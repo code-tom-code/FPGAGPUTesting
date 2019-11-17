@@ -1,3 +1,20 @@
+#########
+#Custom Vivado Project gitignores
+#From: https://github.com/starwaredesign/vivado-project-template/blob/master/.gitignore
+#########
+vivado/*
+bd/**/hdl
+bd/**/hw_handoff
+bd/**/ip
+bd/**/ipshared
+bd/**/sim
+bd/**/synth
+bd/**/ui
+*.bxml
+*.xdc
+*.jou
+*.log
+
 #########################################################################################################
 ##	This is an example .gitignore file for Vivado, please treat it as an example as 
 ##	it might not be complete. In addition, XAPP 1165 should be followed.
@@ -84,19 +101,3 @@
 !*.elf
 !*.bmm
 !*.xmp
-#########
-#Custom Vivado Project gitignores
-#From: https://github.com/starwaredesign/vivado-project-template/blob/master/.gitignore
-#########
-vivado/*
-bd/**/hdl
-bd/**/hw_handoff
-bd/**/ip
-bd/**/ipshared
-bd/**/sim
-bd/**/synth
-bd/**/ui
-*.bxml
-*.xdc
-*.jou
-*.log

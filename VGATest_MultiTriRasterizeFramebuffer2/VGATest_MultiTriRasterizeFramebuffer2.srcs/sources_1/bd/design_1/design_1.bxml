@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Root MajorVersion="0" MinorVersion="35">
+  <CompositeFile CompositeFileTopName="design_1" CanBeSetAsTop="false" CanDisplayChildGraph="true">
+    <Description>Composite Fileset</Description>
+    <Generation Name="SYNTHESIS" State="RESET" Timestamp="1573984626"/>
+    <Generation Name="IMPLEMENTATION" State="RESET" Timestamp="1573984626"/>
+    <Generation Name="SIMULATION" State="RESET" Timestamp="1573984626"/>
+    <Generation Name="HW_HANDOFF" State="RESET" Timestamp="1573984626"/>
+    <FileCollection Name="SOURCES" Type="SOURCES">
+      <File Name="ip\design_1_clk_wiz_0_0\design_1_clk_wiz_0_0.xci" Type="IP">
+        <Instance HierarchyPath="clk_wiz_4x"/>
+        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
+        <Library Name="xil_defaultlib"/>
+        <UsedIn Val="SYNTHESIS"/>
+        <UsedIn Val="IMPLEMENTATION"/>
+        <UsedIn Val="SIMULATION"/>
+      </File>
+      <File Name="ip\design_1_R8G8B8_to_R5G5B4_0_0\design_1_R8G8B8_to_R5G5B4_0_0.xci" Type="IP">
+        <Instance HierarchyPath="R8G8B8_to_R5G5B4_0"/>
+        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
+        <Library Name="xil_defaultlib"/>
+        <UsedIn Val="SYNTHESIS"/>
+        <UsedIn Val="IMPLEMENTATION"/>
+        <UsedIn Val="SIMULATION"/>
+      </File>
+      <File Name="ip\design_1_ScanOut_0_0\design_1_ScanOut_0_0.xci" Type="IP">
+        <Instance HierarchyPath="ScanOut_0"/>
+        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
+        <Library Name="xil_defaultlib"/>
+        <UsedIn Val="SYNTHESIS"/>
+        <UsedIn Val="IMPLEMENTATION"/>
+        <UsedIn Val="SIMULATION"/>
+      </File>
+      <File Name="ip\design_1_SRAM_Framebuffer_0_0\design_1_SRAM_Framebuffer_0_0.xci" Type="IP">
+        <Instance HierarchyPath="SRAM_Framebuffer_0"/>
+        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
+        <Library Name="xil_defaultlib"/>
+        <UsedIn Val="SYNTHESIS"/>
+        <UsedIn Val="IMPLEMENTATION"/>
+        <UsedIn Val="SIMULATION"/>
+      </File>
+      <File Name="ip\design_1_WriteArbiter_0_0\design_1_WriteArbiter_0_0.xci" Type="IP">
+        <Instance HierarchyPath="WriteArbiter_0"/>
+        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
+        <Library Name="xil_defaultlib"/>
+        <UsedIn Val="SYNTHESIS"/>
+        <UsedIn Val="IMPLEMENTATION"/>
+        <UsedIn Val="SIMULATION"/>
+      </File>
+      <File Name="ip\design_1_VertexDataSource_0_0\design_1_VertexDataSource_0_0.xci" Type="IP">
+        <Instance HierarchyPath="VertexDataSource_0"/>
+        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
+        <Library Name="xil_defaultlib"/>
+        <UsedIn Val="SYNTHESIS"/>
+        <UsedIn Val="IMPLEMENTATION"/>
+        <UsedIn Val="SIMULATION"/>
+      </File>
+      <File Name="ip\design_1_TexSample_0_0\design_1_TexSample_0_0.xci" Type="IP">
+        <Instance HierarchyPath="TexSample_0"/>
+        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
+        <Library Name="xil_defaultlib"/>
+        <UsedIn Val="SYNTHESIS"/>
+        <UsedIn Val="IMPLEMENTATION"/>
+        <UsedIn Val="SIMULATION"/>
+      </File>
+      <File Name="ip\design_1_TexSample_1_0\design_1_TexSample_1_0.xci" Type="IP">
+        <Instance HierarchyPath="TexSample_1"/>
+        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
+        <Library Name="xil_defaultlib"/>
+        <UsedIn Val="SYNTHESIS"/>
+        <UsedIn Val="IMPLEMENTATION"/>
+        <UsedIn Val="SIMULATION"/>
+      </File>
+      <File Name="ip\design_1_TexSampleFIFO_0_0\design_1_TexSampleFIFO_0_0.xci" Type="IP">
+        <Instance HierarchyPath="TexSampleFIFO_0"/>
+        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
+        <Library Name="xil_defaultlib"/>
+        <UsedIn Val="SYNTHESIS"/>
+        <UsedIn Val="IMPLEMENTATION"/>
+        <UsedIn Val="SIMULATION"/>
+      </File>
+      <File Name="ip\design_1_TexSampleFIFO_1_0\design_1_TexSampleFIFO_1_0.xci" Type="IP">
+        <Instance HierarchyPath="TexSampleFIFO_1"/>
+        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
+        <Library Name="xil_defaultlib"/>
+        <UsedIn Val="SYNTHESIS"/>
+        <UsedIn Val="IMPLEMENTATION"/>
+        <UsedIn Val="SIMULATION"/>
+      </File>
+      <File Name="ip\design_1_xlconstant_0_0\design_1_xlconstant_0_0.xci" Type="IP">
+        <Instance HierarchyPath="xlconstant_zero"/>
+        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
+        <Library Name="xil_defaultlib"/>
+        <UsedIn Val="SYNTHESIS"/>
+        <UsedIn Val="IMPLEMENTATION"/>
+        <UsedIn Val="SIMULATION"/>
+      </File>
+      <File Name="ip\design_1_TriSetup_0_0\design_1_TriSetup_0_0.xci" Type="IP">
+        <Instance HierarchyPath="TriSetup_0"/>
+        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
+        <Library Name="xil_defaultlib"/>
+        <UsedIn Val="SYNTHESIS"/>
+        <UsedIn Val="IMPLEMENTATION"/>
+        <UsedIn Val="SIMULATION"/>
+      </File>
+      <File Name="ip\design_1_TriSetup_1_0\design_1_TriSetup_1_0.xci" Type="IP">
+        <Instance HierarchyPath="TriSetup_1"/>
+        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
+        <Library Name="xil_defaultlib"/>
+        <UsedIn Val="SYNTHESIS"/>
+        <UsedIn Val="IMPLEMENTATION"/>
+        <UsedIn Val="SIMULATION"/>
+      </File>
+      <File Name="ip\design_1_TriRasterize_0_0\design_1_TriRasterize_0_0.xci" Type="IP">
+        <Instance HierarchyPath="TriRasterize_0"/>
+        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
+        <Library Name="xil_defaultlib"/>
+        <UsedIn Val="SYNTHESIS"/>
+        <UsedIn Val="IMPLEMENTATION"/>
+        <UsedIn Val="SIMULATION"/>
+      </File>
+      <File Name="ip\design_1_TriRasterize_1_0\design_1_TriRasterize_1_0.xci" Type="IP">
+        <Instance HierarchyPath="TriRasterize_1"/>
+        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
+        <Library Name="xil_defaultlib"/>
+        <UsedIn Val="SYNTHESIS"/>
+        <UsedIn Val="IMPLEMENTATION"/>
+        <UsedIn Val="SIMULATION"/>
+      </File>
+      <File Name="ip\design_1_xlconstant_0_1\design_1_xlconstant_0_1.xci" Type="IP">
+        <Instance HierarchyPath="xlconstant_one"/>
+        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
+        <Library Name="xil_defaultlib"/>
+        <UsedIn Val="SYNTHESIS"/>
+        <UsedIn Val="IMPLEMENTATION"/>
+        <UsedIn Val="SIMULATION"/>
+      </File>
+      <File Name="ip\design_1_TexInterpolator_0_0\design_1_TexInterpolator_0_0.xci" Type="IP">
+        <Instance HierarchyPath="TexInterpolator_0"/>
+        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
+        <Library Name="xil_defaultlib"/>
+        <UsedIn Val="SYNTHESIS"/>
+        <UsedIn Val="IMPLEMENTATION"/>
+        <UsedIn Val="SIMULATION"/>
+      </File>
+      <File Name="ip\design_1_TexInterpolator_1_0\design_1_TexInterpolator_1_0.xci" Type="IP">
+        <Instance HierarchyPath="TexInterpolator_1"/>
+        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
+        <Library Name="xil_defaultlib"/>
+        <UsedIn Val="SYNTHESIS"/>
+        <UsedIn Val="IMPLEMENTATION"/>
+        <UsedIn Val="SIMULATION"/>
+      </File>
+      <File Name="ip\design_1_ClearBlock_0_0\design_1_ClearBlock_0_0.xci" Type="IP">
+        <Instance HierarchyPath="ClearBlock_0"/>
+        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
+        <Library Name="xil_defaultlib"/>
+        <UsedIn Val="SYNTHESIS"/>
+        <UsedIn Val="IMPLEMENTATION"/>
+        <UsedIn Val="SIMULATION"/>
+      </File>
+    </FileCollection>
+  </CompositeFile>
+</Root>

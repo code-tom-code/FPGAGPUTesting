@@ -1,0 +1,1411 @@
+﻿<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<bd:repository xmlns:bd="http://www.xilinx.com/bd" bd:BoundaryCRC="0xBAEA467DF6ABCB5B" bd:device="xcku5p-ffvb676-2-e" bd:isValidated="true" bd:synthFlowMode="Hierarchical" bd:tool_version="2018.1" bd:top="design_1" bd:version="1.00.a">
+
+  <spirit:component xmlns:spirit="http://www.spiritconsortium.org/XMLSchema/SPIRIT/1685-2009">
+    <spirit:vendor>xilinx.com</spirit:vendor>
+    <spirit:library>BlockDiagram</spirit:library>
+    <spirit:name>design_1</spirit:name>
+    <spirit:version>1.00.a</spirit:version>
+    <spirit:parameters>
+      <spirit:parameter>
+        <spirit:name>isTop</spirit:name>
+        <spirit:value spirit:format="bool" spirit:resolve="immediate">true</spirit:value>
+      </spirit:parameter>
+    </spirit:parameters>
+    <spirit:busInterfaces>
+      <spirit:busInterface>
+        <spirit:name>default_sysclk1_300</spirit:name>
+        <spirit:slave/>
+        <spirit:busType spirit:library="interface" spirit:name="diff_clock" spirit:vendor="xilinx.com" spirit:version="1.0"/>
+        <spirit:abstractionType spirit:library="interface" spirit:name="diff_clock_rtl" spirit:vendor="xilinx.com" spirit:version="1.0"/>
+        <spirit:parameters>
+          <spirit:parameter>
+            <spirit:name>CAN_DEBUG</spirit:name>
+            <spirit:value>false</spirit:value>
+            <spirit:vendorExtensions>
+              <bd:configElementInfos>
+                <bd:configElementInfo bd:valueSource="default"/>
+              </bd:configElementInfos>
+            </spirit:vendorExtensions>
+          </spirit:parameter>
+          <spirit:parameter>
+            <spirit:name>FREQ_HZ</spirit:name>
+            <spirit:value>300000000</spirit:value>
+            <spirit:vendorExtensions>
+              <bd:configElementInfos>
+                <bd:configElementInfo bd:valueSource="user"/>
+              </bd:configElementInfos>
+            </spirit:vendorExtensions>
+          </spirit:parameter>
+        </spirit:parameters>
+      </spirit:busInterface>
+      <spirit:busInterface>
+        <spirit:name>DATA.PORT_R</spirit:name>
+        <spirit:displayName>Data</spirit:displayName>
+        <spirit:description>Data</spirit:description>
+        <spirit:busType spirit:library="signal" spirit:name="data" spirit:vendor="xilinx.com" spirit:version="1.0"/>
+        <spirit:abstractionType spirit:library="signal" spirit:name="data_rtl" spirit:vendor="xilinx.com" spirit:version="1.0"/>
+        <spirit:slave/>
+        <spirit:portMaps>
+          <spirit:portMap>
+            <spirit:logicalPort>
+              <spirit:name>DATA</spirit:name>
+            </spirit:logicalPort>
+            <spirit:physicalPort>
+              <spirit:name>port_r</spirit:name>
+            </spirit:physicalPort>
+          </spirit:portMap>
+        </spirit:portMaps>
+        <spirit:parameters>
+          <spirit:parameter>
+            <spirit:name>LAYERED_METADATA</spirit:name>
+            <spirit:value>undef</spirit:value>
+            <spirit:vendorExtensions>
+              <bd:configElementInfos>
+                <bd:configElementInfo bd:valueSource="default"/>
+              </bd:configElementInfos>
+            </spirit:vendorExtensions>
+          </spirit:parameter>
+        </spirit:parameters>
+      </spirit:busInterface>
+      <spirit:busInterface>
+        <spirit:name>DATA.PORT_G</spirit:name>
+        <spirit:displayName>Data</spirit:displayName>
+        <spirit:description>Data</spirit:description>
+        <spirit:busType spirit:library="signal" spirit:name="data" spirit:vendor="xilinx.com" spirit:version="1.0"/>
+        <spirit:abstractionType spirit:library="signal" spirit:name="data_rtl" spirit:vendor="xilinx.com" spirit:version="1.0"/>
+        <spirit:slave/>
+        <spirit:portMaps>
+          <spirit:portMap>
+            <spirit:logicalPort>
+              <spirit:name>DATA</spirit:name>
+            </spirit:logicalPort>
+            <spirit:physicalPort>
+              <spirit:name>port_g</spirit:name>
+            </spirit:physicalPort>
+          </spirit:portMap>
+        </spirit:portMaps>
+        <spirit:parameters>
+          <spirit:parameter>
+            <spirit:name>LAYERED_METADATA</spirit:name>
+            <spirit:value>undef</spirit:value>
+            <spirit:vendorExtensions>
+              <bd:configElementInfos>
+                <bd:configElementInfo bd:valueSource="default"/>
+              </bd:configElementInfos>
+            </spirit:vendorExtensions>
+          </spirit:parameter>
+        </spirit:parameters>
+      </spirit:busInterface>
+      <spirit:busInterface>
+        <spirit:name>DATA.PORT_B</spirit:name>
+        <spirit:displayName>Data</spirit:displayName>
+        <spirit:description>Data</spirit:description>
+        <spirit:busType spirit:library="signal" spirit:name="data" spirit:vendor="xilinx.com" spirit:version="1.0"/>
+        <spirit:abstractionType spirit:library="signal" spirit:name="data_rtl" spirit:vendor="xilinx.com" spirit:version="1.0"/>
+        <spirit:slave/>
+        <spirit:portMaps>
+          <spirit:portMap>
+            <spirit:logicalPort>
+              <spirit:name>DATA</spirit:name>
+            </spirit:logicalPort>
+            <spirit:physicalPort>
+              <spirit:name>port_b</spirit:name>
+            </spirit:physicalPort>
+          </spirit:portMap>
+        </spirit:portMaps>
+        <spirit:parameters>
+          <spirit:parameter>
+            <spirit:name>LAYERED_METADATA</spirit:name>
+            <spirit:value>undef</spirit:value>
+            <spirit:vendorExtensions>
+              <bd:configElementInfos>
+                <bd:configElementInfo bd:valueSource="default"/>
+              </bd:configElementInfos>
+            </spirit:vendorExtensions>
+          </spirit:parameter>
+        </spirit:parameters>
+      </spirit:busInterface>
+      <spirit:busInterface>
+        <spirit:name>DATA.VSYNC</spirit:name>
+        <spirit:displayName>Data</spirit:displayName>
+        <spirit:description>Data</spirit:description>
+        <spirit:busType spirit:library="signal" spirit:name="data" spirit:vendor="xilinx.com" spirit:version="1.0"/>
+        <spirit:abstractionType spirit:library="signal" spirit:name="data_rtl" spirit:vendor="xilinx.com" spirit:version="1.0"/>
+        <spirit:slave/>
+        <spirit:portMaps>
+          <spirit:portMap>
+            <spirit:logicalPort>
+              <spirit:name>DATA</spirit:name>
+            </spirit:logicalPort>
+            <spirit:physicalPort>
+              <spirit:name>vsync</spirit:name>
+            </spirit:physicalPort>
+          </spirit:portMap>
+        </spirit:portMaps>
+        <spirit:parameters>
+          <spirit:parameter>
+            <spirit:name>LAYERED_METADATA</spirit:name>
+            <spirit:value>undef</spirit:value>
+            <spirit:vendorExtensions>
+              <bd:configElementInfos>
+                <bd:configElementInfo bd:valueSource="default"/>
+              </bd:configElementInfos>
+            </spirit:vendorExtensions>
+          </spirit:parameter>
+        </spirit:parameters>
+      </spirit:busInterface>
+      <spirit:busInterface>
+        <spirit:name>DATA.HSYNC</spirit:name>
+        <spirit:displayName>Data</spirit:displayName>
+        <spirit:description>Data</spirit:description>
+        <spirit:busType spirit:library="signal" spirit:name="data" spirit:vendor="xilinx.com" spirit:version="1.0"/>
+        <spirit:abstractionType spirit:library="signal" spirit:name="data_rtl" spirit:vendor="xilinx.com" spirit:version="1.0"/>
+        <spirit:slave/>
+        <spirit:portMaps>
+          <spirit:portMap>
+            <spirit:logicalPort>
+              <spirit:name>DATA</spirit:name>
+            </spirit:logicalPort>
+            <spirit:physicalPort>
+              <spirit:name>hsync</spirit:name>
+            </spirit:physicalPort>
+          </spirit:portMap>
+        </spirit:portMaps>
+        <spirit:parameters>
+          <spirit:parameter>
+            <spirit:name>LAYERED_METADATA</spirit:name>
+            <spirit:value>undef</spirit:value>
+            <spirit:vendorExtensions>
+              <bd:configElementInfos>
+                <bd:configElementInfo bd:valueSource="default"/>
+              </bd:configElementInfos>
+            </spirit:vendorExtensions>
+          </spirit:parameter>
+        </spirit:parameters>
+      </spirit:busInterface>
+    </spirit:busInterfaces>
+    <spirit:model>
+      <spirit:views>
+        <spirit:view>
+          <spirit:name>BlockDiagram</spirit:name>
+          <spirit:envIdentifier>:vivado.xilinx.com:</spirit:envIdentifier>
+          <spirit:hierarchyRef spirit:library="BlockDiagram" spirit:name="design_1_imp" spirit:vendor="xilinx.com" spirit:version="1.00.a"/>
+        </spirit:view>
+      </spirit:views>
+      <spirit:ports>
+        <spirit:port>
+          <spirit:name>port_r</spirit:name>
+          <spirit:wire>
+            <spirit:direction>out</spirit:direction>
+            <spirit:vector>
+              <spirit:left>4</spirit:left>
+              <spirit:right>0</spirit:right>
+            </spirit:vector>
+          </spirit:wire>
+        </spirit:port>
+        <spirit:port>
+          <spirit:name>port_g</spirit:name>
+          <spirit:wire>
+            <spirit:direction>out</spirit:direction>
+            <spirit:vector>
+              <spirit:left>4</spirit:left>
+              <spirit:right>0</spirit:right>
+            </spirit:vector>
+          </spirit:wire>
+        </spirit:port>
+        <spirit:port>
+          <spirit:name>port_b</spirit:name>
+          <spirit:wire>
+            <spirit:direction>out</spirit:direction>
+            <spirit:vector>
+              <spirit:left>3</spirit:left>
+              <spirit:right>0</spirit:right>
+            </spirit:vector>
+          </spirit:wire>
+        </spirit:port>
+        <spirit:port>
+          <spirit:name>vsync</spirit:name>
+          <spirit:wire>
+            <spirit:direction>out</spirit:direction>
+          </spirit:wire>
+        </spirit:port>
+        <spirit:port>
+          <spirit:name>hsync</spirit:name>
+          <spirit:wire>
+            <spirit:direction>out</spirit:direction>
+          </spirit:wire>
+        </spirit:port>
+      </spirit:ports>
+    </spirit:model>
+  </spirit:component>
+
+  <spirit:design xmlns:spirit="http://www.spiritconsortium.org/XMLSchema/SPIRIT/1685-2009">
+    <spirit:vendor>xilinx.com</spirit:vendor>
+    <spirit:library>BlockDiagram</spirit:library>
+    <spirit:name>design_1_imp</spirit:name>
+    <spirit:version>1.00.a</spirit:version>
+    <spirit:componentInstances>
+      <spirit:componentInstance>
+        <spirit:instanceName>clk_wiz_4x</spirit:instanceName>
+        <spirit:componentRef spirit:library="ip" spirit:name="clk_wiz" spirit:vendor="xilinx.com" spirit:version="6.0"/>
+        <spirit:configurableElementValues>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_clk_wiz_0_0</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="CLKIN1_JITTER_PS">33.330000000000005</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="CLKOUT1_REQUESTED_OUT_FREQ">100.5</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="PRIM_SOURCE">Differential_clock_capable_pin</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="USE_LOCKED">false</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="USE_RESET">false</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="MMCM_DIVCLK_DIVIDE">25</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="MMCM_CLKFBOUT_MULT_F">100.500</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="MMCM_CLKIN1_PERIOD">3.333</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="MMCM_CLKIN2_PERIOD">10.0</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="MMCM_CLKOUT0_DIVIDE_F">12.000</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="USE_BOARD_FLOW">true</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="CLK_IN1_BOARD_INTERFACE">default_sysclk1_300</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="CLKOUT1_JITTER">205.181</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="CLKOUT1_PHASE_ERROR">350.468</spirit:configurableElementValue>
+        </spirit:configurableElementValues>
+      </spirit:componentInstance>
+      <spirit:componentInstance>
+        <spirit:instanceName>R8G8B8_to_R5G5B4_0</spirit:instanceName>
+        <spirit:componentRef spirit:library="module_ref" spirit:name="R8G8B8_to_R5G5B4" spirit:vendor="xilinx.com" spirit:version="1.0"/>
+        <spirit:configurableElementValues>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_R8G8B8_to_R5G5B4_0_0</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">R8G8B8_to_R5G5B4</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
+        </spirit:configurableElementValues>
+      </spirit:componentInstance>
+      <spirit:componentInstance>
+        <spirit:instanceName>SRAM_Framebuffer_0</spirit:instanceName>
+        <spirit:componentRef spirit:library="module_ref" spirit:name="SRAM_Framebuffer" spirit:vendor="xilinx.com" spirit:version="1.0"/>
+        <spirit:configurableElementValues>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_SRAM_Framebuffer_0_0</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">SRAM_Framebuffer</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
+        </spirit:configurableElementValues>
+      </spirit:componentInstance>
+      <spirit:componentInstance>
+        <spirit:instanceName>xlconstant_zero</spirit:instanceName>
+        <spirit:componentRef spirit:library="ip" spirit:name="xlconstant" spirit:vendor="xilinx.com" spirit:version="1.1"/>
+        <spirit:configurableElementValues>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_xlconstant_0_0</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="CONST_VAL">0</spirit:configurableElementValue>
+        </spirit:configurableElementValues>
+      </spirit:componentInstance>
+      <spirit:componentInstance>
+        <spirit:instanceName>TexSampleFIFO_0</spirit:instanceName>
+        <spirit:componentRef spirit:library="module_ref" spirit:name="TexSampleFIFO" spirit:vendor="xilinx.com" spirit:version="1.0"/>
+        <spirit:configurableElementValues>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_TexSampleFIFO_0_0</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">TexSampleFIFO</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
+        </spirit:configurableElementValues>
+      </spirit:componentInstance>
+      <spirit:componentInstance>
+        <spirit:instanceName>TexSampleFIFO_1</spirit:instanceName>
+        <spirit:componentRef spirit:library="module_ref" spirit:name="TexSampleFIFO" spirit:vendor="xilinx.com" spirit:version="1.0"/>
+        <spirit:configurableElementValues>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_TexSampleFIFO_1_0</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">TexSampleFIFO</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
+        </spirit:configurableElementValues>
+      </spirit:componentInstance>
+      <spirit:componentInstance>
+        <spirit:instanceName>xlconstant_one</spirit:instanceName>
+        <spirit:componentRef spirit:library="ip" spirit:name="xlconstant" spirit:vendor="xilinx.com" spirit:version="1.1"/>
+        <spirit:configurableElementValues>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_xlconstant_0_1</spirit:configurableElementValue>
+        </spirit:configurableElementValues>
+      </spirit:componentInstance>
+      <spirit:componentInstance>
+        <spirit:instanceName>TriRasterize_0</spirit:instanceName>
+        <spirit:componentRef spirit:library="module_ref" spirit:name="TriRasterize" spirit:vendor="xilinx.com" spirit:version="1.0"/>
+        <spirit:configurableElementValues>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_TriRasterize_0_0</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">TriRasterize</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
+        </spirit:configurableElementValues>
+      </spirit:componentInstance>
+      <spirit:componentInstance>
+        <spirit:instanceName>TriRasterize_1</spirit:instanceName>
+        <spirit:componentRef spirit:library="module_ref" spirit:name="TriRasterize" spirit:vendor="xilinx.com" spirit:version="1.0"/>
+        <spirit:configurableElementValues>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_TriRasterize_1_0</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">TriRasterize</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
+        </spirit:configurableElementValues>
+      </spirit:componentInstance>
+      <spirit:componentInstance>
+        <spirit:instanceName>TriSetup_0</spirit:instanceName>
+        <spirit:componentRef spirit:library="module_ref" spirit:name="TriSetup" spirit:vendor="xilinx.com" spirit:version="1.0"/>
+        <spirit:configurableElementValues>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_TriSetup_0_0</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">TriSetup</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
+        </spirit:configurableElementValues>
+      </spirit:componentInstance>
+      <spirit:componentInstance>
+        <spirit:instanceName>TriSetup_1</spirit:instanceName>
+        <spirit:componentRef spirit:library="module_ref" spirit:name="TriSetup" spirit:vendor="xilinx.com" spirit:version="1.0"/>
+        <spirit:configurableElementValues>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_TriSetup_1_0</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">TriSetup</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
+        </spirit:configurableElementValues>
+      </spirit:componentInstance>
+      <spirit:componentInstance>
+        <spirit:instanceName>ScanOut_0</spirit:instanceName>
+        <spirit:componentRef spirit:library="module_ref" spirit:name="ScanOut" spirit:vendor="xilinx.com" spirit:version="1.0"/>
+        <spirit:configurableElementValues>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_ScanOut_0_0</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">ScanOut</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
+        </spirit:configurableElementValues>
+      </spirit:componentInstance>
+      <spirit:componentInstance>
+        <spirit:instanceName>TexSample_0</spirit:instanceName>
+        <spirit:componentRef spirit:library="module_ref" spirit:name="TexSample" spirit:vendor="xilinx.com" spirit:version="1.0"/>
+        <spirit:configurableElementValues>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_TexSample_0_0</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">TexSample</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
+        </spirit:configurableElementValues>
+      </spirit:componentInstance>
+      <spirit:componentInstance>
+        <spirit:instanceName>TexSample_1</spirit:instanceName>
+        <spirit:componentRef spirit:library="module_ref" spirit:name="TexSample" spirit:vendor="xilinx.com" spirit:version="1.0"/>
+        <spirit:configurableElementValues>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_TexSample_1_0</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">TexSample</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
+        </spirit:configurableElementValues>
+      </spirit:componentInstance>
+      <spirit:componentInstance>
+        <spirit:instanceName>TexInterpolator_0</spirit:instanceName>
+        <spirit:componentRef spirit:library="module_ref" spirit:name="TexInterpolator" spirit:vendor="xilinx.com" spirit:version="1.0"/>
+        <spirit:configurableElementValues>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_TexInterpolator_0_0</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">TexInterpolator</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
+        </spirit:configurableElementValues>
+      </spirit:componentInstance>
+      <spirit:componentInstance>
+        <spirit:instanceName>TexInterpolator_1</spirit:instanceName>
+        <spirit:componentRef spirit:library="module_ref" spirit:name="TexInterpolator" spirit:vendor="xilinx.com" spirit:version="1.0"/>
+        <spirit:configurableElementValues>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_TexInterpolator_1_0</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">TexInterpolator</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
+        </spirit:configurableElementValues>
+      </spirit:componentInstance>
+      <spirit:componentInstance>
+        <spirit:instanceName>WriteArbiter_0</spirit:instanceName>
+        <spirit:componentRef spirit:library="module_ref" spirit:name="WriteArbiter" spirit:vendor="xilinx.com" spirit:version="1.0"/>
+        <spirit:configurableElementValues>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_WriteArbiter_0_0</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">WriteArbiter</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
+        </spirit:configurableElementValues>
+      </spirit:componentInstance>
+      <spirit:componentInstance>
+        <spirit:instanceName>ClearBlock_0</spirit:instanceName>
+        <spirit:componentRef spirit:library="module_ref" spirit:name="ClearBlock" spirit:vendor="xilinx.com" spirit:version="1.0"/>
+        <spirit:configurableElementValues>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_ClearBlock_0_0</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">ClearBlock</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
+        </spirit:configurableElementValues>
+      </spirit:componentInstance>
+      <spirit:componentInstance>
+        <spirit:instanceName>VertexDataSource_0</spirit:instanceName>
+        <spirit:componentRef spirit:library="module_ref" spirit:name="VertexDataSource" spirit:vendor="xilinx.com" spirit:version="1.0"/>
+        <spirit:configurableElementValues>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_VertexDataSource_0_0</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">VertexDataSource</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
+        </spirit:configurableElementValues>
+      </spirit:componentInstance>
+    </spirit:componentInstances>
+    <spirit:interconnections/>
+    <spirit:adHocConnections>
+      <spirit:adHocConnection>
+        <spirit:name>R8G8B8_to_R5G5B4_0_outRed5</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="R8G8B8_to_R5G5B4_0" spirit:portRef="outRed5"/>
+        <spirit:externalPortReference spirit:portRef="port_r"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>R8G8B8_to_R5G5B4_0_outGreen5</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="R8G8B8_to_R5G5B4_0" spirit:portRef="outGreen5"/>
+        <spirit:externalPortReference spirit:portRef="port_g"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>R8G8B8_to_R5G5B4_0_outBlue4</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="R8G8B8_to_R5G5B4_0" spirit:portRef="outBlue4"/>
+        <spirit:externalPortReference spirit:portRef="port_b"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>ScanOut_0_outR</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="ScanOut_0" spirit:portRef="outR"/>
+        <spirit:internalPortReference spirit:componentRef="R8G8B8_to_R5G5B4_0" spirit:portRef="red8"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>ScanOut_0_outG</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="ScanOut_0" spirit:portRef="outG"/>
+        <spirit:internalPortReference spirit:componentRef="R8G8B8_to_R5G5B4_0" spirit:portRef="green8"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>ScanOut_0_outB</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="ScanOut_0" spirit:portRef="outB"/>
+        <spirit:internalPortReference spirit:componentRef="R8G8B8_to_R5G5B4_0" spirit:portRef="blue8"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>ScanOut_0_vsync</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="ScanOut_0" spirit:portRef="vsync"/>
+        <spirit:externalPortReference spirit:portRef="vsync"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>ScanOut_0_hsync</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="ScanOut_0" spirit:portRef="hsync"/>
+        <spirit:externalPortReference spirit:portRef="hsync"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>SRAM_Framebuffer_0_outReadColorR</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="SRAM_Framebuffer_0" spirit:portRef="outReadColorR"/>
+        <spirit:internalPortReference spirit:componentRef="ScanOut_0" spirit:portRef="inColorR"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>SRAM_Framebuffer_0_outReadColorG</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="SRAM_Framebuffer_0" spirit:portRef="outReadColorG"/>
+        <spirit:internalPortReference spirit:componentRef="ScanOut_0" spirit:portRef="inColorG"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>SRAM_Framebuffer_0_outReadColorB</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="SRAM_Framebuffer_0" spirit:portRef="outReadColorB"/>
+        <spirit:internalPortReference spirit:componentRef="ScanOut_0" spirit:portRef="inColorB"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>ScanOut_0_outXCoord</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="ScanOut_0" spirit:portRef="outXCoord"/>
+        <spirit:internalPortReference spirit:componentRef="SRAM_Framebuffer_0" spirit:portRef="inReadX"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>ScanOut_0_outYCoord</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="ScanOut_0" spirit:portRef="outYCoord"/>
+        <spirit:internalPortReference spirit:componentRef="SRAM_Framebuffer_0" spirit:portRef="inReadY"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>ScanOut_0_outIsValidRead</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="ScanOut_0" spirit:portRef="outIsValidRead"/>
+        <spirit:internalPortReference spirit:componentRef="SRAM_Framebuffer_0" spirit:portRef="inReadEnable"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>WriteArbiter_0_outWriteLocX</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="WriteArbiter_0" spirit:portRef="outWriteLocX"/>
+        <spirit:internalPortReference spirit:componentRef="SRAM_Framebuffer_0" spirit:portRef="inWriteX"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>WriteArbiter_0_outWriteLocY</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="WriteArbiter_0" spirit:portRef="outWriteLocY"/>
+        <spirit:internalPortReference spirit:componentRef="SRAM_Framebuffer_0" spirit:portRef="inWriteY"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>WriteArbiter_0_outWriteColorR</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="WriteArbiter_0" spirit:portRef="outWriteColorR"/>
+        <spirit:internalPortReference spirit:componentRef="SRAM_Framebuffer_0" spirit:portRef="inWriteColorR"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>WriteArbiter_0_outWriteColorG</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="WriteArbiter_0" spirit:portRef="outWriteColorG"/>
+        <spirit:internalPortReference spirit:componentRef="SRAM_Framebuffer_0" spirit:portRef="inWriteColorG"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>WriteArbiter_0_outWriteColorB</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="WriteArbiter_0" spirit:portRef="outWriteColorB"/>
+        <spirit:internalPortReference spirit:componentRef="SRAM_Framebuffer_0" spirit:portRef="inWriteColorB"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>WriteArbiter_0_outWriteEnable</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="WriteArbiter_0" spirit:portRef="outWriteEnable"/>
+        <spirit:internalPortReference spirit:componentRef="SRAM_Framebuffer_0" spirit:portRef="inWriteEnable"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>clk_wiz_0_clk_out1</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="clk_wiz_4x" spirit:portRef="clk_out1"/>
+        <spirit:internalPortReference spirit:componentRef="SRAM_Framebuffer_0" spirit:portRef="clk"/>
+        <spirit:internalPortReference spirit:componentRef="TexSampleFIFO_0" spirit:portRef="clk"/>
+        <spirit:internalPortReference spirit:componentRef="TexSampleFIFO_1" spirit:portRef="clk"/>
+        <spirit:internalPortReference spirit:componentRef="TriRasterize_0" spirit:portRef="clk"/>
+        <spirit:internalPortReference spirit:componentRef="TriRasterize_1" spirit:portRef="clk"/>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="clk"/>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_1" spirit:portRef="clk"/>
+        <spirit:internalPortReference spirit:componentRef="ScanOut_0" spirit:portRef="clk"/>
+        <spirit:internalPortReference spirit:componentRef="TexSample_0" spirit:portRef="clk"/>
+        <spirit:internalPortReference spirit:componentRef="TexSample_1" spirit:portRef="clk"/>
+        <spirit:internalPortReference spirit:componentRef="TexInterpolator_0" spirit:portRef="clk"/>
+        <spirit:internalPortReference spirit:componentRef="TexInterpolator_1" spirit:portRef="clk"/>
+        <spirit:internalPortReference spirit:componentRef="WriteArbiter_0" spirit:portRef="clk"/>
+        <spirit:internalPortReference spirit:componentRef="ClearBlock_0" spirit:portRef="clk"/>
+        <spirit:internalPortReference spirit:componentRef="VertexDataSource_0" spirit:portRef="clk"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TexSample_0_outR</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TexSample_0" spirit:portRef="outR"/>
+        <spirit:internalPortReference spirit:componentRef="WriteArbiter_0" spirit:portRef="inWriteColorR0"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TexSample_0_outG</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TexSample_0" spirit:portRef="outG"/>
+        <spirit:internalPortReference spirit:componentRef="WriteArbiter_0" spirit:portRef="inWriteColorG0"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TexSample_0_outB</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TexSample_0" spirit:portRef="outB"/>
+        <spirit:internalPortReference spirit:componentRef="WriteArbiter_0" spirit:portRef="inWriteColorB0"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TexSample_1_outR</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TexSample_1" spirit:portRef="outR"/>
+        <spirit:internalPortReference spirit:componentRef="WriteArbiter_0" spirit:portRef="inWriteColorR1"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TexSample_1_outG</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TexSample_1" spirit:portRef="outG"/>
+        <spirit:internalPortReference spirit:componentRef="WriteArbiter_0" spirit:portRef="inWriteColorG1"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TexSample_1_outB</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TexSample_1" spirit:portRef="outB"/>
+        <spirit:internalPortReference spirit:componentRef="WriteArbiter_0" spirit:portRef="inWriteColorB1"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TexSample_0_writeIsValid</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TexSample_0" spirit:portRef="writeIsValid"/>
+        <spirit:internalPortReference spirit:componentRef="WriteArbiter_0" spirit:portRef="inWriteIsValid0"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TexSample_0_outPixelX</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TexSample_0" spirit:portRef="outPixelX"/>
+        <spirit:internalPortReference spirit:componentRef="WriteArbiter_0" spirit:portRef="inWriteLocX0"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TexSample_0_outPixelY</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TexSample_0" spirit:portRef="outPixelY"/>
+        <spirit:internalPortReference spirit:componentRef="WriteArbiter_0" spirit:portRef="inWriteLocY0"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>WriteArbiter_0_outWriteAck0</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="WriteArbiter_0" spirit:portRef="outWriteAck0"/>
+        <spirit:internalPortReference spirit:componentRef="TexSample_0" spirit:portRef="writeAck"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TexSample_1_outPixelX</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TexSample_1" spirit:portRef="outPixelX"/>
+        <spirit:internalPortReference spirit:componentRef="WriteArbiter_0" spirit:portRef="inWriteLocX1"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TexSample_1_outPixelY</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TexSample_1" spirit:portRef="outPixelY"/>
+        <spirit:internalPortReference spirit:componentRef="WriteArbiter_0" spirit:portRef="inWriteLocY1"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>WriteArbiter_0_outWriteAck1</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="WriteArbiter_0" spirit:portRef="outWriteAck1"/>
+        <spirit:internalPortReference spirit:componentRef="TexSample_1" spirit:portRef="writeAck"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TexSample_1_writeIsValid</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TexSample_1" spirit:portRef="writeIsValid"/>
+        <spirit:internalPortReference spirit:componentRef="WriteArbiter_0" spirit:portRef="inWriteIsValid1"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>VertexDataSource_0_v0PosX0</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="VertexDataSource_0" spirit:portRef="v0PosX0"/>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="v0_in_x"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>VertexDataSource_0_v0PosY0</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="VertexDataSource_0" spirit:portRef="v0PosY0"/>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="v0_in_y"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>VertexDataSource_0_v1PosX0</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="VertexDataSource_0" spirit:portRef="v1PosX0"/>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="v1_in_x"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>VertexDataSource_0_v1PosY0</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="VertexDataSource_0" spirit:portRef="v1PosY0"/>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="v1_in_y"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>VertexDataSource_0_v2PosX0</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="VertexDataSource_0" spirit:portRef="v2PosX0"/>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="v2_in_x"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>VertexDataSource_0_v2PosY0</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="VertexDataSource_0" spirit:portRef="v2PosY0"/>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="v2_in_y"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>VertexDataSource_0_tex0_X0</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="VertexDataSource_0" spirit:portRef="tex0_X0"/>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="t0_in_x"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>VertexDataSource_0_tex0_Y0</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="VertexDataSource_0" spirit:portRef="tex0_Y0"/>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="t0_in_y"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>VertexDataSource_0_tex1_X0</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="VertexDataSource_0" spirit:portRef="tex1_X0"/>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="t1_in_x"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>VertexDataSource_0_tex1_Y0</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="VertexDataSource_0" spirit:portRef="tex1_Y0"/>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="t1_in_y"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>VertexDataSource_0_tex2_X0</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="VertexDataSource_0" spirit:portRef="tex2_X0"/>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="t2_in_x"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>VertexDataSource_0_tex2_Y0</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="VertexDataSource_0" spirit:portRef="tex2_Y0"/>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="t2_in_y"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>VertexDataSource_0_newTriBegin0</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="VertexDataSource_0" spirit:portRef="newTriBegin0"/>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="newTriBegin"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>VertexDataSource_0_v0PosX1</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="VertexDataSource_0" spirit:portRef="v0PosX1"/>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_1" spirit:portRef="v0_in_x"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>VertexDataSource_0_v0PosY1</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="VertexDataSource_0" spirit:portRef="v0PosY1"/>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_1" spirit:portRef="v0_in_y"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>VertexDataSource_0_v1PosX1</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="VertexDataSource_0" spirit:portRef="v1PosX1"/>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_1" spirit:portRef="v1_in_x"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>VertexDataSource_0_v1PosY1</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="VertexDataSource_0" spirit:portRef="v1PosY1"/>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_1" spirit:portRef="v1_in_y"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>VertexDataSource_0_v2PosX1</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="VertexDataSource_0" spirit:portRef="v2PosX1"/>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_1" spirit:portRef="v2_in_x"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>VertexDataSource_0_v2PosY1</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="VertexDataSource_0" spirit:portRef="v2PosY1"/>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_1" spirit:portRef="v2_in_y"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>VertexDataSource_0_tex0_X1</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="VertexDataSource_0" spirit:portRef="tex0_X1"/>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_1" spirit:portRef="t0_in_x"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>VertexDataSource_0_tex0_Y1</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="VertexDataSource_0" spirit:portRef="tex0_Y1"/>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_1" spirit:portRef="t0_in_y"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>VertexDataSource_0_tex1_X1</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="VertexDataSource_0" spirit:portRef="tex1_X1"/>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_1" spirit:portRef="t1_in_x"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>VertexDataSource_0_tex1_Y1</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="VertexDataSource_0" spirit:portRef="tex1_Y1"/>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_1" spirit:portRef="t1_in_y"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>VertexDataSource_0_tex2_X1</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="VertexDataSource_0" spirit:portRef="tex2_X1"/>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_1" spirit:portRef="t2_in_x"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>VertexDataSource_0_tex2_Y1</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="VertexDataSource_0" spirit:portRef="tex2_Y1"/>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_1" spirit:portRef="t2_in_y"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>VertexDataSource_0_newTriBegin1</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="VertexDataSource_0" spirit:portRef="newTriBegin1"/>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_1" spirit:portRef="newTriBegin"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>xlconstant_zero_dout</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="xlconstant_zero" spirit:portRef="dout"/>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="nointerpolation"/>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_1" spirit:portRef="nointerpolation"/>
+        <spirit:internalPortReference spirit:componentRef="TexInterpolator_0" spirit:portRef="noperspective"/>
+        <spirit:internalPortReference spirit:componentRef="TexInterpolator_1" spirit:portRef="noperspective"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriSetup_0_outMinX</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="outMinX"/>
+        <spirit:internalPortReference spirit:componentRef="TriRasterize_0" spirit:portRef="inMinX"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriSetup_0_outMaxX</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="outMaxX"/>
+        <spirit:internalPortReference spirit:componentRef="TriRasterize_0" spirit:portRef="inMaxX"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriSetup_0_outMinY</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="outMinY"/>
+        <spirit:internalPortReference spirit:componentRef="TriRasterize_0" spirit:portRef="inMinY"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriSetup_0_outMaxY</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="outMaxY"/>
+        <spirit:internalPortReference spirit:componentRef="TriRasterize_0" spirit:portRef="inMaxY"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriSetup_0_outInitialBarycentricRowResetA</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="outInitialBarycentricRowResetA"/>
+        <spirit:internalPortReference spirit:componentRef="TriRasterize_0" spirit:portRef="inInitialBarycentricRowResetA"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriSetup_0_outInitialBarycentricRowResetB</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="outInitialBarycentricRowResetB"/>
+        <spirit:internalPortReference spirit:componentRef="TriRasterize_0" spirit:portRef="inInitialBarycentricRowResetB"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriSetup_0_outInitialBarycentricRowResetC</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="outInitialBarycentricRowResetC"/>
+        <spirit:internalPortReference spirit:componentRef="TriRasterize_0" spirit:portRef="inInitialBarycentricRowResetC"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriSetup_0_outIsTopLeftEdgeA</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="outIsTopLeftEdgeA"/>
+        <spirit:internalPortReference spirit:componentRef="TriRasterize_0" spirit:portRef="inIsTopLeftEdgeA"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriSetup_0_outIsTopLeftEdgeB</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="outIsTopLeftEdgeB"/>
+        <spirit:internalPortReference spirit:componentRef="TriRasterize_0" spirit:portRef="inIsTopLeftEdgeB"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriSetup_0_outIsTopLeftEdgeC</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="outIsTopLeftEdgeC"/>
+        <spirit:internalPortReference spirit:componentRef="TriRasterize_0" spirit:portRef="inIsTopLeftEdgeC"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriSetup_0_outBarycentricXDeltaA</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="outBarycentricXDeltaA"/>
+        <spirit:internalPortReference spirit:componentRef="TriRasterize_0" spirit:portRef="inBarycentricXDeltaA"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriSetup_0_outBarycentricXDeltaB</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="outBarycentricXDeltaB"/>
+        <spirit:internalPortReference spirit:componentRef="TriRasterize_0" spirit:portRef="inBarycentricXDeltaB"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriSetup_0_outBarycentricXDeltaC</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="outBarycentricXDeltaC"/>
+        <spirit:internalPortReference spirit:componentRef="TriRasterize_0" spirit:portRef="inBarycentricXDeltaC"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriSetup_0_outBarycentricYDeltaA</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="outBarycentricYDeltaA"/>
+        <spirit:internalPortReference spirit:componentRef="TriRasterize_0" spirit:portRef="inBarycentricYDeltaA"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriSetup_0_outBarycentricYDeltaB</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="outBarycentricYDeltaB"/>
+        <spirit:internalPortReference spirit:componentRef="TriRasterize_0" spirit:portRef="inBarycentricYDeltaB"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriSetup_0_outBarycentricYDeltaC</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="outBarycentricYDeltaC"/>
+        <spirit:internalPortReference spirit:componentRef="TriRasterize_0" spirit:portRef="inBarycentricYDeltaC"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriSetup_0_triSetupDataIsValid</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="triSetupDataIsValid"/>
+        <spirit:internalPortReference spirit:componentRef="TriRasterize_0" spirit:portRef="newTriBegin"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriRasterize_0_readyForNewTri</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriRasterize_0" spirit:portRef="readyForNewTri"/>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="readyForTriSetupData"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriSetup_1_outMinX</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_1" spirit:portRef="outMinX"/>
+        <spirit:internalPortReference spirit:componentRef="TriRasterize_1" spirit:portRef="inMinX"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriSetup_1_outMaxX</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_1" spirit:portRef="outMaxX"/>
+        <spirit:internalPortReference spirit:componentRef="TriRasterize_1" spirit:portRef="inMaxX"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriSetup_1_outMinY</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_1" spirit:portRef="outMinY"/>
+        <spirit:internalPortReference spirit:componentRef="TriRasterize_1" spirit:portRef="inMinY"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriSetup_1_outMaxY</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_1" spirit:portRef="outMaxY"/>
+        <spirit:internalPortReference spirit:componentRef="TriRasterize_1" spirit:portRef="inMaxY"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriSetup_1_outInitialBarycentricRowResetA</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_1" spirit:portRef="outInitialBarycentricRowResetA"/>
+        <spirit:internalPortReference spirit:componentRef="TriRasterize_1" spirit:portRef="inInitialBarycentricRowResetA"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriSetup_1_outInitialBarycentricRowResetB</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_1" spirit:portRef="outInitialBarycentricRowResetB"/>
+        <spirit:internalPortReference spirit:componentRef="TriRasterize_1" spirit:portRef="inInitialBarycentricRowResetB"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriSetup_1_outInitialBarycentricRowResetC</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_1" spirit:portRef="outInitialBarycentricRowResetC"/>
+        <spirit:internalPortReference spirit:componentRef="TriRasterize_1" spirit:portRef="inInitialBarycentricRowResetC"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriSetup_1_outIsTopLeftEdgeA</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_1" spirit:portRef="outIsTopLeftEdgeA"/>
+        <spirit:internalPortReference spirit:componentRef="TriRasterize_1" spirit:portRef="inIsTopLeftEdgeA"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriSetup_1_outIsTopLeftEdgeB</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_1" spirit:portRef="outIsTopLeftEdgeB"/>
+        <spirit:internalPortReference spirit:componentRef="TriRasterize_1" spirit:portRef="inIsTopLeftEdgeB"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriSetup_1_outIsTopLeftEdgeC</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_1" spirit:portRef="outIsTopLeftEdgeC"/>
+        <spirit:internalPortReference spirit:componentRef="TriRasterize_1" spirit:portRef="inIsTopLeftEdgeC"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriSetup_1_outBarycentricXDeltaA</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_1" spirit:portRef="outBarycentricXDeltaA"/>
+        <spirit:internalPortReference spirit:componentRef="TriRasterize_1" spirit:portRef="inBarycentricXDeltaA"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriSetup_1_outBarycentricXDeltaB</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_1" spirit:portRef="outBarycentricXDeltaB"/>
+        <spirit:internalPortReference spirit:componentRef="TriRasterize_1" spirit:portRef="inBarycentricXDeltaB"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriSetup_1_outBarycentricXDeltaC</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_1" spirit:portRef="outBarycentricXDeltaC"/>
+        <spirit:internalPortReference spirit:componentRef="TriRasterize_1" spirit:portRef="inBarycentricXDeltaC"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriSetup_1_outBarycentricYDeltaA</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_1" spirit:portRef="outBarycentricYDeltaA"/>
+        <spirit:internalPortReference spirit:componentRef="TriRasterize_1" spirit:portRef="inBarycentricYDeltaA"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriSetup_1_outBarycentricYDeltaB</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_1" spirit:portRef="outBarycentricYDeltaB"/>
+        <spirit:internalPortReference spirit:componentRef="TriRasterize_1" spirit:portRef="inBarycentricYDeltaB"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriSetup_1_outBarycentricYDeltaC</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_1" spirit:portRef="outBarycentricYDeltaC"/>
+        <spirit:internalPortReference spirit:componentRef="TriRasterize_1" spirit:portRef="inBarycentricYDeltaC"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriSetup_1_triSetupDataIsValid</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_1" spirit:portRef="triSetupDataIsValid"/>
+        <spirit:internalPortReference spirit:componentRef="TriRasterize_1" spirit:portRef="newTriBegin"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriRasterize_1_readyForNewTri</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriRasterize_1" spirit:portRef="readyForNewTri"/>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_1" spirit:portRef="readyForTriSetupData"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriRasterize_1_outWriteX</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriRasterize_1" spirit:portRef="outWriteX"/>
+        <spirit:internalPortReference spirit:componentRef="TexSampleFIFO_1" spirit:portRef="inPixelX"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriRasterize_1_outWriteY</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriRasterize_1" spirit:portRef="outWriteY"/>
+        <spirit:internalPortReference spirit:componentRef="TexSampleFIFO_1" spirit:portRef="inPixelY"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriRasterize_1_outBarycentricA</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriRasterize_1" spirit:portRef="outBarycentricA"/>
+        <spirit:internalPortReference spirit:componentRef="TexSampleFIFO_1" spirit:portRef="inBarycentricA"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriRasterize_1_outBarycentricB</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriRasterize_1" spirit:portRef="outBarycentricB"/>
+        <spirit:internalPortReference spirit:componentRef="TexSampleFIFO_1" spirit:portRef="inBarycentricB"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriRasterize_1_outBarycentricC</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriRasterize_1" spirit:portRef="outBarycentricC"/>
+        <spirit:internalPortReference spirit:componentRef="TexSampleFIFO_1" spirit:portRef="inBarycentricC"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriRasterize_1_inside_tri</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriRasterize_1" spirit:portRef="inside_tri"/>
+        <spirit:internalPortReference spirit:componentRef="TexSampleFIFO_1" spirit:portRef="writeEnable"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriRasterize_0_outWriteX</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriRasterize_0" spirit:portRef="outWriteX"/>
+        <spirit:internalPortReference spirit:componentRef="TexSampleFIFO_0" spirit:portRef="inPixelX"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriRasterize_0_outWriteY</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriRasterize_0" spirit:portRef="outWriteY"/>
+        <spirit:internalPortReference spirit:componentRef="TexSampleFIFO_0" spirit:portRef="inPixelY"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriRasterize_0_outBarycentricA</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriRasterize_0" spirit:portRef="outBarycentricA"/>
+        <spirit:internalPortReference spirit:componentRef="TexSampleFIFO_0" spirit:portRef="inBarycentricA"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriRasterize_0_outBarycentricB</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriRasterize_0" spirit:portRef="outBarycentricB"/>
+        <spirit:internalPortReference spirit:componentRef="TexSampleFIFO_0" spirit:portRef="inBarycentricB"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriRasterize_0_outBarycentricC</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriRasterize_0" spirit:portRef="outBarycentricC"/>
+        <spirit:internalPortReference spirit:componentRef="TexSampleFIFO_0" spirit:portRef="inBarycentricC"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriRasterize_0_inside_tri</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriRasterize_0" spirit:portRef="inside_tri"/>
+        <spirit:internalPortReference spirit:componentRef="TexSampleFIFO_0" spirit:portRef="writeEnable"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TexSampleFIFO_0_isFIFOFull</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TexSampleFIFO_0" spirit:portRef="isFIFOFull"/>
+        <spirit:internalPortReference spirit:componentRef="TriRasterize_0" spirit:portRef="writeFifoFull"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TexSampleFIFO_1_isFIFOFull</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TexSampleFIFO_1" spirit:portRef="isFIFOFull"/>
+        <spirit:internalPortReference spirit:componentRef="TriRasterize_1" spirit:portRef="writeFifoFull"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriSetup_1_readyForNewTri</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_1" spirit:portRef="readyForNewTri"/>
+        <spirit:internalPortReference spirit:componentRef="VertexDataSource_0" spirit:portRef="readyForNewTri1"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriSetup_0_readyForNewTri</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="readyForNewTri"/>
+        <spirit:internalPortReference spirit:componentRef="VertexDataSource_0" spirit:portRef="readyForNewTri0"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>VertexDataSource_0_v0PosInvZ0</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="VertexDataSource_0" spirit:portRef="v0PosInvZ0"/>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="v0_in_invZ"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>VertexDataSource_0_v1PosInvZ0</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="VertexDataSource_0" spirit:portRef="v1PosInvZ0"/>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="v1_in_invZ"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>VertexDataSource_0_v2PosInvZ0</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="VertexDataSource_0" spirit:portRef="v2PosInvZ0"/>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="v2_in_invZ"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>VertexDataSource_0_v0PosInvZ1</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="VertexDataSource_0" spirit:portRef="v0PosInvZ1"/>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_1" spirit:portRef="v0_in_invZ"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>VertexDataSource_0_v1PosInvZ1</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="VertexDataSource_0" spirit:portRef="v1PosInvZ1"/>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_1" spirit:portRef="v1_in_invZ"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>VertexDataSource_0_v2PosInvZ1</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="VertexDataSource_0" spirit:portRef="v2PosInvZ1"/>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_1" spirit:portRef="v2_in_invZ"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TexSampleFIFO_0_outPixelX</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TexSampleFIFO_0" spirit:portRef="outPixelX"/>
+        <spirit:internalPortReference spirit:componentRef="TexInterpolator_0" spirit:portRef="pixelX"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TexSampleFIFO_0_outPixelY</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TexSampleFIFO_0" spirit:portRef="outPixelY"/>
+        <spirit:internalPortReference spirit:componentRef="TexInterpolator_0" spirit:portRef="pixelY"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TexInterpolator_0_outPixelX</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TexInterpolator_0" spirit:portRef="outPixelX"/>
+        <spirit:internalPortReference spirit:componentRef="TexSample_0" spirit:portRef="pixelX"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TexInterpolator_0_outPixelY</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TexInterpolator_0" spirit:portRef="outPixelY"/>
+        <spirit:internalPortReference spirit:componentRef="TexSample_0" spirit:portRef="pixelY"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TexInterpolator_0_outInterpolatedTexcoordX</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TexInterpolator_0" spirit:portRef="outInterpolatedTexcoordX"/>
+        <spirit:internalPortReference spirit:componentRef="TexSample_0" spirit:portRef="inInterpolatedTexcoordX"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TexInterpolator_0_outInterpolatedTexcoordY</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TexInterpolator_0" spirit:portRef="outInterpolatedTexcoordY"/>
+        <spirit:internalPortReference spirit:componentRef="TexSample_0" spirit:portRef="inInterpolatedTexcoordY"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TexInterpolator_0_writeIsValid</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TexInterpolator_0" spirit:portRef="writeIsValid"/>
+        <spirit:internalPortReference spirit:componentRef="TexSample_0" spirit:portRef="writeStrobe"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TexSample_0_readyForNewWrite</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TexSample_0" spirit:portRef="readyForNewWrite"/>
+        <spirit:internalPortReference spirit:componentRef="TexInterpolator_0" spirit:portRef="readyForWrite"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TexInterpolator_0_readFromFifo</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TexInterpolator_0" spirit:portRef="readFromFifo"/>
+        <spirit:internalPortReference spirit:componentRef="TexSampleFIFO_0" spirit:portRef="readEnable"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TexSampleFIFO_0_outBarycentricA</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TexSampleFIFO_0" spirit:portRef="outBarycentricA"/>
+        <spirit:internalPortReference spirit:componentRef="TexInterpolator_0" spirit:portRef="inBarycentricA"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TexSampleFIFO_0_outBarycentricB</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TexSampleFIFO_0" spirit:portRef="outBarycentricB"/>
+        <spirit:internalPortReference spirit:componentRef="TexInterpolator_0" spirit:portRef="inBarycentricB"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TexSampleFIFO_0_outBarycentricC</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TexSampleFIFO_0" spirit:portRef="outBarycentricC"/>
+        <spirit:internalPortReference spirit:componentRef="TexInterpolator_0" spirit:portRef="inBarycentricC"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TexSampleFIFO_0_isFIFOEmpty</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TexSampleFIFO_0" spirit:portRef="isFIFOEmpty"/>
+        <spirit:internalPortReference spirit:componentRef="TexInterpolator_0" spirit:portRef="isFifoEmpty"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriSetup_0_outBarycentricInverse</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="outBarycentricInverse"/>
+        <spirit:internalPortReference spirit:componentRef="TexInterpolator_0" spirit:portRef="inBarycentricInverse"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriSetup_0_v0_out_invZ</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="v0_out_invZ"/>
+        <spirit:internalPortReference spirit:componentRef="TexInterpolator_0" spirit:portRef="inInvZ0"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriSetup_0_v1_out_invZ</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="v1_out_invZ"/>
+        <spirit:internalPortReference spirit:componentRef="TexInterpolator_0" spirit:portRef="inInvZ1"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriSetup_0_v2_out_invZ</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="v2_out_invZ"/>
+        <spirit:internalPortReference spirit:componentRef="TexInterpolator_0" spirit:portRef="inInvZ2"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriSetup_0_t0_out_x</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="t0_out_x"/>
+        <spirit:internalPortReference spirit:componentRef="TexInterpolator_0" spirit:portRef="inT0X"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriSetup_0_t0_out_y</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="t0_out_y"/>
+        <spirit:internalPortReference spirit:componentRef="TexInterpolator_0" spirit:portRef="inT0Y"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriSetup_0_t1_out_x</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="t1_out_x"/>
+        <spirit:internalPortReference spirit:componentRef="TexInterpolator_0" spirit:portRef="inT1X"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriSetup_0_t1_out_y</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="t1_out_y"/>
+        <spirit:internalPortReference spirit:componentRef="TexInterpolator_0" spirit:portRef="inT1Y"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriSetup_0_t2_out_x</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="t2_out_x"/>
+        <spirit:internalPortReference spirit:componentRef="TexInterpolator_0" spirit:portRef="inT2X"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriSetup_0_t2_out_y</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="t2_out_y"/>
+        <spirit:internalPortReference spirit:componentRef="TexInterpolator_0" spirit:portRef="inT2Y"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TexSampleFIFO_1_isFIFOEmpty</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TexSampleFIFO_1" spirit:portRef="isFIFOEmpty"/>
+        <spirit:internalPortReference spirit:componentRef="TexInterpolator_1" spirit:portRef="isFifoEmpty"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TexSampleFIFO_1_outBarycentricA</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TexSampleFIFO_1" spirit:portRef="outBarycentricA"/>
+        <spirit:internalPortReference spirit:componentRef="TexInterpolator_1" spirit:portRef="inBarycentricA"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TexSampleFIFO_1_outBarycentricB</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TexSampleFIFO_1" spirit:portRef="outBarycentricB"/>
+        <spirit:internalPortReference spirit:componentRef="TexInterpolator_1" spirit:portRef="inBarycentricB"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TexSampleFIFO_1_outBarycentricC</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TexSampleFIFO_1" spirit:portRef="outBarycentricC"/>
+        <spirit:internalPortReference spirit:componentRef="TexInterpolator_1" spirit:portRef="inBarycentricC"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TexSampleFIFO_1_outPixelX</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TexSampleFIFO_1" spirit:portRef="outPixelX"/>
+        <spirit:internalPortReference spirit:componentRef="TexInterpolator_1" spirit:portRef="pixelX"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TexSampleFIFO_1_outPixelY</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TexSampleFIFO_1" spirit:portRef="outPixelY"/>
+        <spirit:internalPortReference spirit:componentRef="TexInterpolator_1" spirit:portRef="pixelY"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TexInterpolator_1_outPixelX</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TexInterpolator_1" spirit:portRef="outPixelX"/>
+        <spirit:internalPortReference spirit:componentRef="TexSample_1" spirit:portRef="pixelX"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TexInterpolator_1_outPixelY</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TexInterpolator_1" spirit:portRef="outPixelY"/>
+        <spirit:internalPortReference spirit:componentRef="TexSample_1" spirit:portRef="pixelY"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TexInterpolator_1_outInterpolatedTexcoordX</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TexInterpolator_1" spirit:portRef="outInterpolatedTexcoordX"/>
+        <spirit:internalPortReference spirit:componentRef="TexSample_1" spirit:portRef="inInterpolatedTexcoordX"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TexInterpolator_1_outInterpolatedTexcoordY</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TexInterpolator_1" spirit:portRef="outInterpolatedTexcoordY"/>
+        <spirit:internalPortReference spirit:componentRef="TexSample_1" spirit:portRef="inInterpolatedTexcoordY"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TexInterpolator_1_writeIsValid</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TexInterpolator_1" spirit:portRef="writeIsValid"/>
+        <spirit:internalPortReference spirit:componentRef="TexSample_1" spirit:portRef="writeStrobe"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TexSample_1_readyForNewWrite</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TexSample_1" spirit:portRef="readyForNewWrite"/>
+        <spirit:internalPortReference spirit:componentRef="TexInterpolator_1" spirit:portRef="readyForWrite"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TexInterpolator_1_readFromFifo</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TexInterpolator_1" spirit:portRef="readFromFifo"/>
+        <spirit:internalPortReference spirit:componentRef="TexSampleFIFO_1" spirit:portRef="readEnable"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriSetup_1_outBarycentricInverse</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_1" spirit:portRef="outBarycentricInverse"/>
+        <spirit:internalPortReference spirit:componentRef="TexInterpolator_1" spirit:portRef="inBarycentricInverse"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriSetup_1_v0_out_invZ</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_1" spirit:portRef="v0_out_invZ"/>
+        <spirit:internalPortReference spirit:componentRef="TexInterpolator_1" spirit:portRef="inInvZ0"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriSetup_1_v1_out_invZ</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_1" spirit:portRef="v1_out_invZ"/>
+        <spirit:internalPortReference spirit:componentRef="TexInterpolator_1" spirit:portRef="inInvZ1"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriSetup_1_v2_out_invZ</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_1" spirit:portRef="v2_out_invZ"/>
+        <spirit:internalPortReference spirit:componentRef="TexInterpolator_1" spirit:portRef="inInvZ2"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriSetup_1_t0_out_x</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_1" spirit:portRef="t0_out_x"/>
+        <spirit:internalPortReference spirit:componentRef="TexInterpolator_1" spirit:portRef="inT0X"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriSetup_1_t0_out_y</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_1" spirit:portRef="t0_out_y"/>
+        <spirit:internalPortReference spirit:componentRef="TexInterpolator_1" spirit:portRef="inT0Y"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriSetup_1_t1_out_x</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_1" spirit:portRef="t1_out_x"/>
+        <spirit:internalPortReference spirit:componentRef="TexInterpolator_1" spirit:portRef="inT1X"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriSetup_1_t1_out_y</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_1" spirit:portRef="t1_out_y"/>
+        <spirit:internalPortReference spirit:componentRef="TexInterpolator_1" spirit:portRef="inT1Y"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriSetup_1_t2_out_x</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_1" spirit:portRef="t2_out_x"/>
+        <spirit:internalPortReference spirit:componentRef="TexInterpolator_1" spirit:portRef="inT2X"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriSetup_1_t2_out_y</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_1" spirit:portRef="t2_out_y"/>
+        <spirit:internalPortReference spirit:componentRef="TexInterpolator_1" spirit:portRef="inT2Y"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>xlconstant_one_dout</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="xlconstant_one" spirit:portRef="dout"/>
+        <spirit:internalPortReference spirit:componentRef="TexSample_0" spirit:portRef="useBilinearInterpolation"/>
+        <spirit:internalPortReference spirit:componentRef="TexSample_1" spirit:portRef="useBilinearInterpolation"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>VertexDataSource_0_thisFrameTXOffset</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="VertexDataSource_0" spirit:portRef="thisFrameTXOffset"/>
+        <spirit:internalPortReference spirit:componentRef="TexInterpolator_0" spirit:portRef="inTXOffsetThisFrame"/>
+        <spirit:internalPortReference spirit:componentRef="TexInterpolator_1" spirit:portRef="inTXOffsetThisFrame"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>ClearBlock_0_outPixelX</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="ClearBlock_0" spirit:portRef="outPixelX"/>
+        <spirit:internalPortReference spirit:componentRef="WriteArbiter_0" spirit:portRef="inWriteLocX2"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>ClearBlock_0_outPixelY</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="ClearBlock_0" spirit:portRef="outPixelY"/>
+        <spirit:internalPortReference spirit:componentRef="WriteArbiter_0" spirit:portRef="inWriteLocY2"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>ClearBlock_0_outClearColorR</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="ClearBlock_0" spirit:portRef="outClearColorR"/>
+        <spirit:internalPortReference spirit:componentRef="WriteArbiter_0" spirit:portRef="inWriteColorR2"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>ClearBlock_0_outClearColorG</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="ClearBlock_0" spirit:portRef="outClearColorG"/>
+        <spirit:internalPortReference spirit:componentRef="WriteArbiter_0" spirit:portRef="inWriteColorG2"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>ClearBlock_0_outClearColorB</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="ClearBlock_0" spirit:portRef="outClearColorB"/>
+        <spirit:internalPortReference spirit:componentRef="WriteArbiter_0" spirit:portRef="inWriteColorB2"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>ClearBlock_0_outWriteIsValid</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="ClearBlock_0" spirit:portRef="outWriteIsValid"/>
+        <spirit:internalPortReference spirit:componentRef="WriteArbiter_0" spirit:portRef="inWriteIsValid2"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>WriteArbiter_0_outWriteAck2</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="WriteArbiter_0" spirit:portRef="outWriteAck2"/>
+        <spirit:internalPortReference spirit:componentRef="ClearBlock_0" spirit:portRef="inWriteAck"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>VertexDataSource_0_clearRectLeft</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="VertexDataSource_0" spirit:portRef="clearRectLeft"/>
+        <spirit:internalPortReference spirit:componentRef="ClearBlock_0" spirit:portRef="clearLeft"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>VertexDataSource_0_clearRectRight</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="VertexDataSource_0" spirit:portRef="clearRectRight"/>
+        <spirit:internalPortReference spirit:componentRef="ClearBlock_0" spirit:portRef="clearRight"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>VertexDataSource_0_clearRectTop</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="VertexDataSource_0" spirit:portRef="clearRectTop"/>
+        <spirit:internalPortReference spirit:componentRef="ClearBlock_0" spirit:portRef="clearTop"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>VertexDataSource_0_clearRectBottom</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="VertexDataSource_0" spirit:portRef="clearRectBottom"/>
+        <spirit:internalPortReference spirit:componentRef="ClearBlock_0" spirit:portRef="clearBottom"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>VertexDataSource_0_clearColorR</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="VertexDataSource_0" spirit:portRef="clearColorR"/>
+        <spirit:internalPortReference spirit:componentRef="ClearBlock_0" spirit:portRef="inClearColorR"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>VertexDataSource_0_clearColorG</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="VertexDataSource_0" spirit:portRef="clearColorG"/>
+        <spirit:internalPortReference spirit:componentRef="ClearBlock_0" spirit:portRef="inClearColorG"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>VertexDataSource_0_clearColorB</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="VertexDataSource_0" spirit:portRef="clearColorB"/>
+        <spirit:internalPortReference spirit:componentRef="ClearBlock_0" spirit:portRef="inClearColorB"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>VertexDataSource_0_clearRequestBegin</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="VertexDataSource_0" spirit:portRef="clearRequestBegin"/>
+        <spirit:internalPortReference spirit:componentRef="ClearBlock_0" spirit:portRef="clearRequestBegin"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>ClearBlock_0_clearComplete</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="ClearBlock_0" spirit:portRef="clearComplete"/>
+        <spirit:internalPortReference spirit:componentRef="VertexDataSource_0" spirit:portRef="clearComplete"/>
+      </spirit:adHocConnection>
+    </spirit:adHocConnections>
+    <spirit:hierConnections>
+      <spirit:hierConnection spirit:interfaceRef="default_sysclk1_300/default_sysclk1_300_1">
+        <spirit:activeInterface spirit:busRef="CLK_IN1_D" spirit:componentRef="clk_wiz_4x"/>
+      </spirit:hierConnection>
+    </spirit:hierConnections>
+  </spirit:design>
+
+</bd:repository>

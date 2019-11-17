@@ -84,3 +84,19 @@
 !*.elf
 !*.bmm
 !*.xmp
+#########
+#Custom Vivado Project gitignores
+#From: https://github.com/starwaredesign/vivado-project-template/blob/master/.gitignore
+#########
+vivado/*
+bd/**/hdl
+bd/**/hw_handoff
+bd/**/ip
+bd/**/ipshared
+bd/**/sim
+bd/**/synth
+bd/**/ui
+*.bxml
+*.xdc
+*.jou
+*.log

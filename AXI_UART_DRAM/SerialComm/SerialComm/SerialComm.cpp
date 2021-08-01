@@ -38,6 +38,7 @@ struct command
 		PT_WRITEMEM = 1,
 		PT_READMEM = 2,
 		PT_READMEMRESPONSE = 3,
+		PT_CLEARMEM = 4,
 
 		PT_MAX_PACKET_TYPES // This must always be last
 	};
@@ -115,18 +116,19 @@ struct writeMemCommand : command
 	{
 	}
 
-	DWORD writeDWORDAddr = 0x00000000; // The write address, in DWORD's from the start of the BRAM
+	DWORD writeDWORDAddr = 0x00000000; // The write address, in BYTE's from the start of the RAM (must be DRAM_LINE aligned!)
 	DWORD writeVal = 0; // The value to write into the DWORD
 };
 
 struct readMemCommand : command
 {
-	readMemCommand() : command(PT_READMEM)
+	readMemCommand() : command(PT_READMEM), dwordSelect(0), paddingBits(0)
 	{
 	}
 
-	DWORD readDWORDAddr = 0x00000000; // The read address, in DWORD's from the start of the BRAM
-	DWORD byteSelect = 0; // Unused
+	DWORD readDWORDAddr = 0x00000000; // The read address, in BYTE's from the start of the RAM (must be DRAM_LINE aligned!)
+	DWORD dwordSelect : 3; // Selects which of the 8 DWORD's in this DRAM_LINE to read back from (3 bits)
+	DWORD paddingBits : 29;
 };
 
 struct readMemResponse : command
@@ -135,13 +137,35 @@ struct readMemResponse : command
 	{
 	}
 
-	DWORD readDWORDAddr = 0x00000000; // The read address, in DWORD's from the start of the BRAM
+	DWORD readDWORDAddr = 0x00000000; // The read address, in byte's from the start of the RAM (must be DRAM_LINE aligned!)
 	DWORD value = 0; // The value that was read
+};
+
+struct clearMemCommand : command
+{
+	clearMemCommand() : command(PT_CLEARMEM)
+	{
+	}
+
+	enum eClearValue : unsigned char
+	{
+		EC_TRANSPARENTBLACK = 0, // Transparent Black: float4(0.0f, 0.0f, 0.0f, 0.0f)
+		EC_OPAQUEWHITE = 1, // Opaque White: float4(1.0f, 1.0f, 1.0f, 1.0f)
+		EC_OPAQUEBLACK = 2, // Opaque Black: float4(0.0f, 0.0f, 0.0f, 1.0f)
+		EC_TRANSPARENTWHITE = 3 // Transparent White: float4(1.0f, 1.0f, 1.0f, 0.0f)
+	};
+
+	DWORD writeDWORDAddr = 0x00000000; // The address of the DRAM_LINE to clear (must be DRAM_LINE aligned!)
+
+	USHORT clearNumDRAMLines = 1; // The number of DRAM lines (32 byte blocks) to set to the clear color. Zero does nothing!
+	eClearValue clearValue = EC_TRANSPARENTBLACK; // Which clear color to use for this clear operation.
+	unsigned char paddingByte = 0; // Just for padding
 };
 
 static_assert(sizeof(doNothingCommand) == sizeof(writeMemCommand) && 
 	sizeof(doNothingCommand) == sizeof(readMemCommand) &&
 	sizeof(doNothingCommand) == sizeof(readMemResponse) &&
+	sizeof(doNothingCommand) == sizeof(clearMemCommand) &&
 	sizeof(doNothingCommand) == 11, "Error: Unexpected struct size!");
 
 #pragma pack(pop) // End pragma pack 1 region

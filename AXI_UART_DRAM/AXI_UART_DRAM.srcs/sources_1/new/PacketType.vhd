@@ -39,6 +39,7 @@ package PacketType is
 		PT_WRITEMEM, -- 1
 		PT_READMEM, -- 2
 		PT_READMEMRESPONSE, -- 3
+		PT_CLEARMEM, -- 4
 
 		PT_MAX_PACKET_TYPES -- Must always be last!
 	);

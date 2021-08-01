@@ -122,7 +122,7 @@ entity CommandProcessor is
 		DBG_LAST_READ_DATA : out STD_LOGIC_VECTOR(31 downto 0);
 
 		DBG_LAST_WRITE_ADDR : out STD_LOGIC_VECTOR(31 downto 0);
-		DBG_LAST_WRITE_DATA : out STD_LOGIC_VECTOR(31 downto 0)
+		DBG_LAST_WRITE_DATA : out STD_LOGIC_VECTOR(C_M_AXI_DATA_WIDTH-1 downto 0)
 		);
 end CommandProcessor;
 
@@ -151,10 +151,14 @@ architecture Behavioral of CommandProcessor is
 						WRITEMEM_PACKET, -- 4
 						WRITEMEM_WAIT_FOR_WRITE_ACK, -- 5
 
-						READMEM_PACKET, -- 6
-						READMEM_WAIT_FOR_READ_DATA, -- 7
-						READMEM_PUSH_TO_OUT_FIFO, -- 8
-						READMEM_WAIT_FOR_OUT_FIFO_ACK -- 9
+						CLEARMEM_PACKET, -- 6
+						CLEARMEM_LOOP, -- 7
+						CLEARMEM_WAIT_FOR_WRITE_ACK, -- 8
+
+						READMEM_PACKET, -- 9
+						READMEM_WAIT_FOR_READ_DATA, -- 10
+						READMEM_PUSH_TO_OUT_FIFO, -- 11
+						READMEM_WAIT_FOR_OUT_FIFO_ACK -- 12
 						);
 
 	signal mst_write_state  : writerState := WRITERINITSTATE;
@@ -184,6 +188,8 @@ architecture Behavioral of CommandProcessor is
 	signal axi_wdata	: std_logic_vector(C_M_AXI_DATA_WIDTH-1 downto 0) := (others => '0');
 	--read addresss
 	signal axi_araddr	: std_logic_vector(C_M_AXI_ADDR_WIDTH-1 downto 0) := (others => '0');
+	--Write strobe (bitmap of which bytes are valid 1 or invalid 0)
+	signal axi_wstrb	: std_logic_vector(C_M_AXI_DATA_WIDTH/8-1 downto 0) := (others => '1');
 	--Asserts when there is a write response error
 	signal write_resp_error	: std_logic := '0';
 	--Asserts when there is a read response error
@@ -205,11 +211,14 @@ architecture Behavioral of CommandProcessor is
 	signal newWriteEnable : std_logic := '0'; -- Written to by the packet processor process, read from by the AXI write process
 	signal newWriteAck : std_logic := '0'; -- Written to by the AXI write process, read by the packet processor process
 	signal newWriteAddr : unsigned(29 downto 0) := to_unsigned(0, 30); -- Written to by the packet processor process, read from by the AXI write process
-	signal newWriteData : std_logic_vector(31 downto 0) := (others => '0'); -- Written to by the packet processor process, read from by the AXI write process
+	signal newWriteData : std_logic_vector(C_M_AXI_DATA_WIDTH-1 downto 0) := (others => '0'); -- Written to by the packet processor process, read from by the AXI write process
+	signal newWriteByteEnable : std_logic_vector(C_M_AXI_DATA_WIDTH/8-1 downto 0) := (others => '1'); -- Written to by the packet processor process, read from by the AXI write process
+	signal clearMemLines : unsigned(15 downto 0) := to_unsigned(0, 16); -- Written to by the packet processor process, and also read by that same process
 	signal readyForNewWrite : std_logic := '0'; -- Written to by the AXI write process when it's ready for another new write, read from by the packet processor process
 
 	signal newReadEnable : std_logic := '0'; -- Written to by the packet processor process, read from by the AXI read process
 	signal newReadAddr : unsigned(31 downto 0) := to_unsigned(0, 32); -- Written to by the packet processor process, read from by the AXI read process
+	signal newReadDWORDSelect : unsigned(2 downto 0) := to_unsigned(0, 3); -- Written to by the packet processor process, read from by the AXI read process
 	signal newReadData : std_logic_vector(31 downto 0) := (others => '0'); -- Written to by the AXI read process, read from by the packet processor process
 	signal newReadDataReady : std_logic := '0'; -- Written to by the AXI read process, read from by the packet processor process
 	signal readyForNewRead : std_logic := '0'; -- Written to by the AXI read process, read from by the packet processor process
@@ -227,7 +236,7 @@ begin
 	--Write Data(W)
 	M_AXI_WVALID	<= axi_wvalid;
 	--Set all byte strobes in this example
-	M_AXI_WSTRB	<= (others => '1');
+	M_AXI_WSTRB	<= axi_wstrb;
 	--Write Response (B)
 	M_AXI_BREADY	<= axi_bready;
 	--Read Address (AR)
@@ -312,6 +321,7 @@ begin
 						newWriteEnable <= '0';
 						newWriteAddr <= (others => '0');
 						newWriteData <= (others => '0');
+						clearMemLines <= (others => '0');
 						newReadEnable <= '0';
 
 						localIncomingPacket.magicByte <= X"00";
@@ -354,6 +364,9 @@ begin
 							when to_unsigned(packetType'pos(PT_READMEM), 8) =>
 								mst_packet_state <= READMEM_PACKET;
 
+							when to_unsigned(packetType'pos(PT_CLEARMEM), 8) =>
+								mst_packet_state <= CLEARMEM_PACKET;
+
 							when others => -- Should never get here since we have a validated packet, but might as well test for it
 								mst_packet_state <= DONOTHING_PACKET;
 						end case;
@@ -366,9 +379,76 @@ begin
 						if (readyForNewWrite = '1') then
 							-- For write packets, the first padding val is the address
 							newWriteAddr <= localIncomingPacket.payload0(29 downto 0); -- For write packets, the address is in the first payload val
-							newWriteData <= std_logic_vector(localIncomingPacket.payload1); -- For write packets, the data is in the second payload val
+							case localIncomingPacket.payload0(4 downto 2) is
+								when "000" => 
+									newWriteData <= x"00000000000000000000000000000000000000000000000000000000" & std_logic_vector(localIncomingPacket.payload1); -- For write packets, the DWORD write data is in the second payload val
+									newWriteByteEnable <= x"0000000F";
+								when "001" =>
+									newWriteData <= x"000000000000000000000000000000000000000000000000" & std_logic_vector(localIncomingPacket.payload1) & x"00000000";
+									newWriteByteEnable <= x"000000F0";
+								when "010" =>
+									newWriteData <= x"0000000000000000000000000000000000000000" & std_logic_vector(localIncomingPacket.payload1) & x"0000000000000000";
+									newWriteByteEnable <= x"00000F00";
+								when "011" =>
+									newWriteData <= x"00000000000000000000000000000000" & std_logic_vector(localIncomingPacket.payload1) & x"000000000000000000000000";
+									newWriteByteEnable <= x"0000F000";
+								when "100" =>
+									newWriteData <= x"000000000000000000000000" & std_logic_vector(localIncomingPacket.payload1) & x"00000000000000000000000000000000";
+									newWriteByteEnable <= x"000F0000";
+								when "101" =>
+									newWriteData <= x"0000000000000000" & std_logic_vector(localIncomingPacket.payload1) & x"0000000000000000000000000000000000000000";
+									newWriteByteEnable <= x"00F00000";
+								when "110" =>
+									newWriteData <= x"00000000" & std_logic_vector(localIncomingPacket.payload1) & x"000000000000000000000000000000000000000000000000";
+									newWriteByteEnable <= x"0F000000";
+								when "111" =>
+									newWriteData <= std_logic_vector(localIncomingPacket.payload1) & x"00000000000000000000000000000000000000000000000000000000";
+									newWriteByteEnable <= x"F0000000";
+							end case;
 							newWriteEnable <= '1';
 							mst_packet_state <= WRITEMEM_WAIT_FOR_WRITE_ACK;
+						end if;
+
+					when CLEARMEM_PACKET =>
+						if (readyForNewWrite = '1') then
+							if (localIncomingPacket.payload1(15 downto 0) > 0) then
+								-- For clear packets, the first padding val is the address
+								newWriteAddr <= localIncomingPacket.payload0(29 downto 0); -- For clear packets, the address is in the first payload val
+
+								-- For clear packets, the first two bytes of the second DWORD payload val are the clear-length (in 32-byte DRAM lines)
+								clearMemLines <= localIncomingPacket.payload1(15 downto 0);
+
+								-- For clear packets, the clear type is in the third byte of the second DWORD payload val
+								case localIncomingPacket.payload1(17 downto 16) is
+									when "00" => newWriteData <= (others => '0'); -- Transparent Black: float4(0.0f, 0.0f, 0.0f, 0.0f)
+									when "01" => newWriteData <= (others => '1'); -- Opaque White: float4(1.0f, 1.0f, 1.0f, 1.0f)
+									when "10" => newWriteData <= x"FFFFFFFF000000000000000000000000FFFFFFFF000000000000000000000000"; -- Opaque Black: float4(0.0f, 0.0f, 0.0f, 1.0f)
+									when "11" => newWriteData <= x"00000000FFFFFFFFFFFFFFFFFFFFFFFF00000000FFFFFFFFFFFFFFFFFFFFFFFF"; -- Transparent White: float4(1.0f, 1.0f, 1.0f, 0.0f)
+								end case;
+								newWriteByteEnable <= x"FFFFFFFF"; -- Enable all bytes in this strobe
+								mst_packet_state <= CLEARMEM_LOOP;
+							else
+								mst_packet_state <= READ_NEXT_PACKET_FROM_FIFO; -- Skip the whole CLEARMEM_LOOP if the clear size is zero
+							end if;
+						end if;
+
+					when CLEARMEM_LOOP =>
+						if (readyForNewWrite = '1') then
+							clearMemLines <= clearMemLines - 1;
+							newWriteEnable <= '1';
+							mst_packet_state <= CLEARMEM_WAIT_FOR_WRITE_ACK;
+						end if;
+
+					when CLEARMEM_WAIT_FOR_WRITE_ACK =>
+						if (newWriteAck = '1') then
+							newWriteEnable <= '0';
+							newWriteAddr <= newWriteAddr + 32; -- Increment address by 32 bytes (sizeof(DRAM_LINE) )
+
+							if (clearMemLines > 0) then
+								mst_packet_state <= CLEARMEM_LOOP;
+							else
+								mst_packet_state <= READ_NEXT_PACKET_FROM_FIFO;
+							end if;
 						end if;
 
 					when WRITEMEM_WAIT_FOR_WRITE_ACK =>
@@ -381,6 +461,7 @@ begin
 						if (readyForNewRead = '1') then
 							-- For read packets, the first payload val is the address
 							newReadAddr <= localIncomingPacket.payload0;
+							newReadDWORDSelect <= localIncomingPacket.payload1(2 downto 0);
 							newReadEnable <= '1';
 							mst_packet_state <= READMEM_WAIT_FOR_READ_DATA;
 						end if;
@@ -484,7 +565,16 @@ begin
 						end if;
 						if (M_AXI_RVALID = '1' and axi_rready = '1') then
 							axi_rready <= '0';
-							newReadData <= M_AXI_RDATA(31 downto 0);
+							case newReadDWORDSelect is
+								when "000" => newReadData <= M_AXI_RDATA(32*1-1 downto 32*0);
+								when "001" => newReadData <= M_AXI_RDATA(32*2-1 downto 32*1);
+								when "010" => newReadData <= M_AXI_RDATA(32*3-1 downto 32*2);
+								when "011" => newReadData <= M_AXI_RDATA(32*4-1 downto 32*3);
+								when "100" => newReadData <= M_AXI_RDATA(32*5-1 downto 32*4);
+								when "101" => newReadData <= M_AXI_RDATA(32*6-1 downto 32*5);
+								when "110" => newReadData <= M_AXI_RDATA(32*7-1 downto 32*6);
+								when "111" => newReadData <= M_AXI_RDATA(32*8-1 downto 32*7);
+							end case;
 							newReadDataReady <= '1';
 							mst_read_state <= READER_WAIT_FOR_MEM_READY;
 						end if;
@@ -511,7 +601,7 @@ begin
 						start_single_write <= '0';
 						axi_awaddr <= (others => '0');
 						axi_wdata <= (others => '0');
-						M_AXI_WSTRB <= (others => '1');
+						axi_wstrb <= (others => '1');
 						write_issued   <= '0';                                                                      
 						start_single_read  <= '0';                                                                  
 						read_issued  <= '0';                                                                        
@@ -532,7 +622,7 @@ begin
 							readyForNewWrite <= '0';
 							newWriteAck <= '1';
 							axi_awaddr <= std_logic_vector(newWriteAddr(29 downto 0) );
-							axi_wdata <= x"00000000000000000000000000000000000000000000000000000000" & newWriteData;
+							axi_wdata <= newWriteData;
 							DBG_LAST_WRITE_ADDR <= "00" & std_logic_vector(newWriteAddr);
 							DBG_LAST_WRITE_DATA <= newWriteData;
 							mst_write_state <= WRITER_ACK_NEW_DATA;
@@ -542,7 +632,7 @@ begin
 
 					when WRITER_ACK_NEW_DATA =>
 						newWriteAck <= '0'; -- Signal that we want the "has new read data" flag to be cleared
-						M_AXI_WSTRB <= (others => '1'); -- All bytes are valid in this strobe
+						axi_wstrb <= newWriteByteEnable; -- All bytes are valid in this strobe
 						axi_awvalid <= '1';
 						mst_write_state <= WRITER_SEND_DATA_STATE;
                                  

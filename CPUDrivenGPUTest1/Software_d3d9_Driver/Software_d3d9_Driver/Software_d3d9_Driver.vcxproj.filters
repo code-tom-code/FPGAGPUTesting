@@ -1,0 +1,380 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Header Files\Software">
+      <UniqueIdentifier>{a2b9d8f3-aa2c-474f-9397-9485609dea4a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Software">
+      <UniqueIdentifier>{9040b539-18bd-406a-b01d-4f2921e1ad0d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\FixedFunctionEmu">
+      <UniqueIdentifier>{dd76f2a7-d514-42bc-9fca-985f363ce183}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\FixedFunctionEmu\FFPS">
+      <UniqueIdentifier>{4d578eec-a24b-4c9e-ad2b-8b486ff9b158}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\FixedFunctionEmu\FFVS">
+      <UniqueIdentifier>{d6394c21-5f18-47ae-9245-c2de8d267df2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\FixedFunctionEmu\FFPS\Include">
+      <UniqueIdentifier>{aa0828c0-2a1d-4839-aae1-619e08874335}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\FixedFunctionEmu\FFPS\Source">
+      <UniqueIdentifier>{3af59840-c124-4d2e-bdc4-ff2c693df228}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\FixedFunctionEmu\FFVS\Include">
+      <UniqueIdentifier>{4815388a-b5e4-4324-a558-17c4f2526cd3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\FixedFunctionEmu\FFVS\Source">
+      <UniqueIdentifier>{e50eace7-4461-4f7f-a48e-8717aff05102}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Overlay">
+      <UniqueIdentifier>{2ab961d0-8a6a-4cbd-9c79-961facb7202d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Overlay">
+      <UniqueIdentifier>{09ded05c-a23c-4bad-b93a-d98ed82955a1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\Overlay">
+      <UniqueIdentifier>{a5fdb92f-71f0-4276-a51d-a18240d278b6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Driver">
+      <UniqueIdentifier>{e7630207-baef-49eb-8df0-653b8a7b7754}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Driver">
+      <UniqueIdentifier>{57e956c2-4981-4c21-b661-72f23f20e7e3}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="hookd3d9.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="IDirect3D9Hook.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="IDirect3DDevice9Hook.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="IDirect3DResource9Hook.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="IDirect3DPixelShader9Hook.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="IDirect3DVertexShader9Hook.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="IDirect3DQuery9Hook.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="IDirect3DStateBlock9Hook.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="IDirect3DSwapChain9Hook.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="IDirect3DVertexDeclaration9Hook.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="IDirect3DVolume9Hook.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="IDirect3DSurface9Hook.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="IDirect3DBaseTexture9Hook.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="IDirect3DCubeTexture9Hook.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="IDirect3DIndexBuffer9Hook.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="IDirect3DVertexBuffer9Hook.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="IDirect3DTexture9Hook.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="IDirect3DVolumeTexture9Hook.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ShaderAnalysis.cpp">
+      <Filter>Source Files\Software</Filter>
+    </ClCompile>
+    <ClCompile Include="ShaderJIT.cpp">
+      <Filter>Source Files\Software</Filter>
+    </ClCompile>
+    <ClCompile Include="FixedFunctionToShader.cpp">
+      <Filter>Source Files\Software</Filter>
+    </ClCompile>
+    <ClCompile Include="ShaderJIT_HLSL_to_CPP.cpp">
+      <Filter>Source Files\Software</Filter>
+    </ClCompile>
+    <ClCompile Include="PShaderEngine.cpp">
+      <Filter>Source Files\Software</Filter>
+    </ClCompile>
+    <ClCompile Include="VShaderEngine.cpp">
+      <Filter>Source Files\Software</Filter>
+    </ClCompile>
+    <ClCompile Include="VShaderEngine_InterpreterExec1.cpp">
+      <Filter>Source Files\Software</Filter>
+    </ClCompile>
+    <ClCompile Include="VShaderEngine_InterpreterExec4.cpp">
+      <Filter>Source Files\Software</Filter>
+    </ClCompile>
+    <ClCompile Include="ShaderTextureFunctions.cpp">
+      <Filter>Source Files\Software</Filter>
+    </ClCompile>
+    <ClCompile Include="ShaderTextureFunctions4.cpp">
+      <Filter>Source Files\Software</Filter>
+    </ClCompile>
+    <ClCompile Include="IDirect3DDevice9Hook_Accessors.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="IDirect3DDevice9Hook_Creators.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SemanticMappings.cpp">
+      <Filter>Source Files\Software</Filter>
+    </ClCompile>
+    <ClCompile Include="FixedFunctionToPixelShader.cpp">
+      <Filter>Source Files\Software</Filter>
+    </ClCompile>
+    <ClCompile Include="FixedFunctionToVertexShader.cpp">
+      <Filter>Source Files\Software</Filter>
+    </ClCompile>
+    <ClCompile Include="Overlay\DebugOverlay.cpp">
+      <Filter>Source Files\Overlay</Filter>
+    </ClCompile>
+    <ClCompile Include="Overlay\Overlay_WelcomeScreen.cpp">
+      <Filter>Source Files\Overlay</Filter>
+    </ClCompile>
+    <ClCompile Include="Overlay\Overlay_DeviceState.cpp">
+      <Filter>Source Files\Overlay</Filter>
+    </ClCompile>
+    <ClCompile Include="Driver\ISerialDeviceComms.cpp">
+      <Filter>Source Files\Driver</Filter>
+    </ClCompile>
+    <ClCompile Include="Driver\INetSocketDeviceComms.cpp">
+      <Filter>Source Files\Driver</Filter>
+    </ClCompile>
+    <ClCompile Include="Driver\IBaseDeviceComms.cpp">
+      <Filter>Source Files\Driver</Filter>
+    </ClCompile>
+    <ClCompile Include="Driver\GPUAllocator.cpp">
+      <Filter>Source Files\Driver</Filter>
+    </ClCompile>
+    <ClCompile Include="Driver\IBaseGPUDevice.cpp">
+      <Filter>Source Files\Driver</Filter>
+    </ClCompile>
+    <ClCompile Include="Driver\IVirtualDeviceComms.cpp">
+      <Filter>Source Files\Driver</Filter>
+    </ClCompile>
+    <ClCompile Include="Driver\GPUStats.cpp">
+      <Filter>Source Files\Driver</Filter>
+    </ClCompile>
+    <ClCompile Include="Driver\GPUCommandList.cpp">
+      <Filter>Source Files\Driver</Filter>
+    </ClCompile>
+    <ClCompile Include="Driver\DriverSettingsDlg.cpp">
+      <Filter>Source Files\Driver</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Source.def">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="ShaderJIT_PrefixFile.cpp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="FixedFuncEmu\FFPS\Include\FFPS_ApplyColorStage.fxh">
+      <Filter>Resource Files\FixedFunctionEmu\FFPS\Include</Filter>
+    </None>
+    <None Include="FixedFuncEmu\FFPS\Include\FFPS_ArgumentSelector.fxh">
+      <Filter>Resource Files\FixedFunctionEmu\FFPS\Include</Filter>
+    </None>
+    <None Include="FixedFuncEmu\FFPS\Include\FFPS_TexLoad.fxh">
+      <Filter>Resource Files\FixedFunctionEmu\FFPS\Include</Filter>
+    </None>
+    <None Include="FixedFuncEmu\FFPS\Source\FixedFunctionPixelShader.hlsl">
+      <Filter>Resource Files\FixedFunctionEmu\FFPS\Source</Filter>
+    </None>
+    <None Include="FixedFuncEmu\FFVS\Include\FFVS_CalculateSingleLight.fxh">
+      <Filter>Resource Files\FixedFunctionEmu\FFVS\Include</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="IDirect3D9Hook.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="IDirect3DDevice9Hook.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="IDirect3DResource9Hook.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="IDirect3DPixelShader9Hook.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="IDirect3DVertexShader9Hook.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="IDirect3DQuery9Hook.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="IDirect3DStateBlock9Hook.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="IDirect3DSwapChain9Hook.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="IDirect3DVertexDeclaration9Hook.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="IDirect3DVolume9Hook.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="IDirect3DSurface9Hook.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="IDirect3DBaseTexture9Hook.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="IDirect3DCubeTexture9Hook.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="IDirect3DIndexBuffer9Hook.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="IDirect3DVertexBuffer9Hook.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="IDirect3DTexture9Hook.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="IDirect3DVolumeTexture9Hook.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="d3d9include.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ShaderBase.h">
+      <Filter>Header Files\Software</Filter>
+    </ClInclude>
+    <ClInclude Include="ShaderAnalysis.h">
+      <Filter>Header Files\Software</Filter>
+    </ClInclude>
+    <ClInclude Include="ShaderJIT.h">
+      <Filter>Header Files\Software</Filter>
+    </ClInclude>
+    <ClInclude Include="FixedFunctionToShader.h">
+      <Filter>Header Files\Software</Filter>
+    </ClInclude>
+    <ClInclude Include="GlobalToggles.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ShaderEngineBase.h">
+      <Filter>Header Files\Software</Filter>
+    </ClInclude>
+    <ClInclude Include="PShaderEngine.h">
+      <Filter>Header Files\Software</Filter>
+    </ClInclude>
+    <ClInclude Include="VShaderEngine.h">
+      <Filter>Header Files\Software</Filter>
+    </ClInclude>
+    <ClInclude Include="ShaderIntrinsicFunctions.h">
+      <Filter>Header Files\Software</Filter>
+    </ClInclude>
+    <ClInclude Include="ShaderIntrinsicFunctions4.h">
+      <Filter>Header Files\Software</Filter>
+    </ClInclude>
+    <ClInclude Include="DebuggableEnums.h">
+      <Filter>Header Files\Software</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ShaderJIT_HLSL_to_CPP_Tables.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SemanticMappings.h">
+      <Filter>Header Files\Software</Filter>
+    </ClInclude>
+    <ClInclude Include="SimpleInstrumentedProfiler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DitherTables.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DeviceState.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Overlay\DebugOverlay.h">
+      <Filter>Header Files\Overlay</Filter>
+    </ClInclude>
+    <ClInclude Include="Driver\ISerialDeviceComms.h">
+      <Filter>Header Files\Driver</Filter>
+    </ClInclude>
+    <ClInclude Include="Driver\IBaseDeviceComms.h">
+      <Filter>Header Files\Driver</Filter>
+    </ClInclude>
+    <ClInclude Include="Driver\INetSocketDeviceComms.h">
+      <Filter>Header Files\Driver</Filter>
+    </ClInclude>
+    <ClInclude Include="Driver\GPUAllocator.h">
+      <Filter>Header Files\Driver</Filter>
+    </ClInclude>
+    <ClInclude Include="Driver\IBaseGPUDevice.h">
+      <Filter>Header Files\Driver</Filter>
+    </ClInclude>
+    <ClInclude Include="Driver\IVirtualDeviceComms.h">
+      <Filter>Header Files\Driver</Filter>
+    </ClInclude>
+    <ClInclude Include="Driver\GPUStats.h">
+      <Filter>Header Files\Driver</Filter>
+    </ClInclude>
+    <ClInclude Include="Driver\GPUCommandList.h">
+      <Filter>Header Files\Driver</Filter>
+    </ClInclude>
+    <ClInclude Include="Driver\PacketDefs.h">
+      <Filter>Header Files\Driver</Filter>
+    </ClInclude>
+    <ClInclude Include="Driver\PacketTypes.h">
+      <Filter>Header Files\Driver</Filter>
+    </ClInclude>
+    <ClInclude Include="Driver\DriverSettingsDlg.h">
+      <Filter>Header Files\Driver</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="FixedFuncEmu\FFVS\Source\FixedFunctionVertexShader.hlsl">
+      <Filter>Resource Files\FixedFunctionEmu\FFVS\Source</Filter>
+    </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="d3d9.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="SimpleFont256x256.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Overlay\FontMap.tga">
+      <Filter>Resource Files\Overlay</Filter>
+    </Image>
+  </ItemGroup>
+</Project>

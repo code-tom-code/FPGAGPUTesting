@@ -107,7 +107,7 @@ end function;
 
 pure function IsCurrentPixelBlanked(pixelNumber : unsigned(9 downto 0); lineNumber : unsigned(9 downto 0) ) return std_logic is
 begin
-	if (lineNumber > 33 and lineNumber < 513 and pixelNumber > 48 and pixelNumber < 688) then
+	if (lineNumber >= 35 and lineNumber < 515 and pixelNumber >= 48 and pixelNumber < 688) then
 		return '0';
 	else
 		return '1';
@@ -118,6 +118,9 @@ begin
 
 DBG_ScanoutLoadProcess_State <= std_logic_vector(to_unsigned(loadProcessState'pos(loadState), 4) );
 
+vsync <= '1' when (lineNumber < 2) else '0'; -- For 640x480@60Hz mode, vsync signal is active-high
+hsync <= '1' when (pixelNumber < 704) else '0'; -- For 640x480@60Hz mode, hsync signal is active-low
+
 	process(clk)
 	begin
 		if (rising_edge(clk) ) then
@@ -126,38 +129,6 @@ DBG_ScanoutLoadProcess_State <= std_logic_vector(to_unsigned(loadProcessState'po
 
 			BaseRenderTargetAddr_lastCycle <= CMD_BaseRenderTargetAddr;
 			BaseRenderTargetAddr <= BaseRenderTargetAddr_lastCycle and CMD_BaseRenderTargetAddr;
-		end if;
-	end process;
-
-	-- VSync signal process
-	process (clk)
-	begin
-		if (rising_edge(clk) ) then
-			if (clockDividerCounter8 = 7) then
-				if (lineNumber < 2) then
-					vsync <= '0';
-				else
-					vsync <= '1';
-				end if;
-			end if;
-		end if;
-	end process;
-
-	-- HSync signal process
-	process (clk)
-	begin
-		if (rising_edge(clk) ) then
-			if (clockDividerCounter8 = 7) then
-				if (lineNumber < 33 or lineNumber > 513) then
-					hsync <= '0';
-				else
-					if (pixelNumber < 704) then
-						hsync <= '1';
-					else
-						hsync <= '0';
-					end if;
-				end if;
-			end if;
 		end if;
 	end process;
 
@@ -172,17 +143,17 @@ DBG_ScanoutLoadProcess_State <= std_logic_vector(to_unsigned(loadProcessState'po
 				if (lineNumber > 513) then
 					-- Spend some VSync lines pre-warming our cache for the top of the next frame
 					if (pixelNumber = 0) then
-						if (lineNumber = 515) then
+						if (lineNumber = 517) then
 							-- Reset the loading cache line addr to the base specified by the Command Processor when we reach the bottom of the scan region
 							loadingCachedLineOffset <= (others => '0');
 							loadingLineLoaded <= '0';
-						elsif (lineNumber = 517) then
+						elsif (lineNumber = 519) then
 							currentCachedLine <= loadingCachedLine; -- Offset +00
 							currentCachedLineAddr <= loadingCachedLineOffset;
 
 							loadingCachedLineOffset <= to_unsigned(64, 30); -- Increment the read address by 512 bits forwards (64 bytes)
 							loadingLineLoaded <= '0'; -- Mark the loaded cache line as unloaded and needing to be loaded
-						elsif (lineNumber = 519) then
+						elsif (lineNumber = 521) then
 							nextCachedLine <= loadingCachedLine; -- Offset +64
 							nextCachedLineAddr <= loadingCachedLineOffset;
 

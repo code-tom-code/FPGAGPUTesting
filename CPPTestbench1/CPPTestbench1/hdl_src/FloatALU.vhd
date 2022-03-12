@@ -9,6 +9,12 @@ use IEEE.NUMERIC_STD.ALL;
 entity FloatALU is
     Port (clk : in STD_LOGIC;
 
+		-- SHFT pipe operates in 1 clock cycle
+		ISHFT_GO : in STD_LOGIC;
+		ISHFT_A : in STD_LOGIC_VECTOR(31 downto 0);
+		ISHFT_MODE : in STD_LOGIC_VECTOR(2 downto 0); -- Corresponds to the eShftMode enum
+		OSHFT : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+
 		-- MUL pipe operates in 5 clock cycles
 		IMUL_GO : in STD_LOGIC;
 		IMUL_A : in STD_LOGIC_VECTOR(31 downto 0);
@@ -55,6 +61,18 @@ type eCmpType is
 	-- CMP(a, b, c) computes component-wise (a >= 0 ? b : c). CND(a, b, c) computes component-wise (a > 0.5 ? b : c).
 	CmpCmp, -- 5
 	CmpCnd -- 6
+);
+
+type eShftMode is
+(
+	ShftX2, -- 0
+	ShftX4, -- 1
+	ShftX8, -- 2
+	ShftX16, -- 3
+	ShftD2, -- 4
+	ShftD4, -- 5
+	ShftD8, -- 6
+	ShftD16 -- 7
 );
 
 -- Assumes value is nonzero
@@ -420,6 +438,108 @@ begin
 	end if;
 end function;
 
+pure function IsShiftUp(shftMode : eShftMode) return std_logic is
+begin
+	case shftMode is
+		when ShftX2 =>
+			return '1';
+		when ShftX4 =>
+			return '1';
+		when ShftX8 =>
+			return '1';
+		when ShftX16 =>
+			return '1';
+		when others =>
+			return '0';
+	end case;
+end function;
+
+pure function GetShiftAmount(shftMode : eShftMode) return unsigned is
+begin
+	case shftMode is
+		when ShftX2 | ShftD2 =>
+			return to_unsigned(1, 8);
+		when ShftX4 | ShftD4 =>
+			return to_unsigned(2, 8);
+		when ShftX8 | ShftD8 =>
+			return to_unsigned(3, 8);
+		when ShftX16 | ShftD16 =>
+			return to_unsigned(4, 8);
+		when others =>
+			return to_unsigned(0, 8);
+	end case;
+end function;
+
+pure function CastShiftModeBitsToEnum(shftMode : unsigned(2 downto 0) ) return eShftMode is
+begin
+	return eShftMode'val(to_integer(shftMode) );
+end function;
+
+pure function DoesShiftToINFOrDEN(a : unsigned(31 downto 0); shftMode : eShftMode) return std_logic is
+begin
+	case shftMode is
+		when ShftX2 =>
+			if (GetRawExponent(a) > 253) then
+				return '1';
+			else
+				return '0';
+			end if;
+		when ShftX4 =>
+			if (GetRawExponent(a) > 252) then
+				return '1';
+			else
+				return '0';
+			end if;
+		when ShftX8 =>
+			if (GetRawExponent(a) > 251) then
+				return '1';
+			else
+				return '0';
+			end if;
+		when ShftX16 =>
+			if (GetRawExponent(a) > 250) then
+				return '1';
+			else
+				return '0';
+			end if;
+		when ShftD2 =>
+			if (GetRawExponent(a) < 2) then
+				return '1';
+			else
+				return '0';
+			end if;
+		when ShftD4 =>
+			if (GetRawExponent(a) < 3) then
+				return '1';
+			else
+				return '0';
+			end if;
+		when ShftD8 =>
+			if (GetRawExponent(a) < 4) then
+				return '1';
+			else
+				return '0';
+			end if;
+		when ShftD16 =>
+			if (GetRawExponent(a) < 5) then
+				return '1';
+			else
+				return '0';
+			end if;
+		when others =>
+			return '0';
+	end case;
+end function;
+
+pure function PerformCoreShift(value : unsigned(31 downto 0); shiftMode : unsigned(2 downto 0) ) return unsigned is
+begin
+	if (IsShiftUp(CastShiftModeBitsToEnum(shiftMode) ) = '1') then
+		return value(31) & (GetRawExponent(value) + GetShiftAmount(CastShiftModeBitsToEnum(shiftMode) ) ) & GetMantissa(value);
+	else
+		return value(31) & (GetRawExponent(value) - GetShiftAmount(CastShiftModeBitsToEnum(shiftMode) ) ) & GetMantissa(value);
+	end if;
+end function;
+
 -- Addition (ADD) pipe signals:
 signal addPipelineValidStage0 : std_logic := '0';
 signal addPipelineValidStage1 : std_logic := '0';
@@ -470,6 +590,32 @@ signal mulResultSign2 : std_logic := '0';
 signal mulResultSign3 : std_logic := '0';
 
 begin
+
+-- Shift (SHFT) pipe process:
+process(clk)
+begin
+	if (rising_edge(clk) ) then
+		if (ISHFT_GO = '1') then
+			if (GetFloatIsReal(unsigned(ISHFT_A) ) = '0') then
+				OSHFT <= ISHFT_A;
+			else
+				if (DoesShiftToINFOrDEN(unsigned(ISHFT_A), CastShiftModeBitsToEnum(unsigned(ISHFT_MODE) ) ) = '1') then
+					if (IsShiftUp(CastShiftModeBitsToEnum(unsigned(ISHFT_MODE) ) ) = '1') then
+						OSHFT <= ISHFT_A(31) & X"FF" & "00000000000000000000000";
+					else
+						OSHFT <= ISHFT_A(31) & X"00" & "00000000000000000000000";
+					end if;
+				else
+					if (GetRawExponent(unsigned(ISHFT_A) ) = 0) then -- Make sure that zero stays zero. Don't let the shifts turn our zeroes into nonzero values.
+						OSHFT <= std_logic_vector(FlushDenormsToZero(unsigned(ISHFT_A) ) );
+					else
+						OSHFT <= std_logic_vector(PerformCoreShift(unsigned(ISHFT_A), unsigned(ISHFT_MODE) ) );
+					end if;
+				end if;
+			end if;
+		end if;
+	end if;
+end process;
 
 -- Compare (CMP) pipe process:
 process(clk)

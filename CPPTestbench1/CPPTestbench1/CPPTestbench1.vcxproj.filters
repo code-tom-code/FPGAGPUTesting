@@ -13,6 +13,15 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Source Files\Testbenches">
+      <UniqueIdentifier>{d286f175-8db3-4dea-809b-b876eb03e0af}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Testbenches">
+      <UniqueIdentifier>{5d898c11-d160-4d45-9b38-cf7d758a3369}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="HDL">
+      <UniqueIdentifier>{702fbd0c-4a96-42b9-86dd-0cd65993620c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CPPTestbench1.cpp">
@@ -26,6 +35,27 @@
     </ClCompile>
     <ClCompile Include="RenderWindow.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Testbenches\FloatALUTestbench.cpp">
+      <Filter>Source Files\Testbenches</Filter>
+    </ClCompile>
+    <ClCompile Include="Testbenches\UNORM8ToFloatTestbench.cpp">
+      <Filter>Source Files\Testbenches</Filter>
+    </ClCompile>
+    <ClCompile Include="Testbenches\IndexBufferCacheTestbench.cpp">
+      <Filter>Source Files\Testbenches</Filter>
+    </ClCompile>
+    <ClCompile Include="Testbenches\VertexBatchBuilderTestbench.cpp">
+      <Filter>Source Files\Testbenches</Filter>
+    </ClCompile>
+    <ClCompile Include="Testbenches\VertexStreamCacheTestbench.cpp">
+      <Filter>Source Files\Testbenches</Filter>
+    </ClCompile>
+    <ClCompile Include="Testbenches\ShaderCoreTestbench.cpp">
+      <Filter>Source Files\Testbenches</Filter>
+    </ClCompile>
+    <ClCompile Include="Testbenches\InputAssemblerTestbench.cpp">
+      <Filter>Source Files\Testbenches</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -41,6 +71,33 @@
     <ClInclude Include="RenderWindow.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Testbenches\UNORM8ToFloatTestbench.h">
+      <Filter>Header Files\Testbenches</Filter>
+    </ClInclude>
+    <ClInclude Include="Testbenches\FloatALUTestbench.h">
+      <Filter>Header Files\Testbenches</Filter>
+    </ClInclude>
+    <ClInclude Include="Testbenches\IndexBufferCacheTestbench.h">
+      <Filter>Header Files\Testbenches</Filter>
+    </ClInclude>
+    <ClInclude Include="Testbenches\LargeIndexBufferTest.h">
+      <Filter>Header Files\Testbenches</Filter>
+    </ClInclude>
+    <ClInclude Include="Testbenches\VertexBatchBuilderTestbench.h">
+      <Filter>Header Files\Testbenches</Filter>
+    </ClInclude>
+    <ClInclude Include="Testbenches\VertexStreamCacheTestbench.h">
+      <Filter>Header Files\Testbenches</Filter>
+    </ClInclude>
+    <ClInclude Include="Testbenches\LargeVertexBufferData.h">
+      <Filter>Header Files\Testbenches</Filter>
+    </ClInclude>
+    <ClInclude Include="Testbenches\ShaderCoreTestbench.h">
+      <Filter>Header Files\Testbenches</Filter>
+    </ClInclude>
+    <ClInclude Include="Testbenches\InputAssemblerTestbench.h">
+      <Filter>Header Files\Testbenches</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="rebuild_xsim.bat">
@@ -52,8 +109,80 @@
     <None Include="FloatALU.prj">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="ShaderCore.prj">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="hdl_src\ConstantBuffer.vhd">
+      <Filter>HDL</Filter>
+    </None>
     <None Include="hdl_src\FloatALU.vhd">
-      <Filter>Source Files</Filter>
+      <Filter>HDL</Filter>
+    </None>
+    <None Include="hdl_src\GPRQuad.vhd">
+      <Filter>HDL</Filter>
+    </None>
+    <None Include="hdl_src\IndexBufferCache.vhd">
+      <Filter>HDL</Filter>
+    </None>
+    <None Include="hdl_src\ShaderCore.vhd">
+      <Filter>HDL</Filter>
+    </None>
+    <None Include="hdl_src\UNORM8ToFloat.vhd">
+      <Filter>HDL</Filter>
+    </None>
+    <None Include="hdl_src\VertexBatchBuilder.vhd">
+      <Filter>HDL</Filter>
+    </None>
+    <None Include="hdl_src\VertexStreamCache.vhd">
+      <Filter>HDL</Filter>
+    </None>
+    <None Include="AttrInterpolator.prj">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="ConstantBuffer.prj">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="GPRQuad.prj">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="IndexBufferCache.prj">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Reciprocal.prj">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="UNORM8ToFloat.prj">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="VertexBatchBuilder.prj">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="VertexStreamCache.prj">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="hdl_src\InputAssembler2.vhd">
+      <Filter>HDL</Filter>
+    </None>
+    <None Include="InputAssembler2.prj">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="hdl_src\MemoryController.vhd">
+      <Filter>HDL</Filter>
+    </None>
+    <None Include="MemoryController.prj">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="hdl_src\CommandProcessor.vhd">
+      <Filter>HDL</Filter>
+    </None>
+    <None Include="CommandProcessor.prj">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="hdl_src\PacketType.vhd">
+      <Filter>HDL</Filter>
+    </None>
+    <None Include="hdl_src\TestShaderCoreDriver.vhd">
+      <Filter>HDL</Filter>
     </None>
   </ItemGroup>
 </Project>

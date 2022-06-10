@@ -101,6 +101,9 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <BaseAddress>0x400000</BaseAddress>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <FixedBaseAddress>true</FixedBaseAddress>
     </Link>
     <PreBuildEvent>
       <Command>call rebuild_xsim.bat</Command>
@@ -121,6 +124,9 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <BaseAddress>0x400000</BaseAddress>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <FixedBaseAddress>true</FixedBaseAddress>
     </Link>
     <PreBuildEvent>
       <Command>call rebuild_xsim.bat</Command>
@@ -145,6 +151,9 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <BaseAddress>0x400000</BaseAddress>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <FixedBaseAddress>true</FixedBaseAddress>
     </Link>
     <PreBuildEvent>
       <Command>call rebuild_xsim.bat</Command>
@@ -169,6 +178,9 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <BaseAddress>0x400000</BaseAddress>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <FixedBaseAddress>true</FixedBaseAddress>
     </Link>
     <PreBuildEvent>
       <Command>call rebuild_xsim.bat</Command>
@@ -178,18 +190,58 @@
     <ClCompile Include="CPPTestbench1.cpp" />
     <ClCompile Include="CPPTestbenchHelper.cpp" />
     <ClCompile Include="RenderWindow.cpp" />
+    <ClCompile Include="Testbenches\FloatALUTestbench.cpp" />
+    <ClCompile Include="Testbenches\IndexBufferCacheTestbench.cpp" />
+    <ClCompile Include="Testbenches\InputAssemblerTestbench.cpp" />
+    <ClCompile Include="Testbenches\ShaderCoreTestbench.cpp" />
+    <ClCompile Include="Testbenches\UNORM8ToFloatTestbench.cpp" />
+    <ClCompile Include="Testbenches\VertexBatchBuilderTestbench.cpp" />
+    <ClCompile Include="Testbenches\VertexStreamCacheTestbench.cpp" />
     <ClCompile Include="xsi_loader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CPPTestbench.h" />
     <ClInclude Include="RenderWindow.h" />
+    <ClInclude Include="Testbenches\FloatALUTestbench.h" />
+    <ClInclude Include="Testbenches\IndexBufferCacheTestbench.h" />
+    <ClInclude Include="Testbenches\InputAssemblerTestbench.h" />
+    <ClInclude Include="Testbenches\LargeIndexBufferTest.h" />
+    <ClInclude Include="Testbenches\LargeVertexBufferData.h" />
+    <ClInclude Include="Testbenches\ShaderCoreTestbench.h" />
+    <ClInclude Include="Testbenches\UNORM8ToFloatTestbench.h" />
+    <ClInclude Include="Testbenches\VertexBatchBuilderTestbench.h" />
+    <ClInclude Include="Testbenches\VertexStreamCacheTestbench.h" />
     <ClInclude Include="xsi_loader.h" />
     <ClInclude Include="xsi_shared_lib.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="AttrInterpolator.prj" />
+    <None Include="CommandProcessor.prj" />
+    <None Include="ConstantBuffer.prj" />
     <None Include="FloatALU.prj" />
+    <None Include="GPRQuad.prj" />
+    <None Include="hdl_src\CommandProcessor.vhd" />
+    <None Include="hdl_src\ConstantBuffer.vhd" />
     <None Include="hdl_src\FloatALU.vhd" />
+    <None Include="hdl_src\GPRQuad.vhd" />
+    <None Include="hdl_src\IndexBufferCache.vhd" />
+    <None Include="hdl_src\InputAssembler2.vhd" />
+    <None Include="hdl_src\MemoryController.vhd" />
+    <None Include="hdl_src\PacketType.vhd" />
+    <None Include="hdl_src\ShaderCore.vhd" />
+    <None Include="hdl_src\TestShaderCoreDriver.vhd" />
+    <None Include="hdl_src\UNORM8ToFloat.vhd" />
+    <None Include="hdl_src\VertexBatchBuilder.vhd" />
+    <None Include="hdl_src\VertexStreamCache.vhd" />
+    <None Include="IndexBufferCache.prj" />
+    <None Include="InputAssembler2.prj" />
+    <None Include="MemoryController.prj" />
     <None Include="rebuild_xsim.bat" />
+    <None Include="Reciprocal.prj" />
+    <None Include="ShaderCore.prj" />
+    <None Include="UNORM8ToFloat.prj" />
+    <None Include="VertexBatchBuilder.prj" />
+    <None Include="VertexStreamCache.prj" />
     <None Include="xsim.dir\AttrInterpolator\xsimk.dll" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

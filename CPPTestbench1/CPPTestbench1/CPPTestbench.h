@@ -4,7 +4,10 @@
 #undef _UNICODE
 #define WIN32_LEAN_AND_MEAN
 
+#pragma warning(push)
+#pragma warning(disable:4267) // xsi_loader.h(54): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
 #include "xsi_loader.h"
+#pragma warning(pop)
 
 #ifdef _DEBUG
 	// #define FORCE_READBACK_VALUES_EVERY_CLOCK_TICK 1

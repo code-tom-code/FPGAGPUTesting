@@ -1,0 +1,4 @@
+# vhdl work UNORM8ToFloat.vhd
+# List other files here
+vhdl xil_defaultlib  \
+"hdl_src/UNORM8ToFloat.vhd" \

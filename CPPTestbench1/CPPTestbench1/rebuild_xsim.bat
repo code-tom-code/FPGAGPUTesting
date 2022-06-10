@@ -5,4 +5,4 @@ set XSI_INCLUDE_DIR=%VIVADO_BIN_DIR%\..\data\xsim\include
 set XSIM_ELAB=xelab.bat
 
 REM Compile the HDL design into a simulatable Shared Library
-CALL %VIVADO_BIN_DIR%\%XSIM_ELAB% xil_defaultlib.FloatALU -prj FloatALU.prj -dll -s %OUT_SIM_SNAPSHOT% -debug wave
+CALL %VIVADO_BIN_DIR%\%XSIM_ELAB% xil_defaultlib.FloatALU -prj FloatALU.prj -dll -s %OUT_SIM_SNAPSHOT% -debug off -rangecheck -stat

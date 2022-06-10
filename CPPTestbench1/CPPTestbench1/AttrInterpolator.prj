@@ -1,0 +1,4 @@
+# vhdl work AttrInterpolator.vhd
+# List other files here
+vhdl xil_defaultlib  \
+"../../../../GPUHardwareSimulation2.srcs/sources_1/new/AttrInterpolator.vhd" \

@@ -1,0 +1,7 @@
+LIBRARY DriverShaderCompiler
+EXPORTS
+
+CompileShaderToDeviceBytecode=CompileShaderToDeviceBytecode @1
+DisasmDeviceBytecodeToString=DisasmDeviceBytecodeToString @2
+DisasmDeviceBytecodeToFile=DisasmDeviceBytecodeToFile @3
+DisasmSingleInstructionToFile=DisasmSingleInstructionToFile @4

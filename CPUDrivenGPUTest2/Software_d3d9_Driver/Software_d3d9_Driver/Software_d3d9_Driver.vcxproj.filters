@@ -111,9 +111,6 @@
     <ClCompile Include="IDirect3DVolumeTexture9Hook.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ShaderAnalysis.cpp">
-      <Filter>Source Files\Software</Filter>
-    </ClCompile>
     <ClCompile Include="ShaderJIT.cpp">
       <Filter>Source Files\Software</Filter>
     </ClCompile>
@@ -272,9 +269,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ShaderBase.h">
-      <Filter>Header Files\Software</Filter>
-    </ClInclude>
-    <ClInclude Include="ShaderAnalysis.h">
       <Filter>Header Files\Software</Filter>
     </ClInclude>
     <ClInclude Include="ShaderJIT.h">

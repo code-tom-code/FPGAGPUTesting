@@ -5032,7 +5032,7 @@ void IDirect3DDevice9Hook::DeviceSetVertexShader()
 		return;
 	}
 
-	baseDevice->DeviceSetVertexShader(deviceVertexShaderBytecode, deviceVertexShaderInfo->numDeviceTokens);
+	baseDevice->DeviceSetVertexShader(deviceVertexShaderBytecode, deviceVertexShaderInfo->deviceShaderInfo.deviceInstructionTokenCount);
 }
 
 // If the "SCOption_VS_AppendViewportTransform" compile flag is specified, this contains on output the index of the viewport transform
@@ -5080,26 +5080,26 @@ void IDirect3DDevice9Hook::DeviceSetUsedVertexShaderConstants()
 	}
 
 	// This is a hacky location to do this, but we need to set the VS viewport transform constant register before we copy our constant buffer data over to the GPU:
-	if (deviceShaderInfo->vsViewportTransformConstRegisterF >= 0)
+	if (deviceShaderInfo->deviceShaderInfo.vsViewportTransformConstRegisterF >= 0)
 	{
 		const float4 viewportTransformConstantRegisterF = GetDeviceViewportConstantF();
-		SetVertexShaderConstantF(deviceShaderInfo->vsViewportTransformConstRegisterF, &viewportTransformConstantRegisterF.x, 1);
+		SetVertexShaderConstantF(deviceShaderInfo->deviceShaderInfo.vsViewportTransformConstRegisterF, &viewportTransformConstantRegisterF.x, 1);
 	}
 
 	const ShaderInfo& vsShaderInfo = currentState.currentVertexShader->GetShaderInfo();
-	const std::vector<unsigned>& usedVSConstantsF = vsShaderInfo.usedConstantsF;
+	const std::vector<unsigned short>& usedVSConstantsF = vsShaderInfo.usedConstantsF;
 	const unsigned numUsedConstFRegisters = usedVSConstantsF.size();
 	if (numUsedConstFRegisters > 0)
 	{
 		unsigned usedConstRegistersBitmap[GPU_SHADER_MAX_NUM_CONSTANT_FLOAT_REG / 32] = {0};
 		for (unsigned usedRegisterIndex = 0; usedRegisterIndex < numUsedConstFRegisters; ++usedRegisterIndex)
 		{
-			const unsigned usedCReg = usedVSConstantsF[usedRegisterIndex];
+			const unsigned short usedCReg = usedVSConstantsF[usedRegisterIndex];
 			usedConstRegistersBitmap[usedCReg / 32] |= (1 << (usedCReg % 32) );
 		}
-		if (deviceShaderInfo->vsViewportTransformConstRegisterF >= 0)
+		if (deviceShaderInfo->deviceShaderInfo.vsViewportTransformConstRegisterF >= 0)
 		{
-			usedConstRegistersBitmap[deviceShaderInfo->vsViewportTransformConstRegisterF / 32] |= (1 << (deviceShaderInfo->vsViewportTransformConstRegisterF % 32) );
+			usedConstRegistersBitmap[deviceShaderInfo->deviceShaderInfo.vsViewportTransformConstRegisterF / 32] |= (1 << (deviceShaderInfo->deviceShaderInfo.vsViewportTransformConstRegisterF % 32) );
 		}
 
 		const DeviceState* targetDeviceState;

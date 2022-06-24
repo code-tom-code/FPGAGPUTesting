@@ -21,7 +21,7 @@ static const unsigned NumSourceParams[customOpcode + 1] =
 };
 
 template <typename T>
-static inline const bool IsConstantGlobal(const unsigned constIndex, const std::vector<T>& immediateRegisters)
+static inline const bool IsConstantGlobal(const unsigned short constIndex, const std::vector<T>& immediateRegisters)
 {
 	const unsigned numImmediateRegs = immediateRegisters.size();
 	for (unsigned x = 0; x < numImmediateRegs; ++x)
@@ -1797,7 +1797,7 @@ const bool JITCPPFileInternal(const ShaderInfo& shaderInfo, const char* const sh
 	AppendString(cppfile, "\t/*\n");
 	{
 		char shaderStatsString[1024];
-		shaderInfo.PrintShaderStatsToString(shaderStatsString);
+		PrintShaderStatsToString(shaderStatsString, shaderInfo);
 		AppendString(cppfile, shaderStatsString);
 	}
 	AppendString(cppfile, shaderInfo.shaderDisasmBuffer);
@@ -1982,7 +1982,7 @@ const bool JITCPPFileInternal(const ShaderInfo& shaderInfo, const char* const sh
 	const unsigned numUsedConstF = shaderInfo.usedConstantsF.size();
 	for (unsigned x = 0; x < numUsedConstF; ++x)
 	{
-		const unsigned usedConstF = shaderInfo.usedConstantsF[x];
+		const unsigned short usedConstF = shaderInfo.usedConstantsF[x];
 		if (IsConstantGlobal(usedConstF, shaderInfo.initialConstantValues) )
 		{
 			char tempRegBuffer[96] = {0};
@@ -1995,7 +1995,7 @@ const bool JITCPPFileInternal(const ShaderInfo& shaderInfo, const char* const sh
 	const unsigned numUsedConstI = shaderInfo.usedConstantsI.size();
 	for (unsigned x = 0; x < numUsedConstI; ++x)
 	{
-		const unsigned usedConstI = shaderInfo.usedConstantsI[x];
+		const unsigned short usedConstI = shaderInfo.usedConstantsI[x];
 		if (IsConstantGlobal(usedConstI, shaderInfo.initialConstantValuesI) )
 		{
 			char tempRegBuffer[96] = {0};
@@ -2008,7 +2008,7 @@ const bool JITCPPFileInternal(const ShaderInfo& shaderInfo, const char* const sh
 	const unsigned numUsedConstB = shaderInfo.usedConstantsB.size();
 	for (unsigned x = 0; x < numUsedConstB; ++x)
 	{
-		const unsigned usedConstB = shaderInfo.usedConstantsB[x];
+		const unsigned short usedConstB = shaderInfo.usedConstantsB[x];
 		if (IsConstantGlobal(usedConstB, shaderInfo.initialConstantValuesB) )
 		{
 			char tempRegBuffer[96] = {0};

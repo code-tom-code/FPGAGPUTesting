@@ -15,7 +15,7 @@ struct ShaderInfo;
 
 struct InitialConstantValueBase
 {
-	unsigned constantRegisterIndex;
+	unsigned short constantRegisterIndex;
 };
 
 struct InitialConstantValue : public InitialConstantValueBase
@@ -195,8 +195,6 @@ struct ShaderInfo
 	const char* D3DXDisasmString;
 #endif
 
-	void PrintShaderStatsToString(char (&outBuffer)[1024]) const;
-
 	unsigned shaderLengthDWORDs; // The number of DWORD tokens (including the first version token) in the bytecode
 	unsigned numArithInstructions;
 	unsigned numTexInstructions; // This field must be directly after numArithInstructions for reasons
@@ -228,9 +226,9 @@ struct ShaderInfo
 	std::vector<InitialConstantValueB> initialConstantValuesB;
 
 	// Which constants registers are accessed during this shader (overlaps with initial constant values):
-	std::vector<unsigned> usedConstantsF;
-	std::vector<unsigned> usedConstantsI;
-	std::vector<unsigned> usedConstantsB;
+	std::vector<unsigned short> usedConstantsF;
+	std::vector<unsigned short> usedConstantsI;
+	std::vector<unsigned short> usedConstantsB;
 
 	// declared inputs and samplers
 	std::vector<DeclaredRegister> declaredRegisters;
@@ -262,14 +260,19 @@ struct ShaderInfo
 	static const bool IsOpcodeTexInstruction(const D3DSHADER_INSTRUCTION_OPCODE_TYPE opcode);
 };
 
-void DisasmAndAnalyzeShader(const DWORD* shaderMemory, ShaderInfo& shaderInfoOut
+extern "C"
+{
+void __stdcall DisasmAndAnalyzeShader(const DWORD* shaderMemory, ShaderInfo& shaderInfoOut
 #ifdef _DEBUG
 	, const char* const filename
 #endif
 	);
 
-void AnalyzeShader(const DWORD* shaderMemory, ShaderInfo& shaderInfoOut
+void __stdcall AnalyzeShader(const DWORD* shaderMemory, ShaderInfo& shaderInfoOut
 #ifdef _DEBUG
 	, const char* const filename
 #endif
 	);
+
+void __stdcall PrintShaderStatsToString(char (&outBuffer)[1024], const ShaderInfo& shaderInfoIn);
+} // extern "C"

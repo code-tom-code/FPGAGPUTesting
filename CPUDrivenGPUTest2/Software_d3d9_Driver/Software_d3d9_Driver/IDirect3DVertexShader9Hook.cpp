@@ -298,7 +298,7 @@ void IDirect3DVertexShader9Hook::JitLoadShader()
 		return;
 	}
 
-	gpuvoid* allocVertexShaderBytes = GPUAlloc(deviceCompiledVertexShaderBytecode->numDeviceTokens * sizeof(instructionSlot), GPUVAT_ShaderInstructionsMemory, GPUFMT_VertexShaderInstructions
+	gpuvoid* allocVertexShaderBytes = GPUAlloc(deviceCompiledVertexShaderBytecode->deviceShaderInfo.deviceInstructionTokenCount * sizeof(instructionSlot), GPUVAT_ShaderInstructionsMemory, GPUFMT_VertexShaderInstructions
 #ifdef _DEBUG
 		, debugObjectName
 #endif
@@ -314,7 +314,7 @@ void IDirect3DVertexShader9Hook::JitLoadShader()
 
 	// Copy our newly compiled device-specific shader instruction bytecode over to the GPU for later loading and execution:
 	IBaseDeviceComms* const deviceComms = IBaseDeviceComms::GetGlobalDeviceComms();
-	deviceComms->DeviceMemCopy(allocVertexShaderBytes, &(deviceCompiledVertexShaderBytecode->deviceInstructions), deviceCompiledVertexShaderBytecode->numDeviceTokens * sizeof(instructionSlot) );
+	deviceComms->DeviceMemCopy(allocVertexShaderBytes, &(deviceCompiledVertexShaderBytecode->deviceInstructions), deviceCompiledVertexShaderBytecode->deviceShaderInfo.deviceInstructionTokenCount * sizeof(instructionSlot) );
 
 	deviceCompiledVertexShaderBytes = allocVertexShaderBytes;
 }

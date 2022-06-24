@@ -21,51 +21,6 @@ static inline void dprintf(ShaderInfo& shaderInfo, const char* const formatStrin
 	}
 }
 
-void ShaderInfo::PrintShaderStatsToString(char (&outBuffer)[1024]) const
-{
-#pragma warning(push)
-#pragma warning(disable:4996)
-	sprintf(outBuffer, "Shader Version: %cs_%u_%u\n"
-		"Shader Length (tokens): %u\n"
-		"Instructions (ALU/TEX): %u/%u\n"
-		"Temp registers used (r registers): %u/%u\n"
-		"Input registers used (v registers): %u/%u\n"
-		"Float constant registers used (c registers): %u\n"
-		"Integer constant registers used (i registers): %u/%u\n"
-		"Bool constant registers used (b registers): %u/%u\n"
-		"Uses dynamic branching: %s\n"
-		"Uses function calls: %s\n"
-		"Uses int to float conversions: %s\n"
-		"Uses TEXKILL instructions: %s\n"
-		"Uses gradient instructions: %s\n"
-		"Uses instruction predication: %s\n"
-		"Uses scalar instruction co-issuing: %s\n"
-		"Uses custom depth output: %s\n"
-		"Uses vertex texture fetch (VTF): %s\n"
-		"Uses multiple render targets (MRT): %s\n"
-		"Has dependent texture fetches: %s\n",
-		isPixelShader ? 'p' : 'v', shaderMajorVersion, shaderMinorVersion,
-		shaderLengthDWORDs,
-		numArithInstructions, numTexInstructions,
-		numUniqueTempRegistersUsed, MAX_NUM_TEMP_REGISTERS,
-		numUniqueInputRegistersUsed, isPixelShader ? ( (shaderMajorVersion < 2) ? 8 : 10) : 16,
-		usedConstantsF.size(),
-		usedConstantsI.size(), MAX_NUM_CONST_INT_REGISTERS,
-		usedConstantsB.size(), MAX_NUM_CONST_BOOL_REGISTERS,
-		usesDynamicBranching ? "TRUE" : "FALSE",
-		usesFunctionCalls ? "TRUE" : "FALSE",
-		usesIntToFloatConversions ? "TRUE" : "FALSE",
-		usesTexkill ? "TRUE" : "FALSE",
-		usesGradientInstructions ? "TRUE" : "FALSE",
-		usesInstructionPredication ? "TRUE" : "FALSE",
-		usesInstructionCoIssue ? "TRUE" : "FALSE",
-		psWritesDepth ? "TRUE" : "FALSE",
-		usesVertTextureFetch ? "TRUE" : "FALSE",
-		usesMRT ? "TRUE" : "FALSE",
-		hasDependentTextureFetches ? "TRUE" : "FALSE");
-#pragma warning(pop)
-}
-
 // Note that ResolveDstParameter<print> also increments the bytecode stream pointer given to it
 template <const bool print, const bool modifyRegister>
 static inline void ResolveDstParameter(const DWORD*& bytecode, ShaderInfo& shaderInfo, unsigned long& uniqueTempRegistersUsed, outputRegisterWriteTracker& outRegisterwriteTracker)
@@ -359,7 +314,7 @@ static inline void ResolveDstParameter(const DWORD*& bytecode, ShaderInfo& shade
 	++bytecode;
 }
 
-static inline void AddIfNotPresent(std::vector<unsigned>& vals, const unsigned val)
+static inline void AddIfNotPresent(std::vector<unsigned short>& vals, const unsigned short val)
 {
 	const unsigned numVals = vals.size();
 	for (unsigned x = 0; x < numVals; ++x)
@@ -408,7 +363,7 @@ static inline void ResolveSrcParameter(ShaderInfo& shaderInfo, const DWORD*& byt
 		break;
 	}
 
-	unsigned index = srcParameter.GetRegisterIndex();
+	unsigned short index = srcParameter.GetRegisterIndex();
 
 	const D3DSHADER_PARAM_REGISTER_TYPE registerType = srcParameter.GetRegisterType();
 	switch (registerType)
@@ -494,13 +449,13 @@ static inline void ResolveSrcParameter(ShaderInfo& shaderInfo, const DWORD*& byt
 	case D3DSPR_CONST:
 		break;
 	case D3DSPR_CONST2     :
-		index += 2048;
+		index += (2048 * 1);
 		break;
 	case D3DSPR_CONST3     :
-		index += 4096;
+		index += (2048 * 2);
 		break;
 	case D3DSPR_CONST4     :
-		index += 6144;
+		index += (2048 * 3);
 		break;
 	default:
 		break;
@@ -869,7 +824,7 @@ static inline const bool ParseCustomOpcode(const D3DSHADER_INSTRUCTION_OPCODE_TY
 	{
 		InitialConstantValueB newConstantB;
 		const dstParameterToken& dstParameter = *(const dstParameterToken* const)shaderMemory;
-		newConstantB.constantRegisterIndex = dstParameter.GetRegisterIndex();
+		newConstantB.constantRegisterIndex = (const unsigned short)dstParameter.GetRegisterIndex();
 		ResolveDstParameter<print, false>(shaderMemory, shaderInfo, uniqueTempRegistersUsed, outRegisterwriteTracker);
 		const DWORD dwordData = *shaderMemory++;
 		const BOOL bData = (const BOOL)(dwordData);
@@ -891,7 +846,7 @@ static inline const bool ParseCustomOpcode(const D3DSHADER_INSTRUCTION_OPCODE_TY
 	{
 		InitialConstantValueI newConstantI;
 		const dstParameterToken& dstParameter = *(const dstParameterToken* const)shaderMemory;
-		newConstantI.constantRegisterIndex = dstParameter.GetRegisterIndex();
+		newConstantI.constantRegisterIndex = (const unsigned short)dstParameter.GetRegisterIndex();
 		ResolveDstParameter<print, false>(shaderMemory, shaderInfo, uniqueTempRegistersUsed, outRegisterwriteTracker);
 		const DWORD dword0 = *shaderMemory++;
 		newConstantI.initialValue.x = *(const int* const)&dword0;
@@ -911,7 +866,7 @@ static inline const bool ParseCustomOpcode(const D3DSHADER_INSTRUCTION_OPCODE_TY
 	{
 		InitialConstantValue newConstant;
 		const dstParameterToken& dstParameter = *(const dstParameterToken* const)shaderMemory;
-		newConstant.constantRegisterIndex = dstParameter.GetRegisterIndex();
+		newConstant.constantRegisterIndex = (const unsigned short)dstParameter.GetRegisterIndex();
 		ResolveDstParameter<print, false>(shaderMemory, shaderInfo, uniqueTempRegistersUsed, outRegisterwriteTracker);
 		const DWORD dword0 = *shaderMemory++;
 		newConstant.initialValue.x = *(const float* const)&dword0;
@@ -1348,42 +1303,6 @@ static inline void ShaderAnalysisMain(const DWORD* shaderMemory, ShaderInfo& ret
 	return;
 }
 
-void DisasmAndAnalyzeShader(const DWORD* shaderMemory, ShaderInfo& shaderInfoOut
-#ifdef _DEBUG
-	, const char* const filename
-#endif
-	)
-{
-	ShaderAnalysisMain<true>(shaderMemory, shaderInfoOut
-#ifdef _DEBUG
-		, filename
-#endif
-		);
-
-#ifdef DISASM_SHADER
-	printf("%s\n", &shaderInfoOut.shaderDisasmText.front() );
-#endif
-}
-
-void AnalyzeShader(const DWORD* shaderMemory, ShaderInfo& shaderInfoOut
-#ifdef _DEBUG
-	, const char* const filename
-#endif
-	)
-{
-	ShaderAnalysisMain<
-#ifdef DISASM_SHADER
-		true
-#else
-		false
-#endif
-	>(shaderMemory, shaderInfoOut
-#ifdef _DEBUG
-		, filename
-#endif
-		);
-}
-
 void outputRegisterWriteTracker::SetAddOrSkip(const D3DSHADER_PARAM_REGISTER_TYPE registerType, const unsigned registerIndex, const BYTE writeMask, const dstParameterToken& dstParameter, const instructionToken* const _writeInstruction, const dstParameterToken* const optionalRelativeRegister/* = NULL*/)
 {
 	outputRegisterWriteState& thisRegWriteState = writtenRegisters[registerType][registerIndex];
@@ -1422,3 +1341,87 @@ void outputRegisterWriteTracker::AddOutputRegisterListingToShaderInfo(ShaderInfo
 		outShaderInfo.writtenOutputRegisters.push_back(newRegister);
 	}
 }
+
+extern "C"
+{
+void __stdcall DisasmAndAnalyzeShader(const DWORD* shaderMemory, ShaderInfo& shaderInfoOut
+#ifdef _DEBUG
+	, const char* const filename
+#endif
+	)
+{
+	ShaderAnalysisMain<true>(shaderMemory, shaderInfoOut
+#ifdef _DEBUG
+		, filename
+#endif
+		);
+
+#ifdef DISASM_SHADER
+	printf("%s\n", &shaderInfoOut.shaderDisasmText.front() );
+#endif
+}
+
+void __stdcall AnalyzeShader(const DWORD* shaderMemory, ShaderInfo& shaderInfoOut
+#ifdef _DEBUG
+	, const char* const filename
+#endif
+	)
+{
+	ShaderAnalysisMain<
+#ifdef DISASM_SHADER
+		true
+#else
+		false
+#endif
+	>(shaderMemory, shaderInfoOut
+#ifdef _DEBUG
+		, filename
+#endif
+		);
+}
+
+void __stdcall PrintShaderStatsToString(char (&outBuffer)[1024], const ShaderInfo& shaderInfoIn)
+{
+#pragma warning(push)
+#pragma warning(disable:4996)
+	sprintf(outBuffer, "Shader Version: %cs_%u_%u\n"
+		"Shader Length (tokens): %u\n"
+		"Instructions (ALU/TEX): %u/%u\n"
+		"Temp registers used (r registers): %u/%u\n"
+		"Input registers used (v registers): %u/%u\n"
+		"Float constant registers used (c registers): %u\n"
+		"Integer constant registers used (i registers): %u/%u\n"
+		"Bool constant registers used (b registers): %u/%u\n"
+		"Uses dynamic branching: %s\n"
+		"Uses function calls: %s\n"
+		"Uses int to float conversions: %s\n"
+		"Uses TEXKILL instructions: %s\n"
+		"Uses gradient instructions: %s\n"
+		"Uses instruction predication: %s\n"
+		"Uses scalar instruction co-issuing: %s\n"
+		"Uses custom depth output: %s\n"
+		"Uses vertex texture fetch (VTF): %s\n"
+		"Uses multiple render targets (MRT): %s\n"
+		"Has dependent texture fetches: %s\n",
+		shaderInfoIn.isPixelShader ? 'p' : 'v', shaderInfoIn.shaderMajorVersion, shaderInfoIn.shaderMinorVersion,
+		shaderInfoIn.shaderLengthDWORDs,
+		shaderInfoIn.numArithInstructions, shaderInfoIn.numTexInstructions,
+		shaderInfoIn.numUniqueTempRegistersUsed, MAX_NUM_TEMP_REGISTERS,
+		shaderInfoIn.numUniqueInputRegistersUsed, shaderInfoIn.isPixelShader ? ( (shaderInfoIn.shaderMajorVersion < 2) ? 8 : 10) : 16,
+		shaderInfoIn.usedConstantsF.size(),
+		shaderInfoIn.usedConstantsI.size(), MAX_NUM_CONST_INT_REGISTERS,
+		shaderInfoIn.usedConstantsB.size(), MAX_NUM_CONST_BOOL_REGISTERS,
+		shaderInfoIn.usesDynamicBranching ? "TRUE" : "FALSE",
+		shaderInfoIn.usesFunctionCalls ? "TRUE" : "FALSE",
+		shaderInfoIn.usesIntToFloatConversions ? "TRUE" : "FALSE",
+		shaderInfoIn.usesTexkill ? "TRUE" : "FALSE",
+		shaderInfoIn.usesGradientInstructions ? "TRUE" : "FALSE",
+		shaderInfoIn.usesInstructionPredication ? "TRUE" : "FALSE",
+		shaderInfoIn.usesInstructionCoIssue ? "TRUE" : "FALSE",
+		shaderInfoIn.psWritesDepth ? "TRUE" : "FALSE",
+		shaderInfoIn.usesVertTextureFetch ? "TRUE" : "FALSE",
+		shaderInfoIn.usesMRT ? "TRUE" : "FALSE",
+		shaderInfoIn.hasDependentTextureFetches ? "TRUE" : "FALSE");
+#pragma warning(pop)
+}
+} // extern "C"

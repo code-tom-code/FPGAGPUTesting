@@ -218,7 +218,6 @@
     <ClCompile Include="Overlay\Overlay_WelcomeScreen.cpp" />
     <ClCompile Include="PShaderEngine.cpp" />
     <ClCompile Include="SemanticMappings.cpp" />
-    <ClCompile Include="ShaderAnalysis.cpp" />
     <ClCompile Include="ShaderTextureFunctions.cpp" />
     <ClCompile Include="ShaderJIT.cpp" />
     <ClCompile Include="ShaderTextureFunctions4.cpp" />
@@ -274,7 +273,6 @@
     <ClInclude Include="PShaderEngine.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="SemanticMappings.h" />
-    <ClInclude Include="ShaderAnalysis.h" />
     <ClInclude Include="ShaderBase.h" />
     <ClInclude Include="ShaderEngineBase.h" />
     <ClInclude Include="ShaderIntrinsicFunctions.h" />
@@ -321,6 +319,9 @@
   <ItemGroup>
     <ProjectReference Include="..\DriverShaderCompiler\DriverShaderCompiler.vcxproj">
       <Project>{67fca46a-6b71-42e4-90e3-9c25f0c68391}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\ShaderAnalysis\ShaderAnalysis.vcxproj">
+      <Project>{553f9799-7401-4555-a217-9ed70c4afa21}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -270,6 +270,7 @@ union anyToken
 	instructionToken instruction;
 	srcParameterToken src;
 	dstParameterToken dst;
+	versionToken version;
 };
 static_assert(sizeof(anyToken) == sizeof(DWORD), "Error!");
 

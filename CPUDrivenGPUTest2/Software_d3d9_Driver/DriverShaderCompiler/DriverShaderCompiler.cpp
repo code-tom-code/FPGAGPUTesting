@@ -4,8 +4,12 @@
 #include <Windows.h>
 #include <stdio.h>
 #include <string>
+#include "..\Software_d3d9_Driver\ShaderAnalysis.h"
 
 #include "DriverShaderCompiler.h"
+
+// Forwards-declare:
+const ShaderCompileResultCode CompileShaderInternal(const ShaderInfo& inDXShaderInfo, const ShaderCompileOptions inCompileOptions, DeviceBytecode*& outCompiledDeviceBytecode, const char* const inOptShaderBaseFilename);
 
 BOOL APIENTRY DllMain( HMODULE hModule,
                        DWORD  ul_reason_for_call,
@@ -83,7 +87,7 @@ const ShaderCompileResultCode __stdcall DisasmDeviceBytecodeToFile(const DeviceB
 #ifdef _DEBUG
 		__debugbreak();
 #endif
-		return ShaderCompile_ERR;
+		return ShaderCompile_ERR_InvalidArg;
 	}
 
 	if (!outFile)
@@ -91,10 +95,10 @@ const ShaderCompileResultCode __stdcall DisasmDeviceBytecodeToFile(const DeviceB
 #ifdef _DEBUG
 		__debugbreak();
 #endif
-		return ShaderCompile_ERR;
+		return ShaderCompile_ERR_InvalidArg;
 	}
 
-	for (unsigned instructionIndex = 0; instructionIndex < inCompiledDeviceBytecode->numDeviceTokens; ++instructionIndex)
+	for (unsigned instructionIndex = 0; instructionIndex < inCompiledDeviceBytecode->deviceShaderInfo.deviceInstructionTokenCount; ++instructionIndex)
 	{
 		DisasmSingleInstructionToFile(&(inCompiledDeviceBytecode->deviceInstructions[instructionIndex]), outFile);
 	}
@@ -110,7 +114,7 @@ const ShaderCompileResultCode __stdcall DisasmDeviceBytecodeToString(const Devic
 #ifdef _DEBUG
 		__debugbreak();
 #endif
-		return ShaderCompile_ERR;
+		return ShaderCompile_ERR_InvalidArg;
 	}
 
 	if (!outString)
@@ -118,12 +122,12 @@ const ShaderCompileResultCode __stdcall DisasmDeviceBytecodeToString(const Devic
 #ifdef _DEBUG
 		__debugbreak();
 #endif
-		return ShaderCompile_ERR;
+		return ShaderCompile_ERR_InvalidArg;
 	}
 
 	std::string buildString;
 
-	for (unsigned instructionIndex = 0; instructionIndex < inCompiledDeviceBytecode->numDeviceTokens; ++instructionIndex)
+	for (unsigned instructionIndex = 0; instructionIndex < inCompiledDeviceBytecode->deviceShaderInfo.deviceInstructionTokenCount; ++instructionIndex)
 	{
 		char tempMemory[256] = {0};
 		DisasmSingleInstructionToMemory(&(inCompiledDeviceBytecode->deviceInstructions[instructionIndex]), tempMemory);
@@ -136,3 +140,73 @@ const ShaderCompileResultCode __stdcall DisasmDeviceBytecodeToString(const Devic
 
 	return ShaderCompile_OK;
 }
+
+// This is our main function that takes compiled D3D9 bytecode (shader model 1, 2, or 3) and converts it into device-specific bytecode
+const ShaderCompileResultCode __stdcall CompileShaderToDeviceBytecode(const ShaderInfo* const inDXShaderInfo, const ShaderCompileOptions inCompileOptions, DeviceBytecode** outCompiledDeviceBytecode, const char* const inOptShaderBaseFilename)
+{
+	if (!outCompiledDeviceBytecode)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Error: Need to specify an output pointer for the compiled device bytecode
+#endif
+		return ShaderCompile_ERR_InvalidArg;
+	}
+
+	*outCompiledDeviceBytecode = NULL;
+
+	if (!inDXShaderInfo)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Error: Must always specify a fully computed ShaderInfo struct from ShaderAnalysis before calling this function!
+#endif
+		return ShaderCompile_ERR_InvalidArg;
+	}
+
+	if (inDXShaderInfo->parsingErrorDetected)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Error: Must always specify a fully computed ShaderInfo struct from ShaderAnalysis before calling this function!
+#endif
+		return ShaderCompile_ERR_ShaderParseError;
+	}
+
+	if (inCompileOptions >= SCOPtion_LAST_VALID_OPTION)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Error: Invalid/Unknown option specified!
+#endif
+		return ShaderCompile_ERR_InvalidArg;
+	}
+
+	if ( (inCompileOptions & SCOption_OutputEverything) != 0)
+	{
+		if (!inOptShaderBaseFilename)
+		{
+#ifdef _DEBUG
+			__debugbreak(); // Error: Must specify a shaderBaseFilename string when using one of the Output options or else we won't know where to output the files to!
+#endif
+			return ShaderCompile_ERR_InvalidArg;
+		}
+	}
+
+	// The driver shader compiler does not yet support pixel shaders. Vertex shaders only for right now!
+	if (inDXShaderInfo->isPixelShader)
+	{
+#ifdef _DEBUG
+		__debugbreak();
+#endif
+		return ShaderCompile_ERR_InvalidShaderType;
+	}
+
+	// The hardware does not currently support predication, so if the shader uses that, then we can't compile it
+	if (inDXShaderInfo->usesInstructionPredication)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Error: We can't currently compile predication instructions!
+#endif
+		return ShaderCompile_ERR_UnsupportedPredication;
+	}
+
+	return CompileShaderInternal(*inDXShaderInfo, inCompileOptions, *outCompiledDeviceBytecode, inOptShaderBaseFilename);
+}
+

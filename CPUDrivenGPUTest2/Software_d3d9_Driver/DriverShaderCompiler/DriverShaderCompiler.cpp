@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <string>
 #include "..\Software_d3d9_Driver\ShaderAnalysis.h"
+#include "..\Software_d3d9_Driver\Driver\GPUDeviceLimits.h"
 
 #include "DriverShaderCompiler.h"
 
@@ -80,6 +81,76 @@ void __stdcall DisasmSingleInstructionToFile(const instructionSlot* const inInst
 			InstructionSrcRegToString(inInstruction->instructionStruct.srcRegB_regType), inInstruction->instructionStruct.srcRegB_regIndex, InstructionSrcRegModToString(inInstruction->instructionStruct.srcRegB_srcModifier), GetRegChannelLetterFromChannelIndex(inInstruction->instructionStruct.srcRegB_component) ); // srcRegType%u_srcMod.channel
 }
 
+void WriteDeviceShaderInfoDataToFile(const DeviceShaderInfo& inDeviceShaderInfo, FILE* const outFile)
+{
+	if (!outFile)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Don't pass null pointers to this function!
+#endif
+		return;
+	}
+
+	fprintf(outFile, "// Register Type: Registers Used / Total Registers Available:\n");
+	fprintf(outFile, "// r#: \t%u\t/ \t%u\n", inDeviceShaderInfo.tempRegisterCount, GPU_SHADER_MAX_NUM_GPR_REG);
+	fprintf(outFile, "// v#: \t%u\t/ \t%u\n", inDeviceShaderInfo.inputRegisterCount, GPU_SHADER_MAX_NUM_INPUT_REG);
+	fprintf(outFile, "// o#: \t%u\t/ \t%u\n", inDeviceShaderInfo.outputRegisterCount, GPU_SHADER_MAX_NUM_OUTPUT_REG);
+	fprintf(outFile, "// c#: \t%u\t/ \t%u\n", inDeviceShaderInfo.constRegisterCount, GPU_SHADER_MAX_NUM_CONSTANT_FLOAT_REG);
+	fprintf(outFile, "// x#: \t%u\t/ \t%u\n", inDeviceShaderInfo.specialRegisterCount, GPU_SHADER_MAX_NUM_SPECIAL_REG);
+	fprintf(outFile, "// \n");
+
+	const DeviceInputRegisters& inputRegisters = inDeviceShaderInfo.inputRegisters;
+	fprintf(outFile, "// Input Mapping:\n");
+	if (inputRegisters.pos0 >= 0)
+		fprintf(outFile, "// \tIN POSITION0: v%u\n", inputRegisters.pos0);
+	if (inputRegisters.color0 >= 0)
+		fprintf(outFile, "// \tIN COLOR0: v%u\n", inputRegisters.color0);
+	if (inputRegisters.color1 >= 0)
+		fprintf(outFile, "// \tIN COLOR1: v%u\n", inputRegisters.color1);
+	if (inputRegisters.normal0 >= 0)
+		fprintf(outFile, "// \tIN NORMAL0: v%u\n", inputRegisters.normal0);
+	if (inputRegisters.tangent0 >= 0)
+		fprintf(outFile, "// \tIN TANGENT0: v%u\n", inputRegisters.tangent0);
+	if (inputRegisters.binormal0 >= 0)
+		fprintf(outFile, "// \tIN BINORMAL0: v%u\n", inputRegisters.binormal0);
+	if (inputRegisters.blendweight0 >= 0)
+		fprintf(outFile, "// \tIN BLENDWEIGHT0: v%u\n", inputRegisters.blendweight0);
+	if (inputRegisters.blendindices0 >= 0)
+		fprintf(outFile, "// \tIN BLENDINDICES0: v%u\n", inputRegisters.blendindices0);
+	for (unsigned x = 0; x < 8; ++x)
+	{
+		if (inputRegisters.texcoord[x] >= 0)
+			fprintf(outFile, "// \tIN TEXCOORD%u: v%u\n", x, inputRegisters.texcoord[x]);
+	}
+	fprintf(outFile, "// \n");
+
+	const DeviceOutputRegisters& outputRegisters = inDeviceShaderInfo.outputRegisters;
+	fprintf(outFile, "// Output Mapping:\n");
+	fprintf(outFile, "// \tOUT POSITION0: o%u\n", outputRegisters.oPosRegIndex);
+	if (outputRegisters.oDiffuseRegIndex >= 0)
+		fprintf(outFile, "// \tOUT COLOR0: o%u\n", outputRegisters.oDiffuseRegIndex);
+	if (outputRegisters.oSpecularRegIndex >= 0)
+		fprintf(outFile, "// \tOUT COLOR1: o%u\n", outputRegisters.oSpecularRegIndex);
+	if (outputRegisters.oFog >= 0)
+		fprintf(outFile, "// \tOUT FOG0: o%u\n", outputRegisters.oFog);
+	if (outputRegisters.oPts >= 0)
+		fprintf(outFile, "// \tOUT PSIZE0: o%u\n", outputRegisters.oPts);
+	for (unsigned x = 0; x < 8; ++x)
+	{
+		if (outputRegisters.oTexRegIndex[x] >= 0)
+			fprintf(outFile, "// \tOUT TEXCOORD%u: o%u\n", x, outputRegisters.oTexRegIndex[x]);
+	}
+	fprintf(outFile, "//\n");
+
+	fprintf(outFile, "// Execution cycles: %u\n", inDeviceShaderInfo.deviceExecutionCycleCount);
+	fprintf(outFile, "// Cycles wasted to waits: %u\n", inDeviceShaderInfo.deviceCyclesWastedToWaits);
+	fprintf(outFile, "// %u/%u device instruction slots used (%u/%u bytes):\n", 
+		inDeviceShaderInfo.deviceInstructionTokenCount, 
+		GPU_SHADER_MAX_NUM_INSTRUCTIONS, 
+		inDeviceShaderInfo.deviceInstructionTokenCount * sizeof(instructionSlot),
+		GPU_SHADER_MAX_NUM_INSTRUCTIONS * sizeof(instructionSlot) );
+}
+
 const ShaderCompileResultCode __stdcall DisasmDeviceBytecodeToFile(const DeviceBytecode* const inCompiledDeviceBytecode, FILE* const outFile)
 {
 	if (!inCompiledDeviceBytecode)
@@ -98,8 +169,11 @@ const ShaderCompileResultCode __stdcall DisasmDeviceBytecodeToFile(const DeviceB
 		return ShaderCompile_ERR_InvalidArg;
 	}
 
+	WriteDeviceShaderInfoDataToFile(inCompiledDeviceBytecode->deviceShaderInfo, outFile);
+
 	for (unsigned instructionIndex = 0; instructionIndex < inCompiledDeviceBytecode->deviceShaderInfo.deviceInstructionTokenCount; ++instructionIndex)
 	{
+		fprintf(outFile, "%u: ", instructionIndex);
 		DisasmSingleInstructionToFile(&(inCompiledDeviceBytecode->deviceInstructions[instructionIndex]), outFile);
 	}
 

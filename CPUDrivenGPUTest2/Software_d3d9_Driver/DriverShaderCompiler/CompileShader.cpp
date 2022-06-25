@@ -191,6 +191,7 @@ static const bool OpcodeIsCompositeOp(const DEBUGGABLE_D3DSHADER_INSTRUCTION_OPC
 	case _D3DSIO_M3x3:
 	case _D3DSIO_M3x2:
 	case _D3DSIO_POW:
+	case _D3DSIO_CRS:
 	case _D3DSIO_NRM:
 	case _D3DSIO_DP2ADD:
 	case _D3DSIO_SINCOS:
@@ -659,6 +660,7 @@ static const bool DoesInstructionDecompositionRequireTemporaryRegister(const DEB
 	case _D3DSIO_DP4:
 	case _D3DSIO_LIT:
 	case _D3DSIO_NRM:
+	case _D3DSIO_CRS:
 	case _D3DSIO_M4x4:
 	case _D3DSIO_M4x3:
 	case _D3DSIO_M3x4:
@@ -683,6 +685,7 @@ static const unsigned char InstructionDecompositionNewConstantRegistersRequired(
 	case _D3DSIO_LRP:
 	case _D3DSIO_POW:
 	case _D3DSIO_NRM:
+	case _D3DSIO_CRS:
 	case _D3DSIO_DP2ADD:
 	case _D3DSIO_DP3:
 	case _D3DSIO_DP4:
@@ -759,22 +762,6 @@ const ShaderCompileResultCode DecomposeShaderInstructions(const ShaderInfo& inDX
 			{
 				return result;
 			}
-		}
-		else
-		{
-			inOutUnusedConstBufferSpace.numRegisters -= numNewConstantRegisterAllocationsRequired;
-			inOutUnusedConstBufferSpace.regStartIndex += numNewConstantRegisterAllocationsRequired;
-
-#ifdef _DEBUG
-			if (inOutUnusedConstBufferSpace.numRegisters > 255)
-			{
-				__debugbreak();
-			}
-			if (inOutUnusedConstBufferSpace.regStartIndex > 255)
-			{
-				__debugbreak();
-			}
-#endif
 		}
 
 		switch (aliasedInstruction->justOpcode.instruction.opcode)
@@ -890,9 +877,40 @@ const ShaderCompileResultCode DecomposeShaderInstructions(const ShaderInfo& inDX
 			// MUL dst.y, src0.y, src1.y // If write mask .y
 			// MOV dst.z, src0.z // If write mask .z
 			// MOV dst.w, src1.w // If write mask .w
-#ifdef _DEBUG
-			__debugbreak(); // Not yet implemented!
-#endif
+
+			if (aliasedInstruction->srcSrcDst.dst.GetWriteMask() & WM_X)
+			{
+				// MOV dst.x, c0.x
+				AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_MOV) ); // MOV
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcDst.dst.GetRegisterIndex(), WM_X, (const resultModifierType)aliasedInstruction->srcSrcDst.dst.GetResultModifier(), aliasedInstruction->srcSrcDst.dst.GetResultShiftScale() ) ); // dst.x
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_CONST, inOutUnusedConstBufferSpace.regStartIndex, sourceX) ); // src0
+			}
+			if (aliasedInstruction->srcSrcDst.dst.GetWriteMask() & WM_Y)
+			{
+				// MUL dst.y, src0.y, src1.y
+				AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_MUL) ); // MUL
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcDst.dst.GetRegisterIndex(), WM_Y, (const resultModifierType)aliasedInstruction->srcSrcDst.dst.GetResultModifier(), aliasedInstruction->srcSrcDst.dst.GetResultShiftScale() ) ); // dst.y
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, aliasedInstruction->srcSrcDst.src0.GetRegisterType(), aliasedInstruction->srcSrcDst.src0.GetRegisterIndex(), sourceY, (const debuggableSourceModifierType)aliasedInstruction->srcSrcDst.src0.GetSourceModifiers() ) ); // src0.y
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, aliasedInstruction->srcSrcDst.src1.GetRegisterType(), aliasedInstruction->srcSrcDst.src1.GetRegisterIndex(), sourceY, (const debuggableSourceModifierType)aliasedInstruction->srcSrcDst.src1.GetSourceModifiers() ) ); // src1.y
+			}
+			if (aliasedInstruction->srcSrcDst.dst.GetWriteMask() & WM_Z)
+			{
+				// MOV dst.z, src0.z
+				AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_MOV) ); // MOV
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcDst.dst.GetRegisterIndex(), WM_Z, (const resultModifierType)aliasedInstruction->srcSrcDst.dst.GetResultModifier(), aliasedInstruction->srcSrcDst.dst.GetResultShiftScale() ) ); // dst.z
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, aliasedInstruction->srcSrcDst.src0.GetRegisterType(), aliasedInstruction->srcSrcDst.src0.GetRegisterIndex(), sourceZ, (const debuggableSourceModifierType)aliasedInstruction->srcSrcDst.src0.GetSourceModifiers() ) ); // src0.z
+			}
+			if (aliasedInstruction->srcSrcDst.dst.GetWriteMask() & WM_W)
+			{
+				// MOV dst.w, src1.w
+				AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_MOV) ); // MOV
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcDst.dst.GetRegisterIndex(), WM_W, (const resultModifierType)aliasedInstruction->srcSrcDst.dst.GetResultModifier(), aliasedInstruction->srcSrcDst.dst.GetResultShiftScale() ) ); // dst.w
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, aliasedInstruction->srcSrcDst.src1.GetRegisterType(), aliasedInstruction->srcSrcDst.src1.GetRegisterIndex(), sourceW, (const debuggableSourceModifierType)aliasedInstruction->srcSrcDst.src1.GetSourceModifiers() ) ); // src1.w
+			}
 			break;
 		case _D3DSIO_LRP:
 			// LRP dst, src0, src1, src2 ->
@@ -1464,6 +1482,74 @@ const ShaderCompileResultCode DecomposeShaderInstructions(const ShaderInfo& inDX
 			}
 			break;
 		}
+		case _D3DSIO_CRS:
+		{
+			// CRS dst, src0, src1 ->
+			// MUL temp.xyz, src0.yzx, src1.zxy
+			// MUL temp.w, src0.z, src1.y
+			// ADD dst.x, temp.x, -temp.w
+			// MUL temp.w, src0.x, src1.z
+			// ADD dst.y, temp.y, -temp.w
+			// MUL temp.w, src0.y, src1.x
+			// ADD dst.z, temp.z, -temp.w
+
+			// MUL temp.xyz, src0.yzx, src1.zxy
+			AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
+			AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_MUL) ); // MUL
+			AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, WM_XYZ) ); // temp.xyz
+			AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.src0.GetRegisterType(), aliasedInstruction->srcSrcDst.src0.GetRegisterIndex(), _yzxx, (const debuggableSourceModifierType)aliasedInstruction->srcSrcDst.src0.GetSourceModifiers() ) ); // src0.yzx
+			AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.src1.GetRegisterType(), aliasedInstruction->srcSrcDst.src1.GetRegisterIndex(), _zxyy, (const debuggableSourceModifierType)aliasedInstruction->srcSrcDst.src1.GetSourceModifiers() ) ); // src1.zxy
+
+			if (aliasedInstruction->srcSrcDst.dst.GetWriteMask() & WM_X)
+			{
+				// MUL temp.w, src0.z, src1.y
+				AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_MUL) ); // MUL
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, WM_W) ); // temp.w
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, aliasedInstruction->srcSrcDst.src0.GetRegisterType(), aliasedInstruction->srcSrcDst.src0.GetRegisterIndex(), sourceZ, (const debuggableSourceModifierType)aliasedInstruction->srcSrcDst.src0.GetSourceModifiers() ) ); // src0.z
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, aliasedInstruction->srcSrcDst.src1.GetRegisterType(), aliasedInstruction->srcSrcDst.src1.GetRegisterIndex(), sourceY, (const debuggableSourceModifierType)aliasedInstruction->srcSrcDst.src1.GetSourceModifiers() ) ); // src1.y
+
+				// ADD dst.x, temp.x, -temp.w
+				AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_ADD) ); // ADD
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcDst.dst.GetRegisterIndex(), WM_X, (const resultModifierType)aliasedInstruction->srcSrcDst.dst.GetResultModifier(), aliasedInstruction->srcSrcDst.dst.GetResultShiftScale() ) ); // dst.x
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceX) ); // temp.x
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceW, SM_Negate) ); // -temp.w
+			}
+			if (aliasedInstruction->srcSrcDst.dst.GetWriteMask() & WM_Y)
+			{
+				// MUL temp.w, src0.x, src1.z
+				AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_MUL) ); // MUL
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, WM_W) ); // temp.w
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, aliasedInstruction->srcSrcDst.src0.GetRegisterType(), aliasedInstruction->srcSrcDst.src0.GetRegisterIndex(), sourceX, (const debuggableSourceModifierType)aliasedInstruction->srcSrcDst.src0.GetSourceModifiers() ) ); // src0.x
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, aliasedInstruction->srcSrcDst.src1.GetRegisterType(), aliasedInstruction->srcSrcDst.src1.GetRegisterIndex(), sourceZ, (const debuggableSourceModifierType)aliasedInstruction->srcSrcDst.src1.GetSourceModifiers() ) ); // src1.z
+
+				// ADD dst.y, temp.y, -temp.w
+				AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_ADD) ); // ADD
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcDst.dst.GetRegisterIndex(), WM_Y, (const resultModifierType)aliasedInstruction->srcSrcDst.dst.GetResultModifier(), aliasedInstruction->srcSrcDst.dst.GetResultShiftScale() ) ); // dst.y
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceY) ); // temp.y
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceW, SM_Negate) ); // -temp.w
+			}
+			if (aliasedInstruction->srcSrcDst.dst.GetWriteMask() & WM_Z)
+			{
+				// MUL temp.w, src0.y, src1.x
+				AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_MUL) ); // MUL
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, WM_W) ); // temp.w
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, aliasedInstruction->srcSrcDst.src0.GetRegisterType(), aliasedInstruction->srcSrcDst.src0.GetRegisterIndex(), sourceY, (const debuggableSourceModifierType)aliasedInstruction->srcSrcDst.src0.GetSourceModifiers() ) ); // src0.y
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, aliasedInstruction->srcSrcDst.src1.GetRegisterType(), aliasedInstruction->srcSrcDst.src1.GetRegisterIndex(), sourceX, (const debuggableSourceModifierType)aliasedInstruction->srcSrcDst.src1.GetSourceModifiers() ) ); // src1.x
+
+				// ADD dst.z, temp.z, -temp.w
+				AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_ADD) ); // ADD
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcDst.dst.GetRegisterIndex(), WM_Z, (const resultModifierType)aliasedInstruction->srcSrcDst.dst.GetResultModifier(), aliasedInstruction->srcSrcDst.dst.GetResultShiftScale() ) ); // dst.z
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceZ) ); // temp.z
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceW, SM_Negate) ); // -temp.w
+			}
+		}
+			break;
 		case _D3DSIO_NRM:
 		{
 			// NRM dst, src0 ->
@@ -1548,59 +1634,81 @@ const ShaderCompileResultCode DecomposeShaderInstructions(const ShaderInfo& inDX
 			break;
 		case _D3DSIO_SINCOS:
 			// The implementation is different between Shader Model 2 (dst, src0, src1, src2) and Shader Model 3 (dst, src0).
-
-			// SIN is implemented as the power series expansion: sqrt(1+sin(x)) = 1 + x/2 - x^2/8 - x^3/48 + x^4/384 + x^5/3840 - x^6/46080 - x^7/645120 + ...
-			// Then to get back from sqrt(1+sin(x)) to sin(x) you square the series result and finally subtract 1.0f.
-			// SIN dst, src0, src1, src2 ->
-			// temp.x will contain our accumulator
-			// temp.y will contain our x^n power
-			// temp.z will contain a temporary product
-			// MUL temp.x, src0.replicateswizzle, D3DSINCOSCONST2.w // x * 1/2
-			// MUL temp.y, src0.replicateswizzle, src0.replicateswizzle // x^2
-			// MUL temp.z, temp.y, D3DSINCOSCONST2.y // x^2 * -1/8
-			// ADD temp.x, temp.x, temp.z
-			// MUL temp.y, temp.y, src0.replicateswizzle // x^3
-			// MUL temp.z, temp.y, D3DSINCOSCONST2.x // x^3 * -1/48
-			// ADD temp.x, temp.x, temp.z
-			// MUL temp.y, temp.y, src0.replicateswizzle // x^4
-			// MUL temp.z, temp.y, D3DSINCOSCONST1.z // x^4 * 1/384
-			// ADD temp.x, temp.x, temp.z
-			// MUL temp.y, temp.y, src0.replicateswizzle // x^5
-			// MUL temp.z, temp.y, D3DSINCOSCONST1.w // x^5 * 1/3840
-			// ADD temp.x, temp.x, temp.z
-			// MUL temp.y, temp.y, src0.replicateswizzle // x^6
-			// MUL temp.z, temp.y, D3DSINCOSCONST1.y // x^6 * -1/46080
-			// ADD temp.x, temp.x, temp.z
-			// MUL temp.y, temp.y, src0.replicateswizzle // x^7
-			// MUL temp.z, temp.y, D3DSINCOSCONST1.x // x^7 * -1/645120
-			// ADD temp.x, temp.x, temp.z
-			// ADD temp.x, temp.x, D3DSINCOSCONST2.z // + 1.0f
-			// MUL temp.x, temp.x, temp.x // Square the whole result
-			// ADD dst.y, temp.x, -D3DSINCOSCONST2.z // Subtract 1.0f from the final result to get sin(x)
+			if (aliasedInstruction->srcDst.dst.GetWriteMask() & WM_X)
+			{
+				// COS is implemented as the power series expansion: sqrt((1+cos(x))/2) = 1 - x^2/8 + x^4/384 - x^6/46080
+				// Then to get back from sqrt((1+cos(x))/2) to cos(x) you square the series result, multiply by 2, and finally subtract 1.0f.
+				// COS dst, src0, src1, src2 ->
+				// temp.x will contain our accumulator
+				// temp.y will contain our x^n power
+				// temp.z will contain a temporary product
+				// temp.w will contain x^2
+				// MUL temp.w, src0.replicateswizzle, src0.replicateswizzle // x^2
+				// MUL temp.x, temp.w, D3DSINCOSCONST2.y // x^2 * -1/8
+				// MUL temp.y, temp.w, temp.w // x^4
+				// MUL temp.z, temp.y, D3DSINCOSCONST1.z // x^4 * 1/384
+				// ADD temp.x, temp.x, temp.z
+				// MUL temp.y, temp.y, temp.w // x^6
+				// MUL temp.z, temp.y, D3DSINCOSCONST1.y // x^6 * -1/46080
+				// ADD temp.x, temp.x, temp.z
+				// ADD temp.x, temp.x, D3DSINCOSCONST2.z // + 1.0f
+				// MUL temp.x, temp.x, temp.x // Square the whole result
+				// ADD temp.x, temp.x, temp.x // Multiply the result by 2.0f
+				// ADD dst.x, temp.x, -D3DSINCOSCONST2.z // Subtract 1.0f from the final result to get cos(x)
+			}
 			
-			// COS is implemented as the power series expansion: sqrt((1+cos(x))/2) = 1 - x^2/8 + x^4/384 - x^6/46080
-			// Then to get back from sqrt((1+cos(x))/2) to cos(x) you square the series result, multiply by 2, and finally subtract 1.0f.
-			// COS dst, src0, src1, src2 ->
-			// temp.x will contain our accumulator
-			// temp.y will contain our x^n power
-			// temp.z will contain a temporary product
-			// temp.w will contain x^2
-			// MUL temp.w, src0.replicateswizzle, src0.replicateswizzle // x^2
-			// MUL temp.x, temp.w, D3DSINCOSCONST2.y // x^2 * -1/8
-			// MUL temp.y, temp.w, temp.w // x^4
-			// MUL temp.z, temp.y, D3DSINCOSCONST1.z // x^4 * 1/384
-			// ADD temp.x, temp.x, temp.z
-			// MUL temp.y, temp.y, temp.w // x^6
-			// MUL temp.z, temp.y, D3DSINCOSCONST1.y // x^6 * -1/46080
-			// ADD temp.x, temp.x, temp.z
-			// ADD temp.x, temp.x, D3DSINCOSCONST2.z // + 1.0f
-			// MUL temp.x, temp.x, temp.x // Square the whole result
-			// ADD temp.x, temp.x, temp.x // Multiply the result by 2.0f
-			// ADD dst.x, temp.x, -D3DSINCOSCONST2.z // Subtract 1.0f from the final result to get cos(x)
+			if (aliasedInstruction->srcDst.dst.GetWriteMask() & WM_Y)
+			{
+				// SIN is implemented as the power series expansion: sqrt(1+sin(x)) = 1 + x/2 - x^2/8 - x^3/48 + x^4/384 + x^5/3840 - x^6/46080 - x^7/645120 + ...
+				// Then to get back from sqrt(1+sin(x)) to sin(x) you square the series result and finally subtract 1.0f.
+				// SIN dst, src0, src1, src2 ->
+				// temp.x will contain our accumulator
+				// temp.y will contain our x^n power
+				// temp.z will contain a temporary product
+				// MUL temp.x, src0.replicateswizzle, D3DSINCOSCONST2.w // x * 1/2
+				// MUL temp.y, src0.replicateswizzle, src0.replicateswizzle // x^2
+				// MUL temp.z, temp.y, D3DSINCOSCONST2.y // x^2 * -1/8
+				// ADD temp.x, temp.x, temp.z
+				// MUL temp.y, temp.y, src0.replicateswizzle // x^3
+				// MUL temp.z, temp.y, D3DSINCOSCONST2.x // x^3 * -1/48
+				// ADD temp.x, temp.x, temp.z
+				// MUL temp.y, temp.y, src0.replicateswizzle // x^4
+				// MUL temp.z, temp.y, D3DSINCOSCONST1.z // x^4 * 1/384
+				// ADD temp.x, temp.x, temp.z
+				// MUL temp.y, temp.y, src0.replicateswizzle // x^5
+				// MUL temp.z, temp.y, D3DSINCOSCONST1.w // x^5 * 1/3840
+				// ADD temp.x, temp.x, temp.z
+				// MUL temp.y, temp.y, src0.replicateswizzle // x^6
+				// MUL temp.z, temp.y, D3DSINCOSCONST1.y // x^6 * -1/46080
+				// ADD temp.x, temp.x, temp.z
+				// MUL temp.y, temp.y, src0.replicateswizzle // x^7
+				// MUL temp.z, temp.y, D3DSINCOSCONST1.x // x^7 * -1/645120
+				// ADD temp.x, temp.x, temp.z
+				// ADD temp.x, temp.x, D3DSINCOSCONST2.z // + 1.0f
+				// MUL temp.x, temp.x, temp.x // Square the whole result
+				// ADD dst.y, temp.x, -D3DSINCOSCONST2.z // Subtract 1.0f from the final result to get sin(x)
+			}
 #ifdef _DEBUG
 			__debugbreak(); // Not yet implemented!
 #endif
 			break;
+		}
+
+		if (inOutUnusedConstBufferSpace.numRegisters >= numNewConstantRegisterAllocationsRequired)
+		{
+			inOutUnusedConstBufferSpace.numRegisters -= numNewConstantRegisterAllocationsRequired;
+			inOutUnusedConstBufferSpace.regStartIndex += numNewConstantRegisterAllocationsRequired;
+
+#ifdef _DEBUG
+			if (inOutUnusedConstBufferSpace.numRegisters > 255)
+			{
+				__debugbreak(); // Error: Too many constant registers!
+			}
+			if (inOutUnusedConstBufferSpace.regStartIndex > 255)
+			{
+				__debugbreak(); // Error: Constant register start index out of range!
+			}
+#endif
 		}
 	}
 
@@ -2188,9 +2296,9 @@ void MakeSimplePassthroughShader(const ShaderInfo& inDXShaderInfo, std::vector<i
 	outDeviceInstructionStream.push_back(movT0Y);
 }
 
-void HandleFinalOutputs(const DeviceBytecode* const inCompiledFinalDeviceBytecode, const ShaderCompileOptions inCompileOptions, const char* const inOptShaderBaseFilename)
+void DumpDeviceBytecodeToFile(const DeviceBytecode& inDeviceBytecode, const char* const inBaseFilename, const ShaderOutputType inDumpType)
 {
-	if (!inCompiledFinalDeviceBytecode)
+	if (inDumpType >= ShaderOutputType_NUM)
 	{
 #ifdef _DEBUG
 		__debugbreak();
@@ -2198,51 +2306,75 @@ void HandleFinalOutputs(const DeviceBytecode* const inCompiledFinalDeviceBytecod
 		return;
 	}
 
-	if (inCompileOptions & SCOption_OutputFinalBytecode)
-	{
-		EnsureOutputDirectoryExists();
+	EnsureOutputDirectoryExists();
 
-		char finalBytecodeFilename[MAX_PATH] = {0};
+	char deviceBytecodeFilename[MAX_PATH] = {0};
 #pragma warning(push)
 #pragma warning(disable:4996)
-		sprintf(finalBytecodeFilename, SHADER_OUTPUT_DIRECTORY "\\" "%s_FinalBytecode.bin", inOptShaderBaseFilename);
-		FILE* const dumpFinalBytecodeFile = fopen(finalBytecodeFilename, "wb");
+	sprintf(deviceBytecodeFilename, SHADER_OUTPUT_DIRECTORY "\\" "%s_%u_%sBytecode.bin", inBaseFilename, inDumpType, ShaderOutputTypeFilenames[inDumpType]);
+	FILE* const dumpDeviceBytecodeFile = fopen(deviceBytecodeFilename, "wb");
 #pragma warning(pop)
-		if (dumpFinalBytecodeFile)
-		{
-			fwrite(&(inCompiledFinalDeviceBytecode->deviceInstructions), sizeof(instructionSlot), inCompiledFinalDeviceBytecode->deviceShaderInfo.deviceInstructionTokenCount, dumpFinalBytecodeFile);
-			fclose(dumpFinalBytecodeFile);
-		}
-		else
-		{
+	if (dumpDeviceBytecodeFile)
+	{
+		fwrite(&(inDeviceBytecode), sizeof(inDeviceBytecode), 1, dumpDeviceBytecodeFile);
+		fclose(dumpDeviceBytecodeFile);
+	}
+	else
+	{
 #ifdef _DEBUG
-			__debugbreak(); // Cannot open file for writing!
+		__debugbreak(); // Cannot open file for writing!
 #endif
-		}
 	}
 
-	if (inCompileOptions & SCOption_OutputFinalDisasm)
-	{
-		EnsureOutputDirectoryExists();
-
-		char finalDisasmFilename[MAX_PATH] = {0};
+	char deviceDisasmFilename[MAX_PATH] = {0};
 #pragma warning(push)
 #pragma warning(disable:4996)
-		sprintf(finalDisasmFilename, SHADER_OUTPUT_DIRECTORY "\\" "%s_FinalDisasm.asm", inOptShaderBaseFilename);
-		FILE* const dumpFinalDisasmFile = fopen(finalDisasmFilename, "wb");
+	sprintf(deviceDisasmFilename, SHADER_OUTPUT_DIRECTORY "\\" "%s_%u_%sDisasm.asm", inBaseFilename, inDumpType, ShaderOutputTypeFilenames[inDumpType]);
+	FILE* const dumpDeviceDisasmFile = fopen(deviceDisasmFilename, "wb");
 #pragma warning(pop)
-		if (dumpFinalDisasmFile)
-		{
-			DisasmDeviceBytecodeToFile(inCompiledFinalDeviceBytecode, dumpFinalDisasmFile);
-			fclose(dumpFinalDisasmFile);
-		}
-		else
-		{
-#ifdef _DEBUG
-			__debugbreak(); // Cannot open file for writing!
-#endif
-		}
+	if (dumpDeviceDisasmFile)
+	{
+		DisasmDeviceBytecodeToFile(&inDeviceBytecode, dumpDeviceDisasmFile);
+		fclose(dumpDeviceDisasmFile);
 	}
+	else
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Cannot open file for writing!
+#endif
+	}
+}
+
+void DumpDeviceBytecodeToFile(const DeviceShaderInfo& inProgressShaderInfo, const instructionSlot* const inProgressInstructionStream, const unsigned numInstructionTokens, const char* const inBaseFilename, const ShaderOutputType inDumpType)
+{
+	if (!inProgressInstructionStream)
+	{
+#ifdef _DEBUG
+		__debugbreak();
+#endif
+		return;
+	}
+	if (numInstructionTokens < 1)
+	{
+#ifdef _DEBUG
+		__debugbreak();
+#endif
+		return;
+	}
+	if (inDumpType >= ShaderOutputType_NUM)
+	{
+#ifdef _DEBUG
+		__debugbreak();
+#endif
+		return;
+	}
+
+	DeviceBytecode* const tempAlloc = (DeviceBytecode* const)malloc(sizeof(DeviceBytecode) - sizeof(instructionSlot) + sizeof(instructionSlot) * numInstructionTokens);
+	memcpy(&tempAlloc->deviceShaderInfo, &inProgressShaderInfo, sizeof(DeviceShaderInfo) );
+	tempAlloc->deviceShaderInfo.deviceInstructionTokenCount = numInstructionTokens;
+	memcpy(&tempAlloc->deviceInstructions, inProgressInstructionStream, numInstructionTokens * sizeof(instructionSlot) );
+	DumpDeviceBytecodeToFile(*tempAlloc, inBaseFilename, inDumpType);
+	free(tempAlloc);
 }
 
 void OutputDXShaderDisasm(const DWORD* const inDXBytecodeDWORDs, const unsigned inDWORDCount, const char* const inOptShaderBaseFilename, const ShaderOutputType inShaderOutType)
@@ -2604,6 +2736,11 @@ const ShaderCompileResultCode CompileShaderInternal(const ShaderInfo& inDXShader
 		if (result != ShaderCompile_OK && !(inCompileOptions & SCOption_IgnoreShaderCompileErrors) )
 			return result;
 
+		if (inCompileOptions & SCOption_OutputTranslatedDeviceBytecode)
+		{
+			DumpDeviceBytecodeToFile(devShaderInfo, &deviceInstructionStream.front(), deviceInstructionStream.size(), inOptShaderBaseFilename, DeviceTranslated);
+		}
+
 		// For now, simply build a "passthrough" simple VS and use that:
 		//MakeSimplePassthroughShader(inDXShaderInfo, deviceInstructionStream);
 
@@ -2611,6 +2748,14 @@ const ShaderCompileResultCode CompileShaderInternal(const ShaderInfo& inDXShader
 		result = AppendVSSuffix(inDXShaderInfo, deviceInstructionStream, inCompileOptions, viewportConstRegIndex);
 		if (result != ShaderCompile_OK && !(inCompileOptions & SCOption_IgnoreShaderCompileErrors) )
 			return result;
+
+		if (inCompileOptions & SCOption_OutputTranslatedDeviceBytecode)
+		{
+			if (inCompileOptions & (SCOption_VS_AppendDivideByW | SCOption_VS_AppendViewportTransform) )
+			{
+				DumpDeviceBytecodeToFile(devShaderInfo, &deviceInstructionStream.front(), deviceInstructionStream.size(), inOptShaderBaseFilename, DeviceSuffixApplied);
+			}
+		}
 	}
 
 	// (Optional) Apply hardware bytecode-level optimizations at this point (strength reduction from MUL x2 to SHFT, constant buffer replacement with literals 0.0f/1.0f, instruction reordering to reduce waits, etc.)
@@ -2622,7 +2767,16 @@ const ShaderCompileResultCode CompileShaderInternal(const ShaderInfo& inDXShader
 
 		if (inCompileOptions & SCOption_OutputDevicePostOptimizationDisasm)
 		{
-			// TODO: Emit device post-optimization disasm here
+			if (!deviceInstructionStream.empty() )
+			{
+				DumpDeviceBytecodeToFile(devShaderInfo, &deviceInstructionStream.front(), deviceInstructionStream.size(), inOptShaderBaseFilename, DeviceOptimized);
+			}
+			else
+			{
+#ifdef _DEBUG
+				__debugbreak(); // We shouldn't have an empty instruction stream at this point
+#endif
+			}
 		}
 	}
 
@@ -2658,7 +2812,11 @@ const ShaderCompileResultCode CompileShaderInternal(const ShaderInfo& inDXShader
 	memcpy(&allocatedCompiledDeviceBytecode->deviceInstructions, &(deviceInstructionStream.front() ), deviceInstructionStream.size() * sizeof(instructionSlot) );
 	outCompiledDeviceBytecode = allocatedCompiledDeviceBytecode;
 
-	HandleFinalOutputs(allocatedCompiledDeviceBytecode, inCompileOptions, inOptShaderBaseFilename);
+
+	if (inCompileOptions & ShaderCompileOptions::SCOption_OutputFinalBytecode)
+	{
+		DumpDeviceBytecodeToFile(*allocatedCompiledDeviceBytecode, inOptShaderBaseFilename, DeviceFinal);
+	}
 
 	return result;
 }

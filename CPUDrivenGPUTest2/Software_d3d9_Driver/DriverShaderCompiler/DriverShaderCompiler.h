@@ -43,10 +43,10 @@ enum ShaderCompileOptions : unsigned
 	SCOption_OutputD3DPostOptimizationDisasm = 1 << 2,
 	SCOption_OutputDevicePostOptimizationDisasm = 1 << 3,
 	SCOption_OutputFinalBytecode = 1 << 4,
-	SCOption_OutputFinalDisasm = 1 << 5,
+	SCOption_OutputTranslatedDeviceBytecode = 1 << 5,
 	SCOption_OutputInputDisasm = 1 << 6,
 	SCOption_OutputIncludesComments = 1 << 7,
-	SCOption_OutputEverything = (SCOption_OutputScalarizedDisasm | SCOption_OutputDecomposedDisasm | SCOption_OutputD3DPostOptimizationDisasm | SCOption_OutputDevicePostOptimizationDisasm | SCOption_OutputFinalBytecode | SCOption_OutputFinalDisasm | SCOption_OutputInputDisasm | SCOption_OutputIncludesComments),
+	SCOption_OutputEverything = (SCOption_OutputScalarizedDisasm | SCOption_OutputDecomposedDisasm | SCOption_OutputD3DPostOptimizationDisasm | SCOption_OutputDevicePostOptimizationDisasm | SCOption_OutputFinalBytecode | SCOption_OutputTranslatedDeviceBytecode | SCOption_OutputInputDisasm | SCOption_OutputIncludesComments),
 
 	// Causes the driver shader compiler to produce an output shader even if there are errors along the way
 	SCOption_IgnoreShaderCompileErrors = 1 << 8,
@@ -107,21 +107,21 @@ struct DeviceOutputRegisters
 struct DeviceShaderInfo
 {
 	// Used register counts:
-	unsigned short constRegisterCount;
-	unsigned short inputRegisterCount;
-	unsigned short tempRegisterCount;
-	unsigned short specialRegisterCount;
-	unsigned short outputRegisterCount;
+	unsigned short constRegisterCount = 0;
+	unsigned short inputRegisterCount = 0;
+	unsigned short tempRegisterCount = 0;
+	unsigned short specialRegisterCount = 0;
+	unsigned short outputRegisterCount = 0;
 
 	// How many compiled device-specific shader tokens are in the array.
 	// The size of the shadercode in bytes is (deviceInstructionTokenCount * sizeof(instructionSlot) ).
-	unsigned short deviceInstructionTokenCount;
+	unsigned short deviceInstructionTokenCount = 0;
 
 	// How many device cycles it takes to execute this shader.
-	unsigned short deviceExecutionCycleCount;
+	unsigned short deviceExecutionCycleCount = 0;
 
 	// How many cycles are wasted waiting for waits to finish.
-	unsigned short deviceCyclesWastedToWaits;
+	unsigned short deviceCyclesWastedToWaits = 0;
 
 	// If the "SCOption_VS_AppendViewportTransform" compile flag is specified, this contains on output the index of the viewport transform
 	// constant buffer (float) register index. Otherwise this is just set to -1 to indicate not to use it as a register index!
@@ -130,7 +130,7 @@ struct DeviceShaderInfo
 	// Y: Half Viewport Height (example: 240.0f for a viewport height of 480.0f)
 	// Z: Viewport Z scale (example: 1.0f, not halved!)
 	// W: Viewport Z offset (example: 0.0f, not halved!)
-	signed short vsViewportTransformConstRegisterF;
+	signed short vsViewportTransformConstRegisterF = -1;
 
 	// Input register mapping:
 	DeviceInputRegisters inputRegisters;

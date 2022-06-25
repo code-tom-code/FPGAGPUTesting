@@ -2317,6 +2317,10 @@ void DumpDeviceBytecodeToFile(const DeviceBytecode& inDeviceBytecode, const char
 	if (dumpDeviceBytecodeFile)
 	{
 		fwrite(&(inDeviceBytecode), sizeof(inDeviceBytecode), 1, dumpDeviceBytecodeFile);
+		if (inDeviceBytecode.deviceShaderInfo.deviceInstructionTokenCount > 1)
+		{
+			fwrite(&(inDeviceBytecode.deviceInstructions), sizeof(instructionSlot), inDeviceBytecode.deviceShaderInfo.deviceInstructionTokenCount - 1, dumpDeviceBytecodeFile);
+		}
 		fclose(dumpDeviceBytecodeFile);
 	}
 	else

@@ -207,6 +207,7 @@
     <ClInclude Include="Testbenches\InputAssemblerTestbench.h" />
     <ClInclude Include="Testbenches\LargeIndexBufferTest.h" />
     <ClInclude Include="Testbenches\LargeVertexBufferData.h" />
+    <ClInclude Include="Testbenches\ShaderCoreALUCommon.h" />
     <ClInclude Include="Testbenches\ShaderCoreTestbench.h" />
     <ClInclude Include="Testbenches\UNORM8ToFloatTestbench.h" />
     <ClInclude Include="Testbenches\VertexBatchBuilderTestbench.h" />
@@ -223,6 +224,7 @@
     <None Include="hdl_src\CommandProcessor.vhd" />
     <None Include="hdl_src\ConstantBuffer.vhd" />
     <None Include="hdl_src\FloatALU.vhd" />
+    <None Include="hdl_src\FloatALU_Types.vhd" />
     <None Include="hdl_src\GPRQuad.vhd" />
     <None Include="hdl_src\IndexBufferCache.vhd" />
     <None Include="hdl_src\InputAssembler2.vhd" />

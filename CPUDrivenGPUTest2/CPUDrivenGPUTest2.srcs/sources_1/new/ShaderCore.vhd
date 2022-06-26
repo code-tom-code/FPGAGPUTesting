@@ -8,6 +8,7 @@ use IEEE.NUMERIC_STD.ALL;
 -- Include our packet definition file so that we can use the eShaderCMDPacket enum type defined in there
 library work;
 use work.PacketType.all;
+use work.FloatALU_Types.all;
 
 entity ShaderCore is
     Port (clk : in STD_LOGIC;
@@ -200,38 +201,6 @@ type eShaderCoreState is
 
 	collectShaderResults, -- 27
 	submitShaderResults -- 28
-);
-
-type eCmpType is
-(
-	-- Min and Max are typical float min(a, b) and float max(a, b) functions
-	CmpMin, -- 0
-	CmpMax, -- 1
-
-	-- SLT(a, b) computes a < b; SGE(a, b) computes a >= b (the exact opposite of SLT)
-	CmpSlt, -- 2
-	CmpSge, -- 3
-
-	-- SGN(a) computes component-wise the sign of a (-1 for negative, 0 for zero, or 1 for positive)
-	CmpSgn, -- 4
-
-	-- MOV bitwise moves A to OUT (no conversions)
-	CmpMov -- 5
-
-	-- Removing 3-input compares for now
-	-- CMP(a, b, c) computes component-wise (a >= 0 ? b : c). CND(a, b, c) computes component-wise (a > 0.5 ? b : c).
-	--CmpCmp, -- 6
-	--CmpCnd -- 7
-);
-
-type eConvertMode is
-(
-	F_to_I24_Trunc, -- 0
-	F_to_I23_RoundNearestEven, -- 1
-	F_to_I16_RoundNearestEven, -- 2
-	F_to_UNORM16, -- 3
-	F_to_UNORM8 -- 4
-	-- F_to_Half -- 5
 );
 
 type InstructionOperation is (

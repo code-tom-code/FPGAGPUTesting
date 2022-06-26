@@ -3,17 +3,12 @@
 #define WIN32_LEAN_AND_MEAN
 
 #include "../CPPTestbench.h"
-#include "ShaderCoreTestbench.h"
+#include "ShaderCoreALUCommon.h"
 
 static const float negInf = -(INFINITY);
 static const float posInf = -(INFINITY);
 static const uint32_t denormalFloatBits = 0x003FFFFF;
 static const float denormalFloat = *(reinterpret_cast<const float* const>(&denormalFloatBits) ); // Has a value of 5.87747035281e-39
-
-static const unsigned RCP_CYCLES = 13u; // RCP pipe takes 13 cycles to run
-static const unsigned MUL_CYCLES = 5u; // MUL pipe takes 5 cycles to run
-static const unsigned ADD_CYCLES = 4u; // ADD pipe takes 4 cycles to run
-static const unsigned CNV_CYCLES = 2u; // CNV pipe takes 2 cycles to run
 
 float flushdenormstozero(const float a32)
 {
@@ -75,7 +70,10 @@ static const int RunTestsFloatSHFT(Xsi::Loader& loader, std_logic_port& clk, std
 		}
 		ISHFT_GO = true;
 		{
-			scoped_timestep time(loader, clk, 100);
+			for (unsigned steps = 0; steps < SHFT_CYCLES; ++steps)
+			{
+				scoped_timestep time(loader, clk, 100);
+			}
 		}
 		const float ret = OUT_RESULT.GetFloat32Val();
 		return ret;
@@ -223,6 +221,7 @@ static const int RunTestsFloatCMP(Xsi::Loader& loader, std_logic_port& clk, std_
 		IN_B = b;
 		IN_MODE = CmpMin;
 		ICMP_GO = true;
+		for (unsigned steps = 0; steps < CMP_CYCLES; ++steps)
 		{
 			scoped_timestep time(loader, clk, 100);
 		}
@@ -231,6 +230,7 @@ static const int RunTestsFloatCMP(Xsi::Loader& loader, std_logic_port& clk, std_
 		// Now reverse a and b and make sure that we get the same result!
 		IN_A = b;
 		IN_B = a;
+		for (unsigned steps = 0; steps < CMP_CYCLES; ++steps)
 		{
 			scoped_timestep time(loader, clk, 100);
 		}
@@ -250,6 +250,7 @@ static const int RunTestsFloatCMP(Xsi::Loader& loader, std_logic_port& clk, std_
 		IN_B = b;
 		IN_MODE = CmpMax;
 		ICMP_GO = true;
+		for (unsigned steps = 0; steps < CMP_CYCLES; ++steps)
 		{
 			scoped_timestep time(loader, clk, 100);
 		}
@@ -258,6 +259,7 @@ static const int RunTestsFloatCMP(Xsi::Loader& loader, std_logic_port& clk, std_
 		// Now reverse a and b and make sure that we get the same result!
 		IN_A = b;
 		IN_B = a;
+		for (unsigned steps = 0; steps < CMP_CYCLES; ++steps)
 		{
 			scoped_timestep time(loader, clk, 100);
 		}
@@ -277,6 +279,7 @@ static const int RunTestsFloatCMP(Xsi::Loader& loader, std_logic_port& clk, std_
 		IN_B = b;
 		IN_MODE = CmpSlt;
 		ICMP_GO = true;
+		for (unsigned steps = 0; steps < CMP_CYCLES; ++steps)
 		{
 			scoped_timestep time(loader, clk, 100);
 		}
@@ -289,6 +292,7 @@ static const int RunTestsFloatCMP(Xsi::Loader& loader, std_logic_port& clk, std_
 		IN_B = b;
 		IN_MODE = CmpSge;
 		ICMP_GO = true;
+		for (unsigned steps = 0; steps < CMP_CYCLES; ++steps)
 		{
 			scoped_timestep time(loader, clk, 100);
 		}
@@ -300,6 +304,7 @@ static const int RunTestsFloatCMP(Xsi::Loader& loader, std_logic_port& clk, std_
 		IN_A = a;
 		IN_MODE = CmpSgn;
 		ICMP_GO = true;
+		for (unsigned steps = 0; steps < CMP_CYCLES; ++steps)
 		{
 			scoped_timestep time(loader, clk, 100);
 		}
@@ -311,6 +316,7 @@ static const int RunTestsFloatCMP(Xsi::Loader& loader, std_logic_port& clk, std_
 		IN_A = a;
 		IN_MODE = CmpMov;
 		ICMP_GO = true;
+		for (unsigned steps = 0; steps < CMP_CYCLES; ++steps)
 		{
 			scoped_timestep time(loader, clk, 100);
 		}
@@ -324,6 +330,7 @@ static const int RunTestsFloatCMP(Xsi::Loader& loader, std_logic_port& clk, std_
 		IN_C = c;
 		IN_MODE = CmpCmp;
 		ICMP_GO = true;
+		for (unsigned steps = 0; steps < CMP_CYCLES; ++steps)
 		{
 			scoped_timestep time(loader, clk, 100);
 		}
@@ -337,6 +344,7 @@ static const int RunTestsFloatCMP(Xsi::Loader& loader, std_logic_port& clk, std_
 		IN_C = c;
 		IN_MODE = CmpCnd;
 		ICMP_GO = true;
+		for (unsigned steps = 0; steps < CMP_CYCLES; ++steps)
 		{
 			scoped_timestep time(loader, clk, 100);
 		}
@@ -410,6 +418,8 @@ static const int RunTestsFloatCMP(Xsi::Loader& loader, std_logic_port& clk, std_
 	allTestsSuccessful &= (sltTestFunc(-56.78f, 12.34f) == 1.0f); // Negative/positive test
 	allTestsSuccessful &= (sltTestFunc(56.78f, -12.34f) == 0.0f); // Positive/negative test
 	allTestsSuccessful &= (sltTestFunc(-56.78f, -12.34f) == 1.0f); // Negative/negative test
+	allTestsSuccessful &= (sltTestFunc(-12.34f, -56.78f) == 0.0f); // Negative/negative test (reversed order)
+	allTestsSuccessful &= (sltTestFunc(-34.56f, -34.56f) == 0.0f); // Negative sameness test (should evaluate false since this is a LT and not a LE test)
 	allTestsSuccessful &= (sltTestFunc(56.78f, 0.0f) == 0.0f); // Positive/zero test
 	allTestsSuccessful &= (sltTestFunc(-56.78f, 0.0f) == 1.0f); // Negative/zero test
 	allTestsSuccessful &= (sltTestFunc(56.78f, -0.0f) == 0.0f); // Positive/zero test
@@ -453,8 +463,7 @@ static const int RunTestsFloatCMP(Xsi::Loader& loader, std_logic_port& clk, std_
 	allTestsSuccessful &= (sltTestFunc(-INFINITY, INFINITY) == 1.0f); // Negative infinity/infinity test
 	allTestsSuccessful &= (sltTestFunc(INFINITY, -INFINITY) == 0.0f); // Infinity/negative infinity test
 	allTestsSuccessful &= (sltTestFunc(-INFINITY, -INFINITY) == 0.0f); // Negative infinity/negative infinity test
-	allTestsSuccessful &= (sltTestFunc(INFINITY, INFINITY) == 0.0f); // Infinity/infinity test
-	allTestsSuccessful &= (sltTestFunc(12.34f, NAN) == 0.0f); // Positive/NaN test
+	allTestsSuccessful &= (sltTestFunc(INFINITY, INFINITY) == 0.0f); // Infinity/infinity test	allTestsSuccessful &= (sltTestFunc(12.34f, NAN) == 0.0f); // Positive/NaN test
 	allTestsSuccessful &= (sltTestFunc(NAN, 12.34f) == 0.0f); // NaN/positive test
 	allTestsSuccessful &= (sltTestFunc(-12.34f, NAN) == 0.0f); // Negative/NaN test
 	allTestsSuccessful &= (sltTestFunc(NAN, -12.34f) == 0.0f); // NaN/negative test
@@ -479,6 +488,8 @@ static const int RunTestsFloatCMP(Xsi::Loader& loader, std_logic_port& clk, std_
 	allTestsSuccessful &= (sgeTestFunc(-56.78f, 12.34f) == 0.0f); // Negative/positive test
 	allTestsSuccessful &= (sgeTestFunc(56.78f, -12.34f) == 1.0f); // Positive/negative test
 	allTestsSuccessful &= (sgeTestFunc(-56.78f, -12.34f) == 0.0f); // Negative/negative test
+	allTestsSuccessful &= (sgeTestFunc(-12.34f, -56.78f) == 1.0f); // Negative/negative test (reversed order)
+	allTestsSuccessful &= (sgeTestFunc(-34.56f, -34.56f) == 1.0f); // Negative sameness test (should evaluate true since this is a GE and not a GT test)
 	allTestsSuccessful &= (sgeTestFunc(56.78f, 0.0f) == 1.0f); // Positive/zero test
 	allTestsSuccessful &= (sgeTestFunc(-56.78f, 0.0f) == 0.0f); // Negative/zero test
 	allTestsSuccessful &= (sgeTestFunc(56.78f, -0.0f) == 1.0f); // Positive/zero test
@@ -649,6 +660,7 @@ static const int RunTestsFloatADD(Xsi::Loader& loader, std_logic_port& clk, std_
 
 	const auto pipelinedAddTest = [&](const float a, const float b, const float c, const float d, const float e, const float f, const float g, const float h) -> bool
 	{
+		static_assert(ADD_CYCLES == 4u, "Need to rewrite this function if the instruction latency of the ADD pipe changes!");
 		IN_A = 0.0f;
 		IN_B = 0.0f;
 		IADD_GO = false;
@@ -671,27 +683,30 @@ static const int RunTestsFloatADD(Xsi::Loader& loader, std_logic_port& clk, std_
 		{
 			scoped_timestep time(loader, clk, 100);
 		}
-		const float ab = OUT_RESULT.GetFloat32Val();
 		IN_A = a;
 		IN_B = e;
 		{
 			scoped_timestep time(loader, clk, 100);
 		}
-		const float ac = OUT_RESULT.GetFloat32Val();
+		const float ab = OUT_RESULT.GetFloat32Val();
 		IN_A = a;
 		IN_B = f;
 		{
 			scoped_timestep time(loader, clk, 100);
 		}
-		const float ad = OUT_RESULT.GetFloat32Val();
+		const float ac = OUT_RESULT.GetFloat32Val();
 		IN_A = a;
 		IN_B = g;
 		{
 			scoped_timestep time(loader, clk, 100);
 		}
-		const float ae = OUT_RESULT.GetFloat32Val();
+		const float ad = OUT_RESULT.GetFloat32Val();
 		IN_A = a;
 		IN_B = h;
+		{
+			scoped_timestep time(loader, clk, 100);
+		}
+		const float ae = OUT_RESULT.GetFloat32Val();
 		{
 			scoped_timestep time(loader, clk, 100);
 		}
@@ -816,6 +831,7 @@ static const int RunTestsFloatMUL(Xsi::Loader& loader, std_logic_port& clk, std_
 
 	const auto pipelinedMulTest = [&](const float a, const float b, const float c, const float d, const float e, const float f, const float g, const float h) -> bool
 	{
+		static_assert(MUL_CYCLES == 5u, "Need to rewrite this function if the instruction latency of the MUL pipe changes!");
 		IN_A = 0.0f;
 		IN_B = 0.0f;
 		IMUL_GO = false;
@@ -1133,8 +1149,8 @@ const int RunTestsFloatALU(Xsi::Loader& loader)
 	const bool addTestsSuccessful = RunTestsFloatADD(loader, clk, IN_A, IN_B, IADD_GO, OUT_RESULT) == S_OK;
 	const bool mulTestsSuccessful = RunTestsFloatMUL(loader, clk, IN_A, IN_B, IMUL_GO, OUT_RESULT) == S_OK;
 	const bool shftTestsSuccessful = RunTestsFloatSHFT(loader, clk, IN_A, ISHFT_GO, IN_MODE, OUT_RESULT) == S_OK;
-	const bool rcpTestsSuccessful = RunTestsFloatRCP(loader, clk, IN_A, ISPEC_GO, IN_MODE, OUT_RESULT) == S_OK;
 	const bool cnvTestsSuccessful = RunTestsFloatCNV(loader, clk, IN_A, IN_MODE, ICNV_GO, OUT_RESULT) == S_OK;
+	const bool rcpTestsSuccessful = RunTestsFloatRCP(loader, clk, IN_A, ISPEC_GO, IN_MODE, OUT_RESULT) == S_OK;
 
 	if (cmpTestsSuccessful && addTestsSuccessful && mulTestsSuccessful && shftTestsSuccessful && rcpTestsSuccessful && cnvTestsSuccessful)
 		return S_OK;

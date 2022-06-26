@@ -98,6 +98,9 @@
     <ClInclude Include="Testbenches\InputAssemblerTestbench.h">
       <Filter>Header Files\Testbenches</Filter>
     </ClInclude>
+    <ClInclude Include="Testbenches\ShaderCoreALUCommon.h">
+      <Filter>Header Files\Testbenches</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="rebuild_xsim.bat">
@@ -182,6 +185,9 @@
       <Filter>HDL</Filter>
     </None>
     <None Include="hdl_src\TestShaderCoreDriver.vhd">
+      <Filter>HDL</Filter>
+    </None>
+    <None Include="hdl_src\FloatALU_Types.vhd">
       <Filter>HDL</Filter>
     </None>
   </ItemGroup>

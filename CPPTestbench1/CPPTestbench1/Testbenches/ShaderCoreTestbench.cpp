@@ -4,6 +4,7 @@
 
 #include "../CPPTestbench.h"
 #include "ShaderCoreTestbench.h"
+#include "ShaderCoreALUCommon.h"
 
 static bool enableDebugOutout = false;
 
@@ -204,27 +205,66 @@ private:
 		}
 	}
 
+	struct readWriteRequest
+	{
+		unsigned char readQuadIndex;
+		unsigned char writeQuadIndex;
+		bool portAEnable;
+		unsigned char portARegType;
+		unsigned char portARegIndex;
+		unsigned char portARegChannel;
+		bool portBEnable;
+		unsigned char portBRegType;
+		unsigned char portBRegIndex;
+		unsigned char portBRegChannel;
+		bool portWEnable;
+		unsigned char portWRegType;
+		unsigned char portWRegIndex;
+		unsigned char portWRegChannel;
+		float4 portWWriteData;
+	};
+
+	readWriteRequest pipelineData[GPR_QUAD_LATENCY_CYCLES + 1] = {0};
+
 public:
 	void Update(const std_logic_vector_port<2>& GPR0_ReadQuadIndex, const std_logic_vector_port<2>& GPR0_WriteQuadIndex, const std_logic_port& GPR0_PortA_en, const std_logic_vector_port<2>& GPR0_PortA_regType, const std_logic_vector_port<3>& GPR0_PortA_regIdx, const std_logic_vector_port<2>& GPR0_PortA_regChan, std_logic_vector_port<128>& GPR0_PortA_readOutData,
 		const std_logic_port& GPR0_PortB_en, const std_logic_vector_port<2>& GPR0_PortB_regType, const std_logic_vector_port<3>& GPR0_PortB_regIdx, const std_logic_vector_port<2>& GPR0_PortB_regChan, std_logic_vector_port<128>& GPR0_PortB_readOutData,
 		const std_logic_port& GPR0_PortW_en, const std_logic_vector_port<2>& GPR0_PortW_regType, const std_logic_vector_port<3>& GPR0_PortW_regIdx, const std_logic_vector_port<2>& GPR0_PortW_regChan, std_logic_vector_port<128>& GPR0_PortW_writeInData)
 	{
-		const unsigned readQuadIndex = GPR0_ReadQuadIndex.GetUint8Val();
-		const unsigned writeQuadIndex = GPR0_WriteQuadIndex.GetUint8Val();
-		const RegisterFileRegType regTypeA = (const RegisterFileRegType)(GPR0_PortA_regType.GetUint8Val() );
-		const RegisterFileRegType regTypeB = (const RegisterFileRegType)(GPR0_PortB_regType.GetUint8Val() );
-		const RegisterFileRegType regTypeW = (const RegisterFileRegType)(GPR0_PortW_regType.GetUint8Val() );
-		const unsigned regIndexA = GPR0_PortA_regIdx.GetUint8Val();
-		const unsigned regIndexB = GPR0_PortB_regIdx.GetUint8Val();
-		const unsigned regIndexW = GPR0_PortW_regIdx.GetUint8Val();
-		const unsigned regChanA = GPR0_PortA_regChan.GetUint8Val();
-		const unsigned regChanB = GPR0_PortB_regChan.GetUint8Val();
-		const unsigned regChanW = GPR0_PortW_regChan.GetUint8Val();
+		readWriteRequest newRequest;
+		newRequest.readQuadIndex = GPR0_ReadQuadIndex.GetUint8Val();
+		newRequest.writeQuadIndex = GPR0_WriteQuadIndex.GetUint8Val();
+		newRequest.portAEnable = GPR0_PortA_en.GetBoolVal();
+		newRequest.portARegType = GPR0_PortA_regType.GetUint8Val();
+		newRequest.portARegIndex = GPR0_PortA_regIdx.GetUint8Val();
+		newRequest.portARegChannel = GPR0_PortA_regChan.GetUint8Val();
+		newRequest.portBEnable = GPR0_PortB_en.GetBoolVal();
+		newRequest.portBRegType = GPR0_PortB_regType.GetUint8Val();
+		newRequest.portBRegIndex = GPR0_PortB_regIdx.GetUint8Val();
+		newRequest.portBRegChannel = GPR0_PortB_regChan.GetUint8Val();
+		newRequest.portWEnable = GPR0_PortW_en.GetBoolVal();
+		newRequest.portWRegType = GPR0_PortW_regType.GetUint8Val();
+		newRequest.portWRegIndex = GPR0_PortW_regIdx.GetUint8Val();
+		newRequest.portWRegChannel = GPR0_PortW_regChan.GetUint8Val();
+		GPR0_PortW_writeInData.GetStructVal(newRequest.portWWriteData);
+		pipelineData[GPR_QUAD_LATENCY_CYCLES] = newRequest;
+
+		const unsigned readQuadIndex = pipelineData[0].readQuadIndex;
+		const unsigned writeQuadIndex = pipelineData[0].writeQuadIndex;
+		const RegisterFileRegType regTypeA = (const RegisterFileRegType)(pipelineData[0].portARegType);
+		const RegisterFileRegType regTypeB = (const RegisterFileRegType)(pipelineData[0].portBRegType);
+		const RegisterFileRegType regTypeW = (const RegisterFileRegType)(pipelineData[0].portWRegType);
+		const unsigned regIndexA = pipelineData[0].portARegIndex;
+		const unsigned regIndexB = pipelineData[0].portBRegIndex;
+		const unsigned regIndexW = pipelineData[0].portWRegIndex;
+		const unsigned regChanA = pipelineData[0].portARegChannel;
+		const unsigned regChanB = pipelineData[0].portBRegChannel;
+		const unsigned regChanW = pipelineData[0].portWRegChannel;
 		const unsigned portA_readAddress = CalcAddressFromRegisters(readQuadIndex, regTypeA, regIndexA, regChanA);
 		const unsigned portB_readAddress = CalcAddressFromRegisters(readQuadIndex, regTypeB, regIndexB, regChanB);
 		const unsigned portW_writeAddress = CalcAddressFromRegisters(writeQuadIndex, regTypeW, regIndexW, regChanW);
 
-		if (GPR0_PortA_en.GetBoolVal() )
+		if (pipelineData[0].portAEnable)
 		{
 			float4 readARetVal = {0};
 			readARetVal.x = bram0Data[portA_readAddress];
@@ -236,7 +276,7 @@ public:
 				printf("GPRQuad is reading on Port A from Quad[%u] and register %c%u.%c = { %f (0x%08X), %f (0x%08X), %f (0x%08X), %f (0x%08X) }\n", readQuadIndex, GetRegLetterFromRegType(regTypeA), regIndexA, GetRegChannelLetterFromChannelIndex(regChanA), readARetVal.x, *reinterpret_cast<unsigned*>(&readARetVal.x), readARetVal.y, *reinterpret_cast<unsigned*>(&readARetVal.y), readARetVal.z, *reinterpret_cast<unsigned*>(&readARetVal.z), readARetVal.w, *reinterpret_cast<unsigned*>(&readARetVal.w) );
 		}
 
-		if (GPR0_PortB_en.GetBoolVal() )
+		if (pipelineData[0].portBEnable)
 		{
 			float4 readBRetVal = {0};
 			readBRetVal.x = bram0Data[portB_readAddress];
@@ -248,21 +288,20 @@ public:
 				printf("GPRQuad is reading on Port B from Quad[%u] and register %c%u.%c = { %f (0x%08X), %f (0x%08X), %f (0x%08X), %f (0x%08X) }\n", readQuadIndex, GetRegLetterFromRegType(regTypeB), regIndexB, GetRegChannelLetterFromChannelIndex(regChanB), readBRetVal.x, *reinterpret_cast<unsigned*>(&readBRetVal.x), readBRetVal.y, *reinterpret_cast<unsigned*>(&readBRetVal.y), readBRetVal.z, *reinterpret_cast<unsigned*>(&readBRetVal.z), readBRetVal.w, *reinterpret_cast<unsigned*>(&readBRetVal.w) );
 		}
 
-		if (GPR0_PortW_en.GetBoolVal() )
+		if (pipelineData[0].portWEnable)
 		{
-			if (GPR0_PortA_en.GetBoolVal() && portA_readAddress == portW_writeAddress)
+			if (pipelineData[0].portAEnable && portA_readAddress == portW_writeAddress)
 			{
 				// Error! Address collision between SDP readers and writer!
 				__debugbreak();
 			}
-			else if (GPR0_PortB_en.GetBoolVal() && portB_readAddress == portW_writeAddress)
+			else if (pipelineData[0].portBEnable && portB_readAddress == portW_writeAddress)
 			{
 				// Error! Address collision between SDP readers and writer!
 				__debugbreak();
 			}
 
-			float4 writeWData = {0};
-			GPR0_PortW_writeInData.GetStructVal(writeWData);
+			float4 writeWData = pipelineData[0].portWWriteData;
 
 			bram0Data[portW_writeAddress] = writeWData.x;
 			bram1Data[portW_writeAddress] = writeWData.x;
@@ -275,9 +314,14 @@ public:
 			if (enableDebugOutout)
 				printf("GPRQuad is writing on Port W to Quad[%u] and register %c%u.%c = { %f (0x%08X), %f (0x%08X), %f (0x%08X), %f (0x%08X) }\n", writeQuadIndex, GetRegLetterFromRegType(regTypeW), regIndexW, GetRegChannelLetterFromChannelIndex(regChanW), writeWData.x, *reinterpret_cast<unsigned*>(&writeWData.x), writeWData.y, *reinterpret_cast<unsigned*>(&writeWData.y), writeWData.z, *reinterpret_cast<unsigned*>(&writeWData.z), writeWData.w, *reinterpret_cast<unsigned*>(&writeWData.w) );
 		}
+
+		for (unsigned x = 0; x < GPR_QUAD_LATENCY_CYCLES; ++x)
+		{
+			pipelineData[x] = pipelineData[x + 1];
+		}
 	}
 
-	// Debugging function to grab a raw register
+	// Debugging function to grab a raw register with 0 latency
 	const float4 DebugReadGPR(const unsigned ReadGPRQuad, const RegisterFileRegType regType, const unsigned regIndex, const unsigned regComponent) const
 	{
 		const unsigned readAddress = CalcAddressFromRegisters(ReadGPRQuad, regType, regIndex, regComponent);
@@ -400,7 +444,7 @@ public:
 
 private:
 	const unsigned fpuIndex;
-	float pipeStages[13 + 1] = {0};
+	float pipeStages[MAX_PIPE_CYCLES + 1] = {0};
 
 	static const char* const GetCompareModeString(const eCmpType mode)
 	{
@@ -488,7 +532,7 @@ public:
 			// Compare pipe runs in 1 cycle:
 			const eCmpType cmpMode = (const eCmpType)inMode;
 			const float compareResult = ComputeCompare(aVal, bVal, cmpMode);
-			pipeStages[1] = compareResult;
+			pipeStages[CMP_CYCLES] = compareResult;
 			if (enableDebugOutout)
 				printf("FPU%u: %s(%u)(%f, %f) = %f\n", fpuIndex, GetCompareModeString(cmpMode), cmpMode, aVal, bVal, compareResult);
 		}
@@ -496,7 +540,7 @@ public:
 		{
 			// Add pipe runs in 4 cycles:
 			const float addResult = aVal + bVal;
-			pipeStages[4] = addResult;
+			pipeStages[ADD_CYCLES] = addResult;
 			if (enableDebugOutout)
 				printf("FPU%u: %f + %f = %f\n", fpuIndex, aVal, bVal, addResult);
 		}
@@ -504,7 +548,7 @@ public:
 		{
 			// Multiply pipe runs in 5 cycles:
 			const float multResult = aVal * bVal;
-			pipeStages[5] = multResult;
+			pipeStages[MUL_CYCLES] = multResult;
 			if (enableDebugOutout)
 				printf("FPU%u: %f * %f = %f\n", fpuIndex, aVal, bVal, multResult);
 		}
@@ -512,7 +556,7 @@ public:
 		{
 			// Reciprocal pipe runs in 13 cycles:
 			const float rcpResult = 1.0f / aVal;
-			pipeStages[13] = rcpResult;
+			pipeStages[RCP_CYCLES] = rcpResult;
 			if (enableDebugOutout)
 				printf("FPU%u: rcp(%f) = %f\n", fpuIndex, aVal, rcpResult);
 		}
@@ -521,7 +565,7 @@ public:
 			// Shift pipe runs in 1 cycle:
 			const eShftMode shftMode = (const eShftMode)inMode;
 			const float shiftResult = ComputeShift(aVal, shftMode);
-			pipeStages[1] = shiftResult;
+			pipeStages[SHFT_CYCLES] = shiftResult;
 			if (enableDebugOutout)
 				printf("FPU%u: %s(%u)(%f) = %f\n", fpuIndex, GetShiftModeString(shftMode), shftMode, aVal, shiftResult);
 		}
@@ -530,7 +574,7 @@ public:
 			// Convert pipe runs in 2 cycles:
 			const eConvertMode cnvMode = (const eConvertMode)inMode;
 			const int convertResult = ComputeConvert(aVal, cnvMode);
-			pipeStages[2] = *reinterpret_cast<const float* const>(&convertResult);
+			pipeStages[CNV_CYCLES] = *reinterpret_cast<const float* const>(&convertResult);
 			if (enableDebugOutout)
 			{
 				switch (inMode)
@@ -565,19 +609,38 @@ class ConstantBufferBRAM
 private:
 	float4 constantBufferRegisters[256] = {0};
 
+	struct readWriteRequest
+	{
+		bool isEnabled;
+		bool isWrite;
+		unsigned char regIndex;
+		unsigned char regComponent;
+		float writeData;
+	};
+
+	readWriteRequest pipelineCycles[CBUF_LATENCY_CYCLES + 1] = {0};
+
 public:
 	void Update(const std_logic_port& CB_Enable, const std_logic_port& CB_WriteMode, 
 		const std_logic_vector_port<8>& CB_RegIndex, const std_logic_vector_port<2>& CB_RegComponent, 
 		std_logic_vector_port<32>& CB_ReadOutData, const std_logic_vector_port<32>& CB_WriteInData)
 	{
-		if (CB_Enable.GetBoolVal() )
+		readWriteRequest newRequest;
+		newRequest.isEnabled = CB_Enable.GetBoolVal();
+		newRequest.isWrite = CB_WriteMode.GetBoolVal();
+		newRequest.regIndex = CB_RegIndex.GetUint8Val();
+		newRequest.regComponent = CB_RegComponent.GetUint8Val();
+		newRequest.writeData = CB_WriteInData.GetFloat32Val();
+		pipelineCycles[CBUF_LATENCY_CYCLES] = newRequest;
+
+		if (pipelineCycles[0].isEnabled)
 		{
-			const unsigned char regIndex = CB_RegIndex.GetUint8Val();
-			const unsigned char regComponent = CB_RegComponent.GetUint8Val();
-			if (CB_WriteMode.GetBoolVal() )
+			const unsigned char regIndex = pipelineCycles[0].regIndex;
+			const unsigned char regComponent = pipelineCycles[0].regComponent;
+			if (pipelineCycles[0].isWrite)
 			{
 				float4& writeRegister = constantBufferRegisters[regIndex];
-				const float writeData = CB_WriteInData.GetFloat32Val();
+				const float writeData = pipelineCycles[0].writeData;
 				switch (regComponent)
 				{
 				default:
@@ -623,6 +686,11 @@ public:
 				if (enableDebugOutout)
 					printf("Const Buffer is reading from register c%u.%c = %f\n", regIndex, GetRegChannelLetterFromChannelIndex(regComponent), readOutData);
 			}
+		}
+
+		for (unsigned x = 0; x < CBUF_LATENCY_CYCLES; ++x)
+		{
+			pipelineCycles[x] = pipelineCycles[x + 1];
 		}
 	}
 };
@@ -799,17 +867,34 @@ public:
 		memset(this, 0, sizeof(*this) );
 	}
 
+	struct readWriteRequest
+	{
+		bool isEnabled;
+		bool isWrite;
+		unsigned short address;
+		uint64_t writeData;
+	};
+
+	readWriteRequest pipelineData[INST_CACHE_LATENCY_CYCLES + 1] = {0};
+
 	void Update(const std_logic_port& ICache_Enable, const std_logic_port& ICache_WriteMode, 
 		const std_logic_vector_port<9>& ICache_Address,
 		std_logic_vector_port<64>& ICache_ReadData, const std_logic_vector_port<64>& ICache_WriteData)
 	{
-		if (ICache_Enable.GetBoolVal() )
+		readWriteRequest newRequest;
+		newRequest.isEnabled = ICache_Enable.GetBoolVal();
+		newRequest.isWrite = ICache_WriteMode.GetBoolVal();
+		newRequest.address = ICache_Address.GetUint16Val();
+		newRequest.writeData = ICache_WriteData.GetUint64Val();
+		pipelineData[INST_CACHE_LATENCY_CYCLES] = newRequest;
+
+		if (pipelineData[0].isEnabled)
 		{
-			const unsigned short address = ICache_Address.GetUint16Val();
-			if (ICache_WriteMode.GetBoolVal() )
+			const unsigned short address = pipelineData[0].address;
+			if (pipelineData[0].isWrite)
 			{
 				instructionSlot& writeRegister = instructions[address];
-				const unsigned __int64 writeData = ICache_WriteData.GetUint64Val();
+				const unsigned __int64 writeData = pipelineData[0].writeData;
 				writeRegister.rawQWORD = writeData;
 			}
 			else
@@ -817,6 +902,11 @@ public:
 				const instructionSlot& readRegister = instructions[address];
 				ICache_ReadData = readRegister.rawQWORD;
 			}
+		}
+
+		for (unsigned x = 0; x < INST_CACHE_LATENCY_CYCLES; ++x)
+		{
+			pipelineData[x] = pipelineData[x + 1];
 		}
 	}
 };

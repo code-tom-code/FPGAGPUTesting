@@ -2,4 +2,5 @@
 # List other files here
 vhdl xil_defaultlib  \
 "hdl_src/PacketType.vhd" \
+"hdl_src/FloatALU_Types.vhd" \
 "hdl_src/ShaderCore.vhd" \

@@ -6,6 +6,8 @@ use IEEE.STD_LOGIC_1164.ALL;
 -- arithmetic functions with Signed or Unsigned values
 use IEEE.NUMERIC_STD.ALL;
 
+use work.FloatALU_Types.all;
+
 entity FloatALU is
     Port (clk : in STD_LOGIC;
 
@@ -43,14 +45,6 @@ constant oneF : unsigned(31 downto 0) := X"3F800000"; -- Constant for 1.0f
 constant halfF : unsigned(31 downto 0) := X"3F000000"; -- Constant for 0.5f
 constant negOneF : unsigned(31 downto 0) := X"BF800000"; -- Constant for -1.0f
 
--- These constants determine the number of cycles that each of the various pipes runs for:
-constant SHFT_CYCLES : natural := 1;
-constant MUL_CYCLES : natural := 5;
-constant ADD_CYCLES : natural := 4;
-constant CMP_CYCLES : natural := 1;
-constant CNV_CYCLES : natural := 3;
-constant SPEC_CYCLES : natural := 13;
-
 -- VHDL doesn't support the MAXIMUM() or MINIMUM() functions as built-ins until VHDL2008, so we have to
 -- define our own, sadly.
 pure function maxVal(a : integer; b : integer) return integer is
@@ -81,50 +75,6 @@ constant RcpLookupTable_Slopes : RcpLookupArrayType :=
 );
 
 type MUXArrayType is array(0 to maxCycleCount) of unsigned(numMUXSources-1 downto 0);
-
-type eCmpType is
-(
-	-- Min and Max are typical float min(a, b) and float max(a, b) functions
-	CmpMin, -- 0
-	CmpMax, -- 1
-
-	-- SLT(a, b) computes a < b; SGE(a, b) computes a >= b (the exact opposite of SLT)
-	CmpSlt, -- 2
-	CmpSge, -- 3
-
-	-- SGN(a) computes component-wise the sign of a (-1 for negative, 0 for zero, or 1 for positive)
-	CmpSgn, -- 4
-
-	-- MOV bitwise moves A to OUT (no conversions)
-	CmpMov -- 5
-
-	-- Removed 3-component input compares
-	-- CMP(a, b, c) computes component-wise (a >= 0 ? b : c). CND(a, b, c) computes component-wise (a > 0.5 ? b : c).
-	--CmpCmp, -- 6
-	--CmpCnd -- 7
-);
-
-type eShftMode is
-(
-	ShftX2, -- 0
-	ShftX4, -- 1
-	ShftX8, -- 2
-	ShftX16, -- 3
-	ShftD2, -- 4
-	ShftD4, -- 5
-	ShftD8, -- 6
-	ShftD16 -- 7
-);
-
-type eConvertMode is
-(
-	F_to_I24_Trunc, -- 0
-	F_to_I23_RoundNearestEven, -- 1
-	F_to_I16_RoundNearestEven, -- 2
-	F_to_UNORM16, -- 3
-	F_to_UNORM8 -- 4
-	-- F_to_Half -- 5
-);
 
 type eCnvEarlyOutType is
 (
@@ -348,7 +298,7 @@ begin
 end function;
 
 -- This core function is shared by the implementations for both SGE(a, b) and SLT(a, b). It returns (a < b) ? 1 : 0.
-pure function CoreSLTNonNAN(aLessThanB : std_logic; aIsNegative : std_logic; bIsNegative : std_logic; aIsDenorm : std_logic; bIsDenorm : std_logic) return std_logic is
+pure function CoreSLTNonNAN(aEqualsB : std_logic; aLessThanB : std_logic; aIsNegative : std_logic; bIsNegative : std_logic; aIsDenorm : std_logic; bIsDenorm : std_logic) return std_logic is
 begin
 	if ( (aIsDenorm = '1') and (bIsDenorm = '1') ) then -- Special case handling of +/- 0.0f compared to +/- 0.0f
 		return '0';
@@ -360,6 +310,10 @@ begin
 	elsif (aIsNegative = '0' and bIsNegative = '1') then
 		return '0';
 	else -- Same sign comparison
+		if (aEqualsB = '1') then -- Special case handling of A == B (since this is a less-than test and not a less-equals test, we always return false in this case)
+			return '0';
+		end if;
+
 		if (aIsNegative = '0') then -- min(positive, positive)
 			if (aLessThanB = '1') then
 				return '1';
@@ -377,13 +331,13 @@ begin
 end function;
 
 -- Returns the function Slt(a, b) is (a < b) ? 1.0f : 0.0f
-pure function CmpSltFunc(aLessThanB : std_logic; aIsNaN : std_logic; bIsNaN : std_logic; aDenormFlushed : unsigned(31 downto 0); bDenormFlushed : unsigned(31 downto 0); aIsNegative : std_logic; bIsNegative : std_logic; aIsDenorm : std_logic; bIsDenorm : std_logic) return unsigned is
+pure function CmpSltFunc(aEqualsB : std_logic; aLessThanB : std_logic; aIsNaN : std_logic; bIsNaN : std_logic; aDenormFlushed : unsigned(31 downto 0); bDenormFlushed : unsigned(31 downto 0); aIsNegative : std_logic; bIsNegative : std_logic; aIsDenorm : std_logic; bIsDenorm : std_logic) return unsigned is
 begin
 	if (aIsNaN = '1' or bIsNaN = '1') then
 		return zeroF; -- The comparisons EQ, GT, GE, LT, and LE, when either or both operands is NaN returns FALSE.
 	end if;
 
-	if (CoreSLTNonNAN(aLessThanB, aIsNegative, bIsNegative, aIsDenorm, bIsDenorm) = '0') then
+	if (CoreSLTNonNAN(aEqualsB, aLessThanB, aIsNegative, bIsNegative, aIsDenorm, bIsDenorm) = '0') then
 		return zeroF;
 	else
 		return oneF;
@@ -391,13 +345,13 @@ begin
 end function;
 
 -- Returns the function Sge(a, b) is (a >= b) ? 1.0f : 0.0f
-pure function CmpSgeFunc(aLessThanB : std_logic; aIsNaN : std_logic; bIsNaN : std_logic; aDenormFlushed : unsigned(31 downto 0); bDenormFlushed : unsigned(31 downto 0); aIsNegative : std_logic; bIsNegative : std_logic; aIsDenorm : std_logic; bIsDenorm : std_logic) return unsigned is
+pure function CmpSgeFunc(aEqualsB : std_logic; aLessThanB : std_logic; aIsNaN : std_logic; bIsNaN : std_logic; aDenormFlushed : unsigned(31 downto 0); bDenormFlushed : unsigned(31 downto 0); aIsNegative : std_logic; bIsNegative : std_logic; aIsDenorm : std_logic; bIsDenorm : std_logic) return unsigned is
 begin
 	if (aIsNaN = '1' or bIsNaN = '1') then
 		return zeroF; -- The comparisons EQ, GT, GE, LT, and LE, when either or both operands is NaN returns FALSE.
 	end if;
 
-	if (CoreSLTNonNAN(aLessThanB, aIsNegative, bIsNegative, aIsDenorm, bIsDenorm) = '0') then -- This function just returns the opposite of SLT(a, b)
+	if (CoreSLTNonNAN(aEqualsB, aLessThanB, aIsNegative, bIsNegative, aIsDenorm, bIsDenorm) = '0') then -- This function just returns the opposite of SLT(a, b)
 		return oneF;
 	else
 		return zeroF;
@@ -736,6 +690,7 @@ signal comSignedExponentB : signed(7 downto 0) := (others => '0');
 signal comRawMantissaA : unsigned(22 downto 0) := (others => '0');
 signal comRawMantissaB : unsigned(22 downto 0) := (others => '0');
 signal comALessThanB : std_logic := '0';
+signal comAEqualsB : std_logic := '0';
 
 -- Addition (ADD) pipe signals:
 signal addPipelineValidStage0 : std_logic := '0';
@@ -793,10 +748,10 @@ signal mulResultMantissa1 : unsigned(47 downto 0) := (others => '0');
 signal mulResultMantissa2 : unsigned(47 downto 0) := (others => '0');
 signal mulResultMantissa3 : unsigned(47 downto 0) := (others => '0');
 
-signal mulResultExp0 : signed(7 downto 0) := (others => '0');
-signal mulResultExp1 : signed(7 downto 0) := (others => '0');
-signal mulResultExp2 : signed(7 downto 0) := (others => '0');
-signal mulResultExp3 : signed(7 downto 0) := (others => '0');
+signal mulResultExp0 : signed(8 downto 0) := (others => '0');
+signal mulResultExp1 : signed(8 downto 0) := (others => '0');
+signal mulResultExp2 : signed(8 downto 0) := (others => '0');
+signal mulResultExp3 : signed(8 downto 0) := (others => '0');
 
 signal mulResultSign0 : std_logic := '0';
 signal mulResultSign1 : std_logic := '0';
@@ -874,6 +829,7 @@ comSignedExponentB <= GetSignedExponent(unsigned(IN_B) );
 comRawMantissaA <= GetMantissa(unsigned(IN_A) );
 comRawMantissaB <= GetMantissa(unsigned(IN_B) );
 comALessThanB <= '1' when (unsigned(IN_A(30 downto 0) ) < unsigned(IN_B(30 downto 0) ) ) else '0';
+comAEqualsB <= '1' when (unsigned(IN_A(30 downto 0) ) = unsigned(IN_B(30 downto 0) ) ) else '0';
 
 -- Output MUX handling:
 with OMUX(0) select
@@ -950,10 +906,10 @@ begin
 					OCMP <= std_logic_vector(CmpMaxFunc(unsigned(IN_A), unsigned(IN_B), comAIsNaN, comBIsNaN, comAIsNeg, comBIsNeg, comALessThanB) );
 
 				when CmpSlt =>
-					OCMP <= std_logic_vector(CmpSltFunc(comALessThanB, comAIsNaN, comBIsNaN, comDenormalFlushedA, comDenormalFlushedB, comAIsNeg, comBIsNeg, comAIsDenormal, comBIsDenormal) );
+					OCMP <= std_logic_vector(CmpSltFunc(comAEqualsB, comALessThanB, comAIsNaN, comBIsNaN, comDenormalFlushedA, comDenormalFlushedB, comAIsNeg, comBIsNeg, comAIsDenormal, comBIsDenormal) );
 
 				when CmpSge =>
-					OCMP <= std_logic_vector(CmpSgeFunc(comALessThanB, comAIsNaN, comBIsNaN, comDenormalFlushedA, comDenormalFlushedB, comAIsNeg, comBIsNeg, comAIsDenormal, comBIsDenormal) );
+					OCMP <= std_logic_vector(CmpSgeFunc(comAEqualsB, comALessThanB, comAIsNaN, comBIsNaN, comDenormalFlushedA, comDenormalFlushedB, comAIsNeg, comBIsNeg, comAIsDenormal, comBIsDenormal) );
 
 				when CmpSgn =>
 					OCMP <= std_logic_vector(CmpSgnFunc(unsigned(IN_A), comAIsNaN, comAIsDenormal, comAIsNeg) );
@@ -973,7 +929,7 @@ begin
 	end if;
 end process CMPStage0;
 
--- Reciprocal (RCP) pipe process (cycle 1 of 13):
+-- Reciprocal (RCP) pipe process (cycle 1 of 14):
 RCPStage0 : process(clk)
 begin
 	if (rising_edge(clk) ) then
@@ -1022,7 +978,7 @@ RCPStage1 : process(clk)
 	variable LUTIndex : natural range 0 to 15;
 begin
 	if (rising_edge(clk) ) then
-		if (rcpPipeline(0).pipeStageIsValid = '1') then
+		if (rcpPipeline(0).pipeStageIsValid = '1' and rcpPipeline(0).useEarlyOutBypass = '0') then
 			-- const uint16_t rInitialGuess = softfloat_approxRecip_1k0s[index] - ( (softfloat_approxRecip_1k1s[index] * (uint_fast32_t) eps) >> 20); // 16x32 multiply, 16-16 subtraction
 			LUTIndex := to_integer(rcpPipeline(0).calculatedMantissa(22 downto 19) ); -- Take the 4 MSB from the mantissa and use that for our LUT index
 			rcpLookupSlope <= RcpLookupTable_Slopes(LUTIndex);
@@ -1034,7 +990,7 @@ end process RCPStage1;
 RCPStage2 : process(clk)
 begin
 	if (rising_edge(clk) ) then
-		if (rcpPipeline(1).pipeStageIsValid = '1') then
+		if (rcpPipeline(1).pipeStageIsValid = '1' and rcpPipeline(1).useEarlyOutBypass = '0') then
 			-- const uint16_t rInitialGuess = softfloat_approxRecip_1k0s[index] - ( (softfloat_approxRecip_1k1s[index] * (uint_fast32_t) eps) >> 20); // 16x32 multiply, 16-16 subtraction
 			slopeMultiply <= rcpLookupSlope * rcpPipeline(1).calculatedMantissa(18 downto 3);
 			rcpLookupOffset1 <= rcpLookupOffset0;
@@ -1043,13 +999,11 @@ begin
 end process RCPStage2;
 
 RCPStage3 : process(clk)
-	variable tempShiftOutput : unsigned(31 downto 0);
 begin
 	if (rising_edge(clk) ) then
-		if (rcpPipeline(2).pipeStageIsValid = '1') then
+		if (rcpPipeline(2).pipeStageIsValid = '1' and rcpPipeline(2).useEarlyOutBypass = '0') then
 			-- const uint16_t rInitialGuess = softfloat_approxRecip_1k0s[index] - ( (softfloat_approxRecip_1k1s[index] * (uint_fast32_t) eps) >> 20); // 16x32 multiply, 16-16 subtraction
-			tempShiftOutput := slopeMultiply srl 20;
-			rInitialGuess0 <= rcpLookupOffset1 - (tempShiftOutput(15 downto 0) );
+			rInitialGuess0 <= rcpLookupOffset1 - (slopeMultiply(31 downto 20) );
 		end if;
 	end if;
 end process RCPStage3;
@@ -1057,7 +1011,7 @@ end process RCPStage3;
 RCPStage4 : process(clk)
 begin
 	if (rising_edge(clk) ) then
-		if (rcpPipeline(3).pipeStageIsValid = '1') then
+		if (rcpPipeline(3).pipeStageIsValid = '1' and rcpPipeline(3).useEarlyOutBypass = '0') then
 			-- const uint32_t rcpSigma0 = ~(const uint_fast32_t) ( (rInitialGuess * (const uint_fast64_t) fixed_1_31) >> 7); // 16x32 multiply
 			sigma0TempProduct <= (rInitialGuess0 * ('1' & rcpPipeline(3).calculatedMantissa & "00000000") ); -- Construct our 1.31 fixed point value by adding the hidden 1-bit and shifting left by 8
 			rInitialGuess1 <= rInitialGuess0;
@@ -1066,13 +1020,11 @@ begin
 end process RCPStage4;
 
 RCPStage5 : process(clk)
-	variable sigma0Sliced : unsigned(31 downto 0);
 begin
 	if (rising_edge(clk) ) then
-		if (rcpPipeline(4).pipeStageIsValid = '1') then
+		if (rcpPipeline(4).pipeStageIsValid = '1' and rcpPipeline(4).useEarlyOutBypass = '0') then
 			-- const uint32_t rcpSigma0 = ~(const uint_fast32_t) ( (rInitialGuess * (const uint_fast64_t) fixed_1_31) >> 7); // 16x32 multiply
-			sigma0Sliced := sigma0TempProduct(38 downto 7); -- Shift right by 7 and truncate to 32 bits
-			rcpSigma0 <= not sigma0Sliced;
+			rcpSigma0 <= not sigma0TempProduct(38 downto 7); -- Shift right by 7 and truncate to 32 bits
 			rInitialGuess2 <= rInitialGuess1;
 		end if;
 	end if;
@@ -1081,7 +1033,7 @@ end process RCPStage5;
 RCPStage6 : process(clk)
 begin
 	if (rising_edge(clk) ) then
-		if (rcpPipeline(5).pipeStageIsValid = '1') then
+		if (rcpPipeline(5).pipeStageIsValid = '1' and rcpPipeline(5).useEarlyOutBypass = '0') then
 			-- uint_fast32_t rRefined = ( (uint_fast32_t) rInitialGuess << 16) + ( (rInitialGuess * (uint_fast64_t) rcpSigma0) >> 24); // 16x32 multiply, 32+24 addition
 			rProduct <= rInitialGuess2 * rcpSigma0;
 			rInitialGuess3 <= rInitialGuess2;
@@ -1090,13 +1042,11 @@ begin
 end process RCPStage6;
 
 RCPStage7 : process(clk)
-	variable rProductSliced : unsigned(23 downto 0);
 begin
 	if (rising_edge(clk) ) then
-		if (rcpPipeline(6).pipeStageIsValid = '1') then
+		if (rcpPipeline(6).pipeStageIsValid = '1' and rcpPipeline(6).useEarlyOutBypass = '0') then
 			-- uint_fast32_t rRefined = ( (uint_fast32_t) rInitialGuess << 16) + ( (rInitialGuess * (uint_fast64_t) rcpSigma0) >> 24); // 16x32 multiply, 32+24 addition
-			rProductSliced := rProduct(47 downto 24);
-			rRefined0 <= (rInitialGuess3 & X"0000") + (X"00" & rProductSliced);
+			rRefined0 <= (rInitialGuess3 & X"0000") + (X"00" & rProduct(47 downto 24) );
 		end if;
 	end if;
 end process RCPStage7;
@@ -1104,7 +1054,7 @@ end process RCPStage7;
 RCPStage8 : process(clk)
 begin
 	if (rising_edge(clk) ) then
-		if (rcpPipeline(7).pipeStageIsValid = '1') then
+		if (rcpPipeline(7).pipeStageIsValid = '1' and rcpPipeline(7).useEarlyOutBypass = '0') then
 			-- const uint32_t rcpSqrSigma0 = ((uint_fast64_t) rcpSigma1 * rcpSigma1) >> 32; // 32x32 multiply
 			rcpSqrSigma0Product <= (rcpSigma0 * rcpSigma0);
 			rRefined1 <= rRefined0;
@@ -1115,7 +1065,7 @@ end process RCPStage8;
 RCPStage9 : process(clk)
 begin
 	if (rising_edge(clk) ) then
-		if (rcpPipeline(8).pipeStageIsValid = '1') then
+		if (rcpPipeline(8).pipeStageIsValid = '1' and rcpPipeline(8).useEarlyOutBypass = '0') then
 			-- const uint32_t rcpSqrSigma0 = ((uint_fast64_t) rcpSigma1 * rcpSigma1) >> 32; // 32x32 multiply
 			rcpSqrSigma0 <= rcpSqrSigma0Product(63 downto 32);
 			rRefined2 <= rRefined1;
@@ -1126,7 +1076,7 @@ end process RCPStage9;
 RCPStage10 : process(clk)
 begin
 	if (rising_edge(clk) ) then
-		if (rcpPipeline(9).pipeStageIsValid = '1') then
+		if (rcpPipeline(9).pipeStageIsValid = '1' and rcpPipeline(9).useEarlyOutBypass = '0') then
 			-- rAccum = rRefined + ( (uint32_t) rRefined * (uint_fast64_t) rcpSqrSigma0) >> 48; // 32x32 multiply, 32+16 add
 			rAccumProduct <= rRefined2 * rcpSqrSigma0;
 			rRefined3 <= rRefined2;
@@ -1135,40 +1085,35 @@ begin
 end process RCPStage10;
 
 RCPStage11 : process(clk)
-	variable rAccumProductSliced : unsigned(15 downto 0);
 begin
 	if (rising_edge(clk) ) then
-		if (rcpPipeline(10).pipeStageIsValid = '1') then
+		if (rcpPipeline(10).pipeStageIsValid = '1' and rcpPipeline(10).useEarlyOutBypass = '0') then
 			-- rAccum = rRefined + ( (uint32_t) rRefined * (uint_fast64_t) rcpSqrSigma0) >> 48; // 32x32 multiply, 32+16 add
-			rAccumProductSliced := rAccumProduct(63 downto 48);
-			rAccum <= rRefined3 + (X"0000" & rAccumProductSliced);
+			rAccum <= rRefined3 + (X"0000" & rAccumProduct(63 downto 48) );
 		end if;
 	end if;
 end process RCPStage11;
 
 RCPStage12 : process(clk)
-	variable rLocal : unsigned(31 downto 0);
+	variable rLocal : unsigned(29 downto 0);
 begin
 	if (rising_edge(clk) ) then
-		if (rcpPipeline(11).pipeStageIsValid = '1') then
-			-- rAccum = rAccum >> 1
-			rLocal := rAccum srl 1;
-			rLocal := rLocal + 64; -- rAccum += (1 << 6)
-			resultMantissa <= rLocal(22 downto 0); -- resultMantissa = rAccum >> 7
+		if (rcpPipeline(11).pipeStageIsValid = '1' and rcpPipeline(11).useEarlyOutBypass = '0') then
+			rLocal := rAccum(30 downto 1) + 64; -- rAccum = (rAccum >> 1) + (1 << 6)
+			resultMantissa <= rLocal(29 downto 7); -- resultMantissa = rAccum >> 7
 		end if;
 	end if;
 end process RCPStage12;
 
--- Reciprocal (RCP) pipe process (cycle 13 of 13):
+-- Reciprocal (RCP) pipe process (cycle 14 of 14):
 RCPStage13 : process(clk)
-	variable rLocal : unsigned(31 downto 0);
 begin
 	if (rising_edge(clk) ) then
-		if (rcpPipeline(SPEC_CYCLES-1).pipeStageIsValid = '1') then
-			if (rcpPipeline(SPEC_CYCLES-1).useEarlyOutBypass = '0') then
-				ORCP <= rcpPipeline(SPEC_CYCLES-1).rcpSign & std_logic_vector(rcpPipeline(SPEC_CYCLES-1).rcpExponent) & std_logic_vector(resultMantissa);
+		if (rcpPipeline(12).pipeStageIsValid = '1') then
+			if (rcpPipeline(12).useEarlyOutBypass = '0') then
+				ORCP <= rcpPipeline(12).rcpSign & std_logic_vector(rcpPipeline(12).rcpExponent) & std_logic_vector(resultMantissa);
 			else
-				ORCP <= rcpPipeline(SPEC_CYCLES-1).rcpSign & std_logic_vector(rcpPipeline(SPEC_CYCLES-1).rcpExponent) & std_logic_vector(rcpPipeline(SPEC_CYCLES-1).calculatedMantissa);
+				ORCP <= rcpPipeline(12).rcpSign & std_logic_vector(rcpPipeline(12).rcpExponent) & std_logic_vector(rcpPipeline(12).calculatedMantissa);
 			end if;
 		end if;
 	end if;
@@ -1468,7 +1413,7 @@ begin
 				mulEarlyOutBypass0 <= resultSign & X"00" & "00000000000000000000000";
 			else -- Primary multiplication case:
 				mulEarlyOutBypassEnable0 <= '0';
-				mulResultExp0 <= comSignedExponentA + comSignedExponentB;
+				mulResultExp0 <= resize(comSignedExponentA, 9) + resize(comSignedExponentB, 9);
 				mulAssembledMantissaA <= '1' & comRawMantissaA;
 				mulAssembledMantissaB <= '1' & comRawMantissaB;
 			end if;
@@ -1534,21 +1479,21 @@ begin
 			if (mulEarlyOutBypassEnable3 = '1') then -- Mul bypass case
 				OMUL <= std_logic_vector(mulEarlyOutBypass3);
 			else -- Non-bypass standard case
-				if (mulResultExp3 > to_signed(127, 8) ) then -- Saturate to INF if we end up overflowing to +/- INF
+				if (mulResultExp3 > to_signed(127, 9) ) then -- Saturate to INF if we end up overflowing to +/- INF
 					OMUL <= mulResultSign3 & X"FF" & "00000000000000000000000";
-				elsif (mulResultExp3 < to_signed(-126, 8) ) then -- Saturate to 0 if we end up underflowing into 0 or denormals
+				elsif (mulResultExp3 < to_signed(-126, 9) ) then -- Saturate to 0 if we end up underflowing into 0 or denormals
 					OMUL <= mulResultSign3 & X"00" & "00000000000000000000000";
 				else -- Standard case
 					finalMantissa := mulResultMantissa3 srl 23;
 					if (finalMantissa(24) = '1') then -- If the mantissa overflows into the exponent, we need to renormalize
-						if (mulResultExp3 = to_signed(127, 8) ) then -- Our overflow could cause us to overflow into INF
+						if (mulResultExp3 = to_signed(127, 9) ) then -- Our overflow could cause us to overflow into INF
 							OMUL <= mulResultSign3 & X"FF" & "00000000000000000000000";
 						else
 							finalMantissa := finalMantissa srl 1; -- Handle renormalize by adding 1 to the exponent and shifting the mantissa to the right by 1
-							OMUL <= mulResultSign3 & MakeExponentFromSigned(mulResultExp3 + to_signed(1, 8) ) & std_logic_vector(finalMantissa(22 downto 0) );
+							OMUL <= mulResultSign3 & MakeExponentFromSigned(mulResultExp3(7 downto 0) + to_signed(1, 8) ) & std_logic_vector(finalMantissa(22 downto 0) );
 						end if;
 					else -- No mantissa overflow case
-						OMUL <= mulResultSign3 & MakeExponentFromSigned(mulResultExp3) & std_logic_vector(finalMantissa(22 downto 0) );
+						OMUL <= mulResultSign3 & MakeExponentFromSigned(mulResultExp3(7 downto 0) ) & std_logic_vector(finalMantissa(22 downto 0) );
 					end if;
 				end if;
 			end if;

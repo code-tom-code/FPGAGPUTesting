@@ -6,7 +6,60 @@
 #include "ShaderCoreTestbench.h"
 #include "ShaderCoreALUCommon.h"
 
-static bool enableDebugOutout = false;
+static bool enableDebugOutput = false;
+
+enum eShaderCMDPacket : unsigned char
+{
+	DoNothingCommand, // 0 : Do nothing
+	LoadProgramCommand, // 1 : LoadProgram (uint32 prog addr, uint16 prog len)
+	SetShaderConstantFCommand, // 2 : SetShaderConstantF (uint8 constant register index c#, float4 value)
+	IASetVertexStreamCommand, // 3 : IASetVertexStream(uint3 streamID, uint32 streamBaseAddress, uint2 dwordCount, bool isD3DCOLOR, uint3 shaderRegIndex, uint6 dwordStride, uint6 dwordOffset)
+	StartShadingWorkCommand // 4 : StartShadingWork(uint9 setShaderStartAddress)
+};
+
+enum eShaderCoreState
+{
+	initState, // 0
+
+	readyState, // 1
+
+	loadProgramState, // 2
+	loadProgramStateLoopLow, // 3
+	loadProgramStateLoopLowWaitForData, // 4
+	loadProgramStateLoopHigh, // 5
+	loadProgramStateLoopHighWaitForData, // 6
+	loadProgramStateCleanup, // 7
+
+	setShaderConstantY, // 8
+	setShaderConstantZ, // 9
+	setShaderConstantW, // 10
+
+	getVertexBatch, // 11
+
+	fetchVertexStreamData0, // 12
+	fetchVertexStreamData1, // 13
+	fetchVertexStreamDataWaitForData, // 14
+	writeVertexDataToGPR, // 15
+
+	unpackColorData_Lane0, // 16
+	unpackColorData_Lane1, // 17
+	unpackColorData_Lane2, // 18
+	unpackColorData_Lane3, // 19
+	unpackColorData_WriteX, // 20
+	unpackColorData_WriteY, // 21
+	unpackColorData_WriteZ, // 22
+	unpackColorData_WriteW, // 23
+
+	setupRunShader, // 24
+	setupRunShader2, // 25
+	setupRunShader3, // 26
+	setupRunShader4, // 27
+	runShader, // 28
+	waitForWritesToComplete, // 29
+
+	collectShaderResults, // 30
+	submitShaderResults // 31
+};
 
 struct float4
 {
@@ -58,8 +111,10 @@ public:
 	struct VBBEntry
 	{
 		unsigned short indices[16] = {0};
+		unsigned short vertexBatchStartingIndex; // If vertexBatchStartingIndex == vertexBatchEndingIndex, then this is a non-indexed draw call!
+		unsigned short vertexBatchEndingIndex;
 	};
-	static_assert(sizeof(VBBEntry) == sizeof(unsigned short) * 16, "Error: Unexpected struct padding!");
+	static_assert(sizeof(VBBEntry) == sizeof(unsigned short) * 18, "Error: Unexpected struct padding!");
 private:
 	std::vector<VBBEntry> FIFO;
 public:
@@ -70,7 +125,7 @@ public:
 		FIFO.push_back(fifoEntry);
 	}
 
-	void Update(const std_logic_port& VERTBATCH_FIFO_rd_en, std_logic_port& VERTBATCH_FIFO_empty, std_logic_vector_port<256>& VERTBATCH_FIFO_rd_data)
+	void Update(const std_logic_port& VERTBATCH_FIFO_rd_en, std_logic_port& VERTBATCH_FIFO_empty, std_logic_vector_port<288>& VERTBATCH_FIFO_rd_data)
 	{
 		VBBEntry vbb = {0};
 		if (!FIFO.empty() )
@@ -249,6 +304,18 @@ public:
 		GPR0_PortW_writeInData.GetStructVal(newRequest.portWWriteData);
 		pipelineData[GPR_QUAD_LATENCY_CYCLES] = newRequest;
 
+		if (enableDebugOutput)
+		{
+			if (newRequest.portAEnable)
+				printf("GPRQuad is queuing a read on Port A for Quad[%u] and register %c%u.%c\n", newRequest.readQuadIndex, GetRegLetterFromRegType( (const RegisterFileRegType)newRequest.portARegType), newRequest.portARegIndex, GetRegChannelLetterFromChannelIndex(newRequest.portARegChannel) );
+
+			if (newRequest.portBEnable)
+				printf("GPRQuad is queuing a read on Port B for Quad[%u] and register %c%u.%c\n", newRequest.readQuadIndex, GetRegLetterFromRegType( (const RegisterFileRegType)newRequest.portBRegType), newRequest.portBRegIndex, GetRegChannelLetterFromChannelIndex(newRequest.portBRegChannel) );
+
+			if (newRequest.portWEnable)
+				printf("GPRQuad is queuing a write on Port W for Quad[%u] and register %c%u.%c\n", newRequest.writeQuadIndex, GetRegLetterFromRegType( (const RegisterFileRegType)newRequest.portWRegType), newRequest.portWRegIndex, GetRegChannelLetterFromChannelIndex(newRequest.portWRegChannel) );
+		}
+
 		const unsigned readQuadIndex = pipelineData[0].readQuadIndex;
 		const unsigned writeQuadIndex = pipelineData[0].writeQuadIndex;
 		const RegisterFileRegType regTypeA = (const RegisterFileRegType)(pipelineData[0].portARegType);
@@ -272,8 +339,8 @@ public:
 			readARetVal.z = bram4Data[portA_readAddress];
 			readARetVal.w = bram6Data[portA_readAddress];
 			GPR0_PortA_readOutData.SetStructVal(readARetVal);
-			if (enableDebugOutout)
-				printf("GPRQuad is reading on Port A from Quad[%u] and register %c%u.%c = { %f (0x%08X), %f (0x%08X), %f (0x%08X), %f (0x%08X) }\n", readQuadIndex, GetRegLetterFromRegType(regTypeA), regIndexA, GetRegChannelLetterFromChannelIndex(regChanA), readARetVal.x, *reinterpret_cast<unsigned*>(&readARetVal.x), readARetVal.y, *reinterpret_cast<unsigned*>(&readARetVal.y), readARetVal.z, *reinterpret_cast<unsigned*>(&readARetVal.z), readARetVal.w, *reinterpret_cast<unsigned*>(&readARetVal.w) );
+			if (enableDebugOutput)
+				printf("GPRQuad is completing a read on Port A from Quad[%u] and register %c%u.%c = { %f (0x%08X), %f (0x%08X), %f (0x%08X), %f (0x%08X) }\n", readQuadIndex, GetRegLetterFromRegType(regTypeA), regIndexA, GetRegChannelLetterFromChannelIndex(regChanA), readARetVal.x, *reinterpret_cast<unsigned*>(&readARetVal.x), readARetVal.y, *reinterpret_cast<unsigned*>(&readARetVal.y), readARetVal.z, *reinterpret_cast<unsigned*>(&readARetVal.z), readARetVal.w, *reinterpret_cast<unsigned*>(&readARetVal.w) );
 		}
 
 		if (pipelineData[0].portBEnable)
@@ -284,8 +351,8 @@ public:
 			readBRetVal.z = bram4Data[portB_readAddress];
 			readBRetVal.w = bram6Data[portB_readAddress];
 			GPR0_PortB_readOutData.SetStructVal(readBRetVal);
-			if (enableDebugOutout)
-				printf("GPRQuad is reading on Port B from Quad[%u] and register %c%u.%c = { %f (0x%08X), %f (0x%08X), %f (0x%08X), %f (0x%08X) }\n", readQuadIndex, GetRegLetterFromRegType(regTypeB), regIndexB, GetRegChannelLetterFromChannelIndex(regChanB), readBRetVal.x, *reinterpret_cast<unsigned*>(&readBRetVal.x), readBRetVal.y, *reinterpret_cast<unsigned*>(&readBRetVal.y), readBRetVal.z, *reinterpret_cast<unsigned*>(&readBRetVal.z), readBRetVal.w, *reinterpret_cast<unsigned*>(&readBRetVal.w) );
+			if (enableDebugOutput)
+				printf("GPRQuad is completing a read on Port B from Quad[%u] and register %c%u.%c = { %f (0x%08X), %f (0x%08X), %f (0x%08X), %f (0x%08X) }\n", readQuadIndex, GetRegLetterFromRegType(regTypeB), regIndexB, GetRegChannelLetterFromChannelIndex(regChanB), readBRetVal.x, *reinterpret_cast<unsigned*>(&readBRetVal.x), readBRetVal.y, *reinterpret_cast<unsigned*>(&readBRetVal.y), readBRetVal.z, *reinterpret_cast<unsigned*>(&readBRetVal.z), readBRetVal.w, *reinterpret_cast<unsigned*>(&readBRetVal.w) );
 		}
 
 		if (pipelineData[0].portWEnable)
@@ -311,8 +378,8 @@ public:
 			bram5Data[portW_writeAddress] = writeWData.z;
 			bram6Data[portW_writeAddress] = writeWData.w;
 			bram7Data[portW_writeAddress] = writeWData.w;
-			if (enableDebugOutout)
-				printf("GPRQuad is writing on Port W to Quad[%u] and register %c%u.%c = { %f (0x%08X), %f (0x%08X), %f (0x%08X), %f (0x%08X) }\n", writeQuadIndex, GetRegLetterFromRegType(regTypeW), regIndexW, GetRegChannelLetterFromChannelIndex(regChanW), writeWData.x, *reinterpret_cast<unsigned*>(&writeWData.x), writeWData.y, *reinterpret_cast<unsigned*>(&writeWData.y), writeWData.z, *reinterpret_cast<unsigned*>(&writeWData.z), writeWData.w, *reinterpret_cast<unsigned*>(&writeWData.w) );
+			if (enableDebugOutput)
+				printf("GPRQuad is completing a write on Port W to Quad[%u] and register %c%u.%c = { %f (0x%08X), %f (0x%08X), %f (0x%08X), %f (0x%08X) }\n", writeQuadIndex, GetRegLetterFromRegType(regTypeW), regIndexW, GetRegChannelLetterFromChannelIndex(regChanW), writeWData.x, *reinterpret_cast<unsigned*>(&writeWData.x), writeWData.y, *reinterpret_cast<unsigned*>(&writeWData.y), writeWData.z, *reinterpret_cast<unsigned*>(&writeWData.z), writeWData.w, *reinterpret_cast<unsigned*>(&writeWData.w) );
 		}
 
 		for (unsigned x = 0; x < GPR_QUAD_LATENCY_CYCLES; ++x)
@@ -444,7 +511,8 @@ public:
 
 private:
 	const unsigned fpuIndex;
-	float pipeStages[MAX_PIPE_CYCLES + 1] = {0};
+	float pipeStages[MAX_PIPE_CYCLES + 2] = {0};
+	bool pipeStagesValid[MAX_PIPE_CYCLES + 2] = {false};
 
 	static const char* const GetCompareModeString(const eCmpType mode)
 	{
@@ -533,7 +601,12 @@ public:
 			const eCmpType cmpMode = (const eCmpType)inMode;
 			const float compareResult = ComputeCompare(aVal, bVal, cmpMode);
 			pipeStages[CMP_CYCLES] = compareResult;
-			if (enableDebugOutout)
+			if (pipeStagesValid[CMP_CYCLES] == true)
+			{
+				__debugbreak(); // Error: Overwriting existing FPU pipe stage!
+			}
+			pipeStagesValid[CMP_CYCLES] = true;
+			if (enableDebugOutput)
 				printf("FPU%u: %s(%u)(%f, %f) = %f\n", fpuIndex, GetCompareModeString(cmpMode), cmpMode, aVal, bVal, compareResult);
 		}
 		else if (FPU_IADD_GO.GetBoolVal() )
@@ -541,7 +614,12 @@ public:
 			// Add pipe runs in 4 cycles:
 			const float addResult = aVal + bVal;
 			pipeStages[ADD_CYCLES] = addResult;
-			if (enableDebugOutout)
+			if (pipeStagesValid[ADD_CYCLES] == true)
+			{
+				__debugbreak(); // Error: Overwriting existing FPU pipe stage!
+			}
+			pipeStagesValid[ADD_CYCLES] = true;
+			if (enableDebugOutput)
 				printf("FPU%u: %f + %f = %f\n", fpuIndex, aVal, bVal, addResult);
 		}
 		else if (FPU_IMUL_GO.GetBoolVal() )
@@ -549,15 +627,25 @@ public:
 			// Multiply pipe runs in 5 cycles:
 			const float multResult = aVal * bVal;
 			pipeStages[MUL_CYCLES] = multResult;
-			if (enableDebugOutout)
+			if (pipeStagesValid[MUL_CYCLES] == true)
+			{
+				__debugbreak(); // Error: Overwriting existing FPU pipe stage!
+			}
+			pipeStagesValid[MUL_CYCLES] = true;
+			if (enableDebugOutput)
 				printf("FPU%u: %f * %f = %f\n", fpuIndex, aVal, bVal, multResult);
 		}
 		else if (FPU_ISPEC_GO.GetBoolVal() )
 		{
-			// Reciprocal pipe runs in 13 cycles:
+			// Reciprocal pipe runs in 14 cycles:
 			const float rcpResult = 1.0f / aVal;
 			pipeStages[RCP_CYCLES] = rcpResult;
-			if (enableDebugOutout)
+			if (pipeStagesValid[RCP_CYCLES] == true)
+			{
+				__debugbreak(); // Error: Overwriting existing FPU pipe stage!
+			}
+			pipeStagesValid[RCP_CYCLES] = true;
+			if (enableDebugOutput)
 				printf("FPU%u: rcp(%f) = %f\n", fpuIndex, aVal, rcpResult);
 		}
 		else if (FPU_ISHFT_GO.GetBoolVal() )
@@ -566,7 +654,12 @@ public:
 			const eShftMode shftMode = (const eShftMode)inMode;
 			const float shiftResult = ComputeShift(aVal, shftMode);
 			pipeStages[SHFT_CYCLES] = shiftResult;
-			if (enableDebugOutout)
+			if (pipeStagesValid[SHFT_CYCLES] == true)
+			{
+				__debugbreak(); // Error: Overwriting existing FPU pipe stage!
+			}
+			pipeStagesValid[SHFT_CYCLES] = true;
+			if (enableDebugOutput)
 				printf("FPU%u: %s(%u)(%f) = %f\n", fpuIndex, GetShiftModeString(shftMode), shftMode, aVal, shiftResult);
 		}
 		else if (FPU_ICNV_GO.GetBoolVal() )
@@ -575,7 +668,12 @@ public:
 			const eConvertMode cnvMode = (const eConvertMode)inMode;
 			const int convertResult = ComputeConvert(aVal, cnvMode);
 			pipeStages[CNV_CYCLES] = *reinterpret_cast<const float* const>(&convertResult);
-			if (enableDebugOutout)
+			if (pipeStagesValid[CNV_CYCLES] == true)
+			{
+				__debugbreak(); // Error: Overwriting existing FPU pipe stage!
+			}
+			pipeStagesValid[CNV_CYCLES] = true;
+			if (enableDebugOutput)
 			{
 				switch (inMode)
 				{
@@ -594,11 +692,13 @@ public:
 			}
 		}
 
-		for (unsigned x = 0; x < ARRAYSIZE(pipeStages) - 2; ++x)
+		for (unsigned x = 0; x < ARRAYSIZE(pipeStages) - 1; ++x)
 		{
 			pipeStages[x] = pipeStages[x + 1];
+			pipeStagesValid[x] = pipeStagesValid[x + 1];
 		}
 		pipeStages[ARRAYSIZE(pipeStages) - 1] = 0.0f;
+		pipeStagesValid[ARRAYSIZE(pipeStages) - 1] = false;
 
 		FPU_OUT_RESULT = pipeStages[0];
 	}
@@ -632,6 +732,11 @@ public:
 		newRequest.regComponent = CB_RegComponent.GetUint8Val();
 		newRequest.writeData = CB_WriteInData.GetFloat32Val();
 		pipelineCycles[CBUF_LATENCY_CYCLES] = newRequest;
+		if (newRequest.isEnabled)
+		{
+			if (enableDebugOutput)
+				printf("Const Buffer read is queued for register c%u.%c\n", newRequest.regIndex, GetRegChannelLetterFromChannelIndex(newRequest.regComponent) );
+		}
 
 		if (pipelineCycles[0].isEnabled)
 		{
@@ -683,8 +788,8 @@ public:
 
 				CB_ReadOutData = readOutData;
 
-				if (enableDebugOutout)
-					printf("Const Buffer is reading from register c%u.%c = %f\n", regIndex, GetRegChannelLetterFromChannelIndex(regComponent), readOutData);
+				if (enableDebugOutput)
+					printf("Const Buffer reading is available from register c%u.%c = %f\n", regIndex, GetRegChannelLetterFromChannelIndex(regComponent), readOutData);
 			}
 		}
 
@@ -722,6 +827,8 @@ public:
 			/*[30, 31, 32]*/ InstructionSrcRegType srcRegB_regType : 3; // r#/v#/c#/x#/o#/0.0f/1.0f/-1.0f
 			/*[33, 34, 35, 36, 37, 38, 39, 40]*/ unsigned __int64 srcRegB_regIndex : 8; // 0-255
 			/*[41, 42]*/ InstructionRegComponent srcRegB_component : 2; // X/Y/Z/W
+
+			/*[43 thru 63]*/unsigned __int64 unused : 21;
 		} instructionStruct;
 
 		unsigned __int64 rawQWORD;
@@ -887,6 +994,11 @@ public:
 		newRequest.address = ICache_Address.GetUint16Val();
 		newRequest.writeData = ICache_WriteData.GetUint64Val();
 		pipelineData[INST_CACHE_LATENCY_CYCLES] = newRequest;
+		if (newRequest.isEnabled)
+		{
+			if (enableDebugOutput)
+				printf("Instruction cache is queuing a %s at address %u\n", newRequest.isWrite ? "write" : "read", newRequest.address);
+		}
 
 		if (pipelineData[0].isEnabled)
 		{
@@ -901,6 +1013,8 @@ public:
 			{
 				const instructionSlot& readRegister = instructions[address];
 				ICache_ReadData = readRegister.rawQWORD;
+				if (enableDebugOutput)
+					printf("Instruction cache read completed (address %u, value=0x%I64X)\n", address, readRegister.rawQWORD);
 			}
 		}
 
@@ -1183,78 +1297,77 @@ static const InstructionCacheBRAM::instructionSlot testInstructionStream[] =
 { {Op_MUL, DRMod_None, DRTyp_X, 0 /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_R, 0 /*src0RegIndex*/, Chan_X, SRMod_Neg, SRTyp_C, 8 /*src1RegIndex*/, Chan_X} }, // IP[39]: mul x0.x, r0.x, -c8.x
 { {Op_MUL, DRMod_None, DRTyp_X, 0 /*destRegIndex*/, Chan_Y, SRMod_None, SRTyp_R, 0 /*src0RegIndex*/, Chan_Y, SRMod_Neg, SRTyp_C, 8 /*src1RegIndex*/, Chan_Y} }, // IP[40]: mul x0.y, r0.y, -c8.y
 { {Op_MUL, DRMod_None, DRTyp_X, 0 /*destRegIndex*/, Chan_Z, SRMod_None, SRTyp_R, 0 /*src0RegIndex*/, Chan_Z, SRMod_Neg, SRTyp_C, 8 /*src1RegIndex*/, Chan_Z} }, // IP[41]: mul x0.z, r0.z, -c8.z
-//{ {Op_NOP, DRMod_None, DRTyp_NULL, 0 /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_0, 0 /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_0, 0 /*src1RegIndex*/, Chan_X} }, // IP[42]: nop 0.x, 0.x, 0.x
-{ {Op_ADD, DRMod_None, DRTyp_X, 0 /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_X, 0 /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_X, 0 /*src1RegIndex*/, Chan_Y} }, // IP[43]: add x0.x, x0.x, x0.y
-//{ {Op_NOP, DRMod_None, DRTyp_NULL, 0 /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_0, 0 /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_0, 0 /*src1RegIndex*/, Chan_X} }, // IP[44]: nop 0.x, 0.x, 0.x
-//{ {Op_NOP, DRMod_None, DRTyp_NULL, 0 /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_0, 0 /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_0, 0 /*src1RegIndex*/, Chan_X} }, // IP[45]: nop 0.x, 0.x, 0.x
-{ {Op_ADD, DRMod_None, DRTyp_R, 0 /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_X, 0 /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_X, 0 /*src1RegIndex*/, Chan_Z} }, // IP[46]: add r0.x, x0.x, x0.z
-//{ {Op_NOP, DRMod_None, DRTyp_NULL, 0 /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_0, 0 /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_0, 0 /*src1RegIndex*/, Chan_X} }, // IP[47]: nop 0.x, 0.x, 0.x
-//{ {Op_NOP, DRMod_None, DRTyp_NULL, 0 /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_0, 0 /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_0, 0 /*src1RegIndex*/, Chan_X} }, // IP[48]: nop 0.x, 0.x, 0.x
+{ {Op_ADD, DRMod_None, DRTyp_X, 0 /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_X, 0 /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_X, 0 /*src1RegIndex*/, Chan_Y} }, // IP[42]: add x0.x, x0.x, x0.y
+{ {Op_ADD, DRMod_None, DRTyp_R, 0 /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_X, 0 /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_X, 0 /*src1RegIndex*/, Chan_Z} }, // IP[43]: add r0.x, x0.x, x0.z
 // max r0.x, r0.x, c7.x
-{ {Op_MAX, DRMod_None, DRTyp_R, 0 /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_R, 0 /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_C, 7 /*src1RegIndex*/, Chan_X} }, // IP[49]: max r0.x, r0.x, c7.x
-//{ {Op_NOP, DRMod_None, DRTyp_NULL, 0 /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_0, 0 /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_0, 0 /*src1RegIndex*/, Chan_X} }, // IP[50]: nop 0.x, 0.x, 0.x
+{ {Op_MAX, DRMod_None, DRTyp_R, 0 /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_R, 0 /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_C, 7 /*src1RegIndex*/, Chan_X} }, // IP[44]: max r0.x, r0.x, c7.x
 // min r0.x, r0.x, c7.y
-{ {Op_MIN, DRMod_None, DRTyp_R, 0 /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_R, 0 /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_C, 7 /*src1RegIndex*/, Chan_Y} }, // IP[51]: min r0.x, r0.x, c7.y
-//{ {Op_NOP, DRMod_None, DRTyp_NULL, 0 /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_0, 0 /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_0, 0 /*src1RegIndex*/, Chan_X} }, // IP[52]: nop 0.x, 0.x, 0.x
-//{ {Op_MOV, DRMod_None, DRTyp_R, 0 /*destRegIndex*/, Chan_X, SRMod_Abs, SRTyp_R, 0 /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_0, 0 /*src1RegIndex*/, Chan_X} }, // mov r0.x, abs_r0.x, 0.x
-//{ {Op_NOP, DRMod_None, DRTyp_NULL, 0 /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_0, 0 /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_0, 0 /*src1RegIndex*/, Chan_X} }, // nop 0.x, 0.x, 0.x
+{ {Op_MIN, DRMod_None, DRTyp_R, 0 /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_R, 0 /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_C, 7 /*src1RegIndex*/, Chan_Y} }, // IP[45]: min r0.x, r0.x, c7.y
 // mov x1.x, r0.x
-{ {Op_MOV, DRMod_None, DRTyp_X, 1 /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_R, 0 /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_0, 0 /*src1RegIndex*/, Chan_X} }, // IP[58]: mov x1.x, r0.x, 0.x
+{ {Op_MOV, DRMod_None, DRTyp_X, 1 /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_R, 0 /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_0, 0 /*src1RegIndex*/, Chan_X} }, // IP[46]: mov x1.x, r0.x, 0.x
 // mul r0, x1.x, v3
-{ {Op_MUL, DRMod_None, DRTyp_R, 0 /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_X, 1 /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_V, 3 /*src1RegIndex*/, Chan_X} }, // IP[53]: mul r0.x, x1.x, v3.x
-//{ {Op_NOP, DRMod_None, DRTyp_NULL, 0 /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_0, 0 /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_0, 0 /*src1RegIndex*/, Chan_X} }, // IP[54]: nop 0.x, 0.x, 0.x
-{ {Op_MUL, DRMod_None, DRTyp_R, 0 /*destRegIndex*/, Chan_Y, SRMod_None, SRTyp_X, 1 /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_V, 3 /*src1RegIndex*/, Chan_Y} }, // IP[55]: mul r0.y, x1.x, v3.y
-{ {Op_MUL, DRMod_None, DRTyp_R, 0 /*destRegIndex*/, Chan_Z, SRMod_None, SRTyp_X, 1 /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_V, 3 /*src1RegIndex*/, Chan_Z} }, // IP[56]: mul r0.z, x1.x, v3.z
-{ {Op_MUL, DRMod_None, DRTyp_R, 0 /*destRegIndex*/, Chan_W, SRMod_None, SRTyp_X, 1 /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_V, 3 /*src1RegIndex*/, Chan_W} }, // IP[57]: mul r0.w, x1.x, v3.w
+{ {Op_MUL, DRMod_None, DRTyp_R, 0 /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_X, 1 /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_V, 3 /*src1RegIndex*/, Chan_X} }, // IP[47]: mul r0.x, x1.x, v3.x
+{ {Op_MUL, DRMod_None, DRTyp_R, 0 /*destRegIndex*/, Chan_Y, SRMod_None, SRTyp_X, 1 /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_V, 3 /*src1RegIndex*/, Chan_Y} }, // IP[48]: mul r0.y, x1.x, v3.y
+{ {Op_MUL, DRMod_None, DRTyp_R, 0 /*destRegIndex*/, Chan_Z, SRMod_None, SRTyp_X, 1 /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_V, 3 /*src1RegIndex*/, Chan_Z} }, // IP[49]: mul r0.z, x1.x, v3.z
+{ {Op_MUL, DRMod_None, DRTyp_R, 0 /*destRegIndex*/, Chan_W, SRMod_None, SRTyp_X, 1 /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_V, 3 /*src1RegIndex*/, Chan_W} }, // IP[50]: mul r0.w, x1.x, v3.w
 // abs r1, c9 = mov r1, c9_abs
-{ {Op_MOV, DRMod_None, DRTyp_R, 1 /*destRegIndex*/, Chan_X, SRMod_Abs, SRTyp_C, 9 /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_0, 0 /*src1RegIndex*/, Chan_X} }, // IP[58]: mov r1.x, c9.x_abs, 0.x
-{ {Op_MOV, DRMod_None, DRTyp_R, 1 /*destRegIndex*/, Chan_Y, SRMod_Abs, SRTyp_C, 9 /*src0RegIndex*/, Chan_Y, SRMod_None, SRTyp_0, 0 /*src1RegIndex*/, Chan_X} }, // IP[59]: mov r1.y, c9.y_abs, 0.x
-{ {Op_MOV, DRMod_None, DRTyp_R, 1 /*destRegIndex*/, Chan_Z, SRMod_Abs, SRTyp_C, 9 /*src0RegIndex*/, Chan_Z, SRMod_None, SRTyp_0, 0 /*src1RegIndex*/, Chan_X} }, // IP[60]: mov r1.z, c9.z_abs, 0.x
-{ {Op_MOV, DRMod_None, DRTyp_R, 1 /*destRegIndex*/, Chan_W, SRMod_Abs, SRTyp_C, 9 /*src0RegIndex*/, Chan_W, SRMod_None, SRTyp_0, 0 /*src1RegIndex*/, Chan_X} }, // IP[61]: mov r1.w, c9.w_abs, 0.x
+{ {Op_MOV, DRMod_None, DRTyp_R, 1 /*destRegIndex*/, Chan_X, SRMod_Abs, SRTyp_C, 9 /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_0, 0 /*src1RegIndex*/, Chan_X} }, // IP[51]: mov r1.x, c9.x_abs, 0.x
+{ {Op_MOV, DRMod_None, DRTyp_R, 1 /*destRegIndex*/, Chan_Y, SRMod_Abs, SRTyp_C, 9 /*src0RegIndex*/, Chan_Y, SRMod_None, SRTyp_0, 0 /*src1RegIndex*/, Chan_X} }, // IP[52]: mov r1.y, c9.y_abs, 0.x
+{ {Op_MOV, DRMod_None, DRTyp_R, 1 /*destRegIndex*/, Chan_Z, SRMod_Abs, SRTyp_C, 9 /*src0RegIndex*/, Chan_Z, SRMod_None, SRTyp_0, 0 /*src1RegIndex*/, Chan_X} }, // IP[53]: mov r1.z, c9.z_abs, 0.x
+{ {Op_MOV, DRMod_None, DRTyp_R, 1 /*destRegIndex*/, Chan_W, SRMod_Abs, SRTyp_C, 9 /*src0RegIndex*/, Chan_W, SRMod_None, SRTyp_0, 0 /*src1RegIndex*/, Chan_X} }, // IP[54]: mov r1.w, c9.w_abs, 0.x
 // mul oD0, r0, r1
-{ {Op_MUL, DRMod_None, DRTyp_O, 1 /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_R, 0 /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_R, 1 /*src1RegIndex*/, Chan_X} }, // IP[62]: mul o1.x, r0.x, r1.x
-{ {Op_MUL, DRMod_None, DRTyp_O, 1 /*destRegIndex*/, Chan_Y, SRMod_None, SRTyp_R, 0 /*src0RegIndex*/, Chan_Y, SRMod_None, SRTyp_R, 1 /*src1RegIndex*/, Chan_Y} }, // IP[63]: mul o1.y, r0.y, r1.y
-{ {Op_MUL, DRMod_None, DRTyp_O, 1 /*destRegIndex*/, Chan_Z, SRMod_None, SRTyp_R, 0 /*src0RegIndex*/, Chan_Z, SRMod_None, SRTyp_R, 1 /*src1RegIndex*/, Chan_Z} }, // IP[64]: mul o1.z, r0.z, r1.z
-{ {Op_MUL, DRMod_None, DRTyp_O, 1 /*destRegIndex*/, Chan_W, SRMod_None, SRTyp_R, 0 /*src0RegIndex*/, Chan_W, SRMod_None, SRTyp_R, 1 /*src1RegIndex*/, Chan_W} }, // IP[65]: mul o1.w, r0.w, r1.w
-//{ {Op_NOP, DRMod_None, DRTyp_NULL, 0 /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_0, 0 /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_0, 0 /*src1RegIndex*/, Chan_X} }, // IP[66]: nop 0.x, 0.x, 0.x
-//{ {Op_NOP, DRMod_None, DRTyp_NULL, 0 /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_0, 0 /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_0, 0 /*src1RegIndex*/, Chan_X} }, // IP[67]: nop 0.x, 0.x, 0.x
+{ {Op_MUL, DRMod_None, DRTyp_O, 1 /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_R, 0 /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_R, 1 /*src1RegIndex*/, Chan_X} }, // IP[55]: mul o1.x, r0.x, r1.x
+{ {Op_MUL, DRMod_None, DRTyp_O, 1 /*destRegIndex*/, Chan_Y, SRMod_None, SRTyp_R, 0 /*src0RegIndex*/, Chan_Y, SRMod_None, SRTyp_R, 1 /*src1RegIndex*/, Chan_Y} }, // IP[56]: mul o1.y, r0.y, r1.y
+{ {Op_MUL, DRMod_None, DRTyp_O, 1 /*destRegIndex*/, Chan_Z, SRMod_None, SRTyp_R, 0 /*src0RegIndex*/, Chan_Z, SRMod_None, SRTyp_R, 1 /*src1RegIndex*/, Chan_Z} }, // IP[57]: mul o1.z, r0.z, r1.z
+{ {Op_MUL, DRMod_None, DRTyp_O, 1 /*destRegIndex*/, Chan_W, SRMod_None, SRTyp_R, 0 /*src0RegIndex*/, Chan_W, SRMod_None, SRTyp_R, 1 /*src1RegIndex*/, Chan_W} }, // IP[58]: mul o1.w, r0.w, r1.w
 // mov oT0.xy, v1
-{ {Op_MOV, DRMod_None, DRTyp_O, 2 /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_V, 1 /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_0, 0 /*src0RegIndex*/, Chan_X} }, // IP[68]: mov o2.x, v1.x, 0.x
-{ {Op_MOV, DRMod_None, DRTyp_O, 2 /*destRegIndex*/, Chan_Y, SRMod_None, SRTyp_V, 1 /*src0RegIndex*/, Chan_Y, SRMod_None, SRTyp_0, 0 /*src0RegIndex*/, Chan_X} }, // IP[69]: mov o2.y, v1.y, 0.x
+{ {Op_MOV, DRMod_None, DRTyp_O, 2 /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_V, 1 /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_0, 0 /*src0RegIndex*/, Chan_X} }, // IP[59]: mov o2.x, v1.x, 0.x
+{ {Op_MOV, DRMod_None, DRTyp_O, 2 /*destRegIndex*/, Chan_Y, SRMod_None, SRTyp_V, 1 /*src0RegIndex*/, Chan_Y, SRMod_None, SRTyp_0, 0 /*src0RegIndex*/, Chan_X} }, // IP[60]: mov o2.y, v1.y, 0.x
 // rcp x1.w, oPos.w
-{ {Op_RCP, DRMod_None, DRTyp_X, 1 /*destRegIndex*/, Chan_W, SRMod_None, SRTyp_O, 0 /*src0RegIndex*/, Chan_W, SRMod_None, SRTyp_0, 0 /*src0RegIndex*/, Chan_X} }, // IP[69]: rcp x1.w, o0.w, 0.x
+{ {Op_RCP, DRMod_None, DRTyp_X, 1 /*destRegIndex*/, Chan_W, SRMod_None, SRTyp_O, 0 /*src0RegIndex*/, Chan_W, SRMod_None, SRTyp_0, 0 /*src0RegIndex*/, Chan_X} }, // IP[61]: rcp x1.w, o0.w, 0.x
 // mul oPos.xz, oPos.xz, x1.w
 { {Op_MUL, DRMod_None, DRTyp_O, 0 /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_O, 0 /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_X, 1 /*src1RegIndex*/, Chan_W} }, // IP[62]: mul o0.x, o0.x, x1.w
-{ {Op_MUL, DRMod_None, DRTyp_O, 0 /*destRegIndex*/, Chan_Z, SRMod_None, SRTyp_O, 0 /*src0RegIndex*/, Chan_Z, SRMod_None, SRTyp_X, 1 /*src1RegIndex*/, Chan_W} }, // IP[62]: mul o0.z, o0.z, x1.w
+{ {Op_MUL, DRMod_None, DRTyp_O, 0 /*destRegIndex*/, Chan_Z, SRMod_None, SRTyp_O, 0 /*src0RegIndex*/, Chan_Z, SRMod_None, SRTyp_X, 1 /*src1RegIndex*/, Chan_W} }, // IP[63]: mul o0.z, o0.z, x1.w
 // mul oPos.y, oPos.y, x1.w
-{ {Op_MUL, DRMod_None, DRTyp_O, 0 /*destRegIndex*/, Chan_Y, SRMod_None, SRTyp_O, 0 /*src0RegIndex*/, Chan_Y, SRMod_None, SRTyp_X, 1 /*src1RegIndex*/, Chan_W} }, // IP[62]: mul o0.y, o0.y, x1.w
+{ {Op_MUL, DRMod_None, DRTyp_O, 0 /*destRegIndex*/, Chan_Y, SRMod_None, SRTyp_O, 0 /*src0RegIndex*/, Chan_Y, SRMod_None, SRTyp_X, 1 /*src1RegIndex*/, Chan_W} }, // IP[64]: mul o0.y, o0.y, x1.w
 // mul oPos.xyz, oPos.xyz, c10.xyz
-{ {Op_MUL, DRMod_None, DRTyp_O, 0 /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_O, 0 /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_C, 10 /*src1RegIndex*/, Chan_X} }, // IP[62]: mul o0.x, o0.x, c10.x
-{ {Op_MUL, DRMod_None, DRTyp_O, 0 /*destRegIndex*/, Chan_Y, SRMod_Neg, SRTyp_O, 0 /*src0RegIndex*/, Chan_Y, SRMod_None, SRTyp_C, 10 /*src1RegIndex*/, Chan_Y} }, // IP[63]: mul o0.y, -o0.y, c10.y
-{ {Op_MUL, DRMod_None, DRTyp_O, 0 /*destRegIndex*/, Chan_Z, SRMod_None, SRTyp_O, 0 /*src0RegIndex*/, Chan_Z, SRMod_None, SRTyp_C, 10 /*src1RegIndex*/, Chan_Z} }, // IP[64]: mul o0.z, o0.z, c10.z // Note: This Z scale and offset is optional if the viewport Z scale is 1.0f and the Z offset is 0.0f
+{ {Op_MUL, DRMod_None, DRTyp_O, 0 /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_O, 0 /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_C, 10 /*src1RegIndex*/, Chan_X} }, // IP[65]: mul o0.x, o0.x, c10.x
+{ {Op_MUL, DRMod_None, DRTyp_O, 0 /*destRegIndex*/, Chan_Y, SRMod_Neg, SRTyp_O, 0 /*src0RegIndex*/, Chan_Y, SRMod_None, SRTyp_C, 10 /*src1RegIndex*/, Chan_Y} }, // IP[66]: mul o0.y, -o0.y, c10.y
+{ {Op_MUL, DRMod_None, DRTyp_O, 0 /*destRegIndex*/, Chan_Z, SRMod_None, SRTyp_O, 0 /*src0RegIndex*/, Chan_Z, SRMod_None, SRTyp_C, 10 /*src1RegIndex*/, Chan_Z} }, // IP[67]: mul o0.z, o0.z, c10.z // Note: This Z scale and offset is optional if the viewport Z scale is 1.0f and the Z offset is 0.0f
 // add oPos.xyz, oPos.xyz, c10.xyw
-{ {Op_ADD, DRMod_None, DRTyp_O, 0 /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_O, 0 /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_C, 10 /*src1RegIndex*/, Chan_X} }, // IP[62]: add o0.x, o0.x, c10.x
-{ {Op_ADD, DRMod_None, DRTyp_O, 0 /*destRegIndex*/, Chan_Y, SRMod_None, SRTyp_O, 0 /*src0RegIndex*/, Chan_Y, SRMod_None, SRTyp_C, 10 /*src1RegIndex*/, Chan_Y} }, // IP[63]: add o0.y, o0.y, c10.y
-{ {Op_ADD, DRMod_None, DRTyp_O, 0 /*destRegIndex*/, Chan_Z, SRMod_None, SRTyp_O, 0 /*src0RegIndex*/, Chan_Z, SRMod_None, SRTyp_C, 10 /*src1RegIndex*/, Chan_W} }, // IP[64]: add o0.z, o0.z, c10.w
+{ {Op_ADD, DRMod_None, DRTyp_O, 0 /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_O, 0 /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_C, 10 /*src1RegIndex*/, Chan_X} }, // IP[68]: add o0.x, o0.x, c10.x
+{ {Op_ADD, DRMod_None, DRTyp_O, 0 /*destRegIndex*/, Chan_Y, SRMod_None, SRTyp_O, 0 /*src0RegIndex*/, Chan_Y, SRMod_None, SRTyp_C, 10 /*src1RegIndex*/, Chan_Y} }, // IP[69]: add o0.y, o0.y, c10.y
+{ {Op_ADD, DRMod_None, DRTyp_O, 0 /*destRegIndex*/, Chan_Z, SRMod_None, SRTyp_O, 0 /*src0RegIndex*/, Chan_Z, SRMod_None, SRTyp_C, 10 /*src1RegIndex*/, Chan_W} }, // IP[70]: add o0.z, o0.z, c10.w
 
-{ {Op_CNV_UNORM16, DRMod_None, DRTyp_O, 2 /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_O, 2 /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_0, 0 /*src1RegIndex*/, Chan_X} }, // IP[64]: cnv_unorm16 o2.x, o2.x, 0.x
-{ {Op_CNV_UNORM16, DRMod_None, DRTyp_O, 2 /*destRegIndex*/, Chan_Y, SRMod_None, SRTyp_O, 2 /*src0RegIndex*/, Chan_Y, SRMod_None, SRTyp_0, 0 /*src1RegIndex*/, Chan_X} }, // IP[64]: cnv_unorm16 o2.y, o2.y, 0.x
+{ {Op_CNV_UNORM16, DRMod_None, DRTyp_O, 2 /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_O, 2 /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_0, 0 /*src1RegIndex*/, Chan_X} }, // IP[71]: cnv_unorm16 o2.x, o2.x, 0.x
+{ {Op_CNV_UNORM16, DRMod_None, DRTyp_O, 2 /*destRegIndex*/, Chan_Y, SRMod_None, SRTyp_O, 2 /*src0RegIndex*/, Chan_Y, SRMod_None, SRTyp_0, 0 /*src1RegIndex*/, Chan_X} }, // IP[72]: cnv_unorm16 o2.y, o2.y, 0.x
 
-{ {Op_CNV_UNORM8, DRMod_None, DRTyp_O, 1 /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_O, 1 /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_0, 0 /*src1RegIndex*/, Chan_X} }, // IP[64]: cnv_unorm8 o1.x, o1.x, 0.x
-{ {Op_CNV_UNORM8, DRMod_None, DRTyp_O, 1 /*destRegIndex*/, Chan_Y, SRMod_None, SRTyp_O, 1 /*src0RegIndex*/, Chan_Y, SRMod_None, SRTyp_0, 0 /*src1RegIndex*/, Chan_X} }, // IP[64]: cnv_unorm8 o1.y, o1.y, 0.x
-{ {Op_CNV_UNORM8, DRMod_None, DRTyp_O, 1 /*destRegIndex*/, Chan_Z, SRMod_None, SRTyp_O, 1 /*src0RegIndex*/, Chan_Z, SRMod_None, SRTyp_0, 0 /*src1RegIndex*/, Chan_X} }, // IP[64]: cnv_unorm8 o1.z, o1.z, 0.x
-{ {Op_CNV_UNORM8, DRMod_None, DRTyp_O, 1 /*destRegIndex*/, Chan_W, SRMod_None, SRTyp_O, 1 /*src0RegIndex*/, Chan_W, SRMod_None, SRTyp_0, 0 /*src1RegIndex*/, Chan_X} }, // IP[64]: cnv_unorm8 o1.w, o1.w, 0.x
+{ {Op_CNV_UNORM8, DRMod_None, DRTyp_O, 1 /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_O, 1 /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_0, 0 /*src1RegIndex*/, Chan_X} }, // IP[73]: cnv_unorm8 o1.x, o1.x, 0.x
+{ {Op_CNV_UNORM8, DRMod_None, DRTyp_O, 1 /*destRegIndex*/, Chan_Y, SRMod_None, SRTyp_O, 1 /*src0RegIndex*/, Chan_Y, SRMod_None, SRTyp_0, 0 /*src1RegIndex*/, Chan_X} }, // IP[74]: cnv_unorm8 o1.y, o1.y, 0.x
+{ {Op_CNV_UNORM8, DRMod_None, DRTyp_O, 1 /*destRegIndex*/, Chan_Z, SRMod_None, SRTyp_O, 1 /*src0RegIndex*/, Chan_Z, SRMod_None, SRTyp_0, 0 /*src1RegIndex*/, Chan_X} }, // IP[75]: cnv_unorm8 o1.z, o1.z, 0.x
+{ {Op_CNV_UNORM8, DRMod_None, DRTyp_O, 1 /*destRegIndex*/, Chan_W, SRMod_None, SRTyp_O, 1 /*src0RegIndex*/, Chan_W, SRMod_None, SRTyp_0, 0 /*src1RegIndex*/, Chan_X} }, // IP[76]: cnv_unorm8 o1.w, o1.w, 0.x
 
-{ {Op_RND_SINT16NE, DRMod_None, DRTyp_O, 0 /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_O, 0 /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_0, 0 /*src1RegIndex*/, Chan_X} }, // IP[64]: rnd_sint16ne o0.x, o0.x, 0.x
-{ {Op_RND_SINT16NE, DRMod_None, DRTyp_O, 0 /*destRegIndex*/, Chan_Y, SRMod_None, SRTyp_O, 0 /*src0RegIndex*/, Chan_Y, SRMod_None, SRTyp_0, 0 /*src1RegIndex*/, Chan_X} }, // IP[64]: rnd_sint16ne o0.y, o0.y, 0.x
+{ {Op_RND_SINT16NE, DRMod_None, DRTyp_O, 0 /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_O, 0 /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_0, 0 /*src1RegIndex*/, Chan_X} }, // IP[77]: rnd_sint16ne o0.x, o0.x, 0.x
+{ {Op_RND_SINT16NE, DRMod_None, DRTyp_O, 0 /*destRegIndex*/, Chan_Y, SRMod_None, SRTyp_O, 0 /*src0RegIndex*/, Chan_Y, SRMod_None, SRTyp_0, 0 /*src1RegIndex*/, Chan_X} }, // IP[78]: rnd_sint16ne o0.y, o0.y, 0.x
 
 // nops before the end to ensure we're done writing all regs by the time the shader finishes
-{ {Op_NOP, DRMod_None, DRTyp_NULL, 0 /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_0, 0 /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_0, 0 /*src1RegIndex*/, Chan_X} }, // IP[70]: nop 0.x, 0.x, 0.x
-{ {Op_NOP, DRMod_None, DRTyp_NULL, 0 /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_0, 0 /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_0, 0 /*src1RegIndex*/, Chan_X} }, // IP[71]: nop 0.x, 0.x, 0.x
+{ {Op_NOP, DRMod_None, DRTyp_NULL, 0 /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_0, 0 /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_0, 0 /*src1RegIndex*/, Chan_X} }, // IP[79]: nop 0.x, 0.x, 0.x
+{ {Op_NOP, DRMod_None, DRTyp_NULL, 0 /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_0, 0 /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_0, 0 /*src1RegIndex*/, Chan_X} }, // IP[80]: nop 0.x, 0.x, 0.x
 // end
-{ {Op_END, DRMod_None, DRTyp_NULL, 0 /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_0, 0 /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_0, 0 /*src1RegIndex*/, Chan_X} } // IP[72]: end
+{ {Op_END, DRMod_None, DRTyp_NULL, 0 /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_0, 0 /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_0, 0 /*src1RegIndex*/, Chan_X} } // IP[81]: end
 };
 static_assert(ARRAYSIZE(testInstructionStream) < ARRAYSIZE(InstructionCacheBRAM::instructions), "Error: Test shader will not fit into the instruction cache!");
+
+static void VerifyInstructionCacheIntegrity(const InstructionCacheBRAM& instructionCache)
+{
+	for (unsigned x = 0; x < ARRAYSIZE(testInstructionStream); ++x)
+	{
+		if (instructionCache.instructions[x].rawQWORD != testInstructionStream[x].rawQWORD)
+		{
+			__debugbreak();
+		}
+	}
+}
 
 static void VerifyInputRegisterIntegrity(const GPRQuad& registerFile)
 {
@@ -1475,6 +1588,54 @@ static void ShaderEmulateColoredLighting(const float3& inNormal, const float4& i
 	outColor.w = *reinterpret_cast<const float* const>(&oD8_a);
 }
 
+static void VerifyVBOIntegrity(const std::vector<VBO_FIFO::VBOEntry>& outVBO)
+{
+	/*	0 => ( resultDWORDIdx => to_unsigned(0, 2), destBytes => ODB_Write16B_16A, readRegIdx => to_unsigned(0, 3), regComponent_PortA => Comp_X, regComponent_PortB => Comp_Y ), -- res[0] = (o0.y<<16)|o0.x;
+	1 => ( resultDWORDIdx => to_unsigned(1, 2), destBytes => ODB_Write32A, readRegIdx => to_unsigned(0, 3), regComponent_PortA => Comp_Z, regComponent_PortB => Comp_Z ), -- res[1] = o0.z;
+	2 => ( resultDWORDIdx => to_unsigned(2, 2), destBytes => ODB_Write16B_16A, readRegIdx => to_unsigned(2, 3), regComponent_PortA => Comp_X, regComponent_PortB => Comp_Y ), -- res[2] = (o2.y<<16)|o2.x;
+	3 => ( resultDWORDIdx => to_unsigned(3, 2), destBytes => ODB_Write8B_8A_Low, readRegIdx => to_unsigned(1, 3), regComponent_PortA => Comp_X, regComponent_PortB => Comp_Y ), -- res[3] = (o1.y<<8)|o1.x;
+	4 => ( resultDWORDIdx => to_unsigned(3, 2), destBytes => ODB_Write8B_8A_High, readRegIdx => to_unsigned(1, 3), regComponent_PortA => Comp_Z, regComponent_PortB => Comp_W ) -- res[3] = (o1.w<<24)|(o1.z<<16)|res[3];	*/
+	if (outVBO.size() < 15)
+	{
+		__debugbreak();
+	}
+	for (unsigned vertIndex = 0; vertIndex < 15; ++vertIndex)
+	{
+		const testVert3D& thisVert = cubeVertices[vertIndex];
+		const VBO_FIFO::VBOEntry& thisVBO = outVBO[vertIndex];
+
+		float4 trueOutPos;
+		ShaderTransformFloat4Pos(thisVert.xyz, trueOutPos);
+		const DWORD reg0 = *reinterpret_cast<const DWORD*>(&trueOutPos.x) | (*reinterpret_cast<const DWORD*>(&trueOutPos.y) << 16);
+		if (reg0 != thisVBO.registers[0].intReg)
+		{
+			__debugbreak();
+		}
+		const DWORD reg1 = *reinterpret_cast<const DWORD*>(&trueOutPos.z);
+		if (reg1 != thisVBO.registers[1].intReg)
+		{
+			__debugbreak();
+		}
+
+		const DWORD oTexcoord0_x = FPU::ComputeConvert(thisVert.texcoord.x, F_to_UNORM16) & 0xFFFF;
+		const DWORD oTexcoord0_y = FPU::ComputeConvert(thisVert.texcoord.y, F_to_UNORM16) & 0xFFFF;
+		const DWORD reg2 = oTexcoord0_x | (oTexcoord0_y << 16);
+		if (reg2 != thisVBO.registers[2].intReg)
+		{
+			__debugbreak();
+		}
+
+		float4 trueOutColor;
+		const float4 convertedInputColor = UNORM8ToFloat::ConvertD3DCOLORToFloat4(thisVert.color);
+		ShaderEmulateColoredLighting(thisVert.normal, convertedInputColor, trueOutColor);
+		const DWORD reg3 = *reinterpret_cast<const DWORD*>(&trueOutColor.x) | (*reinterpret_cast<const DWORD*>(&trueOutColor.y) << 8) | (*reinterpret_cast<const DWORD*>(&trueOutColor.z) << 16) | (*reinterpret_cast<const DWORD*>(&trueOutColor.w) << 24);
+		if (reg3 != thisVBO.registers[3].intReg)
+		{
+			__debugbreak();
+		}
+	}
+}
+
 static void VerifyOutputRegisterIntegrity(const GPRQuad& registerFile)
 {
 	testVertOutputRHW outputVertices[15];
@@ -1582,7 +1743,7 @@ const int RunTestsShaderCore(Xsi::Loader& loader)
 			printf("%02X", byteData[byteOffset + byte]);
 		}
 	}
-	printf(");");*/
+	printf(");\n");*/
 
 	printf("type VertexDataArrayType is array(%u downto 0) of unsigned(255 downto 0);\n", (const unsigned)( (ARRAYSIZE(cubeVertices) * sizeof(cubeVertices[0]) + 1) / 32) );
 	printf("constant vertexStreamData : VertexDataArrayType := (\n");
@@ -1597,7 +1758,7 @@ const int RunTestsShaderCore(Xsi::Loader& loader)
 			printf("%02X", byteData[byteOffset + byte]);
 		}
 	}
-	printf(");");
+	printf(");\n");
 
 	// Start everything off at the beginning:
 	loader.restart();
@@ -1622,7 +1783,7 @@ const int RunTestsShaderCore(Xsi::Loader& loader)
 	// Vertex Batch Builder (VBB) FIFO signals:
 	std_logic_port VBB_Done(PD_IN, loader, "VBB_Done");
 	std_logic_port VERTBATCH_FIFO_empty(PD_IN, loader, "VERTBATCH_FIFO_empty");
-	std_logic_vector_port<256> VERTBATCH_FIFO_rd_data(PD_IN, loader, "VERTBATCH_FIFO_rd_data");
+	std_logic_vector_port<288> VERTBATCH_FIFO_rd_data(PD_IN, loader, "VERTBATCH_FIFO_rd_data");
 	std_logic_port VERTBATCH_FIFO_rd_en(PD_OUT, loader, "VERTBATCH_FIFO_rd_en");
 
 	// Vertex Batch Output (VBO) FIFO signals:
@@ -1630,6 +1791,7 @@ const int RunTestsShaderCore(Xsi::Loader& loader)
 	std_logic_port VERTOUT_FIFO_full(PD_IN, loader, "VERTOUT_FIFO_full");
 	std_logic_vector_port<128> VERTOUT_FIFO_wr_data(PD_OUT, loader, "VERTOUT_FIFO_wr_data");
 	std_logic_port VERTOUT_FIFO_wr_en(PD_OUT, loader, "VERTOUT_FIFO_wr_en");
+	std_logic_port VBO_Ready(PD_IN, loader, "VBO_Ready");
 
 	// GPRQuad0 signals:
 	std_logic_vector_port<2> GPR0_ReadQuadIndex(PD_OUT, loader, "GPR0_ReadQuadIndex");
@@ -1676,53 +1838,34 @@ const int RunTestsShaderCore(Xsi::Loader& loader)
 	std_logic_vector_port<64> ICache_WriteData(PD_OUT, loader, "ICache_WriteData");
 	std_logic_vector_port<64> ICache_ReadData(PD_IN, loader, "ICache_ReadData");
 
+	// Shared FPU signals:
+	std_logic_vector_port<3> FPUALL_IN_MODE(PD_OUT, loader, "FPUALL_IN_MODE");
+	std_logic_port FPUALL_ISHFT_GO(PD_OUT, loader, "FPUALL_ISHFT_GO");
+	std_logic_port FPUALL_IMUL_GO(PD_OUT, loader, "FPUALL_IMUL_GO");
+	std_logic_port FPUALL_IADD_GO(PD_OUT, loader, "FPUALL_IADD_GO");
+	std_logic_port FPUALL_ICMP_GO(PD_OUT, loader, "FPUALL_ICMP_GO");
+	std_logic_port FPUALL_ISPEC_GO(PD_OUT, loader, "FPUALL_ISPEC_GO");
+	std_logic_port FPUALL_ICNV_GO(PD_OUT, loader, "FPUALL_ICNV_GO");
+
 	// FPU0 signals:
 	std_logic_vector_port<32> FPU0_IN_A(PD_OUT, loader, "FPU0_IN_A");
 	std_logic_vector_port<32> FPU0_IN_B(PD_OUT, loader, "FPU0_IN_B");
-	std_logic_vector_port<3> FPU0_IN_MODE(PD_OUT, loader, "FPU0_IN_MODE");
 	std_logic_vector_port<32> FPU0_OUT_RESULT(PD_IN, loader, "FPU0_OUT_RESULT");
-	std_logic_port FPU0_ISHFT_GO(PD_OUT, loader, "FPU0_ISHFT_GO");
-	std_logic_port FPU0_IMUL_GO(PD_OUT, loader, "FPU0_IMUL_GO");
-	std_logic_port FPU0_IADD_GO(PD_OUT, loader, "FPU0_IADD_GO");
-	std_logic_port FPU0_ICMP_GO(PD_OUT, loader, "FPU0_ICMP_GO");
-	std_logic_port FPU0_ISPEC_GO(PD_OUT, loader, "FPU0_ISPEC_GO");
-	std_logic_port FPU0_ICNV_GO(PD_OUT, loader, "FPU0_ICNV_GO");
 
 	// FPU1 signals:
 	std_logic_vector_port<32> FPU1_IN_A(PD_OUT, loader, "FPU1_IN_A");
 	std_logic_vector_port<32> FPU1_IN_B(PD_OUT, loader, "FPU1_IN_B");
-	std_logic_vector_port<3> FPU1_IN_MODE(PD_OUT, loader, "FPU1_IN_MODE");
 	std_logic_vector_port<32> FPU1_OUT_RESULT(PD_IN, loader, "FPU1_OUT_RESULT");
-	std_logic_port FPU1_ISHFT_GO(PD_OUT, loader, "FPU1_ISHFT_GO");
-	std_logic_port FPU1_IMUL_GO(PD_OUT, loader, "FPU1_IMUL_GO");
-	std_logic_port FPU1_IADD_GO(PD_OUT, loader, "FPU1_IADD_GO");
-	std_logic_port FPU1_ICMP_GO(PD_OUT, loader, "FPU1_ICMP_GO");
-	std_logic_port FPU1_ISPEC_GO(PD_OUT, loader, "FPU1_ISPEC_GO");
-	std_logic_port FPU1_ICNV_GO(PD_OUT, loader, "FPU1_ICNV_GO");
 
 	// FPU2 signals:
 	std_logic_vector_port<32> FPU2_IN_A(PD_OUT, loader, "FPU2_IN_A");
 	std_logic_vector_port<32> FPU2_IN_B(PD_OUT, loader, "FPU2_IN_B");
-	std_logic_vector_port<3> FPU2_IN_MODE(PD_OUT, loader, "FPU2_IN_MODE");
 	std_logic_vector_port<32> FPU2_OUT_RESULT(PD_IN, loader, "FPU2_OUT_RESULT");
-	std_logic_port FPU2_ISHFT_GO(PD_OUT, loader, "FPU2_ISHFT_GO");
-	std_logic_port FPU2_IMUL_GO(PD_OUT, loader, "FPU2_IMUL_GO");
-	std_logic_port FPU2_IADD_GO(PD_OUT, loader, "FPU2_IADD_GO");
-	std_logic_port FPU2_ICMP_GO(PD_OUT, loader, "FPU2_ICMP_GO");
-	std_logic_port FPU2_ISPEC_GO(PD_OUT, loader, "FPU2_ISPEC_GO");
-	std_logic_port FPU2_ICNV_GO(PD_OUT, loader, "FPU2_ICNV_GO");
 
 	// FPU3 signals:
 	std_logic_vector_port<32> FPU3_IN_A(PD_OUT, loader, "FPU3_IN_A");
 	std_logic_vector_port<32> FPU3_IN_B(PD_OUT, loader, "FPU3_IN_B");
-	std_logic_vector_port<3> FPU3_IN_MODE(PD_OUT, loader, "FPU3_IN_MODE");
 	std_logic_vector_port<32> FPU3_OUT_RESULT(PD_IN, loader, "FPU3_OUT_RESULT");
-	std_logic_port FPU3_ISHFT_GO(PD_OUT, loader, "FPU3_ISHFT_GO");
-	std_logic_port FPU3_IMUL_GO(PD_OUT, loader, "FPU3_IMUL_GO");
-	std_logic_port FPU3_IADD_GO(PD_OUT, loader, "FPU3_IADD_GO");
-	std_logic_port FPU3_ICMP_GO(PD_OUT, loader, "FPU3_ICMP_GO");
-	std_logic_port FPU3_ISPEC_GO(PD_OUT, loader, "FPU3_ISPEC_GO");
-	std_logic_port FPU3_ICNV_GO(PD_OUT, loader, "FPU3_ICNV_GO");
 
 	// UNORM8ToFloat signals:
 	std_logic_port UNORM8ToFloat_Enable(PD_OUT, loader, "UNORM8ToFloat_Enable");
@@ -1740,10 +1883,10 @@ const int RunTestsShaderCore(Xsi::Loader& loader)
 	std_logic_vector_port<16> DBG_ActiveLanesBitmask(PD_OUT, loader, "DBG_ActiveLanesBitmask");
 	std_logic_vector_port<9> DBG_InstructionPointer(PD_OUT, loader, "DBG_InstructionPointer");
 	std_logic_vector_port<64> DBG_CurrentlyExecutingInstruction(PD_OUT, loader, "DBG_CurrentlyExecutingInstruction");
-	std_logic_vector_port<4> DBG_CyclesRemainingCurrentInstruction(PD_OUT, loader, "DBG_CyclesRemainingCurrentInstruction");
-	std_logic_vector_port<3> DBG_PortA_MUX(PD_OUT, loader, "DBG_PortA_MUX");
-	std_logic_vector_port<3> DBG_PortB_MUX(PD_OUT, loader, "DBG_PortB_MUX");
-	std_logic_vector_port<2> DBG_PortW_MUX(PD_OUT, loader, "DBG_PortW_MUX");
+	std_logic_vector_port<5> DBG_CyclesRemainingCurrentInstruction(PD_OUT, loader, "DBG_CyclesRemainingCurrentInstruction");
+	//std_logic_vector_port<3> DBG_PortA_MUX(PD_OUT, loader, "DBG_PortA_MUX");
+	//std_logic_vector_port<3> DBG_PortB_MUX(PD_OUT, loader, "DBG_PortB_MUX");
+	//std_logic_vector_port<2> DBG_PortW_MUX(PD_OUT, loader, "DBG_PortW_MUX");
 	std_logic_port DBG_OStall(PD_OUT, loader, "DBG_OStall");
 	std_logic_port DBG_IStall(PD_OUT, loader, "DBG_IStall");
 
@@ -1759,7 +1902,7 @@ const int RunTestsShaderCore(Xsi::Loader& loader)
 
 		const VBB_FIFO::VBBEntry emptyEntry = {0};
 
-		CMD_InCommand = 0;
+		CMD_InCommand = DoNothingCommand;
 		CMD_LoadProgramAddr = 0x00000000;
 		CMD_LoadProgramLen = 0x0000;
 		CMD_SetConstantIndex = 0x00;
@@ -1792,6 +1935,9 @@ const int RunTestsShaderCore(Xsi::Loader& loader)
 		FPU3_OUT_RESULT = 0.0f;
 	}
 
+	// Just set this to always be ready
+	VBO_Ready = true;
+
 	bool allTestsSuccessful = true;
 
 	const auto tickUpdate = [&](ShaderCore& shaderCore)
@@ -1803,17 +1949,17 @@ const int RunTestsShaderCore(Xsi::Loader& loader)
 		shaderCore.VBO.Update(VERTOUT_FIFO_wr_en, VERTOUT_FIFO_full, VERTOUT_FIFO_wr_data);
 		shaderCore.InstructionCache.Update(ICache_Enable, ICache_WriteMode, ICache_Address, ICache_ReadData, ICache_WriteData);
 		shaderCore.ConstBuffer.Update(CB_Enable, CB_WriteMode, CB_RegIndex, CB_RegComponent, CB_ReadOutData, CB_WriteInData);
-		shaderCore.FPU0.Update(FPU0_ISHFT_GO, FPU0_IMUL_GO, FPU0_IADD_GO, FPU0_ICMP_GO, FPU0_ISPEC_GO, FPU0_ICNV_GO, FPU0_IN_A, FPU0_IN_B, FPU0_IN_MODE, FPU0_OUT_RESULT);
-		shaderCore.FPU1.Update(FPU1_ISHFT_GO, FPU1_IMUL_GO, FPU1_IADD_GO, FPU1_ICMP_GO, FPU1_ISPEC_GO, FPU1_ICNV_GO, FPU1_IN_A, FPU1_IN_B, FPU1_IN_MODE, FPU1_OUT_RESULT);
-		shaderCore.FPU2.Update(FPU2_ISHFT_GO, FPU2_IMUL_GO, FPU2_IADD_GO, FPU2_ICMP_GO, FPU2_ISPEC_GO, FPU2_ICNV_GO, FPU2_IN_A, FPU2_IN_B, FPU2_IN_MODE, FPU2_OUT_RESULT);
-		shaderCore.FPU3.Update(FPU3_ISHFT_GO, FPU3_IMUL_GO, FPU3_IADD_GO, FPU3_ICMP_GO, FPU3_ISPEC_GO, FPU3_ICNV_GO, FPU3_IN_A, FPU3_IN_B, FPU3_IN_MODE, FPU3_OUT_RESULT);
+		shaderCore.FPU0.Update(FPUALL_ISHFT_GO, FPUALL_IMUL_GO, FPUALL_IADD_GO, FPUALL_ICMP_GO, FPUALL_ISPEC_GO, FPUALL_ICNV_GO, FPU0_IN_A, FPU0_IN_B, FPUALL_IN_MODE, FPU0_OUT_RESULT);
+		shaderCore.FPU1.Update(FPUALL_ISHFT_GO, FPUALL_IMUL_GO, FPUALL_IADD_GO, FPUALL_ICMP_GO, FPUALL_ISPEC_GO, FPUALL_ICNV_GO, FPU1_IN_A, FPU1_IN_B, FPUALL_IN_MODE, FPU1_OUT_RESULT);
+		shaderCore.FPU2.Update(FPUALL_ISHFT_GO, FPUALL_IMUL_GO, FPUALL_IADD_GO, FPUALL_ICMP_GO, FPUALL_ISPEC_GO, FPUALL_ICNV_GO, FPU2_IN_A, FPU2_IN_B, FPUALL_IN_MODE, FPU2_OUT_RESULT);
+		shaderCore.FPU3.Update(FPUALL_ISHFT_GO, FPUALL_IMUL_GO, FPUALL_IADD_GO, FPUALL_ICMP_GO, FPUALL_ISPEC_GO, FPUALL_ICNV_GO, FPU3_IN_A, FPU3_IN_B, FPUALL_IN_MODE, FPU3_OUT_RESULT);
 		shaderCore.RegisterFile.Update(GPR0_ReadQuadIndex, GPR0_WriteQuadIndex, GPR0_PortA_en, GPR0_PortA_regType, GPR0_PortA_regIdx, GPR0_PortA_regChan, GPR0_PortA_readOutData,
 			GPR0_PortB_en, GPR0_PortB_regType, GPR0_PortB_regIdx, GPR0_PortB_regChan, GPR0_PortB_readOutData,
 			GPR0_PortW_en, GPR0_PortW_regType, GPR0_PortW_regIdx, GPR0_PortW_regChan, GPR0_PortW_writeInData);
 		shaderCore.ColorUnpacker.Update(UNORM8ToFloat_Enable, UNORM8ToFloat_ColorIn, UNORM8ToFloat_ConvertedX, UNORM8ToFloat_ConvertedY, UNORM8ToFloat_ConvertedZ, UNORM8ToFloat_ConvertedW);
 	};
 
-	if (DBG_CurrentState.GetUint8Val() != 1)
+	if (DBG_CurrentState.GetUint8Val() != readyState)
 	{
 		__debugbreak(); // Should be in the Ready state by now
 	}
@@ -1822,9 +1968,9 @@ const int RunTestsShaderCore(Xsi::Loader& loader)
 	{
 		scoped_timestep time(loader, clk, 100);
 
-		CMD_InCommand = 2; // LoadProgram
+		CMD_InCommand = LoadProgramCommand;
 
-		if (DBG_CurrentState.GetUint8Val() != 1)
+		if (DBG_CurrentState.GetUint8Val() != readyState)
 		{
 			__debugbreak(); // We can only load our program if our shader core is in the Ready state beforehand!
 		}
@@ -1845,12 +1991,12 @@ const int RunTestsShaderCore(Xsi::Loader& loader)
 	do // Wait for the shader core to return to the Ready state after loading our program
 	{
 		tickUpdate(testShaderCore);
-	} while (DBG_CurrentState.GetUint8Val() != 1);
+	} while (DBG_CurrentState.GetUint8Val() != readyState);
 
-	// Set shader constants using CMD_InCommand = 1
+	// Set shader constants using CMD_InCommand
 	const auto setConstantReg = [&](const float* const constData, const unsigned char startingRegIndex, const unsigned char numRegs)
 	{
-		if (DBG_CurrentState.GetUint8Val() != 1)
+		if (DBG_CurrentState.GetUint8Val() != readyState)
 		{
 			__debugbreak(); // We can only set constant reg if our shader core is in the Ready state beforehand!
 		}
@@ -1862,15 +2008,15 @@ const int RunTestsShaderCore(Xsi::Loader& loader)
 
 			const float4& thisRegData = regData[reg];
 
-			CMD_InCommand = 1; // SetShaderConstant
+			CMD_InCommand = SetShaderConstantFCommand;
 			CMD_SetConstantIndex = regIndex;
 			CMD_SetConstantData.SetStructVal(thisRegData);
 
 			do
 			{
 				tickUpdate(testShaderCore);
-				CMD_InCommand = 0;
-			} while (DBG_CurrentState.GetUint8Val() != 1);
+				CMD_InCommand = DoNothingCommand;
+			} while (DBG_CurrentState.GetUint8Val() != readyState);
 
 			tickUpdate(testShaderCore);
 		}
@@ -1898,7 +2044,7 @@ const int RunTestsShaderCore(Xsi::Loader& loader)
 		const unsigned char streamID, const unsigned streamVBAddress, const unsigned char streamDWORDCount, const bool streamIsD3DCOLOR, 
 		const unsigned char streamShaderRegIndex, const unsigned char streamDWORDStride, const unsigned char streamDWORDOffset)
 	{
-		if (DBG_CurrentState.GetUint8Val() != 1)
+		if (DBG_CurrentState.GetUint8Val() != readyState)
 		{
 			__debugbreak(); // We can only set vertex streams if our shader core is in the Ready state beforehand!
 		}
@@ -1906,7 +2052,7 @@ const int RunTestsShaderCore(Xsi::Loader& loader)
 		{
 			scoped_timestep time(loader, clk, 100);
 
-			CMD_InCommand = 3; // SetStreamSource
+			CMD_InCommand = IASetVertexStreamCommand;
 			CMD_SetVertexStreamID = streamID;
 			CMD_LoadProgramAddr = streamVBAddress;
 			CMD_SetNumVertexStreams = numVertexStreams;
@@ -1947,12 +2093,14 @@ const int RunTestsShaderCore(Xsi::Loader& loader)
 		vbbEntry.indices[x] = x;
 	}
 	vbbEntry.indices[15] = 0xFFFF; // Keep the last entry invalid to simulate a nonfull warp of 5 triangle list polygons worth of vertices
+	vbbEntry.vertexBatchStartingIndex = vbbEntry.vertexBatchEndingIndex = 0;
 	testShaderCore.VBB.PushDataToFIFO(vbbEntry);
 
 	for (unsigned x = 0; x < 15; ++x)
 	{
 		vbbEntry.indices[x] = x + 15;
 	}
+	vbbEntry.vertexBatchStartingIndex = vbbEntry.vertexBatchEndingIndex = 15;
 	testShaderCore.VBB.PushDataToFIFO(vbbEntry);
 
 	for (unsigned x = 0; x < 6; ++x)
@@ -1963,25 +2111,30 @@ const int RunTestsShaderCore(Xsi::Loader& loader)
 	{
 		vbbEntry.indices[x] = 0xFFFF; // Null out the last unused entries in this batch
 	}
+	vbbEntry.vertexBatchStartingIndex = vbbEntry.vertexBatchEndingIndex = 30;
 	testShaderCore.VBB.PushDataToFIFO(vbbEntry);
 
+	// Set our starting shader address to 0:
+	CMD_LoadProgramAddr = 0x00000000;
 	{
-		if (DBG_CurrentState.GetUint8Val() != 1)
+		if (DBG_CurrentState.GetUint8Val() != readyState)
 		{
 			__debugbreak(); // We can only start shading if our shader core is in the Ready state beforehand!
 		}
 
 		scoped_timestep time(loader, clk, 100);
 		VBB_Done = true; // Let's pretend like we only have this one set of VBB batches to process in our VBB_FIFO queue
-		CMD_InCommand = 4; // BeginShading
+		CMD_InCommand = StartShadingWorkCommand;
 	}
 
-	unsigned char currentState = DBG_CurrentState.GetUint8Val();
+	eShaderCoreState currentState = (const eShaderCoreState)DBG_CurrentState.GetUint8Val();
 	unsigned cyclesSpentRunning = 0;
+	unsigned cyclesSpentOStalled = 0;
+	unsigned cyclesSpentIStalled = 0;
 	do // Wait for the shader core to enter the "running shader" state
 	{
 		tickUpdate(testShaderCore);
-		currentState = DBG_CurrentState.GetUint8Val();
+		currentState = (const eShaderCoreState)DBG_CurrentState.GetUint8Val();
 
 		const unsigned char currentWave = DBG_CurrentFetchWave.GetUint8Val();
 		const unsigned char currentDWORD = DBG_CurrentDWORD.GetUint8Val();
@@ -1989,7 +2142,9 @@ const int RunTestsShaderCore(Xsi::Loader& loader)
 		const unsigned short activeLanesBitmask = DBG_ActiveLanesBitmask.GetUint16Val();
 
 		++cyclesSpentRunning;
-	} while (currentState != 23);
+	} while (currentState != runShader);
+
+	enableDebugOutput = true; // Turn on debug printing for this part
 
 	unsigned char currentWave = DBG_CurrentFetchWave.GetUint8Val();
 	unsigned char currentDWORD = DBG_CurrentDWORD.GetUint8Val();
@@ -1997,9 +2152,9 @@ const int RunTestsShaderCore(Xsi::Loader& loader)
 	unsigned short activeLanesBitmask = DBG_ActiveLanesBitmask.GetUint16Val();
 	unsigned short currentInstructionPointer = DBG_InstructionPointer.GetUint16Val();
 	unsigned char cyclesRemainingCurrentInstruction = DBG_CyclesRemainingCurrentInstruction.GetUint8Val();
-	MUXSource portAMUX = (const MUXSource)DBG_PortA_MUX.GetUint8Val();
-	MUXSource portBMUX = (const MUXSource)DBG_PortB_MUX.GetUint8Val();
-	MUXDest portWMUX = (const MUXDest)DBG_PortW_MUX.GetUint8Val();
+	//MUXSource portAMUX = (const MUXSource)DBG_PortA_MUX.GetUint8Val();
+	//MUXSource portBMUX = (const MUXSource)DBG_PortB_MUX.GetUint8Val();
+	//MUXDest portWMUX = (const MUXDest)DBG_PortW_MUX.GetUint8Val();
 	InstructionCacheBRAM::instructionSlot currentInstruction;
 	currentInstruction.rawQWORD = 0;
 	bool currentCycleOStalled = false;
@@ -2008,11 +2163,9 @@ const int RunTestsShaderCore(Xsi::Loader& loader)
 	InstructionCacheBRAM::instructionSlot previousInstruction;
 	previousInstruction.rawQWORD = 0;
 
-	enableDebugOutout = true; // Turn on debug printing for this part
-
 	do
 	{
-		currentState = DBG_CurrentState.GetUint8Val();
+		currentState = (const eShaderCoreState)DBG_CurrentState.GetUint8Val();
 
 		currentWave = DBG_CurrentFetchWave.GetUint8Val();
 		currentDWORD = DBG_CurrentDWORD.GetUint8Val();
@@ -2020,9 +2173,9 @@ const int RunTestsShaderCore(Xsi::Loader& loader)
 		activeLanesBitmask = DBG_ActiveLanesBitmask.GetUint16Val();
 		currentInstructionPointer = DBG_InstructionPointer.GetUint16Val();
 		cyclesRemainingCurrentInstruction = DBG_CyclesRemainingCurrentInstruction.GetUint8Val();
-		portAMUX = (const MUXSource)DBG_PortA_MUX.GetUint8Val();
-		portBMUX = (const MUXSource)DBG_PortB_MUX.GetUint8Val();
-		portWMUX = (const MUXDest)DBG_PortW_MUX.GetUint8Val();
+		//portAMUX = (const MUXSource)DBG_PortA_MUX.GetUint8Val();
+		//portBMUX = (const MUXSource)DBG_PortB_MUX.GetUint8Val();
+		//portWMUX = (const MUXDest)DBG_PortW_MUX.GetUint8Val();
 		currentCycleOStalled = DBG_OStall.GetBoolVal();
 		currentCycleIStalled = DBG_IStall.GetBoolVal();
 
@@ -2030,9 +2183,22 @@ const int RunTestsShaderCore(Xsi::Loader& loader)
 
 		if (currentInstruction.rawQWORD != previousInstruction.rawQWORD)
 		{
-			if (enableDebugOutout)
+			if (enableDebugOutput)
 			{
+				if (currentInstructionPointer < 0 || currentInstructionPointer >= ARRAYSIZE(testInstructionStream) )
+				{
+					//__debugbreak(); // Out of range IP!
+				}
+				InstructionCacheBRAM::instructionSlot CPUCurrentInstruction;
+				if (currentInstructionPointer > 0 && currentInstructionPointer < ARRAYSIZE(testInstructionStream) )
+					CPUCurrentInstruction = testInstructionStream[currentInstructionPointer - 1];
 				printf("IP[%i]: ", currentInstructionPointer - 1);
+				if (memcmp(&CPUCurrentInstruction, &currentInstruction, sizeof(currentInstruction) ) != 0 && currentInstructionPointer > 0 && currentInstructionPointer < ARRAYSIZE(testInstructionStream) )
+				{
+					printf("Instruction mismatch! Expected: ");
+					InstructionCacheBRAM::PrintDisasmInstruction(CPUCurrentInstruction);
+					printf("\n");
+				}
 				InstructionCacheBRAM::PrintDisasmInstruction(currentInstruction);
 				printf("\n");
 			}
@@ -2042,6 +2208,7 @@ const int RunTestsShaderCore(Xsi::Loader& loader)
 			if (currentInstructionPointer == 2) // There's some overlap with the last GPRQuad still being written to when we first start running instructions, so wait a little bit before verifying register integrity
 			{
 				VerifyInputRegisterIntegrity(testShaderCore.RegisterFile);
+				VerifyInstructionCacheIntegrity(testShaderCore.InstructionCache);
 			}
 
 			if (currentCycleOStalled)
@@ -2058,26 +2225,33 @@ const int RunTestsShaderCore(Xsi::Loader& loader)
 
 		++cyclesSpentRunning;
 
-		if (enableDebugOutout)
+		if (enableDebugOutput)
 		{
-			printf("Cycle %u:\n", cyclesSpentRunning);
+			printf("Cycle %u: (%u remain)\n", cyclesSpentRunning, DBG_CyclesRemainingCurrentInstruction.GetUint8Val() );
 
 			if (currentCycleOStalled)
+			{
+				++cyclesSpentOStalled;
 				printf("STALL (O)! Waiting for previous FPU operations to complete.\n");
+			}
 
 			if (currentCycleIStalled)
+			{
+				++cyclesSpentIStalled;
 				printf("STALL (I)! Waiting for registers from previous operations to be written.\n");
+			}
 		}
-	} while (currentState == 23 || currentState == 24 || currentState == 25);
+	} while (currentState == setupRunShader || currentState == setupRunShader2 || currentState == setupRunShader3 || currentState == setupRunShader4
+		|| currentState == runShader || currentState == waitForWritesToComplete);
 
 	VerifyOutputRegisterIntegrity(testShaderCore.RegisterFile);
 
 	do
 	{
-		currentState = DBG_CurrentState.GetUint8Val();
+		currentState = (const eShaderCoreState)DBG_CurrentState.GetUint8Val();
 
 		tickUpdate(testShaderCore);
-	} while (currentState == 26 || currentState == 27);
+	} while (currentState == collectShaderResults || currentState == submitShaderResults);
 
 	std::vector<VBO_FIFO::VBOEntry> outputProcessedVertData;
 	for (unsigned x = 0; x < 15; ++x)
@@ -2089,6 +2263,7 @@ const int RunTestsShaderCore(Xsi::Loader& loader)
 	}
 
 	const DWORD* const processedVertDataBuffer = reinterpret_cast<const DWORD* const>(&outputProcessedVertData.front() );
+	VerifyVBOIntegrity(outputProcessedVertData);
 
 	if (allTestsSuccessful)
 		return S_OK;

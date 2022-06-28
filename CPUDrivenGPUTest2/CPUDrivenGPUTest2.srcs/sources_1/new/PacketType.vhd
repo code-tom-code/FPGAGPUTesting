@@ -45,6 +45,7 @@ package PacketType is
 		PT_SETVERTEXSTREAMDATA, -- 22
 		PT_SETINDEXBUFFER, -- 23
 		PT_SETSHADERCONSTANTSPECIAL, -- 24
+		PT_SETSHADERSTARTADDRESS, -- 25
 
 		PT_MAX_PACKET_TYPES -- Must always be last!
 	);
@@ -56,7 +57,7 @@ package PacketType is
 		LoadProgramCommand, -- 1 : LoadProgram (uint32 prog addr, uint16 prog len)
 		SetShaderConstantFCommand, -- 2 : SetShaderConstantF (uint8 constant register index c#, float4 value)
 		IASetVertexStreamCommand, -- 3 : IASetVertexStream(uint3 streamID, uint32 streamBaseAddress, uint2 dwordCount, bool isD3DCOLOR, uint3 shaderRegIndex, uint6 dwordStride, uint6 dwordOffset)
-		StartShadingWorkCommand -- 4 : StartShadingWork()
+		StartShadingWorkCommand -- 4 : StartShadingWork(uint9 setShaderStartAddress)
 	);
 
 	-- Sent from the command processor to the Vertex Batch Builder

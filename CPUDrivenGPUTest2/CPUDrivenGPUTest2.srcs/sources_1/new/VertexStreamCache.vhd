@@ -201,7 +201,7 @@ begin
 						VertexCache_ena <= '1';
 						currentState <= waitForBRAMReadState;
 					else -- Cache miss
-						VSCReadRequestsFIFO_wr_data <= std_logic_vector(vertexStreamAddresses(to_integer(unsigned(VSC_ReadStreamIndex) ) ) + unsigned("000000" & VSC_ReadDWORDAddr & "00") );
+						VSCReadRequestsFIFO_wr_data <= std_logic_vector(resize(vertexStreamAddresses(to_integer(unsigned(VSC_ReadStreamIndex) ) ) + (unsigned(VSC_ReadDWORDAddr) sll 2), 30) );
 						VSCReadRequestsFIFO_wr_en <= '1';
 
 						currentState <= cacheMissState;

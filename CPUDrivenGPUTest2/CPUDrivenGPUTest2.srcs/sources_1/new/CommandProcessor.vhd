@@ -245,7 +245,8 @@ architecture Behavioral of CommandProcessor is
 						SET_SHADER_CONSTANT_WAIT_FOR_SEND_HIGH_REGISTER, -- 36
 						SET_VERTEX_STREAM_DATA, -- 37
 						SET_INDEX_BUFFER, -- 38
-						SET_SHADER_CONSTANT_SPECIAL -- 39
+						SET_SHADER_CONSTANT_SPECIAL, -- 39
+						SET_SHADER_START_ADDRESS -- 40
 						);
 
 	type commandListExecState is record
@@ -283,6 +284,7 @@ architecture Behavioral of CommandProcessor is
 	signal setIAStateEnable : std_logic := '0';
 	signal setROPClearEnable : std_logic := '0';
 	signal flushROPCache : std_logic := '0';
+	signal shaderStartAddress : unsigned(8 downto 0) := (others => '0');
 
 	signal constantBufferLoadAddr : unsigned(29 downto 0) := (others => '0');
 	signal constantBufferLoadRegisterIndex : unsigned(7 downto 0) := (others => '0');
@@ -526,6 +528,9 @@ begin
 							when PT_SETSHADERCONSTANTSPECIAL =>
 								mst_packet_state <= SET_SHADER_CONSTANT_SPECIAL;
 
+							when PT_SETSHADERSTARTADDRESS =>
+								mst_packet_state <= SET_SHADER_START_ADDRESS;
+
 							when others => --when PT_DONOTHING =>
 								mst_packet_state <= DONOTHING_PACKET;
 						end case;
@@ -763,6 +768,7 @@ begin
 
 							-- Signal to the shader core to begin shading
 							SHADER_InCommand <= std_logic_vector(to_unsigned(eShaderCMDPacket'pos(StartShadingWorkCommand), 3) );
+							SHADER_LoadProgramAddr <= "000000000000000000000" & std_logic_vector(shaderStartAddress); -- Start from our shader start address
 
 							mst_packet_state <= READ_NEXT_PACKET_FROM_FIFO;
 						else
@@ -961,6 +967,10 @@ begin
 							VBB_CommandArg0 <= std_logic_vector(localIncomingPacket.payload0);
 							mst_packet_state <= READ_NEXT_PACKET_FROM_FIFO;
 						end if;
+
+					when SET_SHADER_START_ADDRESS =>
+						shaderStartAddress <= localIncomingPacket.payload0(8 downto 0);
+						mst_packet_state <= READ_NEXT_PACKET_FROM_FIFO;
 
 					-- Removed! May repurpose this case
 					when Removed13 =>

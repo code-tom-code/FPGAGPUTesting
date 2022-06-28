@@ -134,7 +134,7 @@ entity ShaderCore is
 		DBG_ActiveLanesBitmask : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
 		DBG_InstructionPointer : out STD_LOGIC_VECTOR(8 downto 0) := (others => '0');
 		DBG_CurrentlyExecutingInstruction : out STD_LOGIC_VECTOR(63 downto 0) := (others => '0');
-		DBG_CyclesRemainingCurrentInstruction : out STD_LOGIC_VECTOR(3 downto 0) := (others => '0');
+		DBG_CyclesRemainingCurrentInstruction : out STD_LOGIC_VECTOR(4 downto 0) := (others => '0');
 		--DBG_PortA_MUX : out STD_LOGIC_VECTOR(2 downto 0) := (others => '0');
 		--DBG_PortB_MUX : out STD_LOGIC_VECTOR(2 downto 0) := (others => '0');
 		--DBG_PortW_MUX : out STD_LOGIC_VECTOR(1 downto 0) := (others => '0');
@@ -196,11 +196,14 @@ type eShaderCoreState is
 	unpackColorData_WriteW, -- 23
 
 	setupRunShader, -- 24
-	runShader, -- 25
-	waitForWritesToComplete, -- 26
+	setupRunShader2, -- 25
+	setupRunShader3, -- 26
+	setupRunShader4, -- 27
+	runShader, -- 28
+	waitForWritesToComplete, -- 29
 
-	collectShaderResults, -- 27
-	submitShaderResults -- 28
+	collectShaderResults, -- 30
+	submitShaderResults -- 31
 );
 
 type InstructionOperation is (
@@ -358,6 +361,10 @@ constant InstructionSlot_SrcBRegComponentBitOffset : integer := InstructionSlot_
 constant InstructionSlot_SrcBRegComponentBitLength : integer := 2;
 constant InstructionSlot_SrcBRegComponentBitHigh : integer := InstructionSlot_SrcBRegComponentBitOffset + InstructionSlot_SrcBRegComponentBitLength - 1;
 
+constant CycleLatency_InstructionCache : natural := 3; -- The instruction cache now takes 3 cycles to return a read result
+constant CycleLatency_ConstBuffer : natural := 3; -- The constant buffer now takes 3 cycles to return a read result
+constant CycleLatency_GPRQuad : natural := 3; -- The GPR Quad now takes 3 cycles to return a read result
+
 type PipelineFPUState is record
 	Pipe_IN_MODE : unsigned(2 downto 0);
 	Pipe_IADD_GO : std_logic;
@@ -418,7 +425,7 @@ type GPR_PortW_PipelineData is record
 	Pipe_CurrentOperation : InstructionOperation;
 end record GPR_PortW_PipelineData;
 
-type PortW_PipelineArrayType is array(13 + 4 + 1 downto 0) of GPR_PortW_PipelineData;
+type PortW_PipelineArrayType is array(SPEC_CYCLES + 4 + CycleLatency_GPRQuad + 1 downto 0) of GPR_PortW_PipelineData;
 
 type VertexStreamData is record
 	dwordCount : unsigned(2 downto 0);
@@ -441,7 +448,7 @@ end record OutputInstruction;
 type OutputInstructionArray is array(4 downto 0) of OutputInstruction;
 type OutputRegistersArray is array(3 downto 0) of unsigned(31 downto 0);
 
-constant SafeNOPInstruction : unsigned(63 downto 0) := "0000000000000000000000000000000001010000000000001010000000110000"; -- NOP NULL.x, 0.x, 0.x
+constant SafeNOPInstruction : unsigned(63 downto 0) := "0000000000000000000000000000000101000000000000101000000011000000"; -- NOP NULL.x, 0.x, 0.x
 constant DefaultPipeOutputState : PipelineOutputState := (Pipe_PortWrite_GPRQuad => (others => '0'),
 														Pipe_PortW_wrEnable => '0',
 														Pipe_PortW_regType => RFType_XSpecial,
@@ -493,16 +500,18 @@ end function;
 pure function InstructionGetCycleLatency(instructionOp : InstructionOperation) return unsigned is
 begin
 	case instructionOp is
-		when Op_RCP => -- 13 cycle operation latency for RCP pipe
-			return to_unsigned(13, 4);
+		when Op_RCP => -- 14 cycle operation latency for RCP pipe
+			return to_unsigned(SPEC_CYCLES, 5);
 		when Op_MUL => -- 5 cycle operation latency for MUL pipe
-			return to_unsigned(5, 4);
+			return to_unsigned(MUL_CYCLES, 5);
 		when Op_ADD => -- 4 cycle operation latency for ADD pipe
-			return to_unsigned(4, 4);
+			return to_unsigned(ADD_CYCLES, 5);
 		when Op_CNV_UNORM16 | Op_CNV_UNORM8 | Op_RND_SINT16NE | Op_RND_SINT23NE | Op_RND_SINT24Z => -- 3 cycle operation latency for CNV pipe
-			return to_unsigned(3, 4);
-		when others => -- Assuming that the other instructions are all 1-cycle instructions (like CMP, SHFT, MOV, etc.)
-			return to_unsigned(1, 4);
+			return to_unsigned(CNV_CYCLES, 5);
+		when Op_SHFT => -- 1 cycle operation latency for SHFT pipe
+			return to_unsigned(SHFT_CYCLES, 5);
+		when others => -- Assuming that the other instructions are all 1-cycle instructions (like CMP, MOV, etc.)
+			return to_unsigned(1, 5);
 	end case;
 end function;
 
@@ -679,7 +688,9 @@ begin
 	return instructionData(InstructionSlot_SrcBRegIndexBitOffset+3-1 downto InstructionSlot_SrcBRegIndexBitOffset);
 end function;
 
--- Returns '1' if the shader core should stall (not issue this instruction yet), or '0' if it is free to issue the instruction
+-- Returns '1' if the shader core should stall (not issue this instruction yet) due to output port contention, or '0' if it is free to issue the instruction.
+-- This type of stall is common when switching from an instruction with a longer latency to an instruction with a shorter latency. The shorter latency instruction needs
+-- to wait for the longer latency instruction to finish using the output port before it's able to use it.
 pure function ShouldStallOnOutputCollision(targetWritePipeStage : PipelineOutputState) return std_logic is
 begin
 	return targetWritePipeStage.Pipe_PortW_wrEnable; -- We need to stall if the target pipe stage is already writing to Port W!
@@ -702,7 +713,7 @@ end function;
 -- Returns '1' if the shader core should stall (not issue this instruction yet), or '0' if it is free to issue the instruction
 pure function ShouldStallOnWaitForInputReady(upcomingPipeStages : PortW_PipelineArrayType; instructionData : unsigned(63 downto 0) ) return std_logic is
 begin
-	for i in 0 to 4 loop
+	for i in 0 to (upcomingPipeStages'length - 1) loop
 		if (InstructionGetPortAMUXSource(instructionData) = MUXSrc_RegFile) then
 			if (InputOutputCollisionCheck(InstructionGetSrcRegAChannel(instructionData), InstructionGetRegFileTypeSrcA(instructionData), InstructionGetSrcRegFileAIndex(instructionData), upcomingPipeStages(i).Pipe_OutputState) = '1') then
 				return '1';
@@ -983,7 +994,7 @@ begin
 	return '0';
 end function;
 
-pure function MaxFunc(aVal : unsigned(3 downto 0); bVal : unsigned(3 downto 0) ) return unsigned is
+pure function MaxFunc(aVal : unsigned(4 downto 0); bVal : unsigned(4 downto 0) ) return unsigned is
 begin
 	if (aVal > bVal) then
 		return aVal;
@@ -1058,8 +1069,9 @@ signal readyToRunShader : std_logic := '0';
 
 -- Shader Execution signals
 signal instructionPointer : unsigned(8 downto 0) := (others => '0');
-signal currentInstruction : unsigned(63 downto 0) := (others => '0');
-signal cyclesRemainingCurrentInstruction : unsigned(3 downto 0) := (others => '0');
+signal shaderStartInstructionPointer : unsigned(8 downto 0) := (others => '0');
+signal currentInstruction : unsigned(63 downto 0) := SafeNOPInstruction;
+signal cyclesRemainingCurrentInstruction : unsigned(4 downto 0) := (others => '0');
 signal PortA_MUX : MUXSource := MUXSrc_ZeroReg;
 signal PortA_SrcMod : SourceMod := SrcMod_None;
 signal PortB_MUX : MUXSource := MUXSrc_ZeroReg;
@@ -1070,6 +1082,7 @@ signal PortW_DestMod : DestMod := DestMod_None;
 -- Vertex output signals
 signal currentBitOutput : unsigned(3 downto 0) := (others => '0');
 signal currentOutputInstructionPointer : unsigned(2 downto 0) := (others => '0');
+signal currentOutputIteration : unsigned(3 downto 0) := (others => '0');
 signal currentOutputDWORDs : OutputRegistersArray := (others => (others => '0') );
 
 -- PortW Pipeline data:
@@ -1178,6 +1191,7 @@ begin
 						currentFetchWave <= (others => '0');
 						currentStreamID <= (others => '0');
 						currentDWORDID <= (others => '0');
+						shaderStartInstructionPointer <= unsigned(CMD_LoadProgramAddr(8 downto 0) );
 						PortW_MUX <= MUXDest_Special; -- Set PortW on the register file MUX to input from the currentFetchRegisters
 						currentState <= getVertexBatch;
 
@@ -1283,6 +1297,7 @@ begin
 				VSC_ReadStreamIndex <= std_logic_vector(currentStreamID);
 				vertexScaleProduct <= vertexBatchData(to_integer(currentFetchWave) ) * vertexStreams(to_integer(currentStreamID) ).dwordStreamStride;
 				thisDwordOffset <= vertexStreams(to_integer(currentStreamID) ).dwordStreamOffset;
+				currentState <= fetchVertexStreamData1;
 
 			when fetchVertexStreamData1 =>
 				VSC_ReadDWORDAddr <= std_logic_vector(vertexScaleProduct + thisDwordOffset + currentDWORDID);
@@ -1409,7 +1424,7 @@ begin
 				ICache_Enable <= '1';
 				ICache_WriteMode <= "0"; -- Set our instruction cache to read-only mode
 				CB_WriteMode <= '0'; -- Set the constant buffer to read-only mode
-				instructionPointer <= (others => '0'); -- Reset our IP to address 0
+				instructionPointer <= shaderStartInstructionPointer; -- Reset our IP to the starting address for our shader
 				cyclesRemainingCurrentInstruction <= (others => '0'); -- Tell the shader core that it's time to fetch a new instruction
 				currentInstruction <= SafeNOPInstruction; -- Set our current instruction to something safe that won't have any side effects or dependencies
 				GPR0_PortA_en <= '0';
@@ -1447,6 +1462,15 @@ begin
 					Pipe_Data(i).Pipe_CurrentOperation <= Op_NOP;
 				end loop;
 
+				currentState <= setupRunShader2;
+
+			when setupRunShader2 => -- Wait 3 cycles for the instruction cache read to return with our first instruction
+				currentState <= setupRunShader3;
+
+			when setupRunShader3 => -- Wait 3 cycles for the instruction cache read to return with our first instruction
+				currentState <= setupRunShader4;
+
+			when setupRunShader4 => -- Wait 3 cycles for the instruction cache read to return with our first instruction
 				currentState <= runShader;
 
 			when runShader =>
@@ -1497,25 +1521,25 @@ begin
 				DBG_OStall <= '0'; -- This may get overridden in case of a stall
 				DBG_IStall <= '0'; -- This may get overridden in case of a stall
 
-				if (cyclesRemainingCurrentInstruction = 1) then
+				if (cyclesRemainingCurrentInstruction = (CycleLatency_InstructionCache + 1) ) then
 					ICache_Enable <= '1';
 				else
 					ICache_Enable <= '0';
 				end if;
 
 				if (cyclesRemainingCurrentInstruction = 0) then -- If we're done executing the previous instruction, then start working on the next one
-					if (ShouldStallOnOutputCollision(Pipe_Data(to_integer(InstructionGetCycleLatency(InstructionGetOperation(unsigned(ICache_ReadData) ) ) + to_unsigned(1, 4) ) ).Pipe_OutputState) = '1' or
-						ShouldStallOnOutputCollision(Pipe_Data(to_integer(InstructionGetCycleLatency(InstructionGetOperation(unsigned(ICache_ReadData) ) ) + to_unsigned(2, 4) ) ).Pipe_OutputState) = '1' or
-						ShouldStallOnOutputCollision(Pipe_Data(to_integer(InstructionGetCycleLatency(InstructionGetOperation(unsigned(ICache_ReadData) ) ) + to_unsigned(3, 4) ) ).Pipe_OutputState) = '1' or
-						ShouldStallOnOutputCollision(Pipe_Data(to_integer(InstructionGetCycleLatency(InstructionGetOperation(unsigned(ICache_ReadData) ) ) + to_unsigned(4, 4) ) ).Pipe_OutputState) = '1') then
+					if (ShouldStallOnOutputCollision(Pipe_Data(to_integer(InstructionGetCycleLatency(InstructionGetOperation(unsigned(ICache_ReadData) ) ) + to_unsigned(CycleLatency_GPRQuad + 1, 5) ) ).Pipe_OutputState) = '1' or
+						ShouldStallOnOutputCollision(Pipe_Data(to_integer(InstructionGetCycleLatency(InstructionGetOperation(unsigned(ICache_ReadData) ) ) + to_unsigned(CycleLatency_GPRQuad + 2, 5) ) ).Pipe_OutputState) = '1' or
+						ShouldStallOnOutputCollision(Pipe_Data(to_integer(InstructionGetCycleLatency(InstructionGetOperation(unsigned(ICache_ReadData) ) ) + to_unsigned(CycleLatency_GPRQuad + 3, 5) ) ).Pipe_OutputState) = '1' or
+						ShouldStallOnOutputCollision(Pipe_Data(to_integer(InstructionGetCycleLatency(InstructionGetOperation(unsigned(ICache_ReadData) ) ) + to_unsigned(CycleLatency_GPRQuad + 4, 5) ) ).Pipe_OutputState) = '1') then
 
 						DBG_OStall <= '1';
-						cyclesRemainingCurrentInstruction <= cyclesRemainingCurrentInstruction; -- Do not advance the cycles remaining until we are un-stalled!
+						cyclesRemainingCurrentInstruction <= (others => '0'); -- Do not advance the cycles remaining until we are un-stalled!
 
 					elsif (ShouldStallOnWaitForInputReady(Pipe_Data, unsigned(ICache_ReadData) ) = '1') then
 
 						DBG_IStall <= '1';
-						cyclesRemainingCurrentInstruction <= cyclesRemainingCurrentInstruction; -- Do not advance the cycles remaining until we are un-stalled!
+						cyclesRemainingCurrentInstruction <= (others => '0'); -- Do not advance the cycles remaining until we are un-stalled!
 
 					else -- if no stalls, issue our new instruction!
 
@@ -1534,14 +1558,14 @@ begin
 							Pipe_Data(0).Pipe_CBState <= DefaultPipeCBState;
 						end if;
 
-						for i in 1 to 4 loop
+						for i in (CycleLatency_GPRQuad + 1) to (CycleLatency_GPRQuad + 4) loop
 							Pipe_Data(i).Pipe_FPUState.Pipe_IN_MODE <= InstructionGetFPUMode(unsigned(ICache_ReadData) );
 							Pipe_Data(i).Pipe_FPUState.Pipe_IADD_GO <= InstructionIsFPUAdd(unsigned(ICache_ReadData) );
 							Pipe_Data(i).Pipe_FPUState.Pipe_ICMP_GO <= InstructionIsFPUCmp(unsigned(ICache_ReadData) );
 							Pipe_Data(i).Pipe_FPUState.Pipe_IMUL_GO <= InstructionIsFPUMul(unsigned(ICache_ReadData) );
 							Pipe_Data(i).Pipe_FPUState.Pipe_ISHFT_GO <= InstructionIsFPUShft(unsigned(ICache_ReadData) );
 							Pipe_Data(i).Pipe_FPUState.Pipe_ISPEC_GO <= InstructionIsFPUSpec(unsigned(ICache_ReadData) );
-							Pipe_Data(i).Pipe_FPUState.Pipe_ICNV_GO <= InstructionIsFPUCnv(unsigned(ICache_ReadData) );	
+							Pipe_Data(i).Pipe_FPUState.Pipe_ICNV_GO <= InstructionIsFPUCnv(unsigned(ICache_ReadData) );
 							Pipe_Data(i).Pipe_FPUState.Pipe_PortA_MUX <= InstructionGetPortAMUXSource(unsigned(ICache_ReadData) );
 							Pipe_Data(i).Pipe_FPUState.Pipe_PortA_SrcMod <= InstructionGetPortASrcMod(unsigned(ICache_ReadData) );
 							Pipe_Data(i).Pipe_FPUState.Pipe_PortB_MUX <= InstructionGetPortBMUXSource(unsigned(ICache_ReadData) );
@@ -1574,23 +1598,23 @@ begin
 						end if;
 
 						if (InstructionGetDestRegType(unsigned(ICache_ReadData) ) /= DRTyp_NULL) then
-							for i in 1 to 4 loop
-								Pipe_Data(to_integer(InstructionGetCycleLatency(InstructionGetOperation(unsigned(ICache_ReadData) ) ) + to_unsigned(i, 4) ) ).Pipe_OutputState.Pipe_PortW_wrEnable <= '1';
-								Pipe_Data(to_integer(InstructionGetCycleLatency(InstructionGetOperation(unsigned(ICache_ReadData) ) ) + to_unsigned(i, 4) ) ).Pipe_OutputState.Pipe_PortW_regChan <= InstructionGetDestRegWChannel(unsigned(ICache_ReadData) );
-								Pipe_Data(to_integer(InstructionGetCycleLatency(InstructionGetOperation(unsigned(ICache_ReadData) ) ) + to_unsigned(i, 4) ) ).Pipe_OutputState.Pipe_PortW_regIdx <= InstructionGetDestRegWIndex(unsigned(ICache_ReadData) );
-								Pipe_Data(to_integer(InstructionGetCycleLatency(InstructionGetOperation(unsigned(ICache_ReadData) ) ) + to_unsigned(i, 4) ) ).Pipe_OutputState.Pipe_PortW_regType <= InstructionGetRegFileTypeDestW(unsigned(ICache_ReadData) );
-								Pipe_Data(to_integer(InstructionGetCycleLatency(InstructionGetOperation(unsigned(ICache_ReadData) ) ) + to_unsigned(i, 4) ) ).Pipe_OutputState.Pipe_PortWrite_GPRQuad <= to_unsigned(i - 1, 2);
-								Pipe_Data(to_integer(InstructionGetCycleLatency(InstructionGetOperation(unsigned(ICache_ReadData) ) ) + to_unsigned(i, 4) ) ).Pipe_OutputState.Pipe_PortW_MUX <= InstructionGetPortWMUXDest(unsigned(ICache_ReadData) );
-								Pipe_Data(to_integer(InstructionGetCycleLatency(InstructionGetOperation(unsigned(ICache_ReadData) ) ) + to_unsigned(i, 4) ) ).Pipe_OutputState.Pipe_PortW_DestMod <= InstructionGetPortWDestMod(unsigned(ICache_ReadData) );
+							for i in (CycleLatency_GPRQuad + 1) to (CycleLatency_GPRQuad + 4) loop
+								Pipe_Data(to_integer(InstructionGetCycleLatency(InstructionGetOperation(unsigned(ICache_ReadData) ) ) + to_unsigned(i, 5) ) ).Pipe_OutputState.Pipe_PortW_wrEnable <= '1';
+								Pipe_Data(to_integer(InstructionGetCycleLatency(InstructionGetOperation(unsigned(ICache_ReadData) ) ) + to_unsigned(i, 5) ) ).Pipe_OutputState.Pipe_PortW_regChan <= InstructionGetDestRegWChannel(unsigned(ICache_ReadData) );
+								Pipe_Data(to_integer(InstructionGetCycleLatency(InstructionGetOperation(unsigned(ICache_ReadData) ) ) + to_unsigned(i, 5) ) ).Pipe_OutputState.Pipe_PortW_regIdx <= InstructionGetDestRegWIndex(unsigned(ICache_ReadData) );
+								Pipe_Data(to_integer(InstructionGetCycleLatency(InstructionGetOperation(unsigned(ICache_ReadData) ) ) + to_unsigned(i, 5) ) ).Pipe_OutputState.Pipe_PortW_regType <= InstructionGetRegFileTypeDestW(unsigned(ICache_ReadData) );
+								Pipe_Data(to_integer(InstructionGetCycleLatency(InstructionGetOperation(unsigned(ICache_ReadData) ) ) + to_unsigned(i, 5) ) ).Pipe_OutputState.Pipe_PortWrite_GPRQuad <= to_unsigned(i - CycleLatency_GPRQuad - 1, 2);
+								Pipe_Data(to_integer(InstructionGetCycleLatency(InstructionGetOperation(unsigned(ICache_ReadData) ) ) + to_unsigned(i, 5) ) ).Pipe_OutputState.Pipe_PortW_MUX <= InstructionGetPortWMUXDest(unsigned(ICache_ReadData) );
+								Pipe_Data(to_integer(InstructionGetCycleLatency(InstructionGetOperation(unsigned(ICache_ReadData) ) ) + to_unsigned(i, 5) ) ).Pipe_OutputState.Pipe_PortW_DestMod <= InstructionGetPortWDestMod(unsigned(ICache_ReadData) );
 							end loop;
 						else
-							for i in 1 to 4 loop
-								Pipe_Data(to_integer(InstructionGetCycleLatency(InstructionGetOperation(unsigned(ICache_ReadData) ) ) + to_unsigned(i, 4) ) ).Pipe_OutputState <= DefaultPipeOutputState;
+							for i in (CycleLatency_GPRQuad + 1) to (CycleLatency_GPRQuad + 4) loop
+								Pipe_Data(to_integer(InstructionGetCycleLatency(InstructionGetOperation(unsigned(ICache_ReadData) ) ) + to_unsigned(i, 5) ) ).Pipe_OutputState <= DefaultPipeOutputState;
 							end loop;
 						end if;
 
-						-- Min of 4 cycles because we need to run through four GPR Quads per instruction in order to write them all
-						cyclesRemainingCurrentInstruction <= MaxFunc(to_unsigned(4, 4), InstructionGetCycleLatency(InstructionGetOperation(unsigned(ICache_ReadData) ) ) );
+						-- Min of 7 cycles because we need to run through four GPR Quads per instruction in order to write them all and we have a 3 cycle latency to do so
+						cyclesRemainingCurrentInstruction <= MaxFunc(to_unsigned(7, 5), InstructionGetCycleLatency(InstructionGetOperation(unsigned(ICache_ReadData) ) ) );
 
 						for i in 0 to 3 loop
 							Pipe_Data(i).Pipe_InputState.Pipe_PortRead_GPRQuad <= to_unsigned(i, 2);
@@ -1655,6 +1679,8 @@ begin
 					VBO_BatchEndingIndex <= std_logic_vector(vertexBatchEndingIndex);
 					currentState <= getVertexBatch;
 				else
+					-- This is simple, yet wasteful. Instead of spinning doing nothing for 3 cycles for each output instruction, we should instead
+					-- pipeline the output instruction processing.
 					if (currentOutputInstructionPointer < DefaultOutputInstructionStream'length) then
 						GPR0_ReadQuadIndex <= std_logic_vector(currentBitOutput(3 downto 2) );
 						GPR0_PortA_en <= '1';
@@ -1680,8 +1706,14 @@ begin
 						currentState <= submitShaderResults;
 						currentBitOutput <= currentBitOutput + 1;
 						currentOutputInstructionPointer <= (others => '0');
+						currentOutputIteration <= (others => '0');
 					else
-						currentOutputInstructionPointer <= currentOutputInstructionPointer + 1;
+						if (currentOutputIteration = (CycleLatency_GPRQuad) ) then
+							currentOutputIteration <= (others => '0');
+							currentOutputInstructionPointer <= currentOutputInstructionPointer + 1;
+						else
+							currentOutputIteration <= currentOutputIteration + 1;
+						end if;
 					end if;
 				end if;
 

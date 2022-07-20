@@ -224,6 +224,28 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DVertexShader9Hook::GetFu
 	return ret;
 }
 
+void IDirect3DVertexShader9Hook::UploadShaderBytecodeToDevice(gpuvoid* const gpuUploadShaderAddress)
+{
+	if (!gpuUploadShaderAddress)
+	{
+#ifdef _DEBUG
+		__debugbreak();
+#endif
+		return;
+	}
+
+	if (!deviceCompiledVertexShaderBytecode)
+	{
+#ifdef _DEBUG
+		__debugbreak();
+#endif
+		return;
+	}
+
+	IBaseDeviceComms* const deviceComms = IBaseDeviceComms::GetGlobalDeviceComms();
+	deviceComms->DeviceMemCopy(gpuUploadShaderAddress, &(deviceCompiledVertexShaderBytecode->deviceInstructions), deviceCompiledVertexShaderBytecode->deviceShaderInfo.deviceInstructionTokenCount * sizeof(instructionSlot) );
+}
+
 void IDirect3DVertexShader9Hook::JitLoadShader()
 {
 	const char* const jitName = ConstructShaderJITName(vertexShaderInfo);
@@ -287,10 +309,14 @@ void IDirect3DVertexShader9Hook::JitLoadShader()
 	ShaderCompileOptions compileFlags = (ShaderCompileOptions)(SCOption_VS_AppendViewportTransform | SCOption_VS_AppendDivideByW | SCOption_VS_OutputCompressionEnable);
 #ifdef _DEBUG
 	compileFlags = (ShaderCompileOptions)(compileFlags | SCOption_OutputEverything);
+
+	// Just for testing:
+	//compileFlags = (ShaderCompileOptions)(compileFlags | SCOption_VS_GeneratePassthroughShader); // Force special shader path
+	//compileFlags = (ShaderCompileOptions)(compileFlags & (~SCOption_VS_OutputCompressionEnable) ); // Remove output compresion
 #else
 	compileFlags = (ShaderCompileOptions)(compileFlags | SCOption_Optimize_InstructionReordering | SCOption_Optimize_RegisterSplitting);
 #endif
-	if (CompileShaderToDeviceBytecode(&GetShaderInfo(), compileFlags, &deviceCompiledVertexShaderBytecode, jitName) != ShaderCompile_OK)
+	if (CompileShaderInfoToDeviceBytecode(&GetShaderInfo(), compileFlags, &deviceCompiledVertexShaderBytecode, jitName) != ShaderCompile_OK)
 	{
 #ifdef _DEBUG
 		__debugbreak(); // Shader compilation to device bytecode failed!
@@ -313,8 +339,7 @@ void IDirect3DVertexShader9Hook::JitLoadShader()
 	}
 
 	// Copy our newly compiled device-specific shader instruction bytecode over to the GPU for later loading and execution:
-	IBaseDeviceComms* const deviceComms = IBaseDeviceComms::GetGlobalDeviceComms();
-	deviceComms->DeviceMemCopy(allocVertexShaderBytes, &(deviceCompiledVertexShaderBytecode->deviceInstructions), deviceCompiledVertexShaderBytecode->deviceShaderInfo.deviceInstructionTokenCount * sizeof(instructionSlot) );
+	UploadShaderBytecodeToDevice(allocVertexShaderBytes);
 
 	deviceCompiledVertexShaderBytes = allocVertexShaderBytes;
 }

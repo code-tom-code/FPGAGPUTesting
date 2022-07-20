@@ -41,6 +41,7 @@ enum allocationUsage : unsigned char
 	GPUVAT_ConstantBufferData,
 	GPUVAT_ShaderInstructionsMemory,
 	GPUVAT_StatsMemory,
+	GPUVAT_RegisterFileDumpMemory,
 
 	GPUVAT_MAX_NUM_ALLOCATION_USAGES // This must always be last!
 };
@@ -105,6 +106,10 @@ enum gpuFormat : unsigned char
 	GPUFMT_StatsBuffer,
 	GPUFMT_StartValidStatsFormats = GPUFMT_StatsBuffer,
 	GPUFMT_EndValidStatsFormats = GPUFMT_StatsBuffer,
+
+	GPUFMT_RegFileDump,
+	GPUFMT_StartValidRegFileDumpFormats = GPUFMT_RegFileDump,
+	GPUFMT_EndValidRegFileDumpFormats = GPUFMT_RegFileDump,
 
 	GPUFMT_MAX_NUM_FORMATS // This must always be last
 };

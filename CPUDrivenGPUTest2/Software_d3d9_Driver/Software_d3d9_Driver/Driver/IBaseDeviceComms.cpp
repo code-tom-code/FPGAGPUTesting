@@ -67,6 +67,7 @@ __declspec(nothrow) HRESULT __stdcall IBaseDeviceComms::DeviceMemSet(gpuvoid* co
 		newWriteMemPacket.writeDWORDAddr = dwordID * sizeof(DWORD) + (const DWORD)deviceDestAddr;
 		newWriteMemPacket.writeVal = dwSetVal;
 		newWriteMemPacket.SetComputeChecksum(&newWriteMemPacket);
+
 		HRESULT sendHR = SendLoop( (const BYTE* const)&newWriteMemPacket, sizeof(newWriteMemPacket) );
 		if (FAILED(sendHR) )
 			return sendHR;
@@ -145,6 +146,7 @@ __declspec(nothrow) HRESULT __stdcall IBaseDeviceComms::DeviceMemCopy(gpuvoid* c
 		newWriteMemPacket.writeDWORDAddr = dwordID * sizeof(DWORD) + (const DWORD)deviceDestAddr;
 		newWriteMemPacket.writeVal = newVal;
 		newWriteMemPacket.SetComputeChecksum(&newWriteMemPacket);
+
 		HRESULT sendHR = SendLoop( (const BYTE* const)&newWriteMemPacket, sizeof(newWriteMemPacket) );
 		if (FAILED(sendHR) )
 			return sendHR;
@@ -235,6 +237,7 @@ __declspec(nothrow) HRESULT __stdcall IBaseDeviceComms::ReadFromDevice(const gpu
 		newReadMemPacket.dwordSelect = (newReadMemPacket.readDWORDAddr >> 2) & 0x7; // Mask off these three bits
 		newReadMemPacket.readDWORDAddr &= ~0x1F; // Mask off the bottommost 5 bits in order to align our read address to the next lowest DRAM line
 		newReadMemPacket.SetComputeChecksum(&newReadMemPacket);
+
 		HRESULT sendHR = SendLoop( (const BYTE* const)&newReadMemPacket, sizeof(newReadMemPacket) );
 		if (FAILED(sendHR) )
 			return sendHR;

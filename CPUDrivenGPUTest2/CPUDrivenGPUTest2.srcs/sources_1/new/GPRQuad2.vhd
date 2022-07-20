@@ -123,6 +123,10 @@ end GPRQuad2;
 architecture Behavioral of GPRQuad2 is
 
 ATTRIBUTE X_INTERFACE_INFO : STRING;
+ATTRIBUTE X_INTERFACE_PARAMETER : STRING;
+
+ATTRIBUTE X_INTERFACE_INFO of clk: SIGNAL is "xilinx.com:signal:clock:1.0 clk CLK";
+ATTRIBUTE X_INTERFACE_PARAMETER of clk: SIGNAL is "FREQ_HZ 333250000";
 
 ATTRIBUTE X_INTERFACE_INFO of  clka_bram0: SIGNAL is "xilinx.com:interface:bram:1.0 BRAM0W CLK";
 ATTRIBUTE X_INTERFACE_INFO of   ena_bram0: SIGNAL is "xilinx.com:interface:bram:1.0 BRAM0W EN";
@@ -266,40 +270,40 @@ begin
 	portA_readOutData(32*1-1 downto 32*0) <= doutb_bram0;
 	portB_readOutData(32*1-1 downto 32*0) <= doutb_bram1;
 	enb_bram0 <= portA_en;
-	enb_bram1 <= portA_en;
+	enb_bram1 <= portB_en;
 
 	-- Lane 1 read data
 	portA_readOutData(32*2-1 downto 32*1) <= doutb_bram2;
 	portB_readOutData(32*2-1 downto 32*1) <= doutb_bram3;
-	enb_bram2 <= portB_en;
+	enb_bram2 <= portA_en;
 	enb_bram3 <= portB_en;
 
 	-- Lane 2 read data
 	portA_readOutData(32*3-1 downto 32*2) <= doutb_bram4;
 	portB_readOutData(32*3-1 downto 32*2) <= doutb_bram5;
 	enb_bram4 <= portA_en;
-	enb_bram5 <= portA_en;
+	enb_bram5 <= portB_en;
 
 	-- Lane 3 read data
 	portA_readOutData(32*4-1 downto 32*3) <= doutb_bram6;
 	portB_readOutData(32*4-1 downto 32*3) <= doutb_bram7;
-	enb_bram6 <= portB_en;
+	enb_bram6 <= portA_en;
 	enb_bram7 <= portB_en;
 
 	-- Lane 0 read address
 	addrb_bram0 <= readQuadIndex & portA_regType & portA_regIdx & portA_regChan;
-	addrb_bram1 <= readQuadIndex & portA_regType & portA_regIdx & portA_regChan;
+	addrb_bram1 <= readQuadIndex & portB_regType & portB_regIdx & portB_regChan;
 
 	-- Lane 1 read address
-	addrb_bram2 <= readQuadIndex & portB_regType & portB_regIdx & portB_regChan;
+	addrb_bram2 <= readQuadIndex & portA_regType & portA_regIdx & portA_regChan;
 	addrb_bram3 <= readQuadIndex & portB_regType & portB_regIdx & portB_regChan;
 
 	-- Lane 2 read address
 	addrb_bram4 <= readQuadIndex & portA_regType & portA_regIdx & portA_regChan;
-	addrb_bram5 <= readQuadIndex & portA_regType & portA_regIdx & portA_regChan;
+	addrb_bram5 <= readQuadIndex & portB_regType & portB_regIdx & portB_regChan;
 
 	-- Lane 3 read address
-	addrb_bram6 <= readQuadIndex & portB_regType & portB_regIdx & portB_regChan;
+	addrb_bram6 <= readQuadIndex & portA_regType & portA_regIdx & portA_regChan;
 	addrb_bram7 <= readQuadIndex & portB_regType & portB_regIdx & portB_regChan;
 
 	-- Lane 0 write address

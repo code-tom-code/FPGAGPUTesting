@@ -11,6 +11,8 @@ struct _iobuf;
 typedef _iobuf FILE;
 #endif // #ifndef _FILE_DEFINED
 
+typedef unsigned long DWORD;
+
 // You can check this for "success" as (ShaderCompileResultCode == 0) and for "failure" as (ShaderCompile_OK > 0)
 enum ShaderCompileResultCode : unsigned
 {
@@ -20,6 +22,8 @@ enum ShaderCompileResultCode : unsigned
 	// Error codes:
 	ShaderCompile_ERR_InvalidArg, // An invalid argument was passed to one of the functions. Rerun in a DEBUG build to get more precise errors.
 	ShaderCompile_ERR_ShaderParseError, // ShaderAnalysis must have completed successfully, otherwise we won't have accurate ShaderInfo!
+	ShaderCompile_ERR_MissingInputPos, // Cannot find a v# register that maps to POSITION0!
+	ShaderCompile_ERR_MissingOutputPos, // Cannot find the oPos register!
 	ShaderCompile_ERR_InvalidShaderType, // Currently only Vertex Shaders are supported in hardware. Pixel Shaders is not yet supported. Do not pass Pixel Shaders to these functions!
 	ShaderCompile_ERR_ShaderMissingVERSIONToken, // A VS or PS shader VERSION token was not found in the Direct3D shader instruction token stream. This is likely a corrupted or malformed shader.
 	ShaderCompile_ERR_UnsupportedFlowControlInstruction, // An unsupported flow control instruction was found
@@ -151,7 +155,11 @@ static_assert(sizeof(DeviceBytecode) == sizeof(DeviceShaderInfo) + sizeof(instru
 
 // This is our main function that takes compiled D3D9 bytecode (shader model 1, 2, or 3) and converts it into device-specific bytecode.
 // If this function succeeds, then the caller now owns the device bytecode buffer (free it using free(outCompiledDeviceBytecode) after you're done with it).
-const ShaderCompileResultCode __stdcall CompileShaderToDeviceBytecode(const struct ShaderInfo* const inDXShaderInfo, const ShaderCompileOptions inCompileOptions, DeviceBytecode** outCompiledDeviceBytecode, const char* const inOptShaderBaseFilename);
+const ShaderCompileResultCode __stdcall CompileShaderInfoToDeviceBytecode(const struct ShaderInfo* const inDXShaderInfo, const ShaderCompileOptions inCompileOptions, DeviceBytecode** outCompiledDeviceBytecode, const char* const inOptShaderBaseFilename);
+
+// This is our main function that takes compiled D3D9 bytecode (shader model 1, 2, or 3) and converts it into device-specific bytecode.
+// If this function succeeds, then the caller now owns the device bytecode buffer (free it using free(outCompiledDeviceBytecode) after you're done with it).
+const ShaderCompileResultCode __stdcall CompileShaderBytecodeToDeviceBytecode(const DWORD* const inDXShaderBytecode, const ShaderCompileOptions inCompileOptions, DeviceBytecode** outCompiledDeviceBytecode, const char* const inOptShaderBaseFilename);
 
 // After this function returns, the caller owns the outString. Be sure to call free() on the outString when you are done with it to avoid leaking memory!
 const ShaderCompileResultCode __stdcall DisasmDeviceBytecodeToString(const DeviceBytecode* const inCompiledDeviceBytecode, const char** outString);
@@ -159,5 +167,7 @@ const ShaderCompileResultCode __stdcall DisasmDeviceBytecodeToString(const Devic
 const ShaderCompileResultCode __stdcall DisasmDeviceBytecodeToFile(const DeviceBytecode* const inCompiledDeviceBytecode, FILE* const outFile);
 
 void __stdcall DisasmSingleInstructionToFile(const instructionSlot* const inInstruction, FILE* const outFile);
+
+void __stdcall DisasmSingleInstructionToMemory(const instructionSlot* const inInstruction, char* const outMemory);
 
 } // end extern "C"

@@ -55,6 +55,7 @@ struct GPUDeviceState
 	unsigned texStateHeight = 0;
 	unsigned texSetWidth = 0;
 	unsigned texSetHeight = 0;
+	unsigned deviceCachedSetVertexStartAddress = 0x0000;
 	eCullMode deviceCachedCullMode = eCullMode_NUM_CULL_MODES;
 	ePrimTopology deviceCachedPrimTop = primTop_NUM_PRIM_TOPOLOGIES;
 	eStripCutType deviceCachedStripCut = sct_NUM_STRIP_CUT_TYPES;
@@ -124,7 +125,8 @@ __declspec(align(16) ) struct IBaseGPUDevice
 
 	HRESULT __stdcall DeviceSetIndexBuffer(const gpuvoid* const indexBufferMemory, const unsigned indexBuffer16LengthIndices, const eIndexFormat indexFormat);
 
-	HRESULT __stdcall DeviceSetVertexShader(const gpuvoid* const vertexShaderMemory, const unsigned short numShaderTokensToLoad, const unsigned short targetAddressToLoadTo = 0);
+	HRESULT __stdcall DeviceLoadVertexShader(const gpuvoid* const vertexShaderMemory, const unsigned short numShaderTokensToLoad, const bool forceLoadVertexShader = false, const unsigned short targetAddressToLoadTo = 0);
+	HRESULT __stdcall DeviceSetVertexShaderStartAddr(const unsigned short shaderStartAddress);
 
 	HRESULT __stdcall DeviceSetVertexStreamData(const gpuvoid* const vertexStreamData, const unsigned vertexBufferLengthBytes, const BYTE dwordCount, const BYTE streamID, 
 		const bool isD3DCOLOR, const BYTE shaderRegIndex, const BYTE dwordStride, const BYTE dwordOffset, const BYTE numVertexStreamsTotal);
@@ -132,6 +134,8 @@ __declspec(align(16) ) struct IBaseGPUDevice
 	HRESULT __stdcall DeviceSetConstantData(const gpuvoid* const constantBufferMemory, const float4* const baseCPUFloat4RegisterFile, const BYTE startingRegisterIndex, const BYTE numFloat4Registers);
 
 	HRESULT __stdcall DeviceSetConstantDataSingleSpecial(const float4& registerData, const BYTE registerIndex);
+
+	HRESULT __stdcall DeviceEnableShaderDebuggingForNextDrawCall(const gpuvoid* registerFileDumpAddress);
 
 	HRESULT __stdcall DeviceDrawIndexedPrimitive(const D3DPRIMITIVETYPE primType, const unsigned primitiveCount);
 	HRESULT __stdcall DeviceDrawPrimitive(const D3DPRIMITIVETYPE primType, const unsigned primitiveCount);

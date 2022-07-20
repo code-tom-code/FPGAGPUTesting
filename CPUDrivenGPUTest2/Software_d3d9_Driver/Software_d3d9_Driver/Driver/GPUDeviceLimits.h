@@ -4,6 +4,8 @@
 	The current GPU device has limits that are different than the usual D3D9 limits. Let's define those limits here in one place to keep things clean.
 */
 
+typedef unsigned long DWORD;
+
 // We only have 3 bits for vertex stream indices, so we can only have 8 of them in total
 const constexpr unsigned GPU_MAX_NUM_VERTEX_STREAMS = 8;
 
@@ -19,6 +21,8 @@ const constexpr unsigned GPU_MAX_VERTEX_ELEMENTS_PER_VERTEX_STREAM = 0xFFFF;
 const constexpr unsigned GPU_MAX_VERTEX_BUFFER_SIZE_BYTES = GPU_MAX_VERTEX_ELEMENT_STRIDE_BYTES * GPU_MAX_VERTEX_ELEMENTS_PER_VERTEX_STREAM;
 
 // Vertex shader limits:
+const constexpr unsigned GPU_SHADER_NUM_LANES = 16; // The number of simultaneous lanes being calculated in one shader warp at once
+const constexpr unsigned GPU_SHADER_NUM_REGFILE_TYPES = 4; // The number of different register types in the register file (currently 4 for v#/r#/o#/x#)
 const constexpr unsigned GPU_SHADER_MAX_NUM_GPR_REG = 8; // The number of r# available to the shader
 const constexpr unsigned GPU_SHADER_MAX_NUM_INPUT_REG = 8; // The number of v# available to the shader
 const constexpr unsigned GPU_SHADER_MAX_NUM_OUTPUT_REG = 8; // The number of o# available to the shader

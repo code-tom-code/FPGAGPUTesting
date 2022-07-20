@@ -112,6 +112,12 @@ __declspec(nothrow) HRESULT __stdcall ISerialDeviceComms::InternalInitComms()
 
 	IncrementSentPacket(len);
 
+	if (len >= sizeof(genericCommand) )
+	{
+		const genericCommand* const genericPacket = (const genericCommand* const)sendBuffer;
+		sentPacketsThisFrame.push_back(*genericPacket);
+	}
+
 	const BYTE* buffer = (const BYTE* const)sendBuffer;
 	unsigned remainingSize = len;
 	while (remainingSize > 0)
@@ -160,6 +166,12 @@ __declspec(nothrow) HRESULT __stdcall ISerialDeviceComms::InternalInitComms()
 		}
 		remainingSize -= numBytesRead;
 		buffer += numBytesRead;
+	}
+
+	if (len >= sizeof(genericCommand) )
+	{
+		const genericCommand* const genericPacket = (const genericCommand* const)recvBuffer;
+		recvdPacketsThisFrame.push_back(*genericPacket);
 	}
 
 	return S_OK;

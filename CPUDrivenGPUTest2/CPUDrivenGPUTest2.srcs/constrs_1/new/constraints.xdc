@@ -61,10 +61,21 @@ set_property IOSTANDARD LVCMOS18 [get_ports rs232_uart_rxd]
 current_instance design_1_i/MemorySystem/ddr4_0/inst
 set_property LOC MMCM_X0Y3 [get_cells -hier -filter {NAME =~ */u_ddr4_infrastructure/gen_mmcme*.u_mmcme_adv_inst}]
 set_property CLOCK_DEDICATED_ROUTE BACKBONE [get_pins -hier -filter {NAME =~ */u_ddr4_infrastructure/gen_mmcme*.u_mmcme_adv_inst/CLKIN1}]
+
 current_instance -quiet
-set_property INTERNAL_VREF 0.84 [get_iobanks 67]
 set_output_delay -clock [get_clocks design_1_i/ScanoutSystem/scanout_clk_25_175_x8/inst/clk_in1] 1.000 [get_ports {{blue[0]} {blue[1]} {blue[2]} {blue[3]} {green[0]} {green[1]} {green[2]} {green[3]} {green[4]} hsync {red[0]} {red[1]} {red[2]} {red[3]} {red[4]} vsync}]
 set_false_path -from [get_clocks clk_out1_design_1_clk_wiz_0_0] -to [get_clocks mmcm_clkout0]
+
+
+
+current_instance design_1_i/MemorySystem/ddr4_0/inst
+set_property LOC MMCM_X0Y3 [get_cells -hier -filter {NAME =~ */u_ddr4_infrastructure/gen_mmcme*.u_mmcme_adv_inst}]
+set_property CLOCK_DEDICATED_ROUTE BACKBONE [get_pins -hier -filter {NAME =~ */u_ddr4_infrastructure/gen_mmcme*.u_mmcme_adv_inst/CLKIN1}]
+current_instance -quiet
+set_property INTERNAL_VREF 0.84 [get_iobanks 67]
+
+create_pblock pblock_ScanoutSystem
+
 set_property C_CLK_INPUT_FREQ_HZ 300000000 [get_debug_cores dbg_hub]
 set_property C_ENABLE_CLK_DIVIDER false [get_debug_cores dbg_hub]
 set_property C_USER_SCAN_CHAIN 1 [get_debug_cores dbg_hub]

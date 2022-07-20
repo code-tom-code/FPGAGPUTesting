@@ -36,6 +36,12 @@ INetSocketDeviceComms::INetSocketDeviceComms()
 
 	IncrementSentPacket(len);
 
+	if (len >= sizeof(genericCommand) )
+	{
+		const genericCommand* const genericPacket = (const genericCommand* const)sendBuffer;
+		sentPacketsThisFrame.push_back(*genericPacket);
+	}
+
 	const BYTE* buffer = (const BYTE* const)sendBuffer;
 	unsigned remainingSize = len;
 	while (remainingSize > 0)
@@ -102,6 +108,12 @@ INetSocketDeviceComms::INetSocketDeviceComms()
 #endif
 			return E_FAIL;
 		}
+	}
+
+	if (len >= sizeof(genericCommand) )
+	{
+		const genericCommand* const genericPacket = (const genericCommand* const)recvBuffer;
+		recvdPacketsThisFrame.push_back(*genericPacket);
 	}
 
 	return S_OK;

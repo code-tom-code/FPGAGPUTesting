@@ -23,14 +23,22 @@ entity IndexBufferCache is
 
 		IBCReadResponsesFIFO_rd_data : in STD_LOGIC_VECTOR(30+256-1 downto 0);
         IBCReadResponsesFIFO_empty : in STD_LOGIC;
-        IBCReadResponsesFIFO_rd_en : out STD_LOGIC := '0'
+        IBCReadResponsesFIFO_rd_en : out STD_LOGIC := '0';
 	-- Memory controller interfaces end
+
+		DBG_State : out STD_LOGIC_VECTOR(1 downto 0) := (others => '0');
+		DBG_IBCReadRequestsFIFO_full : out STD_LOGIC := '0';
+		DBG_IBCReadResponsesFIFO_empty : out STD_LOGIC := '0'
 		);
 end IndexBufferCache;
 
 architecture Behavioral of IndexBufferCache is
 
 ATTRIBUTE X_INTERFACE_INFO : STRING;
+ATTRIBUTE X_INTERFACE_PARAMETER : STRING;
+
+ATTRIBUTE X_INTERFACE_INFO of clk: SIGNAL is "xilinx.com:signal:clock:1.0 clk CLK";
+ATTRIBUTE X_INTERFACE_PARAMETER of clk: SIGNAL is "FREQ_HZ 333250000";
 
 ATTRIBUTE X_INTERFACE_INFO of IBCReadRequestsFIFO_wr_data: SIGNAL is "xilinx.com:interface:fifo_write:1.0 IBCacheReadRequests WR_DATA";
 ATTRIBUTE X_INTERFACE_INFO of IBCReadRequestsFIFO_wr_en: SIGNAL is "xilinx.com:interface:fifo_write:1.0 IBCacheReadRequests WR_EN";
@@ -113,29 +121,34 @@ begin
 	end case;
 	case addr(1 downto 0) is
 		when "00" =>
+			return ret;
 		when "01" =>
-			ret := ret srl 8;
+			return ret srl 8;
 		when "10" =>
-			ret := ret srl 16;
+			return ret srl 16;
 		when "11" =>
-			ret := ret srl 24;
+			return ret srl 24;
 	end case;
-	return ret;
 end function;
 
 begin
 
--- DBG_State <= std_logic_vector(to_unsigned(eCacheState'pos(currentState), 2) );
+DBG_State <= std_logic_vector(to_unsigned(eCacheState'pos(currentState), 2) );
+DBG_IBCReadRequestsFIFO_full <= IBCReadRequestsFIFO_full;
+DBG_IBCReadResponsesFIFO_empty <= IBCReadResponsesFIFO_empty;
 
 process(clk)
 begin
 	if (rising_edge(clk) ) then
 		case currentState is
 			when initState =>
+				IBCReadResponsesFIFO_rd_en <= '0';
+				IBCReadRequestsFIFO_wr_en <= '0';
 				currentState <= readyState;
 
 			when readyState =>
 				IBCReadResponsesFIFO_rd_en <= '0';
+				IBCReadRequestsFIFO_wr_en <= '0';
 				if (VBB_ReadEnable = '1') then
 					if (IsAddressInCurrentCache(unsigned(VBB_ReadAddr(29 downto 5) ), currentCache0BaseAddr, currentCache1BaseAddr, currentCache2BaseAddr, currentCache3BaseAddr) = '1') then
 						case GetCurrentCacheIndexForAddress(unsigned(VBB_ReadAddr(29 downto 5) ), currentCache0BaseAddr, currentCache1BaseAddr, currentCache2BaseAddr, currentCache3BaseAddr ) is
@@ -155,8 +168,6 @@ begin
 							IBCReadRequestsFIFO_wr_data <= VBB_ReadAddr(29 downto 5) & "00000";
 							IBCReadRequestsFIFO_wr_en <= '1';
 							currentState <= waitForMemReadState;
-						else
-							IBCReadRequestsFIFO_wr_en <= '0';
 						end if;
 					end if;
 				else
@@ -165,6 +176,7 @@ begin
 
 			when waitForMemReadState =>
 				IBCReadRequestsFIFO_wr_en <= '0';
+				IBCReadResponsesFIFO_rd_en <= '0';
 				if (IBCReadResponsesFIFO_empty = '0') then
 					IBCReadResponsesFIFO_rd_en <= '1';
 					case nextCacheLineWrite is

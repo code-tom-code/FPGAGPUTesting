@@ -44,6 +44,7 @@ entity VertexBatchBuilder is
 	-- Vertex Batch FIFO interface end
 
 	-- Debug interfaces begin
+		DBG_UseConstantOutput : in STD_LOGIC;
 		DBG_CurrentState : out STD_LOGIC_VECTOR(3 downto 0) := (others => '0');
 		DBG_CurrentBatchLength : out STD_LOGIC_VECTOR(4 downto 0) := (others => '0');
 		DBG_CurrentBatchRemainingPrims : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
@@ -57,6 +58,10 @@ end VertexBatchBuilder;
 architecture Behavioral of VertexBatchBuilder is
 
 ATTRIBUTE X_INTERFACE_INFO : STRING;
+ATTRIBUTE X_INTERFACE_PARAMETER : STRING;
+
+ATTRIBUTE X_INTERFACE_INFO of clk: SIGNAL is "xilinx.com:signal:clock:1.0 clk CLK";
+ATTRIBUTE X_INTERFACE_PARAMETER of clk: SIGNAL is "FREQ_HZ 333250000";
 
 ATTRIBUTE X_INTERFACE_INFO of VERTBATCH_FIFO_wr_data: SIGNAL is "xilinx.com:interface:fifo_write:1.0 VertexBatchFIFO WR_DATA";
 ATTRIBUTE X_INTERFACE_INFO of VERTBATCH_FIFO_wr_en: SIGNAL is "xilinx.com:interface:fifo_write:1.0 VertexBatchFIFO WR_EN";
@@ -72,14 +77,18 @@ type eVertexBatchBuilderState is
 	drawLoopNonindexed_triStrip, -- 3
 	drawLoopNonindexed_triFan, -- 4
 
-	drawLoopIndexed_triList, -- 5
-	drawLoopIndexed_triStrip, -- 6
-	drawLoopIndexed_triFan, -- 7
+	drawLoopIndexed_triListA, -- 5
+	drawLoopIndexed_triListB, -- 6
+	drawLoopIndexed_triListC, -- 7
+	drawLoopIndexed_triStrip, -- 8
+	drawLoopIndexed_triFan, -- 9
 
-	drawLoopIndexed_waitForIndex, -- 8
+	drawLoopIndexed_constantOut, -- 10
 
-	finishAndSubmitBatch, -- 9
-	submitBatch -- 10
+	drawLoopIndexed_waitForIndex, -- 11
+
+	finishAndSubmitBatch, -- 12
+	submitBatch -- 13
 );
 
 type eIndexFormat is
@@ -193,6 +202,9 @@ signal currentBatchStartingIndex : unsigned(31 downto 0) := (others => '0');
 signal currentIndexID : unsigned(31 downto 0) := (others => '0');
 signal currentIndexIDPlus1 : unsigned(31 downto 0) := (others => '0');
 signal currentIndexIDPlus2 : unsigned(31 downto 0) := (others => '0');
+signal currentIndexValueA : unsigned(15 downto 0) := (others => '0');
+signal currentIndexValueB : unsigned(15 downto 0) := (others => '0');
+signal currentIndexValueC : unsigned(15 downto 0) := (others => '0');
 signal currentPrimToplogy : ePrimTopology := triList;
 signal currentlyDoingIndexedDrawing : std_logic := '0';
 
@@ -207,6 +219,7 @@ DBG_CurrentIndexIDPlus1 <= std_logic_vector(currentIndexIDPlus1);
 DBG_CurrentIndexIDPlus2 <= std_logic_vector(currentIndexIDPlus2);
 
 process(clk)
+	variable newBatchLength : unsigned(4 downto 0);
 begin
 	if (rising_edge(clk) ) then
 		case currentState is
@@ -250,16 +263,20 @@ begin
 						currentBatchLength <= (others => '0');
 						currentlyDoingIndexedDrawing <= '1';
 						SHADER_Done <= '0';
-						case GetPrimitiveToplogyFromUnsigned(unsigned(CMD_CommandArgType) ) is
-							when triList =>
-								currentBatch(15) <= X"FFFF"; -- Always set the last vertID in the vertex batch to FFFF when we're drawing triangle lists (15/16)
-								currentState <= drawLoopIndexed_triList;
-							when triStrip =>
-								currentState <= drawLoopIndexed_triStrip;
-							when triFan =>
-								currentState <= drawLoopIndexed_triFan;
-							when others =>
-						end case;
+						if (DBG_UseConstantOutput = '1') then
+							currentState <= drawLoopIndexed_constantOut;
+						else
+							case GetPrimitiveToplogyFromUnsigned(unsigned(CMD_CommandArgType) ) is
+								when triList =>
+									currentBatch(15) <= X"FFFF"; -- Always set the last vertID in the vertex batch to FFFF when we're drawing triangle lists (15/16)
+									currentState <= drawLoopIndexed_triListA;
+								when triStrip =>
+									currentState <= drawLoopIndexed_triStrip;
+								when triFan =>
+									currentState <= drawLoopIndexed_triFan;
+								when others =>
+							end case;
+						end if;
 					when others =>
 				end case;
 
@@ -271,12 +288,16 @@ begin
 				currentIndexID <= currentIndexID + 3;
 				currentIndexIDPlus1 <= currentIndexIDPlus1 + 3;
 				currentIndexIDPlus2 <= currentIndexIDPlus2 + 3;
-				if (currentBatchRemainingPrims = 1) then
+				if (currentBatchRemainingPrims <= 1) then
 					currentState <= finishAndSubmitBatch;
 				elsif (currentBatchLength >= 12) then
 					currentState <= submitBatch;
 				end if;
-				currentBatchRemainingPrims <= currentBatchRemainingPrims - 1;
+				if (currentBatchRemainingPrims(31) = '1') then
+					currentBatchRemainingPrims <= (others => '0');
+				else
+					currentBatchRemainingPrims <= currentBatchRemainingPrims - 1;
+				end if;
 				currentBatchLength <= currentBatchLength + 3;
 
 			when drawLoopNonindexed_triStrip =>
@@ -294,7 +315,7 @@ begin
 				currentIndexIDPlus1 <= currentIndexID;
 				currentIndexID <= currentIndexID + 1;
 
-				if (currentBatchRemainingPrims = 1) then
+				if (currentBatchRemainingPrims <= 1) then
 					currentState <= finishAndSubmitBatch;
 				elsif (currentBatchLength >= 14) then
 					currentState <= submitBatch;
@@ -314,7 +335,7 @@ begin
 				currentIndexIDPlus2 <= currentIndexIDPlus1;
 				currentIndexIDPlus1 <= currentIndexID + 1;
 
-				if (currentBatchRemainingPrims = 1) then
+				if (currentBatchRemainingPrims <= 1) then
 					currentState <= finishAndSubmitBatch;
 				elsif (currentBatchLength >= 14) then
 					currentState <= submitBatch;
@@ -331,30 +352,34 @@ begin
 			when submitBatch =>
 				if (VERTBATCH_FIFO_full = '0') then -- FIFO is ready
 					VERTBATCH_FIFO_wr_en <= '1';
-					VERTBATCH_FIFO_wr_data <= std_logic_vector(SerializeBatch(currentBatch, currentBatchStartingIndex, currentIndexID) );
+					if (currentlyDoingIndexedDrawing = '1') then
+						VERTBATCH_FIFO_wr_data <= std_logic_vector(SerializeBatch(currentBatch, currentBatchStartingIndex, currentIndexID) );
+					else
+						VERTBATCH_FIFO_wr_data <= std_logic_vector(SerializeBatch(currentBatch, currentBatchStartingIndex, currentBatchStartingIndex) );
+					end if;
 					currentBatchLength <= (others => '0');
-					if (currentBatchRemainingPrims > 0) then -- More polys remaining
+					if (currentBatchRemainingPrims > 0 and currentBatchRemainingPrims(31) = '0') then -- More polys remaining
 						if (currentlyDoingIndexedDrawing = '1') then
 							case currentPrimToplogy is
-							when triList =>
-								currentState <= drawLoopIndexed_triList;
-							when triStrip =>
-								currentState <= drawLoopIndexed_triStrip;
-							when triFan =>
-								currentState <= drawLoopIndexed_triFan;
-							when others =>
-								currentState <= readyState;
+								when triList =>
+									currentState <= drawLoopIndexed_triListA;
+								when triStrip =>
+									currentState <= drawLoopIndexed_triStrip;
+								when triFan =>
+									currentState <= drawLoopIndexed_triFan;
+								when others =>
+									currentState <= readyState;
 							end case;
 						else
 							case currentPrimToplogy is
-							when triList =>
-								currentState <= drawLoopNonindexed_triList;
-							when triStrip =>
-								currentState <= drawLoopNonindexed_triStrip;
-							when triFan =>
-								currentState <= drawLoopNonindexed_triFan;
-							when others =>
-								currentState <= readyState;
+								when triList =>
+									currentState <= drawLoopNonindexed_triList;
+								when triStrip =>
+									currentState <= drawLoopNonindexed_triStrip;
+								when triFan =>
+									currentState <= drawLoopNonindexed_triFan;
+								when others =>
+									currentState <= readyState;
 							end case;
 						end if;
 					else -- All polys complete
@@ -364,33 +389,89 @@ begin
 					VERTBATCH_FIFO_wr_en <= '0';
 				end if;
 
-			when drawLoopIndexed_triList =>
+			when drawLoopIndexed_constantOut =>
+				currentBatch(0) <= x"0000";
+				currentBatch(1) <= x"0001";
+				currentBatch(2) <= x"0002";
+				currentBatch(3) <= x"0003";
+				currentBatch(4) <= x"0004";
+				currentBatch(5) <= x"0006";
+				currentBatch(6) <= x"0007";
+				currentBatch(7) <= x"0005";
+				currentBatch(8) <= x"FFFF";
+				currentBatch(9) <= x"FFFF";
+				currentBatch(10) <= x"FFFF";
+				currentBatch(11) <= x"FFFF";
+				currentBatch(12) <= x"FFFF";
+				currentBatch(13) <= x"FFFF";
+				currentBatch(14) <= x"FFFF";
+				currentBatch(15) <= x"FFFF";
+				currentBatchRemainingPrims <= (others => '0');
+				currentIndexID <= to_unsigned(8, 32);
+				currentState <= submitBatch;
+
+			when drawLoopIndexed_triListA =>
 				VERTBATCH_FIFO_wr_en <= '0';
 				if (currentBatchRemainingPrims > 0) then
 					IBC_ReadAddr <= std_logic_vector(IndexIDToIndexAddress(currentIndexID, currentIndexBufferAddr, currentIndexBufferFmt)(29 downto 0) );
 					IBC_ReadEnable <= '1';
-					currentState <= drawLoopIndexed_waitForIndex;
+					currentIndexID <= currentIndexID + 3;
+					currentState <= drawLoopIndexed_triListB;
 				else
 					currentState <= finishAndSubmitBatch;
+				end if;
+
+			when drawLoopIndexed_triListB =>
+				if (IBC_ReadReady = '1') then
+					currentIndexValueA <= GetIndexValueMasked(unsigned(IBC_ReadData), currentIndexBufferFmt);
+					IBC_ReadAddr <= std_logic_vector(IndexIDToIndexAddress(currentIndexIDPlus1, currentIndexBufferAddr, currentIndexBufferFmt)(29 downto 0) );
+					currentIndexIDPlus1 <= currentIndexIDPlus1 + 3;
+					IBC_ReadEnable <= '1';
+					currentState <= drawLoopIndexed_triListC;
+				end if;
+
+			when drawLoopIndexed_triListC =>
+				if (IBC_ReadReady = '1') then
+					currentIndexValueB <= GetIndexValueMasked(unsigned(IBC_ReadData), currentIndexBufferFmt);
+					IBC_ReadAddr <= std_logic_vector(IndexIDToIndexAddress(currentIndexIDPlus2, currentIndexBufferAddr, currentIndexBufferFmt)(29 downto 0) );
+					currentIndexIDPlus2 <= currentIndexIDPlus2 + 3;
+					IBC_ReadEnable <= '1';
+					currentState <= drawLoopIndexed_waitForIndex;
 				end if;
 
 			when drawLoopIndexed_waitForIndex =>
 				if (IBC_ReadReady = '1') then
 					IBC_ReadEnable <= '0';
-					currentBatch(to_integer(currentBatchLength) ) <= GetIndexValueMasked(unsigned(IBC_ReadData), currentIndexBufferFmt);
-					currentIndexID <= currentIndexID + 1;
-					currentBatchLength <= currentBatchLength + 1;
-					if (currentPrimLength = 2) then
-						currentPrimLength <= (others => '0');
-						currentBatchRemainingPrims <= currentBatchRemainingPrims - 1;
-					else
-						currentPrimLength <= currentPrimLength + 1;
+					newBatchLength := currentBatchLength;
+					if (IsValueInCurrentBatch(currentBatch, newBatchLength, currentIndexValueA) = '0') then
+						currentBatch(to_integer(newBatchLength) ) <= currentIndexValueA;
+						newBatchLength := newBatchLength + 1;
+					end if;
+					if (IsValueInCurrentBatch(currentBatch, newBatchLength, currentIndexValueB ) = '0') then
+						currentBatch(to_integer(newBatchLength) ) <= currentIndexValueB;
+						newBatchLength := newBatchLength + 1;
+					end if;
+					if (IsValueInCurrentBatch(currentBatch, newBatchLength, GetIndexValueMasked(unsigned(IBC_ReadData), currentIndexBufferFmt) ) = '0') then
+						currentBatch(to_integer(newBatchLength) ) <= GetIndexValueMasked(unsigned(IBC_ReadData), currentIndexBufferFmt);
+						newBatchLength := newBatchLength + 1;
 					end if;
 
-					if (currentBatchLength = 14) then
-						currentState <= submitBatch;
+					if (newBatchLength >= 16) then
+						if (currentBatchLength = 16) then
+							currentState <= submitBatch;
+						else
+							currentState <= finishAndSubmitBatch;
+						end if;
 					else
-						currentState <= drawLoopIndexed_triList;
+						currentBatchLength <= newBatchLength;
+
+						if (currentBatchRemainingPrims(31) = '1' or currentBatchRemainingPrims = 0) then
+							currentBatchRemainingPrims <= (others => '0');
+							currentState <= finishAndSubmitBatch;
+						else
+							currentBatchRemainingPrims <= currentBatchRemainingPrims - 1;
+							currentState <= drawLoopIndexed_triListA;
+						end if;
 					end if;
 				end if;
 

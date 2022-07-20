@@ -48,11 +48,12 @@ void __stdcall DisasmSingleInstructionToMemory(const instructionSlot* const inIn
 
 #pragma warning(push)
 #pragma warning(disable:4996) // C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-	sprintf(outMemory, "%s%s %s%llu.%c %s%llu%s.%c %s%llu%s.%c\n", 
+	sprintf(outMemory, "%s%s %s%llu.%c %s%llu%s.%c %s%llu%s.%c // 0x%016I64X\n", 
 			InstructionOpToString(inInstruction->instructionStruct.operation), InstructionDestRegModToString(inInstruction->instructionStruct.destReg_destModifier), // op_destmod
 			InstructionDestRegToString(inInstruction->instructionStruct.destReg_regType), inInstruction->instructionStruct.destReg_regIndex, GetRegChannelLetterFromChannelIndex(inInstruction->instructionStruct.destReg_component), // destRegType%u.channel
 			InstructionSrcRegToString(inInstruction->instructionStruct.srcRegA_regType), inInstruction->instructionStruct.srcRegA_regIndex, InstructionSrcRegModToString(inInstruction->instructionStruct.srcRegA_srcModifier), GetRegChannelLetterFromChannelIndex(inInstruction->instructionStruct.srcRegA_component), // srcRegType%u_srcMod.channel
-			InstructionSrcRegToString(inInstruction->instructionStruct.srcRegB_regType), inInstruction->instructionStruct.srcRegB_regIndex, InstructionSrcRegModToString(inInstruction->instructionStruct.srcRegB_srcModifier), GetRegChannelLetterFromChannelIndex(inInstruction->instructionStruct.srcRegB_component) ); // srcRegType%u_srcMod.channel
+			InstructionSrcRegToString(inInstruction->instructionStruct.srcRegB_regType), inInstruction->instructionStruct.srcRegB_regIndex, InstructionSrcRegModToString(inInstruction->instructionStruct.srcRegB_srcModifier), GetRegChannelLetterFromChannelIndex(inInstruction->instructionStruct.srcRegB_component), // srcRegType%u_srcMod.channel
+			inInstruction->rawQWORD);
 #pragma warning(pop)
 }
 
@@ -74,11 +75,12 @@ void __stdcall DisasmSingleInstructionToFile(const instructionSlot* const inInst
 		return;
 	}
 
-	fprintf(outFile, "%s%s %s%llu.%c %s%llu%s.%c %s%llu%s.%c\n", 
+	fprintf(outFile, "%s%s %s%llu.%c, %s%llu%s.%c, %s%llu%s.%c // 0x%016I64X\n", 
 			InstructionOpToString(inInstruction->instructionStruct.operation), InstructionDestRegModToString(inInstruction->instructionStruct.destReg_destModifier), // op_destmod
 			InstructionDestRegToString(inInstruction->instructionStruct.destReg_regType), inInstruction->instructionStruct.destReg_regIndex, GetRegChannelLetterFromChannelIndex(inInstruction->instructionStruct.destReg_component), // destRegType%u.channel
 			InstructionSrcRegToString(inInstruction->instructionStruct.srcRegA_regType), inInstruction->instructionStruct.srcRegA_regIndex, InstructionSrcRegModToString(inInstruction->instructionStruct.srcRegA_srcModifier), GetRegChannelLetterFromChannelIndex(inInstruction->instructionStruct.srcRegA_component), // srcRegType%u_srcMod.channel
-			InstructionSrcRegToString(inInstruction->instructionStruct.srcRegB_regType), inInstruction->instructionStruct.srcRegB_regIndex, InstructionSrcRegModToString(inInstruction->instructionStruct.srcRegB_srcModifier), GetRegChannelLetterFromChannelIndex(inInstruction->instructionStruct.srcRegB_component) ); // srcRegType%u_srcMod.channel
+			InstructionSrcRegToString(inInstruction->instructionStruct.srcRegB_regType), inInstruction->instructionStruct.srcRegB_regIndex, InstructionSrcRegModToString(inInstruction->instructionStruct.srcRegB_srcModifier), GetRegChannelLetterFromChannelIndex(inInstruction->instructionStruct.srcRegB_component), // srcRegType%u_srcMod.channel
+			inInstruction->rawQWORD);
 }
 
 void WriteDeviceShaderInfoDataToFile(const DeviceShaderInfo& inDeviceShaderInfo, FILE* const outFile)
@@ -215,8 +217,9 @@ const ShaderCompileResultCode __stdcall DisasmDeviceBytecodeToString(const Devic
 	return ShaderCompile_OK;
 }
 
-// This is our main function that takes compiled D3D9 bytecode (shader model 1, 2, or 3) and converts it into device-specific bytecode
-const ShaderCompileResultCode __stdcall CompileShaderToDeviceBytecode(const ShaderInfo* const inDXShaderInfo, const ShaderCompileOptions inCompileOptions, DeviceBytecode** outCompiledDeviceBytecode, const char* const inOptShaderBaseFilename)
+// This is our main function that takes compiled D3D9 bytecode (shader model 1, 2, or 3) and converts it into device-specific bytecode.
+// If this function succeeds, then the caller now owns the device bytecode buffer (free it using free(outCompiledDeviceBytecode) after you're done with it).
+const ShaderCompileResultCode __stdcall CompileShaderInfoToDeviceBytecode(const ShaderInfo* const inDXShaderInfo, const ShaderCompileOptions inCompileOptions, DeviceBytecode** outCompiledDeviceBytecode, const char* const inOptShaderBaseFilename)
 {
 	if (!outCompiledDeviceBytecode)
 	{
@@ -282,5 +285,27 @@ const ShaderCompileResultCode __stdcall CompileShaderToDeviceBytecode(const Shad
 	}
 
 	return CompileShaderInternal(*inDXShaderInfo, inCompileOptions, *outCompiledDeviceBytecode, inOptShaderBaseFilename);
+}
+
+// This is our main function that takes compiled D3D9 bytecode (shader model 1, 2, or 3) and converts it into device-specific bytecode.
+// If this function succeeds, then the caller now owns the device bytecode buffer (free it using free(outCompiledDeviceBytecode) after you're done with it).
+const ShaderCompileResultCode __stdcall CompileShaderBytecodeToDeviceBytecode(const DWORD* const inDXShaderBytecode, const ShaderCompileOptions inCompileOptions, DeviceBytecode** outCompiledDeviceBytecode, const char* const inOptShaderBaseFilename)
+{
+	if (!inDXShaderBytecode)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Error: Need to specify a valid pointer to D3D8/9 shader bytecode for this function call
+#endif
+		return ShaderCompile_ERR_InvalidArg;
+	}
+
+	ShaderInfo tempShaderInfo;
+	AnalyzeShader(inDXShaderBytecode, tempShaderInfo
+#ifdef _DEBUG
+		, inOptShaderBaseFilename
+#endif
+	);
+
+	return CompileShaderInfoToDeviceBytecode(&tempShaderInfo, inCompileOptions, outCompiledDeviceBytecode, inOptShaderBaseFilename);
 }
 

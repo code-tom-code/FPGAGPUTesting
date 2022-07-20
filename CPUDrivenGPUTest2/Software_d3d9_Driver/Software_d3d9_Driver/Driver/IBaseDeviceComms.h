@@ -4,7 +4,9 @@
 #undef _UNICODE
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h> // for HRESULT and BYTE
+#include <vector> // for std::vector
 #include "GPUAllocator.h"
+#include "PacketDefs.h"
 
 #ifdef _DEBUG
 	#define PRINT_COMMS 1
@@ -76,10 +78,35 @@ __declspec(align(16) ) struct __declspec(novtable) IBaseDeviceComms
 		return packetStatsTotal;
 	}
 
-	__declspec(nothrow) void EndFrame()
+	__declspec(nothrow) virtual void EndFrame()
 	{
 		packetStatsTotal.Accumulate(packetStatsCurrentFrame);
 		packetStatsCurrentFrame.Reset();
+
+		sentPacketsThisFrame.clear();
+		recvdPacketsThisFrame.clear();
+	}
+
+	virtual void IncrementSentPacket(const unsigned packetSizeBytes)
+	{
+		++packetStatsCurrentFrame.numBytesSent;
+		packetStatsCurrentFrame.numBytesSent += packetSizeBytes;
+	}
+
+	virtual void IncrementRecvPacket(const unsigned packetSizeBytes)
+	{
+		++packetStatsCurrentFrame.numBytesRecv;
+		packetStatsCurrentFrame.numBytesRecv += packetSizeBytes;
+	}
+
+	virtual void StoreSentPacket(const genericCommand& sentPacket)
+	{
+		sentPacketsThisFrame.push_back(sentPacket);
+	}
+
+	virtual void StoreRecvdPacket(const genericCommand& recvdPacket)
+	{
+		recvdPacketsThisFrame.push_back(recvdPacket);
 	}
 
 protected:
@@ -88,20 +115,10 @@ protected:
 		globalDeviceComms = newGlobalDeviceComms;
 	}
 
-	void IncrementSentPacket(const unsigned packetSizeBytes)
-	{
-		++packetStatsCurrentFrame.numBytesSent;
-		packetStatsCurrentFrame.numBytesSent += packetSizeBytes;
-	}
-
-	void IncrementRecvPacket(const unsigned packetSizeBytes)
-	{
-		++packetStatsCurrentFrame.numBytesRecv;
-		packetStatsCurrentFrame.numBytesRecv += packetSizeBytes;
-	}
-
 	PacketStats packetStatsTotal;
 	PacketStats packetStatsCurrentFrame;
+	std::vector<genericCommand> sentPacketsThisFrame;
+	std::vector<genericCommand> recvdPacketsThisFrame;
 
 private:
 	static IBaseDeviceComms* globalDeviceComms;

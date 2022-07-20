@@ -1,3 +1,12 @@
+-- 10-bit BRAM for cache space (4KBytes, 1024 DWORD's, 128 DRAM lines)
+-- 32 cache sets of 4 cache entries each = 128 cache entries
+-- 
+-- VertexStreamCache takes a 22-bit DWORD address
+-- D = Index in DRAM line
+-- S = Bits used for finding the cache set (5 bits = 32 cache sets)
+-- X = Read line index (cache key address)
+-- XXXXXXXXXXXXXXSSSSSDDD
+
 
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
@@ -10,7 +19,7 @@ entity VertexStreamCache is
     Port (clk : in STD_LOGIC;	
 
 	-- Vertex Shader Core interfaces begin
-		VSC_ReadEnable : in STD_LOGIC;
+		VSC_ReadEnable : in STD_LOGIC; -- Note: ReadEnable *must* be kept held high until ReadReady is '1'. You cannot pulse this for a single cycle.
 		VSC_ReadStreamIndex : in STD_LOGIC_VECTOR(2 downto 0);
 		VSC_ReadDWORDAddr : in STD_LOGIC_VECTOR(21 downto 0);
 		VSC_ReadData : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
@@ -39,14 +48,24 @@ entity VertexStreamCache is
 
 		VSCReadResponsesFIFO_rd_data : in STD_LOGIC_VECTOR(30+256-1 downto 0);
         VSCReadResponsesFIFO_empty : in STD_LOGIC;
-        VSCReadResponsesFIFO_rd_en : out STD_LOGIC := '0'
+        VSCReadResponsesFIFO_rd_en : out STD_LOGIC := '0';
 	-- Memory controller interfaces end
+
+	-- Debug interfaces begin
+		DBG_State : out STD_LOGIC_VECTOR(2 downto 0) := (others => '0');
+		DBG_CacheSetIndex : out STD_LOGIC_VECTOR(4 downto 0) := (others => '0');
+		DBG_CacheElementIndex : out STD_LOGIC_VECTOR(1 downto 0) := (others => '0')
+	-- Debug interfaces end
 		);
 end VertexStreamCache;
 
 architecture Behavioral of VertexStreamCache is
 
 ATTRIBUTE X_INTERFACE_INFO : STRING;
+ATTRIBUTE X_INTERFACE_PARAMETER : STRING;
+
+ATTRIBUTE X_INTERFACE_INFO of clk: SIGNAL is "xilinx.com:signal:clock:1.0 clk CLK";
+ATTRIBUTE X_INTERFACE_PARAMETER of clk: SIGNAL is "FREQ_HZ 333250000";
 
 ATTRIBUTE X_INTERFACE_INFO of VSCReadRequestsFIFO_wr_data: SIGNAL is "xilinx.com:interface:fifo_write:1.0 VBCacheReadRequests WR_DATA";
 ATTRIBUTE X_INTERFACE_INFO of VSCReadRequestsFIFO_wr_en: SIGNAL is "xilinx.com:interface:fifo_write:1.0 VBCacheReadRequests WR_EN";
@@ -72,9 +91,12 @@ type eCacheState is
 	cacheMissState, -- 2
 
 	waitForMemReadState, -- 3
+	writeToCacheState, -- 4
 
-	waitForBRAMReadState, -- 4
-	waitForBRAMReadState2 -- 5
+	waitForBRAMReadState, -- 5
+	waitForBRAMReadState2, -- 6
+
+	cooldownState -- 7
 );
 
 type structCacheEntry is record
@@ -96,7 +118,7 @@ type vertexStreamAddresses_t is array(7 downto 0) of unsigned(29 downto 0);
 
 signal cacheLines : cacheLines_t;
 
-signal vertexStreamAddresses : vertexStreamAddresses_t;
+signal vertexStreamAddresses : vertexStreamAddresses_t := (others => (others => '0') );
 
 signal currentState : eCacheState := initState;
 
@@ -135,21 +157,17 @@ begin
 	end if;
 end function;
 
-pure function GetBRAMAddress(cacheSetIndex : unsigned(4 downto 0); cacheHitEntryIndex : unsigned(1 downto 0); readDWORDAddr : unsigned(21 downto 0) ) return unsigned is
+pure function GetBRAMAddress(cacheSetIndex : unsigned(4 downto 0); cacheHitEntryIndex : unsigned(1 downto 0); readDWORDAddr : unsigned(2 downto 0) ) return unsigned is
 begin
-	return cacheSetIndex & cacheHitEntryIndex & readDWORDAddr(2 downto 0);
+	return cacheSetIndex & cacheHitEntryIndex & readDWORDAddr;
 end function;
-
-signal addressIsInCurrentCache : STD_LOGIC := '0';
-signal selectedCacheSetIndex : unsigned(4 downto 0) := (others => '0');
 
 begin
 
 VertexCache_clk <= clk;
-selectedCacheSetIndex <= GetCacheSetIndexFromDWORDAddr(unsigned(VSC_ReadDWORDAddr), unsigned(VSC_ReadStreamIndex) );
-addressIsInCurrentCache <= IsAddressInCurrentCache(unsigned(VSC_ReadStreamIndex), unsigned(VSC_ReadDWORDAddr(21 downto 8) ), cacheLines(to_integer(GetCacheSetIndexFromDWORDAddr(unsigned(VSC_ReadDWORDAddr), unsigned(VSC_ReadStreamIndex) ) ) ) );
+VSC_ReadData <= VertexCache_douta;
 
--- DBG_State <= std_logic_vector(to_unsigned(eCacheState'pos(currentState), 2) );
+DBG_State <= std_logic_vector(to_unsigned(eCacheState'pos(currentState), 3) );
 
 -- Use a separate process to handle writing the new vertex buffer stream addresses to keep things a little cleaner:
 process(clk)
@@ -175,7 +193,6 @@ process(clk)
 		cacheLines(cacheSetIndex).cacheRotationOffset <= (others => '0');
 	end InvalidateCacheEntries;
 
-	variable selectedCacheSet : structCacheSet;
 	variable selectedCacheSetIndexInt : natural range 0 to 31;
 begin
 	if (rising_edge(clk) ) then
@@ -194,10 +211,11 @@ begin
 						InvalidateCacheEntries(iter);
 					end loop;
 				elsif (VSC_ReadEnable = '1') then
-					selectedCacheSetIndexInt := to_integer(selectedCacheSetIndex);
-					selectedCacheSet := cacheLines(selectedCacheSetIndexInt);
-					if (addressIsInCurrentCache = '1') then -- Cache hit
-						VertexCache_addra <= std_logic_vector(GetBRAMAddress(selectedCacheSetIndex, GetCacheHitIndex(unsigned(VSC_ReadStreamIndex), unsigned(VSC_ReadDWORDAddr(21 downto 8) ), selectedCacheSet), unsigned(VSC_ReadDWORDAddr) ) );
+					selectedCacheSetIndexInt := to_integer(GetCacheSetIndexFromDWORDAddr(unsigned(VSC_ReadDWORDAddr), unsigned(VSC_ReadStreamIndex) ) );
+					if (IsAddressInCurrentCache(unsigned(VSC_ReadStreamIndex), unsigned(VSC_ReadDWORDAddr(21 downto 8) ), cacheLines(selectedCacheSetIndexInt) ) = '1') then -- Cache hit
+						VertexCache_addra <= std_logic_vector(GetBRAMAddress(GetCacheSetIndexFromDWORDAddr(unsigned(VSC_ReadDWORDAddr), unsigned(VSC_ReadStreamIndex) ), 
+							GetCacheHitIndex(unsigned(VSC_ReadStreamIndex), unsigned(VSC_ReadDWORDAddr(21 downto 8) ), cacheLines(selectedCacheSetIndexInt) ), 
+							unsigned(VSC_ReadDWORDAddr(2 downto 0) ) ) );
 						VertexCache_ena <= '1';
 						currentState <= waitForBRAMReadState;
 					else -- Cache miss
@@ -209,7 +227,9 @@ begin
 				end if;
 
 			when cacheMissState =>
-				selectedCacheSetIndexInt := to_integer(selectedCacheSetIndex);
+				VSCReadRequestsFIFO_wr_en <= '0';
+
+				selectedCacheSetIndexInt := to_integer(GetCacheSetIndexFromDWORDAddr(unsigned(VSC_ReadDWORDAddr), unsigned(VSC_ReadStreamIndex) ) );
 
 				-- Shift down the cache lines to make room for a new entry:
 				cacheLines(selectedCacheSetIndexInt).entry3 <= cacheLines(selectedCacheSetIndexInt).entry2;
@@ -221,42 +241,46 @@ begin
 				cacheLines(selectedCacheSetIndexInt).entry0.vertStreamIndex <= unsigned(VSC_ReadStreamIndex);
 				cacheLines(selectedCacheSetIndexInt).entry0.readLineIndex <= unsigned(VSC_ReadDWORDAddr(21 downto 8) );
 
-				writeCacheLineDWORD <= (others => '0');
 				currentState <= waitForMemReadState;
 
 			when waitForMemReadState =>
-				selectedCacheSetIndexInt := to_integer(selectedCacheSetIndex);
-				selectedCacheSet := cacheLines(selectedCacheSetIndexInt);
-				VertexCache_addra <= std_logic_vector(GetBRAMAddress(selectedCacheSetIndex, GetCacheHitIndex(unsigned(VSC_ReadStreamIndex), unsigned(VSC_ReadDWORDAddr(21 downto 8) ), selectedCacheSet), unsigned(VSC_ReadDWORDAddr) + writeCacheLineDWORD) );
-				VSCReadRequestsFIFO_wr_en <= '0';
 				if (VSCReadResponsesFIFO_empty = '0') then
-					VertexCache_wea <= (others => '1');
-					VertexCache_ena <= '1';
+					writeCacheLineDWORD <= (others => '0');
+					currentState <= writeToCacheState;
+				end if;
 
-					case writeCacheLineDWORD is
-						when "000" =>
-							VertexCache_dina <= VSCReadResponsesFIFO_rd_data(32*1-1 downto 32*0);
-						when "001" =>
-							VertexCache_dina <= VSCReadResponsesFIFO_rd_data(32*2-1 downto 32*1);
-						when "010" =>
-							VertexCache_dina <= VSCReadResponsesFIFO_rd_data(32*3-1 downto 32*2);
-						when "011" =>
-							VertexCache_dina <= VSCReadResponsesFIFO_rd_data(32*4-1 downto 32*3);
-						when "100" =>
-							VertexCache_dina <= VSCReadResponsesFIFO_rd_data(32*5-1 downto 32*4);
-						when "101" =>
-							VertexCache_dina <= VSCReadResponsesFIFO_rd_data(32*6-1 downto 32*5);
-						when "110" =>
-							VertexCache_dina <= VSCReadResponsesFIFO_rd_data(32*7-1 downto 32*6);
-						when others =>
-							VertexCache_dina <= VSCReadResponsesFIFO_rd_data(32*8-1 downto 32*7);
-					end case;
+			when writeToCacheState =>
+				selectedCacheSetIndexInt := to_integer(GetCacheSetIndexFromDWORDAddr(unsigned(VSC_ReadDWORDAddr), unsigned(VSC_ReadStreamIndex) ) );
+				VertexCache_addra <= std_logic_vector(GetBRAMAddress(GetCacheSetIndexFromDWORDAddr(unsigned(VSC_ReadDWORDAddr), unsigned(VSC_ReadStreamIndex) ), -- cacheSetIndex : unsigned(4 downto 0);
+					GetCacheHitIndex(unsigned(VSC_ReadStreamIndex), unsigned(VSC_ReadDWORDAddr(21 downto 8) ), cacheLines(selectedCacheSetIndexInt) ), -- cacheHitEntryIndex : unsigned(1 downto 0);
+					writeCacheLineDWORD) ); -- readDWORDAddr : unsigned(2 downto 0)
 
-					if (writeCacheLineDWORD = "111") then
-						VSCReadResponsesFIFO_rd_en <= '1';
-						currentState <= readyState;
-					end if;
+				VertexCache_wea <= (others => '1');
+				VertexCache_ena <= '1';
 
+				case writeCacheLineDWORD is
+					when "000" =>
+						VertexCache_dina <= VSCReadResponsesFIFO_rd_data(32*1-1 downto 32*0);
+					when "001" =>
+						VertexCache_dina <= VSCReadResponsesFIFO_rd_data(32*2-1 downto 32*1);
+					when "010" =>
+						VertexCache_dina <= VSCReadResponsesFIFO_rd_data(32*3-1 downto 32*2);
+					when "011" =>
+						VertexCache_dina <= VSCReadResponsesFIFO_rd_data(32*4-1 downto 32*3);
+					when "100" =>
+						VertexCache_dina <= VSCReadResponsesFIFO_rd_data(32*5-1 downto 32*4);
+					when "101" =>
+						VertexCache_dina <= VSCReadResponsesFIFO_rd_data(32*6-1 downto 32*5);
+					when "110" =>
+						VertexCache_dina <= VSCReadResponsesFIFO_rd_data(32*7-1 downto 32*6);
+					when others =>
+						VertexCache_dina <= VSCReadResponsesFIFO_rd_data(32*8-1 downto 32*7);
+				end case;
+
+				if (writeCacheLineDWORD = "111") then
+					VSCReadResponsesFIFO_rd_en <= '1';
+					currentState <= readyState;
+				else
 					writeCacheLineDWORD <= writeCacheLineDWORD + 1;
 				end if;
 
@@ -266,8 +290,11 @@ begin
 
 			when waitForBRAMReadState2 =>
 				VertexCache_ena <= '0';
-				VSC_ReadData <= VertexCache_douta;
 				VSC_ReadReady <= '1';
+				currentState <= cooldownState;
+
+			when cooldownState =>
+				VSC_ReadReady <= '0';
 				currentState <= readyState;
 
 			when others =>

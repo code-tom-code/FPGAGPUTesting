@@ -122,6 +122,8 @@ public:
 		return deviceCompiledVertexShaderBytes;
 	}
 
+	void UploadShaderBytecodeToDevice(gpuvoid* const gpuUploadShaderAddress);
+
 protected:
 	LPDIRECT3DVERTEXSHADER9 realObject;
 	IDirect3DDevice9Hook* parentDevice;

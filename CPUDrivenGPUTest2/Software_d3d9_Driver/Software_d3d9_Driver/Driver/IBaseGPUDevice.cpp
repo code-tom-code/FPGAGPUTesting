@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include "../IDirect3DSurface9Hook.h"
 #include "..\..\DriverShaderCompiler\DeviceShaderBytecode.h"
+#include "..\..\ShaderTraceViewer\ShaderTrace.h"
 #include "GPUCommandList.h"
 #include "GPUDeviceLimits.h"
 
@@ -633,7 +634,7 @@ HRESULT __stdcall IBaseGPUDevice::DeviceSetIndexBuffer(const gpuvoid* const inde
 	return hRet;
 }
 
-HRESULT __stdcall IBaseGPUDevice::DeviceSetVertexShader(const gpuvoid* const vertexShaderMemory, const unsigned short numShaderTokensToLoad, const unsigned short targetAddressToLoadTo/* = 0*/)
+HRESULT __stdcall IBaseGPUDevice::DeviceLoadVertexShader(const gpuvoid* const vertexShaderMemory, const unsigned short numShaderTokensToLoad, const bool forceLoadVertexShader/* = false*/, const unsigned short targetAddressToLoadTo/* = 0*/)
 {
 	if (!ValidateAddress(vertexShaderMemory) )
 		return E_INVALIDARG;
@@ -678,7 +679,7 @@ HRESULT __stdcall IBaseGPUDevice::DeviceSetVertexShader(const gpuvoid* const ver
 		return E_INVALIDARG;
 	}
 
-	if (DoCacheDeviceState() && currentCachedState.deviceCachedVertexShader == vertexShaderMemory)
+	if (DoCacheDeviceState() && currentCachedState.deviceCachedVertexShader == vertexShaderMemory && !forceLoadVertexShader)
 		return S_OK;
 
 	loadShaderInstructionsCommand loadShaderInstructions;
@@ -704,6 +705,42 @@ HRESULT __stdcall IBaseGPUDevice::DeviceSetVertexShader(const gpuvoid* const ver
 	if (DoSyncEveryCall() )
 		return DeviceWaitForIdle();
 	return loadVertexShaderHR;
+}
+
+HRESULT __stdcall IBaseGPUDevice::DeviceSetVertexShaderStartAddr(const unsigned short shaderStartAddress)
+{
+	if (shaderStartAddress >= GPU_SHADER_MAX_NUM_INSTRUCTIONS)
+	{
+#ifdef _DEBUG
+		__debugbreak();
+#endif
+		return E_INVALIDARG;
+	}
+
+	if (DoCacheDeviceState() && currentCachedState.deviceCachedSetVertexStartAddress == shaderStartAddress)
+		return S_OK;
+
+	setShaderStartAddressCommand setShaderStartAddress;
+	setShaderStartAddress.shaderStartAddress = shaderStartAddress;
+	setShaderStartAddress.checksum = command::ComputeChecksum(&setShaderStartAddress, sizeof(setShaderStartAddress) );
+#ifdef _DEBUG
+	if (!command::IsValidPacket(&setShaderStartAddress, sizeof(setShaderStartAddress) ) )
+	{
+		__debugbreak();
+	}
+#endif
+	const HRESULT setShaderStartAddressHR = SendOrStorePacket(&setShaderStartAddress);
+	if (FAILED(setShaderStartAddressHR) )
+		return setShaderStartAddressHR;
+
+	if (DoCacheDeviceState() )
+	{
+		currentCachedState.deviceCachedSetVertexStartAddress = shaderStartAddress;
+	}
+
+	if (DoSyncEveryCall() )
+		return DeviceWaitForIdle();
+	return setShaderStartAddressHR;
 }
 
 HRESULT __stdcall IBaseGPUDevice::DeviceSetVertexStreamData(const gpuvoid* const vertexStreamData, const unsigned vertexBufferLengthBytes, const BYTE dwordCount, const BYTE streamID, 
@@ -801,8 +838,8 @@ HRESULT __stdcall IBaseGPUDevice::DeviceSetVertexStreamData(const gpuvoid* const
 	compareVertexStream.dwordStride = dwordStride;
 	compareVertexStream.dwordOffset = dwordOffset;
 
-	if (DoCacheDeviceState() && currentCachedState.deviceCachedVertexStreams[streamID] == compareVertexStream) // TODO: DO we actually want to cache this? What if we have a dynamic vertex buffer?
-		return S_OK;
+	//if (DoCacheDeviceState() && currentCachedState.deviceCachedVertexStreams[streamID] == compareVertexStream) // TODO: DO we actually want to cache this? What if we have a dynamic vertex buffer?
+		//return S_OK;
 
 	setVertexStreamDataCommand setVertexStreamData;
 	setVertexStreamData.streamBaseAddress = (const DWORD)vertexStreamData;
@@ -854,13 +891,24 @@ const bool IsFloatCompressible(const float component)
 	if ( (uFloat & 0x7FFFFF) == 0x000000)
 	{
 		// This includes 0, which is also compressible as a special
-		if (component >= 0.0f)
+		if (component >= 1.0f)
 		{
 			return component >= (1.0f / 128.0f) && component <= (256.0f);
 		}
-		else
+		else if (component <= -1.0f)
 		{
 			return component >= -(256.0f) && component <= -(1.0f / 128.0f);
+		}
+		else if (component == 0.0f)
+		{
+			return true;
+		}
+		else
+		{
+#ifdef _DEBUG
+			__debugbreak(); // Should never be here!
+#endif
+			return false;
 		}
 	}
 	else
@@ -978,24 +1026,24 @@ HRESULT __stdcall IBaseGPUDevice::DeviceSetConstantDataSingleSpecial(const float
 	const unsigned compZ = CompressFloat(registerData.z);
 	const unsigned compW = CompressFloat(registerData.w);
 	setShaderConstantSpecialCommand setShaderConstantSpecial;
-	setShaderConstantSpecial.isXNegative = (compX & (0x1 << 0) );
-	setShaderConstantSpecial.isXPow2 = (compX & (0x1 << 1) );
-	setShaderConstantSpecial.isXSpec = (compX & (0x1 << 2) );
+	setShaderConstantSpecial.isXNegative = (compX & (0x1 << 0) ) ? true : false;
+	setShaderConstantSpecial.isXPow2 = (compX & (0x1 << 1) ) ? true : false;
+	setShaderConstantSpecial.isXSpec = (compX & (0x1 << 2) ) ? true : false;
 	setShaderConstantSpecial.XIndex = ( (compX >> 3) & 0xF);
 
-	setShaderConstantSpecial.isYNegative = (compY & (0x1 << 0) );
-	setShaderConstantSpecial.isYPow2 = (compY & (0x1 << 1) );
-	setShaderConstantSpecial.isYSpec = (compY & (0x1 << 2) );
+	setShaderConstantSpecial.isYNegative = (compY & (0x1 << 0) ) ? true : false;
+	setShaderConstantSpecial.isYPow2 = (compY & (0x1 << 1) ) ? true : false;
+	setShaderConstantSpecial.isYSpec = (compY & (0x1 << 2) ) ? true : false;
 	setShaderConstantSpecial.YIndex = ( (compY >> 3) & 0xF);
 
-	setShaderConstantSpecial.isZNegative = (compZ & (0x1 << 0) );
-	setShaderConstantSpecial.isZPow2 = (compZ & (0x1 << 1) );
-	setShaderConstantSpecial.isZSpec = (compZ & (0x1 << 2) );
+	setShaderConstantSpecial.isZNegative = (compZ & (0x1 << 0) ) ? true : false;
+	setShaderConstantSpecial.isZPow2 = (compZ & (0x1 << 1) ) ? true : false;
+	setShaderConstantSpecial.isZSpec = (compZ & (0x1 << 2) ) ? true : false;
 	setShaderConstantSpecial.ZIndex = ( (compZ >> 3) & 0xF);
 
-	setShaderConstantSpecial.isWNegative = (compW & (0x1 << 0) );
-	setShaderConstantSpecial.isWPow2 = (compW & (0x1 << 1) );
-	setShaderConstantSpecial.isWSpec = (compW & (0x1 << 2) );
+	setShaderConstantSpecial.isWNegative = (compW & (0x1 << 0) ) ? true : false;
+	setShaderConstantSpecial.isWPow2 = (compW & (0x1 << 1) ) ? true : false;
+	setShaderConstantSpecial.isWSpec = (compW & (0x1 << 2) ) ? true : false;
 	setShaderConstantSpecial.WIndex = ( (compW >> 3) & 0xF);
 
 	setShaderConstantSpecial.checksum = command::ComputeChecksum(&setShaderConstantSpecial, sizeof(setShaderConstantSpecial) );
@@ -1124,6 +1172,46 @@ static const unsigned GetIndexCountFromPrimitiveCount(const D3DPRIMITIVETYPE pri
 	}
 }
 
+HRESULT __stdcall IBaseGPUDevice::DeviceEnableShaderDebuggingForNextDrawCall(const gpuvoid* registerFileDumpAddress)
+{
+	if (!ValidateAddress(registerFileDumpAddress) )
+		return E_INVALIDARG;
+
+	if ( (const DWORD)registerFileDumpAddress % GPU_DRAM_TRANSACTION_SIZE_BYTES != 0)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Invalid pointer alignment! The register file dump memory *must* be 2-kilobyte aligned!
+#endif
+		return E_INVALIDARG;
+	}
+
+	if (!ValidateMemoryRangeExistsInsideAllocation(registerFileDumpAddress, sizeof(DeviceRegisterFile) ) )
+	{
+#ifdef _DEBUG
+		__debugbreak();
+#endif
+		return E_INVALIDARG;
+	}
+
+	debugShaderNextDrawCallCommand debugCommand;
+	debugCommand.dumpRegistersAddress = (const DWORD)registerFileDumpAddress;
+
+	debugCommand.checksum = command::ComputeChecksum(&debugCommand, sizeof(debugCommand) );
+#ifdef _DEBUG
+	if (!command::IsValidPacket(&debugCommand, sizeof(debugCommand) ) )
+	{
+		__debugbreak();
+	}
+#endif
+	const HRESULT debugHR = SendOrStorePacket(&debugCommand);
+	if (FAILED(debugHR) )
+		return debugHR;
+
+	if (DoSyncEveryCall() )
+		return DeviceWaitForIdle();
+	return debugHR;
+}
+
 HRESULT __stdcall IBaseGPUDevice::DeviceDrawIndexedPrimitive(const D3DPRIMITIVETYPE primType, const unsigned primitiveCount)
 {
 	if (DoCacheDeviceState() )
@@ -1235,6 +1323,7 @@ HRESULT __stdcall IBaseGPUDevice::DeviceDrawPrimitive(const D3DPRIMITIVETYPE pri
 	drawIndexedCommand drawCommand;
 	drawCommand.isIndexedDrawCall = false;
 	drawCommand.startIndex = 0;
+	drawCommand.numPrimitivesToDraw = primitiveCount;
 	drawCommand.primTopology = primType - 1;
 
 	drawCommand.checksum = command::ComputeChecksum(&drawCommand, sizeof(drawCommand) );
@@ -1567,6 +1656,7 @@ const bool IBaseGPUDevice::PacketIsValidForRecording(const command::ePacketType 
 	case command::PT_SETVERTEXSTREAMDATA:
 	case command::PT_SETINDEXBUFFER:
 	case command::PT_SETSHADERCONSTANTSPECIAL:
+	case command::PT_SETSHADERSTARTADDRESS:
 		return true;
 	default:
 #ifdef _DEBUG
@@ -1582,9 +1672,10 @@ const bool IBaseGPUDevice::PacketIsValidForRecording(const command::ePacketType 
 	case command::PT_ENDFRAMESTATS:
 	case command::PT_ENDFRAME:
 	case command::PT_RUNCOMMANDLIST: // No recursive recorded command lists allowed!
+	case command::PT_DEBUGSHADERNEXTDRAWCALL:
 		return false;
 	}
-	static_assert(command::PT_MAX_PACKET_TYPES == 25, "Reminder: Need to update this switch statement with new cases when adding new packets!");
+	static_assert(command::PT_MAX_PACKET_TYPES == 27, "Reminder: Need to update this switch statement with new cases when adding new packets!");
 }
 
 HRESULT IBaseGPUDevice::SendOrStorePacket(const command* const sendPacket)

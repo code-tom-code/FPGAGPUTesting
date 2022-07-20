@@ -538,19 +538,25 @@ static inline const debuggableSourceModifierType ApplyNegateToSourceMod(const de
 }
 
 // Returns the r# index of the found available temp GPR register, or -1 if there are no available registers to use!
-const int FindAvailableTempGPR(const ShaderInfo& inDXShaderInfo)
+const int FindAvailableTempGPR(const unsigned tempGPRUseBitmask)
 {
 	int foundGPRReg = -1;
 	for (int regNum = 0; regNum < 32; ++regNum)
 	{
 		const unsigned regMask = 1 << regNum;
-		if ( (inDXShaderInfo.tempRegistersUsedBitmask & regMask) != regMask)
+		if ( (tempGPRUseBitmask & regMask) != regMask)
 		{
 			foundGPRReg = regNum;
 			break;
 		}
 	}
 	return foundGPRReg;
+}
+
+// Returns the r# index of the found available temp GPR register, or -1 if there are no available registers to use!
+const int FindAvailableTempGPR(const ShaderInfo& inDXShaderInfo)
+{
+	return FindAvailableTempGPR(inDXShaderInfo.tempRegistersUsedBitmask);
 }
 
 // Finds the largest available unused constant buffer register-space.
@@ -649,12 +655,14 @@ static const bool DoesInstructionDecompositionRequireTemporaryRegister(const DEB
 
 		// These combo instructions don't require the use of temporary registers:
 	case _D3DSIO_SUB:
-	case _D3DSIO_MAD:
 	case _D3DSIO_DST:
-	case _D3DSIO_LRP:
 	case _D3DSIO_POW:
 		return false;
 
+		// MAD and LRP are 3-source instructions (dst,src0,src1,src2). 3-source instructions may require a temporary GPR in case src2 aliases with dst, so we'll
+		// list them here just to be safe!
+	case _D3DSIO_MAD:
+	case _D3DSIO_LRP:
 		// These combo instructions require one extra temporary GPR to use (usually as an accumulator for dot-products):
 	case _D3DSIO_DP3:
 	case _D3DSIO_DP4:
@@ -770,6 +778,7 @@ const ShaderCompileResultCode DecomposeShaderInstructions(const ShaderInfo& inDX
 			// Already decomposed into a basic instruction (or a non-decomposable one), just copy over our existing instruction tokens
 			CopyInstructionToNewInstructionStream(outDecomposedInstructionStream, outDecomposedInstructionStartPtrs, thisInstruction, inDXShaderInfo);
 			break;
+
 		case _D3DSIO_SUB:
 			// SUB dst, src0, src1 ->
 			// ADD dst, src0, -src1
@@ -782,9 +791,27 @@ const ShaderCompileResultCode DecomposeShaderInstructions(const ShaderInfo& inDX
 			AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.src1.GetRegisterType(), aliasedInstruction->srcSrcDst.src1.GetRegisterIndex(), (const debuggableFullSwizzle)aliasedInstruction->srcSrcDst.src1.GetSwizzle(), ApplyNegateToSourceMod(aliasedInstruction->srcSrcDst.src1.srcParameter.sourceModifier) ) ); // -src1
 			break;
 		case _D3DSIO_MAD:
+		{
 			// MAD dst, src0, src1, src2 ->
+			// If no aliasing:
 			// MUL dst, src0, src1
 			// ADD dst, dst, src2
+			// If aliasing:
+			// MOV tmp, src2
+			// MUL dst, src0, src1
+			// ADD dst, dst, tmp
+
+			const bool dstAliasesSrc2 = (aliasedInstruction->srcSrcSrcDst.dst.GetRegisterIndex() == aliasedInstruction->srcSrcSrcDst.src2.GetRegisterIndex() ) &&
+				(aliasedInstruction->srcSrcSrcDst.dst.GetRegisterType() == aliasedInstruction->srcSrcSrcDst.src2.GetRegisterType() );
+
+			if (dstAliasesSrc2)
+			{
+				// MOV tmp, src2
+				AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_MOV) ); // MOV
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, WM_XYZW) ); // temp.xyzw
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcSrcDst.src2.GetRegisterType(), aliasedInstruction->srcSrcSrcDst.src2.GetRegisterIndex(), _NoSwizzleRGBA) ); // src2 (as src0 for the MOV)
+			}
 
 			// MUL dst, src0, src1
 			AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
@@ -793,13 +820,21 @@ const ShaderCompileResultCode DecomposeShaderInstructions(const ShaderInfo& inDX
 			AppendNewTokenToTokenStream(outDecomposedInstructionStream, CopyExistingSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcSrcDst.src0) ); // src0
 			AppendNewTokenToTokenStream(outDecomposedInstructionStream, CopyExistingSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcSrcDst.src1) ); // src1
 
-			// ADD dst, dst, src2
+			// ADD dst, dst, tmp/src2
 			AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
 			AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_ADD) ); // ADD
 			AppendNewTokenToTokenStream(outDecomposedInstructionStream, CopyExistingDestParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcSrcDst.dst) ); // dst
 			AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcSrcDst.dst.GetRegisterIndex(), (const debuggableFullSwizzle)aliasedInstruction->srcSrcSrcDst.src1.GetSwizzle() ) ); // dest (as src0 for the ADD)
-			AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcSrcDst.src2.GetRegisterType(), aliasedInstruction->srcSrcSrcDst.src2.GetRegisterIndex(), (const debuggableFullSwizzle)aliasedInstruction->srcSrcSrcDst.src2.GetSwizzle() ) ); // src2 (as src1 for the ADD)
+			if (dstAliasesSrc2)
+			{
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterToken(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, (const debuggableFullSwizzle)aliasedInstruction->srcSrcSrcDst.src2.GetSwizzle(), (const debuggableSourceModifierType)aliasedInstruction->srcSrcSrcDst.src2.GetSourceModifiers() ) ); // temp (as src1 for the ADD)
+			}
+			else
+			{
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, CopyExistingSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcSrcDst.src2) ); // src2 (as src1 for the ADD)
+			}
 			break;
+		}
 		case _D3DSIO_DP3:
 			// DP3 dst, src0, src1 ->
 			// MUL temp.xyz, src0.xyz, src1.xyz
@@ -913,10 +948,38 @@ const ShaderCompileResultCode DecomposeShaderInstructions(const ShaderInfo& inDX
 			}
 			break;
 		case _D3DSIO_LRP:
+		{
 			// LRP dst, src0, src1, src2 ->
+			// If no aliasing:
 			// ADD dst, src1, -src2
 			// MUL dst, dst, src0
 			// ADD dst, dst, src2
+			// If aliasing:
+			// MOV tmp, dst
+			// ADD dst, src1, -src2
+			// MUL dst, dst, tmp/src0
+			// ADD dst, dst, tmp/src2
+
+			const bool dstAliasesSrc0 = (aliasedInstruction->srcSrcSrcDst.dst.GetRegisterIndex() == aliasedInstruction->srcSrcSrcDst.src0.GetRegisterIndex() ) &&
+				(aliasedInstruction->srcSrcSrcDst.dst.GetRegisterType() == aliasedInstruction->srcSrcSrcDst.src0.GetRegisterType() );
+			const bool dstAliasesSrc2 = (aliasedInstruction->srcSrcSrcDst.dst.GetRegisterIndex() == aliasedInstruction->srcSrcSrcDst.src2.GetRegisterIndex() ) &&
+				(aliasedInstruction->srcSrcSrcDst.dst.GetRegisterType() == aliasedInstruction->srcSrcSrcDst.src2.GetRegisterType() );
+
+			if (dstAliasesSrc0 || dstAliasesSrc2)
+			{
+				// MOV tmp, src0/src2
+				AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_MOV) ); // MOV
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, WM_XYZW) ); // temp.xyzw
+				if (dstAliasesSrc0)
+				{
+					AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcSrcDst.src0.GetRegisterType(), aliasedInstruction->srcSrcSrcDst.src0.GetRegisterIndex(), _NoSwizzleRGBA) ); // src0 (as src0 for the MOV)
+				}
+				else
+				{
+					AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcSrcDst.src2.GetRegisterType(), aliasedInstruction->srcSrcSrcDst.src2.GetRegisterIndex(), _NoSwizzleRGBA) ); // src2 (as src0 for the MOV)
+				}
+			}
 
 			// ADD dst, src1, -src2
 			AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
@@ -930,15 +993,30 @@ const ShaderCompileResultCode DecomposeShaderInstructions(const ShaderInfo& inDX
 			AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_MUL) ); // MUL
 			AppendNewTokenToTokenStream(outDecomposedInstructionStream, CopyExistingDestParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcSrcDst.dst) ); // dst
 			AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenNoSwizzle(inDXShaderInfo, aliasedInstruction->srcSrcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcSrcDst.dst.GetRegisterIndex() ) ); // dst
-			AppendNewTokenToTokenStream(outDecomposedInstructionStream, CopyExistingSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcSrcDst.src0) ); // src0
+			if (dstAliasesSrc0)
+			{
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterToken(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, (const debuggableFullSwizzle)aliasedInstruction->srcSrcSrcDst.src0.GetChannelSwizzleXYZW(), (const debuggableSourceModifierType)aliasedInstruction->srcSrcSrcDst.src0.GetSourceModifiers() ) ); // tmp (as src1)
+			}
+			else
+			{
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, CopyExistingSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcSrcDst.src0) ); // src0
+			}
 
 			// ADD dst, dst, src2
 			AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
 			AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_ADD) ); // ADD
 			AppendNewTokenToTokenStream(outDecomposedInstructionStream, CopyExistingDestParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcSrcDst.dst) ); // dst
 			AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenNoSwizzle(inDXShaderInfo, aliasedInstruction->srcSrcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcSrcDst.dst.GetRegisterIndex() ) ); // dst
-			AppendNewTokenToTokenStream(outDecomposedInstructionStream, CopyExistingSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcSrcDst.src2) ); // src2
+			if (dstAliasesSrc2)
+			{
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterToken(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, (const debuggableFullSwizzle)aliasedInstruction->srcSrcSrcDst.src2.GetChannelSwizzleXYZW(), (const debuggableSourceModifierType)aliasedInstruction->srcSrcSrcDst.src2.GetSourceModifiers() ) ); // tmp (as src2)
+			}
+			else
+			{
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, CopyExistingSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcSrcDst.src2) ); // src2
+			}
 			break;
+		}
 		case _D3DSIO_M4x4:
 			// M4x4 dst, src0, src1 ->
 			// MUL temp.xyzw, src0.xyzw, src1.xyzw // If write mask .x
@@ -2134,22 +2212,176 @@ void AppendVSEndInstruction(std::vector<instructionSlot>& inOutDeviceInstruction
 	inOutDeviceInstructionStream.push_back(endingENDToken);
 }
 
-// Used for D3DFVF_XYZRHW FVF's or POSITIONT vertex decl's. Simply copies the pretransformed vertex data over to its output registers.
-void MakePretransformedPassthroughShader(const ShaderInfo& inDXShaderInfo, std::vector<instructionSlot>& outDeviceInstructionStream, const bool hasVertexColor, const bool hasTexcoords)
+ShaderCompileResultCode GenerateConstBufferWriteAllRegFileShader(const ShaderInfo& inDXShaderInfo, std::vector<instructionSlot>& outDeviceInstructionStream, DeviceShaderInfo& outDeviceShaderInfo)
 {
+	for (unsigned x = 0; x < 8; ++x)
+	{
+		const instructionSlot o0x = { {Op_MOV, DRMod_None, DRTyp_O, x /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_C, 3 /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_0, 0 /*src0RegIndex*/, Chan_X} }; // mov o0.x, c3.x, 0.x
+		const instructionSlot o0y = { {Op_MOV, DRMod_None, DRTyp_O, x /*destRegIndex*/, Chan_Y, SRMod_None, SRTyp_C, 3 /*src0RegIndex*/, Chan_Y, SRMod_None, SRTyp_0, 0 /*src0RegIndex*/, Chan_X} }; // mov o0.y, c3.y, 0.x
+		const instructionSlot o0z = { {Op_MOV, DRMod_None, DRTyp_O, x /*destRegIndex*/, Chan_Z, SRMod_None, SRTyp_C, 3 /*src0RegIndex*/, Chan_Z, SRMod_None, SRTyp_0, 0 /*src0RegIndex*/, Chan_X} }; // mov o0.z, c3.z, 0.x
+		const instructionSlot o0w = { {Op_MOV, DRMod_None, DRTyp_O, x /*destRegIndex*/, Chan_W, SRMod_None, SRTyp_C, 3 /*src0RegIndex*/, Chan_W, SRMod_None, SRTyp_0, 0 /*src0RegIndex*/, Chan_X} }; // mov o0.w, c3.w, 0.x
+		outDeviceInstructionStream.push_back(o0x);
+		outDeviceInstructionStream.push_back(o0y);
+		outDeviceInstructionStream.push_back(o0z);
+		outDeviceInstructionStream.push_back(o0w);
+	}
+	for (unsigned x = 0; x < 8; ++x)
+	{
+		const instructionSlot r0x = { {Op_MOV, DRMod_None, DRTyp_R, x /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_C, 4 /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_0, 0 /*src0RegIndex*/, Chan_X} }; // mov r0.x, c4.x, 0.x
+		const instructionSlot r0y = { {Op_MOV, DRMod_None, DRTyp_R, x /*destRegIndex*/, Chan_Y, SRMod_None, SRTyp_C, 4 /*src0RegIndex*/, Chan_Y, SRMod_None, SRTyp_0, 0 /*src0RegIndex*/, Chan_X} }; // mov r0.y, c4.y, 0.x
+		const instructionSlot r0z = { {Op_MOV, DRMod_None, DRTyp_R, x /*destRegIndex*/, Chan_Z, SRMod_None, SRTyp_C, 4 /*src0RegIndex*/, Chan_Z, SRMod_None, SRTyp_0, 0 /*src0RegIndex*/, Chan_X} }; // mov r0.z, c4.z, 0.x
+		const instructionSlot r0w = { {Op_MOV, DRMod_None, DRTyp_R, x /*destRegIndex*/, Chan_W, SRMod_None, SRTyp_C, 4 /*src0RegIndex*/, Chan_W, SRMod_None, SRTyp_0, 0 /*src0RegIndex*/, Chan_X} }; // mov r0.w, c4.w, 0.x
+		outDeviceInstructionStream.push_back(r0x);
+		outDeviceInstructionStream.push_back(r0y);
+		outDeviceInstructionStream.push_back(r0z);
+		outDeviceInstructionStream.push_back(r0w);
+	}
+	for (unsigned x = 0; x < 8; ++x)
+	{
+		const instructionSlot x0x = { {Op_MOV, DRMod_None, DRTyp_X, x /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_C, 5 /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_0, 0 /*src0RegIndex*/, Chan_X} }; // mov x0.x, c5.x, 0.x
+		const instructionSlot x0y = { {Op_MOV, DRMod_None, DRTyp_X, x /*destRegIndex*/, Chan_Y, SRMod_None, SRTyp_C, 5 /*src0RegIndex*/, Chan_Y, SRMod_None, SRTyp_0, 0 /*src0RegIndex*/, Chan_X} }; // mov x0.y, c5.y, 0.x
+		const instructionSlot x0z = { {Op_MOV, DRMod_None, DRTyp_X, x /*destRegIndex*/, Chan_Z, SRMod_None, SRTyp_C, 5 /*src0RegIndex*/, Chan_Z, SRMod_None, SRTyp_0, 0 /*src0RegIndex*/, Chan_X} }; // mov x0.z, c5.z, 0.x
+		const instructionSlot x0w = { {Op_MOV, DRMod_None, DRTyp_X, x /*destRegIndex*/, Chan_W, SRMod_None, SRTyp_C, 5 /*src0RegIndex*/, Chan_W, SRMod_None, SRTyp_0, 0 /*src0RegIndex*/, Chan_X} }; // mov x0.w, c5.w, 0.x
+		outDeviceInstructionStream.push_back(x0x);
+		outDeviceInstructionStream.push_back(x0y);
+		outDeviceInstructionStream.push_back(x0z);
+		outDeviceInstructionStream.push_back(x0w);
+	}
+
+	return ShaderCompile_OK;
+}
+
+ShaderCompileResultCode GenerateTestWritebackShader(const ShaderInfo& inDXShaderInfo, std::vector<instructionSlot>& outDeviceInstructionStream, DeviceShaderInfo& outDeviceShaderInfo)
+{
+	const instructionSlot r1z = { {Op_MOV, DRMod_None, DRTyp_R, 1 /*destRegIndex*/, Chan_Z, SRMod_None, SRTyp_C, 3 /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_0, 0 /*src0RegIndex*/, Chan_X} }; // mov r1.z, c3.x, 0.x
+	const instructionSlot o1x = { {Op_MOV, DRMod_None, DRTyp_O, 1 /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_R, 1 /*src0RegIndex*/, Chan_Z, SRMod_None, SRTyp_0, 0 /*src0RegIndex*/, Chan_X} }; // mov o1.x, r1.z, 0.x
+	const instructionSlot r1z2 = { {Op_MOV, DRMod_None, DRTyp_R, 1 /*destRegIndex*/, Chan_Z, SRMod_None, SRTyp_C, 3 /*src0RegIndex*/, Chan_Y, SRMod_None, SRTyp_0, 0 /*src0RegIndex*/, Chan_X} }; // mov r1.z, c3.y, 0.x
+	const instructionSlot r1z3 = { {Op_MOV, DRMod_None, DRTyp_R, 1 /*destRegIndex*/, Chan_Z, SRMod_None, SRTyp_C, 3 /*src0RegIndex*/, Chan_Z, SRMod_None, SRTyp_0, 0 /*src0RegIndex*/, Chan_X} }; // mov r1.z, c3.z, 0.x
+
+	outDeviceInstructionStream.push_back(r1z);
+	outDeviceInstructionStream.push_back(o1x);
+	outDeviceInstructionStream.push_back(r1z2);
+	outDeviceInstructionStream.push_back(r1z3);
+	return ShaderCompile_OK;
+}
+
+ShaderCompileResultCode GenerateSpecialShader(const ShaderInfo& inDXShaderInfo, std::vector<instructionSlot>& outDeviceInstructionStream, DeviceShaderInfo& outDeviceShaderInfo)
+{
+	return GenerateConstBufferWriteAllRegFileShader(inDXShaderInfo, outDeviceInstructionStream, outDeviceShaderInfo);
+}
+
+// Used for D3DFVF_XYZRHW FVF's or POSITIONT vertex decl's. Simply copies the pretransformed vertex data over to its output registers.
+ShaderCompileResultCode MakePretransformedPassthroughShader(const ShaderInfo& inDXShaderInfo, std::vector<instructionSlot>& outDeviceInstructionStream, DeviceShaderInfo& outDeviceShaderInfo)
+{
+	return GenerateSpecialShader(inDXShaderInfo, outDeviceInstructionStream, outDeviceShaderInfo);
+
 	// Simply do:
 	// o0 = oPos = mov oPos, v0
 	// o1 = oD0 = mov oD0, v2
 	// o2 = oT0 = mov oT0, v1.xy00
 	// Don't apply the viewport transform VS suffix, or the division by W VS suffix, but do apply output compression if requested
 
-	const unsigned inputPositionReg = 0; // v0 = POSITION0
-	const unsigned inputTexcoordReg = 1; // v1 = TEXCOORD0
-	const unsigned inputDiffuseReg = 2; // v2 = COLOR0
+	unsigned inputPositionReg = 0xFFFFFFFF; // v0 = POSITION0
+	unsigned inputTexcoordReg = 0xFFFFFFFF; // v1 = TEXCOORD0
+	unsigned inputDiffuseReg = 0xFFFFFFFF; // v2 = COLOR0
 
-	const unsigned outputPositionReg = 0; // o0 = oPos = OPOSITION0
-	const unsigned outputDiffuseReg = 1; // o1 = oD0 = OCOLOR0
-	const unsigned outputTexcoordReg = 2; // o2 = oT0 = OTEXCOORD0
+	unsigned outputPositionReg = 0xFFFFFFFF; // o0 = oPos = OPOSITION0
+	unsigned outputDiffuseReg = 0xFFFFFFFF; // o1 = oD0 = OCOLOR0
+	unsigned outputTexcoordReg = 0xFFFFFFFF; // o2 = oT0 = OTEXCOORD0
+
+	const unsigned numDeclaredRegs = inDXShaderInfo.declaredRegisters.size();
+	for (unsigned declIndex = 0; declIndex < numDeclaredRegs; ++declIndex)
+	{
+		const DeclaredRegister& thisDecl = inDXShaderInfo.declaredRegisters[declIndex];
+		if ( (thisDecl.usageType == D3DDECLUSAGE_POSITION || thisDecl.usageType == D3DDECLUSAGE_POSITIONT) && thisDecl.usageIndex == 0)
+		{
+			if (thisDecl.isOutputRegister)
+				outputPositionReg = thisDecl.registerIndex;
+			else
+				inputPositionReg = thisDecl.registerIndex;
+		}
+		else if (thisDecl.usageType == D3DDECLUSAGE_TEXCOORD && thisDecl.usageIndex == 0)
+		{
+			if (thisDecl.isOutputRegister)
+				outputTexcoordReg = thisDecl.registerIndex;
+			else
+				inputTexcoordReg = thisDecl.registerIndex;
+		}
+		else if (thisDecl.usageType == D3DDECLUSAGE_COLOR && thisDecl.usageIndex == 0)
+		{
+			if (thisDecl.isOutputRegister)
+				outputDiffuseReg = thisDecl.registerIndex;
+			else
+				inputDiffuseReg = thisDecl.registerIndex;
+		}
+	}
+
+	if (inputPositionReg >= GPU_SHADER_MAX_NUM_INPUT_REG)
+	{
+#ifdef _DEBUG
+		__debugbreak();
+#endif
+		return ShaderCompile_ERR_MissingInputPos;
+	}
+
+	if (outputPositionReg >= GPU_SHADER_MAX_NUM_OUTPUT_REG)
+	{
+#ifdef _DEBUG
+		__debugbreak();
+#endif
+		return ShaderCompile_ERR_MissingOutputPos;
+	}
+
+	const bool hasVertexColor = outputDiffuseReg < GPU_SHADER_MAX_NUM_OUTPUT_REG && inputDiffuseReg < GPU_SHADER_MAX_NUM_INPUT_REG;
+	const bool hasTexcoord = outputTexcoordReg < GPU_SHADER_MAX_NUM_OUTPUT_REG && inputTexcoordReg < GPU_SHADER_MAX_NUM_INPUT_REG;
+
+	// Output Vertex Color index reassign (default to o1):
+	if (outputDiffuseReg >= GPU_SHADER_MAX_NUM_OUTPUT_REG)
+	{
+		if (outputPositionReg != 1 && outputTexcoordReg != 1)
+			outputDiffuseReg = 1;
+		else if (outputPositionReg != 2 && outputTexcoordReg != 2)
+			outputDiffuseReg = 2;
+		else
+			outputDiffuseReg = 0;
+	}
+
+	// Output Texcoord index reassign (default to o2):
+	if (outputTexcoordReg >= GPU_SHADER_MAX_NUM_OUTPUT_REG)
+	{
+		if (outputPositionReg != 2 && outputDiffuseReg != 2)
+			outputTexcoordReg = 2;
+		else if (outputPositionReg != 1 && outputDiffuseReg != 1)
+			outputTexcoordReg = 1;
+		else
+			outputTexcoordReg = 0;
+	}
+
+	outDeviceShaderInfo.outputRegisters.oPosRegIndex = outputPositionReg;
+	outDeviceShaderInfo.outputRegisters.oDiffuseRegIndex = outputDiffuseReg;
+	outDeviceShaderInfo.outputRegisters.oTexRegIndex[0] = outputTexcoordReg;
+
+	if (outputPositionReg != 0)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Error: oPos is currently needed to always be o0 because the post export shadercode depends on it!
+#endif
+		return ShaderCompile_ERR_InvalidArg;
+	}
+	if (outputDiffuseReg != 1)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Error: oD is currently needed to always be o1 because the post export shadercode depends on it!
+#endif
+		return ShaderCompile_ERR_InvalidArg;
+	}
+	if (outputTexcoordReg != 2)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Error: oT0 is currently needed to always be o2 because the post export shadercode depends on it!
+#endif
+		return ShaderCompile_ERR_InvalidArg;
+	}
 
 	// mov oPos, v0:
 	const instructionSlot movoPos0R = { {Op_MOV, DRMod_None, DRTyp_O, outputPositionReg /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_V, inputPositionReg /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_0, 0 /*src0RegIndex*/, Chan_X} }; // mov o0.x, v0.x, 0.x
@@ -2186,7 +2418,7 @@ void MakePretransformedPassthroughShader(const ShaderInfo& inDXShaderInfo, std::
 		outDeviceInstructionStream.push_back(movD0A);
 	}
 
-	if (hasTexcoords)
+	if (hasTexcoord)
 	{
 		// mov oT0.xy, v1.xy:
 		const instructionSlot movT0X = { {Op_MOV, DRMod_None, DRTyp_O, outputTexcoordReg /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_V, inputTexcoordReg /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_0, 0 /*src0RegIndex*/, Chan_X} }; // mov o2.x, v1.x, 0.x
@@ -2202,98 +2434,8 @@ void MakePretransformedPassthroughShader(const ShaderInfo& inDXShaderInfo, std::
 		outDeviceInstructionStream.push_back(movT0X);
 		outDeviceInstructionStream.push_back(movT0Y);
 	}
-}
 
-// Used as a test case for a very simple shader - simply multiplies the 4x4 WVP matrix in constant register c3/c4/c5/c6 with the input float3 vertex position,
-// then copies over the vertex color and texcoord0 verbatim.
-void MakeSimplePassthroughShader(const ShaderInfo& inDXShaderInfo, std::vector<instructionSlot>& outDeviceInstructionStream)
-{
-	const unsigned baseConstRegisterWVP = 3; // c3, c4, c5, c6 = WVP matrix
-
-	const unsigned inputPositionReg = 0; // v0 = POSITION0
-	const unsigned inputTexcoordReg = 1; // v1 = TEXCOORD0
-	const unsigned inputDiffuseReg = 2; // v2 = COLOR0
-
-	const unsigned outputPositionReg = 0; // o0 = oPos = OPOSITION0
-	const unsigned outputDiffuseReg = 1; // o1 = oD0 = OCOLOR0
-	const unsigned outputTexcoordReg = 2; // o2 = oT0 = OTEXCOORD0
-
-	// Simply do:
-	// o0 = oPos = mul(float4(v0.xyz, 1.0f), c3); // c3, c4, c5, c6 is our combined WVP matrix in row-major form
-	// o1 = oD0 = v2.xyzw (passthrough vertex color)
-	// o2 = oT0 = v1.xy (passthrough texcoord0)
-
-	// mul r0, v0.y, c1:
-	const instructionSlot mulV0Y_C1_X = { {Op_MUL, DRMod_None, DRTyp_R, 0 /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_V, inputPositionReg /*src0RegIndex*/, Chan_Y, SRMod_None, SRTyp_C, baseConstRegisterWVP + 1 /*src1RegIndex*/, Chan_X} }; // mul r0.x, v0.y, c1.x
-	const instructionSlot mulV0Y_C1_Y = { {Op_MUL, DRMod_None, DRTyp_R, 0 /*destRegIndex*/, Chan_Y, SRMod_None, SRTyp_V, inputPositionReg /*src0RegIndex*/, Chan_Y, SRMod_None, SRTyp_C, baseConstRegisterWVP + 1 /*src1RegIndex*/, Chan_Y} }; // mul r0.y, v0.y, c1.y
-	const instructionSlot mulV0Y_C1_Z = { {Op_MUL, DRMod_None, DRTyp_R, 0 /*destRegIndex*/, Chan_Z, SRMod_None, SRTyp_V, inputPositionReg /*src0RegIndex*/, Chan_Y, SRMod_None, SRTyp_C, baseConstRegisterWVP + 1 /*src1RegIndex*/, Chan_Z} }; // mul r0.z, v0.y, c1.z
-	const instructionSlot mulV0Y_C1_W = { {Op_MUL, DRMod_None, DRTyp_R, 0 /*destRegIndex*/, Chan_W, SRMod_None, SRTyp_V, inputPositionReg /*src0RegIndex*/, Chan_Y, SRMod_None, SRTyp_C, baseConstRegisterWVP + 1 /*src1RegIndex*/, Chan_W} }; // mul r0.w, v0.y, c1.w
-	outDeviceInstructionStream.push_back(mulV0Y_C1_X);
-	outDeviceInstructionStream.push_back(mulV0Y_C1_Y);
-	outDeviceInstructionStream.push_back(mulV0Y_C1_Z);
-	outDeviceInstructionStream.push_back(mulV0Y_C1_W);
-
-	// mad r0, v0.x, c0, r0:
-	const instructionSlot mulV0X_C0_X = { {Op_MUL, DRMod_None, DRTyp_X, 0 /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_V, inputPositionReg /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_C, baseConstRegisterWVP + 0 /*src1RegIndex*/, Chan_X} }; // mul x0.x, v0.x, c0.x
-	const instructionSlot mulV0X_C0_Y = { {Op_MUL, DRMod_None, DRTyp_X, 0 /*destRegIndex*/, Chan_Y, SRMod_None, SRTyp_V, inputPositionReg /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_C, baseConstRegisterWVP + 0 /*src1RegIndex*/, Chan_Y} }; // mul x0.y, v0.x, c0.y
-	const instructionSlot mulV0X_C0_Z = { {Op_MUL, DRMod_None, DRTyp_X, 0 /*destRegIndex*/, Chan_Z, SRMod_None, SRTyp_V, inputPositionReg /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_C, baseConstRegisterWVP + 0 /*src1RegIndex*/, Chan_Z} }; // mul x0.z, v0.x, c0.z
-	const instructionSlot mulV0X_C0_W = { {Op_MUL, DRMod_None, DRTyp_X, 0 /*destRegIndex*/, Chan_W, SRMod_None, SRTyp_V, inputPositionReg /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_C, baseConstRegisterWVP + 0 /*src1RegIndex*/, Chan_W} }; // mul x0.w, v0.x, c0.w
-	const instructionSlot addX0_R0_X1 = { {Op_ADD, DRMod_None, DRTyp_R, 0 /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_X, 0 /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_R, 0 /*src1RegIndex*/, Chan_X} }; // add r0.x, x0.x, r0.x
-	const instructionSlot addX0_R0_Y1 = { {Op_ADD, DRMod_None, DRTyp_R, 0 /*destRegIndex*/, Chan_Y, SRMod_None, SRTyp_X, 0 /*src0RegIndex*/, Chan_Y, SRMod_None, SRTyp_R, 0 /*src1RegIndex*/, Chan_Y} }; // add r0.y, x0.y, r0.y
-	const instructionSlot addX0_R0_Z1 = { {Op_ADD, DRMod_None, DRTyp_R, 0 /*destRegIndex*/, Chan_Z, SRMod_None, SRTyp_X, 0 /*src0RegIndex*/, Chan_Z, SRMod_None, SRTyp_R, 0 /*src1RegIndex*/, Chan_Z} }; // add r0.z, x0.z, r0.z
-	const instructionSlot addX0_R0_W1 = { {Op_ADD, DRMod_None, DRTyp_R, 0 /*destRegIndex*/, Chan_W, SRMod_None, SRTyp_X, 0 /*src0RegIndex*/, Chan_W, SRMod_None, SRTyp_R, 0 /*src1RegIndex*/, Chan_W} }; // add r0.w, x0.w, r0.w
-	outDeviceInstructionStream.push_back(mulV0X_C0_X);
-	outDeviceInstructionStream.push_back(mulV0X_C0_Y);
-	outDeviceInstructionStream.push_back(mulV0X_C0_Z);
-	outDeviceInstructionStream.push_back(mulV0X_C0_W);
-	outDeviceInstructionStream.push_back(addX0_R0_X1);
-	outDeviceInstructionStream.push_back(addX0_R0_Y1);
-	outDeviceInstructionStream.push_back(addX0_R0_Z1);
-	outDeviceInstructionStream.push_back(addX0_R0_W1);
-
-	// mad r0, v0.z, c2, r0:
-	const instructionSlot mulV0Z_C2_X = { {Op_MUL, DRMod_None, DRTyp_X, 0 /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_V, inputPositionReg /*src0RegIndex*/, Chan_Z, SRMod_None, SRTyp_C, baseConstRegisterWVP + 2 /*src1RegIndex*/, Chan_X} }; // mul x0.x, v0.z, c2.x 
-	const instructionSlot mulV0Z_C2_Y = { {Op_MUL, DRMod_None, DRTyp_X, 0 /*destRegIndex*/, Chan_Y, SRMod_None, SRTyp_V, inputPositionReg /*src0RegIndex*/, Chan_Z, SRMod_None, SRTyp_C, baseConstRegisterWVP + 2 /*src1RegIndex*/, Chan_Y} }; // mul x0.y, v0.z, c2.y
-	const instructionSlot mulV0Z_C2_Z = { {Op_MUL, DRMod_None, DRTyp_X, 0 /*destRegIndex*/, Chan_Z, SRMod_None, SRTyp_V, inputPositionReg /*src0RegIndex*/, Chan_Z, SRMod_None, SRTyp_C, baseConstRegisterWVP + 2 /*src1RegIndex*/, Chan_Z} }; // mul x0.z, v0.z, c2.z
-	const instructionSlot mulV0Z_C2_W = { {Op_MUL, DRMod_None, DRTyp_X, 0 /*destRegIndex*/, Chan_W, SRMod_None, SRTyp_V, inputPositionReg /*src0RegIndex*/, Chan_Z, SRMod_None, SRTyp_C, baseConstRegisterWVP + 2 /*src1RegIndex*/, Chan_W} }; // mul x0.w, v0.z, c2.w
-	const instructionSlot addX0_R0_X2 = { {Op_ADD, DRMod_None, DRTyp_R, 0 /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_X, 0 /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_R, 0 /*src1RegIndex*/, Chan_X} }; // add r0.x, x0.x, r0.x
-	const instructionSlot addX0_R0_Y2 = { {Op_ADD, DRMod_None, DRTyp_R, 0 /*destRegIndex*/, Chan_Y, SRMod_None, SRTyp_X, 0 /*src0RegIndex*/, Chan_Y, SRMod_None, SRTyp_R, 0 /*src1RegIndex*/, Chan_Y} }; // add r0.y, x0.y, r0.y
-	const instructionSlot addX0_R0_Z2 = { {Op_ADD, DRMod_None, DRTyp_R, 0 /*destRegIndex*/, Chan_Z, SRMod_None, SRTyp_X, 0 /*src0RegIndex*/, Chan_Z, SRMod_None, SRTyp_R, 0 /*src1RegIndex*/, Chan_Z} }; // add r0.z, x0.z, r0.z
-	const instructionSlot addX0_R0_W2 = { {Op_ADD, DRMod_None, DRTyp_R, 0 /*destRegIndex*/, Chan_W, SRMod_None, SRTyp_X, 0 /*src0RegIndex*/, Chan_W, SRMod_None, SRTyp_R, 0 /*src1RegIndex*/, Chan_W} }; // add r0.w, x0.w, r0.w
-	outDeviceInstructionStream.push_back(mulV0Z_C2_X);
-	outDeviceInstructionStream.push_back(mulV0Z_C2_Y);
-	outDeviceInstructionStream.push_back(mulV0Z_C2_Z);
-	outDeviceInstructionStream.push_back(mulV0Z_C2_W);
-	outDeviceInstructionStream.push_back(addX0_R0_X2);
-	outDeviceInstructionStream.push_back(addX0_R0_Y2);
-	outDeviceInstructionStream.push_back(addX0_R0_Z2);
-	outDeviceInstructionStream.push_back(addX0_R0_W2);
-
-	// add oPos, r0, c3:
-	const instructionSlot addX0_C3_X = { {Op_ADD, DRMod_None, DRTyp_O, outputPositionReg /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_R, 0 /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_C, baseConstRegisterWVP + 3 /*src1RegIndex*/, Chan_X} }; // add o0.x, r0.x, c3.x
-	const instructionSlot addX0_C3_Y = { {Op_ADD, DRMod_None, DRTyp_O, outputPositionReg /*destRegIndex*/, Chan_Y, SRMod_None, SRTyp_R, 0 /*src0RegIndex*/, Chan_Y, SRMod_None, SRTyp_C, baseConstRegisterWVP + 3 /*src1RegIndex*/, Chan_Y} }; // add o0.y, r0.y, c3.y
-	const instructionSlot addX0_C3_Z = { {Op_ADD, DRMod_None, DRTyp_O, outputPositionReg /*destRegIndex*/, Chan_Z, SRMod_None, SRTyp_R, 0 /*src0RegIndex*/, Chan_Z, SRMod_None, SRTyp_C, baseConstRegisterWVP + 3 /*src1RegIndex*/, Chan_Z} }; // add o0.z, r0.z, c3.z
-	const instructionSlot addX0_C3_W = { {Op_ADD, DRMod_None, DRTyp_O, outputPositionReg /*destRegIndex*/, Chan_W, SRMod_None, SRTyp_R, 0 /*src0RegIndex*/, Chan_W, SRMod_None, SRTyp_C, baseConstRegisterWVP + 3 /*src1RegIndex*/, Chan_W} }; // add o0.w, r0.w, c3.w
-	outDeviceInstructionStream.push_back(addX0_C3_X);
-	outDeviceInstructionStream.push_back(addX0_C3_Y);
-	outDeviceInstructionStream.push_back(addX0_C3_Z);
-	outDeviceInstructionStream.push_back(addX0_C3_W);
-
-	// mov oD0, v2:
-	const instructionSlot movD0R = { {Op_MOV, DRMod_None, DRTyp_O, outputDiffuseReg /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_V, inputDiffuseReg /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_0, 0 /*src0RegIndex*/, Chan_X} }; // mov o1.x, v2.x, 0.x
-	const instructionSlot movD0G = { {Op_MOV, DRMod_None, DRTyp_O, outputDiffuseReg /*destRegIndex*/, Chan_Y, SRMod_None, SRTyp_V, inputDiffuseReg /*src0RegIndex*/, Chan_Y, SRMod_None, SRTyp_0, 0 /*src0RegIndex*/, Chan_X} }; // mov o1.y, v2.y, 0.x
-	const instructionSlot movD0B = { {Op_MOV, DRMod_None, DRTyp_O, outputDiffuseReg /*destRegIndex*/, Chan_Z, SRMod_None, SRTyp_V, inputDiffuseReg /*src0RegIndex*/, Chan_Z, SRMod_None, SRTyp_0, 0 /*src0RegIndex*/, Chan_X} }; // mov o1.z, v2.z, 0.x
-	const instructionSlot movD0A = { {Op_MOV, DRMod_None, DRTyp_O, outputDiffuseReg /*destRegIndex*/, Chan_W, SRMod_None, SRTyp_V, inputDiffuseReg /*src0RegIndex*/, Chan_W, SRMod_None, SRTyp_0, 0 /*src0RegIndex*/, Chan_X} }; // mov o1.w, v2.w, 0.x
-	outDeviceInstructionStream.push_back(movD0R);
-	outDeviceInstructionStream.push_back(movD0G);
-	outDeviceInstructionStream.push_back(movD0B);
-	outDeviceInstructionStream.push_back(movD0A);
-
-	// mov oT0.xy, v1.xy:
-	const instructionSlot movT0X = { {Op_MOV, DRMod_None, DRTyp_O, outputTexcoordReg /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_V, inputTexcoordReg /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_0, 0 /*src0RegIndex*/, Chan_X} }; // mov o2.x, v1.x, 0.x
-	const instructionSlot movT0Y = { {Op_MOV, DRMod_None, DRTyp_O, outputTexcoordReg /*destRegIndex*/, Chan_Y, SRMod_None, SRTyp_V, inputTexcoordReg /*src0RegIndex*/, Chan_Y, SRMod_None, SRTyp_0, 0 /*src0RegIndex*/, Chan_X} }; // mov o2.y, v1.y, 0.x
-	outDeviceInstructionStream.push_back(movT0X);
-	outDeviceInstructionStream.push_back(movT0Y);
+	return ShaderCompile_OK;
 }
 
 void DumpDeviceBytecodeToFile(const DeviceBytecode& inDeviceBytecode, const char* const inBaseFilename, const ShaderOutputType inDumpType)
@@ -2319,7 +2461,7 @@ void DumpDeviceBytecodeToFile(const DeviceBytecode& inDeviceBytecode, const char
 		fwrite(&(inDeviceBytecode), sizeof(inDeviceBytecode), 1, dumpDeviceBytecodeFile);
 		if (inDeviceBytecode.deviceShaderInfo.deviceInstructionTokenCount > 1)
 		{
-			fwrite(&(inDeviceBytecode.deviceInstructions), sizeof(instructionSlot), inDeviceBytecode.deviceShaderInfo.deviceInstructionTokenCount - 1, dumpDeviceBytecodeFile);
+			fwrite(&(inDeviceBytecode.deviceInstructions) + 1, sizeof(instructionSlot), inDeviceBytecode.deviceShaderInfo.deviceInstructionTokenCount - 1, dumpDeviceBytecodeFile);
 		}
 		fclose(dumpDeviceBytecodeFile);
 	}
@@ -2373,7 +2515,7 @@ void DumpDeviceBytecodeToFile(const DeviceShaderInfo& inProgressShaderInfo, cons
 		return;
 	}
 
-	DeviceBytecode* const tempAlloc = (DeviceBytecode* const)malloc(sizeof(DeviceBytecode) - sizeof(instructionSlot) + sizeof(instructionSlot) * numInstructionTokens);
+	DeviceBytecode* const tempAlloc = (DeviceBytecode* const)calloc(sizeof(DeviceBytecode) + sizeof(instructionSlot) * numInstructionTokens, 1);
 	memcpy(&tempAlloc->deviceShaderInfo, &inProgressShaderInfo, sizeof(DeviceShaderInfo) );
 	tempAlloc->deviceShaderInfo.deviceInstructionTokenCount = numInstructionTokens;
 	memcpy(&tempAlloc->deviceInstructions, inProgressInstructionStream, numInstructionTokens * sizeof(instructionSlot) );
@@ -2542,7 +2684,7 @@ static void CountUsedSourceRegs(const InstructionSrcRegType regType, const unsig
 		rRegBitmask |= (1 << regIndex);
 		break;
 	case SRTyp_V:
-		xRegBitmask |= (1 << regIndex);
+		vRegBitmask |= (1 << regIndex);
 		break;
 	case SRTyp_C:
 		cRegBitmask[regIndex/32] |= (1 << (regIndex % 32) );
@@ -2677,9 +2819,9 @@ const ShaderCompileResultCode CompileShaderInternal(const ShaderInfo& inDXShader
 			__debugbreak(); // These two "append" shader options get ignored when using passthrough mode!
 		}
 #endif
-		const bool hasVertexColor = true;
-		const bool hasTexcoord = true;
-		MakePretransformedPassthroughShader(inDXShaderInfo, deviceInstructionStream, hasVertexColor, hasTexcoord);
+		result = MakePretransformedPassthroughShader(inDXShaderInfo, deviceInstructionStream, devShaderInfo);
+		if (result != ShaderCompile_OK && !(inCompileOptions & SCOption_IgnoreShaderCompileErrors) )
+			return result;
 	}
 	else // Standard shader compilation pipeline:
 	{
@@ -2692,7 +2834,8 @@ const ShaderCompileResultCode CompileShaderInternal(const ShaderInfo& inDXShader
 				return ShaderCompile_ERR_TempGPRCountExceedsHardware;
 		}
 
-		const int freeTempGPRIndex = FindAvailableTempGPR(inDXShaderInfo);
+		const int freeDecomposeTempGPRIndex = FindAvailableTempGPR(inDXShaderInfo);
+		const int freeScalarizeTempGPRIndex = (freeDecomposeTempGPRIndex >= 0) ? FindAvailableTempGPR(inDXShaderInfo.tempRegistersUsedBitmask | (1 << freeDecomposeTempGPRIndex) ) : -1;
 		constantBufferRegisterSpace unusedConstRegSpace = FindLargestUnusedConstBufferRegisterSpace(inDXShaderInfo);
 
 		// First walk the D3D9 shader bytecode and find our instruction start pointers:
@@ -2706,7 +2849,7 @@ const ShaderCompileResultCode CompileShaderInternal(const ShaderInfo& inDXShader
 		std::vector<anyToken> decomposedInstructionStream;
 		decomposedInstructionStream.push_back(*(reinterpret_cast<const anyToken* const>(&shaderVersionToken) ) );
 		std::vector<const instructionToken*> decomposedInstructionStartPtrs;
-		result = DecomposeShaderInstructions(inDXShaderInfo, instructionStartPtrs, inCompileOptions, freeTempGPRIndex, unusedConstRegSpace, decomposedInstructionStream, decomposedInstructionStartPtrs);
+		result = DecomposeShaderInstructions(inDXShaderInfo, instructionStartPtrs, inCompileOptions, freeDecomposeTempGPRIndex, unusedConstRegSpace, decomposedInstructionStream, decomposedInstructionStartPtrs);
 		if (result != ShaderCompile_OK && !(inCompileOptions & SCOption_IgnoreShaderCompileErrors) )
 			return result;
 
@@ -2717,7 +2860,7 @@ const ShaderCompileResultCode CompileShaderInternal(const ShaderInfo& inDXShader
 		std::vector<anyToken> scalarizedInstructionStream;
 		scalarizedInstructionStream.push_back(*(reinterpret_cast<const anyToken* const>(&shaderVersionToken) ) );
 		std::vector<const instructionToken*> scalarizedInstructionStartPtrs;
-		result = ScalarizeVectorShader(inDXShaderInfo, decomposedInstructionStartPtrs, inCompileOptions, freeTempGPRIndex, scalarizedInstructionStream, scalarizedInstructionStartPtrs);
+		result = ScalarizeVectorShader(inDXShaderInfo, decomposedInstructionStartPtrs, inCompileOptions, freeScalarizeTempGPRIndex, scalarizedInstructionStream, scalarizedInstructionStartPtrs);
 		if (result != ShaderCompile_OK && !(inCompileOptions & SCOption_IgnoreShaderCompileErrors) )
 			return result;
 

@@ -39,6 +39,12 @@ end FloatALU;
 
 architecture Behavioral of FloatALU is
 
+ATTRIBUTE X_INTERFACE_INFO : STRING;
+ATTRIBUTE X_INTERFACE_PARAMETER : STRING;
+
+ATTRIBUTE X_INTERFACE_INFO of clk: SIGNAL is "xilinx.com:signal:clock:1.0 clk CLK";
+ATTRIBUTE X_INTERFACE_PARAMETER of clk: SIGNAL is "FREQ_HZ 333250000";
+
 -- Globally useful float constants:
 constant zeroF : unsigned(31 downto 0) := X"00000000"; -- Constant for 0.0f
 constant oneF : unsigned(31 downto 0) := X"3F800000"; -- Constant for 1.0f

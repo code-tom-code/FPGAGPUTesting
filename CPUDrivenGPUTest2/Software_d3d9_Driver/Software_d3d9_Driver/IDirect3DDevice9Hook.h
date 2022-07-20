@@ -1072,7 +1072,7 @@ public:
 
 	const float4 GetDeviceViewportConstantF() const;
 
-	void DeviceSetVertexShader();
+	void DeviceSetVertexShader(const bool forceLoadVertexShader = false);
 	void DeviceSetVertexStreamsAndDecl();
 	void DeviceSetUsedVertexShaderConstants();
 
@@ -1520,6 +1520,8 @@ protected:
 	bool useDoubleBuffering; // Set this to false for GPU single-step debugging purposes to only have a frontbuffer instead of a frontbuffer + backbuffer
 	bool emulateCommandLists;
 	int overrideTexCombinerMode;
+
+	gpuvoid* allocatedDebugShaderRegisterFile;
 
 	std::vector<deviceAllocatedBuffer> cachedVertexPositionBuffers;
 	std::vector<deviceAllocatedBuffer> cachedVertexInvZBuffers;

@@ -9,8 +9,16 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "d3d9", "Software_d3d9_Drive
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DriverShaderCompiler", "DriverShaderCompiler\DriverShaderCompiler.vcxproj", "{67FCA46A-6B71-42E4-90E3-9C25F0C68391}"
+	ProjectSection(ProjectDependencies) = postProject
+		{553F9799-7401-4555-A217-9ED70C4AFA21} = {553F9799-7401-4555-A217-9ED70C4AFA21}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ShaderAnalysis", "ShaderAnalysis\ShaderAnalysis.vcxproj", "{553F9799-7401-4555-A217-9ED70C4AFA21}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ShaderTraceViewer", "ShaderTraceViewer\ShaderTraceViewer.vcxproj", "{3237FC59-D3DA-42C4-943C-DEF557227589}"
+	ProjectSection(ProjectDependencies) = postProject
+		{67FCA46A-6B71-42E4-90E3-9C25F0C68391} = {67FCA46A-6B71-42E4-90E3-9C25F0C68391}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -44,6 +52,14 @@ Global
 		{553F9799-7401-4555-A217-9ED70C4AFA21}.Release|Win32.Build.0 = Release|Win32
 		{553F9799-7401-4555-A217-9ED70C4AFA21}.Release|x64.ActiveCfg = Release|x64
 		{553F9799-7401-4555-A217-9ED70C4AFA21}.Release|x64.Build.0 = Release|x64
+		{3237FC59-D3DA-42C4-943C-DEF557227589}.Debug|Win32.ActiveCfg = Debug|Win32
+		{3237FC59-D3DA-42C4-943C-DEF557227589}.Debug|Win32.Build.0 = Debug|Win32
+		{3237FC59-D3DA-42C4-943C-DEF557227589}.Debug|x64.ActiveCfg = Debug|x64
+		{3237FC59-D3DA-42C4-943C-DEF557227589}.Debug|x64.Build.0 = Debug|x64
+		{3237FC59-D3DA-42C4-943C-DEF557227589}.Release|Win32.ActiveCfg = Release|Win32
+		{3237FC59-D3DA-42C4-943C-DEF557227589}.Release|Win32.Build.0 = Release|Win32
+		{3237FC59-D3DA-42C4-943C-DEF557227589}.Release|x64.ActiveCfg = Release|x64
+		{3237FC59-D3DA-42C4-943C-DEF557227589}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -62,6 +62,12 @@ end TriWorkCache;
 
 architecture Behavioral of TriWorkCache is
 
+ATTRIBUTE X_INTERFACE_INFO : STRING;
+ATTRIBUTE X_INTERFACE_PARAMETER : STRING;
+
+ATTRIBUTE X_INTERFACE_INFO of clk: SIGNAL is "xilinx.com:signal:clock:1.0 clk CLK";
+ATTRIBUTE X_INTERFACE_PARAMETER of clk: SIGNAL is "FREQ_HZ 333250000";
+
 pure function GetActiveTriangleCount(activeSlotsBitmask : STD_LOGIC_VECTOR(3 downto 0) ) return unsigned is
 begin
 	case activeSlotsBitmask is

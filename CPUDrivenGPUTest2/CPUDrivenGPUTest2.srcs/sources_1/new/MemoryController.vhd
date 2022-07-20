@@ -233,7 +233,10 @@ entity MemoryController is
 		DBG_LastWriteDataDWORDEnables : out STD_LOGIC_VECTOR(7 downto 0) := (others => '0');
 		DBG_LastWriteMemoryClientIndex : out STD_LOGIC_VECTOR(3 downto 0) := (others => '0');
 		DBG_LastReadAddress : out STD_LOGIC_VECTOR(C_M_AXI_ADDR_WIDTH-1 downto 0) := (others => '0');
-		DBG_LastReadMemoryClientIndex : out STD_LOGIC_VECTOR(3 downto 0) := (others => '0')
+		DBG_LastReadMemoryClientIndex : out STD_LOGIC_VECTOR(3 downto 0) := (others => '0');
+		DBG_ReadRequestsEmptyBitmask : out STD_LOGIC_VECTOR(7 downto 0) := (others => '0');
+		DBG_WriteRequestsEmptyBitmask : out STD_LOGIC_VECTOR(4 downto 0) := (others => '0');
+		DBG_ReadResponsesFullBitmask : out STD_LOGIC_VECTOR(7 downto 0) := (others => '0')
 		);
 end MemoryController;
 
@@ -610,6 +613,11 @@ begin
 	DBG_LastWriteMemoryClientIndex <= std_logic_vector(LastWriteMemoryClientIndex);
 	DBG_LastReadAddress <= LastReadAddress;
 	DBG_LastReadMemoryClientIndex <= std_logic_vector(LastReadMemoryClientIndex);
+	DBG_ReadRequestsEmptyBitmask <= ROPReadRequestsFIFO_empty & TexFetchReadRequestsFIFO_empty & IBCPostReadRequestsFIFO_empty & IBCPreReadRequestsFIFO_empty &
+		IAReadRequestsFIFO_empty & CommandProcReadRequestsFIFO_empty & ZStencilReadRequestsFIFO_empty & ScanoutReadRequestsFIFO_empty;
+	DBG_WriteRequestsEmptyBitmask <= StatsWriteRequestsFIFO_empty & ClearBlockWriteRequestsFIFO_empty & ROPWriteRequestsFIFO_empty & CommandProcWriteRequestsFIFO_empty & ZStencilWriteRequestsFIFO_empty;
+	DBG_ReadResponsesFullBitmask <= ROPReadResponsesFIFO_full & TexFetchReadResponsesFIFO_full & IBCPostReadResponsesFIFO_full & IBCPreReadResponsesFIFO_full &
+		IAReadResponsesFIFO_full & CommandProcReadResponsesFIFO_full & ZStencilReadResponsesFIFO_full & ScanoutReadResponsesFIFO_full;
 
 	process(M_AXI_ACLK)
 	begin
@@ -688,6 +696,8 @@ begin
 						ZStencilReadResponsesFIFO_wr_en <= '0';
 						CommandProcReadResponsesFIFO_wr_en <= '0';
 						IAReadResponsesFIFO_wr_en <= '0';
+						IBCPreReadResponsesFIFO_wr_en <= '0';
+						IBCPostReadResponsesFIFO_wr_en <= '0';
 						TexFetchReadResponsesFIFO_wr_en <= '0';
 						ROPReadResponsesFIFO_wr_en <= '0';
 

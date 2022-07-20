@@ -360,6 +360,9 @@ static const bool ValidateFormatForUsage(const gpuFormat format, const allocatio
 
 	case GPUVAT_StatsMemory:
 		return format >= GPUFMT_StartValidStatsFormats && format <= GPUFMT_EndValidStatsFormats;
+
+	case GPUVAT_RegisterFileDumpMemory:
+		return format >= GPUFMT_StartValidRegFileDumpFormats && format <= GPUFMT_EndValidRegFileDumpFormats;
 	}
 }
 
@@ -383,6 +386,7 @@ static const unsigned GetAlignmentSizeForUsage(const allocationUsage usage)
 	case GPUVAT_ConstantBufferData:
 	case GPUVAT_StatsMemory:
 	case GPUVAT_ShaderInstructionsMemory:
+	case GPUVAT_RegisterFileDumpMemory:
 		return GPU_PAGE_SIZE_BYTES; // One DRAM page is 2KBytes
 
 	case GPUVAT_Texture:

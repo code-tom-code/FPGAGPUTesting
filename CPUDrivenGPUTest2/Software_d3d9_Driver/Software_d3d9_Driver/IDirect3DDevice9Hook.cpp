@@ -23,6 +23,7 @@
 #include "Driver/GPUAllocator.h"
 #include "Driver/GPUDeviceLimits.h"
 #include "..\DriverShaderCompiler\DriverShaderCompiler.h"
+#include "..\ShaderTraceViewer\ShaderTrace.h"
 #include <Mmsystem.h>
 
 #ifdef MULTITHREAD_SHADING
@@ -4814,14 +4815,19 @@ void IDirect3DDevice9Hook::DeviceSetVertexStreamsAndDecl()
 
 	// TODO: A future optimization would be that we could skip setting vertex elements that might exist in our IDirect3DVertexDeclaration9 but that aren't referenced by the vertex shader
 	const std::vector<DebuggableD3DVERTEXELEMENT9>& vertexElements = currentState.currentVertexDecl->GetElementsInternal();
-	const unsigned numElements = vertexElements.size();
+	const unsigned numElements = vertexElements.size() - 1; // Minus one here to skip the D3DDECL_END struct
 	for (unsigned elementIndex = 0; elementIndex < numElements; ++elementIndex)
 	{
 		const DebuggableD3DVERTEXELEMENT9& thisElement = vertexElements[elementIndex];
 
 		// This is D3DDECL_END, it means we're done with our vertex elements and can break out of the loop!
 		if (thisElement.Stream == 0xFF && thisElement.Type == D3DDECLTYPE_UNUSED)
+		{
+#ifdef _DEBUG
+			__debugbreak(); // If we hit this, then it means that D3DDECL_END wasn't the last struct in the array!
+#endif
 			break;
+		}
 
 		if (thisElement.Stream >= GPU_MAX_NUM_VERTEX_STREAMS)
 		{
@@ -4935,7 +4941,8 @@ void IDirect3DDevice9Hook::DeviceSetVertexStreamsAndDecl()
 		{
 		case D3DDECLTYPE_D3DCOLOR:
 			isD3DCOLOR = true;
-			// Intentional fall-through
+			elementDWORDCount = sizeof(D3DCOLOR) / sizeof(DWORD);
+			break;
 		case D3DDECLTYPE_UBYTE4:
 		case D3DDECLTYPE_UBYTE4N:
 		case D3DDECLTYPE_SHORT2:
@@ -4998,13 +5005,13 @@ void IDirect3DDevice9Hook::DeviceSetVertexStreamsAndDecl()
 				return;
 			}
 
-			baseDevice->DeviceSetVertexStreamData(vertexBufferData, thisVertexStream.vertexBuffer->GetInternalLength_Bytes(), elementDWORDCount, (const BYTE)thisElement.Stream, isD3DCOLOR,
+			baseDevice->DeviceSetVertexStreamData(vertexBufferData, thisVertexStream.vertexBuffer->GetInternalLength_Bytes(), elementDWORDCount, /*(const BYTE)thisElement.Stream*/elementIndex, isD3DCOLOR,
 				shaderRegIndex, thisVertexStream.streamStride / sizeof(DWORD), thisElement.Offset / sizeof(DWORD), numElements);
 		}
 	}
 }
 
-void IDirect3DDevice9Hook::DeviceSetVertexShader()
+void IDirect3DDevice9Hook::DeviceSetVertexShader(const bool forceLoadVertexShader /*= false*/)
 {
 	if (!currentState.currentVertexShader)
 	{
@@ -5032,7 +5039,7 @@ void IDirect3DDevice9Hook::DeviceSetVertexShader()
 		return;
 	}
 
-	baseDevice->DeviceSetVertexShader(deviceVertexShaderBytecode, deviceVertexShaderInfo->deviceShaderInfo.deviceInstructionTokenCount);
+	baseDevice->DeviceLoadVertexShader(deviceVertexShaderBytecode, deviceVertexShaderInfo->deviceShaderInfo.deviceInstructionTokenCount, forceLoadVertexShader);
 }
 
 // If the "SCOption_VS_AppendViewportTransform" compile flag is specified, this contains on output the index of the viewport transform
@@ -5184,14 +5191,16 @@ void IDirect3DDevice9Hook::DeviceSetUsedVertexShaderConstants()
 				for (unsigned registerRangeIndex = 0; registerRangeIndex < numRegisterRanges; ++registerRangeIndex)
 				{
 					const constantRegisterRange& thisRegisterRange = registerRanges[registerRangeIndex];
+					const bool isLastRegisterRange = (registerRangeIndex == numRegisterRanges - 1);
 					deviceComms->DeviceMemCopy( (char* const)constantBufferAllocation.deviceMemory + rangeOffsetBytes, &constRegisterData.front() + readConstIndex, thisRegisterRange.rangeRegisterLength * sizeof(float4) );
+					if (thisRegisterRange.rangeRegisterLength % 2 && !isLastRegisterRange)
+					{
+						// Zero out our padding float4's:
+						deviceComms->DeviceMemSet( (char* const)constantBufferAllocation.deviceMemory + rangeOffsetBytes + thisRegisterRange.rangeRegisterLength * sizeof(float4), 0, sizeof(float4) );
+						rangeOffsetBytes += sizeof(float4) * 1;
+					}
 					readConstIndex += thisRegisterRange.rangeRegisterLength;
 					rangeOffsetBytes += thisRegisterRange.rangeRegisterLength * sizeof(float4);
-					if (thisRegisterRange.rangeRegisterLength % 2)
-					{
-						deviceComms->DeviceMemSet( (char* const)constantBufferAllocation.deviceMemory + rangeOffsetBytes, 0, sizeof(float4) );
-						rangeOffsetBytes += sizeof(float4);
-					}
 				}
 			}
 		}
@@ -5199,7 +5208,7 @@ void IDirect3DDevice9Hook::DeviceSetUsedVertexShaderConstants()
 		unsigned rangeOffsetBytes = 0;
 		for (unsigned registerRangeIndex = 0; registerRangeIndex < numRegisterRanges; ++registerRangeIndex)
 		{
-			const constantRegisterRange& thisRegisterRange = registerRanges[registerRangeIndex];
+			constantRegisterRange& thisRegisterRange = registerRanges[registerRangeIndex];
 			baseDevice->DeviceSetConstantData( (const char* const)constantBufferAllocation.deviceMemory + rangeOffsetBytes, targetDeviceState->vertexShaderRegisters.floats, thisRegisterRange.rangeStartIndex, thisRegisterRange.rangeRegisterLength);
 			rangeOffsetBytes += thisRegisterRange.rangeRegisterLength * sizeof(float4);
 			if (thisRegisterRange.rangeRegisterLength % 2)
@@ -5207,7 +5216,7 @@ void IDirect3DDevice9Hook::DeviceSetUsedVertexShaderConstants()
 		}
 	}
 
-	// Make sure to set our DEF constants *after* the SetVertexShaderConstantF/SetPixelShaderConstantF values are applied (DEF's need to override the D3D9 API call values).
+	// Make sure to set our DEF constants *after* the SetVertexShaderConstantF/SetPixelShaderConstantF values are applied (shader DEF's need to override the D3D9 API call values).
 	const unsigned numInitialConstants = vsShaderInfo.initialConstantValues.size();
 	for (unsigned x = 0; x < numInitialConstants; ++x)
 	{
@@ -5805,18 +5814,72 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawIndexed
 #endif
 
 	{
-		GPUCommandList newRecordingCommandList;
-		baseDevice->BeginRecordingCommandList(&newRecordingCommandList);
+		//GPUCommandList newRecordingCommandList;
+		//baseDevice->BeginRecordingCommandList(&newRecordingCommandList);
 
 		DeviceLoadIndexBuffer(currentState.currentIndexBuffer); // Set our index buffer (only needed for DrawIndexedX() calls)
 		DeviceSetCurrentState(PrimitiveType, currentState.currentIndexBuffer); // Update the device state
-		DeviceSetVertexStreamsAndDecl(); // Bind our current vertex streams and set up our vertex decl
-		DeviceSetVertexShader(); // Set our current vertex shader on the device
-		DeviceSetUsedVertexShaderConstants(); // Copy over and set our vertex shader constant registers
-		baseDevice->DeviceDrawPrimitive(PrimitiveType, primCount);
 
-		CreateOrUseCachedCommandList(newRecordingCommandList, cachedCommandLists);
-		CallRunCommandList(newRecordingCommandList);
+		const DeviceBytecode* const deviceVertexShaderInfo = currentState.currentVertexShader->GetDeviceCompiledShaderInfo();
+		deviceVertexShaderInfo->deviceShaderInfo.deviceInstructionTokenCount;
+
+		// Just for testing the shader trace functionality:
+		/*float4 c3 = { 0.1f, 0.2f, 0.3f, 0.4f }; // O registers
+		SetVertexShaderConstantF(3, &c3.x, 1);
+
+		float4 c4 = { -0.1f, -0.2f, -0.3f, -0.4f }; // R registers
+		SetVertexShaderConstantF(4, &c4.x, 1);
+
+		float4 c5 = { 5.0f, 6.0f, 7.0f, 8.0f }; // X registers
+		SetVertexShaderConstantF(5, &c5.x, 1);*/
+
+		DeviceSetVertexShader(); // Set our current vertex shader on the device
+
+		DeviceSetVertexStreamsAndDecl(); // Bind our current vertex streams and set up our vertex decl
+
+		DeviceSetUsedVertexShaderConstants(); // Copy over and set our vertex shader constant registers
+
+		static bool doShaderTrace = true;
+
+		if (doShaderTrace)
+		{
+			doShaderTrace = false; // Only do it once per run
+
+			CreateDirectoryA("ShaderTrace\\", NULL);
+			for (int x = 0; x < deviceVertexShaderInfo->deviceShaderInfo.deviceInstructionTokenCount; ++x)
+			{
+				const unsigned overwriteIPIndex = (deviceVertexShaderInfo->deviceShaderInfo.deviceInstructionTokenCount - 1 - x); // Index of the instruction to overwrite with a NOP. Make sure this is never the END instruction!
+				if (x > 0) // Never ever overwrite the END token or else our shader will infinite-loop!
+				{
+					gpuvoid* targetInstructionOverwrite = ( (char*)currentState.currentVertexShader->GetDeviceCompiledShaderBytecode() ) + sizeof(instructionSlot) * overwriteIPIndex;
+					deviceComms->DeviceMemSet(targetInstructionOverwrite, 0x000000C0, sizeof(instructionSlot) ); // Overwrite the instruction with a NOP instruction
+					const bool bForceReloadVertexShader = true;
+					DeviceSetVertexShader(bForceReloadVertexShader); // Force a reload of our newly-patched vertex shader
+					DeviceSetVertexStreamsAndDecl(); // Bind our current vertex streams and set up our vertex decl
+				}
+
+				baseDevice->DeviceEnableShaderDebuggingForNextDrawCall(allocatedDebugShaderRegisterFile);
+				baseDevice->DeviceDrawIndexedPrimitive(PrimitiveType, primCount);
+				DeviceRegisterFile regFile;
+				memset(&regFile, 0, sizeof(regFile) );
+				deviceComms->ReadFromDevice(allocatedDebugShaderRegisterFile, &regFile, sizeof(regFile) );
+				regFile.SwizzleDeviceWriteOrderToLogicalOrder();
+				char filenameBuffer[MAX_PATH] = {0};
+#pragma warning(push)
+#pragma warning(disable:4996) // warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+				sprintf(filenameBuffer, "ShaderTrace\\DumpShaderRegStateInst%u.dat", overwriteIPIndex);
+				FILE* const dumpShaderRegStateFile = fopen(filenameBuffer, "wb");
+#pragma warning(pop)
+				fwrite(&regFile, sizeof(regFile), 1, dumpShaderRegStateFile);
+				fclose(dumpShaderRegStateFile);
+			}
+
+			// Reupload our original shader bytecode when we're done since we've stomped all over it with NOP's:
+			currentState.currentVertexShader->UploadShaderBytecodeToDevice( (gpuvoid* const)currentState.currentVertexShader->GetDeviceCompiledShaderBytecode() );
+		}
+
+		//CreateOrUseCachedCommandList(newRecordingCommandList, cachedCommandLists);
+		//CallRunCommandList(newRecordingCommandList);
 	}
 
 	if (CurrentPipelineCanEarlyZTest() )
@@ -11265,7 +11328,7 @@ void IDirect3DDevice9Hook::InitializeState(const D3DPRESENT_PARAMETERS& d3dpp, c
 
 IDirect3DDevice9Hook::IDirect3DDevice9Hook(LPDIRECT3DDEVICE9 _d3d9dev, IDirect3D9Hook* _parentHook) : d3d9dev(_d3d9dev), parentHook(_parentHook), refCount(1), initialDevType(D3DDEVTYPE_HAL), initialCreateFlags(D3DCREATE_HARDWARE_VERTEXPROCESSING),
 	enableDialogs(FALSE), sceneBegun(FALSE), implicitSwapChain(NULL), hConsoleHandle(INVALID_HANDLE_VALUE), numPixelsPassedZTest(0), initialCreateFocusWindow(NULL), initialCreateDeviceWindow(NULL),
-	processedVertexBuffer(NULL), processedVertsUsed(0), processVertsAllocated(0), currentlyRecordingStateBlock(NULL), currentSwvpEnabled(FALSE), deviceComms(NULL), baseDevice(NULL), overrideTexCombinerMode(-1)
+	processedVertexBuffer(NULL), processedVertsUsed(0), processVertsAllocated(0), currentlyRecordingStateBlock(NULL), currentSwvpEnabled(FALSE), deviceComms(NULL), baseDevice(NULL), overrideTexCombinerMode(-1), allocatedDebugShaderRegisterFile(NULL)
 {
 #ifdef _DEBUG
 	m_FirstMember = false;
@@ -11333,6 +11396,8 @@ IDirect3DDevice9Hook::IDirect3DDevice9Hook(LPDIRECT3DDEVICE9 _d3d9dev, IDirect3D
 	deviceComms = new IVirtualDeviceComms(new ISerialDeviceComms("COM3", 921600, ODDPARITY) );
 
 	baseDevice = new IBaseGPUDevice(deviceComms);
+
+	allocatedDebugShaderRegisterFile = GPUAlloc(sizeof(DeviceRegisterFile), GPUVAT_RegisterFileDumpMemory, GPUFMT_RegFileDump, "DebugDeviceRegisterFileDump");
 }
 
 /*virtual*/ IDirect3DDevice9Hook::~IDirect3DDevice9Hook()

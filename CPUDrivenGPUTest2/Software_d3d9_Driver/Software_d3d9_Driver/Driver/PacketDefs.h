@@ -33,13 +33,13 @@ struct command
 		PT_ENDFRAMESTATS = 17,
 		PT_ENDFRAME = 18,
 		PT_RUNCOMMANDLIST = 19,
-
-		// To hook up in the driver:
 		PT_LOADSHADERINSTRUCTIONS = 20,
 		PT_SETSHADERCONSTANT = 21,
 		PT_SETVERTEXSTREAMDATA = 22,
 		PT_SETINDEXBUFFER = 23,
 		PT_SETSHADERCONSTANTSPECIAL = 24,
+		PT_SETSHADERSTARTADDRESS = 25,
+		PT_DEBUGSHADERNEXTDRAWCALL = 26,
 
 		PT_MAX_PACKET_TYPES // This must always be last
 	};
@@ -699,7 +699,7 @@ struct loadShaderInstructionsCommand : command
 
 	// Payload 1:
 	USHORT shaderLengthTokens = 0; // 15 downto 0 // Number of shader instruction tokens in this shader
-	USHORT shaderLoadTargetOffset = 0; // 31 downto 16 // Address (in shader instruction tokens) into the loaded shader instruction cache defining where to put the loaded shader instructions (defaults to 0). Values above 0 are not yet supported as we don't have a way to launch a shader from a nonzero address!
+	USHORT shaderLoadTargetOffset = 0; // 31 downto 16 // Address (in shader instruction tokens) into the loaded shader instruction cache defining where to put the loaded shader instructions (defaults to 0).
 };
 
 struct setShaderConstantCommand : command
@@ -802,6 +802,40 @@ struct setIndexBufferCommand : command
 	DWORD unused2 = 0x00000000;
 };
 
+// This configures the index buffer address and type for the pretransformed index cache in the Vertex Batch Builder.
+// This packet might be safe to elide in case we're issuing a non-indexed draw call.
+struct setShaderStartAddressCommand : command
+{
+	setShaderStartAddressCommand() : command(PT_SETSHADERSTARTADDRESS),
+		shaderStartAddress(0), unused0(0)
+	{
+	}
+
+	// Payload 0:
+	DWORD shaderStartAddress : 9; // Address (in instruction-cache memory space) of the start instruction of our shader // 8 downto 0
+	DWORD unused0 : 23; // 31 downto 9
+
+	// Payload 1:
+	DWORD unused1 = 0x00000000;
+};
+
+// This instructs the command processor that when the next draw call completes, we should dump the shader core's register file data to GPU DRAM
+// at the given address (for the CPU to read back later)
+struct debugShaderNextDrawCallCommand : command
+{
+	debugShaderNextDrawCallCommand() : command(PT_DEBUGSHADERNEXTDRAWCALL),
+		dumpRegistersAddress(0x00000000), unused0(0x0), unused1(0x00000000)
+	{
+	}
+
+	// Payload 0:
+	DWORD dumpRegistersAddress : 30; // Address (must be DRAM-aligned) in GPU DRAM to start dumping out shader RF registers // 29 downto 0
+	DWORD unused0 : 2; // 31 downto 30
+
+	// Payload 1:
+	DWORD unused1 = 0x00000000;
+};
+
 // TODO: One day implement variable-sized packets and then this can go away
 static_assert(sizeof(genericCommand) == sizeof(doNothingCommand) &&
 	sizeof(genericCommand) == sizeof(writeMemCommand) &&
@@ -827,6 +861,8 @@ static_assert(sizeof(genericCommand) == sizeof(doNothingCommand) &&
 	sizeof(genericCommand) == sizeof(setVertexStreamDataCommand) && 
 	sizeof(genericCommand) == sizeof(setIndexBufferCommand) && 
 	sizeof(genericCommand) == sizeof(setShaderConstantSpecialCommand) &&
+	sizeof(genericCommand) == sizeof(setShaderStartAddressCommand) &&
+	sizeof(genericCommand) == sizeof(debugShaderNextDrawCallCommand) && 
 	sizeof(genericCommand) == 11, "Error: Unexpected struct size!");
 
 #pragma pack(pop) // End pragma pack 1 region

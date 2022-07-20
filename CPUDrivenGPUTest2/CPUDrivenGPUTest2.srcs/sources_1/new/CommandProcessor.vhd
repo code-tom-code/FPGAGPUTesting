@@ -73,6 +73,9 @@ entity CommandProcessor is
 		SHADER_SetVertexStreamShaderRegIndex : out STD_LOGIC_VECTOR(2 downto 0) := (others => '0');
 		SHADER_SetVertexStreamDWORDStride : out STD_LOGIC_VECTOR(5 downto 0) := (others => '0'); -- Number of DWORD's between consecutive vertex stream elements (may be 0)
 		SHADER_SetVertexStreamDWORDOffset : out STD_LOGIC_VECTOR(5 downto 0) := (others => '0'); -- Number of DWORD's offset from the start of the vertex to this element
+		SHADER_ReadRegisterOutRequest : out STD_LOGIC := '0';
+		SHADER_ReadRegisterOutDataReady : in STD_LOGIC;
+		SHADER_ReadRegisterOutData : in STD_LOGIC_VECTOR(127 downto 0);
 	-- Shader Core interfaces end
 
 	-- Input Assembler interfaces begin
@@ -171,6 +174,10 @@ end CommandProcessor;
 architecture Behavioral of CommandProcessor is
 
 	ATTRIBUTE X_INTERFACE_INFO : STRING;
+	ATTRIBUTE X_INTERFACE_PARAMETER : STRING;
+
+	ATTRIBUTE X_INTERFACE_INFO of clk: SIGNAL is "xilinx.com:signal:clock:1.0 clk CLK";
+	ATTRIBUTE X_INTERFACE_PARAMETER of clk: SIGNAL is "FREQ_HZ 333250000";
 
 	ATTRIBUTE X_INTERFACE_INFO of validPacketsFIFO_rd_data: SIGNAL is "xilinx.com:interface:fifo_read:1.0 validPacketsFIFO RD_DATA";
 	ATTRIBUTE X_INTERFACE_INFO of validPacketsFIFO_rd_en: SIGNAL is "xilinx.com:interface:fifo_read:1.0 validPacketsFIFO RD_EN";
@@ -242,11 +249,18 @@ architecture Behavioral of CommandProcessor is
 						SET_SHADER_CONSTANT, -- 33
 						SET_SHADER_CONSTANT2, -- 34
 						SET_SHADER_CONSTANT_WAIT_FOR_MEMORY, -- 35
-						SET_SHADER_CONSTANT_WAIT_FOR_SEND_HIGH_REGISTER, -- 36
-						SET_VERTEX_STREAM_DATA, -- 37
-						SET_INDEX_BUFFER, -- 38
-						SET_SHADER_CONSTANT_SPECIAL, -- 39
-						SET_SHADER_START_ADDRESS -- 40
+						SET_SHADER_CONSTANT_WAIT_FOR_MEMORY_COOLDOWN, -- 36
+						SET_SHADER_CONSTANT_WAIT_FOR_SEND_HIGH_REGISTER, -- 37
+						SET_SHADER_CONSTANT_WAIT_FOR_SEND_HIGH_REGISTER_COOLDOWN, -- 38
+						SET_VERTEX_STREAM_DATA, -- 39
+						SET_INDEX_BUFFER, -- 40
+						SET_SHADER_CONSTANT_SPECIAL, -- 41
+						SET_SHADER_START_ADDRESS, -- 42
+
+						DBG_SHADER_NEXT_DRAW_CALL, -- 43
+						DBG_DUMP_SHADER_REGISTERS, -- 44
+						DBG_DUMP_SHADER_REGISTERS_HIGH, -- 45
+						DBG_DUMP_SHADER_REGISTERS_MEMWRITE -- 46
 						);
 
 	type commandListExecState is record
@@ -285,6 +299,11 @@ architecture Behavioral of CommandProcessor is
 	signal setROPClearEnable : std_logic := '0';
 	signal flushROPCache : std_logic := '0';
 	signal shaderStartAddress : unsigned(8 downto 0) := (others => '0');
+
+	signal debugShaderRegistersSet : std_logic := '0';
+	signal debugShaderRegistersTransactionsCount : unsigned(9 downto 0) := (others => '0');
+	signal debugShaderRegistersDumpAddr : unsigned(29 downto 0) := (others => '0');
+	signal debugShaderRegistersData : unsigned(255 downto 0) := (others => '0');
 
 	signal constantBufferLoadAddr : unsigned(29 downto 0) := (others => '0');
 	signal constantBufferLoadRegisterIndex : unsigned(7 downto 0) := (others => '0');
@@ -531,6 +550,9 @@ begin
 							when PT_SETSHADERSTARTADDRESS =>
 								mst_packet_state <= SET_SHADER_START_ADDRESS;
 
+							when PT_DEBUGSHADERNEXTDRAWCALL =>
+								mst_packet_state <= DBG_SHADER_NEXT_DRAW_CALL;
+
 							when others => --when PT_DONOTHING =>
 								mst_packet_state <= DONOTHING_PACKET;
 						end case;
@@ -770,7 +792,12 @@ begin
 							SHADER_InCommand <= std_logic_vector(to_unsigned(eShaderCMDPacket'pos(StartShadingWorkCommand), 3) );
 							SHADER_LoadProgramAddr <= "000000000000000000000" & std_logic_vector(shaderStartAddress); -- Start from our shader start address
 
-							mst_packet_state <= READ_NEXT_PACKET_FROM_FIFO;
+							if (debugShaderRegistersSet = '1') then
+								debugShaderRegistersTransactionsCount <= to_unsigned(512, 10);
+								mst_packet_state <= DBG_DUMP_SHADER_REGISTERS;
+							else
+								mst_packet_state <= READ_NEXT_PACKET_FROM_FIFO;
+							end if;
 						else
 							mst_packet_state <= DRAW_COMMAND;
 						end if;
@@ -900,17 +927,24 @@ begin
 							if (SHADER_IsReadyForCommand = '1') then
 								SHADER_InCommand <= std_logic_vector(to_unsigned(eShaderCMDPacket'pos(SetShaderConstantFCommand), 3) );
 								SHADER_SetConstantIndex <= std_logic_vector(constantBufferLoadRegisterIndex);
-								constantBufferLoadAddr <= constantBufferLoadAddr + 32;
 								constantBufferLoadRegisterIndex <= constantBufferLoadRegisterIndex + 1;
 								SHADER_SetConstantData <= CommandProcReadResponsesFIFO_rd_data(127 downto 0);
 								CommandProcReadResponsesFIFO_rd_en <= '1';
-								if (constantBufferLoadRemainingRegs /= 0) then
+								if (constantBufferLoadRemainingRegs > 1) then
 									constantBufferLoadRemainingRegs <= constantBufferLoadRemainingRegs - 1;
-									mst_packet_state <= SET_SHADER_CONSTANT_WAIT_FOR_SEND_HIGH_REGISTER;
+									mst_packet_state <= SET_SHADER_CONSTANT_WAIT_FOR_MEMORY_COOLDOWN;
 								else
 									mst_packet_state <= READ_NEXT_PACKET_FROM_FIFO;
 								end if;
 							end if;
+						end if;
+
+					when SET_SHADER_CONSTANT_WAIT_FOR_MEMORY_COOLDOWN =>
+						SHADER_InCommand <= std_logic_vector(to_unsigned(eShaderCMDPacket'pos(DoNothingCommand), 3) );
+						CommandProcReadResponsesFIFO_rd_en <= '0'; -- Deassert after one clock cycle
+						if (SHADER_IsReadyForCommand = '1' and CommandProcReadRequestsFIFO_full = '0') then
+							constantBufferLoadAddr <= constantBufferLoadAddr + 32;
+							mst_packet_state <= SET_SHADER_CONSTANT_WAIT_FOR_SEND_HIGH_REGISTER;
 						end if;
 
 					when SET_SHADER_CONSTANT_WAIT_FOR_SEND_HIGH_REGISTER =>
@@ -921,16 +955,23 @@ begin
 							SHADER_SetConstantIndex <= std_logic_vector(constantBufferLoadRegisterIndex);
 							SHADER_SetConstantData <= CommandProcReadResponsesFIFO_rd_data(255 downto 128);
 							CommandProcReadResponsesFIFO_rd_en <= '1';
-							if (constantBufferLoadRemainingRegs /= 0) then
+							if (constantBufferLoadRemainingRegs > 1) then
 								constantBufferLoadRegisterIndex <= constantBufferLoadRegisterIndex + 1;
 								constantBufferLoadRemainingRegs <= constantBufferLoadRemainingRegs - 1;
 								CommandProcReadRequestsFIFO_wr_data <= std_logic_vector(constantBufferLoadAddr);
-								constantBufferLoadAddr <= constantBufferLoadAddr + 32;
 								CommandProcReadRequestsFIFO_wr_en <= '1';
-								mst_packet_state <= SET_SHADER_CONSTANT_WAIT_FOR_MEMORY;
+								mst_packet_state <= SET_SHADER_CONSTANT_WAIT_FOR_SEND_HIGH_REGISTER_COOLDOWN;
 							else
 								mst_packet_state <= READ_NEXT_PACKET_FROM_FIFO;
 							end if;
+						end if;
+
+					when SET_SHADER_CONSTANT_WAIT_FOR_SEND_HIGH_REGISTER_COOLDOWN =>
+						CommandProcReadRequestsFIFO_wr_en <= '0'; -- Deassert after one clock cycle
+						CommandProcReadResponsesFIFO_rd_en <= '0'; -- Deassert after one clock cycle
+						SHADER_InCommand <= std_logic_vector(to_unsigned(eShaderCMDPacket'pos(DoNothingCommand), 3) );
+						if (SHADER_IsReadyForCommand = '1' and CommandProcReadResponsesFIFO_empty = '0') then
+							mst_packet_state <= SET_SHADER_CONSTANT_WAIT_FOR_MEMORY;
 						end if;
 
 					when SET_SHADER_CONSTANT_SPECIAL =>
@@ -971,6 +1012,46 @@ begin
 					when SET_SHADER_START_ADDRESS =>
 						shaderStartAddress <= localIncomingPacket.payload0(8 downto 0);
 						mst_packet_state <= READ_NEXT_PACKET_FROM_FIFO;
+
+					when DBG_SHADER_NEXT_DRAW_CALL =>
+						debugShaderRegistersSet <= '1';
+						debugShaderRegistersDumpAddr <= localIncomingPacket.payload0(29 downto 0);
+						mst_packet_state <= READ_NEXT_PACKET_FROM_FIFO;
+
+					when DBG_DUMP_SHADER_REGISTERS =>
+						debugShaderRegistersSet <= '0';
+						CommandProcWriteRequestsFIFO_wr_en <= '0';
+						if (debugShaderRegistersTransactionsCount = to_unsigned(0, 10) ) then
+							SHADER_ReadRegisterOutRequest <= '0';
+							mst_packet_state <= READ_NEXT_PACKET_FROM_FIFO;
+						elsif (SHADER_ReadRegisterOutDataReady = '1') then
+							debugShaderRegistersData(127 downto 0) <= unsigned(SHADER_ReadRegisterOutData);
+							debugShaderRegistersTransactionsCount <= debugShaderRegistersTransactionsCount - 1;
+							SHADER_ReadRegisterOutRequest <= '1';
+							mst_packet_state <= DBG_DUMP_SHADER_REGISTERS_HIGH;
+						else
+							SHADER_ReadRegisterOutRequest <= '1';
+						end if;
+
+					when DBG_DUMP_SHADER_REGISTERS_HIGH =>
+						if (SHADER_ReadRegisterOutDataReady = '1') then
+							SHADER_ReadRegisterOutRequest <= '0';
+							debugShaderRegistersData(255 downto 128) <= unsigned(SHADER_ReadRegisterOutData);
+							debugShaderRegistersTransactionsCount <= debugShaderRegistersTransactionsCount - 1;
+							mst_packet_state <= DBG_DUMP_SHADER_REGISTERS_MEMWRITE;
+						else
+							SHADER_ReadRegisterOutRequest <= '1';
+						end if;
+
+					when DBG_DUMP_SHADER_REGISTERS_MEMWRITE =>
+						if (CommandProcWriteRequestsFIFO_full = '0') then
+							CommandProcWriteRequestsFIFO_wr_en <= '1';
+							CommandProcWriteRequestsFIFO_wr_data <= std_logic_vector(debugShaderRegistersDumpAddr) & std_logic_vector(debugShaderRegistersData) & "11111111";
+							debugShaderRegistersDumpAddr <= debugShaderRegistersDumpAddr + 32;
+							mst_packet_state <= DBG_DUMP_SHADER_REGISTERS;
+						else
+							CommandProcWriteRequestsFIFO_wr_en <= '0';
+						end if;
 
 					-- Removed! May repurpose this case
 					when Removed13 =>

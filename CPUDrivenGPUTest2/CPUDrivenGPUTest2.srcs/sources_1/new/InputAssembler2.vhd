@@ -82,6 +82,10 @@ end InputAssembler2;
 architecture Behavioral of InputAssembler2 is
 
 ATTRIBUTE X_INTERFACE_INFO : STRING;
+ATTRIBUTE X_INTERFACE_PARAMETER : STRING;
+
+ATTRIBUTE X_INTERFACE_INFO of clk: SIGNAL is "xilinx.com:signal:clock:1.0 clk CLK";
+ATTRIBUTE X_INTERFACE_PARAMETER of clk: SIGNAL is "FREQ_HZ 333250000";
 
 ATTRIBUTE X_INTERFACE_INFO of VERTOUT_FIFO_rd_data : SIGNAL is "xilinx.com:interface:fifo_read:1.0 VERTOUT_FIFO RD_DATA";
 ATTRIBUTE X_INTERFACE_INFO of VERTOUT_FIFO_rd_en : SIGNAL is "xilinx.com:interface:fifo_read:1.0 VERTOUT_FIFO RD_EN";
@@ -107,9 +111,12 @@ type IA_state_t is (
 
 	IAstate_advanceIndices, -- 4
 	IAstate_readIndicesA, -- 5
-	IAstate_readIndicesB, -- 6
-	IAstate_readIndicesC, -- 7
-	IAstate_indexedAssemble -- 8
+	IAstate_readIndicesACooldown, -- 6
+	IAstate_readIndicesB, -- 7
+	IAstate_readIndicesBCooldown, -- 8
+	IAstate_readIndicesC, -- 9
+	IAstate_readIndicesCCooldown, -- 10
+	IAstate_indexedAssemble -- 11
 );
     
 type vertexPos is record
@@ -144,7 +151,7 @@ end record triangleData;
 
 type vertexDataBatch is array(15 downto 0) of vertexData;
 
-type indexTranslationArray is array(15 downto 0) of unsigned(15 downto 0);
+type indexTranslationArray is array(15 downto 0) of unsigned(31 downto 0);
 
 procedure IncrementIndicesByPrimitiveTopology(signal indexA : inout unsigned(15 downto 0); 
 	signal indexB : inout unsigned(15 downto 0); 
@@ -197,7 +204,7 @@ begin
 	return ret;
 end function;
 
-pure function IsIndexAlreadyInBatch(knownIndices : indexTranslationArray; newIndex : unsigned(15 downto 0) ) return std_logic is
+pure function IsIndexAlreadyInBatch(knownIndices : indexTranslationArray; newIndex : unsigned(31 downto 0) ) return std_logic is
 begin
 	for i in 0 to 15 loop
 		if (knownIndices(i) = newIndex) then
@@ -208,7 +215,7 @@ begin
 end function;
 
 -- Do not call this function unless you have previously called IsIndexAlreadyInBatch() and it returned true
-pure function GetIndexAlreadyInBatch(knownIndices : indexTranslationArray; lookupIndex : unsigned(15 downto 0) ) return unsigned is
+pure function GetIndexAlreadyInBatch(knownIndices : indexTranslationArray; lookupIndex : unsigned(31 downto 0) ) return unsigned is
 begin
 	for i in 0 to 15 loop
 		if (knownIndices(i) = lookupIndex) then
@@ -503,53 +510,74 @@ DBG_IA_State <= std_logic_vector(to_unsigned(IA_state_t'pos(currentState), 6) );
 				when IAstate_readIndicesA =>
 					if (IBC_ReadReady = '1') then
 						--currentIndexValA <= unsigned(IBC_ReadData(15 downto 0) );
+						IBC_ReadEnable <= '0';
 						if (IsIndexAlreadyInBatch(indexTranslation, X"0000" & unsigned(IBC_ReadData(15 downto 0) ) ) = '0') then
-							indexTranslation(to_integer(indicesUsedPerBatch) ) <= unsigned(IBC_ReadData(15 downto 0) );
+							indexTranslation(to_integer(indicesUsedPerBatch) ) <= X"0000" & unsigned(IBC_ReadData(15 downto 0) );
 							currentIndexValA <= "000000000000" & indicesUsedPerBatch;
 							indicesUsedPerBatch <= indicesUsedPerBatch + 1;
 						else
-							currentIndexValA <= "000000000000" & GetIndexAlreadyInBatch(indexTranslation, unsigned(IBC_ReadData(15 downto 0) ) );
+							currentIndexValA <= "000000000000" & GetIndexAlreadyInBatch(indexTranslation, X"0000" & unsigned(IBC_ReadData(15 downto 0) ) );
 						end if;
+						currentState <= IAstate_readIndicesACooldown;
+					else
+						IBC_ReadEnable <= '1'; -- IBC_ReadEnable must be held high until IBC_ReadReady is '1'
+					end if;
+
+					-- Not sure exactly why yet, but these cooldown states are necessary to prevent the IndexBufferCache from getting stuck in a state where
+					-- it never properly empties the incoming memory responses queue (this freezes the memory controller, and the whole GPU with it).
+				when IAstate_readIndicesACooldown =>
+					if (IBC_ReadReady = '0') then
 						IBC_ReadEnable <= '1';
 						IBC_ReadAddr <= std_logic_vector(IndexIDToIndexAddress("00" & currentIndexB, IBAddrBase, indexFormatState) );
 						currentState <= IAstate_readIndicesB;
-					else
-						IBC_ReadEnable <= '0';
 					end if;
 
 				when IAstate_readIndicesB =>
 					if (IBC_ReadReady = '1') then
 						--currentIndexValB <= unsigned(IBC_ReadData(15 downto 0) );
+						IBC_ReadEnable <= '0';
 						if (IsIndexAlreadyInBatch(indexTranslation, X"0000" & unsigned(IBC_ReadData(15 downto 0) ) ) = '0') then
-							indexTranslation(to_integer(indicesUsedPerBatch) ) <= unsigned(IBC_ReadData(15 downto 0) );
+							indexTranslation(to_integer(indicesUsedPerBatch) ) <= X"0000" & unsigned(IBC_ReadData(15 downto 0) );
 							currentIndexValB <= "000000000000" & indicesUsedPerBatch;
 							indicesUsedPerBatch <= indicesUsedPerBatch + 1;
 						else
-							currentIndexValB <= "000000000000" & GetIndexAlreadyInBatch(indexTranslation, unsigned(IBC_ReadData(15 downto 0) ) );
+							currentIndexValB <= "000000000000" & GetIndexAlreadyInBatch(indexTranslation, X"0000" & unsigned(IBC_ReadData(15 downto 0) ) );
 						end if;
+						currentState <= IAstate_readIndicesBCooldown;
+					else
+						IBC_ReadEnable <= '1'; -- IBC_ReadEnable must be held high until IBC_ReadReady is '1'
+					end if;
+
+				when IAstate_readIndicesBCooldown =>
+					if (IBC_ReadReady = '0') then
 						IBC_ReadEnable <= '1';
 						IBC_ReadAddr <= std_logic_vector(IndexIDToIndexAddress("00" & currentIndexC, IBAddrBase, indexFormatState) );
 						currentState <= IAstate_readIndicesC;
-					else
-						IBC_ReadEnable <= '0';
 					end if;
 
 				when IAstate_readIndicesC =>
-					IBC_ReadEnable <= '0';
 					if (IBC_ReadReady = '1') then
+						IBC_ReadEnable <= '0';
 						--currentIndexValC <= unsigned(IBC_ReadData(15 downto 0) );
 						if (IsIndexAlreadyInBatch(indexTranslation, X"0000" & unsigned(IBC_ReadData(15 downto 0) ) ) = '0') then
-							indexTranslation(to_integer(indicesUsedPerBatch) ) <= unsigned(IBC_ReadData(15 downto 0) );
+							indexTranslation(to_integer(indicesUsedPerBatch) ) <= X"0000" & unsigned(IBC_ReadData(15 downto 0) );
 							currentIndexValC <= "000000000000" & indicesUsedPerBatch;
 							indicesUsedPerBatch <= indicesUsedPerBatch + 1;
 						else
-							currentIndexValC <= "000000000000" & GetIndexAlreadyInBatch(indexTranslation, unsigned(IBC_ReadData(15 downto 0) ) );
+							currentIndexValC <= "000000000000" & GetIndexAlreadyInBatch(indexTranslation, X"0000" & unsigned(IBC_ReadData(15 downto 0) ) );
 						end if;
+						currentState <= IAstate_readIndicesCCooldown;
+					else
+						IBC_ReadEnable <= '1'; -- IBC_ReadEnable must be held high until IBC_ReadReady is '1'
+					end if;
+
+				when IAstate_readIndicesCCooldown =>
+					IBC_ReadEnable <= '0';
+					if (IBC_ReadReady = '0') then
 						currentState <= IAstate_indexedAssemble;
 					end if;
 
 				when IAstate_indexedAssemble =>
-					IBC_ReadEnable <= '0';
 					AssembleTrianglesFromVertices(currentIndexValA, currentIndexValB, currentIndexValC, currentVertexData, currentTri);
 					isCurrentTriangleStripTriEven := not SV_PrimitiveID(0);
 					IncrementIndicesByPrimitiveTopology(currentIndexA, currentIndexB, currentIndexC, primTopologyState, isCurrentTriangleStripTriEven);

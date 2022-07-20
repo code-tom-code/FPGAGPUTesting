@@ -88,7 +88,11 @@ type eVertexBatchBuilderState is
 	drawLoopIndexed_waitForIndex, -- 11
 
 	finishAndSubmitBatch, -- 12
-	submitBatch -- 13
+	submitBatch, -- 13
+
+	finishCooldown, -- 14
+	finishCooldown2, -- 15
+	finishCooldown3 -- 16
 );
 
 type eIndexFormat is
@@ -368,7 +372,7 @@ begin
 								when triFan =>
 									currentState <= drawLoopIndexed_triFan;
 								when others =>
-									currentState <= readyState;
+									currentState <= finishCooldown;
 							end case;
 						else
 							case currentPrimToplogy is
@@ -379,11 +383,11 @@ begin
 								when triFan =>
 									currentState <= drawLoopNonindexed_triFan;
 								when others =>
-									currentState <= readyState;
+									currentState <= finishCooldown;
 							end case;
 						end if;
 					else -- All polys complete
-						currentState <= readyState;
+						currentState <= finishCooldown;
 					end if;
 				else -- FIFO is not ready
 					VERTBATCH_FIFO_wr_en <= '0';
@@ -478,12 +482,24 @@ begin
 			when drawLoopIndexed_triStrip =>
 				-- TODO: Implement non-TriList indexed drawing
 				VERTBATCH_FIFO_wr_en <= '0';
-				currentState <= readyState; -- Just go back to the ready state for now
+				currentState <= finishCooldown; -- Just go back to the ready state for now
 
 			when drawLoopIndexed_triFan =>
 				-- TODO: Implement non-TriList indexed drawing
 				VERTBATCH_FIFO_wr_en <= '0';
-				currentState <= readyState; -- Just go back to the ready state for now
+				currentState <= finishCooldown; -- Just go back to the ready state for now
+
+			when finishCooldown =>
+				VERTBATCH_FIFO_wr_en <= '0';
+				currentState <= finishCooldown2;
+
+			when finishCooldown2 =>
+				VERTBATCH_FIFO_wr_en <= '0';
+				currentState <= finishCooldown3;
+
+			when finishCooldown3 =>
+				VERTBATCH_FIFO_wr_en <= '0';
+				currentState <= readyState;
 
 			when others =>
 		end case;

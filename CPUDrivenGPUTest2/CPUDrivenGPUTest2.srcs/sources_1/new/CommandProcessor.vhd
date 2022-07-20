@@ -239,28 +239,29 @@ architecture Behavioral of CommandProcessor is
 						SIGNAL_END_OF_FRAME_STATS, -- 26
 
 						DRAW_COMMAND, -- 27
+						DRAW_COMMAND2, -- 28
 
-						BEGIN_EXECUTE_COMMAND_LIST, -- 28
-						COMMAND_LIST_LOAD_NEXT_DRAM_LINE, -- 29
-						COMMAND_LIST_WAIT_FOR_NEXT_DRAM_LINE, -- 30
-						COMMAND_LIST_FINISH_DRAM_READ, -- 31
+						BEGIN_EXECUTE_COMMAND_LIST, -- 29
+						COMMAND_LIST_LOAD_NEXT_DRAM_LINE, -- 30
+						COMMAND_LIST_WAIT_FOR_NEXT_DRAM_LINE, -- 31
+						COMMAND_LIST_FINISH_DRAM_READ, -- 32
 
-						LOAD_SHADER_INSTRUCTIONS, -- 32
-						SET_SHADER_CONSTANT, -- 33
-						SET_SHADER_CONSTANT2, -- 34
-						SET_SHADER_CONSTANT_WAIT_FOR_MEMORY, -- 35
-						SET_SHADER_CONSTANT_WAIT_FOR_MEMORY_COOLDOWN, -- 36
-						SET_SHADER_CONSTANT_WAIT_FOR_SEND_HIGH_REGISTER, -- 37
-						SET_SHADER_CONSTANT_WAIT_FOR_SEND_HIGH_REGISTER_COOLDOWN, -- 38
-						SET_VERTEX_STREAM_DATA, -- 39
-						SET_INDEX_BUFFER, -- 40
-						SET_SHADER_CONSTANT_SPECIAL, -- 41
-						SET_SHADER_START_ADDRESS, -- 42
+						LOAD_SHADER_INSTRUCTIONS, -- 33
+						SET_SHADER_CONSTANT, -- 34
+						SET_SHADER_CONSTANT2, -- 35
+						SET_SHADER_CONSTANT_WAIT_FOR_MEMORY, -- 36
+						SET_SHADER_CONSTANT_WAIT_FOR_MEMORY_COOLDOWN, -- 37
+						SET_SHADER_CONSTANT_WAIT_FOR_SEND_HIGH_REGISTER, -- 38
+						SET_SHADER_CONSTANT_WAIT_FOR_SEND_HIGH_REGISTER_COOLDOWN, -- 39
+						SET_VERTEX_STREAM_DATA, -- 40
+						SET_INDEX_BUFFER, -- 41
+						SET_SHADER_CONSTANT_SPECIAL, -- 42
+						SET_SHADER_START_ADDRESS, -- 43
 
-						DBG_SHADER_NEXT_DRAW_CALL, -- 43
-						DBG_DUMP_SHADER_REGISTERS, -- 44
-						DBG_DUMP_SHADER_REGISTERS_HIGH, -- 45
-						DBG_DUMP_SHADER_REGISTERS_MEMWRITE -- 46
+						DBG_SHADER_NEXT_DRAW_CALL, -- 44
+						DBG_DUMP_SHADER_REGISTERS, -- 45
+						DBG_DUMP_SHADER_REGISTERS_HIGH, -- 46
+						DBG_DUMP_SHADER_REGISTERS_MEMWRITE -- 47
 						);
 
 	type commandListExecState is record
@@ -787,19 +788,18 @@ begin
 							VBB_CommandArg0 <= "00000000" & std_logic_vector(localIncomingPacket.payload0(23 downto 0) );
 							VBB_CommandArg1 <= "00000000" & std_logic_vector(localIncomingPacket.payload1(23 downto 0) );
 							VBB_CommandArgType <= std_logic_vector(localIncomingPacket.payload1(26 downto 24) );
+							mst_packet_state <= DRAW_COMMAND2;							
+						end if;
 
-							-- Signal to the shader core to begin shading
-							SHADER_InCommand <= std_logic_vector(to_unsigned(eShaderCMDPacket'pos(StartShadingWorkCommand), 3) );
-							SHADER_LoadProgramAddr <= "000000000000000000000" & std_logic_vector(shaderStartAddress); -- Start from our shader start address
-
-							if (debugShaderRegistersSet = '1') then
-								debugShaderRegistersTransactionsCount <= to_unsigned(512, 10);
-								mst_packet_state <= DBG_DUMP_SHADER_REGISTERS;
-							else
-								mst_packet_state <= READ_NEXT_PACKET_FROM_FIFO;
-							end if;
+					when DRAW_COMMAND2 =>
+						-- Signal to the shader core to begin shading
+						SHADER_InCommand <= std_logic_vector(to_unsigned(eShaderCMDPacket'pos(StartShadingWorkCommand), 3) );
+						SHADER_LoadProgramAddr <= "000000000000000000000" & std_logic_vector(shaderStartAddress); -- Start from our shader start address
+						if (debugShaderRegistersSet = '1') then
+							debugShaderRegistersTransactionsCount <= to_unsigned(512, 10);
+							mst_packet_state <= DBG_DUMP_SHADER_REGISTERS;
 						else
-							mst_packet_state <= DRAW_COMMAND;
+							mst_packet_state <= READ_NEXT_PACKET_FROM_FIFO;
 						end if;
 
 					when SET_SCANOUT_POINTER =>

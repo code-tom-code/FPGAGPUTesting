@@ -148,12 +148,16 @@ const int RunTestsVertexStreamCache(Xsi::Loader& loader)
 	// Memory controller interfaces begin
 	std_logic_port VSCReadRequestsFIFO_full(PD_IN, loader, "VSCReadRequestsFIFO_full");
 	std_logic_port VSCReadRequestsFIFO_wr_en(PD_OUT, loader, "VSCReadRequestsFIFO_wr_en");
-	std_logic_vector_port<32> VSCReadRequestsFIFO_wr_data(PD_OUT, loader, "VSCReadRequestsFIFO_wr_data");
+	std_logic_vector_port<30> VSCReadRequestsFIFO_wr_data(PD_OUT, loader, "VSCReadRequestsFIFO_wr_data");
 
 	std_logic_port VSCReadResponsesFIFO_empty(PD_IN, loader, "VSCReadResponsesFIFO_empty");
 	std_logic_port VSCReadResponsesFIFO_rd_en(PD_OUT, loader, "VSCReadResponsesFIFO_rd_en");
-	std_logic_vector_port<32+256> VSCReadResponsesFIFO_rd_data(PD_IN, loader, "VSCReadResponsesFIFO_rd_data");
+	std_logic_vector_port<30+256> VSCReadResponsesFIFO_rd_data(PD_IN, loader, "VSCReadResponsesFIFO_rd_data");
 	// Memory controller interfaces end
+
+	// Debug interfaces begin
+	std_logic_vector_port<3> DBG_State(PD_OUT, loader, "DBG_State");
+	// Debug interfaces end
 
 	// Start up idling with default values for a hundred cycles:
 	for (unsigned startupCycle = 0; startupCycle < 100; ++startupCycle)
@@ -171,9 +175,7 @@ const int RunTestsVertexStreamCache(Xsi::Loader& loader)
 		VSCReadRequestsFIFO_full = false;
 		VSCReadResponsesFIFO_empty = true;
 
-		DRAMResponse allZero;
-		memset(&allZero, 0, sizeof(allZero) );
-		VSCReadResponsesFIFO_rd_data.SetStructVal(allZero);
+		VSCReadResponsesFIFO_rd_data.SetToZero();
 	}
 
 	std::vector<DWORD> DRAMReadRequestsFIFO;
@@ -181,11 +183,27 @@ const int RunTestsVertexStreamCache(Xsi::Loader& loader)
 	DRAMResponse DRAMCurrentReadResponse;
 	std::vector<DRAMPendingRequest> DRAMPendingRequests;
 
+	unsigned currentState = 0;
+
 	// Let's count the number of DRAM requests (cache misses)
 	unsigned DRAMRequestsSent = 0;
 
+	// Count the number of BRAM reads/writes also:
+	unsigned BRAMReads = 0;
+	unsigned BRAMWrites = 0;
+
 	// Let's count the number of cycles it takes to burn through our simulated draw calls
 	unsigned cycles = 0;
+
+	struct BRAMRequest
+	{
+		bool isWrite;
+		uint32_t address;
+		uint32_t writeData;
+	};
+
+	static const constexpr unsigned BRAM_PIPELINE_LATENCY = 2u;
+	BRAMRequest BRAMPipeline[BRAM_PIPELINE_LATENCY] = {0};
 
 	const auto BRAMUpdate = [&]()
 	{
@@ -193,14 +211,32 @@ const int RunTestsVertexStreamCache(Xsi::Loader& loader)
 		{
 			const uint32_t BRAMAddress = VertexCache_addra.GetUint32Val();
 			const bool isWrite = (VertexCache_wea.GetUint8Val() != 0);
-			if (!isWrite) // Read cache
+
+			BRAMRequest newRequest;
+			newRequest.isWrite = isWrite;
+			newRequest.writeData = 0;
+			newRequest.address = BRAMAddress;
+			if (isWrite)
 			{
-				VertexCache_douta = static_cast<uint32_t>(BRAMCache.dwords[BRAMAddress]);
+				const DWORD BRAMWriteData = static_cast<DWORD>(VertexCache_dina.GetUint32Val() );
+				newRequest.writeData = BRAMWriteData;
+			}
+			BRAMPipeline[ARRAYSIZE(BRAMPipeline) - 1] = newRequest;
+
+			if (!BRAMPipeline[0].isWrite) // Read cache
+			{
+				VertexCache_douta = static_cast<uint32_t>(BRAMCache.dwords[BRAMPipeline[0].address]);
+				++BRAMReads;
 			}
 			else // Write cache
 			{
-				const DWORD BRAMWriteData = static_cast<DWORD>(VertexCache_dina.GetUint32Val() );
-				BRAMCache.dwords[BRAMAddress] = BRAMWriteData;
+				BRAMCache.dwords[BRAMPipeline[0].address] = BRAMPipeline[0].writeData;
+				++BRAMWrites;
+			}
+
+			for (unsigned x = 0; x < ARRAYSIZE(BRAMPipeline) - 1; ++x)
+			{
+				BRAMPipeline[x] = BRAMPipeline[x + 1];
 			}
 		}
 	};
@@ -240,7 +276,7 @@ const int RunTestsVertexStreamCache(Xsi::Loader& loader)
 
 		VSCReadRequestsFIFO_full = (DRAMReadRequestsFIFO.size() > 2);
 		VSCReadResponsesFIFO_empty = DRAMReadResponsesFIFO.empty();
-		VSCReadResponsesFIFO_rd_data.SetStructVal(DRAMCurrentReadResponse);
+		VSCReadResponsesFIFO_rd_data.SetToByteMemory(&DRAMCurrentReadResponse);
 
 		if (VSCReadResponsesFIFO_rd_en.GetBoolVal() )
 		{
@@ -303,6 +339,7 @@ const int RunTestsVertexStreamCache(Xsi::Loader& loader)
 			while (VSC_ReadReady.GetBoolVal() == false)
 			{
 				scoped_timestep time(loader, clk, 100);
+				currentState = DBG_State.GetUint8Val();
 				VSC_ReadEnable = true;
 				VSC_ReadStreamIndex = 0;
 				const unsigned thisDWORDAddr = (thisIndex * interleavedVertexDWORDStride) + thisDWORDOffset;
@@ -313,6 +350,7 @@ const int RunTestsVertexStreamCache(Xsi::Loader& loader)
 
 				++cycles;
 			}
+			currentState = DBG_State.GetUint8Val();
 
 			const uint32_t readData = VSC_ReadData.GetUint32Val();
 			memcpy( ( (DWORD* const)thisWriteVertex) + thisDWORDOffset, &readData, sizeof(DWORD) );
@@ -320,6 +358,7 @@ const int RunTestsVertexStreamCache(Xsi::Loader& loader)
 			while (VSC_ReadReady.GetBoolVal() == true)
 			{
 				scoped_timestep time(loader, clk, 100);
+				currentState = DBG_State.GetUint8Val();
 				VSC_ReadEnable = false;
 
 				BRAMUpdate();
@@ -327,6 +366,7 @@ const int RunTestsVertexStreamCache(Xsi::Loader& loader)
 
 				++cycles;
 			}
+			currentState = DBG_State.GetUint8Val();
 		}
 
 		readVertOnce[thisIndex] = true;
@@ -349,6 +389,8 @@ const int RunTestsVertexStreamCache(Xsi::Loader& loader)
 	readVertOnce.resize(ARRAYSIZE(vertexBufferDataInterleavedBreakout), false);
 	cycles = 0;
 	DRAMRequestsSent = 0;
+	BRAMReads = 0;
+	BRAMWrites = 0;
 
 	// Let's do another test. This time, with separate vertex streams
 
@@ -417,6 +459,7 @@ const int RunTestsVertexStreamCache(Xsi::Loader& loader)
 			while (VSC_ReadReady.GetBoolVal() == false)
 			{
 				scoped_timestep time(loader, clk, 100);
+				currentState = DBG_State.GetUint8Val();
 				VSC_ReadEnable = true;
 				VSC_ReadStreamIndex = thisStreamOffsetPair.streamIndex;
 				const unsigned thisDWORDAddr = (thisIndex * streamStrideDWORDs[thisStreamOffsetPair.streamIndex]) + thisStreamOffsetPair.DWORDOffset;
@@ -427,6 +470,7 @@ const int RunTestsVertexStreamCache(Xsi::Loader& loader)
 
 				++cycles;
 			}
+			currentState = DBG_State.GetUint8Val();
 
 			const uint32_t readData = VSC_ReadData.GetUint32Val();
 			memcpy( ( (DWORD* const)thisWriteVertex) + thisStreamOffsetPair.vertexDwordOffset, &readData, sizeof(DWORD) );
@@ -434,6 +478,7 @@ const int RunTestsVertexStreamCache(Xsi::Loader& loader)
 			while (VSC_ReadReady.GetBoolVal() == true)
 			{
 				scoped_timestep time(loader, clk, 100);
+				currentState = DBG_State.GetUint8Val();
 				VSC_ReadEnable = false;
 
 				BRAMUpdate();
@@ -441,6 +486,7 @@ const int RunTestsVertexStreamCache(Xsi::Loader& loader)
 
 				++cycles;
 			}
+			currentState = DBG_State.GetUint8Val();
 		}
 
 		readVertOnce[thisIndex] = true;

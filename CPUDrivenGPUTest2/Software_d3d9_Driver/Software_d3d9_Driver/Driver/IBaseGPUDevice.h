@@ -200,3 +200,7 @@ private:
 		false;
 #endif
 };
+
+// Assorted helper functions:
+const bool IsFloatRegCompressible(const float4& reg);
+const bool IsFloatCompressible(const float component);

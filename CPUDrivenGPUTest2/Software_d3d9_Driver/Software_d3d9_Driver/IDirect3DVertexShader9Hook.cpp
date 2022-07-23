@@ -314,7 +314,7 @@ void IDirect3DVertexShader9Hook::JitLoadShader()
 	//compileFlags = (ShaderCompileOptions)(compileFlags | SCOption_VS_GeneratePassthroughShader); // Force special shader path
 	//compileFlags = (ShaderCompileOptions)(compileFlags & (~SCOption_VS_OutputCompressionEnable) ); // Remove output compresion
 #else
-	compileFlags = (ShaderCompileOptions)(compileFlags | SCOption_Optimize_InstructionReordering | SCOption_Optimize_RegisterSplitting);
+	compileFlags = (ShaderCompileOptions)(compileFlags | SCOption_Optimize_D3DOptimizations | SCOption_Optimize_DeviceOptimizations);
 #endif
 	if (CompileShaderInfoToDeviceBytecode(&GetShaderInfo(), compileFlags, &deviceCompiledVertexShaderBytecode, jitName) != ShaderCompile_OK)
 	{

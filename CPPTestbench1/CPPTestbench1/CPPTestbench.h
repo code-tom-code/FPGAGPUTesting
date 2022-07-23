@@ -108,9 +108,29 @@ void FillLogicArrayWithBits(std_logic (&outVec)[numBytes * 8], const void* const
 template <unsigned numBits>
 void FillLogicArrayWithBits(std_logic* const outVec, const uint64_t uVal)
 {
-	for (uint64_t bitCount = 0; bitCount < numBits; ++bitCount)
+	for (unsigned bitCount = 0; bitCount < numBits; ++bitCount)
 	{
 		if (uVal & (1ull << bitCount) )
+			outVec[bitCount] = logic_1;
+		else
+			outVec[bitCount] = logic_0;
+	}
+}
+
+template <unsigned numBits>
+void FillLogicArrayWithMemoryBits(std_logic* const outVec, const void* const pMemory)
+{
+#ifdef _DEBUG
+	if (!pMemory)
+	{
+		__debugbreak(); // Cannot pass null to this function!
+	}
+#endif
+	const char* const pBytes = (const char* const)pMemory;
+	for (unsigned bitCount = 0; bitCount < numBits; ++bitCount)
+	{
+		const unsigned byteIndex = bitCount / 8;
+		if (pBytes[byteIndex] & (1 << (bitCount % 8) ) )
 			outVec[bitCount] = logic_1;
 		else
 			outVec[bitCount] = logic_0;
@@ -316,6 +336,60 @@ public:
 				vectorUnion.u64 = 0;
 				memcpy(&vectorUnion.u64, &structVal, sizeof(structVal) );
 			}
+		}
+		else
+		{
+#ifdef _DEBUG
+			__debugbreak(); // You cannot write to a read-only port!
+#endif
+		}
+	}
+
+	void SetToByteMemory(const void* const memory)
+	{
+		if (portDir & PD_IN)
+		{
+			std_logic convertedLogicBits[bitLength] = { logic_U };
+
+			FillLogicArrayWithMemoryBits<bitLength>(convertedLogicBits, memory);
+
+			ReverseArrayInPlace<bitLength>(convertedLogicBits);
+
+			loader.put_value(portNumber, &convertedLogicBits);
+			memcpy(&currentData, &convertedLogicBits, sizeof(std_logic) * bitLength);
+
+			if (bitLength > sizeof(vectorUnion.u64) * 8)
+			{
+				memcpy(&vectorUnion.u64, memory, sizeof(vectorUnion.u64) );
+			}
+			else
+			{
+				vectorUnion.u64 = 0;
+				memcpy(&vectorUnion.u64, memory, (bitLength + 7) / 8);
+			}
+		}
+		else
+		{
+#ifdef _DEBUG
+			__debugbreak(); // You cannot write to a read-only port!
+#endif
+		}
+	}
+
+	void SetToZero()
+	{
+		if (portDir & PD_IN)
+		{
+			std_logic zeroLogicBits[bitLength] = { logic_0 };
+			for (unsigned x = 0; x < bitLength; ++x)
+			{
+				zeroLogicBits[x] = logic_0;
+			}
+
+			loader.put_value(portNumber, &zeroLogicBits);
+			memcpy(&currentData, &zeroLogicBits, sizeof(std_logic) * bitLength);
+
+			vectorUnion.u64 = 0;
 		}
 		else
 		{

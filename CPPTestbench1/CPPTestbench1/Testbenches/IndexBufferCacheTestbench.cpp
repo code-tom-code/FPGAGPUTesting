@@ -25,12 +25,15 @@ const int RunTestsIndexBufferCache(Xsi::Loader& loader)
 	std_logic_vector_port<2> DBG_State(PD_OUT, loader, "DBG_State");
 
 	std_logic_port IBCReadRequestsFIFO_full(PD_IN, loader, "IBCReadRequestsFIFO_full");
-	std_logic_vector_port<32> IBCReadRequestsFIFO_wr_data(PD_OUT, loader, "IBCReadRequestsFIFO_wr_data");
+	std_logic_vector_port<30> IBCReadRequestsFIFO_wr_data(PD_OUT, loader, "IBCReadRequestsFIFO_wr_data");
 	std_logic_port IBCReadRequestsFIFO_wr_en(PD_OUT, loader, "IBCReadRequestsFIFO_wr_en");
 
 	std_logic_port IBCReadResponsesFIFO_empty(PD_IN, loader, "IBCReadResponsesFIFO_empty");
-	std_logic_vector_port<256+32> IBCReadResponsesFIFO_rd_data(PD_IN, loader, "IBCReadResponsesFIFO_rd_data");
+	std_logic_vector_port<256+30> IBCReadResponsesFIFO_rd_data(PD_IN, loader, "IBCReadResponsesFIFO_rd_data");
 	std_logic_port IBCReadResponsesFIFO_rd_en(PD_OUT, loader, "IBCReadResponsesFIFO_rd_en");
+
+	std::vector<uint32_t> memReadRequests;
+	std::vector<memResponse> memReadResponses;
 
 	// Start up idling with default values for a hundred cycles:
 	for (unsigned startupCycle = 0; startupCycle < 100; ++startupCycle)
@@ -48,8 +51,6 @@ const int RunTestsIndexBufferCache(Xsi::Loader& loader)
 	{
 		VBB_ReadEnable = true;
 		VBB_ReadAddr = reinterpret_cast<const uint32_t>(addr);
-		std::vector<uint32_t> memReadRequests;
-		std::vector<memResponse> memReadResponses;
 		unsigned consecutiveCyclesMemRequestsPending = 25u;
 		while (VBB_ReadReady.GetBoolVal() == false)
 		{
@@ -64,7 +65,7 @@ const int RunTestsIndexBufferCache(Xsi::Loader& loader)
 			}
 			if (IBCReadResponsesFIFO_rd_en.GetBoolVal() == true)
 			{
-				IBCReadResponsesFIFO_rd_data.SetStructVal(memReadResponses.front() );
+				IBCReadResponsesFIFO_rd_data.SetToByteMemory(&memReadResponses.front() );
 				memReadResponses.erase(memReadResponses.begin() );
 				IBCReadResponsesFIFO_empty = memReadResponses.empty();
 			}
@@ -80,7 +81,7 @@ const int RunTestsIndexBufferCache(Xsi::Loader& loader)
 					response.requestAddr = memRequest;
 
 					memReadResponses.push_back(response);
-					IBCReadResponsesFIFO_rd_data.SetStructVal(response);
+					IBCReadResponsesFIFO_rd_data.SetToByteMemory(&response);
 					IBCReadResponsesFIFO_empty = false;
 				}
 			}

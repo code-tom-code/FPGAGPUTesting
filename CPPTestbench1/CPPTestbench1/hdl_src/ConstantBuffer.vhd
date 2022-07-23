@@ -32,7 +32,10 @@ end ConstantBuffer;
 architecture Behavioral of ConstantBuffer is
 
 ATTRIBUTE X_INTERFACE_INFO : STRING;
+ATTRIBUTE X_INTERFACE_PARAMETER : STRING;
 
+ATTRIBUTE X_INTERFACE_INFO of clk: SIGNAL is "xilinx.com:signal:clock:1.0 clk CLK";
+ATTRIBUTE X_INTERFACE_PARAMETER of clk: SIGNAL is "FREQ_HZ 333250000";
 ATTRIBUTE X_INTERFACE_INFO of ConstBufferBRAM_ena: SIGNAL is "xilinx.com:interface:bram:1.0 ConstBufferBRAM EN";
 ATTRIBUTE X_INTERFACE_INFO of ConstBufferBRAM_clka: SIGNAL is "xilinx.com:interface:bram:1.0 ConstBufferBRAM CLK";
 ATTRIBUTE X_INTERFACE_INFO of ConstBufferBRAM_douta: SIGNAL is "xilinx.com:interface:bram:1.0 ConstBufferBRAM DOUT";

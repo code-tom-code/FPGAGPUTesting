@@ -2179,21 +2179,84 @@ void AppendVSPositionCompression(const unsigned oRegIndex, std::vector<instructi
 	inOutDeviceInstructionStream.push_back(compressPosY);
 }
 
+void AppendVSRegisterPacking(const unsigned packedORegIndex, const unsigned positionORegIndex, const unsigned texcoordORegIndex, const unsigned colorORegIndex, std::vector<instructionSlot>& inOutDeviceInstructionStream)
+{
+#ifdef _DEBUG
+	if (packedORegIndex >= GPU_SHADER_MAX_NUM_OUTPUT_REG)
+	{
+		__debugbreak();
+	}
+	if (positionORegIndex >= GPU_SHADER_MAX_NUM_OUTPUT_REG)
+	{
+		__debugbreak();
+	}
+	if (texcoordORegIndex >= GPU_SHADER_MAX_NUM_OUTPUT_REG)
+	{
+		__debugbreak();
+	}
+	if (colorORegIndex >= GPU_SHADER_MAX_NUM_OUTPUT_REG)
+	{
+		__debugbreak();
+	}
+#endif
+
+	// out.x = (oPos.y << 16) | oPos.x
+	const instructionSlot shiftPosY = { {Op_BSHFTL16, DRMod_None, DRTyp_O, positionORegIndex /*destRegIndex*/, Chan_Y, SRMod_None, SRTyp_O, positionORegIndex /*src0RegIndex*/, Chan_Y, SRMod_None, SRTyp_0, 0 /*src1RegIndex*/, Chan_X} }; // bshftl16 oPos.y, oPos.y, 0.x
+	const instructionSlot orPosX = { {Op_OR, DRMod_None, DRTyp_O, packedORegIndex /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_O, positionORegIndex /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_O, positionORegIndex /*src1RegIndex*/, Chan_Y} }; // or oPacked.x, oPos.x, oPos.y
+	inOutDeviceInstructionStream.push_back(shiftPosY);
+	inOutDeviceInstructionStream.push_back(orPosX);
+
+	// out.y = oPos.z
+	const instructionSlot movPosZ = { {Op_MOV, DRMod_None, DRTyp_O, packedORegIndex /*destRegIndex*/, Chan_Y, SRMod_None, SRTyp_O, positionORegIndex /*src0RegIndex*/, Chan_Z, SRMod_None, SRTyp_0, 0 /*src1RegIndex*/, Chan_X} }; // mov oPacked.y, oPos.z, 0.x
+	inOutDeviceInstructionStream.push_back(movPosZ);
+
+	// out.z = (oTex.y << 16) | oTex.x
+	const instructionSlot shiftTexY = { {Op_BSHFTL16, DRMod_None, DRTyp_O, texcoordORegIndex /*destRegIndex*/, Chan_Y, SRMod_None, SRTyp_O, texcoordORegIndex /*src0RegIndex*/, Chan_Y, SRMod_None, SRTyp_0, 0 /*src1RegIndex*/, Chan_X} }; // bshftl16 oTex.y, oTex.y, 0.x
+	const instructionSlot orTexX = { {Op_OR, DRMod_None, DRTyp_O, packedORegIndex /*destRegIndex*/, Chan_Z, SRMod_None, SRTyp_O, texcoordORegIndex /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_O, texcoordORegIndex /*src1RegIndex*/, Chan_Y} }; // or oPacked.z, oTex.x, oTex.y
+	inOutDeviceInstructionStream.push_back(shiftTexY);
+	inOutDeviceInstructionStream.push_back(orTexX);
+
+	// out.w = (oD.a << 24) | (oD.b << 16) | (oD.g << 8) | oD.r
+	const instructionSlot shiftColorA = { {Op_BSHFTL24, DRMod_None, DRTyp_O, packedORegIndex /*destRegIndex*/, Chan_W, SRMod_None, SRTyp_O, colorORegIndex /*src0RegIndex*/, Chan_W, SRMod_None, SRTyp_0, 0 /*src1RegIndex*/, Chan_X} }; // bshftl24 oPacked.w, oD.w, 0.x
+	const instructionSlot shiftColorB = { {Op_BSHFTL16, DRMod_None, DRTyp_O, colorORegIndex /*destRegIndex*/, Chan_Z, SRMod_None, SRTyp_O, colorORegIndex /*src0RegIndex*/, Chan_Z, SRMod_None, SRTyp_0, 0 /*src1RegIndex*/, Chan_X} }; // bshftl16 oD.z, oD.z, 0.x
+	const instructionSlot shiftColorG = { {Op_BSHFTL8, DRMod_None, DRTyp_O, colorORegIndex /*destRegIndex*/, Chan_Y, SRMod_None, SRTyp_O, colorORegIndex /*src0RegIndex*/, Chan_Y, SRMod_None, SRTyp_0, 0 /*src1RegIndex*/, Chan_X} }; // bshftl8 oD.y, oD.y, 0.x
+	const instructionSlot orColorB = { {Op_OR, DRMod_None, DRTyp_O, packedORegIndex /*destRegIndex*/, Chan_W, SRMod_None, SRTyp_O, colorORegIndex /*src0RegIndex*/, Chan_Z, SRMod_None, SRTyp_O, packedORegIndex /*src1RegIndex*/, Chan_W} }; // or oPacked.w, oD.z, oPacked.w
+	const instructionSlot orColorG = { {Op_OR, DRMod_None, DRTyp_O, packedORegIndex /*destRegIndex*/, Chan_W, SRMod_None, SRTyp_O, colorORegIndex /*src0RegIndex*/, Chan_Y, SRMod_None, SRTyp_O, packedORegIndex /*src1RegIndex*/, Chan_W} }; // or oPacked.w, oD.y, oPacked.w
+	const instructionSlot orColorR = { {Op_OR, DRMod_None, DRTyp_O, packedORegIndex /*destRegIndex*/, Chan_W, SRMod_None, SRTyp_O, colorORegIndex /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_O, packedORegIndex /*src1RegIndex*/, Chan_W} }; // or oPacked.w, oD.x, oPacked.w
+	inOutDeviceInstructionStream.push_back(shiftColorA);
+	inOutDeviceInstructionStream.push_back(shiftColorB);
+	inOutDeviceInstructionStream.push_back(shiftColorG);
+	inOutDeviceInstructionStream.push_back(orColorB);
+	inOutDeviceInstructionStream.push_back(orColorG);
+	inOutDeviceInstructionStream.push_back(orColorR);
+}
+
 // Optionally applies vertex shader output compression (ie. compress oPos.xy to SHORT, compress oDn.rgba to D3DCOLOR, and compress oTn.xy to USHORT)
 const ShaderCompileResultCode AppendVSOutputCompression(const ShaderInfo& inDXShaderInfo, const ShaderCompileOptions inCompileOptions, std::vector<instructionSlot>& inOutDeviceInstructionStream)
 {
 	if (inDXShaderInfo.isPixelShader == false && (inCompileOptions & SCOption_VS_OutputCompressionEnable) )
 	{
+		// Convert oTex.xy from float2 to uint16_2
 		const unsigned texcoordORegIndex = 2;
 		const unsigned texcoordDimension = 2;
 		AppendVSTexcoordCompression(texcoordORegIndex, inOutDeviceInstructionStream, texcoordDimension);
 
+		// Convert oD.xyzw from float4 to uint8_4
 		const unsigned colorORegIndex = 1;
 		const unsigned colorDimension = 4;
 		AppendVSColorCompression(colorORegIndex, inOutDeviceInstructionStream, colorDimension);
 
+		// Convert oPos.xy from float2 to int16_2
 		const unsigned positionORegIndex = 0;
 		AppendVSPositionCompression(positionORegIndex, inOutDeviceInstructionStream);
+
+		// Now that our registers are converted, we can pack them together into just one register such that:
+		// oReg.x = (oPos.y << 16) | oPos.x
+		// oReg.y = oPos.z
+		// oReg.z = (oTex.y << 16) | oTex.x
+		// oReg.w = (oD.w << 24) | (oD.z << 16) | (oD.y << 8) | oD.x
+		const unsigned packedORegIndex = 0;
+		AppendVSRegisterPacking(packedORegIndex, positionORegIndex, texcoordORegIndex, colorORegIndex, inOutDeviceInstructionStream);
 	}
 	return ShaderCompile_OK;
 }

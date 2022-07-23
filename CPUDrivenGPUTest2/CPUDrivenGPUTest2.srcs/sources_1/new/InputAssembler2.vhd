@@ -75,7 +75,9 @@ entity InputAssembler2 is
 	-- Stats interface end
 
 	-- Debug signals
-		DBG_IA_State : out STD_LOGIC_VECTOR(5 downto 0) := (others => '0')
+		DBG_IA_State : out STD_LOGIC_VECTOR(5 downto 0) := (others => '0');
+		DBG_IA_VertexIDPerBatch : out STD_LOGIC_VECTOR(3 downto 0) := (others => '0');
+		DBG_UsePrebuiltIB : in STD_LOGIC
 		);
 end InputAssembler2;
 
@@ -108,15 +110,18 @@ type IA_state_t is (
 	IAstate_sendTriDataNoCulling, -- 2
 
 	IAState_readVertexData, -- 3
+	IAState_readVertexDataCooldown, -- 4
 
-	IAstate_advanceIndices, -- 4
-	IAstate_readIndicesA, -- 5
-	IAstate_readIndicesACooldown, -- 6
-	IAstate_readIndicesB, -- 7
-	IAstate_readIndicesBCooldown, -- 8
-	IAstate_readIndicesC, -- 9
-	IAstate_readIndicesCCooldown, -- 10
-	IAstate_indexedAssemble -- 11
+	IAstate_advanceIndices, -- 5
+	IAstate_readIndicesA, -- 6
+	IAstate_readIndicesACooldown, -- 7
+	IAstate_readIndicesB, -- 8
+	IAstate_readIndicesBCooldown, -- 9
+	IAstate_readIndicesC, -- 10
+	IAstate_readIndicesCCooldown, -- 11
+	IAstate_indexedAssemble, -- 12
+
+	IAstate_usePrebuiltIB -- 13
 );
     
 type vertexPos is record
@@ -149,9 +154,31 @@ type triangleData is record
 	v2 : vertexData;
 end record triangleData;
 
+type indexTriplet is record
+	i0 : unsigned(15 downto 0);
+	i1 : unsigned(15 downto 0);
+	i2 : unsigned(15 downto 0);
+end record indexTriplet;
+
 type vertexDataBatch is array(15 downto 0) of vertexData;
 
 type indexTranslationArray is array(15 downto 0) of unsigned(31 downto 0);
+
+type constantIndexArray is array(11 downto 0) of indexTriplet;
+
+constant constIndices : constantIndexArray := (
+	0 => (i0 => x"0000", i1 => x"0001", i2 => x"0002"),
+	1 => (i0 => x"0002", i1 => x"0001", i2 => x"0003"),
+	2 => (i0 => x"0004", i1 => x"0005", i2 => x"0000"),
+	3 => (i0 => x"0000", i1 => x"0005", i2 => x"0001"),
+	4 => (i0 => x"0004", i1 => x"0000", i2 => x"0006"),
+	5 => (i0 => x"0006", i1 => x"0000", i2 => x"0002"),
+	6 => (i0 => x"0007", i1 => x"0005", i2 => x"0006"),
+	7 => (i0 => x"0006", i1 => x"0005", i2 => x"0004"),
+	8 => (i0 => x"0003", i1 => x"0001", i2 => x"0007"),
+	9 => (i0 => x"0007", i1 => x"0001", i2 => x"0005"),
+	10 => (i0 => x"0003", i1 => x"0007", i2 => x"0002"),
+	11 => (i0 => x"0002", i1 => x"0007", i2 => x"0006") );
 
 procedure IncrementIndicesByPrimitiveTopology(signal indexA : inout unsigned(15 downto 0); 
 	signal indexB : inout unsigned(15 downto 0); 
@@ -255,7 +282,6 @@ signal LastPrimitiveIDIsOdd : std_logic := '0';
 
 signal batchStartingIndex : unsigned(15 downto 0) := (others => '0');
 signal batchEndingIndex : unsigned(15 downto 0) := (others => '0');
-signal batchUsedIndices : unsigned(3 downto 0) := (others => '0');
 signal currentDrawIsIndexed : std_logic := '1'; -- If 1 then this is an indexed draw call (ie. DrawIndexedPrimitive), if 0 then this is a non-indexed draw call (ie. DrawPrimitive)
 
 signal indexTranslation : indexTranslationArray := (others => (others => '1') );
@@ -287,6 +313,7 @@ STAT_CyclesWaitingForOutput <= std_logic_vector(statCyclesWaitingForOutput);
 STAT_CyclesLoadingDataToCache <= std_logic_vector(statCyclesLoadingDataToCache);
 
 DBG_IA_State <= std_logic_vector(to_unsigned(IA_state_t'pos(currentState), 6) );
+DBG_IA_VertexIDPerBatch <= std_logic_vector(vertexIDPerBatch);
 
 	process(clk)
 	begin
@@ -366,6 +393,7 @@ DBG_IA_State <= std_logic_vector(to_unsigned(IA_state_t'pos(currentState), 6) );
 						batchEndingIndex <= unsigned(VBO_BatchEndingIndex);
 						vertexIDPerBatch <= (others => '0');
 						indicesUsedPerBatch <= (others => '0');
+						indexTranslation <= (others => (others => '1') );
 						if (unsigned(VBO_BatchStartingIndex) = unsigned(VBO_BatchEndingIndex) ) then
 							currentDrawIsIndexed <= '0';
 						else
@@ -395,7 +423,12 @@ DBG_IA_State <= std_logic_vector(to_unsigned(IA_state_t'pos(currentState), 6) );
 					else
 						VERTOUT_FIFO_rd_en <= '1';
 						vertexIDPerBatch <= vertexIDPerBatch + 1;
+						currentState <= IAState_readVertexDataCooldown;
 					end if;
+
+				when IAState_readVertexDataCooldown =>
+					VERTOUT_FIFO_rd_en <= '0'; -- Deassert after one clock cycle
+					currentState <= IAState_readVertexData;
 					
 				when IAstate_sendTriData =>
 					TRISETUP_v0PosX <= std_logic_vector(currentTri.v0.pos.vx);
@@ -489,9 +522,13 @@ DBG_IA_State <= std_logic_vector(to_unsigned(IA_state_t'pos(currentState), 6) );
                     
 					if (currentIndexC < batchEndingIndex) then
 						if (currentDrawIsIndexed = '1') then
-							IBC_ReadEnable <= '1';
-							IBC_ReadAddr <= std_logic_vector(IndexIDToIndexAddress("00" & currentIndexA, IBAddrBase, indexFormatState) );
-							currentState <= IAstate_readIndicesA;
+							if (DBG_UsePrebuiltIB = '1') then
+								currentState <= IAstate_usePrebuiltIB;
+							else
+								IBC_ReadEnable <= '1';
+								IBC_ReadAddr <= std_logic_vector(IndexIDToIndexAddress("00" & currentIndexA, IBAddrBase, indexFormatState) );
+								currentState <= IAstate_readIndicesA;
+							end if;
 						else
 							AssembleTrianglesFromVertices(currentIndexA, currentIndexB, currentIndexC, currentVertexData, currentTri);
 							isCurrentTriangleStripTriEven := not SV_PrimitiveID(0);
@@ -576,6 +613,12 @@ DBG_IA_State <= std_logic_vector(to_unsigned(IA_state_t'pos(currentState), 6) );
 					if (IBC_ReadReady = '0') then
 						currentState <= IAstate_indexedAssemble;
 					end if;
+
+				when IAstate_usePrebuiltIB =>
+					currentIndexValA <= constIndices(to_integer(SV_PrimitiveID - 1) ).i0;
+					currentIndexValB <= constIndices(to_integer(SV_PrimitiveID - 1) ).i1;
+					currentIndexValC <= constIndices(to_integer(SV_PrimitiveID - 1) ).i2;
+					currentState <= IAstate_indexedAssemble;
 
 				when IAstate_indexedAssemble =>
 					AssembleTrianglesFromVertices(currentIndexValA, currentIndexValB, currentIndexValC, currentVertexData, currentTri);

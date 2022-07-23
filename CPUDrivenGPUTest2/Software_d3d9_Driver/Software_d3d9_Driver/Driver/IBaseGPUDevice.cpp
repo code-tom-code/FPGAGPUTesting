@@ -891,11 +891,11 @@ const bool IsFloatCompressible(const float component)
 	if ( (uFloat & 0x7FFFFF) == 0x000000)
 	{
 		// This includes 0, which is also compressible as a special
-		if (component >= 1.0f)
+		if (component >= (1.0f / 128.0f) )
 		{
 			return component >= (1.0f / 128.0f) && component <= (256.0f);
 		}
-		else if (component <= -1.0f)
+		else if (component <= (-1.0f / 128.0f) )
 		{
 			return component >= -(256.0f) && component <= -(1.0f / 128.0f);
 		}

@@ -16,11 +16,12 @@ static const constexpr unsigned ADD_CYCLES = 4u; // ADD pipe takes 4 cycles to r
 static const constexpr unsigned CNV_CYCLES = 3u; // CNV pipe takes 3 cycles to run
 static const constexpr unsigned CMP_CYCLES = 1u; // CMP pipe takes 1 cycles to run
 static const constexpr unsigned SHFT_CYCLES = 1u; // SHFT pipe takes 1 cycles to run
-static const constexpr unsigned MAX_PIPE_CYCLES = GetMax(GetMax(GetMax(GetMax(GetMax(RCP_CYCLES, MUL_CYCLES), ADD_CYCLES), CNV_CYCLES), CMP_CYCLES), SHFT_CYCLES);
+static const constexpr unsigned BIT_CYCLES = 1u; // BIT pipe takes 1 cycles to run
+static const constexpr unsigned MAX_PIPE_CYCLES = GetMax(GetMax(GetMax(GetMax(GetMax(GetMax(RCP_CYCLES, MUL_CYCLES), ADD_CYCLES), CNV_CYCLES), CMP_CYCLES), SHFT_CYCLES), BIT_CYCLES);
 
-static const constexpr unsigned CBUF_LATENCY_CYCLES = 3u; // Constant Buffer reads/writes now take 3 cycles to take effect
+static const constexpr unsigned CBUF_LATENCY_CYCLES = 2u; // Constant Buffer reads/writes now take 3 cycles to take effect
 static const constexpr unsigned INST_CACHE_LATENCY_CYCLES = 3u; // Instruction Cache reads/writes now take 3 cycles to take effect
-static const constexpr unsigned GPR_QUAD_LATENCY_CYCLES = 3u; // GPR Quad reads/writes now take 3 cycles to take effect
+static const constexpr unsigned GPR_QUAD_LATENCY_CYCLES = 2u; // GPR Quad reads/writes now take 3 cycles to take effect
 
 enum eCmpType : uint8_t
 {
@@ -56,12 +57,24 @@ enum eShftMode : uint8_t
 	ShftD16 // 7
 };
 
+enum eBitMode : uint8_t
+{
+	BShftL8, // 0
+	BShftL16, // 1
+	BShftL24, // 2
+	BOr, // 3
+	BShftR8, // 4
+	BShftR16, // 5
+	BShftR24, // 6
+	BAnd // 7
+};
+
 enum eConvertMode : uint8_t
 {
 	F_to_I24_Trunc, // 0
 	F_to_I23_RoundNearestEven, // 1
 	F_to_I16_RoundNearestEven, // 2
 	F_to_UNORM16, // 3
-	F_to_UNORM8 // 4
+	F_to_UNORM8, // 4
 	// F_to_Half // 5
 };

@@ -37,82 +37,84 @@ static_assert(sizeof(VBOEntry) == sizeof(DWORD) * 4, "Error: Unexpected struct p
 static std::vector<VBOEntry> VBO_FIFO;
 
 static const unsigned short minCubeIB[36] = {
-	32 + 0, 32 + 1, 32 + 2, 
-	32 + 2, 32 + 3, 32 + 0, 
-	32 + 1, 32 + 5, 32 + 6, 
-	32 + 6, 32 + 2, 32 + 1, 
-	32 + 7, 32 + 6, 32 + 5, 
-	32 + 5, 32 + 4, 32 + 7, 
-	32 + 4, 32 + 0, 32 + 3, 
-	32 + 3, 32 + 7, 32 + 4, 
-	32 + 4, 32 + 5, 32 + 1, 
-	32 + 1, 32 + 0, 32 + 4, 
-	32 + 3, 32 + 2, 32 + 6, 
-	32 + 6, 32 + 7, 32 + 3};
+	0, 1, 2,    // side 1
+    2, 1, 3,
+	4, 5, 0,    // side 5
+    0, 5, 1,
+    4, 0, 6,    // side 2
+    6, 0, 2,
+    7, 5, 6,    // side 3
+    6, 5, 4,
+    3, 1, 7,    // side 4
+    7, 1, 5,
+    3, 7, 2,    // side 6
+    2, 7, 6
+};
 
 // This is a batch of 15 shaded verts' data from the VBB and ShaderCore testbenches
 static const DWORD drawPrimitiveTriList5Tris[] = {
-0x01df01c1,
-0x3f74602d,
-0x00000000,
-0xc0000000,
-0x013a01a1,
-0x3f7970d6,
-0x00000000,
-0xc0bb0000,
-0x00c401c3,
-0x3f771df5,
-0xffff0000,
-0xc0bbb200,
-0x011a00c4,
-0x3f6f3112,
-0xffffffff,
-0x73006a6d,
-0x01df01c1,
-0x3f74602d,
-0x00000000,
-0x73000000,
-0x014e022f,
-0x3f6a646b,
-0xffff0000,
-0x73006a00,
-0x0128012a,
-0x3f79f770,
-0x0000ffff,
-0x00000000,
-0x01df01c1,
-0x3f74602d,
-0x00000000,
-0x00000000,
-0x01ac00f6,
-0x3f75ed21,
-0x0000ffff,
-0x00000000,
-0x011a00c4,
-0x3f6f3112,
-0xffffffff,
-0x73006a6d,
-0x01ac00f6,
-0x3f75ed21,
-0x0000ffff,
-0x7300006d,
-0x01df01c1,
-0x3f74602d,
-0x00000000,
-0x73000000,
-0x01df01c1,
-0x3f74602d,
-0x00000000,
-0xc0000000,
-0x00c401c3,
-0x3f771df5,
-0xffff0000,
-0xc0bbb200,
-0x014e022f,
-0x3f6a646b,
-0xffff0000,
-0xc000b200};
+0x01df01c1, // v0 oPos.x, oPos.y
+0x3f74602d, // v0 oPos.z
+0x00000000, // v0 oTex0.x, oTex0.y
+0xc0000000, // v0 oColor.xyzw
+0x013a01a1, // v1 oPos.x, oPos.y
+0x3f7970d6,	// v1 oPos.z
+0x00000000,	// v1 oTex0.x, oTex0.y
+0xc0bb0001,	// v1 oColor.xyzw
+0x00c401c3, // v2 oPos.x, oPos.y
+0x3f771df5,	// v2 oPos.z
+0xffff0000,	// v2 oTex0.x, oTex0.y
+0xc0bbb202,	// v2 oColor.xyzw
+0x011a00c4, // v3 oPos.x, oPos.y
+0x3f6f3112,	// v3 oPos.z
+0xffffffff,	// v3 oTex0.x, oTex0.y
+0x73006a03,	// v3 oColor.xyzw
+0x01df01c1, // v4 oPos.x, oPos.y
+0x3f74602d,	// v4 oPos.z
+0x00000000,	// v4 oTex0.x, oTex0.y
+0x73000004,	// v4 oColor.xyzw
+0x014e022f, // v5 oPos.x, oPos.y
+0x3f6a646b,	// v5 oPos.z
+0xffff0000,	// v5 oTex0.x, oTex0.y
+0x73006a05,	// v5 oColor.xyzw
+0x0128012a, // v6 oPos.x, oPos.y
+0x3f79f770,	// v6 oPos.z
+0x0000ffff,	// v6 oTex0.x, oTex0.y
+0x00000006,	// v6 oColor.xyzw
+0x01df01c1, // v7 oPos.x, oPos.y
+0x3f74602d,	// v7 oPos.z
+0x00000000,	// v7 oTex0.x, oTex0.y
+0x00000007,	// v7 oColor.xyzw
+0x01ac00f6, // v8 oPos.x, oPos.y
+0x3f75ed21,	// v8 oPos.z
+0x0000ffff,	// v8 oTex0.x, oTex0.y
+0x00000008,	// v8 oColor.xyzw
+0x011a00c4, // v9 oPos.x, oPos.y
+0x3f6f3112,	// v9 oPos.z
+0xffffffff,	// v9 oTex0.x, oTex0.y
+0x73006a09,	// v9 oColor.xyzw
+0x01ac00f6, // v10 oPos.x, oPos.y
+0x3f75ed21,	// v10 oPos.z
+0x0000ffff,	// v10 oTex0.x, oTex0.y
+0x7300000a,	// v10 oColor.xyzw
+0x01df01c1, // v11 oPos.x, oPos.y
+0x3f74602d,	// v11 oPos.z
+0x00000000,	// v11 oTex0.x, oTex0.y
+0x7300000b,	// v11 oColor.xyzw
+0x01df01c1, // v12 oPos.x, oPos.y
+0x3f74602d,	// v12 oPos.z
+0x00000000,	// v12 oTex0.x, oTex0.y
+0xc000000c,	// v12 oColor.xyzw
+0x00c401c3, // v13 oPos.x, oPos.y
+0x3f771df5,	// v13 oPos.z
+0xffff0000,	// v13 oTex0.x, oTex0.y
+0xc0bbb20d,	// v13 oColor.xyzw
+0x014e022f, // v14 oPos.x, oPos.y
+0x3f6a646b,	// v14 oPos.z
+0xffff0000,	// v14 oTex0.x, oTex0.y
+0xc000b20e};// v14 oColor.xyzw
 
+static unsigned currentIndexBufferBaseAddr = 0x00000000;
 
 const int RunTestsInputAssembler(Xsi::Loader& loader)
 {
@@ -176,6 +178,7 @@ const int RunTestsInputAssembler(Xsi::Loader& loader)
 
 	// Debug interfaces
 	std_logic_vector_port<6> DBG_IA_State(PD_OUT, loader, "DBG_IA_State");
+	std_logic_port DBG_UsePrebuiltIB(PD_IN, loader, "DBG_UsePrebuiltIB");
 
 	auto updateInterfaces = [&]()
 	{
@@ -183,7 +186,8 @@ const int RunTestsInputAssembler(Xsi::Loader& loader)
 		{
 			const unsigned readAddr = IBC_ReadAddr.GetUint32Val();
 			const unsigned* const readPtr = reinterpret_cast<const unsigned* const>(readAddr);
-			const unsigned indexData = *readPtr;
+			const unsigned indexData = (*readPtr) & 0xFFFF;
+			printf("IB Cache[0x%08X] = 0x%04X\n", readAddr - currentIndexBufferBaseAddr, indexData);
 			IBC_ReadData = indexData;
 			IBC_ReadReady = true;
 		}
@@ -239,8 +243,12 @@ const int RunTestsInputAssembler(Xsi::Loader& loader)
 	{
 		scoped_timestep time(loader, clk, 100);
 
+		DBG_UsePrebuiltIB = 0;
+
 		updateInterfaces();
 	}
+
+	DBG_UsePrebuiltIB = 1;
 
 	for (unsigned x = 0; x < ARRAYSIZE(drawPrimitiveTriList5Tris) / 4; ++x)
 	{
@@ -270,6 +278,7 @@ const int RunTestsInputAssembler(Xsi::Loader& loader)
 		CMD_StateStripCutType = 0; // Strip cuts disabled
 		CMD_StateIndexFormat = 2; // INDEX16
 		CMD_IndexBufferBaseAddr = reinterpret_cast<unsigned>(&minCubeIB);
+		currentIndexBufferBaseAddr = reinterpret_cast<unsigned>(&minCubeIB);
 		updateInterfaces();
 	}
 	CMD_SetStateEnable = false;
@@ -308,6 +317,8 @@ const int RunTestsInputAssembler(Xsi::Loader& loader)
 		updateInterfaces();
 		IAState = DBG_IA_State.GetUint8Val();
 	} while (IAState != 0);
+
+	printf("Indexed tri test:\n");
 
 	for (unsigned x = 0; x < ARRAYSIZE(drawPrimitiveTriList5Tris) / 4; ++x)
 	{

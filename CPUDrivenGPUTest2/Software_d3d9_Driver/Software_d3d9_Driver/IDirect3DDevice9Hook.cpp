@@ -5227,7 +5227,29 @@ void IDirect3DDevice9Hook::DeviceSetUsedVertexShaderConstants()
 			__debugbreak();
 		}
 #endif
-		baseDevice->DeviceSetConstantDataSingleSpecial(*(const float4* const)&(thisInitialConst.initialValue), (const BYTE)thisInitialConst.constantRegisterIndex);
+
+		if (IsFloatRegCompressible(*(const float4* const)&(thisInitialConst.initialValue) ) )
+		{
+			baseDevice->DeviceSetConstantDataSingleSpecial(*(const float4* const)&(thisInitialConst.initialValue), thisInitialConst.constantRegisterIndex);
+		}
+		else
+		{
+			deviceAllocatedBuffer shaderDEFConstantAllocation;
+			shaderDEFConstantAllocation.deviceSizeBytes = sizeof(float4);
+			shaderDEFConstantAllocation.format = GPUFMT_ConstFBufferData;
+			shaderDEFConstantAllocation.bufferHash = deviceAllocatedBuffer::ComputeHash(&(thisInitialConst.initialValue), shaderDEFConstantAllocation.deviceSizeBytes);
+
+			if (CreateOrUseCachedVertDataBuffer(shaderDEFConstantAllocation, cachedConstantBuffers
+		#ifdef _DEBUG
+				, "ShaderDEFConstantF"
+		#endif
+			) )
+			{
+				deviceComms->DeviceMemCopy( (char* const)shaderDEFConstantAllocation.deviceMemory, &(thisInitialConst.initialValue), sizeof(float4) );
+			}
+
+			baseDevice->DeviceSetConstantData( (const char* const)shaderDEFConstantAllocation.deviceMemory, (const float4* const)&(thisInitialConst.initialValue), thisInitialConst.constantRegisterIndex, 1);
+		}
 	}
 }
 
@@ -5814,36 +5836,23 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawIndexed
 #endif
 
 	{
-		//GPUCommandList newRecordingCommandList;
-		//baseDevice->BeginRecordingCommandList(&newRecordingCommandList);
+		GPUCommandList newRecordingCommandList;
+		baseDevice->BeginRecordingCommandList(&newRecordingCommandList);
 
 		DeviceLoadIndexBuffer(currentState.currentIndexBuffer); // Set our index buffer (only needed for DrawIndexedX() calls)
 		DeviceSetCurrentState(PrimitiveType, currentState.currentIndexBuffer); // Update the device state
-
-		const DeviceBytecode* const deviceVertexShaderInfo = currentState.currentVertexShader->GetDeviceCompiledShaderInfo();
-		deviceVertexShaderInfo->deviceShaderInfo.deviceInstructionTokenCount;
-
-		// Just for testing the shader trace functionality:
-		/*float4 c3 = { 0.1f, 0.2f, 0.3f, 0.4f }; // O registers
-		SetVertexShaderConstantF(3, &c3.x, 1);
-
-		float4 c4 = { -0.1f, -0.2f, -0.3f, -0.4f }; // R registers
-		SetVertexShaderConstantF(4, &c4.x, 1);
-
-		float4 c5 = { 5.0f, 6.0f, 7.0f, 8.0f }; // X registers
-		SetVertexShaderConstantF(5, &c5.x, 1);*/
 
 		DeviceSetVertexShader(); // Set our current vertex shader on the device
 
 		DeviceSetVertexStreamsAndDecl(); // Bind our current vertex streams and set up our vertex decl
 
-		DeviceSetUsedVertexShaderConstants(); // Copy over and set our vertex shader constant registers
-
-		static bool doShaderTrace = true;
+		static bool doShaderTrace = false;
 
 		if (doShaderTrace)
 		{
 			doShaderTrace = false; // Only do it once per run
+
+			const DeviceBytecode* const deviceVertexShaderInfo = currentState.currentVertexShader->GetDeviceCompiledShaderInfo();
 
 			CreateDirectoryA("ShaderTrace\\", NULL);
 			for (int x = 0; x < deviceVertexShaderInfo->deviceShaderInfo.deviceInstructionTokenCount; ++x)
@@ -5877,9 +5886,16 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawIndexed
 			// Reupload our original shader bytecode when we're done since we've stomped all over it with NOP's:
 			currentState.currentVertexShader->UploadShaderBytecodeToDevice( (gpuvoid* const)currentState.currentVertexShader->GetDeviceCompiledShaderBytecode() );
 		}
+		else
+		{
+			baseDevice->DeviceDrawIndexedPrimitive(PrimitiveType, primCount);
+		}
 
-		//CreateOrUseCachedCommandList(newRecordingCommandList, cachedCommandLists);
-		//CallRunCommandList(newRecordingCommandList);
+		CreateOrUseCachedCommandList(newRecordingCommandList, cachedCommandLists);
+
+		DeviceSetUsedVertexShaderConstants(); // Copy over and set our vertex shader constant registers
+
+		CallRunCommandList(newRecordingCommandList);
 	}
 
 	if (CurrentPipelineCanEarlyZTest() )
@@ -11397,7 +11413,11 @@ IDirect3DDevice9Hook::IDirect3DDevice9Hook(LPDIRECT3DDEVICE9 _d3d9dev, IDirect3D
 
 	baseDevice = new IBaseGPUDevice(deviceComms);
 
-	allocatedDebugShaderRegisterFile = GPUAlloc(sizeof(DeviceRegisterFile), GPUVAT_RegisterFileDumpMemory, GPUFMT_RegFileDump, "DebugDeviceRegisterFileDump");
+	allocatedDebugShaderRegisterFile = GPUAlloc(sizeof(DeviceRegisterFile), GPUVAT_RegisterFileDumpMemory, GPUFMT_RegFileDump
+#ifdef _DEBUG
+		, "DebugDeviceRegisterFileDump"
+#endif
+	);
 }
 
 /*virtual*/ IDirect3DDevice9Hook::~IDirect3DDevice9Hook()

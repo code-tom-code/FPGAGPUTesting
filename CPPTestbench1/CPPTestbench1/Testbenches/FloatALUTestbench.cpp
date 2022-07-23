@@ -149,6 +149,155 @@ static const int RunTestsFloatSHFT(Xsi::Loader& loader, std_logic_port& clk, std
 	return allTestsSuccessful ? S_OK : 1;
 }
 
+static const int RunTestsFloatBIT(Xsi::Loader& loader, std_logic_port& clk, std_logic_vector_port<32>& IN_A, std_logic_vector_port<32>& IN_B, 
+	std_logic_port& IBIT_GO, std_logic_vector_port<3>& IN_MODE, std_logic_vector_port<32>& OUT_RESULT)
+{
+	bool allTestsSuccessful = true;
+
+	const auto bitShiftTestFunc = [&](const unsigned a, const int shft) -> unsigned
+	{
+		IN_A = a;
+		switch (shft)
+		{
+		case 8:
+			IN_MODE = BShftL8;
+			break;
+		case 16:
+			IN_MODE = BShftL16;
+			break;
+		case 24:
+			IN_MODE = BShftL24;
+			break;
+		case -8:
+			IN_MODE = BShftR8;
+			break;
+		case -16:
+			IN_MODE = BShftR16;
+			break;
+		case -24:
+			IN_MODE = BShftR24;
+			break;
+		default:
+			__debugbreak(); // Invalid/unknown shift amount!
+		}
+		IBIT_GO = true;
+		{
+			for (unsigned steps = 0; steps < BIT_CYCLES; ++steps)
+			{
+				scoped_timestep time(loader, clk, 100);
+			}
+		}
+		const unsigned ret = OUT_RESULT.GetUint32Val();
+		return ret;
+	};
+
+	const auto bitOrTestFunc = [&](const unsigned a, const unsigned b) -> unsigned
+	{
+		IN_A = a;
+		IN_B = b;
+		IN_MODE = BOr;
+		IBIT_GO = true;
+		{
+			for (unsigned steps = 0; steps < BIT_CYCLES; ++steps)
+			{
+				scoped_timestep time(loader, clk, 100);
+			}
+		}
+		const unsigned ret = OUT_RESULT.GetUint32Val();
+		return ret;
+	};
+
+	const auto bitAndTestFunc = [&](const unsigned a, const unsigned b) -> unsigned
+	{
+		IN_A = a;
+		IN_B = b;
+		IN_MODE = BAnd;
+		IBIT_GO = true;
+		{
+			for (unsigned steps = 0; steps < BIT_CYCLES; ++steps)
+			{
+				scoped_timestep time(loader, clk, 100);
+			}
+		}
+		const unsigned ret = OUT_RESULT.GetUint32Val();
+		return ret;
+	};
+
+	const int multipliers[] =
+	{
+		8, 16, 24,
+		-8, -16, -24
+	};
+
+	const unsigned testShiftValues[] =
+	{
+		0x00000000,
+		0x00000001,
+		0x00000080,
+		0x000000FF,
+		0x00000100,
+		0x00008000,
+		0x0000FF00,
+		0x00010000,
+		0x00800000,
+		0x00FF0000,
+		0x01000000,
+		0x80000000,
+		0xFF000000,
+		0x55555555,
+		0x99999999,
+		0x95959595,
+		0xFFFFFFFE,
+		0xFFFFFFFF,
+	};
+
+	// Bit-shifts test:
+	for (unsigned iter = 0; iter < ARRAYSIZE(multipliers); ++iter)
+	{
+		const int thisMultiplier = multipliers[iter];
+
+		for (unsigned iterTest = 0; iterTest < ARRAYSIZE(testShiftValues); ++iterTest)
+		{
+			const unsigned thisTestValue = testShiftValues[iterTest];
+			if (thisMultiplier < 0)
+			{
+				const unsigned expectedCorrectResult = thisTestValue >> abs(thisMultiplier);
+				const unsigned simTestResult = bitShiftTestFunc(thisTestValue, thisMultiplier);
+				allTestsSuccessful &= (simTestResult == expectedCorrectResult);
+			}
+			else
+			{
+				const unsigned expectedCorrectResult = thisTestValue << thisMultiplier;
+				const unsigned simTestResult = bitShiftTestFunc(thisTestValue, thisMultiplier);
+				allTestsSuccessful &= (simTestResult == expectedCorrectResult);
+			}
+		}
+	}
+
+	// Bitwise or/and tests:
+	for (unsigned iterA = 0; iterA < ARRAYSIZE(testShiftValues); ++iterA)
+	{
+		const unsigned thisTestValueA = testShiftValues[iterA];
+		for (unsigned iterB = 0; iterB < ARRAYSIZE(testShiftValues); ++iterB)
+		{
+			const unsigned thisTestValueB = testShiftValues[iterB];
+
+			const unsigned expectedCorrectResultOr = thisTestValueA | thisTestValueB;
+			const unsigned simTestResultOr = bitOrTestFunc(thisTestValueA, thisTestValueB);
+			allTestsSuccessful &= (simTestResultOr == expectedCorrectResultOr);
+
+			const unsigned expectedCorrectResultAnd = thisTestValueA & thisTestValueB;
+			const unsigned simTestResultAnd = bitAndTestFunc(thisTestValueA, thisTestValueB);
+			allTestsSuccessful &= (simTestResultAnd == expectedCorrectResultAnd);
+		}
+	}
+
+	// Turn off the BIT pipe when we're done using it
+	IBIT_GO = false;
+
+	return allTestsSuccessful ? S_OK : 1;
+}
+
 static const int RunTestsFloatRCP(Xsi::Loader& loader, std_logic_port& clk, std_logic_vector_port<32>& IN_A, 
 	std_logic_port& ISPEC_GO, std_logic_vector_port<3>& IN_MODE, std_logic_vector_port<32>& OUT_RESULT)
 {
@@ -1134,6 +1283,7 @@ const int RunTestsFloatALU(Xsi::Loader& loader)
 	std_logic_port ICMP_GO(PD_IN, loader, "ICMP_GO");
 	std_logic_port ISPEC_GO(PD_IN, loader, "ISPEC_GO");
 	std_logic_port ICNV_GO(PD_IN, loader, "ICNV_GO");
+	std_logic_port IBIT_GO(PD_IN, loader, "IBIT_GO");
 
 	// Start up idling with default values for a hundred cycles:
 	for (unsigned startupCycle = 0; startupCycle < 100; ++startupCycle)
@@ -1151,8 +1301,9 @@ const int RunTestsFloatALU(Xsi::Loader& loader)
 	const bool shftTestsSuccessful = RunTestsFloatSHFT(loader, clk, IN_A, ISHFT_GO, IN_MODE, OUT_RESULT) == S_OK;
 	const bool cnvTestsSuccessful = RunTestsFloatCNV(loader, clk, IN_A, IN_MODE, ICNV_GO, OUT_RESULT) == S_OK;
 	const bool rcpTestsSuccessful = RunTestsFloatRCP(loader, clk, IN_A, ISPEC_GO, IN_MODE, OUT_RESULT) == S_OK;
+	const bool bitTestsSuccessful = RunTestsFloatBIT(loader, clk, IN_A, IN_B, IBIT_GO, IN_MODE, OUT_RESULT) == S_OK;
 
-	if (cmpTestsSuccessful && addTestsSuccessful && mulTestsSuccessful && shftTestsSuccessful && rcpTestsSuccessful && cnvTestsSuccessful)
+	if (cmpTestsSuccessful && addTestsSuccessful && mulTestsSuccessful && shftTestsSuccessful && rcpTestsSuccessful && cnvTestsSuccessful && bitTestsSuccessful)
 		return S_OK;
 	else
 		return 1;

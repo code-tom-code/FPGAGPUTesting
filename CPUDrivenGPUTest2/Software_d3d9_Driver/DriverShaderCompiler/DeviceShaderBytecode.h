@@ -22,6 +22,18 @@ enum InstructionOperation : unsigned __int64
 	Op_CNV_UNORM16 = 17,
 	Op_CNV_UNORM8 = 18,
 	Op_SHFT = 19,
+	Op_BSHFTL8 = 20,
+	Op_BSHFTL16 = 21,
+	Op_BSHFTL24 = 22,
+	Op_BSHFTR8 = 23,
+	Op_BSHFTR16 = 24,
+	Op_BSHFTR24 = 25,
+	Op_OR = 26,
+	Op_AND = 27,
+
+	Op_UNUSED28 = 28,
+	Op_UNUSED29 = 29,
+	Op_UNUSED30 = 30,
 
 	Op_END = 31
 };
@@ -103,12 +115,15 @@ enum eCmpType : unsigned char
 	CmpSge, // 3
 
 	// SGN(a) computes component-wise the sign of a (-1 for negative, 0 for zero, or 1 for positive)
-	CmpSgn // 4
+	CmpSgn, // 4
+
+	// MOV simply returns "a" (bitwise)
+	CmpMov // 5
 
 	// 3-input compares are disabled
 	// CMP(a, b, c) computes component-wise (a >= 0 ? b : c). CND(a, b, c) computes component-wise (a > 0.5 ? b : c).
-	//CmpCmp, // 5
-	//CmpCnd // 6
+	//CmpCmp, // 6
+	//CmpCnd // 7
 };
 
 enum eShftMode : unsigned char
@@ -123,6 +138,18 @@ enum eShftMode : unsigned char
 	ShftD16 // 7
 };
 
+enum eBitMode : unsigned char
+{
+	BShftL8, // 0
+	BShftL16, // 1
+	BShftL24, // 2
+	BOr, // 3
+	BShftR8, // 4
+	BShftR16, // 5
+	BShftR24, // 6
+	BAnd // 7
+};
+
 enum eConvertMode : unsigned char
 {
 	F_to_I24_Trunc, // 0
@@ -130,8 +157,7 @@ enum eConvertMode : unsigned char
 	F_to_I16_RoundNearestEven, // 2
 	F_to_UNORM16, // 3
 	F_to_UNORM8, // 4
-	F_Mov // 5
-	// F_to_Half // 6
+	// F_to_Half // 5
 };
 
 union instructionSlot
@@ -166,6 +192,7 @@ static_assert(sizeof(instructionSlot) == sizeof(unsigned __int64), "Error: Unexp
 
 static const char* const InstructionOpToString(const InstructionOperation op)
 {
+	static_assert(Op_END == 31 && Op_UNUSED28 == 28 && Op_UNUSED30 == 30, "Need to update this string table to match the new enum!");
 	switch (op)
 	{
 	default:
@@ -209,6 +236,22 @@ static const char* const InstructionOpToString(const InstructionOperation op)
 		return "cvt_unorm8";
 	case Op_SHFT:
 		return "shft";
+	case Op_BSHFTL8:
+		return "bshft_l8";
+	case Op_BSHFTL16:
+		return "bshft_l16";
+	case Op_BSHFTL24:
+		return "bshft_l24";
+	case Op_BSHFTR8:
+		return "bshft_r8";
+	case Op_BSHFTR16:
+		return "bshft_r16";
+	case Op_BSHFTR24:
+		return "bshft_r24";
+	case Op_OR:
+		return "or";
+	case Op_AND:
+		return "and";
 	case Op_END:
 		return "end";
 	}

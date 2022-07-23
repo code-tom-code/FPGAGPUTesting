@@ -29,6 +29,14 @@ enum InstructionOperation : unsigned __int64
 	Op_CNV_UNORM16 = 17,
 	Op_CNV_UNORM8 = 18,
 	Op_SHFT = 19,
+	Op_BSHFTL8 = 20,
+	Op_BSHFTL16 = 21,
+	Op_BSHFTL24 = 22,
+	Op_BSHFTR8 = 23,
+	Op_BSHFTR16 = 24,
+	Op_BSHFTR24 = 25,
+	Op_OR = 26,
+	Op_AND = 27,
 
 	Op_END = 31
 };

@@ -300,6 +300,18 @@ default:
 		break;
 	}
 
+	// These special instructions are not allowed to have any relative tokens:
+	switch (baseToken->opcode)
+	{
+	case _D3DSIO_LABEL:
+	case _D3DSIO_DCL:
+	case _D3DSIO_DEFB:
+	case _D3DSIO_DEFI:
+	case _D3DSIO_DEF:
+		relativeTokens = 0;
+		break;
+	}
+
 	switch (currentOpcodeType)
 	{
 	default:

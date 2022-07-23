@@ -21,7 +21,7 @@
 static const WCHAR* const simengine_libpath = L"D:\\Xilinx\\Vivado\\2018.1\\lib\\win64.o";
 static const WCHAR* const simengine_imageformats_libpath = L"D:\\Xilinx\\Vivado\\2018.1\\lib\\win64.o\\imageformats";
 static const char* const simengine_libname = "librdi_simulator_kernel.dll";
-static const char* const design_name = "ShaderCore";
+static const char* const design_name = "InputAssembler2";
 static char wdbName[] = "xsim.wdb";
 static D3DCOLOR colorsArray[640 * 480] = {0};
 static RenderWindow* renderWindow = NULL;
@@ -59,11 +59,11 @@ int main(const unsigned argc, const char* const argv[])
 		info.wdbFileName = NULL;
 		loader.open(&info);
 
-		status = RunTestsShaderCore(loader);
+		//status = RunTestsShaderCore(loader);
 		//status = RunTestsFloatALU(loader);
 		//status = RunTestsUNORM8ToFloat(loader);
 		//status = RunTestsIndexBufferCache(loader);
-		//status = RunTestsInputAssembler(loader);
+		status = RunTestsInputAssembler(loader);
 		//status = RunTestsVertexBatchBuilder(loader);
 		//status = RunTestsVertexStreamCache(loader);
 	}

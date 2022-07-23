@@ -399,9 +399,12 @@ begin
 				currentBatch(2) <= x"0002";
 				currentBatch(3) <= x"0003";
 				currentBatch(4) <= x"0004";
-				currentBatch(5) <= x"0006";
-				currentBatch(6) <= x"0007";
-				currentBatch(7) <= x"0005";
+				--currentBatch(5) <= x"0006";
+				--currentBatch(6) <= x"0007";
+				--currentBatch(7) <= x"0005";
+				currentBatch(5) <= x"0005";
+				currentBatch(6) <= x"0006";
+				currentBatch(7) <= x"0007";
 				currentBatch(8) <= x"FFFF";
 				currentBatch(9) <= x"FFFF";
 				currentBatch(10) <= x"FFFF";
@@ -410,8 +413,8 @@ begin
 				currentBatch(13) <= x"FFFF";
 				currentBatch(14) <= x"FFFF";
 				currentBatch(15) <= x"FFFF";
+				currentIndexID <= resize(currentBatchRemainingPrims, 16) * to_unsigned(3, 16);
 				currentBatchRemainingPrims <= (others => '0');
-				currentIndexID <= to_unsigned(8, 32);
 				currentState <= submitBatch;
 
 			when drawLoopIndexed_triListA =>

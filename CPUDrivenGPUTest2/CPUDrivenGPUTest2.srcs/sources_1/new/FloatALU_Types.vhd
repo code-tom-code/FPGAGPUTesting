@@ -17,6 +17,7 @@ package FloatALU_Types is
 	constant CMP_CYCLES : natural := 1;
 	constant CNV_CYCLES : natural := 3;
 	constant SPEC_CYCLES : natural := 14;
+	constant BIT_CYCLES : natural := 1;
 
 	type eCmpType is
 	(
@@ -50,6 +51,18 @@ package FloatALU_Types is
 		ShftD4, -- 5
 		ShftD8, -- 6
 		ShftD16 -- 7
+	);
+
+	type eBitMode is
+	(
+		BShftL8, -- 0
+		BShftL16, -- 1
+		BShftL24, -- 2
+		BOr, -- 3
+		BShftR8, -- 4
+		BShftR16, -- 5
+		BShftR24, -- 6
+		BAnd -- 7
 	);
 
 	type eConvertMode is

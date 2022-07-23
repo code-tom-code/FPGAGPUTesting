@@ -97,6 +97,7 @@ entity ShaderCore is
 		FPUALL_ICMP_GO : out STD_LOGIC := '0'; -- CMP pipe operates in 1 clock cycle
 		FPUALL_ICNV_GO : out STD_LOGIC := '0'; -- CNV pipe operates in 2 clock cycles
 		FPUALL_ISPEC_GO : out STD_LOGIC := '0'; -- SPEC pipe operates in 14 clock cycles
+		FPUALL_IBIT_GO : out STD_LOGIC := '0'; -- BIT pipe operates in 1 clock cycle
 
 		-- FPU0 signals:
 		FPU0_IN_A : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
@@ -243,16 +244,16 @@ type InstructionOperation is (
 	Op_CNV_UNORM16, -- 17
 	Op_CNV_UNORM8, -- 18
 	Op_SHFT, -- 19
+	Op_BSHFTL8, -- 20
+	Op_BSHFTL16, -- 21
+	Op_BSHFTL24, -- 22
+	Op_BSHFTR8, -- 23
+	Op_BSHFTR16, -- 24
+	Op_BSHFTR24, -- 25
+	Op_OR, -- 26
+	Op_AND, -- 27
 
 	-- These instructions are currently unused!
-	Op_UNUSED20, -- 20
-	Op_UNUSED21, -- 21
-	Op_UNUSED22, -- 22
-	Op_UNUSED23, -- 23
-	Op_UNUSED24, -- 24
-	Op_UNUSED25, -- 25
-	Op_UNUSED26, -- 26
-	Op_UNUSED27, -- 27
 	Op_UNUSED28, -- 28
 	Op_UNUSED29, -- 29
 	Op_UNUSED30, -- 30
@@ -316,13 +317,6 @@ type RegisterFileRegType is (
 	RFType_OOutput, -- 1 o#
 	RFType_RGPR, -- 2 r#
 	RFType_XSpecial -- 3 x#
-);
-
-type OutputDestBytesType is (
-	ODB_Write32A, -- 0 -- result = sourceA;
-	ODB_Write16B_16A, -- 1 -- result = (sourceB << 16) | (sourceA & 0xFFFF);
-	ODB_Write8B_8A_Low, -- 2 -- result = (sourceB << 8) | (sourceA & 0xFF);
-	ODB_Write8B_8A_High -- 3 -- result = (sourceB << 24) | (sourceA << 16) | (result & 0xFFFF);
 );
 
 constant InstructionSlot_OpcodeBitOffset : integer := 0;
@@ -389,6 +383,7 @@ type PipelineFPUState is record
 	Pipe_ISHFT_GO : std_logic;
 	Pipe_ISPEC_GO : std_logic;
 	Pipe_ICNV_GO : std_logic;
+	Pipe_IBIT_GO : std_logic;
 
 	-- These are for loading Port A and Port B of the FPU
 	Pipe_PortA_MUX : MUXSource;
@@ -453,17 +448,6 @@ type VertexStreamData is record
 	dwordStreamOffset : unsigned(5 downto 0);
 end record VertexStreamData;
 
--- TODO: Make this more flexible and fleshed out
-type OutputInstruction is record
-	resultDWORDIdx : unsigned(1 downto 0);
-	destBytes : OutputDestBytesType;
-	readRegIdx : unsigned(2 downto 0); -- There is only one readRegIdx here because it is assumed that both portA and portB will be reading from the same register index (just different components)
-	-- There is no srcRegType here because it is assumed we are always reading from the O# Output RegType registers
-	regComponent_PortA : RegisterComponent;
-	regComponent_PortB : RegisterComponent;
-end record OutputInstruction;
-
-type OutputInstructionArray is array(4 downto 0) of OutputInstruction;
 type OutputRegistersArray is array(3 downto 0) of unsigned(31 downto 0);
 
 constant SafeNOPInstruction : unsigned(63 downto 0) := "0000000000000000000000000000000101000000000000101000000011000000"; -- NOP NULL.x, 0.x, 0.x
@@ -484,6 +468,7 @@ constant DefaultPipeFPUState : PipelineFPUState := (Pipe_IN_MODE => (others => '
 													Pipe_ISHFT_GO => '0',
 													Pipe_ISPEC_GO => '0',
 													Pipe_ICNV_GO => '0',
+													Pipe_IBIT_GO => '0',
 													Pipe_PortA_MUX => MUXSrc_ZeroReg,
 													Pipe_PortA_SrcMod => SrcMod_None,
 													Pipe_PortB_MUX => MUXSrc_ZeroReg,
@@ -495,15 +480,6 @@ constant DefaultPipeGPRPortInputState : PipelineGPRPortInputState := (Pipe_Port_
 constant DefaultPipeInputState : PipelineInputState := (Pipe_PortRead_GPRQuad => (others => '0'),
 														Pipe_PortA => DefaultPipeGPRPortInputState,
 														Pipe_PortB => DefaultPipeGPRPortInputState);
-
--- Hardcode our output instruction stream for now. TODO: Make this programmable and more flexible for supporting different vertex shader output compressions and vertex-to-pixel-shader layouts
-constant DefaultOutputInstructionStream : OutputInstructionArray := ( 
-	0 => ( resultDWORDIdx => to_unsigned(0, 2), destBytes => ODB_Write16B_16A, readRegIdx => to_unsigned(0, 3), regComponent_PortA => Comp_X, regComponent_PortB => Comp_Y ), -- res[0] = (o0.y<<16)|o0.x;
-	1 => ( resultDWORDIdx => to_unsigned(1, 2), destBytes => ODB_Write32A, readRegIdx => to_unsigned(0, 3), regComponent_PortA => Comp_Z, regComponent_PortB => Comp_Z ), -- res[1] = o0.z;
-	2 => ( resultDWORDIdx => to_unsigned(2, 2), destBytes => ODB_Write16B_16A, readRegIdx => to_unsigned(2, 3), regComponent_PortA => Comp_X, regComponent_PortB => Comp_Y ), -- res[2] = (o2.y<<16)|o2.x;
-	3 => ( resultDWORDIdx => to_unsigned(3, 2), destBytes => ODB_Write8B_8A_Low, readRegIdx => to_unsigned(1, 3), regComponent_PortA => Comp_X, regComponent_PortB => Comp_Y ), -- res[3] = (o1.y<<8)|o1.x;
-	4 => ( resultDWORDIdx => to_unsigned(3, 2), destBytes => ODB_Write8B_8A_High, readRegIdx => to_unsigned(1, 3), regComponent_PortA => Comp_Z, regComponent_PortB => Comp_W ) -- res[3] = (o1.w<<24)|(o1.z<<16)|res[3];
-);
 
 
 type VertexStreamsArray is array (7 downto 0) of VertexStreamData;
@@ -528,7 +504,7 @@ begin
 			return to_unsigned(CNV_CYCLES, 5);
 		when Op_SHFT => -- 1 cycle operation latency for SHFT pipe
 			return to_unsigned(SHFT_CYCLES, 5);
-		when others => -- Assuming that the other instructions are all 1-cycle instructions (like CMP, MOV, etc.)
+		when others => -- Assuming that the other instructions are all 1-cycle instructions (like CMP, MOV, bitwise ops, etc.)
 			return to_unsigned(1, 5);
 	end case;
 end function;
@@ -803,6 +779,22 @@ begin
 			return to_unsigned(eConvertMode'pos(F_to_UNORM16), 3);
 		when Op_CNV_UNORM8 =>
 			return to_unsigned(eConvertMode'pos(F_to_UNORM8), 3);
+		when Op_BSHFTL8 =>
+			return to_unsigned(eBitMode'pos(BShftL8), 3);
+		when Op_BSHFTL16 =>
+			return to_unsigned(eBitMode'pos(BShftL16), 3);
+		when Op_BSHFTL24 =>
+			return to_unsigned(eBitMode'pos(BShftL24), 3);
+		when Op_BSHFTR8 =>
+			return to_unsigned(eBitMode'pos(BShftR8), 3);
+		when Op_BSHFTR16 =>
+			return to_unsigned(eBitMode'pos(BShftR16), 3);
+		when Op_BSHFTR24 =>
+			return to_unsigned(eBitMode'pos(BShftR24), 3);
+		when Op_OR =>
+			return to_unsigned(eBitMode'pos(BOr), 3);
+		when Op_AND =>
+			return to_unsigned(eBitMode'pos(BAnd), 3);
 		when others =>
 			return to_unsigned(0, 3);
 	end case;
@@ -832,6 +824,16 @@ pure function InstructionIsFPUCmp(instructionData : unsigned(63 downto 0) ) retu
 begin
 	case InstructionGetOperation(instructionData) is
 		when Op_MIN | Op_MAX | Op_SLT | Op_SGE | Op_SGN | Op_MOV =>
+			return '1';
+		when others =>
+			return '0';
+	end case;
+end function;
+
+pure function InstructionIsFPUBit(instructionData : unsigned(63 downto 0) ) return std_logic is
+begin
+	case InstructionGetOperation(instructionData) is
+		when Op_BSHFTL8 | Op_BSHFTL16 | Op_BSHFTL24 | Op_BSHFTR8 | Op_BSHFTR16 | Op_BSHFTR24 | Op_OR | Op_AND =>
 			return '1';
 		when others =>
 			return '0';
@@ -1043,34 +1045,17 @@ begin
 	end if;
 end function;
 
-pure function ComputeOutputValue(laneIndex : unsigned(1 downto 0); currentOutputInst : OutputInstruction; srcData_PortA : unsigned(127 downto 0); srcData_PortB : unsigned(127 downto 0); destData : unsigned(31 downto 0) ) return unsigned is
-	variable srcDataA : unsigned(31 downto 0);
-	variable srcDataB : unsigned(31 downto 0);
+pure function SelectOutputLane(laneIndex : unsigned(1 downto 0); srcDataAllLanes : unsigned(127 downto 0) ) return unsigned is
 begin
 	case laneIndex is
 		when "00" =>
-			srcDataA := srcData_PortA(31 downto 0);
-			srcDataB := srcData_PortB(31 downto 0);
+			return srcDataAllLanes(31 downto 0);
 		when "01" =>
-			srcDataA := srcData_PortA(63 downto 32);
-			srcDataB := srcData_PortB(63 downto 32);
+			return srcDataAllLanes(63 downto 32);
 		when "10" =>
-			srcDataA := srcData_PortA(95 downto 64);
-			srcDataB := srcData_PortB(95 downto 64);
+			return srcDataAllLanes(95 downto 64);
 		when others =>
-			srcDataA := srcData_PortA(127 downto 96);
-			srcDataB := srcData_PortB(127 downto 96);
-	end case;
-
-	case currentOutputInst.destBytes is
-		when ODB_Write16B_16A => -- 1 -- result = (sourceB << 16) | (sourceA & 0xFFFF);
-			return srcDataB(15 downto 0) & srcDataA(15 downto 0);
-		when ODB_Write8B_8A_Low => -- 2 -- result = (sourceB << 8) | (sourceA & 0xFF);
-			return X"0000" & srcDataB(7 downto 0) & srcDataA(7 downto 0);
-		when ODB_Write8B_8A_High => -- 3 -- result = (sourceB << 24) | (sourceA << 16) | (result & 0xFFFF);
-			return srcDataB(7 downto 0) & srcDataA(7 downto 0) & destData(15 downto 0);
-		when others => -- 0 -- result = sourceA;
-			return srcDataA;
+			return srcDataAllLanes(127 downto 96);
 	end case;
 end function;
 
@@ -1127,7 +1112,7 @@ signal dbgRegisterDumpReadQuad : unsigned(1 downto 0) := (others => '0');
 
 -- Vertex output signals
 signal currentBitOutput : unsigned(3 downto 0) := (others => '0');
-signal currentOutputInstructionPointer : unsigned(2 downto 0) := (others => '0');
+signal currentOutputInstructionPointer : unsigned(3 downto 0) := (others => '0');
 signal currentOutputIteration : unsigned(3 downto 0) := (others => '0');
 signal currentOutputDWORDs : OutputRegistersArray := (others => (others => '0') );
 
@@ -1519,6 +1504,7 @@ begin
 				FPUALL_ISHFT_GO <= '0';
 				FPUALL_ISPEC_GO <= '0';
 				FPUALL_ICNV_GO <= '0';
+				FPUALL_IBIT_GO <= '0';
 
 				-- Initialize the incoming pipeline states with default "do nothing" data
 				for i in 0 to PortW_PipelineArrayType'length - 1 loop
@@ -1593,6 +1579,7 @@ begin
 				FPUALL_ISHFT_GO <= Pipe_Data(0).Pipe_FPUState.Pipe_ISHFT_GO;
 				FPUALL_ISPEC_GO <= Pipe_Data(0).Pipe_FPUState.Pipe_ISPEC_GO;
 				FPUALL_ICNV_GO <= Pipe_Data(0).Pipe_FPUState.Pipe_ICNV_GO;
+				FPUALL_IBIT_GO <= Pipe_Data(0).Pipe_FPUState.Pipe_IBIT_GO;
 				CB_Enable <= Pipe_Data(0).Pipe_CBState.Pipe_CB_Enable;
 				CB_RegIndex <= std_logic_vector(Pipe_Data(0).Pipe_CBState.Pipe_CB_RegIndex);
 				CB_RegComponent <= std_logic_vector(Pipe_Data(0).Pipe_CBState.Pipe_CB_RegComponent);
@@ -1646,6 +1633,7 @@ begin
 							Pipe_Data(i).Pipe_FPUState.Pipe_ISHFT_GO <= InstructionIsFPUShft(unsigned(ICache_ReadData) );
 							Pipe_Data(i).Pipe_FPUState.Pipe_ISPEC_GO <= InstructionIsFPUSpec(unsigned(ICache_ReadData) );
 							Pipe_Data(i).Pipe_FPUState.Pipe_ICNV_GO <= InstructionIsFPUCnv(unsigned(ICache_ReadData) );
+							Pipe_Data(i).Pipe_FPUState.Pipe_IBIT_GO <= InstructionIsFPUBit(unsigned(ICache_ReadData) );
 							Pipe_Data(i).Pipe_FPUState.Pipe_PortA_MUX <= InstructionGetPortAMUXSource(unsigned(ICache_ReadData) );
 							Pipe_Data(i).Pipe_FPUState.Pipe_PortA_SrcMod <= InstructionGetPortASrcMod(unsigned(ICache_ReadData) );
 							Pipe_Data(i).Pipe_FPUState.Pipe_PortB_MUX <= InstructionGetPortBMUXSource(unsigned(ICache_ReadData) );
@@ -1725,6 +1713,7 @@ begin
 				FPUALL_ISHFT_GO <= '0';
 				FPUALL_ISPEC_GO <= '0';
 				FPUALL_ICNV_GO <= '0';
+				FPUALL_IBIT_GO <= '0';
 
 				-- Move the pipe stages for each of the write port data
 				for i in 0 to PortW_PipelineArrayType'length - 2 loop
@@ -1807,12 +1796,17 @@ begin
 				GPR0_PortA_en <= '0';
 				GPR0_PortB_en <= '0';
 				GPR0_PortW_en <= '0';
+				GPR0_PortA_regType <= std_logic_vector(to_unsigned(RegisterFileRegType'pos(RFType_OOutput), 2) );
+				GPR0_PortB_regType <= std_logic_vector(to_unsigned(RegisterFileRegType'pos(RFType_OOutput), 2) );
+				GPR0_PortA_regIdx <= (others => '0');
+				GPR0_PortB_regIdx <= (others => '0');
 				FPUALL_IADD_GO <= '0';
 				FPUALL_ICMP_GO <= '0';
 				FPUALL_IMUL_GO <= '0';
 				FPUALL_ISHFT_GO <= '0';
 				FPUALL_ISPEC_GO <= '0';
 				FPUALL_ICNV_GO <= '0';
+				FPUALL_IBIT_GO <= '0';
 				VERTOUT_FIFO_wr_en <= '0';
 				VBO_Pushed <= '0';
 				VBO_BatchStartingIndex <= (others => '0');
@@ -1825,41 +1819,40 @@ begin
 					VBO_BatchEndingIndex <= std_logic_vector(vertexBatchEndingIndex);
 					currentState <= getVertexBatch;
 				else
-					-- This is simple, yet wasteful. Instead of spinning doing nothing for 3 cycles for each output instruction, we should instead
-					-- pipeline the output instruction processing.
-					if (currentOutputInstructionPointer < DefaultOutputInstructionStream'length) then
+					if (currentOutputInstructionPointer < 8) then
 						GPR0_ReadQuadIndex <= std_logic_vector(currentBitOutput(3 downto 2) );
 						GPR0_PortA_en <= '1';
 						GPR0_PortB_en <= '1';
-						GPR0_PortA_regType <= std_logic_vector(to_unsigned(RegisterFileRegType'pos(RFType_OOutput), 2) );
-						GPR0_PortB_regType <= std_logic_vector(to_unsigned(RegisterFileRegType'pos(RFType_OOutput), 2) );
-						GPR0_PortA_regIdx <= std_logic_vector(DefaultOutputInstructionStream(to_integer(currentOutputInstructionPointer) ).readRegIdx);
-						GPR0_PortB_regIdx <= std_logic_vector(DefaultOutputInstructionStream(to_integer(currentOutputInstructionPointer) ).readRegIdx);
-						GPR0_PortA_regChan <= std_logic_vector(to_unsigned(RegisterComponent'pos(DefaultOutputInstructionStream(to_integer(currentOutputInstructionPointer) ).regComponent_PortA), 2) );
-						GPR0_PortB_regChan <= std_logic_vector(to_unsigned(RegisterComponent'pos(DefaultOutputInstructionStream(to_integer(currentOutputInstructionPointer) ).regComponent_PortB), 2) );
+						GPR0_PortA_regChan <= std_logic_vector(currentOutputInstructionPointer(1 downto 0) );
+						GPR0_PortB_regChan <= std_logic_vector(currentOutputInstructionPointer(1 downto 0) );
+						-- TODO Optimization: Shave off two cycles per vertex by loading using both Port A and Port B simultaneously
+						case currentOutputInstructionPointer is
+							when x"0" =>
+								-- Load issue
+							when x"1" =>
+								-- Loading cycle 1
+							when x"2" =>
+								-- Loading cycle 2
+							when x"3" =>
+								-- Loading cycle 3
+							when x"4" =>
+								currentOutputDWORDs(0) <= SelectOutputLane(currentBitOutput(1 downto 0), unsigned(GPR0_PortA_readOutData) );								
+							when x"5" =>
+								currentOutputDWORDs(1) <= SelectOutputLane(currentBitOutput(1 downto 0), unsigned(GPR0_PortA_readOutData) );								
+							when x"6" =>
+								currentOutputDWORDs(2) <= SelectOutputLane(currentBitOutput(1 downto 0), unsigned(GPR0_PortA_readOutData) );
+							when x"7" =>
+								currentOutputDWORDs(3) <= SelectOutputLane(currentBitOutput(1 downto 0), unsigned(GPR0_PortA_readOutData) );
+							when others =>
+						end case;
+						currentOutputInstructionPointer <= currentOutputInstructionPointer + 1;
 					else
 						GPR0_PortA_en <= '0';
 						GPR0_PortB_en <= '0';
-					end if;
-
-					if (currentOutputInstructionPointer > 0) then
-						currentOutputDWORDs(to_integer(DefaultOutputInstructionStream(to_integer(currentOutputInstructionPointer - 1) ).resultDWORDIdx) ) <= 
-							ComputeOutputValue(currentBitOutput(1 downto 0), DefaultOutputInstructionStream(to_integer(currentOutputInstructionPointer - 1) ), unsigned(GPR0_PortA_readOutData), unsigned(GPR0_PortB_readOutData),
-								currentOutputDWORDs(to_integer(DefaultOutputInstructionStream(to_integer(currentOutputInstructionPointer - 1) ).resultDWORDIdx) ) );
-					end if;
-
-					if (currentOutputInstructionPointer = DefaultOutputInstructionStream'length) then
-						currentState <= submitShaderResults;
-						currentBitOutput <= currentBitOutput + 1;
 						currentOutputInstructionPointer <= (others => '0');
-						currentOutputIteration <= (others => '0');
-					else
-						if (currentOutputIteration = (CycleLatency_GPRQuad) ) then
-							currentOutputIteration <= (others => '0');
-							currentOutputInstructionPointer <= currentOutputInstructionPointer + 1;
-						else
-							currentOutputIteration <= currentOutputIteration + 1;
-						end if;
+
+						currentBitOutput <= currentBitOutput + 1;
+						currentState <= submitShaderResults;
 					end if;
 				end if;
 

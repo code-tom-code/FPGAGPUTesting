@@ -226,6 +226,7 @@
     <None Include="hdl_src\FloatALU.vhd" />
     <None Include="hdl_src\FloatALU_Types.vhd" />
     <None Include="hdl_src\GPRQuad.vhd" />
+    <None Include="hdl_src\GPRQuad2.vhd" />
     <None Include="hdl_src\IndexBufferCache.vhd" />
     <None Include="hdl_src\InputAssembler2.vhd" />
     <None Include="hdl_src\MemoryController.vhd" />

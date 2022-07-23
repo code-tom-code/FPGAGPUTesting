@@ -23,7 +23,7 @@ entity FloatALU is
 		-- MUL pipe operates in 5 clock cycles
 		IMUL_GO : in STD_LOGIC;
 
-		-- ADD pipe operates in 3 clock cycles
+		-- ADD pipe operates in 4 clock cycles
 		IADD_GO : in STD_LOGIC;
 
 		-- CMP pipe operates in 1 clock cycle. IN_MODE corresponds to the eCmpType type.
@@ -32,12 +32,21 @@ entity FloatALU is
 		-- CNV pipe operates in 2 clock cycles. IN_MODE corresponds to the eConvertMode type.
 		ICNV_GO : in STD_LOGIC;
 
-		-- SPEC pipe operates in 6 clock cycles for RCP.
-		ISPEC_GO : in STD_LOGIC
+		-- SPEC pipe operates in 14 clock cycles for RCP.
+		ISPEC_GO : in STD_LOGIC;
+
+		-- BIT pipe operates in 1 clock cycle. IN_MODE corresponds to the eBitType type.
+		IBIT_GO : in STD_LOGIC
 		);
 end FloatALU;
 
 architecture Behavioral of FloatALU is
+
+ATTRIBUTE X_INTERFACE_INFO : STRING;
+ATTRIBUTE X_INTERFACE_PARAMETER : STRING;
+
+ATTRIBUTE X_INTERFACE_INFO of clk: SIGNAL is "xilinx.com:signal:clock:1.0 clk CLK";
+ATTRIBUTE X_INTERFACE_PARAMETER of clk: SIGNAL is "FREQ_HZ 333250000";
 
 -- Globally useful float constants:
 constant zeroF : unsigned(31 downto 0) := X"00000000"; -- Constant for 0.0f
@@ -57,8 +66,8 @@ begin
 end function;
 
 -- Maximum number of cycles that a single operation can take
-constant maxCycleCount : integer := maxVal(SHFT_CYCLES, maxVal(MUL_CYCLES, maxVal(ADD_CYCLES, maxVal(CMP_CYCLES, maxVal(CNV_CYCLES, SPEC_CYCLES) ) ) ) );
-constant numMUXSources : integer := 6; -- Number of different pipes that our MUX can source from
+constant maxCycleCount : integer := maxVal(BIT_CYCLES, maxVal(SHFT_CYCLES, maxVal(MUL_CYCLES, maxVal(ADD_CYCLES, maxVal(CMP_CYCLES, maxVal(CNV_CYCLES, SPEC_CYCLES) ) ) ) ) );
+constant numMUXSources : integer := 7; -- Number of different pipes that our MUX can source from
 
 -- attribute KEEP : string;
 
@@ -804,6 +813,7 @@ signal OMUL : std_logic_vector(31 downto 0) := (others => '0');
 signal OCMP : std_logic_vector(31 downto 0) := (others => '0');
 signal ORCP : std_logic_vector(31 downto 0) := (others => '0');
 signal OCNV : std_logic_vector(31 downto 0) := (others => '0');
+signal OBIT : std_logic_vector(31 downto 0) := (others => '0');
 signal OMUX : MUXArrayType := (others => (others => '0') );
 
 begin
@@ -833,12 +843,13 @@ comAEqualsB <= '1' when (unsigned(IN_A(30 downto 0) ) = unsigned(IN_B(30 downto 
 
 -- Output MUX handling:
 with OMUX(0) select
-	OUT_RESULT <= OCMP when "000001",
-					OADD when "000010",
-					OMUL when "000100",
-					OSHFT when "001000",
-					ORCP when "010000",
-					OCNV when "100000",
+	OUT_RESULT <= OCMP when "0000001",
+					OADD when "0000010",
+					OMUL when "0000100",
+					OSHFT when "0001000",
+					ORCP when "0010000",
+					OCNV when "0100000",
+					OBIT when "1000000",
 					(others => '0') when others;
 
 -- Output MUX process:
@@ -850,17 +861,19 @@ begin
 			OMUX(i) <= OMUX(i + 1); -- Shift the whole vector down by one entry per clock cycle (shifting in zeroed bits at the top each time)
 		end loop;
 		if (ICMP_GO = '1') then
-			OMUX(CMP_CYCLES - 1) <= "000001";
+			OMUX(CMP_CYCLES - 1) <= "0000001";
 		elsif (IADD_GO = '1') then
-			OMUX(ADD_CYCLES - 1) <= "000010";
+			OMUX(ADD_CYCLES - 1) <= "0000010";
 		elsif (IMUL_GO = '1') then
-			OMUX(MUL_CYCLES - 1) <= "000100";
+			OMUX(MUL_CYCLES - 1) <= "0000100";
 		elsif (ISHFT_GO = '1') then
-			OMUX(SHFT_CYCLES - 1) <= "001000";
+			OMUX(SHFT_CYCLES - 1) <= "0001000";
 		elsif (ISPEC_GO = '1') then
-			OMUX(SPEC_CYCLES - 1) <= "010000";
+			OMUX(SPEC_CYCLES - 1) <= "0010000";
 		elsif (ICNV_GO = '1') then
-			OMUX(CNV_CYCLES - 1) <= "100000";
+			OMUX(CNV_CYCLES - 1) <= "0100000";
+		elsif (IBIT_GO = '1') then
+			OMUX(BIT_CYCLES - 1) <= "1000000";
 		end if;
 	end if;
 end process OMUXProcess;
@@ -928,6 +941,42 @@ begin
 		end if;
 	end if;
 end process CMPStage0;
+
+-- Bitwise (BIT) pipe process:
+BITStage0 : process(clk)
+begin
+	if (rising_edge(clk) ) then
+		if (IBIT_GO = '1') then
+			case eBitMode'val(to_integer(unsigned(IN_MODE) ) ) is
+				when BShftL8 =>
+					OBIT <= IN_A(23 downto 0) & X"00";
+
+				when BShftL16 =>
+					OBIT <= IN_A(15 downto 0) & X"0000";
+
+				when BShftL24 =>
+					OBIT <= IN_A(7 downto 0) & X"000000";
+
+				when BShftR8 =>
+					OBIT <= X"00" & IN_A(31 downto 8);
+
+				when BShftR16 =>
+					OBIT <= X"0000" & IN_A(31 downto 16);
+
+				when BShftR24 =>
+					OBIT <= X"000000" & IN_A(31 downto 24);
+				
+				when BOr =>
+					OBIT <= IN_A or IN_B;
+
+				when others => -- when BAnd =>
+					OBIT <= IN_A and IN_B;
+			end case;
+		else
+			OBIT <= (others => '0');
+		end if;
+	end if;
+end process BITStage0;
 
 -- Reciprocal (RCP) pipe process (cycle 1 of 14):
 RCPStage0 : process(clk)
@@ -1119,7 +1168,7 @@ begin
 	end if;
 end process RCPStage13;
 
--- Addition (ADD) pipe process (cycle 1 of 3):
+-- Addition (ADD) pipe process (cycle 1 of 4):
 ADDStage0 : process(clk)
 	variable aIsNaN : std_logic;
 	variable bIsNaN : std_logic;
@@ -1240,7 +1289,7 @@ begin
 	end if;
 end process ADDStage0;
 
--- Addition (ADD) pipe process (cycle 2 of 3):
+-- Addition (ADD) pipe process (cycle 2 of 4):
 ADDStage1 : process(clk)
 	variable addMinVal0 : unsigned(31 downto 0);
 	variable addMaxVal0 : unsigned(31 downto 0);
@@ -1296,7 +1345,7 @@ begin
 	end if;
 end process ADDStage1;
 
--- Addition (ADD) pipe process (cycle 3 of 3):
+-- Addition (ADD) pipe process (cycle 3 of 4):
 ADDStage2 : process (clk)
 	variable finalSignIsNeg : std_logic;
 	variable postAddMantissa : signed(25 downto 0);
@@ -1348,6 +1397,7 @@ begin
 	end if;
 end process ADDStage2;
 
+-- Addition (ADD) pipe process (cycle 4 of 4):
 ADDStage3 : process(clk)
 	variable newFinalExp : signed(7 downto 0);
 	variable postAddMantissa : signed(25 downto 0);

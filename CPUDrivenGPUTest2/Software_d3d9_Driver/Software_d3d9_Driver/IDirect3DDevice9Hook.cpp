@@ -4568,232 +4568,164 @@ const bool AllVectorElementsEqual(const std::vector<T>& testVector)
 	return true;
 }
 
-/*void IDirect3DDevice9Hook::DeviceLoadVertexDataBuffers(const unsigned vertCount, const std::vector<SHORT>* const posXbuffer, const std::vector<SHORT>* const posYbuffer, const std::vector<DWORD>* const invZbuffer, 
-	const std::vector<USHORT>* const texcoordXbuffer, const std::vector<USHORT>* const texcoordYbuffer, const std::vector<RGBACOLOR>* const vertColorBuffer)
+// Returns true if valid, or false if invalid
+static const bool ValidateVertexDeclarationForDevice(const std::vector<DebuggableD3DVERTEXELEMENT9>& vertexElements, const StreamSource (&currentStreams)[MAX_D3D9_STREAMS])
 {
-#ifdef _DEBUG
-	if (vertCount < 1)
+	const unsigned totalNumElements = vertexElements.size() - 1; // Minus one here to skip the D3DDECL_END struct
+	for (unsigned elementIndex = 0; elementIndex < totalNumElements; ++elementIndex)
 	{
-		__debugbreak(); // Error: Cannot load 0-sized arrays!
-	}
+		const DebuggableD3DVERTEXELEMENT9& thisElement = vertexElements[elementIndex];
 
-	if (posXbuffer && vertCount != posXbuffer->size() )
-	{
-		__debugbreak(); // Error: Array size mismatch!
-	}
-	if (posYbuffer && vertCount != posYbuffer->size() )
-	{
-		__debugbreak(); // Error: Array size mismatch!
-	}
-	if (invZbuffer && vertCount != invZbuffer->size() )
-	{
-		__debugbreak(); // Error: Array size mismatch!
-	}
-	if (texcoordXbuffer && vertCount != texcoordXbuffer->size() )
-	{
-		__debugbreak(); // Error: Array size mismatch!
-	}
-	if (texcoordYbuffer && vertCount != texcoordYbuffer->size() )
-	{
-		__debugbreak(); // Error: Array size mismatch!
-	}
-	if (vertColorBuffer && vertCount != vertColorBuffer->size() )
-	{
-		__debugbreak(); // Error: Array size mismatch!
-	}
-#endif
-
-#ifdef PRINT_COMMS
-	printf("Uploading %u vertices...\n", vertCount);
-#endif
-	const DWORD startingTick = GetTickCount();
-	// Vertex x Position:
-	if (posXbuffer)
-	{
-		deviceAllocatedBuffer posXalloc;
-		posXalloc.deviceSizeBytes = vertCount * sizeof(SHORT);
-		posXalloc.format = GPUFMT_VertexPosT_UINT16;
-		posXalloc.bufferHash = deviceAllocatedBuffer::ComputeHash(&posXbuffer->front(), vertCount * sizeof(SHORT) );
-		const bool allElementsEqual = AllVectorElementsEqual(*posXbuffer);
-		if (CreateOrUseCachedVertDataBuffer(posXalloc, cachedVertexPositionBuffers
-#ifdef _DEBUG
-			, "PosXBuffer_SNORM16"
-#endif
-		) )
+		// This is D3DDECL_END, it means we're done with our vertex elements and can break out of the loop!
+		if (thisElement.Stream == 0xFF && thisElement.Type == D3DDECLTYPE_UNUSED)
 		{
-			deviceComms->DeviceMemCopy(posXalloc.deviceMemory, &posXbuffer->front(), vertCount * sizeof(SHORT) );
-		}
-		baseDevice->DeviceSetVertexStreamData(posXalloc.deviceMemory, vst_xPos, vertCount, allElementsEqual, posXbuffer->front() );
-	}
-
-	// Vertex y Position:
-	if (posYbuffer)
-	{
-		deviceAllocatedBuffer posYalloc;
-		posYalloc.deviceSizeBytes = vertCount * sizeof(SHORT);
-		posYalloc.format = GPUFMT_VertexPosT_UINT16;
-		posYalloc.bufferHash = deviceAllocatedBuffer::ComputeHash(&posYbuffer->front(), vertCount * sizeof(SHORT) );
-		const bool allElementsEqual = AllVectorElementsEqual(*posYbuffer);
-		if (CreateOrUseCachedVertDataBuffer(posYalloc, cachedVertexPositionBuffers
 #ifdef _DEBUG
-			, "PosYBuffer_SNORM16"
+			__debugbreak(); // If we hit this, then it means that D3DDECL_END wasn't the last struct in the array!
 #endif
-		) )
-		{
-			deviceComms->DeviceMemCopy(posYalloc.deviceMemory, &posYbuffer->front(), vertCount * sizeof(SHORT) );
+			return false;
 		}
-		baseDevice->DeviceSetVertexStreamData(posYalloc.deviceMemory, vst_yPos, vertCount, allElementsEqual, posYbuffer->front() );
-	}
 
-	// Vertex inverse z Position:
-	if (invZbuffer)
-	{
-		deviceAllocatedBuffer posInvZalloc;
-		posInvZalloc.deviceSizeBytes = vertCount * sizeof(DWORD);
-		posInvZalloc.format = GPUFMT_VertexInvPosT_UNORM24;
-		posInvZalloc.bufferHash = deviceAllocatedBuffer::ComputeHash(&invZbuffer->front(), vertCount * sizeof(DWORD) );
-		const bool allElementsEqual = AllVectorElementsEqual(*invZbuffer);
-		if (CreateOrUseCachedVertDataBuffer(posInvZalloc, cachedVertexInvZBuffers
+		if (thisElement.Stream >= GPU_MAX_NUM_VERTEX_STREAMS)
+		{
 #ifdef _DEBUG
-			, "PosInvZBuffer_UNORM32"
+			__debugbreak(); // Stream index is out of range to be supported by the device!
 #endif
-		) )
-		{
-			deviceComms->DeviceMemCopy(posInvZalloc.deviceMemory, &invZbuffer->front(), vertCount * sizeof(DWORD) );
+			return false;
 		}
-		baseDevice->DeviceSetVertexStreamData(posInvZalloc.deviceMemory, vst_invZPos, vertCount, allElementsEqual, invZbuffer->front() );
-	}
 
-	// Texcoord x:
-	if (texcoordXbuffer)
-	{
-		deviceAllocatedBuffer texXalloc;
-		texXalloc.deviceSizeBytes = vertCount * sizeof(USHORT);
-		texXalloc.format = GPUFMT_VertexTexcoord_UNORM16;
-		texXalloc.bufferHash = deviceAllocatedBuffer::ComputeHash(&texcoordXbuffer->front(), vertCount * sizeof(USHORT) );
-		const bool allElementsEqual = AllVectorElementsEqual(*texcoordXbuffer);
-		if (CreateOrUseCachedVertDataBuffer(texXalloc, cachedVertexTexcoordBuffers
+		if (thisElement.Type > D3DDECLTYPE_D3DCOLOR)
+		{
 #ifdef _DEBUG
-			, "TexCoordXBuffer_UNORM16"
+			__debugbreak(); // Element type is not supported in hardware!
 #endif
-		) )
-		{
-			deviceComms->DeviceMemCopy(texXalloc.deviceMemory, &texcoordXbuffer->front(), vertCount * sizeof(USHORT) );
+			return false;
 		}
-		baseDevice->DeviceSetVertexStreamData(texXalloc.deviceMemory, vst_tx, vertCount, allElementsEqual, texcoordXbuffer->front() );
-	}
 
-	// Texcoord y:
-	if (texcoordYbuffer)
-	{
-		deviceAllocatedBuffer texYalloc;
-		texYalloc.deviceSizeBytes = vertCount * sizeof(USHORT);
-		texYalloc.format = GPUFMT_VertexTexcoord_UNORM16;
-		texYalloc.bufferHash = deviceAllocatedBuffer::ComputeHash(&texcoordYbuffer->front(), vertCount * sizeof(USHORT) );
-		const bool allElementsEqual = AllVectorElementsEqual(*texcoordYbuffer);
-		if (CreateOrUseCachedVertDataBuffer(texYalloc, cachedVertexTexcoordBuffers
+		if (thisElement.Method != D3DDECLMETHOD_DEFAULT)
+		{
 #ifdef _DEBUG
-			, "TexCoordYBuffer_UNORM16"
+			__debugbreak(); // Tessellation is not supported!
 #endif
-		) )
-		{
-			deviceComms->DeviceMemCopy(texYalloc.deviceMemory, &texcoordYbuffer->front(), vertCount * sizeof(USHORT) );
+			return false;
 		}
-		baseDevice->DeviceSetVertexStreamData(texYalloc.deviceMemory, vst_ty, vertCount, allElementsEqual, texcoordYbuffer->front() );
-	}
 
-	// Vertex color:
-	if (vertColorBuffer)
-	{
-		deviceAllocatedBuffer vertColorAlloc;
-		vertColorAlloc.deviceSizeBytes = vertCount * sizeof(D3DCOLOR);
-		vertColorAlloc.format = GPUFMT_VertexColor_R8G8B8A8_UNORM8;
-		vertColorAlloc.bufferHash = deviceAllocatedBuffer::ComputeHash(&vertColorBuffer->front(), vertCount * sizeof(D3DCOLOR) );
-		const bool allElementsEqual = AllVectorElementsEqual(*vertColorBuffer);
-		if (CreateOrUseCachedVertDataBuffer(vertColorAlloc, cachedVertexColorBuffers
+		if (thisElement.Offset % sizeof(DWORD) != 0)
+		{
 #ifdef _DEBUG
-			, "VertColorBuffer_D3DCOLOR"
+			__debugbreak(); // Offset must be DWORD-aligned!
 #endif
-		) )
-		{
-			deviceComms->DeviceMemCopy(vertColorAlloc.deviceMemory, &vertColorBuffer->front(), vertCount * sizeof(D3DCOLOR) );
+			return false;
 		}
-		baseDevice->DeviceSetVertexStreamData(vertColorAlloc.deviceMemory, vst_vertColor, vertCount, allElementsEqual, vertColorBuffer->front() );
-	}
-	const DWORD endingTick = GetTickCount();
 
-#ifdef PRINT_COMMS
-	printf("...uploaded %u vertices in %ums\n", vertCount, endingTick - startingTick);
+		if (thisElement.Offset >= GPU_MAX_VERTEX_ELEMENT_OFFSET_BYTES)
+		{
+#ifdef _DEBUG
+			__debugbreak(); // Offset out of range!
 #endif
+			return false;
+		}
+
+		if (thisElement.Usage > MAXD3DDECLUSAGE)
+		{
+#ifdef _DEBUG
+			__debugbreak(); // Unknown element usage
+#endif
+			return false;
+		}
+
+		if (thisElement.UsageIndex > 0)
+		{
+#ifdef _DEBUG
+			__debugbreak(); // Usage indices are not currently supported! We can currently only have one of each Usage type in a vertex shader!
+#endif
+			return false;
+		}
+
+		const StreamSource& thisVertexStream = currentStreams[thisElement.Stream];
+		if (!thisVertexStream.vertexBuffer)
+		{
+#ifdef _DEBUG
+			__debugbreak(); // Must have a stream already bound at drawcall-time or else we can't render anything!
+#endif
+			return false;
+		}
+
+		if (thisVertexStream.streamStride % sizeof(DWORD) != 0)
+		{
+#ifdef _DEBUG
+			__debugbreak(); // Stream stride must be a multiple of DWORD size. May be set to zero to indicate a "constant" stream.
+#endif
+			return false;
+		}
+
+		if (thisVertexStream.streamStride >= GPU_MAX_VERTEX_ELEMENT_STRIDE_BYTES)
+		{
+#ifdef _DEBUG
+			__debugbreak(); // Stream stride out of bounds for the device!
+#endif
+			return false;
+		}
+
+		if (thisVertexStream.streamOffset % sizeof(DWORD) != 0)
+		{
+#ifdef _DEBUG
+			__debugbreak(); // Stream offset must be a multiple of DWORD size (zero is allowed and zero is the common, default case for offsets)
+#endif
+			return false;
+		}
+
+		if (thisVertexStream.streamOffset > 0)
+		{
+#ifdef _DEBUG
+			__debugbreak(); // Stream offset is not currently supported (per-element offset *is* supported however)
+#endif
+			return false;
+		}
+
+		const gpuvoid* const vertexBufferData = thisVertexStream.vertexBuffer->GetGPUBytes();
+		if (!vertexBufferData)
+		{
+#ifdef _DEBUG
+			__debugbreak(); // Vertex buffer must already be allocated on the GPU at drawcall-time!
+#endif
+			return false;
+		}
+	}
+	return true;
 }
 
-void IDirect3DDevice9Hook::DeviceLoadVertexDataPOSITIONTVerticesPosition(const D3DPRIMITIVETYPE PrimitiveType, const UINT primCount, const bool useIndices, const INT BaseVertexIndex, const UINT startIndex)
+struct deviceVertexDeclElement
 {
-	unsigned vertCount = 0;
-	switch (PrimitiveType)
+	deviceVertexDeclElement() : vertexBufferBaseAddr(0x00000000), vertexBufferLength_Bytes(0), isD3DCOLOR(false),
+		thisElementDWORDCount(3), vertexStreamSlotIndex(0), shaderInputRegisterIndex(0), dwordStreamStride(0), dwordOffset(0)
 	{
-	case D3DPT_TRIANGLELIST:
-		vertCount = primCount * 3;
-		break;
-	case D3DPT_TRIANGLESTRIP:
-	case D3DPT_TRIANGLEFAN:
-		vertCount = primCount + 2;
-		break;
-	default:
-#ifdef _DEBUG
-		__debugbreak(); // Not yet supported!
-#endif
-		return;
 	}
 
-	const USHORT* indices = NULL;
+	const gpuvoid* vertexBufferBaseAddr;
+	unsigned vertexBufferLength_Bytes;
+	bool isD3DCOLOR;
+	BYTE thisElementDWORDCount : 3; // Can only be 1, 2, 3, or 4
+	BYTE vertexStreamSlotIndex : 3; // Can be from 0 to 7
+	BYTE shaderInputRegisterIndex : 3; // Can be from 0 to 7
+	BYTE dwordStreamStride : 6; // Can be from 0 to 63 DWORD's
+	BYTE dwordOffset : 6; // Can be from 0 to 63 DWORD's
+};
 
-	if (useIndices)
-		indices = ( (const USHORT* const)currentState.currentIndexBuffer->GetBufferBytes() ) + startIndex;
+struct deviceVertexDecl
+{
+	BYTE numElements : 3; // Can be from 1 to 7 (may not be 0)
+	deviceVertexDeclElement deviceDeclElements[8];
+};
 
-	const std::vector<DebuggableD3DVERTEXELEMENT9>& vertexElements = currentState.currentVertexDecl->GetElementsInternal();
-	const unsigned numElements = vertexElements.size();
-	const D3DXVECTOR4* positionTData = NULL;
-	unsigned positionTStride = 0;
-	unsigned numVerticesPositionStream = 0;
-	for (unsigned x = 0; x < numElements; ++x)
+void IDirect3DDevice9Hook::DeviceSetVertexDecl(const deviceVertexDecl& deviceDecl)
+{
+	for (unsigned streamElementID = 0; streamElementID < deviceDecl.numElements; ++streamElementID)
 	{
-		const DebuggableD3DVERTEXELEMENT9& thisElement = vertexElements[x];
-		const StreamSource& thisStream = currentState.currentStreams[thisElement.Stream];
-		if (thisElement.Usage == D3DDECLUSAGE_POSITIONT)
-		{
-			positionTData = (const D3DXVECTOR4* const)(thisStream.vertexBuffer->GetInternalDataBuffer() + thisStream.streamOffset + thisElement.Offset);
-			positionTStride = thisStream.streamStride;
-			numVerticesPositionStream = thisStream.vertexBuffer->GetInternalLength_Bytes() / positionTStride;
-		}
+		const deviceVertexDeclElement& thisDeviceDeclElement = deviceDecl.deviceDeclElements[streamElementID];
+		baseDevice->DeviceSetVertexStreamData(thisDeviceDeclElement.vertexBufferBaseAddr, thisDeviceDeclElement.vertexBufferLength_Bytes, thisDeviceDeclElement.thisElementDWORDCount, streamElementID, thisDeviceDeclElement.isD3DCOLOR,
+				thisDeviceDeclElement.shaderInputRegisterIndex, thisDeviceDeclElement.dwordStreamStride, thisDeviceDeclElement.dwordOffset, deviceDecl.numElements);
 	}
-
-#ifdef _DEBUG
-	if (positionTData == NULL)
-	{
-		__debugbreak();
-	}
-#endif
-
-	std::vector<SHORT> posXbuffer;
-	std::vector<SHORT> posYbuffer;
-	std::vector<DWORD> invZbuffer;
-	posXbuffer.resize(numVerticesPositionStream);
-	posYbuffer.resize(numVerticesPositionStream);
-	invZbuffer.resize(numVerticesPositionStream);
-
-	for (unsigned vertID = 0; vertID < numVerticesPositionStream; ++vertID)
-	{
-		const D3DXVECTOR4* const vpos = (const D3DXVECTOR4* const)( (const BYTE* const)positionTData + vertID * positionTStride);
-		posXbuffer[vertID] = ( (const SHORT)vpos->x);
-		posYbuffer[vertID] = ( (const SHORT)vpos->y);
-		const long double fInvZ0 = vpos->z > 0.0f ? (const long double)(1.0) / vpos->z : 1.0;
-		const unsigned invZ0_UNORM32 = (const unsigned)(fInvZ0 * 0xFFFFFFFF);
-		invZbuffer[vertID] = invZ0_UNORM32;
-	}
-
-	DeviceLoadVertexDataBuffers(numVerticesPositionStream, &posXbuffer, &posYbuffer, &invZbuffer, NULL, NULL, NULL);
-}*/
+}
 
 void IDirect3DDevice9Hook::DeviceSetVertexStreamsAndDecl()
 {
@@ -4813,10 +4745,22 @@ void IDirect3DDevice9Hook::DeviceSetVertexStreamsAndDecl()
 		return;
 	}
 
-	// TODO: A future optimization would be that we could skip setting vertex elements that might exist in our IDirect3DVertexDeclaration9 but that aren't referenced by the vertex shader
 	const std::vector<DebuggableD3DVERTEXELEMENT9>& vertexElements = currentState.currentVertexDecl->GetElementsInternal();
-	const unsigned numElements = vertexElements.size() - 1; // Minus one here to skip the D3DDECL_END struct
-	for (unsigned elementIndex = 0; elementIndex < numElements; ++elementIndex)
+
+	if (!ValidateVertexDeclarationForDevice(vertexElements, currentState.currentStreams) )
+	{
+#ifdef _DEBUG
+		__debugbreak();
+#endif
+		return;
+	}
+
+	// Construct and initialize a device vertex declaration to be sent to the device:
+	deviceVertexDecl deviceDecl;
+
+	const unsigned totalNumElements = vertexElements.size() - 1; // Minus one here to skip the D3DDECL_END struct
+	unsigned shaderUsedElements = 0; // If the shader uses fewer elements than are present in the vertex declaration, then this number might be less than totalNumElements
+	for (unsigned elementIndex = 0; elementIndex < totalNumElements; ++elementIndex)
 	{
 		const DebuggableD3DVERTEXELEMENT9& thisElement = vertexElements[elementIndex];
 
@@ -4829,111 +4773,8 @@ void IDirect3DDevice9Hook::DeviceSetVertexStreamsAndDecl()
 			break;
 		}
 
-		if (thisElement.Stream >= GPU_MAX_NUM_VERTEX_STREAMS)
-		{
-#ifdef _DEBUG
-			__debugbreak(); // Stream index is out of range to be supported by the device!
-#endif
-			return;
-		}
-
-		if (thisElement.Type > D3DDECLTYPE_D3DCOLOR)
-		{
-#ifdef _DEBUG
-			__debugbreak(); // Element type is not supported in hardware!
-#endif
-			return;
-		}
-
-		if (thisElement.Method != D3DDECLMETHOD_DEFAULT)
-		{
-#ifdef _DEBUG
-			__debugbreak(); // Tessellation is not supported!
-#endif
-			return;
-		}
-
-		if (thisElement.Offset % sizeof(DWORD) != 0)
-		{
-#ifdef _DEBUG
-			__debugbreak(); // Offset must be DWORD-aligned!
-#endif
-			return;
-		}
-
-		if (thisElement.Offset >= GPU_MAX_VERTEX_ELEMENT_OFFSET_BYTES)
-		{
-#ifdef _DEBUG
-			__debugbreak(); // Offset out of range!
-#endif
-			return;
-		}
-
-		if (thisElement.Usage > MAXD3DDECLUSAGE)
-		{
-#ifdef _DEBUG
-			__debugbreak(); // Unknown element usage
-#endif
-			return;
-		}
-
-		if (thisElement.UsageIndex > 0)
-		{
-#ifdef _DEBUG
-			__debugbreak(); // Usage indices are not currently supported! We can currently only have one of each Usage type in a vertex shader!
-#endif
-			return;
-		}
-
 		const StreamSource& thisVertexStream = currentState.currentStreams[thisElement.Stream];
-		if (!thisVertexStream.vertexBuffer)
-		{
-#ifdef _DEBUG
-			__debugbreak(); // Must have a stream already bound at drawcall-time or else we can't render anything!
-#endif
-			return;
-		}
-
-		if (thisVertexStream.streamStride % sizeof(DWORD) != 0)
-		{
-#ifdef _DEBUG
-			__debugbreak(); // Stream stride must be a multiple of DWORD size. May be set to zero to indicate a "constant" stream.
-#endif
-			return;
-		}
-
-		if (thisVertexStream.streamStride > GPU_MAX_VERTEX_ELEMENT_STRIDE_BYTES)
-		{
-#ifdef _DEBUG
-			__debugbreak(); // Stream stride out of bounds for the device!
-#endif
-			return;
-		}
-
-		if (thisVertexStream.streamOffset % sizeof(DWORD) != 0)
-		{
-#ifdef _DEBUG
-			__debugbreak(); // Stream offset must be a multiple of DWORD size (zero is allowed and zero is the common, default case for offsets)
-#endif
-			return;
-		}
-
-		if (thisVertexStream.streamOffset > 0)
-		{
-#ifdef _DEBUG
-			__debugbreak(); // Stream offset is not currently supported (per-element offset *is* supported however)
-#endif
-			return;
-		}
-
 		const gpuvoid* const vertexBufferData = thisVertexStream.vertexBuffer->GetGPUBytes();
-		if (!vertexBufferData)
-		{
-#ifdef _DEBUG
-			__debugbreak(); // Vertex buffer must already be allocated on the GPU at drawcall-time!
-#endif
-			return;
-		}
 
 		bool isD3DCOLOR = false;
 		BYTE elementDWORDCount = 0;
@@ -5005,10 +4846,38 @@ void IDirect3DDevice9Hook::DeviceSetVertexStreamsAndDecl()
 				return;
 			}
 
-			baseDevice->DeviceSetVertexStreamData(vertexBufferData, thisVertexStream.vertexBuffer->GetInternalLength_Bytes(), elementDWORDCount, /*(const BYTE)thisElement.Stream*/elementIndex, isD3DCOLOR,
-				shaderRegIndex, thisVertexStream.streamStride / sizeof(DWORD), thisElement.Offset / sizeof(DWORD), numElements);
+			deviceVertexDeclElement& thisDeviceDeclElement = deviceDecl.deviceDeclElements[shaderUsedElements];
+
+			thisDeviceDeclElement.vertexBufferBaseAddr = vertexBufferData;
+			thisDeviceDeclElement.vertexBufferLength_Bytes = thisVertexStream.vertexBuffer->GetInternalLength_Bytes();
+			thisDeviceDeclElement.thisElementDWORDCount = elementDWORDCount;
+			thisDeviceDeclElement.isD3DCOLOR = isD3DCOLOR;
+			thisDeviceDeclElement.shaderInputRegisterIndex = shaderRegIndex;
+			thisDeviceDeclElement.dwordStreamStride = thisVertexStream.streamStride / sizeof(DWORD);
+			thisDeviceDeclElement.dwordOffset = thisElement.Offset / sizeof(DWORD);
+
+			++shaderUsedElements;
 		}
 	}
+	deviceDecl.numElements = shaderUsedElements;
+
+	if (shaderUsedElements == 0)
+	{
+#ifdef _DEBUG
+		__debugbreak();
+#endif
+		return;
+	}
+	if (shaderUsedElements > GPU_MAX_NUM_VERTEX_STREAMS)
+	{
+#ifdef _DEBUG
+		__debugbreak();
+#endif
+		return;
+	}
+	
+	// Finally, set our vertex decl and bind our vertex streams on the device:
+	DeviceSetVertexDecl(deviceDecl);
 }
 
 void IDirect3DDevice9Hook::DeviceSetVertexShader(const bool forceLoadVertexShader /*= false*/)
@@ -5230,7 +5099,7 @@ void IDirect3DDevice9Hook::DeviceSetUsedVertexShaderConstants()
 
 		if (IsFloatRegCompressible(*(const float4* const)&(thisInitialConst.initialValue) ) )
 		{
-			baseDevice->DeviceSetConstantDataSingleSpecial(*(const float4* const)&(thisInitialConst.initialValue), thisInitialConst.constantRegisterIndex);
+			baseDevice->DeviceSetConstantDataSingleSpecial(*(const float4* const)&(thisInitialConst.initialValue), (const BYTE)thisInitialConst.constantRegisterIndex);
 		}
 		else
 		{
@@ -5248,186 +5117,10 @@ void IDirect3DDevice9Hook::DeviceSetUsedVertexShaderConstants()
 				deviceComms->DeviceMemCopy( (char* const)shaderDEFConstantAllocation.deviceMemory, &(thisInitialConst.initialValue), sizeof(float4) );
 			}
 
-			baseDevice->DeviceSetConstantData( (const char* const)shaderDEFConstantAllocation.deviceMemory, (const float4* const)&(thisInitialConst.initialValue), thisInitialConst.constantRegisterIndex, 1);
+			baseDevice->DeviceSetConstantData( (const char* const)shaderDEFConstantAllocation.deviceMemory, (const float4* const)&(thisInitialConst.initialValue), (const BYTE)thisInitialConst.constantRegisterIndex, 1);
 		}
 	}
 }
-
-/*void IDirect3DDevice9Hook::DeviceLoadVertexDataPOSITIONTVerticesAttributes(const D3DPRIMITIVETYPE PrimitiveType, const UINT primCount, const bool useIndices, const INT BaseVertexIndex, const UINT startIndex)
-{
-	unsigned vertCount = 0;
-	switch (PrimitiveType)
-	{
-	case D3DPT_TRIANGLELIST:
-		vertCount = primCount * 3;
-		break;
-	case D3DPT_TRIANGLESTRIP:
-	case D3DPT_TRIANGLEFAN:
-		vertCount = primCount + 2;
-		break;
-	default:
-#ifdef _DEBUG
-		__debugbreak(); // Not yet supported!
-#endif
-		return;
-	}
-
-	const USHORT* indices = NULL;
-
-	if (useIndices)
-		indices = ( (const USHORT* const)currentState.currentIndexBuffer->GetBufferBytes() ) + startIndex;
-
-	const std::vector<DebuggableD3DVERTEXELEMENT9>& vertexElements = currentState.currentVertexDecl->GetElementsInternal();
-	const unsigned numElements = vertexElements.size();
-	const D3DXVECTOR2* texcoordData = NULL;
-	const D3DCOLOR* vertexColorData = NULL;
-	unsigned texcoordStride = 0;
-	unsigned vertColorStride = 0;
-	unsigned numVerticesTexcoordStream = 0;
-	unsigned numVerticesVertColorStream = 0;
-	for (unsigned x = 0; x < numElements; ++x)
-	{
-		const DebuggableD3DVERTEXELEMENT9& thisElement = vertexElements[x];
-		const StreamSource& thisStream = currentState.currentStreams[thisElement.Stream];
-		if (thisElement.Usage == D3DDECLUSAGE_TEXCOORD && thisElement.UsageIndex == 0)
-		{
-			texcoordData = (const D3DXVECTOR2* const)(thisStream.vertexBuffer->GetInternalDataBuffer() + thisStream.streamOffset + thisElement.Offset);
-			texcoordStride = thisStream.streamStride;
-			numVerticesTexcoordStream = thisStream.vertexBuffer->GetInternalLength_Bytes() / texcoordStride;
-		}
-		else if (thisElement.Usage == D3DDECLUSAGE_COLOR && thisElement.UsageIndex == 0)
-		{
-			vertexColorData = (const D3DCOLOR* const)(thisStream.vertexBuffer->GetInternalDataBuffer() + thisStream.streamOffset + thisElement.Offset);
-			vertColorStride = thisStream.streamStride;
-			numVerticesVertColorStream = thisStream.vertexBuffer->GetInternalLength_Bytes() / vertColorStride;
-		}
-	}
-	if (numVerticesTexcoordStream == 0 && numVerticesVertColorStream != 0)
-		numVerticesTexcoordStream = numVerticesVertColorStream;
-	if (numVerticesVertColorStream == 0 && !numVerticesTexcoordStream)
-		numVerticesVertColorStream = numVerticesTexcoordStream;
-
-#ifdef _DEBUG
-	if (numVerticesTexcoordStream != numVerticesVertColorStream) // It wouldn't be good if we didn't find any verts in either of these streams!
-	{
-		__debugbreak();
-	}
-#endif
-
-	std::vector<USHORT> texcoordXbuffer;
-	std::vector<USHORT> texcoordYbuffer;
-	texcoordXbuffer.resize(numVerticesTexcoordStream);
-	texcoordYbuffer.resize(numVerticesTexcoordStream);
-	std::vector<RGBACOLOR> vertColorBuffer;
-	vertColorBuffer.resize(numVerticesVertColorStream);
-
-	static const D3DXVECTOR2 defaultTexcoord(0.0f, 0.0f);
-	static const RGBACOLOR defaultVertColor = 0xFFFFFFFF;
-
-	for (unsigned vertID = 0; vertID < numVerticesTexcoordStream; ++vertID)
-	{
-		const D3DXVECTOR2* const vtex = texcoordData ? (const D3DXVECTOR2* const)( (const BYTE* const)texcoordData + vertID * texcoordStride) : &defaultTexcoord;
-		texcoordXbuffer[vertID] = FloatToUNORM<16>(vtex->x);
-		texcoordYbuffer[vertID] = FloatToUNORM<16>(vtex->y);
-	}
-
-	for (unsigned vertID = 0; vertID < numVerticesVertColorStream; ++vertID)
-	{
-		const D3DCOLOR* const vcol = vertexColorData ? (const D3DCOLOR* const)( (const BYTE* const)vertexColorData + vertID * vertColorStride) : &defaultVertColor;
-		vertColorBuffer[vertID] = D3DColorToRGBAColor(*vcol);
-	}
-
-	DeviceLoadVertexDataBuffers(numVerticesTexcoordStream, NULL, NULL, NULL, &texcoordXbuffer, &texcoordYbuffer, &vertColorBuffer);		
-}
-
-void IDirect3DDevice9Hook::DeviceLoadVertexDataProcessedVerticesPosition(const D3DPRIMITIVETYPE PrimitiveType, const UINT primCount)
-{
-	unsigned vertCount = 0;
-	switch (PrimitiveType)
-	{
-	case D3DPT_TRIANGLELIST:
-		vertCount = primCount * 3;
-		break;
-	case D3DPT_TRIANGLESTRIP:
-	case D3DPT_TRIANGLEFAN:
-		vertCount = primCount + 2;
-		break;
-	default:
-#ifdef _DEBUG
-		__debugbreak(); // Not yet supported!
-#endif
-		return;
-	}
-
-	VStoPSMapping vStoPSMapping;
-	vStoPSMapping.ClearSemanticMapping();
-	vStoPSMapping.ComputeMappingVSToPS(currentState.currentVertexShader, currentState.currentPixelShader);
-
-	const VS_2_0_OutputRegisters* const processedVertsBuffer = processedVertexBuffer;
-	const D3DXVECTOR4* registerData = NULL;
-	std::vector<SHORT> posXbuffer;
-	std::vector<SHORT> posYbuffer;
-	std::vector<DWORD> invZbuffer;
-	posXbuffer.resize(vertCount);
-	posYbuffer.resize(vertCount);
-	invZbuffer.resize(vertCount);
-	for (unsigned x = 0; x < vertCount; ++x)
-	{
-		const VS_2_0_OutputRegisters& thisVert = processedVertsBuffer[x];
-		const D3DXVECTOR4& vertexPos = currentState.currentVertexShader->GetPosition(thisVert);
-		posXbuffer[x] = ( (const SHORT)vertexPos.x);
-		posYbuffer[x] = ( (const SHORT)vertexPos.y);
-		const long double fInvZ = vertexPos.z > 0.0f ? (const long double)(1.0) / vertexPos.z : 1.0;
-		const unsigned invZ_UNORM32 = (const unsigned)(fInvZ * 0xFFFFFFFF);
-		invZbuffer[x] = (invZ_UNORM32);
-	}
-
-	DeviceLoadVertexDataBuffers(vertCount, &posXbuffer, &posYbuffer, &invZbuffer, NULL, NULL, NULL);
-}
-
-void IDirect3DDevice9Hook::DeviceLoadVertexDataProcessedVerticesAttributes(const D3DPRIMITIVETYPE PrimitiveType, const UINT primCount)
-{
-	unsigned vertCount = 0;
-	switch (PrimitiveType)
-	{
-	case D3DPT_TRIANGLELIST:
-		vertCount = primCount * 3;
-		break;
-	case D3DPT_TRIANGLESTRIP:
-	case D3DPT_TRIANGLEFAN:
-		vertCount = primCount + 2;
-		break;
-	default:
-#ifdef _DEBUG
-		__debugbreak(); // Not yet supported!
-#endif
-		return;
-	}
-
-	VStoPSMapping vStoPSMapping;
-	vStoPSMapping.ClearSemanticMapping();
-	vStoPSMapping.ComputeMappingVSToPS(currentState.currentVertexShader, currentState.currentPixelShader);
-
-	const VS_2_0_OutputRegisters* const processedVertsBuffer = processedVertexBuffer;
-	const D3DXVECTOR4* registerData = NULL;
-	std::vector<USHORT> texcoordXbuffer;
-	std::vector<USHORT> texcoordYbuffer;
-	std::vector<RGBACOLOR> vertColorBuffer;
-	texcoordXbuffer.resize(vertCount);
-	texcoordYbuffer.resize(vertCount);
-	vertColorBuffer.resize(vertCount);
-	for (unsigned x = 0; x < vertCount; ++x)
-	{
-		const VS_2_0_OutputRegisters& thisVert = processedVertsBuffer[x];
-		const D3DXVECTOR4& texcoord = currentState.currentVertexShader->GetTexcoord0(thisVert);
-		texcoordXbuffer[x] = FloatToUNORM<16>(texcoord.x);
-		texcoordYbuffer[x] = FloatToUNORM<16>(texcoord.y);
-		const D3DXVECTOR4& vertColor = currentState.currentVertexShader->GetColor0(thisVert);
-		vertColorBuffer[x] = D3DColorToRGBAColor(Float4ToD3DCOLORClamp<0xF>(vertColor) );
-	}
-
-	DeviceLoadVertexDataBuffers(vertCount, NULL, NULL, NULL, &texcoordXbuffer, &texcoordYbuffer, &vertColorBuffer);	
-}*/
 
 void IDirect3DDevice9Hook::DeviceSetCurrentState(const D3DPRIMITIVETYPE primType, const IDirect3DIndexBuffer9Hook* currentIB)
 {

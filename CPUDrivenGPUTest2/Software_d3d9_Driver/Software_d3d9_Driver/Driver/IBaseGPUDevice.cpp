@@ -744,7 +744,7 @@ HRESULT __stdcall IBaseGPUDevice::DeviceSetVertexShaderStartAddr(const unsigned 
 }
 
 HRESULT __stdcall IBaseGPUDevice::DeviceSetVertexStreamData(const gpuvoid* const vertexStreamData, const unsigned vertexBufferLengthBytes, const BYTE dwordCount, const BYTE streamID, 
-	const bool isD3DCOLOR, const BYTE shaderRegIndex, const BYTE dwordStride, const BYTE dwordOffset, const BYTE numVertexStreamsTotal)
+	const bool isD3DCOLOR, const BYTE shaderInputRegIndex, const BYTE dwordStride, const BYTE dwordOffset, const BYTE numVertexStreamsTotal)
 {
 	if (!ValidateAddress(vertexStreamData) )
 		return E_INVALIDARG;
@@ -768,7 +768,7 @@ HRESULT __stdcall IBaseGPUDevice::DeviceSetVertexStreamData(const gpuvoid* const
 	if (dwordCount < 1)
 	{
 #ifdef _DEBUG
-		__debugbreak();
+		__debugbreak(); // Only 1, 2, 3, or 4 (4, 8, 12, or 16 bytes) are valid inputs for the dwordCount of an element
 #endif
 		return E_INVALIDARG;
 	}
@@ -776,7 +776,7 @@ HRESULT __stdcall IBaseGPUDevice::DeviceSetVertexStreamData(const gpuvoid* const
 	if (dwordCount > 4)
 	{
 #ifdef _DEBUG
-		__debugbreak();
+		__debugbreak(); // Only 1, 2, 3, or 4 (4, 8, 12, or 16 bytes) are valid inputs for the dwordCount of an element
 #endif
 		return E_INVALIDARG;
 	}
@@ -789,7 +789,7 @@ HRESULT __stdcall IBaseGPUDevice::DeviceSetVertexStreamData(const gpuvoid* const
 		return E_INVALIDARG;
 	}
 
-	if (shaderRegIndex >= GPU_SHADER_MAX_NUM_INPUT_REG)
+	if (shaderInputRegIndex >= GPU_SHADER_MAX_NUM_INPUT_REG)
 	{
 #ifdef _DEBUG
 		__debugbreak();
@@ -821,6 +821,14 @@ HRESULT __stdcall IBaseGPUDevice::DeviceSetVertexStreamData(const gpuvoid* const
 		return E_INVALIDARG;
 	}
 
+	if (numVertexStreamsTotal == 0)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // D3D9 doesn't really allow draw calls without vertex buffers bound. This wouldn't technically break the device, but it's probably not what you wanted to do either.
+#endif
+		return E_INVALIDARG;
+	}
+
 	if (!ValidateMemoryRangeExistsInsideAllocation(vertexStreamData, vertexBufferLengthBytes) )
 	{
 #ifdef _DEBUG
@@ -834,7 +842,7 @@ HRESULT __stdcall IBaseGPUDevice::DeviceSetVertexStreamData(const gpuvoid* const
 	compareVertexStream.streamID = streamID;
 	compareVertexStream.dwordCount = dwordCount;
 	compareVertexStream.isD3DCOLOR = isD3DCOLOR;
-	compareVertexStream.shaderRegIndex = shaderRegIndex;
+	compareVertexStream.shaderInputRegIndex = shaderInputRegIndex;
 	compareVertexStream.dwordStride = dwordStride;
 	compareVertexStream.dwordOffset = dwordOffset;
 
@@ -846,7 +854,7 @@ HRESULT __stdcall IBaseGPUDevice::DeviceSetVertexStreamData(const gpuvoid* const
 	setVertexStreamData.dwordCount = dwordCount - 1; // Convert from 0-based to 1-based element DWORD count here
 	setVertexStreamData.streamID = streamID;
 	setVertexStreamData.isD3DCOLOR = isD3DCOLOR;
-	setVertexStreamData.shaderRegIndex = shaderRegIndex;
+	setVertexStreamData.shaderInputRegIndex = shaderInputRegIndex;
 	setVertexStreamData.dwordStride = dwordStride;
 	setVertexStreamData.dwordOffset = dwordOffset;
 	setVertexStreamData.numVertexStreamsTotal = numVertexStreamsTotal;

@@ -2255,6 +2255,7 @@ proc create_root_design { parentCell } {
   set_property -dict [ list \
    CONFIG.C_EN_PROBE_IN_ACTIVITY {0} \
    CONFIG.C_NUM_PROBE_IN {0} \
+   CONFIG.C_NUM_PROBE_OUT {2} \
    CONFIG.C_PROBE_OUT0_INIT_VAL {0x1} \
  ] $vio_0
 
@@ -2271,9 +2272,6 @@ proc create_root_design { parentCell } {
    CONFIG.CONST_VAL {0} \
    CONFIG.CONST_WIDTH {32} \
  ] $xlconstant_1
-
-  # Create instance: xlconstant_2, and set properties
-  set xlconstant_2 [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant:1.1 xlconstant_2 ]
 
   # Create interface connections
   connect_bd_intf_net -intf_net AttrInterpolator_0_RASTOUT_FIFO [get_bd_intf_pins AttrInterpolator_0/RASTOUT_FIFO] [get_bd_intf_pins rast_out_fifo/FIFO_READ]
@@ -2664,10 +2662,10 @@ proc create_root_design { parentCell } {
   connect_bd_net -net rd_clk_1 [get_bd_pins MemorySystem/rd_clk] [get_bd_pins ScanoutSystem/clk_out1]
   connect_bd_net -net reset_1 [get_bd_ports reset] [get_bd_pins MemorySystem/reset] [get_bd_pins ResetN_UntilClockLoc_0/reset] [get_bd_pins ScanoutSystem/reset] [get_bd_pins SerialPacketSystem/reset] [get_bd_pins proc_sys_reset_0/ext_reset_in]
   connect_bd_net -net vio_0_probe_out0 [get_bd_pins InputAssembler2_0/DBG_UsePrebuiltIB] [get_bd_pins vio_0/probe_out0]
+  connect_bd_net -net vio_0_probe_out1 [get_bd_pins VertexBatchBuilder_0/DBG_UseConstantOutput] [get_bd_pins vio_0/probe_out1]
   connect_bd_net -net xlconstant_0_dout [get_bd_pins ResetN_UntilClockLoc_0/locked] [get_bd_pins constant_always_locked/dout]
   connect_bd_net -net xlconstant_0_dout1 [get_bd_pins ila_333_250/probe4] [get_bd_pins xlconstant_0/dout]
   connect_bd_net -net xlconstant_1_dout [get_bd_pins ILA_TexSampler/probe6] [get_bd_pins xlconstant_1/dout]
-  connect_bd_net -net xlconstant_2_dout [get_bd_pins VertexBatchBuilder_0/DBG_UseConstantOutput] [get_bd_pins xlconstant_2/dout]
 
   # Create address segments
   create_bd_addr_seg -range 0x40000000 -offset 0x00000000 [get_bd_addr_spaces MemorySystem/MemoryController_0/M_AXI] [get_bd_addr_segs MemorySystem/ddr4_0/C0_DDR4_MEMORY_MAP/C0_DDR4_ADDRESS_BLOCK] SEG_ddr4_0_C0_DDR4_ADDRESS_BLOCK

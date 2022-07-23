@@ -2172,11 +2172,14 @@ void AppendVSPositionCompression(const unsigned oRegIndex, std::vector<instructi
 	}
 #endif
 
-	const instructionSlot compressPosX = { {Op_RND_SINT16NE, DRMod_None, DRTyp_O, oRegIndex /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_O, oRegIndex /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_0, 0 /*src1RegIndex*/, Chan_X} }; // rnd_sint16ne oN.x, oN.x, 0.x
-	const instructionSlot compressPosY = { {Op_RND_SINT16NE, DRMod_None, DRTyp_O, oRegIndex /*destRegIndex*/, Chan_Y, SRMod_None, SRTyp_O, oRegIndex /*src0RegIndex*/, Chan_Y, SRMod_None, SRTyp_0, 0 /*src1RegIndex*/, Chan_X} }; // rnd_sint16ne oN.y, oN.y, 0.x
+	const instructionSlot compressPosX = { {Op_RND_SINT16NE, DRMod_None, DRTyp_O, oRegIndex /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_O, oRegIndex /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_0, 0 /*src1RegIndex*/, Chan_X} }; // rnd_sint16ne oPos.x, oPos.x, 0.x
+	const instructionSlot compressPosY = { {Op_RND_SINT16NE, DRMod_None, DRTyp_O, oRegIndex /*destRegIndex*/, Chan_Y, SRMod_None, SRTyp_O, oRegIndex /*src0RegIndex*/, Chan_Y, SRMod_None, SRTyp_0, 0 /*src1RegIndex*/, Chan_X} }; // rnd_sint16ne oPos.y, oPos.y, 0.x
 
 	inOutDeviceInstructionStream.push_back(compressPosX);
 	inOutDeviceInstructionStream.push_back(compressPosY);
+
+	const instructionSlot invZ = { {Op_RCP, DRMod_None, DRTyp_O, oRegIndex /*destRegIndex*/, Chan_Z, SRMod_None, SRTyp_O, oRegIndex /*src0RegIndex*/, Chan_Z, SRMod_None, SRTyp_0, 0 /*src1RegIndex*/, Chan_X} }; // rcp oPos.z, oPos.z, 0.x
+	inOutDeviceInstructionStream.push_back(invZ);
 }
 
 void AppendVSRegisterPacking(const unsigned packedORegIndex, const unsigned positionORegIndex, const unsigned texcoordORegIndex, const unsigned colorORegIndex, std::vector<instructionSlot>& inOutDeviceInstructionStream)

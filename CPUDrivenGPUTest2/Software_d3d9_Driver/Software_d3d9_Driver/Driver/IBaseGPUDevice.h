@@ -23,7 +23,7 @@ struct CachedVertexStream
 			rhs.streamID == streamID &&
 			rhs.dwordCount == dwordCount &&
 			rhs.isD3DCOLOR == isD3DCOLOR &&
-			rhs.shaderRegIndex == shaderRegIndex &&
+			rhs.shaderInputRegIndex == shaderInputRegIndex &&
 			rhs.dwordStride == dwordStride &&
 			rhs.dwordOffset == dwordOffset);
 	}
@@ -38,7 +38,7 @@ struct CachedVertexStream
 	BYTE streamID = 0;
 	BYTE dwordCount = 0;
 	bool isD3DCOLOR = false;
-	BYTE shaderRegIndex = 0;
+	BYTE shaderInputRegIndex = 0;
 	BYTE dwordStride = 0;
 	BYTE dwordOffset = 0;
 };
@@ -129,7 +129,7 @@ __declspec(align(16) ) struct IBaseGPUDevice
 	HRESULT __stdcall DeviceSetVertexShaderStartAddr(const unsigned short shaderStartAddress);
 
 	HRESULT __stdcall DeviceSetVertexStreamData(const gpuvoid* const vertexStreamData, const unsigned vertexBufferLengthBytes, const BYTE dwordCount, const BYTE streamID, 
-		const bool isD3DCOLOR, const BYTE shaderRegIndex, const BYTE dwordStride, const BYTE dwordOffset, const BYTE numVertexStreamsTotal);
+		const bool isD3DCOLOR, const BYTE shaderInputRegIndex, const BYTE dwordStride, const BYTE dwordOffset, const BYTE numVertexStreamsTotal);
 
 	HRESULT __stdcall DeviceSetConstantData(const gpuvoid* const constantBufferMemory, const float4* const baseCPUFloat4RegisterFile, const BYTE startingRegisterIndex, const BYTE numFloat4Registers);
 

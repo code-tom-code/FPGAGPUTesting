@@ -1073,6 +1073,7 @@ public:
 	const float4 GetDeviceViewportConstantF() const;
 
 	void DeviceSetVertexShader(const bool forceLoadVertexShader = false);
+	void DeviceSetVertexDecl(const struct deviceVertexDecl& deviceDecl);
 	void DeviceSetVertexStreamsAndDecl();
 	void DeviceSetUsedVertexShaderConstants();
 

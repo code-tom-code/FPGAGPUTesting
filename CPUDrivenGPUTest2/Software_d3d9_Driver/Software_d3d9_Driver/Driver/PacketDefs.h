@@ -766,7 +766,7 @@ struct setVertexStreamDataCommand : command
 {
 	setVertexStreamDataCommand() : command(PT_SETVERTEXSTREAMDATA),
 		streamBaseAddress(0x00000000), dwordCount(1),
-		streamID(0), isD3DCOLOR(false), shaderRegIndex(0),
+		streamID(0), isD3DCOLOR(false), shaderInputRegIndex(0),
 		dwordStride(1), dwordOffset(0), unused0(0)
 	{
 	}
@@ -778,7 +778,7 @@ struct setVertexStreamDataCommand : command
 	// Payload 1:
 	DWORD streamID : 3; // The stream index of this data (matches stream number in CreateVertexDeclaration() ) // 2 downto 0
 	DWORD isD3DCOLOR : 1; // Is this a D3DCOLOR element (1) that needs to do UINT8->UNORM8 conversion and ARGB->RGBA swizzling, or a FLOAT element (0)? // 3
-	DWORD shaderRegIndex : 3; // Which v# register does this vertex data get loaded into? // 6 downto 4
+	DWORD shaderInputRegIndex : 3; // Which v# register does this vertex data get loaded into? // 6 downto 4
 	DWORD dwordStride : 6; // What is the stride (in DWORD's) between elements in this stream? May be 0 to indicate that this data is the same for all elements. // 12 downto 7
 	DWORD dwordOffset : 6; // What is the offset (in DWORD's) from the start of the stream? // 18 downto 13
 	DWORD numVertexStreamsTotal : 3; // How many vertex streams does this shader use in total? // 21 downto 19

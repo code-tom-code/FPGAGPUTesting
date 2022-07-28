@@ -133,12 +133,6 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PSRCDIR/sources_1/new/RGB888Quantizer.vhd">
-        <FileInfo>
-          <Attr Name="UsedIn" Val="synthesis"/>
-          <Attr Name="UsedIn" Val="simulation"/>
-        </FileInfo>
-      </File>
       <File Path="$PSRCDIR/sources_1/new/ClearBlock.vhd">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
@@ -218,6 +212,24 @@
         </FileInfo>
       </File>
       <File Path="$PSRCDIR/sources_1/new/InputAssembler2.vhd">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PSRCDIR/sources_1/new/TDMS_encoder.vhd">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PSRCDIR/sources_1/new/dvid.vhd">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PSRCDIR/sources_1/new/obuf_outputs.vhd">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="simulation"/>
@@ -325,7 +337,7 @@
     <MsgAttr Name="ShowRule" Val="1"/>
     <MsgAttr Name="RuleSource" Val="2"/>
     <MsgAttr Name="StringIsRegExp" Val="0"/>
-    <MsgAttr Name="RuleId" Val="1"/>
+    <MsgAttr Name="RuleId" Val="3"/>
     <MsgAttr Name="Note" Val=""/>
     <MsgAttr Name="Author" Val=""/>
     <MsgAttr Name="CreatedTimestamp" Val=""/>
@@ -339,7 +351,7 @@
     <MsgAttr Name="ShowRule" Val="1"/>
     <MsgAttr Name="RuleSource" Val="2"/>
     <MsgAttr Name="StringIsRegExp" Val="0"/>
-    <MsgAttr Name="RuleId" Val="2"/>
+    <MsgAttr Name="RuleId" Val="4"/>
     <MsgAttr Name="Note" Val=""/>
     <MsgAttr Name="Author" Val=""/>
     <MsgAttr Name="CreatedTimestamp" Val=""/>

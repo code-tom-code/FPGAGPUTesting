@@ -40,7 +40,7 @@ if { [string first $scripts_vivado_version $current_vivado_version] == -1 } {
 
 # The design that will be created by this Tcl script contains the following 
 # module references:
-# AttrInterpolator, ClearBlock, CommandProcessor, IndexBufferCache, IndexBufferCache, InputAssembler2, Reciprocal, ROP, Rasterizer, ResetN_UntilClockLocked, StatsCollector, TexSample, Reciprocal, TriSetup, TriWorkCache, VertexBatchBuilder, MemoryController, R8G8B8Quantizer, ScanOut, PacketProcessor, ConstantBuffer, FloatALU, FloatALU, FloatALU, FloatALU, ShaderCore, UNORM8ToFloat, VertexStreamCache, GPRQuad2
+# AttrInterpolator, ClearBlock, CommandProcessor, IndexBufferCache, IndexBufferCache, InputAssembler2, Reciprocal, ROP, Rasterizer, ResetN_UntilClockLocked, StatsCollector, TexSample, Reciprocal, TriSetup, TriWorkCache, VertexBatchBuilder, MemoryController, ScanOut, dvid, obuf_outputs, PacketProcessor, ConstantBuffer, FloatALU, FloatALU, FloatALU, FloatALU, ShaderCore, UNORM8ToFloat, VertexStreamCache, GPRQuad2
 
 # Please add the sources of those modules before sourcing this Tcl script.
 
@@ -951,27 +951,22 @@ proc create_hier_cell_ScanoutSystem { parentCell nameHier } {
 
   # Create pins
   create_bd_pin -dir I -from 29 -to 0 CMD_BaseRenderTargetAddr
+  create_bd_pin -dir I CMD_InvertOutputColor
+  create_bd_pin -dir I -from 8 -to 0 CMD_OutputColorChannels
   create_bd_pin -dir I CMD_ScanoutEnable
-  create_bd_pin -dir O -from 3 -to 0 blue
   create_bd_pin -dir I -type clk clk_in1
   create_bd_pin -dir O -type clk clk_out1
-  create_bd_pin -dir O -from 4 -to 0 green
-  create_bd_pin -dir O hsync
-  create_bd_pin -dir O -from 4 -to 0 red
+  create_bd_pin -dir O out_blue_n
+  create_bd_pin -dir O out_blue_p
+  create_bd_pin -dir O out_cl_n
+  create_bd_pin -dir O out_cl_p
+  create_bd_pin -dir O out_green_n
+  create_bd_pin -dir O out_green_p
+  create_bd_pin -dir O out_red_n
+  create_bd_pin -dir O out_red_p
   create_bd_pin -dir I -type rst reset
   create_bd_pin -dir O vsync
 
-  # Create instance: R8G8B8Quantizer_0, and set properties
-  set block_name R8G8B8Quantizer
-  set block_cell_name R8G8B8Quantizer_0
-  if { [catch {set R8G8B8Quantizer_0 [create_bd_cell -type module -reference $block_name $block_cell_name] } errmsg] } {
-     catch {common::send_msg_id "BD_TCL-105" "ERROR" "Unable to add referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
-     return 1
-   } elseif { $R8G8B8Quantizer_0 eq "" } {
-     catch {common::send_msg_id "BD_TCL-106" "ERROR" "Unable to referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
-     return 1
-   }
-  
   # Create instance: ScanOut_0, and set properties
   set block_name ScanOut
   set block_cell_name ScanOut_0
@@ -983,38 +978,85 @@ proc create_hier_cell_ScanoutSystem { parentCell nameHier } {
      return 1
    }
   
-  # Create instance: scanout_clk_25_175_x8, and set properties
-  set scanout_clk_25_175_x8 [ create_bd_cell -type ip -vlnv xilinx.com:ip:clk_wiz:6.0 scanout_clk_25_175_x8 ]
+  # Create instance: dvid_0, and set properties
+  set block_name dvid
+  set block_cell_name dvid_0
+  if { [catch {set dvid_0 [create_bd_cell -type module -reference $block_name $block_cell_name] } errmsg] } {
+     catch {common::send_msg_id "BD_TCL-105" "ERROR" "Unable to add referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
+     return 1
+   } elseif { $dvid_0 eq "" } {
+     catch {common::send_msg_id "BD_TCL-106" "ERROR" "Unable to referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
+     return 1
+   }
+  
+  # Create instance: obuf_outputs_0, and set properties
+  set block_name obuf_outputs
+  set block_cell_name obuf_outputs_0
+  if { [catch {set obuf_outputs_0 [create_bd_cell -type module -reference $block_name $block_cell_name] } errmsg] } {
+     catch {common::send_msg_id "BD_TCL-105" "ERROR" "Unable to add referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
+     return 1
+   } elseif { $obuf_outputs_0 eq "" } {
+     catch {common::send_msg_id "BD_TCL-106" "ERROR" "Unable to referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
+     return 1
+   }
+  
+  # Create instance: scanout_clk_25_175_x10, and set properties
+  set scanout_clk_25_175_x10 [ create_bd_cell -type ip -vlnv xilinx.com:ip:clk_wiz:6.0 scanout_clk_25_175_x10 ]
   set_property -dict [ list \
-   CONFIG.CLKOUT1_JITTER {109.744} \
-   CONFIG.CLKOUT1_PHASE_ERROR {115.734} \
-   CONFIG.CLKOUT1_REQUESTED_OUT_FREQ {201.4} \
-   CONFIG.MMCM_CLKFBOUT_MULT_F {17.375} \
-   CONFIG.MMCM_CLKOUT0_DIVIDE_F {5.750} \
-   CONFIG.MMCM_DIVCLK_DIVIDE {5} \
+   CONFIG.CLKIN1_JITTER_PS {40.0} \
+   CONFIG.CLKOUT1_JITTER {169.784} \
+   CONFIG.CLKOUT1_PHASE_ERROR {328.812} \
+   CONFIG.CLKOUT1_REQUESTED_OUT_FREQ {251.75} \
+   CONFIG.CLKOUT2_JITTER {236.903} \
+   CONFIG.CLKOUT2_PHASE_ERROR {328.812} \
+   CONFIG.CLKOUT2_REQUESTED_OUT_FREQ {25.175} \
+   CONFIG.CLKOUT2_USED {true} \
+   CONFIG.CLK_OUT1_PORT {clk_x10} \
+   CONFIG.CLK_OUT2_PORT {pixelclk_x1} \
+   CONFIG.MMCM_CLKFBOUT_MULT_F {125.875} \
+   CONFIG.MMCM_CLKIN1_PERIOD {4.000} \
+   CONFIG.MMCM_CLKOUT0_DIVIDE_F {5.000} \
+   CONFIG.MMCM_CLKOUT1_DIVIDE {50} \
+   CONFIG.MMCM_DIVCLK_DIVIDE {25} \
+   CONFIG.NUM_OUT_CLKS {2} \
+   CONFIG.PRIM_IN_FREQ {250.0} \
    CONFIG.RESET_BOARD_INTERFACE {reset} \
    CONFIG.USE_LOCKED {false} \
    CONFIG.USE_RESET {true} \
- ] $scanout_clk_25_175_x8
+ ] $scanout_clk_25_175_x10
 
   # Create interface connections
   connect_bd_intf_net -intf_net ScanOut_0_ScanoutReadRequestsFIFO [get_bd_intf_pins ScanoutReadRequestsFIFO] [get_bd_intf_pins ScanOut_0/ScanoutReadRequestsFIFO]
   connect_bd_intf_net -intf_net ScanOut_0_ScanoutReadResponses [get_bd_intf_pins ScanoutReadResponses] [get_bd_intf_pins ScanOut_0/ScanoutReadResponses]
 
   # Create port connections
+  connect_bd_net -net CMD_InvertOutputColor_1 [get_bd_pins CMD_InvertOutputColor] [get_bd_pins ScanOut_0/CMD_InvertOutputColor]
+  connect_bd_net -net CMD_OutputColorChannels_1 [get_bd_pins CMD_OutputColorChannels] [get_bd_pins ScanOut_0/CMD_OutputColorChannels]
   connect_bd_net -net CMD_ScanoutEnable_1 [get_bd_pins CMD_ScanoutEnable] [get_bd_pins ScanOut_0/CMD_ScanoutEnable]
   connect_bd_net -net CommandProcessor_0_SCANOUT_RenderTargetBaseAddr [get_bd_pins CMD_BaseRenderTargetAddr] [get_bd_pins ScanOut_0/CMD_BaseRenderTargetAddr]
-  connect_bd_net -net R8G8B8Quantizer_0_outBlueBits [get_bd_pins blue] [get_bd_pins R8G8B8Quantizer_0/outBlueBits]
-  connect_bd_net -net R8G8B8Quantizer_0_outGreenBits [get_bd_pins green] [get_bd_pins R8G8B8Quantizer_0/outGreenBits]
-  connect_bd_net -net R8G8B8Quantizer_0_outRedBits [get_bd_pins red] [get_bd_pins R8G8B8Quantizer_0/outRedBits]
-  connect_bd_net -net ScanOut_0_hsync [get_bd_pins hsync] [get_bd_pins ScanOut_0/hsync]
-  connect_bd_net -net ScanOut_0_outB [get_bd_pins R8G8B8Quantizer_0/inBlue8] [get_bd_pins ScanOut_0/outB]
-  connect_bd_net -net ScanOut_0_outG [get_bd_pins R8G8B8Quantizer_0/inGreen8] [get_bd_pins ScanOut_0/outG]
-  connect_bd_net -net ScanOut_0_outR [get_bd_pins R8G8B8Quantizer_0/inRed8] [get_bd_pins ScanOut_0/outR]
-  connect_bd_net -net ScanOut_0_vsync [get_bd_pins vsync] [get_bd_pins ScanOut_0/vsync]
-  connect_bd_net -net clk_wiz_0_clk_out1 [get_bd_pins clk_out1] [get_bd_pins ScanOut_0/clk] [get_bd_pins scanout_clk_25_175_x8/clk_out1]
-  connect_bd_net -net ddr4_0_c0_ddr4_ui_clk [get_bd_pins clk_in1] [get_bd_pins scanout_clk_25_175_x8/clk_in1]
-  connect_bd_net -net reset_1 [get_bd_pins reset] [get_bd_pins scanout_clk_25_175_x8/reset]
+  connect_bd_net -net ScanOut_0_blank [get_bd_pins ScanOut_0/blank] [get_bd_pins dvid_0/blank]
+  connect_bd_net -net ScanOut_0_hsync [get_bd_pins ScanOut_0/hsync] [get_bd_pins dvid_0/hsync]
+  connect_bd_net -net ScanOut_0_outB [get_bd_pins ScanOut_0/outB] [get_bd_pins dvid_0/blue_p]
+  connect_bd_net -net ScanOut_0_outG [get_bd_pins ScanOut_0/outG] [get_bd_pins dvid_0/green_p]
+  connect_bd_net -net ScanOut_0_outR [get_bd_pins ScanOut_0/outR] [get_bd_pins dvid_0/red_p]
+  connect_bd_net -net ScanOut_0_out_scanout_enable [get_bd_pins ScanOut_0/out_scanout_enable] [get_bd_pins dvid_0/scanout_en]
+  connect_bd_net -net ScanOut_0_vsync [get_bd_pins vsync] [get_bd_pins ScanOut_0/vsync] [get_bd_pins dvid_0/vsync]
+  connect_bd_net -net clk_wiz_0_clk_out1 [get_bd_pins clk_out1] [get_bd_pins ScanOut_0/clk_x10] [get_bd_pins dvid_0/clk_x10] [get_bd_pins scanout_clk_25_175_x10/clk_x10]
+  connect_bd_net -net ddr4_0_c0_ddr4_ui_clk [get_bd_pins clk_in1] [get_bd_pins scanout_clk_25_175_x10/clk_in1]
+  connect_bd_net -net dvid_0_blue_s [get_bd_pins dvid_0/blue_s] [get_bd_pins obuf_outputs_0/blue_s]
+  connect_bd_net -net dvid_0_cl_s [get_bd_pins dvid_0/cl_s] [get_bd_pins obuf_outputs_0/cl_s]
+  connect_bd_net -net dvid_0_green_s [get_bd_pins dvid_0/green_s] [get_bd_pins obuf_outputs_0/green_s]
+  connect_bd_net -net dvid_0_red_s [get_bd_pins dvid_0/red_s] [get_bd_pins obuf_outputs_0/red_s]
+  connect_bd_net -net obuf_outputs_0_out_blue_n [get_bd_pins out_blue_n] [get_bd_pins obuf_outputs_0/out_blue_n]
+  connect_bd_net -net obuf_outputs_0_out_blue_p [get_bd_pins out_blue_p] [get_bd_pins obuf_outputs_0/out_blue_p]
+  connect_bd_net -net obuf_outputs_0_out_cl_n [get_bd_pins out_cl_n] [get_bd_pins obuf_outputs_0/out_cl_n]
+  connect_bd_net -net obuf_outputs_0_out_cl_p [get_bd_pins out_cl_p] [get_bd_pins obuf_outputs_0/out_cl_p]
+  connect_bd_net -net obuf_outputs_0_out_green_n [get_bd_pins out_green_n] [get_bd_pins obuf_outputs_0/out_green_n]
+  connect_bd_net -net obuf_outputs_0_out_green_p [get_bd_pins out_green_p] [get_bd_pins obuf_outputs_0/out_green_p]
+  connect_bd_net -net obuf_outputs_0_out_red_n [get_bd_pins out_red_n] [get_bd_pins obuf_outputs_0/out_red_n]
+  connect_bd_net -net obuf_outputs_0_out_red_p [get_bd_pins out_red_p] [get_bd_pins obuf_outputs_0/out_red_p]
+  connect_bd_net -net reset_1 [get_bd_pins reset] [get_bd_pins scanout_clk_25_175_x10/reset]
+  connect_bd_net -net scanout_clk_25_175_x10_pixelclk_x1 [get_bd_pins dvid_0/clk_pixel] [get_bd_pins scanout_clk_25_175_x10/pixelclk_x1]
 
   # Restore current instance
   current_bd_instance $oldCurInst
@@ -1400,7 +1442,7 @@ proc create_hier_cell_MemorySystem { parentCell nameHier } {
    CONFIG.Performance_Options {First_Word_Fall_Through} \
    CONFIG.Read_Clock_Frequency {333} \
    CONFIG.Read_Data_Count_Width {9} \
-   CONFIG.Write_Clock_Frequency {201} \
+   CONFIG.Write_Clock_Frequency {252} \
    CONFIG.Write_Data_Count_Width {9} \
  ] $ScanoutReadRequestsFIFO
 
@@ -1418,7 +1460,7 @@ proc create_hier_cell_MemorySystem { parentCell nameHier } {
    CONFIG.Output_Data_Width {286} \
    CONFIG.Output_Depth {512} \
    CONFIG.Performance_Options {First_Word_Fall_Through} \
-   CONFIG.Read_Clock_Frequency {201} \
+   CONFIG.Read_Clock_Frequency {252} \
    CONFIG.Read_Data_Count_Width {9} \
    CONFIG.Write_Clock_Frequency {333} \
    CONFIG.Write_Data_Count_Width {9} \
@@ -1549,6 +1591,7 @@ proc create_hier_cell_MemorySystem { parentCell nameHier } {
   set ddr4_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:ddr4:2.2 ddr4_0 ]
   set_property -dict [ list \
    CONFIG.ADDN_UI_CLKOUT1_FREQ_HZ {250} \
+   CONFIG.ADDN_UI_CLKOUT2_FREQ_HZ {None} \
    CONFIG.C0.BANK_GROUP_WIDTH {1} \
    CONFIG.C0.DDR4_AxiAddressWidth {30} \
    CONFIG.C0.DDR4_AxiDataWidth {256} \
@@ -1695,15 +1738,18 @@ proc create_root_design { parentCell } {
   set rs232_uart [ create_bd_intf_port -mode Master -vlnv xilinx.com:interface:uart_rtl:1.0 rs232_uart ]
 
   # Create ports
-  set blue [ create_bd_port -dir O -from 3 -to 0 -type data blue ]
-  set green [ create_bd_port -dir O -from 4 -to 0 -type data green ]
-  set hsync [ create_bd_port -dir O -type data hsync ]
-  set red [ create_bd_port -dir O -from 4 -to 0 -type data red ]
   set reset [ create_bd_port -dir I -type rst reset ]
   set_property -dict [ list \
    CONFIG.POLARITY {ACTIVE_HIGH} \
  ] $reset
-  set vsync [ create_bd_port -dir O -type data vsync ]
+  set tmds_blue_n [ create_bd_port -dir O tmds_blue_n ]
+  set tmds_blue_p [ create_bd_port -dir O tmds_blue_p ]
+  set tmds_cl_n [ create_bd_port -dir O tmds_cl_n ]
+  set tmds_cl_p [ create_bd_port -dir O tmds_cl_p ]
+  set tmds_green_n [ create_bd_port -dir O tmds_green_n ]
+  set tmds_green_p [ create_bd_port -dir O tmds_green_p ]
+  set tmds_red_n [ create_bd_port -dir O tmds_red_n ]
+  set tmds_red_p [ create_bd_port -dir O tmds_red_p ]
 
   # Create instance: AttrInterpolator_0, and set properties
   set block_name AttrInterpolator
@@ -2365,6 +2411,8 @@ proc create_root_design { parentCell } {
   connect_bd_net -net CommandProcessor_0_ROP_SetBlendStateBeginSignal [get_bd_pins CommandProcessor_0/ROP_SetBlendStateBeginSignal] [get_bd_pins ROP_0/CMD_SetBlendStateSignal]
   connect_bd_net -net CommandProcessor_0_ROP_SetClearColor [get_bd_pins CommandProcessor_0/ROP_SetClearColor] [get_bd_pins ROP_0/CMD_SetClearColor]
   connect_bd_net -net CommandProcessor_0_ROP_SetRenderTargetBaseAddr [get_bd_pins CommandProcessor_0/ROP_SetRenderTargetBaseAddr] [get_bd_pins ROP_0/CMD_SetRenderTargetBaseAddr]
+  connect_bd_net -net CommandProcessor_0_SCANOUT_InvertOutputColor [get_bd_pins CommandProcessor_0/SCANOUT_InvertOutputColor] [get_bd_pins ScanoutSystem/CMD_InvertOutputColor]
+  connect_bd_net -net CommandProcessor_0_SCANOUT_OutputColorChannels [get_bd_pins CommandProcessor_0/SCANOUT_OutputColorChannels] [get_bd_pins ScanoutSystem/CMD_OutputColorChannels]
   connect_bd_net -net CommandProcessor_0_SCANOUT_RenderTargetBaseAddr [get_bd_pins CommandProcessor_0/SCANOUT_RenderTargetBaseAddr] [get_bd_pins ScanoutSystem/CMD_BaseRenderTargetAddr]
   connect_bd_net -net CommandProcessor_0_SCANOUT_ScanEnable [get_bd_pins CommandProcessor_0/SCANOUT_ScanEnable] [get_bd_pins ScanoutSystem/CMD_ScanoutEnable]
   connect_bd_net -net CommandProcessor_0_SHADER_ReadRegisterOutRequest [get_bd_pins CommandProcessor_0/SHADER_ReadRegisterOutRequest] [get_bd_pins ShaderCoreSystem/DBG_ReadRegisterOutRequest]
@@ -2454,9 +2502,6 @@ proc create_root_design { parentCell } {
   connect_bd_net -net MemorySystem_STAT_MemWriteCountTransactions [get_bd_pins MemorySystem/STAT_MemWriteCountTransactions] [get_bd_pins StatsCollector_0/MEM_MemWriteCountTransactions]
   connect_bd_net -net MemorySystem_STAT_MemWriteCyclesIdle [get_bd_pins MemorySystem/STAT_MemWriteCyclesIdle] [get_bd_pins StatsCollector_0/MEM_WriteCyclesIdle]
   connect_bd_net -net MemorySystem_STAT_MemWriteCyclesSpentWorking [get_bd_pins MemorySystem/STAT_MemWriteCyclesSpentWorking] [get_bd_pins StatsCollector_0/MEM_WriteCyclesSpentWorking]
-  connect_bd_net -net R8G8B8Quantizer_0_outBlueBits [get_bd_ports blue] [get_bd_pins ScanoutSystem/blue]
-  connect_bd_net -net R8G8B8Quantizer_0_outGreenBits [get_bd_ports green] [get_bd_pins ScanoutSystem/green]
-  connect_bd_net -net R8G8B8Quantizer_0_outRedBits [get_bd_ports red] [get_bd_pins ScanoutSystem/red]
   connect_bd_net -net ROP_0_CMD_ClearSignalAck [get_bd_pins CommandProcessor_0/ROP_ClearSignalAck] [get_bd_pins ROP_0/CMD_ClearSignalAck]
   connect_bd_net -net ROP_0_CMD_FlushCacheAck [get_bd_pins CommandProcessor_0/ROP_FlushCacheAck] [get_bd_pins ROP_0/CMD_FlushCacheAck]
   connect_bd_net -net ROP_0_CMD_ROPIsIdle [get_bd_pins CommandProcessor_0/CMD_ROP_Idle] [get_bd_pins ROP_0/CMD_ROPIsIdle]
@@ -2502,8 +2547,15 @@ proc create_root_design { parentCell } {
   connect_bd_net -net Rasterizer_0_TRICACHE_VertColor2 [get_bd_pins Rasterizer_0/TRICACHE_VertColor2] [get_bd_pins TriWorkCache_0/RAST_inColorRGBA2]
   connect_bd_net -net Rasterizer_0_TRISETUP_readyForNewTri [get_bd_pins Rasterizer_0/TRISETUP_readyForNewTri] [get_bd_pins TriSetup_0/RAST_readyForTriSetupData]
   connect_bd_net -net ResetN_UntilClockLoc_0_resetn [get_bd_pins CommandProcessor_0/resetn] [get_bd_pins MemorySystem/M_AXI_ARESETN] [get_bd_pins ResetN_UntilClockLoc_0/resetn] [get_bd_pins SerialPacketSystem/s_axi_aresetn]
-  connect_bd_net -net ScanOut_0_hsync [get_bd_ports hsync] [get_bd_pins ScanoutSystem/hsync]
-  connect_bd_net -net ScanOut_0_vsync [get_bd_ports vsync] [get_bd_pins CommandProcessor_0/CMD_VSync] [get_bd_pins ScanoutSystem/vsync]
+  connect_bd_net -net ScanoutSystem_out_blue_n_0 [get_bd_ports tmds_blue_n] [get_bd_pins ScanoutSystem/out_blue_n]
+  connect_bd_net -net ScanoutSystem_out_blue_p_0 [get_bd_ports tmds_blue_p] [get_bd_pins ScanoutSystem/out_blue_p]
+  connect_bd_net -net ScanoutSystem_out_cl_n_0 [get_bd_ports tmds_cl_n] [get_bd_pins ScanoutSystem/out_cl_n]
+  connect_bd_net -net ScanoutSystem_out_cl_p_0 [get_bd_ports tmds_cl_p] [get_bd_pins ScanoutSystem/out_cl_p]
+  connect_bd_net -net ScanoutSystem_out_green_n_0 [get_bd_ports tmds_green_n] [get_bd_pins ScanoutSystem/out_green_n]
+  connect_bd_net -net ScanoutSystem_out_green_p_0 [get_bd_ports tmds_green_p] [get_bd_pins ScanoutSystem/out_green_p]
+  connect_bd_net -net ScanoutSystem_out_red_n_0 [get_bd_ports tmds_red_n] [get_bd_pins ScanoutSystem/out_red_n]
+  connect_bd_net -net ScanoutSystem_out_red_p_0 [get_bd_ports tmds_red_p] [get_bd_pins ScanoutSystem/out_red_p]
+  connect_bd_net -net ScanoutSystem_vsync_0 [get_bd_pins CommandProcessor_0/CMD_VSync] [get_bd_pins ScanoutSystem/vsync]
   connect_bd_net -net ShaderCoreSystem_CB_Enable [get_bd_pins ILA_IA/probe45] [get_bd_pins ShaderCoreSystem/CB_Enable]
   connect_bd_net -net ShaderCoreSystem_CB_RegComponent [get_bd_pins ILA_IA/probe47] [get_bd_pins ShaderCoreSystem/CB_RegComponent]
   connect_bd_net -net ShaderCoreSystem_CB_RegIndex [get_bd_pins ILA_IA/probe46] [get_bd_pins ShaderCoreSystem/CB_RegIndex]
@@ -2654,8 +2706,8 @@ proc create_root_design { parentCell } {
   connect_bd_net -net VertexBatchBuilder_0_IBC_ReadAddr [get_bd_pins IndexBufferCache_0/VBB_ReadAddr] [get_bd_pins VertexBatchBuilder_0/IBC_ReadAddr]
   connect_bd_net -net VertexBatchBuilder_0_IBC_ReadEnable [get_bd_pins IndexBufferCache_0/VBB_ReadEnable] [get_bd_pins VertexBatchBuilder_0/IBC_ReadEnable]
   connect_bd_net -net VertexBatchBuilder_0_SHADER_Done [get_bd_pins ShaderCoreSystem/VBB_Done_0] [get_bd_pins VertexBatchBuilder_0/SHADER_Done]
-  connect_bd_net -net ddr4_0_addn_ui_clkout1 [get_bd_pins MemorySystem/addn_ui_clkout1] [get_bd_pins SerialPacketSystem/s_axi_aclk] [get_bd_pins proc_sys_reset_0/slowest_sync_clk]
-  connect_bd_net -net ddr4_0_c0_ddr4_ui_clk [get_bd_pins AttrInterpolator_0/clk] [get_bd_pins ClearBlock_0/clk] [get_bd_pins CommandProcessor_0/clk] [get_bd_pins ILA_AttrInterpolator/clk] [get_bd_pins ILA_IA/clk] [get_bd_pins ILA_TexSampler/clk] [get_bd_pins ILA_TriSetup/clk] [get_bd_pins IndexBufferCache_0/clk] [get_bd_pins IndexBufferCache_1/clk] [get_bd_pins InputAssembler2_0/clk] [get_bd_pins InterpolatorRecip/clk] [get_bd_pins MemorySystem/c0_ddr4_ui_clk] [get_bd_pins ROP_0/clk] [get_bd_pins Rasterizer_0/clk] [get_bd_pins ScanoutSystem/clk_in1] [get_bd_pins SerialPacketSystem/rd_clk] [get_bd_pins ShaderCoreSystem/clk_0] [get_bd_pins StatsCollector_0/clk] [get_bd_pins TexSample_0/clk] [get_bd_pins TextureCache_128x128x32bits/clka] [get_bd_pins TriSetupRecip/clk] [get_bd_pins TriSetup_0/clk] [get_bd_pins TriWorkCache_0/clk] [get_bd_pins VBO_FIFO/clk] [get_bd_pins VertexBatchBuilder_0/clk] [get_bd_pins fifo_generator_0/clk] [get_bd_pins ila_333_250/clk] [get_bd_pins rast_out_fifo/clk] [get_bd_pins vio_0/clk]
+  connect_bd_net -net ddr4_0_addn_ui_clkout1 [get_bd_pins MemorySystem/addn_ui_clkout1] [get_bd_pins ScanoutSystem/clk_in1] [get_bd_pins SerialPacketSystem/s_axi_aclk] [get_bd_pins proc_sys_reset_0/slowest_sync_clk]
+  connect_bd_net -net ddr4_0_c0_ddr4_ui_clk [get_bd_pins AttrInterpolator_0/clk] [get_bd_pins ClearBlock_0/clk] [get_bd_pins CommandProcessor_0/clk] [get_bd_pins ILA_AttrInterpolator/clk] [get_bd_pins ILA_IA/clk] [get_bd_pins ILA_TexSampler/clk] [get_bd_pins ILA_TriSetup/clk] [get_bd_pins IndexBufferCache_0/clk] [get_bd_pins IndexBufferCache_1/clk] [get_bd_pins InputAssembler2_0/clk] [get_bd_pins InterpolatorRecip/clk] [get_bd_pins MemorySystem/c0_ddr4_ui_clk] [get_bd_pins ROP_0/clk] [get_bd_pins Rasterizer_0/clk] [get_bd_pins SerialPacketSystem/rd_clk] [get_bd_pins ShaderCoreSystem/clk_0] [get_bd_pins StatsCollector_0/clk] [get_bd_pins TexSample_0/clk] [get_bd_pins TextureCache_128x128x32bits/clka] [get_bd_pins TriSetupRecip/clk] [get_bd_pins TriSetup_0/clk] [get_bd_pins TriWorkCache_0/clk] [get_bd_pins VBO_FIFO/clk] [get_bd_pins VertexBatchBuilder_0/clk] [get_bd_pins fifo_generator_0/clk] [get_bd_pins ila_333_250/clk] [get_bd_pins rast_out_fifo/clk] [get_bd_pins vio_0/clk]
   connect_bd_net -net fifo_generator_0_dout [get_bd_pins ILA_IA/probe14] [get_bd_pins ShaderCoreSystem/VERTBATCH_FIFO_0_rd_data] [get_bd_pins fifo_generator_0/dout]
   connect_bd_net -net no_reset_dout [get_bd_pins no_reset/dout] [get_bd_pins rast_out_fifo/srst]
   connect_bd_net -net placeholder_texcfg_dout [get_bd_pins TriSetup_0/TEXCFG_nointerpolation] [get_bd_pins placeholder_texcfg/dout]

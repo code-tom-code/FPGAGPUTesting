@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
-<EDKSYSTEM EDWVERSION="1.2" TIMESTAMP="Sat Jul 23 13:21:56 2022" VIVADOVERSION="2018.1">
+<EDKSYSTEM EDWVERSION="1.2" TIMESTAMP="Tue Jul 26 19:42:13 2022" VIVADOVERSION="2018.1">
 
   <SYSTEMINFO ARCH="kintexuplus" BOARD="xilinx.com:kcu116:part0:1.3" DEVICE="xcku5p" NAME="design_1" PACKAGE="ffvb676" SPEEDGRADE="-2"/>
 
@@ -11,32 +11,47 @@
         <CONNECTION INSTANCE="MemorySystem_ddr4_0" PORT="sys_rst"/>
         <CONNECTION INSTANCE="SerialPacketSystem_ValidIncomingPacketsFIFO" PORT="srst"/>
         <CONNECTION INSTANCE="SerialPacketSystem_ReturnOutputPacketsFIFO" PORT="srst"/>
-        <CONNECTION INSTANCE="ScanoutSystem_scanout_clk_25_175_x8" PORT="reset"/>
+        <CONNECTION INSTANCE="ScanoutSystem_scanout_clk_25_175_x10" PORT="reset"/>
       </CONNECTIONS>
     </PORT>
-    <PORT DIR="O" NAME="vsync" SIGIS="data" SIGNAME="ScanoutSystem_ScanOut_0_vsync">
+    <PORT DIR="O" NAME="tmds_blue_p" SIGIS="undef" SIGNAME="ScanoutSystem_obuf_outputs_0_out_blue_p">
       <CONNECTIONS>
-        <CONNECTION INSTANCE="ScanoutSystem_ScanOut_0" PORT="vsync"/>
+        <CONNECTION INSTANCE="ScanoutSystem_obuf_outputs_0" PORT="out_blue_p"/>
       </CONNECTIONS>
     </PORT>
-    <PORT DIR="O" NAME="hsync" SIGIS="data" SIGNAME="ScanoutSystem_ScanOut_0_hsync">
+    <PORT DIR="O" NAME="tmds_blue_n" SIGIS="undef" SIGNAME="ScanoutSystem_obuf_outputs_0_out_blue_n">
       <CONNECTIONS>
-        <CONNECTION INSTANCE="ScanoutSystem_ScanOut_0" PORT="hsync"/>
+        <CONNECTION INSTANCE="ScanoutSystem_obuf_outputs_0" PORT="out_blue_n"/>
       </CONNECTIONS>
     </PORT>
-    <PORT DIR="O" LEFT="4" NAME="red" RIGHT="0" SIGIS="data" SIGNAME="ScanoutSystem_R8G8B8Quantizer_0_outRedBits">
+    <PORT DIR="O" NAME="tmds_green_p" SIGIS="undef" SIGNAME="ScanoutSystem_obuf_outputs_0_out_green_p">
       <CONNECTIONS>
-        <CONNECTION INSTANCE="ScanoutSystem_R8G8B8Quantizer_0" PORT="outRedBits"/>
+        <CONNECTION INSTANCE="ScanoutSystem_obuf_outputs_0" PORT="out_green_p"/>
       </CONNECTIONS>
     </PORT>
-    <PORT DIR="O" LEFT="4" NAME="green" RIGHT="0" SIGIS="data" SIGNAME="ScanoutSystem_R8G8B8Quantizer_0_outGreenBits">
+    <PORT DIR="O" NAME="tmds_green_n" SIGIS="undef" SIGNAME="ScanoutSystem_obuf_outputs_0_out_green_n">
       <CONNECTIONS>
-        <CONNECTION INSTANCE="ScanoutSystem_R8G8B8Quantizer_0" PORT="outGreenBits"/>
+        <CONNECTION INSTANCE="ScanoutSystem_obuf_outputs_0" PORT="out_green_n"/>
       </CONNECTIONS>
     </PORT>
-    <PORT DIR="O" LEFT="3" NAME="blue" RIGHT="0" SIGIS="data" SIGNAME="ScanoutSystem_R8G8B8Quantizer_0_outBlueBits">
+    <PORT DIR="O" NAME="tmds_red_p" SIGIS="undef" SIGNAME="ScanoutSystem_obuf_outputs_0_out_red_p">
       <CONNECTIONS>
-        <CONNECTION INSTANCE="ScanoutSystem_R8G8B8Quantizer_0" PORT="outBlueBits"/>
+        <CONNECTION INSTANCE="ScanoutSystem_obuf_outputs_0" PORT="out_red_p"/>
+      </CONNECTIONS>
+    </PORT>
+    <PORT DIR="O" NAME="tmds_red_n" SIGIS="undef" SIGNAME="ScanoutSystem_obuf_outputs_0_out_red_n">
+      <CONNECTIONS>
+        <CONNECTION INSTANCE="ScanoutSystem_obuf_outputs_0" PORT="out_red_n"/>
+      </CONNECTIONS>
+    </PORT>
+    <PORT DIR="O" NAME="tmds_cl_p" SIGIS="undef" SIGNAME="ScanoutSystem_obuf_outputs_0_out_cl_p">
+      <CONNECTIONS>
+        <CONNECTION INSTANCE="ScanoutSystem_obuf_outputs_0" PORT="out_cl_p"/>
+      </CONNECTIONS>
+    </PORT>
+    <PORT DIR="O" NAME="tmds_cl_n" SIGIS="undef" SIGNAME="ScanoutSystem_obuf_outputs_0_out_cl_n">
+      <CONNECTIONS>
+        <CONNECTION INSTANCE="ScanoutSystem_obuf_outputs_0" PORT="out_cl_n"/>
       </CONNECTIONS>
     </PORT>
     <PORT DIR="I" NAME="rs232_uart_rxd" SIGIS="undef"/>
@@ -818,6 +833,16 @@
         <PORT DIR="O" NAME="SCANOUT_ScanEnable" SIGIS="undef" SIGNAME="CommandProcessor_0_SCANOUT_ScanEnable">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ScanoutSystem_ScanOut_0" PORT="CMD_ScanoutEnable"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="SCANOUT_InvertOutputColor" SIGIS="undef" SIGNAME="CommandProcessor_0_SCANOUT_InvertOutputColor">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ScanoutSystem_ScanOut_0" PORT="CMD_InvertOutputColor"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="8" NAME="SCANOUT_OutputColorChannels" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_SCANOUT_OutputColorChannels">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ScanoutSystem_ScanOut_0" PORT="CMD_OutputColorChannels"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" NAME="CLEAR_ClearBlockBeginSignal" SIGIS="undef" SIGNAME="CommandProcessor_0_CLEAR_ClearBlockBeginSignal">
@@ -21292,7 +21317,7 @@
         <PARAMETER NAME="C_WR_ACK_LOW" VALUE="0"/>
         <PARAMETER NAME="C_WR_DATA_COUNT_WIDTH" VALUE="9"/>
         <PARAMETER NAME="C_WR_DEPTH" VALUE="512"/>
-        <PARAMETER NAME="C_WR_FREQ" VALUE="201"/>
+        <PARAMETER NAME="C_WR_FREQ" VALUE="252"/>
         <PARAMETER NAME="C_WR_PNTR_WIDTH" VALUE="9"/>
         <PARAMETER NAME="C_WR_RESPONSE_LATENCY" VALUE="1"/>
         <PARAMETER NAME="C_MSGON_VAL" VALUE="1"/>
@@ -21478,7 +21503,7 @@
         <PARAMETER NAME="Read_Data_Count_Width" VALUE="9"/>
         <PARAMETER NAME="Disable_Timing_Violations" VALUE="false"/>
         <PARAMETER NAME="Read_Clock_Frequency" VALUE="333"/>
-        <PARAMETER NAME="Write_Clock_Frequency" VALUE="201"/>
+        <PARAMETER NAME="Write_Clock_Frequency" VALUE="252"/>
         <PARAMETER NAME="Programmable_Full_Type" VALUE="No_Programmable_Full_Threshold"/>
         <PARAMETER NAME="Full_Threshold_Assert_Value" VALUE="511"/>
         <PARAMETER NAME="Full_Threshold_Negate_Value" VALUE="510"/>
@@ -21607,9 +21632,9 @@
       </PARAMETERS>
       <PORTS>
         <PORT DIR="I" NAME="srst" SIGIS="undef"/>
-        <PORT CLKFREQUENCY="201398913" DIR="I" NAME="wr_clk" SIGIS="clk" SIGNAME="ScanoutSystem_scanout_clk_25_175_x8_clk_out1">
+        <PORT CLKFREQUENCY="251750000" DIR="I" NAME="wr_clk" SIGIS="clk" SIGNAME="ScanoutSystem_scanout_clk_25_175_x10_clk_x10">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="ScanoutSystem_scanout_clk_25_175_x8" PORT="clk_out1"/>
+            <CONNECTION INSTANCE="ScanoutSystem_scanout_clk_25_175_x10" PORT="clk_x10"/>
           </CONNECTIONS>
         </PORT>
         <PORT CLKFREQUENCY="333250000" DIR="I" NAME="rd_clk" SIGIS="clk" SIGNAME="MemorySystem_ddr4_0_c0_ddr4_ui_clk">
@@ -21716,7 +21741,7 @@
         <PARAMETER NAME="C_PROG_FULL_TYPE" VALUE="0"/>
         <PARAMETER NAME="C_RD_DATA_COUNT_WIDTH" VALUE="9"/>
         <PARAMETER NAME="C_RD_DEPTH" VALUE="512"/>
-        <PARAMETER NAME="C_RD_FREQ" VALUE="201"/>
+        <PARAMETER NAME="C_RD_FREQ" VALUE="252"/>
         <PARAMETER NAME="C_RD_PNTR_WIDTH" VALUE="9"/>
         <PARAMETER NAME="C_UNDERFLOW_LOW" VALUE="0"/>
         <PARAMETER NAME="C_USE_DOUT_RST" VALUE="1"/>
@@ -21915,7 +21940,7 @@
         <PARAMETER NAME="Read_Data_Count" VALUE="false"/>
         <PARAMETER NAME="Read_Data_Count_Width" VALUE="9"/>
         <PARAMETER NAME="Disable_Timing_Violations" VALUE="false"/>
-        <PARAMETER NAME="Read_Clock_Frequency" VALUE="201"/>
+        <PARAMETER NAME="Read_Clock_Frequency" VALUE="252"/>
         <PARAMETER NAME="Write_Clock_Frequency" VALUE="333"/>
         <PARAMETER NAME="Programmable_Full_Type" VALUE="No_Programmable_Full_Threshold"/>
         <PARAMETER NAME="Full_Threshold_Assert_Value" VALUE="511"/>
@@ -22050,9 +22075,9 @@
             <CONNECTION INSTANCE="MemorySystem_ddr4_0" PORT="c0_ddr4_ui_clk"/>
           </CONNECTIONS>
         </PORT>
-        <PORT CLKFREQUENCY="201398913" DIR="I" NAME="rd_clk" SIGIS="clk" SIGNAME="ScanoutSystem_scanout_clk_25_175_x8_clk_out1">
+        <PORT CLKFREQUENCY="251750000" DIR="I" NAME="rd_clk" SIGIS="clk" SIGNAME="ScanoutSystem_scanout_clk_25_175_x10_clk_x10">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="ScanoutSystem_scanout_clk_25_175_x8" PORT="clk_out1"/>
+            <CONNECTION INSTANCE="ScanoutSystem_scanout_clk_25_175_x10" PORT="clk_x10"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="I" LEFT="285" NAME="din" RIGHT="0" SIGIS="undef" SIGNAME="MemorySystem_MemoryController_0_ScanoutReadResponsesFIFO_wr_data">
@@ -25003,13 +25028,11 @@
             <CONNECTION INSTANCE="StatsCollector_0" PORT="clk"/>
             <CONNECTION INSTANCE="ROP_0" PORT="clk"/>
             <CONNECTION INSTANCE="TexSample_0" PORT="clk"/>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="clk"/>
             <CONNECTION INSTANCE="VertexBatchBuilder_0" PORT="clk"/>
             <CONNECTION INSTANCE="InputAssembler2_0" PORT="clk"/>
             <CONNECTION INSTANCE="vio_0" PORT="clk"/>
             <CONNECTION INSTANCE="SerialPacketSystem_ValidIncomingPacketsFIFO" PORT="rd_clk"/>
             <CONNECTION INSTANCE="SerialPacketSystem_ReturnOutputPacketsFIFO" PORT="wr_clk"/>
-            <CONNECTION INSTANCE="ScanoutSystem_scanout_clk_25_175_x8" PORT="clk_in1"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_InstructionCache" PORT="clka"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_VertexStreamCache_0" PORT="clk"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_ConstantBuffer_0" PORT="clk"/>
@@ -25018,8 +25041,9 @@
             <CONNECTION INSTANCE="ShaderCoreSystem_FloatALU_1" PORT="clk"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_FloatALU_2" PORT="clk"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_FloatALU_3" PORT="clk"/>
-            <CONNECTION INSTANCE="ShaderCoreSystem_GPRQuadSystem_GPRQuad2_0" PORT="clk"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_ShaderCore_0" PORT="clk"/>
+            <CONNECTION INSTANCE="ShaderCoreSystem_GPRQuadSystem_GPRQuad2_0" PORT="clk"/>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="clk"/>
             <CONNECTION INSTANCE="MemorySystem_ScanoutReadRequestsFIFO" PORT="rd_clk"/>
             <CONNECTION INSTANCE="MemorySystem_ZStencilReadRequestsFIFO" PORT="rd_clk"/>
             <CONNECTION INSTANCE="MemorySystem_ZStencilReadRequestsFIFO" PORT="wr_clk"/>
@@ -25243,6 +25267,7 @@
             <CONNECTION INSTANCE="SerialPacketSystem_ila_250" PORT="clk"/>
             <CONNECTION INSTANCE="SerialPacketSystem_axi_uartlite_0" PORT="s_axi_aclk"/>
             <CONNECTION INSTANCE="SerialPacketSystem_PacketProcessor_0" PORT="M_AXI_ACLK"/>
+            <CONNECTION INSTANCE="ScanoutSystem_scanout_clk_25_175_x10" PORT="clk_in1"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="I" NAME="sys_rst" SIGIS="rst" SIGNAME="External_Ports_reset">
@@ -26014,53 +26039,10 @@
         </PORT>
         <PORT DIR="O" NAME="resetn" SIGIS="rst" SIGNAME="ResetN_UntilClockLoc_0_resetn">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="resetn"/>
             <CONNECTION INSTANCE="MemorySystem_MemoryController_0" PORT="M_AXI_ARESETN"/>
             <CONNECTION INSTANCE="SerialPacketSystem_axi_uartlite_0" PORT="s_axi_aresetn"/>
             <CONNECTION INSTANCE="SerialPacketSystem_PacketProcessor_0" PORT="M_AXI_ARESETN"/>
-          </CONNECTIONS>
-        </PORT>
-      </PORTS>
-      <BUSINTERFACES/>
-    </MODULE>
-    <MODULE FULLNAME="/ScanoutSystem/R8G8B8Quantizer_0" HWVERSION="1.0" INSTANCE="ScanoutSystem_R8G8B8Quantizer_0" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="R8G8B8Quantizer" VLNV="xilinx.com:module_ref:R8G8B8Quantizer:1.0">
-      <DOCUMENTS/>
-      <PARAMETERS>
-        <PARAMETER NAME="R_OUTPUT_BITS" VALUE="5"/>
-        <PARAMETER NAME="G_OUTPUT_BITS" VALUE="5"/>
-        <PARAMETER NAME="B_OUTPUT_BITS" VALUE="4"/>
-        <PARAMETER NAME="Component_Name" VALUE="design_1_R8G8B8Quantizer_0_0"/>
-        <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
-      </PARAMETERS>
-      <PORTS>
-        <PORT DIR="I" LEFT="7" NAME="inRed8" RIGHT="0" SIGIS="undef" SIGNAME="ScanoutSystem_ScanOut_0_outR">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="ScanoutSystem_ScanOut_0" PORT="outR"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" LEFT="7" NAME="inGreen8" RIGHT="0" SIGIS="undef" SIGNAME="ScanoutSystem_ScanOut_0_outG">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="ScanoutSystem_ScanOut_0" PORT="outG"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" LEFT="7" NAME="inBlue8" RIGHT="0" SIGIS="undef" SIGNAME="ScanoutSystem_ScanOut_0_outB">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="ScanoutSystem_ScanOut_0" PORT="outB"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="O" LEFT="4" NAME="outRedBits" RIGHT="0" SIGIS="undef" SIGNAME="ScanoutSystem_R8G8B8Quantizer_0_outRedBits">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="External_Ports" PORT="red"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="O" LEFT="4" NAME="outGreenBits" RIGHT="0" SIGIS="undef" SIGNAME="ScanoutSystem_R8G8B8Quantizer_0_outGreenBits">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="External_Ports" PORT="green"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="O" LEFT="3" NAME="outBlueBits" RIGHT="0" SIGIS="undef" SIGNAME="ScanoutSystem_R8G8B8Quantizer_0_outBlueBits">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="External_Ports" PORT="blue"/>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="resetn"/>
           </CONNECTIONS>
         </PORT>
       </PORTS>
@@ -26073,9 +26055,9 @@
         <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
       </PARAMETERS>
       <PORTS>
-        <PORT CLKFREQUENCY="201398913" DIR="I" NAME="clk" SIGIS="clk" SIGNAME="ScanoutSystem_scanout_clk_25_175_x8_clk_out1">
+        <PORT CLKFREQUENCY="251750000" DIR="I" NAME="clk_x10" SIGIS="clk" SIGNAME="ScanoutSystem_scanout_clk_25_175_x10_clk_x10">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="ScanoutSystem_scanout_clk_25_175_x8" PORT="clk_out1"/>
+            <CONNECTION INSTANCE="ScanoutSystem_scanout_clk_25_175_x10" PORT="clk_x10"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="I" LEFT="29" NAME="CMD_BaseRenderTargetAddr" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_SCANOUT_RenderTargetBaseAddr">
@@ -26086,6 +26068,16 @@
         <PORT DIR="I" NAME="CMD_ScanoutEnable" SIGIS="undef" SIGNAME="CommandProcessor_0_SCANOUT_ScanEnable">
           <CONNECTIONS>
             <CONNECTION INSTANCE="CommandProcessor_0" PORT="SCANOUT_ScanEnable"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="CMD_InvertOutputColor" SIGIS="undef" SIGNAME="CommandProcessor_0_SCANOUT_InvertOutputColor">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="SCANOUT_InvertOutputColor"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="8" NAME="CMD_OutputColorChannels" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_SCANOUT_OutputColorChannels">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="SCANOUT_OutputColorChannels"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="9" NAME="outXCoord" RIGHT="0" SIGIS="undef"/>
@@ -26120,30 +26112,40 @@
             <CONNECTION INSTANCE="MemorySystem_ScanoutReadResponsesFIFO" PORT="rd_en"/>
           </CONNECTIONS>
         </PORT>
+        <PORT DIR="O" NAME="out_scanout_enable" SIGIS="undef" SIGNAME="ScanoutSystem_ScanOut_0_out_scanout_enable">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ScanoutSystem_dvid_0" PORT="scanout_en"/>
+          </CONNECTIONS>
+        </PORT>
         <PORT DIR="O" NAME="vsync" SIGIS="undef" SIGNAME="ScanoutSystem_ScanOut_0_vsync">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="External_Ports" PORT="vsync"/>
             <CONNECTION INSTANCE="CommandProcessor_0" PORT="CMD_VSync"/>
+            <CONNECTION INSTANCE="ScanoutSystem_dvid_0" PORT="vsync"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" NAME="hsync" SIGIS="undef" SIGNAME="ScanoutSystem_ScanOut_0_hsync">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="External_Ports" PORT="hsync"/>
+            <CONNECTION INSTANCE="ScanoutSystem_dvid_0" PORT="hsync"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="blank" SIGIS="undef" SIGNAME="ScanoutSystem_ScanOut_0_blank">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ScanoutSystem_dvid_0" PORT="blank"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="7" NAME="outR" RIGHT="0" SIGIS="undef" SIGNAME="ScanoutSystem_ScanOut_0_outR">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="ScanoutSystem_R8G8B8Quantizer_0" PORT="inRed8"/>
+            <CONNECTION INSTANCE="ScanoutSystem_dvid_0" PORT="red_p"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="7" NAME="outG" RIGHT="0" SIGIS="undef" SIGNAME="ScanoutSystem_ScanOut_0_outG">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="ScanoutSystem_R8G8B8Quantizer_0" PORT="inGreen8"/>
+            <CONNECTION INSTANCE="ScanoutSystem_dvid_0" PORT="green_p"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="7" NAME="outB" RIGHT="0" SIGIS="undef" SIGNAME="ScanoutSystem_ScanOut_0_outB">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="ScanoutSystem_R8G8B8Quantizer_0" PORT="inBlue8"/>
+            <CONNECTION INSTANCE="ScanoutSystem_dvid_0" PORT="blue_p"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="3" NAME="DBG_ScanoutLoadProcess_State" RIGHT="0" SIGIS="undef"/>
@@ -26165,12 +26167,157 @@
         </BUSINTERFACE>
       </BUSINTERFACES>
     </MODULE>
-    <MODULE FULLNAME="/ScanoutSystem/scanout_clk_25_175_x8" HWVERSION="6.0" INSTANCE="ScanoutSystem_scanout_clk_25_175_x8" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="clk_wiz" VLNV="xilinx.com:ip:clk_wiz:6.0">
+    <MODULE FULLNAME="/ScanoutSystem/dvid_0" HWVERSION="1.0" INSTANCE="ScanoutSystem_dvid_0" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="dvid" VLNV="xilinx.com:module_ref:dvid:1.0">
+      <DOCUMENTS/>
+      <PARAMETERS>
+        <PARAMETER NAME="Component_Name" VALUE="design_1_dvid_0_0"/>
+        <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
+      </PARAMETERS>
+      <PORTS>
+        <PORT CLKFREQUENCY="251750000" DIR="I" NAME="clk_x10" SIGIS="clk" SIGNAME="ScanoutSystem_scanout_clk_25_175_x10_clk_x10">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ScanoutSystem_scanout_clk_25_175_x10" PORT="clk_x10"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT CLKFREQUENCY="25175000" DIR="I" NAME="clk_pixel" SIGIS="clk" SIGNAME="ScanoutSystem_scanout_clk_25_175_x10_pixelclk_x1">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ScanoutSystem_scanout_clk_25_175_x10" PORT="pixelclk_x1"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="scanout_en" SIGIS="undef" SIGNAME="ScanoutSystem_ScanOut_0_out_scanout_enable">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ScanoutSystem_ScanOut_0" PORT="out_scanout_enable"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="7" NAME="red_p" RIGHT="0" SIGIS="undef" SIGNAME="ScanoutSystem_ScanOut_0_outR">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ScanoutSystem_ScanOut_0" PORT="outR"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="7" NAME="green_p" RIGHT="0" SIGIS="undef" SIGNAME="ScanoutSystem_ScanOut_0_outG">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ScanoutSystem_ScanOut_0" PORT="outG"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="7" NAME="blue_p" RIGHT="0" SIGIS="undef" SIGNAME="ScanoutSystem_ScanOut_0_outB">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ScanoutSystem_ScanOut_0" PORT="outB"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="blank" SIGIS="undef" SIGNAME="ScanoutSystem_ScanOut_0_blank">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ScanoutSystem_ScanOut_0" PORT="blank"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="hsync" SIGIS="undef" SIGNAME="ScanoutSystem_ScanOut_0_hsync">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ScanoutSystem_ScanOut_0" PORT="hsync"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="vsync" SIGIS="undef" SIGNAME="ScanoutSystem_ScanOut_0_vsync">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ScanoutSystem_ScanOut_0" PORT="vsync"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="red_s" SIGIS="undef" SIGNAME="ScanoutSystem_dvid_0_red_s">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ScanoutSystem_obuf_outputs_0" PORT="red_s"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="green_s" SIGIS="undef" SIGNAME="ScanoutSystem_dvid_0_green_s">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ScanoutSystem_obuf_outputs_0" PORT="green_s"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="blue_s" SIGIS="undef" SIGNAME="ScanoutSystem_dvid_0_blue_s">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ScanoutSystem_obuf_outputs_0" PORT="blue_s"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="cl_s" SIGIS="undef" SIGNAME="ScanoutSystem_dvid_0_cl_s">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ScanoutSystem_obuf_outputs_0" PORT="cl_s"/>
+          </CONNECTIONS>
+        </PORT>
+      </PORTS>
+      <BUSINTERFACES/>
+    </MODULE>
+    <MODULE FULLNAME="/ScanoutSystem/obuf_outputs_0" HWVERSION="1.0" INSTANCE="ScanoutSystem_obuf_outputs_0" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="obuf_outputs" VLNV="xilinx.com:module_ref:obuf_outputs:1.0">
+      <DOCUMENTS/>
+      <PARAMETERS>
+        <PARAMETER NAME="Component_Name" VALUE="design_1_obuf_outputs_0_0"/>
+        <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
+      </PARAMETERS>
+      <PORTS>
+        <PORT DIR="I" NAME="red_s" SIGIS="undef" SIGNAME="ScanoutSystem_dvid_0_red_s">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ScanoutSystem_dvid_0" PORT="red_s"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="green_s" SIGIS="undef" SIGNAME="ScanoutSystem_dvid_0_green_s">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ScanoutSystem_dvid_0" PORT="green_s"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="blue_s" SIGIS="undef" SIGNAME="ScanoutSystem_dvid_0_blue_s">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ScanoutSystem_dvid_0" PORT="blue_s"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="cl_s" SIGIS="undef" SIGNAME="ScanoutSystem_dvid_0_cl_s">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ScanoutSystem_dvid_0" PORT="cl_s"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="out_red_p" SIGIS="undef" SIGNAME="ScanoutSystem_obuf_outputs_0_out_red_p">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="External_Ports" PORT="tmds_red_p"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="out_red_n" SIGIS="undef" SIGNAME="ScanoutSystem_obuf_outputs_0_out_red_n">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="External_Ports" PORT="tmds_red_n"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="out_green_p" SIGIS="undef" SIGNAME="ScanoutSystem_obuf_outputs_0_out_green_p">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="External_Ports" PORT="tmds_green_p"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="out_green_n" SIGIS="undef" SIGNAME="ScanoutSystem_obuf_outputs_0_out_green_n">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="External_Ports" PORT="tmds_green_n"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="out_blue_p" SIGIS="undef" SIGNAME="ScanoutSystem_obuf_outputs_0_out_blue_p">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="External_Ports" PORT="tmds_blue_p"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="out_blue_n" SIGIS="undef" SIGNAME="ScanoutSystem_obuf_outputs_0_out_blue_n">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="External_Ports" PORT="tmds_blue_n"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="out_cl_p" SIGIS="undef" SIGNAME="ScanoutSystem_obuf_outputs_0_out_cl_p">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="External_Ports" PORT="tmds_cl_p"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="out_cl_n" SIGIS="undef" SIGNAME="ScanoutSystem_obuf_outputs_0_out_cl_n">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="External_Ports" PORT="tmds_cl_n"/>
+          </CONNECTIONS>
+        </PORT>
+      </PORTS>
+      <BUSINTERFACES/>
+    </MODULE>
+    <MODULE FULLNAME="/ScanoutSystem/scanout_clk_25_175_x10" HWVERSION="6.0" INSTANCE="ScanoutSystem_scanout_clk_25_175_x10" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="clk_wiz" VLNV="xilinx.com:ip:clk_wiz:6.0">
       <DOCUMENTS>
         <DOCUMENT SOURCE="http://www.xilinx.com/cgi-bin/docs/ipdoc?c=clk_wiz;v=v6_0;d=pg065-clk-wiz.pdf"/>
       </DOCUMENTS>
       <PARAMETERS>
-        <PARAMETER NAME="C_CLKOUT2_USED" VALUE="0"/>
+        <PARAMETER NAME="C_CLKOUT2_USED" VALUE="1"/>
         <PARAMETER NAME="C_USER_CLK_FREQ0" VALUE="100.0"/>
         <PARAMETER NAME="C_AUTO_PRIMITIVE" VALUE="MMCM"/>
         <PARAMETER NAME="C_USER_CLK_FREQ1" VALUE="100.0"/>
@@ -26211,7 +26358,7 @@
         <PARAMETER NAME="C_USE_FAST_SIMULATION" VALUE="0"/>
         <PARAMETER NAME="C_PRIMTYPE_SEL" VALUE="AUTO"/>
         <PARAMETER NAME="C_USE_CLK_VALID" VALUE="0"/>
-        <PARAMETER NAME="C_PRIM_IN_FREQ" VALUE="333.250"/>
+        <PARAMETER NAME="C_PRIM_IN_FREQ" VALUE="250.0"/>
         <PARAMETER NAME="C_PRIM_IN_TIMEPERIOD" VALUE="10.000"/>
         <PARAMETER NAME="C_IN_FREQ_UNITS" VALUE="Units_MHz"/>
         <PARAMETER NAME="C_SECONDARY_IN_FREQ" VALUE="100.000"/>
@@ -26229,7 +26376,7 @@
         <PARAMETER NAME="C_USE_POWER_DOWN" VALUE="0"/>
         <PARAMETER NAME="C_USE_STATUS" VALUE="0"/>
         <PARAMETER NAME="C_USE_FREEZE" VALUE="0"/>
-        <PARAMETER NAME="C_NUM_OUT_CLKS" VALUE="1"/>
+        <PARAMETER NAME="C_NUM_OUT_CLKS" VALUE="2"/>
         <PARAMETER NAME="C_CLKOUT1_DRIVES" VALUE="BUFG"/>
         <PARAMETER NAME="C_CLKOUT2_DRIVES" VALUE="BUFG"/>
         <PARAMETER NAME="C_CLKOUT3_DRIVES" VALUE="BUFG"/>
@@ -26238,19 +26385,19 @@
         <PARAMETER NAME="C_CLKOUT6_DRIVES" VALUE="BUFG"/>
         <PARAMETER NAME="C_CLKOUT7_DRIVES" VALUE="BUFG"/>
         <PARAMETER NAME="C_INCLK_SUM_ROW0" VALUE="Input Clock   Freq (MHz)    Input Jitter (UI)"/>
-        <PARAMETER NAME="C_INCLK_SUM_ROW1" VALUE="__primary_________333.250____________0.010"/>
+        <PARAMETER NAME="C_INCLK_SUM_ROW1" VALUE="__primary___________250.0____________0.010"/>
         <PARAMETER NAME="C_INCLK_SUM_ROW2" VALUE="no_secondary_input_clock"/>
         <PARAMETER NAME="C_OUTCLK_SUM_ROW0A" VALUE="Output     Output      Phase    Duty Cycle   Pk-to-Pk     Phase"/>
         <PARAMETER NAME="C_OUTCLK_SUM_ROW0B" VALUE="Clock     Freq (MHz)  (degrees)    (%)     Jitter (ps)  Error (ps)"/>
-        <PARAMETER NAME="C_OUTCLK_SUM_ROW1" VALUE="clk_out1___201.399______0.000______50.0______109.744____115.734"/>
-        <PARAMETER NAME="C_OUTCLK_SUM_ROW2" VALUE="no_CLK_OUT2_output"/>
+        <PARAMETER NAME="C_OUTCLK_SUM_ROW1" VALUE="_clk_x10___251.750______0.000______50.0______169.784____328.812"/>
+        <PARAMETER NAME="C_OUTCLK_SUM_ROW2" VALUE="pixelclk_x1____25.175______0.000______50.0______236.903____328.812"/>
         <PARAMETER NAME="C_OUTCLK_SUM_ROW3" VALUE="no_CLK_OUT3_output"/>
         <PARAMETER NAME="C_OUTCLK_SUM_ROW4" VALUE="no_CLK_OUT4_output"/>
         <PARAMETER NAME="C_OUTCLK_SUM_ROW5" VALUE="no_CLK_OUT5_output"/>
         <PARAMETER NAME="C_OUTCLK_SUM_ROW6" VALUE="no_CLK_OUT6_output"/>
         <PARAMETER NAME="C_OUTCLK_SUM_ROW7" VALUE="no_CLK_OUT7_output"/>
-        <PARAMETER NAME="C_CLKOUT1_REQUESTED_OUT_FREQ" VALUE="201.4"/>
-        <PARAMETER NAME="C_CLKOUT2_REQUESTED_OUT_FREQ" VALUE="100.000"/>
+        <PARAMETER NAME="C_CLKOUT1_REQUESTED_OUT_FREQ" VALUE="251.75"/>
+        <PARAMETER NAME="C_CLKOUT2_REQUESTED_OUT_FREQ" VALUE="25.175"/>
         <PARAMETER NAME="C_CLKOUT3_REQUESTED_OUT_FREQ" VALUE="100.000"/>
         <PARAMETER NAME="C_CLKOUT4_REQUESTED_OUT_FREQ" VALUE="100.000"/>
         <PARAMETER NAME="C_CLKOUT5_REQUESTED_OUT_FREQ" VALUE="100.000"/>
@@ -26270,8 +26417,8 @@
         <PARAMETER NAME="C_CLKOUT5_REQUESTED_DUTY_CYCLE" VALUE="50.000"/>
         <PARAMETER NAME="C_CLKOUT6_REQUESTED_DUTY_CYCLE" VALUE="50.000"/>
         <PARAMETER NAME="C_CLKOUT7_REQUESTED_DUTY_CYCLE" VALUE="50.000"/>
-        <PARAMETER NAME="C_CLKOUT1_OUT_FREQ" VALUE="201.399"/>
-        <PARAMETER NAME="C_CLKOUT2_OUT_FREQ" VALUE="100.000"/>
+        <PARAMETER NAME="C_CLKOUT1_OUT_FREQ" VALUE="251.750"/>
+        <PARAMETER NAME="C_CLKOUT2_OUT_FREQ" VALUE="25.175"/>
         <PARAMETER NAME="C_CLKOUT3_OUT_FREQ" VALUE="100.000"/>
         <PARAMETER NAME="C_CLKOUT4_OUT_FREQ" VALUE="100.000"/>
         <PARAMETER NAME="C_CLKOUT5_OUT_FREQ" VALUE="100.000"/>
@@ -26285,7 +26432,7 @@
         <PARAMETER NAME="C_CLKOUT6_PHASE" VALUE="0.000"/>
         <PARAMETER NAME="C_CLKOUT7_PHASE" VALUE="0.000"/>
         <PARAMETER NAME="C_CLKOUT1_DUTY_CYCLE" VALUE="50.0"/>
-        <PARAMETER NAME="C_CLKOUT2_DUTY_CYCLE" VALUE="50.000"/>
+        <PARAMETER NAME="C_CLKOUT2_DUTY_CYCLE" VALUE="50.0"/>
         <PARAMETER NAME="C_CLKOUT3_DUTY_CYCLE" VALUE="50.000"/>
         <PARAMETER NAME="C_CLKOUT4_DUTY_CYCLE" VALUE="50.000"/>
         <PARAMETER NAME="C_CLKOUT5_DUTY_CYCLE" VALUE="50.000"/>
@@ -26302,18 +26449,18 @@
         <PARAMETER NAME="C_CLKOUT7_SEQUENCE_NUMBER" VALUE="1"/>
         <PARAMETER NAME="C_MMCM_NOTES" VALUE="None"/>
         <PARAMETER NAME="C_MMCM_BANDWIDTH" VALUE="OPTIMIZED"/>
-        <PARAMETER NAME="C_MMCM_CLKFBOUT_MULT_F" VALUE="17.375"/>
-        <PARAMETER NAME="C_MMCM_CLKIN1_PERIOD" VALUE="3.001"/>
+        <PARAMETER NAME="C_MMCM_CLKFBOUT_MULT_F" VALUE="125.875"/>
+        <PARAMETER NAME="C_MMCM_CLKIN1_PERIOD" VALUE="4.000"/>
         <PARAMETER NAME="C_MMCM_CLKIN2_PERIOD" VALUE="10.0"/>
         <PARAMETER NAME="C_MMCM_CLKOUT4_CASCADE" VALUE="FALSE"/>
         <PARAMETER NAME="C_MMCM_CLOCK_HOLD" VALUE="FALSE"/>
         <PARAMETER NAME="C_MMCM_COMPENSATION" VALUE="AUTO"/>
-        <PARAMETER NAME="C_MMCM_DIVCLK_DIVIDE" VALUE="5"/>
+        <PARAMETER NAME="C_MMCM_DIVCLK_DIVIDE" VALUE="25"/>
         <PARAMETER NAME="C_MMCM_REF_JITTER1" VALUE="0.010"/>
         <PARAMETER NAME="C_MMCM_REF_JITTER2" VALUE="0.010"/>
         <PARAMETER NAME="C_MMCM_STARTUP_WAIT" VALUE="FALSE"/>
-        <PARAMETER NAME="C_MMCM_CLKOUT0_DIVIDE_F" VALUE="5.750"/>
-        <PARAMETER NAME="C_MMCM_CLKOUT1_DIVIDE" VALUE="1"/>
+        <PARAMETER NAME="C_MMCM_CLKOUT0_DIVIDE_F" VALUE="5.000"/>
+        <PARAMETER NAME="C_MMCM_CLKOUT1_DIVIDE" VALUE="50"/>
         <PARAMETER NAME="C_MMCM_CLKOUT2_DIVIDE" VALUE="1"/>
         <PARAMETER NAME="C_MMCM_CLKOUT3_DIVIDE" VALUE="1"/>
         <PARAMETER NAME="C_MMCM_CLKOUT4_DIVIDE" VALUE="1"/>
@@ -26374,8 +26521,8 @@
         <PARAMETER NAME="C_OVERRIDE_PLL" VALUE="0"/>
         <PARAMETER NAME="C_PRIMARY_PORT" VALUE="clk_in1"/>
         <PARAMETER NAME="C_SECONDARY_PORT" VALUE="clk_in2"/>
-        <PARAMETER NAME="C_CLK_OUT1_PORT" VALUE="clk_out1"/>
-        <PARAMETER NAME="C_CLK_OUT2_PORT" VALUE="clk_out2"/>
+        <PARAMETER NAME="C_CLK_OUT1_PORT" VALUE="clk_x10"/>
+        <PARAMETER NAME="C_CLK_OUT2_PORT" VALUE="pixelclk_x1"/>
         <PARAMETER NAME="C_CLK_OUT3_PORT" VALUE="clk_out3"/>
         <PARAMETER NAME="C_CLK_OUT4_PORT" VALUE="clk_out4"/>
         <PARAMETER NAME="C_CLK_OUT5_PORT" VALUE="clk_out5"/>
@@ -26406,7 +26553,7 @@
         <PARAMETER NAME="C_CLK_IN_SEL_PORT" VALUE="clk_in_sel"/>
         <PARAMETER NAME="C_INPUT_CLK_STOPPED_PORT" VALUE="input_clk_stopped"/>
         <PARAMETER NAME="C_CLKFB_STOPPED_PORT" VALUE="clkfb_stopped"/>
-        <PARAMETER NAME="C_CLKIN1_JITTER_PS" VALUE="30.0"/>
+        <PARAMETER NAME="C_CLKIN1_JITTER_PS" VALUE="40.0"/>
         <PARAMETER NAME="C_CLKIN2_JITTER_PS" VALUE="100.0"/>
         <PARAMETER NAME="C_PRIMITIVE" VALUE="MMCM"/>
         <PARAMETER NAME="C_SS_MODE" VALUE="CENTER_HIGH"/>
@@ -26444,12 +26591,12 @@
         <PARAMETER NAME="C_FILTER_1" VALUE="0000"/>
         <PARAMETER NAME="C_FILTER_2" VALUE="0000"/>
         <PARAMETER NAME="C_DIVIDE1_AUTO" VALUE="1"/>
-        <PARAMETER NAME="C_DIVIDE2_AUTO" VALUE="2.0140000000000002"/>
-        <PARAMETER NAME="C_DIVIDE3_AUTO" VALUE="2.0140000000000002"/>
-        <PARAMETER NAME="C_DIVIDE4_AUTO" VALUE="2.0140000000000002"/>
-        <PARAMETER NAME="C_DIVIDE5_AUTO" VALUE="2.0140000000000002"/>
-        <PARAMETER NAME="C_DIVIDE6_AUTO" VALUE="2.0140000000000002"/>
-        <PARAMETER NAME="C_DIVIDE7_AUTO" VALUE="2.0140000000000002"/>
+        <PARAMETER NAME="C_DIVIDE2_AUTO" VALUE="10.0"/>
+        <PARAMETER NAME="C_DIVIDE3_AUTO" VALUE="2.5175"/>
+        <PARAMETER NAME="C_DIVIDE4_AUTO" VALUE="2.5175"/>
+        <PARAMETER NAME="C_DIVIDE5_AUTO" VALUE="2.5175"/>
+        <PARAMETER NAME="C_DIVIDE6_AUTO" VALUE="2.5175"/>
+        <PARAMETER NAME="C_DIVIDE7_AUTO" VALUE="2.5175"/>
         <PARAMETER NAME="C_PLLBUFGCEDIV" VALUE="false"/>
         <PARAMETER NAME="C_MMCMBUFGCEDIV" VALUE="false"/>
         <PARAMETER NAME="C_PLLBUFGCEDIV1" VALUE="false"/>
@@ -26470,8 +26617,8 @@
         <PARAMETER NAME="C_CLKOUT5_MATCHED_ROUTING" VALUE="false"/>
         <PARAMETER NAME="C_CLKOUT6_MATCHED_ROUTING" VALUE="false"/>
         <PARAMETER NAME="C_CLKOUT7_MATCHED_ROUTING" VALUE="false"/>
-        <PARAMETER NAME="C_CLKOUT0_ACTUAL_FREQ" VALUE="201.399"/>
-        <PARAMETER NAME="C_CLKOUT1_ACTUAL_FREQ" VALUE="100.000"/>
+        <PARAMETER NAME="C_CLKOUT0_ACTUAL_FREQ" VALUE="251.750"/>
+        <PARAMETER NAME="C_CLKOUT1_ACTUAL_FREQ" VALUE="25.175"/>
         <PARAMETER NAME="C_CLKOUT2_ACTUAL_FREQ" VALUE="100.000"/>
         <PARAMETER NAME="C_CLKOUT3_ACTUAL_FREQ" VALUE="100.000"/>
         <PARAMETER NAME="C_CLKOUT4_ACTUAL_FREQ" VALUE="100.000"/>
@@ -26501,7 +26648,7 @@
         <PARAMETER NAME="USE_DYN_PHASE_SHIFT" VALUE="false"/>
         <PARAMETER NAME="USE_DYN_RECONFIG" VALUE="false"/>
         <PARAMETER NAME="JITTER_SEL" VALUE="No_Jitter"/>
-        <PARAMETER NAME="PRIM_IN_FREQ" VALUE="333.250"/>
+        <PARAMETER NAME="PRIM_IN_FREQ" VALUE="250.0"/>
         <PARAMETER NAME="PRIM_IN_TIMEPERIOD" VALUE="10.000"/>
         <PARAMETER NAME="IN_FREQ_UNITS" VALUE="Units_MHz"/>
         <PARAMETER NAME="PHASESHIFT_MODE" VALUE="LATENCY"/>
@@ -26517,16 +26664,16 @@
         <PARAMETER NAME="CLKIN2_UI_JITTER" VALUE="0.010"/>
         <PARAMETER NAME="PRIM_IN_JITTER" VALUE="0.010"/>
         <PARAMETER NAME="SECONDARY_IN_JITTER" VALUE="0.010"/>
-        <PARAMETER NAME="CLKIN1_JITTER_PS" VALUE="30.0"/>
+        <PARAMETER NAME="CLKIN1_JITTER_PS" VALUE="40.0"/>
         <PARAMETER NAME="CLKIN2_JITTER_PS" VALUE="100.0"/>
         <PARAMETER NAME="CLKOUT1_USED" VALUE="true"/>
-        <PARAMETER NAME="CLKOUT2_USED" VALUE="false"/>
+        <PARAMETER NAME="CLKOUT2_USED" VALUE="true"/>
         <PARAMETER NAME="CLKOUT3_USED" VALUE="false"/>
         <PARAMETER NAME="CLKOUT4_USED" VALUE="false"/>
         <PARAMETER NAME="CLKOUT5_USED" VALUE="false"/>
         <PARAMETER NAME="CLKOUT6_USED" VALUE="false"/>
         <PARAMETER NAME="CLKOUT7_USED" VALUE="false"/>
-        <PARAMETER NAME="NUM_OUT_CLKS" VALUE="1"/>
+        <PARAMETER NAME="NUM_OUT_CLKS" VALUE="2"/>
         <PARAMETER NAME="CLK_OUT1_USE_FINE_PS_GUI" VALUE="false"/>
         <PARAMETER NAME="CLK_OUT2_USE_FINE_PS_GUI" VALUE="false"/>
         <PARAMETER NAME="CLK_OUT3_USE_FINE_PS_GUI" VALUE="false"/>
@@ -26535,8 +26682,8 @@
         <PARAMETER NAME="CLK_OUT6_USE_FINE_PS_GUI" VALUE="false"/>
         <PARAMETER NAME="CLK_OUT7_USE_FINE_PS_GUI" VALUE="false"/>
         <PARAMETER NAME="PRIMARY_PORT" VALUE="clk_in1"/>
-        <PARAMETER NAME="CLK_OUT1_PORT" VALUE="clk_out1"/>
-        <PARAMETER NAME="CLK_OUT2_PORT" VALUE="clk_out2"/>
+        <PARAMETER NAME="CLK_OUT1_PORT" VALUE="clk_x10"/>
+        <PARAMETER NAME="CLK_OUT2_PORT" VALUE="pixelclk_x1"/>
         <PARAMETER NAME="CLK_OUT3_PORT" VALUE="clk_out3"/>
         <PARAMETER NAME="CLK_OUT4_PORT" VALUE="clk_out4"/>
         <PARAMETER NAME="CLK_OUT5_PORT" VALUE="clk_out5"/>
@@ -26553,10 +26700,10 @@
         <PARAMETER NAME="PSEN_PORT" VALUE="psen"/>
         <PARAMETER NAME="PSINCDEC_PORT" VALUE="psincdec"/>
         <PARAMETER NAME="PSDONE_PORT" VALUE="psdone"/>
-        <PARAMETER NAME="CLKOUT1_REQUESTED_OUT_FREQ" VALUE="201.4"/>
+        <PARAMETER NAME="CLKOUT1_REQUESTED_OUT_FREQ" VALUE="251.75"/>
         <PARAMETER NAME="CLKOUT1_REQUESTED_PHASE" VALUE="0.000"/>
         <PARAMETER NAME="CLKOUT1_REQUESTED_DUTY_CYCLE" VALUE="50.000"/>
-        <PARAMETER NAME="CLKOUT2_REQUESTED_OUT_FREQ" VALUE="100.000"/>
+        <PARAMETER NAME="CLKOUT2_REQUESTED_OUT_FREQ" VALUE="25.175"/>
         <PARAMETER NAME="CLKOUT2_REQUESTED_PHASE" VALUE="0.000"/>
         <PARAMETER NAME="CLKOUT2_REQUESTED_DUTY_CYCLE" VALUE="50.000"/>
         <PARAMETER NAME="CLKOUT3_REQUESTED_OUT_FREQ" VALUE="100.000"/>
@@ -26623,12 +26770,12 @@
         <PARAMETER NAME="SS_MOD_TIME" VALUE="0.004"/>
         <PARAMETER NAME="OVERRIDE_MMCM" VALUE="false"/>
         <PARAMETER NAME="MMCM_NOTES" VALUE="None"/>
-        <PARAMETER NAME="MMCM_DIVCLK_DIVIDE" VALUE="5"/>
+        <PARAMETER NAME="MMCM_DIVCLK_DIVIDE" VALUE="25"/>
         <PARAMETER NAME="MMCM_BANDWIDTH" VALUE="OPTIMIZED"/>
-        <PARAMETER NAME="MMCM_CLKFBOUT_MULT_F" VALUE="17.375"/>
+        <PARAMETER NAME="MMCM_CLKFBOUT_MULT_F" VALUE="125.875"/>
         <PARAMETER NAME="MMCM_CLKFBOUT_PHASE" VALUE="0.000"/>
         <PARAMETER NAME="MMCM_CLKFBOUT_USE_FINE_PS" VALUE="false"/>
-        <PARAMETER NAME="MMCM_CLKIN1_PERIOD" VALUE="3.001"/>
+        <PARAMETER NAME="MMCM_CLKIN1_PERIOD" VALUE="4.000"/>
         <PARAMETER NAME="MMCM_CLKIN2_PERIOD" VALUE="10.0"/>
         <PARAMETER NAME="MMCM_CLKOUT4_CASCADE" VALUE="false"/>
         <PARAMETER NAME="MMCM_CLOCK_HOLD" VALUE="false"/>
@@ -26636,11 +26783,11 @@
         <PARAMETER NAME="MMCM_REF_JITTER1" VALUE="0.010"/>
         <PARAMETER NAME="MMCM_REF_JITTER2" VALUE="0.010"/>
         <PARAMETER NAME="MMCM_STARTUP_WAIT" VALUE="false"/>
-        <PARAMETER NAME="MMCM_CLKOUT0_DIVIDE_F" VALUE="5.750"/>
+        <PARAMETER NAME="MMCM_CLKOUT0_DIVIDE_F" VALUE="5.000"/>
         <PARAMETER NAME="MMCM_CLKOUT0_DUTY_CYCLE" VALUE="0.500"/>
         <PARAMETER NAME="MMCM_CLKOUT0_PHASE" VALUE="0.000"/>
         <PARAMETER NAME="MMCM_CLKOUT0_USE_FINE_PS" VALUE="false"/>
-        <PARAMETER NAME="MMCM_CLKOUT1_DIVIDE" VALUE="1"/>
+        <PARAMETER NAME="MMCM_CLKOUT1_DIVIDE" VALUE="50"/>
         <PARAMETER NAME="MMCM_CLKOUT1_DUTY_CYCLE" VALUE="0.500"/>
         <PARAMETER NAME="MMCM_CLKOUT1_PHASE" VALUE="0.000"/>
         <PARAMETER NAME="MMCM_CLKOUT1_USE_FINE_PS" VALUE="false"/>
@@ -26714,10 +26861,10 @@
         <PARAMETER NAME="CDDCREQ_PORT" VALUE="cddcreq"/>
         <PARAMETER NAME="ENABLE_CLKOUTPHY" VALUE="false"/>
         <PARAMETER NAME="CLKOUTPHY_REQUESTED_FREQ" VALUE="600.000"/>
-        <PARAMETER NAME="CLKOUT1_JITTER" VALUE="109.744"/>
-        <PARAMETER NAME="CLKOUT1_PHASE_ERROR" VALUE="115.734"/>
-        <PARAMETER NAME="CLKOUT2_JITTER" VALUE="0.0"/>
-        <PARAMETER NAME="CLKOUT2_PHASE_ERROR" VALUE="0.0"/>
+        <PARAMETER NAME="CLKOUT1_JITTER" VALUE="169.784"/>
+        <PARAMETER NAME="CLKOUT1_PHASE_ERROR" VALUE="328.812"/>
+        <PARAMETER NAME="CLKOUT2_JITTER" VALUE="236.903"/>
+        <PARAMETER NAME="CLKOUT2_PHASE_ERROR" VALUE="328.812"/>
         <PARAMETER NAME="CLKOUT3_JITTER" VALUE="0.0"/>
         <PARAMETER NAME="CLKOUT3_PHASE_ERROR" VALUE="0.0"/>
         <PARAMETER NAME="CLKOUT4_JITTER" VALUE="0.0"/>
@@ -26740,16 +26887,22 @@
             <CONNECTION INSTANCE="External_Ports" PORT="reset"/>
           </CONNECTIONS>
         </PORT>
-        <PORT CLKFREQUENCY="333250000" DIR="I" NAME="clk_in1" SIGIS="clk" SIGNAME="MemorySystem_ddr4_0_c0_ddr4_ui_clk">
+        <PORT CLKFREQUENCY="250000000" DIR="I" NAME="clk_in1" SIGIS="clk" SIGNAME="MemorySystem_ddr4_0_addn_ui_clkout1">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="MemorySystem_ddr4_0" PORT="c0_ddr4_ui_clk"/>
+            <CONNECTION INSTANCE="MemorySystem_ddr4_0" PORT="addn_ui_clkout1"/>
           </CONNECTIONS>
         </PORT>
-        <PORT CLKFREQUENCY="201398913" DIR="O" NAME="clk_out1" SIGIS="clk" SIGNAME="ScanoutSystem_scanout_clk_25_175_x8_clk_out1">
+        <PORT CLKFREQUENCY="251750000" DIR="O" NAME="clk_x10" SIGIS="clk" SIGNAME="ScanoutSystem_scanout_clk_25_175_x10_clk_x10">
           <CONNECTIONS>
             <CONNECTION INSTANCE="MemorySystem_ScanoutReadResponsesFIFO" PORT="rd_clk"/>
             <CONNECTION INSTANCE="MemorySystem_ScanoutReadRequestsFIFO" PORT="wr_clk"/>
-            <CONNECTION INSTANCE="ScanoutSystem_ScanOut_0" PORT="clk"/>
+            <CONNECTION INSTANCE="ScanoutSystem_dvid_0" PORT="clk_x10"/>
+            <CONNECTION INSTANCE="ScanoutSystem_ScanOut_0" PORT="clk_x10"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT CLKFREQUENCY="25175000" DIR="O" NAME="pixelclk_x1" SIGIS="clk" SIGNAME="ScanoutSystem_scanout_clk_25_175_x10_pixelclk_x1">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ScanoutSystem_dvid_0" PORT="clk_pixel"/>
           </CONNECTIONS>
         </PORT>
       </PORTS>

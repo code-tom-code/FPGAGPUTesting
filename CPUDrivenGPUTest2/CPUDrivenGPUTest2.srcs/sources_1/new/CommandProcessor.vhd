@@ -138,6 +138,8 @@ entity CommandProcessor is
 	-- Scanout interfaces begin
 		SCANOUT_RenderTargetBaseAddr : out STD_LOGIC_VECTOR(29 downto 0) := (others => '0');
 		SCANOUT_ScanEnable : out STD_LOGIC := '0';
+		SCANOUT_InvertOutputColor : out STD_LOGIC := '0';
+		SCANOUT_OutputColorChannels : out STD_LOGIC_VECTOR(8 downto 0) := (others => '0');
 	-- Scanout interfaces end
 
 	-- Clear Block interfaces begin
@@ -383,6 +385,8 @@ begin
 	ROP_ClearSignal <= setROPClearEnable;
 	ROP_FlushCacheSignal <= flushROPCache;
 	IA_SetStateEnable <= setIAStateEnable;
+
+	SCANOUT_OutputColorChannels <= "010001000";
 
 	STAT_CyclesIdle <= std_logic_vector(statCyclesIdle);
 	STAT_CyclesSpentWorking <= std_logic_vector(statCyclesWorking);

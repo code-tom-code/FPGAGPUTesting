@@ -2,7 +2,7 @@
 <spirit:component xmlns:xilinx="http://www.xilinx.com" xmlns:spirit="http://www.spiritconsortium.org/XMLSchema/SPIRIT/1685-2009" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <spirit:vendor>xilinx.com</spirit:vendor>
   <spirit:library>module_ref</spirit:library>
-  <spirit:name>R8G8B8Quantizer</spirit:name>
+  <spirit:name>obuf_outputs</spirit:name>
   <spirit:version>1.0</spirit:version>
   <spirit:model>
     <spirit:views>
@@ -11,11 +11,11 @@
         <spirit:displayName>Synthesis</spirit:displayName>
         <spirit:envIdentifier>:vivado.xilinx.com:synthesis</spirit:envIdentifier>
         <spirit:language>VHDL</spirit:language>
-        <spirit:modelName>R8G8B8Quantizer</spirit:modelName>
+        <spirit:modelName>obuf_outputs</spirit:modelName>
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>viewChecksum</spirit:name>
-            <spirit:value>c860d48d</spirit:value>
+            <spirit:value>71523c32</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -24,11 +24,11 @@
         <spirit:displayName>Simulation</spirit:displayName>
         <spirit:envIdentifier>:vivado.xilinx.com:simulation</spirit:envIdentifier>
         <spirit:language>VHDL</spirit:language>
-        <spirit:modelName>R8G8B8Quantizer</spirit:modelName>
+        <spirit:modelName>obuf_outputs</spirit:modelName>
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>viewChecksum</spirit:name>
-            <spirit:value>c860d48d</spirit:value>
+            <spirit:value>71523c32</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -43,16 +43,12 @@
     </spirit:views>
     <spirit:ports>
       <spirit:port>
-        <spirit:name>inRed8</spirit:name>
+        <spirit:name>red_s</spirit:name>
         <spirit:wire>
           <spirit:direction>in</spirit:direction>
-          <spirit:vector>
-            <spirit:left spirit:format="long">7</spirit:left>
-            <spirit:right spirit:format="long">0</spirit:right>
-          </spirit:vector>
           <spirit:wireTypeDefs>
             <spirit:wireTypeDef>
-              <spirit:typeName>STD_LOGIC_VECTOR</spirit:typeName>
+              <spirit:typeName>STD_LOGIC</spirit:typeName>
               <spirit:viewNameRef>xilinx_anylanguagesynthesis</spirit:viewNameRef>
               <spirit:viewNameRef>xilinx_anylanguagebehavioralsimulation</spirit:viewNameRef>
             </spirit:wireTypeDef>
@@ -60,16 +56,12 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
-        <spirit:name>inGreen8</spirit:name>
+        <spirit:name>green_s</spirit:name>
         <spirit:wire>
           <spirit:direction>in</spirit:direction>
-          <spirit:vector>
-            <spirit:left spirit:format="long">7</spirit:left>
-            <spirit:right spirit:format="long">0</spirit:right>
-          </spirit:vector>
           <spirit:wireTypeDefs>
             <spirit:wireTypeDef>
-              <spirit:typeName>STD_LOGIC_VECTOR</spirit:typeName>
+              <spirit:typeName>STD_LOGIC</spirit:typeName>
               <spirit:viewNameRef>xilinx_anylanguagesynthesis</spirit:viewNameRef>
               <spirit:viewNameRef>xilinx_anylanguagebehavioralsimulation</spirit:viewNameRef>
             </spirit:wireTypeDef>
@@ -77,16 +69,12 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
-        <spirit:name>inBlue8</spirit:name>
+        <spirit:name>blue_s</spirit:name>
         <spirit:wire>
           <spirit:direction>in</spirit:direction>
-          <spirit:vector>
-            <spirit:left spirit:format="long">7</spirit:left>
-            <spirit:right spirit:format="long">0</spirit:right>
-          </spirit:vector>
           <spirit:wireTypeDefs>
             <spirit:wireTypeDef>
-              <spirit:typeName>STD_LOGIC_VECTOR</spirit:typeName>
+              <spirit:typeName>STD_LOGIC</spirit:typeName>
               <spirit:viewNameRef>xilinx_anylanguagesynthesis</spirit:viewNameRef>
               <spirit:viewNameRef>xilinx_anylanguagebehavioralsimulation</spirit:viewNameRef>
             </spirit:wireTypeDef>
@@ -94,16 +82,12 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
-        <spirit:name>outRedBits</spirit:name>
+        <spirit:name>cl_s</spirit:name>
         <spirit:wire>
-          <spirit:direction>out</spirit:direction>
-          <spirit:vector>
-            <spirit:left spirit:format="long" spirit:resolve="dependent" spirit:dependency="(spirit:decode(id(&apos;MODELPARAM_VALUE.R_OUTPUT_BITS&apos;)) - 1)">4</spirit:left>
-            <spirit:right spirit:format="long">0</spirit:right>
-          </spirit:vector>
+          <spirit:direction>in</spirit:direction>
           <spirit:wireTypeDefs>
             <spirit:wireTypeDef>
-              <spirit:typeName>STD_LOGIC_VECTOR</spirit:typeName>
+              <spirit:typeName>STD_LOGIC</spirit:typeName>
               <spirit:viewNameRef>xilinx_anylanguagesynthesis</spirit:viewNameRef>
               <spirit:viewNameRef>xilinx_anylanguagebehavioralsimulation</spirit:viewNameRef>
             </spirit:wireTypeDef>
@@ -111,16 +95,12 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
-        <spirit:name>outGreenBits</spirit:name>
+        <spirit:name>out_red_p</spirit:name>
         <spirit:wire>
           <spirit:direction>out</spirit:direction>
-          <spirit:vector>
-            <spirit:left spirit:format="long" spirit:resolve="dependent" spirit:dependency="(spirit:decode(id(&apos;MODELPARAM_VALUE.G_OUTPUT_BITS&apos;)) - 1)">4</spirit:left>
-            <spirit:right spirit:format="long">0</spirit:right>
-          </spirit:vector>
           <spirit:wireTypeDefs>
             <spirit:wireTypeDef>
-              <spirit:typeName>STD_LOGIC_VECTOR</spirit:typeName>
+              <spirit:typeName>STD_LOGIC</spirit:typeName>
               <spirit:viewNameRef>xilinx_anylanguagesynthesis</spirit:viewNameRef>
               <spirit:viewNameRef>xilinx_anylanguagebehavioralsimulation</spirit:viewNameRef>
             </spirit:wireTypeDef>
@@ -128,16 +108,90 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
-        <spirit:name>outBlueBits</spirit:name>
+        <spirit:name>out_red_n</spirit:name>
         <spirit:wire>
           <spirit:direction>out</spirit:direction>
-          <spirit:vector>
-            <spirit:left spirit:format="long" spirit:resolve="dependent" spirit:dependency="(spirit:decode(id(&apos;MODELPARAM_VALUE.B_OUTPUT_BITS&apos;)) - 1)">3</spirit:left>
-            <spirit:right spirit:format="long">0</spirit:right>
-          </spirit:vector>
           <spirit:wireTypeDefs>
             <spirit:wireTypeDef>
-              <spirit:typeName>STD_LOGIC_VECTOR</spirit:typeName>
+              <spirit:typeName>STD_LOGIC</spirit:typeName>
+              <spirit:viewNameRef>xilinx_anylanguagesynthesis</spirit:viewNameRef>
+              <spirit:viewNameRef>xilinx_anylanguagebehavioralsimulation</spirit:viewNameRef>
+            </spirit:wireTypeDef>
+          </spirit:wireTypeDefs>
+        </spirit:wire>
+      </spirit:port>
+      <spirit:port>
+        <spirit:name>out_green_p</spirit:name>
+        <spirit:wire>
+          <spirit:direction>out</spirit:direction>
+          <spirit:wireTypeDefs>
+            <spirit:wireTypeDef>
+              <spirit:typeName>STD_LOGIC</spirit:typeName>
+              <spirit:viewNameRef>xilinx_anylanguagesynthesis</spirit:viewNameRef>
+              <spirit:viewNameRef>xilinx_anylanguagebehavioralsimulation</spirit:viewNameRef>
+            </spirit:wireTypeDef>
+          </spirit:wireTypeDefs>
+        </spirit:wire>
+      </spirit:port>
+      <spirit:port>
+        <spirit:name>out_green_n</spirit:name>
+        <spirit:wire>
+          <spirit:direction>out</spirit:direction>
+          <spirit:wireTypeDefs>
+            <spirit:wireTypeDef>
+              <spirit:typeName>STD_LOGIC</spirit:typeName>
+              <spirit:viewNameRef>xilinx_anylanguagesynthesis</spirit:viewNameRef>
+              <spirit:viewNameRef>xilinx_anylanguagebehavioralsimulation</spirit:viewNameRef>
+            </spirit:wireTypeDef>
+          </spirit:wireTypeDefs>
+        </spirit:wire>
+      </spirit:port>
+      <spirit:port>
+        <spirit:name>out_blue_p</spirit:name>
+        <spirit:wire>
+          <spirit:direction>out</spirit:direction>
+          <spirit:wireTypeDefs>
+            <spirit:wireTypeDef>
+              <spirit:typeName>STD_LOGIC</spirit:typeName>
+              <spirit:viewNameRef>xilinx_anylanguagesynthesis</spirit:viewNameRef>
+              <spirit:viewNameRef>xilinx_anylanguagebehavioralsimulation</spirit:viewNameRef>
+            </spirit:wireTypeDef>
+          </spirit:wireTypeDefs>
+        </spirit:wire>
+      </spirit:port>
+      <spirit:port>
+        <spirit:name>out_blue_n</spirit:name>
+        <spirit:wire>
+          <spirit:direction>out</spirit:direction>
+          <spirit:wireTypeDefs>
+            <spirit:wireTypeDef>
+              <spirit:typeName>STD_LOGIC</spirit:typeName>
+              <spirit:viewNameRef>xilinx_anylanguagesynthesis</spirit:viewNameRef>
+              <spirit:viewNameRef>xilinx_anylanguagebehavioralsimulation</spirit:viewNameRef>
+            </spirit:wireTypeDef>
+          </spirit:wireTypeDefs>
+        </spirit:wire>
+      </spirit:port>
+      <spirit:port>
+        <spirit:name>out_cl_p</spirit:name>
+        <spirit:wire>
+          <spirit:direction>out</spirit:direction>
+          <spirit:wireTypeDefs>
+            <spirit:wireTypeDef>
+              <spirit:typeName>STD_LOGIC</spirit:typeName>
+              <spirit:viewNameRef>xilinx_anylanguagesynthesis</spirit:viewNameRef>
+              <spirit:viewNameRef>xilinx_anylanguagebehavioralsimulation</spirit:viewNameRef>
+            </spirit:wireTypeDef>
+          </spirit:wireTypeDefs>
+        </spirit:wire>
+      </spirit:port>
+      <spirit:port>
+        <spirit:name>out_cl_n</spirit:name>
+        <spirit:wire>
+          <spirit:direction>out</spirit:direction>
+          <spirit:wireTypeDefs>
+            <spirit:wireTypeDef>
+              <spirit:typeName>STD_LOGIC</spirit:typeName>
               <spirit:viewNameRef>xilinx_anylanguagesynthesis</spirit:viewNameRef>
               <spirit:viewNameRef>xilinx_anylanguagebehavioralsimulation</spirit:viewNameRef>
             </spirit:wireTypeDef>
@@ -145,55 +199,23 @@
         </spirit:wire>
       </spirit:port>
     </spirit:ports>
-    <spirit:modelParameters>
-      <spirit:modelParameter xsi:type="spirit:nameValueTypeType" spirit:dataType="integer">
-        <spirit:name>R_OUTPUT_BITS</spirit:name>
-        <spirit:displayName>R Output Bits</spirit:displayName>
-        <spirit:value spirit:format="long" spirit:resolve="generated" spirit:id="MODELPARAM_VALUE.R_OUTPUT_BITS">5</spirit:value>
-      </spirit:modelParameter>
-      <spirit:modelParameter spirit:dataType="integer">
-        <spirit:name>G_OUTPUT_BITS</spirit:name>
-        <spirit:displayName>G Output Bits</spirit:displayName>
-        <spirit:value spirit:format="long" spirit:resolve="generated" spirit:id="MODELPARAM_VALUE.G_OUTPUT_BITS">5</spirit:value>
-      </spirit:modelParameter>
-      <spirit:modelParameter spirit:dataType="integer">
-        <spirit:name>B_OUTPUT_BITS</spirit:name>
-        <spirit:displayName>B Output Bits</spirit:displayName>
-        <spirit:value spirit:format="long" spirit:resolve="generated" spirit:id="MODELPARAM_VALUE.B_OUTPUT_BITS">4</spirit:value>
-      </spirit:modelParameter>
-    </spirit:modelParameters>
   </spirit:model>
   <spirit:fileSets>
     <spirit:fileSet>
       <spirit:name>xilinx_xpgui_view_fileset</spirit:name>
       <spirit:file>
-        <spirit:name>xgui/R8G8B8Quantizer_v1_0.tcl</spirit:name>
+        <spirit:name>xgui/obuf_outputs_v1_0.tcl</spirit:name>
         <spirit:fileType>tclSource</spirit:fileType>
-        <spirit:userFileType>CHECKSUM_7cd719ec</spirit:userFileType>
+        <spirit:userFileType>CHECKSUM_f64a5dae</spirit:userFileType>
         <spirit:userFileType>XGUI_VERSION_2</spirit:userFileType>
       </spirit:file>
     </spirit:fileSet>
   </spirit:fileSets>
-  <spirit:description>xilinx.com:module_ref:R8G8B8Quantizer:1.0</spirit:description>
+  <spirit:description>xilinx.com:module_ref:obuf_outputs:1.0</spirit:description>
   <spirit:parameters>
     <spirit:parameter>
-      <spirit:name>R_OUTPUT_BITS</spirit:name>
-      <spirit:displayName>R Output Bits</spirit:displayName>
-      <spirit:value spirit:format="long" spirit:resolve="user" spirit:id="PARAM_VALUE.R_OUTPUT_BITS">5</spirit:value>
-    </spirit:parameter>
-    <spirit:parameter>
-      <spirit:name>G_OUTPUT_BITS</spirit:name>
-      <spirit:displayName>G Output Bits</spirit:displayName>
-      <spirit:value spirit:format="long" spirit:resolve="user" spirit:id="PARAM_VALUE.G_OUTPUT_BITS">5</spirit:value>
-    </spirit:parameter>
-    <spirit:parameter>
-      <spirit:name>B_OUTPUT_BITS</spirit:name>
-      <spirit:displayName>B Output Bits</spirit:displayName>
-      <spirit:value spirit:format="long" spirit:resolve="user" spirit:id="PARAM_VALUE.B_OUTPUT_BITS">4</spirit:value>
-    </spirit:parameter>
-    <spirit:parameter>
       <spirit:name>Component_Name</spirit:name>
-      <spirit:value spirit:resolve="user" spirit:id="PARAM_VALUE.Component_Name" spirit:order="1">R8G8B8Quantizer_v1_0</spirit:value>
+      <spirit:value spirit:resolve="user" spirit:id="PARAM_VALUE.Component_Name" spirit:order="1">obuf_outputs_v1_0</spirit:value>
     </spirit:parameter>
   </spirit:parameters>
   <spirit:vendorExtensions>
@@ -204,14 +226,14 @@
       <xilinx:taxonomies>
         <xilinx:taxonomy>/UserIP</xilinx:taxonomy>
       </xilinx:taxonomies>
-      <xilinx:displayName>R8G8B8Quantizer_v1_0</xilinx:displayName>
+      <xilinx:displayName>obuf_outputs_v1_0</xilinx:displayName>
       <xilinx:autoFamilySupportLevel>level_1</xilinx:autoFamilySupportLevel>
       <xilinx:blockIP>true</xilinx:blockIP>
       <xilinx:designToolContexts>
         <xilinx:designToolContext>IPI</xilinx:designToolContext>
       </xilinx:designToolContexts>
       <xilinx:coreRevision>1</xilinx:coreRevision>
-      <xilinx:coreCreationDateTime>2021-08-07T05:56:40Z</xilinx:coreCreationDateTime>
+      <xilinx:coreCreationDateTime>2022-07-26T04:12:30Z</xilinx:coreCreationDateTime>
     </xilinx:coreExtensions>
     <xilinx:packagingInfo>
       <xilinx:xilinxVersion>2018.1</xilinx:xilinxVersion>

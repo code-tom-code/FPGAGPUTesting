@@ -6,16 +6,18 @@ use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
 
 entity ScanOut is
-	Port (clk : in STD_LOGIC;
+	Port (clk_x10 : in STD_LOGIC;
 
 	-- Command Processor interfaces begin
 		CMD_BaseRenderTargetAddr : in STD_LOGIC_VECTOR(29 downto 0);
 		CMD_ScanoutEnable : in STD_LOGIC;
+		CMD_InvertOutputColor : in STD_LOGIC;
+		CMD_OutputColorChannels : in STD_LOGIC_VECTOR(8 downto 0);
 	-- Command Processor interfaces end
 
 	-- Misc interface begin
-		outXCoord : out STD_LOGIC_VECTOR(9 downto 0); -- 0 to 639
-		outYCoord : out STD_LOGIC_VECTOR(9 downto 0); -- 0 to 479
+		outXCoord : out STD_LOGIC_VECTOR(9 downto 0) := (others => '0'); -- 0 to 639
+		outYCoord : out STD_LOGIC_VECTOR(9 downto 0) := (others => '0'); -- 0 to 479
 	-- Misc interface end
 
 	-- Memory Controller FIFO interface begin
@@ -31,11 +33,13 @@ entity ScanOut is
 	-- Memory Controller FIFO interface end
 
 	-- VGA interface begin
-		vsync : out STD_LOGIC;
-		hsync : out STD_LOGIC;
-		outR : out STD_LOGIC_VECTOR(7 downto 0);
-		outG : out STD_LOGIC_VECTOR(7 downto 0);
-		outB : out STD_LOGIC_VECTOR(7 downto 0);
+		out_scanout_enable : out STD_LOGIC := '0';
+		vsync : out STD_LOGIC := '0';
+		hsync : out STD_LOGIC := '0';
+		blank : out STD_LOGIC := '0';
+		outR : out STD_LOGIC_VECTOR(7 downto 0) := (others => '0');
+		outG : out STD_LOGIC_VECTOR(7 downto 0) := (others => '0');
+		outB : out STD_LOGIC_VECTOR(7 downto 0) := (others => '0');
 	-- VGA interface end
 
 	-- Debug signals
@@ -46,6 +50,10 @@ end ScanOut;
 architecture Behavioral of ScanOut is
 
 ATTRIBUTE X_INTERFACE_INFO : STRING;
+ATTRIBUTE X_INTERFACE_PARAMETER : STRING;
+
+ATTRIBUTE X_INTERFACE_INFO of clk_x10: SIGNAL is "xilinx.com:signal:clock:1.0 clk_x10 CLK";
+ATTRIBUTE X_INTERFACE_PARAMETER of clk_x10: SIGNAL is "FREQ_HZ 251750000";
 
 ATTRIBUTE X_INTERFACE_INFO of MEM_ScanoutReadRequestsFIFO_wr_data: SIGNAL is "xilinx.com:interface:fifo_write:1.0 ScanoutReadRequestsFIFO WR_DATA";
 ATTRIBUTE X_INTERFACE_INFO of MEM_ScanoutReadRequestsFIFO_wr_en: SIGNAL is "xilinx.com:interface:fifo_write:1.0 ScanoutReadRequestsFIFO WR_EN";
@@ -72,13 +80,15 @@ signal loadCacheLineNum : unsigned(2 downto 0) := (others => '0');
 signal lineNumber : unsigned(9 downto 0) := (others => '0'); -- stores values from 0 to 1024, but we only need from 0 to 525
 signal pixelNumber : unsigned(9 downto 0) := (others => '0'); -- stores values from 0 to 1024, but we only need from 0 to 800
 signal frameNumber : unsigned(9 downto 0) := (others => '0');
-signal clockDividerCounter8 : unsigned(2 downto 0) := (others => '0');
+signal clockDividerCounter10 : unsigned(3 downto 0) := (others => '0');
 
 -- Cached command signals:
 signal scanoutEnable_lastCycle : std_logic := '0';
 signal scanoutEnable : std_logic := '0';
 signal BaseRenderTargetAddr_lastCycle : STD_LOGIC_VECTOR(29 downto 0) := (others => '0');
 signal BaseRenderTargetAddr : STD_LOGIC_VECTOR(29 downto 0) := (others => '0');
+signal invertOutputColor : std_logic := '0';
+signal outputColorChannels : unsigned(8 downto 0) := "010001000";
 
 -- Let's cache a few DRAM lines ahead:
 -- 0 lines ahead:
@@ -114,16 +124,44 @@ begin
 	end if;
 end function;
 
+pure function GetPixelColor(RGBA : unsigned(31 downto 0); colorSwizzle : unsigned(2 downto 0); invertColor : std_logic) return unsigned is
+	variable tempColor : unsigned(7 downto 0);
+begin
+	case colorSwizzle is
+		when "000" =>
+			tempColor := RGBA(7 downto 0);
+		when "001" =>
+			tempColor := RGBA(15 downto 8);
+		when "010" =>
+			tempColor := RGBA(23 downto 16);
+		when "011" =>
+			tempColor := RGBA(31 downto 24);
+		when "100" =>
+			tempColor := "00000000";
+		when others =>
+			tempColor := "11111111";
+	end case;
+
+	if (invertColor = '0') then
+		return tempColor;
+	else
+		return 255 - tempColor;
+	end if;
+end function;
+
 begin
 
 DBG_ScanoutLoadProcess_State <= std_logic_vector(to_unsigned(loadProcessState'pos(loadState), 4) );
+invertOutputColor <= CMD_InvertOutputColor;
+outputColorChannels <= unsigned(CMD_OutputColorChannels);
 
+out_scanout_enable <= scanoutEnable;
 vsync <= '1' when (lineNumber < 2) else '0'; -- For 640x480@60Hz mode, vsync signal is active-high
 hsync <= '1' when (pixelNumber < 704) else '0'; -- For 640x480@60Hz mode, hsync signal is active-low
 
-	process(clk)
+	process(clk_x10)
 	begin
-		if (rising_edge(clk) ) then
+		if (rising_edge(clk_x10) ) then
 			scanoutEnable_lastCycle <= CMD_ScanoutEnable;
 			scanoutEnable <= scanoutEnable_lastCycle and CMD_ScanoutEnable;
 
@@ -132,14 +170,14 @@ hsync <= '1' when (pixelNumber < 704) else '0'; -- For 640x480@60Hz mode, hsync 
 		end if;
 	end process;
 
-	process(clk)
+	process(clk_x10)
 		variable tempXCoord : unsigned(9 downto 0) := (others => '0');
 	begin
-		if (rising_edge(clk) ) then
-			if (clockDividerCounter8 = 7) then
-				clockDividerCounter8 <= (others => '0');
+		if (rising_edge(clk_x10) ) then
+			if (clockDividerCounter10 = 9) then
+				clockDividerCounter10 <= (others => '0');
 
-				-- Do stuff here on every 8th tick:
+				-- Do stuff here on every 10th tick:
 				if (lineNumber > 513) then
 					-- Spend some VSync lines pre-warming our cache for the top of the next frame
 					if (pixelNumber = 0) then
@@ -167,13 +205,9 @@ hsync <= '1' when (pixelNumber < 704) else '0'; -- For 640x480@60Hz mode, hsync 
 					tempXCoord := GetXCoord(pixelNumber);
 					outXCoord <= std_logic_vector(tempXCoord);
 					outYCoord <= std_logic_vector(GetYCoord(lineNumber) );
-					outR <= std_logic_vector(currentCachedLine(7 downto 0) );
-					outG <= std_logic_vector(currentCachedLine(15 downto 8) );
-					outB <= std_logic_vector(currentCachedLine(23 downto 16) );
-
-					--outR <= std_logic_vector(loadingCachedLineOffset(7 downto 0) );
-					--outG <= std_logic_vector(loadingCachedLineOffset(15 downto 8) );
-					--outB <= std_logic_vector(loadingCachedLineOffset(23 downto 16) );
+					outR <= std_logic_vector(GetPixelColor(currentCachedLine(31 downto 0), outputColorChannels(2 downto 0), invertOutputColor) );
+					outG <= std_logic_vector(GetPixelColor(currentCachedLine(31 downto 0), outputColorChannels(5 downto 3), invertOutputColor) );
+					outB <= std_logic_vector(GetPixelColor(currentCachedLine(31 downto 0), outputColorChannels(8 downto 6), invertOutputColor) );
 
 					if (tempXCoord(3 downto 0) = 15) then
 						currentCachedLine <= nextCachedLine;
@@ -187,7 +221,9 @@ hsync <= '1' when (pixelNumber < 704) else '0'; -- For 640x480@60Hz mode, hsync 
 					else
 						currentCachedLine <= currentCachedLine srl 32; -- Shift the current cache line down one R8G8B8A8 pixel (shift 32 bits to the right)
 					end if;
+					blank <= '0';
 				else
+					blank <= '1';
 					outXCoord <= (others => '0');
 					outYCoord <= (others => '0');
 					outR <= (others => '0');
@@ -212,7 +248,7 @@ hsync <= '1' when (pixelNumber < 704) else '0'; -- For 640x480@60Hz mode, hsync 
 
 			else
 				if (scanoutEnable = '1') then
-					clockDividerCounter8 <= clockDividerCounter8 + 1; -- Only advance our clock counter if scanout is enabled
+					clockDividerCounter10 <= clockDividerCounter10 + 1; -- Only advance our clock counter if scanout is enabled
 				end if;
 				if (loadingLineReady = '1') then
 					loadingLineLoaded <= '1'; -- Ack our new cache line being loaded
@@ -222,9 +258,9 @@ hsync <= '1' when (pixelNumber < 704) else '0'; -- For 640x480@60Hz mode, hsync 
 	end process;
 
 	-- Data loading process
-	process(clk)
+	process(clk_x10)
 	begin
-		if (rising_edge(clk) ) then
+		if (rising_edge(clk_x10) ) then
 			case loadState is
 				when loadProcessInit =>
 					MEM_ScanoutReadResponsesFIFO_rd_en <= '0';

@@ -1,7 +1,7 @@
 --Copyright 1986-2018 Xilinx, Inc. All Rights Reserved.
 ----------------------------------------------------------------------------------
 --Tool Version: Vivado v.2018.1 (win64) Build 2188600 Wed Apr  4 18:40:38 MDT 2018
---Date        : Sat Jul 23 13:21:52 2022
+--Date        : Tue Jul 26 19:42:02 2022
 --Host        : Dragon2 running 64-bit major release  (build 9200)
 --Command     : generate_target design_1_wrapper.bd
 --Design      : design_1_wrapper
@@ -13,7 +13,6 @@ library UNISIM;
 use UNISIM.VCOMPONENTS.ALL;
 entity design_1_wrapper is
   port (
-    blue : out STD_LOGIC_VECTOR ( 3 downto 0 );
     ddr4_sdram_c1_act_n : out STD_LOGIC;
     ddr4_sdram_c1_adr : out STD_LOGIC_VECTOR ( 16 downto 0 );
     ddr4_sdram_c1_ba : out STD_LOGIC_VECTOR ( 1 downto 0 );
@@ -30,13 +29,17 @@ entity design_1_wrapper is
     ddr4_sdram_c1_reset_n : out STD_LOGIC;
     default_sysclk1_300_clk_n : in STD_LOGIC;
     default_sysclk1_300_clk_p : in STD_LOGIC;
-    green : out STD_LOGIC_VECTOR ( 4 downto 0 );
-    hsync : out STD_LOGIC;
-    red : out STD_LOGIC_VECTOR ( 4 downto 0 );
     reset : in STD_LOGIC;
     rs232_uart_rxd : in STD_LOGIC;
     rs232_uart_txd : out STD_LOGIC;
-    vsync : out STD_LOGIC
+    tmds_blue_n : out STD_LOGIC;
+    tmds_blue_p : out STD_LOGIC;
+    tmds_cl_n : out STD_LOGIC;
+    tmds_cl_p : out STD_LOGIC;
+    tmds_green_n : out STD_LOGIC;
+    tmds_green_p : out STD_LOGIC;
+    tmds_red_n : out STD_LOGIC;
+    tmds_red_p : out STD_LOGIC
   );
 end design_1_wrapper;
 
@@ -44,11 +47,14 @@ architecture STRUCTURE of design_1_wrapper is
   component design_1 is
   port (
     reset : in STD_LOGIC;
-    vsync : out STD_LOGIC;
-    hsync : out STD_LOGIC;
-    red : out STD_LOGIC_VECTOR ( 4 downto 0 );
-    green : out STD_LOGIC_VECTOR ( 4 downto 0 );
-    blue : out STD_LOGIC_VECTOR ( 3 downto 0 );
+    tmds_blue_p : out STD_LOGIC;
+    tmds_blue_n : out STD_LOGIC;
+    tmds_green_p : out STD_LOGIC;
+    tmds_green_n : out STD_LOGIC;
+    tmds_red_p : out STD_LOGIC;
+    tmds_red_n : out STD_LOGIC;
+    tmds_cl_p : out STD_LOGIC;
+    tmds_cl_n : out STD_LOGIC;
     rs232_uart_rxd : in STD_LOGIC;
     rs232_uart_txd : out STD_LOGIC;
     default_sysclk1_300_clk_n : in STD_LOGIC;
@@ -72,7 +78,6 @@ architecture STRUCTURE of design_1_wrapper is
 begin
 design_1_i: component design_1
      port map (
-      blue(3 downto 0) => blue(3 downto 0),
       ddr4_sdram_c1_act_n => ddr4_sdram_c1_act_n,
       ddr4_sdram_c1_adr(16 downto 0) => ddr4_sdram_c1_adr(16 downto 0),
       ddr4_sdram_c1_ba(1 downto 0) => ddr4_sdram_c1_ba(1 downto 0),
@@ -89,12 +94,16 @@ design_1_i: component design_1
       ddr4_sdram_c1_reset_n => ddr4_sdram_c1_reset_n,
       default_sysclk1_300_clk_n => default_sysclk1_300_clk_n,
       default_sysclk1_300_clk_p => default_sysclk1_300_clk_p,
-      green(4 downto 0) => green(4 downto 0),
-      hsync => hsync,
-      red(4 downto 0) => red(4 downto 0),
       reset => reset,
       rs232_uart_rxd => rs232_uart_rxd,
       rs232_uart_txd => rs232_uart_txd,
-      vsync => vsync
+      tmds_blue_n => tmds_blue_n,
+      tmds_blue_p => tmds_blue_p,
+      tmds_cl_n => tmds_cl_n,
+      tmds_cl_p => tmds_cl_p,
+      tmds_green_n => tmds_green_n,
+      tmds_green_p => tmds_green_p,
+      tmds_red_n => tmds_red_n,
+      tmds_red_p => tmds_red_p
     );
 end STRUCTURE;

@@ -29,7 +29,7 @@ entity FloatALU is
 		-- CMP pipe operates in 1 clock cycle. IN_MODE corresponds to the eCmpType type.
 		ICMP_GO : in STD_LOGIC;
 
-		-- CNV pipe operates in 2 clock cycles. IN_MODE corresponds to the eConvertMode type.
+		-- CNV pipe operates in 3 clock cycles. IN_MODE corresponds to the eConvertMode type.
 		ICNV_GO : in STD_LOGIC;
 
 		-- SPEC pipe operates in 14 clock cycles for RCP.
@@ -803,6 +803,7 @@ signal cnvIsNegative1 : std_logic := '0';
 signal cnvInput : unsigned(31 downto 0) := (others => '0');
 signal cnvShiftedTemporary : unsigned(31 downto 0) := (others => '0');
 signal cnvIsValid : std_logic := '0';
+signal cnvIsValid1 : std_logic := '0';
 signal cnvMode0 : eConvertMode := F_to_UNORM16;
 signal cnvMode1 : eConvertMode := F_to_UNORM16;
 
@@ -1606,6 +1607,7 @@ CNVStage1 : process(clk)
 	variable tempBuffer : signed(31 downto 0);
 begin
 	if (rising_edge(clk) ) then
+		cnvIsValid1 <= cnvIsValid;
 		cnvMode1 <= cnvMode0;
 		cnvIsNegative1 <= cnvIsNegative0;
 		cnvEarlyOutType1 <= cnvEarlyOutType0;
@@ -1619,7 +1621,7 @@ end process CNVStage1;
 CNVStage2 : process(clk)
 begin
 	if (rising_edge(clk) ) then
-		if (cnvIsValid = '1') then
+		if (cnvIsValid1 = '1') then
 			case cnvMode1 is
 				when F_to_I24_Trunc =>
 					case cnvEarlyOutType1 is

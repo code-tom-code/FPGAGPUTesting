@@ -193,5 +193,8 @@
     <None Include="hdl_src\GPRQuad2.vhd">
       <Filter>HDL</Filter>
     </None>
+    <None Include="hdl_src\IndexBufferCacheTestbench.vhd">
+      <Filter>HDL</Filter>
+    </None>
   </ItemGroup>
 </Project>

@@ -1456,6 +1456,16 @@ public:
 		emulateCommandLists = bNewEmulateCommandLists;
 	}
 
+	const bool GetPrintScreenCapturesScreenshot() const
+	{
+		return printScrnCapturesScreenshot;
+	}
+
+	void SetPrintScreenCapturesScreenshot(const bool bNewPrintScrnCapturesScreenshot)
+	{
+		printScrnCapturesScreenshot = bNewPrintScrnCapturesScreenshot;
+	}
+
 protected:
 	LPDIRECT3DDEVICE9 d3d9dev;
 	IDirect3D9Hook* parentHook;
@@ -1520,6 +1530,7 @@ protected:
 	bool enableScanout;
 	bool useDoubleBuffering; // Set this to false for GPU single-step debugging purposes to only have a frontbuffer instead of a frontbuffer + backbuffer
 	bool emulateCommandLists;
+	bool printScrnCapturesScreenshot;
 	int overrideTexCombinerMode;
 
 	gpuvoid* allocatedDebugShaderRegisterFile;

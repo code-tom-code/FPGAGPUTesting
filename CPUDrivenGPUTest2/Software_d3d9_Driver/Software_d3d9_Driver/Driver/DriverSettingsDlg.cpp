@@ -21,6 +21,8 @@ static INT_PTR CALLBACK DriverSettingsDialogProc(_In_ HWND hWnd, _In_ UINT MSG, 
 			CheckDlgButton(hWnd, IDC_CHK_OVERRIDETEXMODE, d3d9devhook->DoOverrideTexCombinerMode() ? BST_CHECKED : BST_UNCHECKED);
 			CheckDlgButton(hWnd, IDC_CHK_SYNCEVERYCOMMAND, d3d9devhook->GetBaseDevice()->GetSyncEveryCommand() ? BST_CHECKED : BST_UNCHECKED);
 			CheckDlgButton(hWnd, IDC_CHK_EMULATECOMMANDLISTS, d3d9devhook->GetEmulateCommandLists() ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hWnd, IDC_CHK_PRINTSCRNSAVESSCREENSHOT, d3d9devhook->GetPrintScreenCapturesScreenshot() ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hWnd, IDC_CHK_DISABLESTATECACHING, d3d9devhook->GetBaseDevice()->GetDisallowDeviceStateCaching() ? BST_CHECKED : BST_UNCHECKED);
 			EnableWindow(GetDlgItem(hWnd, IDC_LST_OVERRIDETEXMODE), d3d9devhook->DoOverrideTexCombinerMode() ? TRUE : FALSE);
 			SendDlgItemMessageA(hWnd, IDC_LST_OVERRIDETEXMODE, LB_SETITEMDATA, SendDlgItemMessageA(hWnd, IDC_LST_OVERRIDETEXMODE, LB_ADDSTRING, NULL, (LPARAM)"(0)Black"), 0);
 			SendDlgItemMessageA(hWnd, IDC_LST_OVERRIDETEXMODE, LB_SETITEMDATA, SendDlgItemMessageA(hWnd, IDC_LST_OVERRIDETEXMODE, LB_ADDSTRING, NULL, (LPARAM)"(1)White"), 1);
@@ -61,6 +63,12 @@ static INT_PTR CALLBACK DriverSettingsDialogProc(_In_ HWND hWnd, _In_ UINT MSG, 
 				return TRUE;
 			case IDC_CHK_EMULATECOMMANDLISTS:
 				d3d9devhook->SetEmulateCommandLists(IsDlgButtonChecked(hWnd, IDC_CHK_EMULATECOMMANDLISTS) ? true : false);
+				return TRUE;
+			case IDC_CHK_PRINTSCRNSAVESSCREENSHOT:
+				d3d9devhook->SetPrintScreenCapturesScreenshot(IsDlgButtonChecked(hWnd, IDC_CHK_PRINTSCRNSAVESSCREENSHOT) ? true : false);
+				return TRUE;
+			case IDC_CHK_DISABLESTATECACHING:
+				d3d9devhook->GetBaseDevice()->SetDisallowDeviceStateCaching(IsDlgButtonChecked(hWnd, IDC_CHK_DISABLESTATECACHING) ? true : false);
 				return TRUE;
 			case IDC_CHK_OVERRIDETEXMODE:
 				if (IsDlgButtonChecked(hWnd, IDC_CHK_OVERRIDETEXMODE) )

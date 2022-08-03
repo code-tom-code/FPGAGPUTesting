@@ -161,6 +161,16 @@ __declspec(align(16) ) struct IBaseGPUDevice
 		syncEveryCall = newSyncEveryCommand;
 	}
 
+	const bool GetDisallowDeviceStateCaching() const
+	{
+		return disallowDeviceStateCaching;
+	}
+
+	void SetDisallowDeviceStateCaching(const bool newDisallowDeviceStateCaching)
+	{
+		disallowDeviceStateCaching = newDisallowDeviceStateCaching;
+	}
+
 	const bool PacketIsValidForRecording(const command::ePacketType packetType) const;
 
 	void ResetInvalidateDeviceState();
@@ -168,7 +178,7 @@ __declspec(align(16) ) struct IBaseGPUDevice
 	const bool DoCacheDeviceState() const
 	{
 		// Only enable device state caching if we are not recording a command list!
-		return currentlyRecordingCommandList == NULL;
+		return currentlyRecordingCommandList == NULL && !disallowDeviceStateCaching;
 	}
 
 	const bool DoSyncEveryCall() const
@@ -192,6 +202,8 @@ private:
 	GPUDeviceState currentCachedState;
 
 	GPUCommandList* currentlyRecordingCommandList = nullptr;
+
+	bool disallowDeviceStateCaching = false;
 	
 	bool syncEveryCall = 
 #ifdef _DEBUG

@@ -31,6 +31,7 @@ entity VertexBatchBuilder is
 		IBC_ReadAddr : out STD_LOGIC_VECTOR(29 downto 0) := (others => '0');
 		IBC_ReadData : in STD_LOGIC_VECTOR(31 downto 0);
 		IBC_ReadReady : in STD_LOGIC;
+		IBC_InvalidateIndexCache : out STD_LOGIC := '0';
 	-- Index Buffer Cache interfaces end
 
 	-- Shader Core interface begin
@@ -39,7 +40,7 @@ entity VertexBatchBuilder is
 
 	-- Vertex Batch FIFO interface begin
 		VERTBATCH_FIFO_full : in STD_LOGIC;
-		VERTBATCH_FIFO_wr_data : out STD_LOGIC_VECTOR(18*16 - 1 downto 0) := (others => '0');
+		VERTBATCH_FIFO_wr_data : out STD_LOGIC_VECTOR(528 - 1 downto 0) := (others => '0');
 		VERTBATCH_FIFO_wr_en : out STD_LOGIC := '0';
 	-- Vertex Batch FIFO interface end
 
@@ -47,10 +48,13 @@ entity VertexBatchBuilder is
 		DBG_UseConstantOutput : in STD_LOGIC;
 		DBG_CurrentState : out STD_LOGIC_VECTOR(3 downto 0) := (others => '0');
 		DBG_CurrentBatchLength : out STD_LOGIC_VECTOR(4 downto 0) := (others => '0');
-		DBG_CurrentBatchRemainingPrims : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-		DBG_CurrentIndexID : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-		DBG_CurrentIndexIDPlus1 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-		DBG_CurrentIndexIDPlus2 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0')
+		DBG_CurrentIndexBatchLength : out STD_LOGIC_VECTOR(6 downto 0) := (others => '0');
+		DBG_CurrentBatchRemainingPrims : out STD_LOGIC_VECTOR(23 downto 0) := (others => '0');
+		DBG_QueueIsFull : out STD_LOGIC := '0';
+		DBG_QueueIsEmpty : out STD_LOGIC := '1';
+		DBG_DoneGeneratingIndices : out STD_LOGIC := '0';
+		DBG_IndexGeneratorRemainingPrims : out STD_LOGIC_VECTOR(23 downto 0) := (others => '0');
+		DBG_LastPolygonIndices : out STD_LOGIC_VECTOR(47 downto 0) := (others => '1')
 	-- Debug interfaces end
 		);
 end VertexBatchBuilder;
@@ -70,29 +74,16 @@ ATTRIBUTE X_INTERFACE_INFO of VERTBATCH_FIFO_full: SIGNAL is "xilinx.com:interfa
 type eVertexBatchBuilderState is
 (
 	initState, -- 0
-
 	readyState, -- 1
-
-	drawLoopNonindexed_triList, -- 2
-	drawLoopNonindexed_triStrip, -- 3
-	drawLoopNonindexed_triFan, -- 4
-
-	drawLoopIndexed_triListA, -- 5
-	drawLoopIndexed_triListB, -- 6
-	drawLoopIndexed_triListC, -- 7
-	drawLoopIndexed_triStrip, -- 8
-	drawLoopIndexed_triFan, -- 9
-
-	drawLoopIndexed_constantOut, -- 10
-
-	drawLoopIndexed_waitForIndex, -- 11
-
-	finishAndSubmitBatch, -- 12
-	submitBatch, -- 13
-
-	finishCooldown, -- 14
-	finishCooldown2, -- 15
-	finishCooldown3 -- 16
+	fillBatch, -- 2
+	startupState, -- 3
+	comparitorState, -- 4
+	batchInsertState, -- 5
+	finishAndSubmitBatch, -- 6
+	finishAndSubmitBatch2, -- 7
+	submitBatch, -- 8
+	finishCooldown, -- 9
+	fillBatch_constantOut -- 10
 );
 
 type eIndexFormat is
@@ -113,19 +104,100 @@ type ePrimTopology is
 	triStrip, -- 4
 	triFan, -- 5
 
+	-- This is not yet implemented:
 	quadList -- 6
 );
 
-type vertexBatch is array (15 downto 0) of unsigned(15 downto 0);
+type VertexBatchType is array (15 downto 0) of unsigned(15 downto 0);
+type IndexBatchType is array(63 downto 0) of unsigned(3 downto 0);
 
-pure function SerializeBatch(batch : vertexBatch; batchStartingIndex : unsigned(31 downto 0); batchEndingIndex : unsigned(31 downto 0) ) return unsigned is
+type PrimitiveIndices is record
+	indexA : unsigned(15 downto 0);
+	indexB : unsigned(15 downto 0);
+	indexC : unsigned(15 downto 0);
+end record PrimitiveIndices;
+
+type PrimitiveIndicesArrayType is array(15 downto 0) of PrimitiveIndices;
+
+type PrimitiveIndicesQueueStruct is record
+	PrimitivesArray : PrimitiveIndicesArrayType;
+	WritePointer : unsigned(3 downto 0);
+end record PrimitiveIndicesQueueStruct;
+
+type DrawCallParams is record
+	remainingPrimCount : unsigned(23 downto 0);
+	primTopology : ePrimTopology;
+	isIndexedDraw : std_logic;
+	indexBufferPtr : unsigned(29 downto 0);
+	indexFormat : eIndexFormat;
+end record DrawCallParams;
+
+constant DefaultDrawCallParams : DrawCallParams := (remainingPrimCount => (others => '0'), primTopology => triList, isIndexedDraw => '0', indexBufferPtr => (others => '0'), indexFormat => index16);
+
+pure function TrimIndexValueToIndexFormat(indexData : unsigned(31 downto 0); indexFormat : eIndexFormat) return unsigned is
 begin
-	return batchEndingIndex(15 downto 0) & batchStartingIndex(15 downto 0) & 
+	if (indexFormat = index8) then
+		return "00000000" & indexData(7 downto 0);
+	else -- For now just treat all other index formats as being index16 because all of our subsequent systems that we pass the vertex batches to expect 16 bit indices
+		return indexData(15 downto 0);
+	end if;
+end function;
+
+pure function IsPrimitiveIndicesQueueFull(queue : PrimitiveIndicesQueueStruct; ReadPointer : unsigned(3 downto 0) ) return boolean is
+begin
+	return ( (queue.WritePointer + 1) = ReadPointer);
+end function;
+
+pure function IsPrimitiveIndicesQueueEmpty(queue : PrimitiveIndicesQueueStruct; ReadPointer : unsigned(3 downto 0) ) return boolean is
+begin
+	return (queue.WritePointer = ReadPointer);
+end function;
+
+procedure QueuePushNewWriteEntry(signal queue : inout PrimitiveIndicesQueueStruct;
+	variable newPrimitiveEntry : in PrimitiveIndices) is
+begin
+	queue.PrimitivesArray(to_integer(queue.WritePointer) ) <= newPrimitiveEntry;
+	queue.WritePointer <= queue.WritePointer + 1;
+end procedure;
+
+procedure QueuePopNewReadEntry(signal queue : in PrimitiveIndicesQueueStruct; signal ReadPointer : inout unsigned(3 downto 0);
+	signal newPrimitiveEntry : out PrimitiveIndices) is
+begin
+	newPrimitiveEntry <= queue.PrimitivesArray(to_integer(ReadPointer) );
+	ReadPointer <= ReadPointer + 1;
+end procedure;
+
+procedure IncrementIndexBufferPointerByIndexFormat(signal indexBufferPointer : inout unsigned(29 downto 0);
+	signal indexBufferFormat : eIndexFormat) is
+begin
+	case indexBufferFormat is
+		when index8 =>
+			indexBufferPointer <= indexBufferPointer + 1;
+		when index16 =>
+			indexBufferPointer <= indexBufferPointer + 2;
+		when index32 =>
+			indexBufferPointer <= indexBufferPointer + 4;
+	end case;
+end procedure;
+
+pure function SerializeBatch(batch : VertexBatchType; vertexBatchLength : unsigned(4 downto 0) ) return unsigned is
+begin
+	return "000" & vertexBatchLength & 
 		batch(15) & batch(14) & batch(13) & batch(12) & batch(11) & batch(10) & batch(9) & batch(8) & 
 		batch(7) & batch(6) & batch(5) & batch(4) & batch(3) & batch(2) & batch(1) & batch(0);
 end function;
 
-pure function IsValueInCurrentBatch(batch : vertexBatch; batchLength : unsigned(4 downto 0); testValue : unsigned(15 downto 0) ) return std_logic is
+pure function SerializeIndexBatch(indexBatch : IndexBatchType; indexBatchLength : unsigned(6 downto 0); isIndexedDraw : std_logic) return unsigned is
+	variable tempBatchData : unsigned(255+8 downto 0) := (others => '0');
+begin
+	for x in 0 to 63 loop
+		tempBatchData( (x+1)*4-1 downto x*4) := indexBatch(x);
+	end loop;
+	tempBatchData(256+8-1 downto 256) := isIndexedDraw & indexBatchLength;
+	return tempBatchData;
+end function;
+
+pure function IsValueInCurrentBatch(batch : VertexBatchType; batchLength : unsigned(4 downto 0); testValue : unsigned(15 downto 0) ) return std_logic is
 begin
 	for x in 0 to 15 loop
 		if (batchLength > x) then
@@ -135,6 +207,17 @@ begin
 		end if;
 	end loop;
 	return '0';
+end function;
+
+-- Only call this function if a previous call to IsValueInCurrentBatch() has succeeded or else you will get a non-sensical result!
+pure function GetCurrentBatchIndexFromVertexIndex(batch : VertexBatchType; newIndex : unsigned(15 downto 0) ) return unsigned is
+begin
+	for x in 0 to 15 loop
+		if (batch(x) = newIndex) then
+			return to_unsigned(x, 4);
+		end if;
+	end loop;
+	return to_unsigned(15, 4);
 end function;
 
 pure function GetNumIndicesPerLine(idxFmt : eIndexFormat) return integer is
@@ -184,46 +267,344 @@ begin
 	end case;
 end function;
 
-pure function GetCMDReadyFlag(state : eVertexBatchBuilderState) return std_logic is
+pure function TestLineIsDegenerate(testPrim : PrimitiveIndices) return boolean is
 begin
-	if (state = readyState) then
-		return '1';
-	else
-		return '0';
-	end if;
+	return (testPrim.indexA = testPrim.indexB);
 end function;
 
-signal currentBatch : vertexBatch;
-signal currentBatchLength : unsigned(4 downto 0) := to_unsigned(0, 5);
-signal currentPrimLength : unsigned(1 downto 0) := (others => '0');
+pure function TestTriangleIsDegenerate(testPrim : PrimitiveIndices) return boolean is
+begin
+	return ( (testPrim.indexA = testPrim.indexB) or (testPrim.indexA = testPrim.indexC) );
+end function;
 
--- The current state of the vertex batch builder
+pure function GetCMDReadyFlag(state : eVertexBatchBuilderState) return boolean is
+begin
+	return (state = readyState);
+end function;
+
+pure function NewPrimFitsIntoVertexBatch(currentVertBatchLength : unsigned(4 downto 0); vertsMatchInBatch : STD_LOGIC_VECTOR(2 downto 0); currentPrimTopology : ePrimTopology) return boolean is
+begin
+	case currentPrimTopology is
+		when pointList =>
+			if (vertsMatchInBatch(0) = '0') then
+				return (currentVertBatchLength <= 15);
+			else
+				return true;
+			end if;
+
+		when lineList | lineStrip =>
+			case vertsMatchInBatch(1 downto 0) is
+				when "00" =>
+					return (currentVertBatchLength <= 14);
+				when "01" | "10" =>
+					return (currentVertBatchLength <= 15);
+				when others => --when "11" =>
+					return true;
+			end case;
+
+		when others => -- triList | triStrip | triFan =>
+			case vertsMatchInBatch is
+				when "000" =>
+					return (currentVertBatchLength <= 13);
+				when "001" | "010" | "100" =>
+					return (currentVertBatchLength <= 14);
+				when "011" | "101" | "110" =>
+					return (currentVertBatchLength <= 15);
+				when others => --when "111" =>
+					return true;
+			end case;
+	end case;
+end function;
+
+pure function NewPrimFitsIntoIndexBatch(currentIndexBatchLength : unsigned (6 downto 0); currentPrimTopology : ePrimTopology) return boolean is
+begin
+	case currentPrimTopology is
+		when pointList =>
+			return (currentIndexBatchLength <= 63);
+
+		when lineList | lineStrip =>
+			return (currentIndexBatchLength <= 62);
+
+		when others => -- triList | triStrip | triFan =>
+			return (currentIndexBatchLength <= 61);
+	end case;
+end function;
+
+pure function NewPrimFitsIntoBatch(currentVertBatchLength : unsigned(4 downto 0); currentIndexBatchLength : unsigned (6 downto 0); vertsMatchInBatch : STD_LOGIC_VECTOR(2 downto 0); currentPrimTopology : ePrimTopology) return boolean is
+begin
+	return (NewPrimFitsIntoIndexBatch(currentIndexBatchLength, currentPrimTopology) and NewPrimFitsIntoVertexBatch(currentVertBatchLength, vertsMatchInBatch, currentPrimTopology) );
+end function;
+
+-- State shared between the various processes
+signal PrimitiveIndicesQueue : PrimitiveIndicesQueueStruct := (WritePointer => (others => '0'), PrimitivesArray => (others => (others => (others => '0') ) ) );
+signal PrimitiveIndicesQueue_ReadPointer : unsigned(3 downto 0) := (others => '0');
+signal newDrawCallSignal : std_logic := '0';
+signal newDrawCallParams : DrawCallParams := DefaultDrawCallParams;
+
+-- Input state for the comparitor process
+signal currentPoppedPrim : PrimitiveIndices := (others => (others => '1') ); -- Read by the comparitor processor, written to by the main VBB process
+
+-- Output state from the comparitor process
+signal vertsExistInBatch : STD_LOGIC_VECTOR(2 downto 0) := (others => '0'); -- Bit-map of which vertices exist in the vertex batch already
+signal existingVertMatchIndexA : unsigned(3 downto 0) := (others => '1'); -- Index of the vertex in the vertex batch that matches our new indexA
+signal existingVertMatchIndexB : unsigned(3 downto 0) := (others => '1'); -- Index of the vertex in the vertex batch that matches our new indexB
+signal existingVertMatchIndexC : unsigned(3 downto 0) := (others => '1'); -- Index of the vertex in the vertex batch that matches our new indexC
+signal batchVertsAreUsed : STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
+signal batchIndicesAreUsed : STD_LOGIC_VECTOR(63 downto 0) := (others => '0');
+
+-- The current state of the VBB main process
 signal currentState : eVertexBatchBuilderState := initState;
-signal currentIndexBufferAddr : unsigned(29 downto 0) := (others => '0');
-signal currentIndexBufferFmt : eIndexFormat := index16;
-signal currentBatchRemainingPrims : unsigned(31 downto 0) := (others => '0');
+signal currentBatch : VertexBatchType := (others => (others => '1') );
+signal currentIndexBatch : IndexBatchType := (others => (others => '1') );
 signal currentBatchStartingIndex : unsigned(31 downto 0) := (others => '0');
-signal currentIndexID : unsigned(31 downto 0) := (others => '0');
-signal currentIndexIDPlus1 : unsigned(31 downto 0) := (others => '0');
-signal currentIndexIDPlus2 : unsigned(31 downto 0) := (others => '0');
-signal currentIndexValueA : unsigned(15 downto 0) := (others => '0');
-signal currentIndexValueB : unsigned(15 downto 0) := (others => '0');
-signal currentIndexValueC : unsigned(15 downto 0) := (others => '0');
-signal currentPrimToplogy : ePrimTopology := triList;
-signal currentlyDoingIndexedDrawing : std_logic := '0';
+signal currentBatchLength : unsigned(4 downto 0) := to_unsigned(0, 5); -- How many vertices do we currently have in our vertex batch?
+signal currentIndexBatchLength : unsigned(6 downto 0) := to_unsigned(0, 7); -- How many indices do we currently have in our index batch?
+signal leftoverPrimitiveNextBatch : std_logic := '0'; -- Do we have an extra primitive left over to be the start of next batch?
+signal savedIndexBufferAddr : unsigned(29 downto 0) := (others => '0');
+signal savedIndexBufferFmt : eIndexFormat := index16;
+
+-- The current state for the Index Generator Process
+signal currentPrimVertex : unsigned(2 downto 0) := (others => '0'); -- The current primitive index (0, 1 or 2) using one-hot format ("001", "010", and "100")
+signal currentIndexBufferAddr : unsigned(29 downto 0) := (others => '0');
+signal currentDrawCallParams : DrawCallParams := DefaultDrawCallParams;
+signal doneGeneratingIndices : std_logic := '1'; -- Signal from the Index Generator Process to the main VBB Process to tell it that we're done with this draw call
+signal cooldownState : std_logic := '0';
 
 begin
 
-CMD_ReadyState <= GetCMDReadyFlag(currentState);
+CMD_ReadyState <= '1' when GetCMDReadyFlag(currentState) else '0';
 DBG_CurrentState <= std_logic_vector(to_unsigned(eVertexBatchBuilderState'pos(currentState), 4) );
 DBG_CurrentBatchLength <= std_logic_vector(currentBatchLength);
-DBG_CurrentBatchRemainingPrims <= std_logic_vector(currentBatchRemainingPrims);
-DBG_CurrentIndexID <= std_logic_vector(currentIndexID);
-DBG_CurrentIndexIDPlus1 <= std_logic_vector(currentIndexIDPlus1);
-DBG_CurrentIndexIDPlus2 <= std_logic_vector(currentIndexIDPlus2);
+DBG_CurrentIndexBatchLength <= std_logic_vector(currentIndexBatchLength);
+DBG_CurrentBatchRemainingPrims <= std_logic_vector(newDrawCallParams.remainingPrimCount);
+DBG_QueueIsFull <= '1' when IsPrimitiveIndicesQueueFull(PrimitiveIndicesQueue, PrimitiveIndicesQueue_ReadPointer) else '0';
+DBG_QueueIsEmpty <= '1' when IsPrimitiveIndicesQueueEmpty(PrimitiveIndicesQueue, PrimitiveIndicesQueue_ReadPointer) else '0';
+DBG_DoneGeneratingIndices <= doneGeneratingIndices;
+DBG_IndexGeneratorRemainingPrims <= std_logic_vector(currentDrawCallParams.remainingPrimCount);
+DBG_LastPolygonIndices <= std_logic_vector(currentPoppedPrim.indexC) & std_logic_vector(currentPoppedPrim.indexB) & std_logic_vector(currentPoppedPrim.indexA);
+IBC_ReadAddr <= std_logic_vector(currentIndexBufferAddr);
 
-process(clk)
-	variable newBatchLength : unsigned(4 downto 0);
+BatchComparitorProcess : process(clk)
+begin
+	if (rising_edge(clk) ) then
+		vertsExistInBatch(0) <= IsValueInCurrentBatch(currentBatch, currentBatchLength, currentPoppedPrim.indexA);
+		if (ePrimTopology'pos(newDrawCallParams.primTopology) >= ePrimTopology'pos(lineList) ) then
+			vertsExistInBatch(1) <= IsValueInCurrentBatch(currentBatch, currentBatchLength, currentPoppedPrim.indexB);
+		else
+			vertsExistInBatch(1) <= '1';
+		end if;
+		if (ePrimTopology'pos(newDrawCallParams.primTopology) >= ePrimTopology'pos(triList) ) then
+			vertsExistInBatch(2) <= IsValueInCurrentBatch(currentBatch, currentBatchLength, currentPoppedPrim.indexC);
+		else
+			vertsExistInBatch(2) <= '1';
+		end if;
+		existingVertMatchIndexA <= GetCurrentBatchIndexFromVertexIndex(currentBatch, currentPoppedPrim.indexA);
+		existingVertMatchIndexB <= GetCurrentBatchIndexFromVertexIndex(currentBatch, currentPoppedPrim.indexB);
+		existingVertMatchIndexC <= GetCurrentBatchIndexFromVertexIndex(currentBatch, currentPoppedPrim.indexC);
+		for x in 0 to 15 loop
+			if (currentBatchLength < (x + 1) ) then
+				batchVertsAreUsed(x) <= '0';
+			else
+				batchVertsAreUsed(x) <= '1';
+			end if;
+		end loop;
+		for y in 0 to 63 loop
+			if (currentIndexBatchLength < (y + 1) ) then
+				batchIndicesAreUsed(y) <= '0';
+			else
+				batchIndicesAreUsed(y) <= '1';
+			end if;
+		end loop;
+	end if;
+end process BatchComparitorProcess;
+
+IndexGeneratorProcess : process(clk)
+	variable workPrim : PrimitiveIndices;
+begin
+	if (rising_edge(clk) ) then
+		if (currentDrawCallParams.remainingPrimCount = 0) then
+			doneGeneratingIndices <= '1';
+			IBC_ReadEnable <= '0';
+		else
+			doneGeneratingIndices <= '0';
+			if (cooldownState = '1') then
+				IBC_ReadEnable <= '0';
+				if (IBC_ReadReady = '0') then
+					cooldownState <= '0';
+				end if;
+			else
+				IBC_ReadEnable <= currentDrawCallParams.isIndexedDraw;
+			end if;
+		end if;
+
+		if (cooldownState = '0' and IsPrimitiveIndicesQueueFull(PrimitiveIndicesQueue, PrimitiveIndicesQueue_ReadPointer) = false and currentDrawCallParams.remainingPrimCount > 0) then -- Stall this process if our output queue is full or we run out of prims
+			if (currentDrawCallParams.isIndexedDraw = '1') then -- Indexed draw call case:
+				if (IBC_ReadReady = '1') then
+					cooldownState <= '1';
+					case currentDrawCallParams.primTopology is
+						when pointList =>
+							workPrim.indexA := TrimIndexValueToIndexFormat(unsigned(IBC_ReadData), currentDrawCallParams.indexFormat);
+							IncrementIndexBufferPointerByIndexFormat(currentIndexBufferAddr, currentDrawCallParams.indexFormat);
+							currentDrawCallParams.remainingPrimCount <= currentDrawCallParams.remainingPrimCount - 1;
+							-- Point Lists have no index-based degeneracy case, so there's nothing to test here
+							QueuePushNewWriteEntry(PrimitiveIndicesQueue, workPrim);
+
+						when lineList =>
+							case currentPrimVertex is
+								when "001" =>
+									workPrim.indexA := TrimIndexValueToIndexFormat(unsigned(IBC_ReadData), currentDrawCallParams.indexFormat);
+									IncrementIndexBufferPointerByIndexFormat(currentIndexBufferAddr, currentDrawCallParams.indexFormat);
+									currentPrimVertex <= "010";
+								when others => -- when "010" =>
+									workPrim.indexB := TrimIndexValueToIndexFormat(unsigned(IBC_ReadData), currentDrawCallParams.indexFormat);
+									IncrementIndexBufferPointerByIndexFormat(currentIndexBufferAddr, currentDrawCallParams.indexFormat);
+									currentPrimVertex <= "001";
+									currentDrawCallParams.remainingPrimCount <= currentDrawCallParams.remainingPrimCount - 1;
+									if (TestLineIsDegenerate(workPrim) = false) then
+										QueuePushNewWriteEntry(PrimitiveIndicesQueue, workPrim);
+									end if;
+							end case;
+
+						when lineStrip =>
+							case currentPrimVertex is
+								when "001" =>
+									workPrim.indexA := TrimIndexValueToIndexFormat(unsigned(IBC_ReadData), currentDrawCallParams.indexFormat);
+									IncrementIndexBufferPointerByIndexFormat(currentIndexBufferAddr, currentDrawCallParams.indexFormat);
+									currentPrimVertex <= "010";
+								when others => -- when "010" =>
+									workPrim.indexB := TrimIndexValueToIndexFormat(unsigned(IBC_ReadData), currentDrawCallParams.indexFormat);
+									IncrementIndexBufferPointerByIndexFormat(currentIndexBufferAddr, currentDrawCallParams.indexFormat);
+									currentPrimVertex <= "010";
+									currentDrawCallParams.remainingPrimCount <= currentDrawCallParams.remainingPrimCount - 1;
+									if (TestLineIsDegenerate(workPrim) = false) then
+										QueuePushNewWriteEntry(PrimitiveIndicesQueue, workPrim);
+									end if;
+									workPrim.indexA := workPrim.indexB;
+							end case;
+
+						when triList =>
+							case currentPrimVertex is
+								when "001" =>
+									workPrim.indexA := TrimIndexValueToIndexFormat(unsigned(IBC_ReadData), currentDrawCallParams.indexFormat);
+									IncrementIndexBufferPointerByIndexFormat(currentIndexBufferAddr, currentDrawCallParams.indexFormat);
+									currentPrimVertex <= "010";
+								when "010" =>
+									workPrim.indexB := TrimIndexValueToIndexFormat(unsigned(IBC_ReadData), currentDrawCallParams.indexFormat);
+									IncrementIndexBufferPointerByIndexFormat(currentIndexBufferAddr, currentDrawCallParams.indexFormat);
+									currentPrimVertex <= "100";
+								when others => -- when "100" =>
+									workPrim.indexC := TrimIndexValueToIndexFormat(unsigned(IBC_ReadData), currentDrawCallParams.indexFormat);
+									IncrementIndexBufferPointerByIndexFormat(currentIndexBufferAddr, currentDrawCallParams.indexFormat);
+									currentPrimVertex <= "001";
+									currentDrawCallParams.remainingPrimCount <= currentDrawCallParams.remainingPrimCount - 1;
+									if (TestTriangleIsDegenerate(workPrim) = false) then
+										QueuePushNewWriteEntry(PrimitiveIndicesQueue, workPrim);
+									end if;
+							end case;
+
+						when triStrip =>
+							case currentPrimVertex is
+								when "001" =>
+									workPrim.indexA := TrimIndexValueToIndexFormat(unsigned(IBC_ReadData), currentDrawCallParams.indexFormat);
+									IncrementIndexBufferPointerByIndexFormat(currentIndexBufferAddr, currentDrawCallParams.indexFormat);
+									currentPrimVertex <= "010";
+								when "010" =>
+									workPrim.indexB := TrimIndexValueToIndexFormat(unsigned(IBC_ReadData), currentDrawCallParams.indexFormat);
+									IncrementIndexBufferPointerByIndexFormat(currentIndexBufferAddr, currentDrawCallParams.indexFormat);
+									currentPrimVertex <= "100";
+								when others => -- when "100" =>
+									workPrim.indexC := TrimIndexValueToIndexFormat(unsigned(IBC_ReadData), currentDrawCallParams.indexFormat);
+									IncrementIndexBufferPointerByIndexFormat(currentIndexBufferAddr, currentDrawCallParams.indexFormat);
+									currentPrimVertex <= "100";
+									currentDrawCallParams.remainingPrimCount <= currentDrawCallParams.remainingPrimCount - 1;
+									if (TestTriangleIsDegenerate(workPrim) = false) then
+										QueuePushNewWriteEntry(PrimitiveIndicesQueue, workPrim);
+									end if;
+									workPrim.indexA := workPrim.indexB;
+									workPrim.indexB := workPrim.indexC;
+							end case;
+
+						when triFan =>
+							case currentPrimVertex is
+								when "001" =>
+									workPrim.indexA := TrimIndexValueToIndexFormat(unsigned(IBC_ReadData), currentDrawCallParams.indexFormat);
+									IncrementIndexBufferPointerByIndexFormat(currentIndexBufferAddr, currentDrawCallParams.indexFormat);
+									currentPrimVertex <= "010";
+								when "010" =>
+									workPrim.indexB := TrimIndexValueToIndexFormat(unsigned(IBC_ReadData), currentDrawCallParams.indexFormat);
+									IncrementIndexBufferPointerByIndexFormat(currentIndexBufferAddr, currentDrawCallParams.indexFormat);
+									currentPrimVertex <= "100";
+								when others => -- when "100" =>
+									workPrim.indexC := TrimIndexValueToIndexFormat(unsigned(IBC_ReadData), currentDrawCallParams.indexFormat);
+									IncrementIndexBufferPointerByIndexFormat(currentIndexBufferAddr, currentDrawCallParams.indexFormat);
+									currentPrimVertex <= "100";
+									currentDrawCallParams.remainingPrimCount <= currentDrawCallParams.remainingPrimCount - 1;
+									if (TestTriangleIsDegenerate(workPrim) = false) then
+										QueuePushNewWriteEntry(PrimitiveIndicesQueue, workPrim);
+									end if;
+									workPrim.indexB := workPrim.indexC;
+							end case;
+
+						when others => -- when quadList =>
+					end case;
+				end if;
+			else -- Non-indexed draw call case:
+				QueuePushNewWriteEntry(PrimitiveIndicesQueue, workPrim);
+				case currentDrawCallParams.primTopology is
+					when pointList =>
+						workPrim.indexA := workPrim.indexA + 1;
+
+					when lineList =>
+						workPrim.indexA := workPrim.indexB + 1;
+						workPrim.indexB := workPrim.indexB + 2;
+
+					when lineStrip =>
+						workPrim.indexA := workPrim.indexB;
+						workPrim.indexB := workPrim.indexB + 1;
+
+					when triList =>
+						workPrim.indexA := workPrim.indexC + 1;
+						workPrim.indexB := workPrim.indexC + 2;
+						workPrim.indexC := workPrim.indexC + 3;
+
+					when triStrip =>
+						workPrim.indexA := workPrim.indexB;
+						workPrim.indexB := workPrim.indexC;
+						workPrim.indexC := workPrim.indexC + 1;
+
+					when triFan =>
+						workPrim.indexA := (others => '0');
+						workPrim.indexB := workPrim.indexC;
+						workPrim.indexC := workPrim.indexC + 1;
+
+					when others => -- when quadList =>
+				end case;
+				
+				currentDrawCallParams.remainingPrimCount <= currentDrawCallParams.remainingPrimCount - 1;
+			end if;
+		elsif (newDrawCallSignal = '1') then
+			currentDrawCallParams <= newDrawCallParams;
+			currentIndexBufferAddr <= newDrawCallParams.indexBufferPtr;
+			if (newDrawCallParams.isIndexedDraw = '1') then
+				IBC_ReadEnable <= '1'; -- Begin reading from our first index address right away to save one cycle
+				cooldownState <= '1';
+			else
+				IBC_ReadEnable <= '0';
+			end if;
+			if (newDrawCallParams.remainingPrimCount = 0) then
+				doneGeneratingIndices <= '1';
+			else
+				doneGeneratingIndices <= '0';
+			end if;
+			currentPrimVertex <= "001";
+			workPrim.indexA := to_unsigned(0, 16);
+			workPrim.indexB := to_unsigned(1, 16);
+			workPrim.indexC := to_unsigned(2, 16);
+		end if;
+	end if;
+end process IndexGeneratorProcess;
+
+MainVertexBatchBuilderProcess : process(clk)
 begin
 	if (rising_edge(clk) ) then
 		case currentState is
@@ -233,122 +614,198 @@ begin
 			when readyState =>
 				VERTBATCH_FIFO_wr_en <= '0';
 				SHADER_Done <= '1';
+				newDrawCallSignal <= '0';
+				IBC_InvalidateIndexCache <= '0';
 				case (eVBB_CMDPacket'val(to_integer(unsigned(CMD_SendCommand) ) ) ) is
 					when SetIndexBuffer =>
-						currentIndexBufferAddr <= unsigned(CMD_CommandArg0(29 downto 0) );
-						currentIndexBufferFmt <= eIndexFormat'val(to_integer(unsigned(CMD_CommandArg0(31 downto 30) ) ) );
+						savedIndexBufferAddr <= unsigned(CMD_CommandArg0(29 downto 0) );
+						savedIndexBufferFmt <= eIndexFormat'val(to_integer(unsigned(CMD_CommandArg0(31 downto 30) ) ) );
 					when DrawPrimitive =>
-						currentBatchRemainingPrims <= unsigned(CMD_CommandArg0);
-						currentBatchStartingIndex <= (others => '0'); -- Non-indexed batches have no start/end indices (they are both always 0)
-						currentIndexID <= unsigned(CMD_CommandArg1);
-						currentIndexIDPlus1 <= unsigned(CMD_CommandArg1) + 1;
-						currentIndexIDPlus2 <= unsigned(CMD_CommandArg1) + 2;
-						currentPrimToplogy <= GetPrimitiveToplogyFromUnsigned(unsigned(CMD_CommandArgType) );
+						currentBatchStartingIndex <= (others => '0'); -- Non-indexed batches have no starting index (it always starts at 0)
+						newDrawCallParams.remainingPrimCount <= unsigned(CMD_CommandArg0(23 downto 0) );
+						newDrawCallParams.primTopology <= GetPrimitiveToplogyFromUnsigned(unsigned(CMD_CommandArgType) );
+						newDrawCallParams.isIndexedDraw <= '0';
+						newDrawCallParams.indexBufferPtr <= (others => '0');
+						newDrawCallParams.indexFormat <= index16;
 						currentBatchLength <= (others => '0');
-						currentlyDoingIndexedDrawing <= '0';
+						currentIndexBatchLength <= (others => '0');
 						SHADER_Done <= '0';
-						case GetPrimitiveToplogyFromUnsigned(unsigned(CMD_CommandArgType) ) is
-							when triList =>
-								currentBatch(15) <= X"FFFF"; -- Always set the last vertID in the vertex batch to FFFF when we're drawing triangle lists (15/16)
-								currentState <= drawLoopNonindexed_triList;
-							when triStrip =>
-								currentState <= drawLoopNonindexed_triStrip;
-							when triFan =>
-								currentState <= drawLoopNonindexed_triFan;
-							when others =>
-						end case;
+						newDrawCallSignal <= '1'; -- Signal the IndexGeneratorProcess to start generating indices for us!
+
+						currentState <= startupState;
 					when DrawIndexedPrimitive =>
-						currentBatchRemainingPrims <= unsigned(CMD_CommandArg0);
+						newDrawCallParams.remainingPrimCount <= unsigned(CMD_CommandArg0(23 downto 0) );
 						currentBatchStartingIndex <= unsigned(CMD_CommandArg1);
-						currentIndexID <= unsigned(CMD_CommandArg1);
-						currentIndexIDPlus1 <= unsigned(CMD_CommandArg1) + 1;
-						currentIndexIDPlus2 <= unsigned(CMD_CommandArg1) + 2;
-						currentPrimToplogy <= GetPrimitiveToplogyFromUnsigned(unsigned(CMD_CommandArgType) );
+						newDrawCallParams.primTopology <= GetPrimitiveToplogyFromUnsigned(unsigned(CMD_CommandArgType) );
+						newDrawCallParams.indexBufferPtr <= savedIndexBufferAddr;
+						newDrawCallParams.indexFormat <= savedIndexBufferFmt;
 						currentBatchLength <= (others => '0');
-						currentlyDoingIndexedDrawing <= '1';
+						currentIndexBatchLength <= (others => '0');
+						newDrawCallParams.isIndexedDraw <= '1';
 						SHADER_Done <= '0';
-						if (DBG_UseConstantOutput = '1') then
-							currentState <= drawLoopIndexed_constantOut;
-						else
-							case GetPrimitiveToplogyFromUnsigned(unsigned(CMD_CommandArgType) ) is
-								when triList =>
-									currentBatch(15) <= X"FFFF"; -- Always set the last vertID in the vertex batch to FFFF when we're drawing triangle lists (15/16)
-									currentState <= drawLoopIndexed_triListA;
-								when triStrip =>
-									currentState <= drawLoopIndexed_triStrip;
-								when triFan =>
-									currentState <= drawLoopIndexed_triFan;
-								when others =>
-							end case;
-						end if;
+						newDrawCallSignal <= '1'; -- Signal the IndexGeneratorProcess to start generating indices for us!
+						IBC_InvalidateIndexCache <= '1'; -- Signal the IndexBufferCache to invalidate its cache for this new draw call
+
+						currentState <= startupState;
 					when others =>
 				end case;
 
-			when drawLoopNonindexed_triList =>
-				VERTBATCH_FIFO_wr_en <= '0';
-				currentBatch(to_integer(currentBatchLength) ) <= currentIndexID(15 downto 0);
-				currentBatch(to_integer(currentBatchLength + 1) ) <= currentIndexIDPlus1(15 downto 0);
-				currentBatch(to_integer(currentBatchLength + 2) ) <= currentIndexIDPlus2(15 downto 0);
-				currentIndexID <= currentIndexID + 3;
-				currentIndexIDPlus1 <= currentIndexIDPlus1 + 3;
-				currentIndexIDPlus2 <= currentIndexIDPlus2 + 3;
-				if (currentBatchRemainingPrims <= 1) then
-					currentState <= finishAndSubmitBatch;
-				elsif (currentBatchLength >= 12) then
-					currentState <= submitBatch;
-				end if;
-				if (currentBatchRemainingPrims(31) = '1') then
-					currentBatchRemainingPrims <= (others => '0');
+			when startupState =>
+				IBC_InvalidateIndexCache <= '0';
+				if (DBG_UseConstantOutput = '1' and newDrawCallParams.isIndexedDraw = '1') then
+					currentState <= fillBatch_constantOut;
 				else
-					currentBatchRemainingPrims <= currentBatchRemainingPrims - 1;
+					currentState <= fillBatch;
 				end if;
-				currentBatchLength <= currentBatchLength + 3;
 
-			when drawLoopNonindexed_triStrip =>
+			when fillBatch =>
 				VERTBATCH_FIFO_wr_en <= '0';
-				if (currentBatchLength = 0) then
-					currentBatch(0) <= currentIndexID(15 downto 0);
-					currentBatch(1) <= currentIndexIDPlus1(15 downto 0);
-					currentBatch(2) <= currentIndexIDPlus2(15 downto 0);
-					currentBatchLength <= currentBatchLength + 3;
-				else
-					currentBatch(to_integer(currentBatchLength) ) <= currentIndexID(15 downto 0);
-					currentBatchLength <= currentBatchLength + 1;
-				end if;
-				currentIndexIDPlus2 <= currentIndexIDPlus1;
-				currentIndexIDPlus1 <= currentIndexID;
-				currentIndexID <= currentIndexID + 1;
+				newDrawCallSignal <= '0';
+				if (IsPrimitiveIndicesQueueEmpty(PrimitiveIndicesQueue, PrimitiveIndicesQueue_ReadPointer) = false) then
+					QueuePopNewReadEntry(PrimitiveIndicesQueue, PrimitiveIndicesQueue_ReadPointer, currentPoppedPrim);
+					currentState <= comparitorState;
 
-				if (currentBatchRemainingPrims <= 1) then
+				elsif (doneGeneratingIndices = '1') then
+					-- If our current batch isn't empty, then finish off our current batch by filling the remaining elements with 0xFFFF's
+					leftoverPrimitiveNextBatch <= '0';
 					currentState <= finishAndSubmitBatch;
-				elsif (currentBatchLength >= 14) then
-					currentState <= submitBatch;
 				end if;
 
-			when drawLoopNonindexed_triFan =>
-				VERTBATCH_FIFO_wr_en <= '0';
-				if (currentBatchLength = 0) then
-					currentBatch(0) <= currentIndexID(15 downto 0);
-					currentBatch(1) <= currentIndexIDPlus1(15 downto 0);
-					currentBatch(2) <= currentIndexIDPlus2(15 downto 0);
-					currentBatchLength <= currentBatchLength + 3;
-				else
-					currentBatch(to_integer(currentBatchLength) ) <= currentIndexID(15 downto 0);
-					currentBatchLength <= currentBatchLength + 1;
-				end if;
-				currentIndexIDPlus2 <= currentIndexIDPlus1;
-				currentIndexIDPlus1 <= currentIndexID + 1;
+			when fillBatch_constantOut =>
+				newDrawCallSignal <= '0';
+				if (IsPrimitiveIndicesQueueEmpty(PrimitiveIndicesQueue, PrimitiveIndicesQueue_ReadPointer) = false) then
+					QueuePopNewReadEntry(PrimitiveIndicesQueue, PrimitiveIndicesQueue_ReadPointer, currentPoppedPrim);
+				elsif (doneGeneratingIndices = '1') then
+					currentBatch(0) <= X"0000";
+					currentBatch(1) <= X"0001";
+					currentBatch(2) <= X"0002";
+					currentBatch(3) <= X"0003";
+					currentBatch(4) <= X"0004";
+					currentBatch(5) <= X"0006";
+					currentBatch(6) <= X"0007";
+					currentBatch(7) <= X"0005";
+					currentBatchLength <= to_unsigned(8, 5);
 
-				if (currentBatchRemainingPrims <= 1) then
+					currentIndexBatch( 0) <= to_unsigned(0, 4); currentIndexBatch( 1) <= to_unsigned(1, 4); currentIndexBatch( 2) <= to_unsigned(2, 4);
+					currentIndexBatch( 3) <= to_unsigned(2, 4); currentIndexBatch( 4) <= to_unsigned(1, 4); currentIndexBatch( 5) <= to_unsigned(3, 4);
+					currentIndexBatch( 6) <= to_unsigned(4, 4); currentIndexBatch( 7) <= to_unsigned(0, 4); currentIndexBatch( 8) <= to_unsigned(5, 4);
+					currentIndexBatch( 9) <= to_unsigned(5, 4); currentIndexBatch(10) <= to_unsigned(0, 4); currentIndexBatch(11) <= to_unsigned(2, 4);
+					currentIndexBatch(12) <= to_unsigned(6, 4); currentIndexBatch(13) <= to_unsigned(7, 4); currentIndexBatch(14) <= to_unsigned(5, 4);
+					currentIndexBatch(15) <= to_unsigned(5, 4); currentIndexBatch(16) <= to_unsigned(7, 4); currentIndexBatch(17) <= to_unsigned(4, 4);
+					currentIndexBatch(18) <= to_unsigned(3, 4); currentIndexBatch(19) <= to_unsigned(1, 4); currentIndexBatch(20) <= to_unsigned(6, 4);
+					currentIndexBatch(21) <= to_unsigned(6, 4); currentIndexBatch(22) <= to_unsigned(1, 4); currentIndexBatch(23) <= to_unsigned(7, 4);
+					currentIndexBatch(24) <= to_unsigned(4, 4); currentIndexBatch(25) <= to_unsigned(7, 4); currentIndexBatch(26) <= to_unsigned(0, 4);
+					currentIndexBatch(27) <= to_unsigned(2, 4); currentIndexBatch(28) <= to_unsigned(6, 4); currentIndexBatch(29) <= to_unsigned(5, 4);
+					currentIndexBatch(30) <= to_unsigned(3, 4); currentIndexBatch(31) <= to_unsigned(6, 4); currentIndexBatch(32) <= to_unsigned(2, 4);
+					currentIndexBatch(33) <= to_unsigned(0, 4); currentIndexBatch(34) <= to_unsigned(7, 4); currentIndexBatch(35) <= to_unsigned(1, 4);
+					currentIndexBatchLength <= to_unsigned(36, 7);
+
+					leftoverPrimitiveNextBatch <= '0';
 					currentState <= finishAndSubmitBatch;
-				elsif (currentBatchLength >= 14) then
-					currentState <= submitBatch;
 				end if;
-				
+
+			when comparitorState =>
+				-- The comparisons are happening in parallel in its own process
+				-- TODO: Make this state last for multiple clock cycles if we end up needing to pipeline the comparisons
+				currentState <= batchInsertState;
+
+			when batchInsertState =>
+				if (NewPrimFitsIntoBatch(currentBatchLength, currentIndexBatchLength, vertsExistInBatch, newDrawCallParams.primTopology) ) then
+					case vertsExistInBatch is
+						when "000" =>
+							currentIndexBatch(to_integer(currentIndexBatchLength) ) <= currentBatchLength(3 downto 0);
+							currentIndexBatch(to_integer(currentIndexBatchLength + 1) ) <= currentBatchLength(3 downto 0) + 1;
+							currentIndexBatch(to_integer(currentIndexBatchLength + 2) ) <= currentBatchLength(3 downto 0) + 2;
+						when "001" =>
+							currentIndexBatch(to_integer(currentIndexBatchLength) ) <= existingVertMatchIndexA;
+							currentIndexBatch(to_integer(currentIndexBatchLength + 1) ) <= currentBatchLength(3 downto 0);
+							currentIndexBatch(to_integer(currentIndexBatchLength + 2) ) <= currentBatchLength(3 downto 0) + 1;
+						when "010" =>
+							currentIndexBatch(to_integer(currentIndexBatchLength) ) <= currentBatchLength(3 downto 0);
+							currentIndexBatch(to_integer(currentIndexBatchLength + 1) ) <= existingVertMatchIndexB;
+							currentIndexBatch(to_integer(currentIndexBatchLength + 2) ) <= currentBatchLength(3 downto 0) + 1;
+						when "011" =>
+							currentIndexBatch(to_integer(currentIndexBatchLength) ) <= existingVertMatchIndexA;
+							currentIndexBatch(to_integer(currentIndexBatchLength + 1) ) <= existingVertMatchIndexB;
+							currentIndexBatch(to_integer(currentIndexBatchLength + 2) ) <= currentBatchLength(3 downto 0);
+						when "100" =>
+							currentIndexBatch(to_integer(currentIndexBatchLength) ) <= currentBatchLength(3 downto 0);
+							currentIndexBatch(to_integer(currentIndexBatchLength + 1) ) <= currentBatchLength(3 downto 0) + 1;
+							currentIndexBatch(to_integer(currentIndexBatchLength + 2) ) <= existingVertMatchIndexC;
+						when "101" =>
+							currentIndexBatch(to_integer(currentIndexBatchLength) ) <= existingVertMatchIndexA;
+							currentIndexBatch(to_integer(currentIndexBatchLength + 1) ) <= currentBatchLength(3 downto 0);
+							currentIndexBatch(to_integer(currentIndexBatchLength + 2) ) <= existingVertMatchIndexC;
+						when "110" =>
+							currentIndexBatch(to_integer(currentIndexBatchLength) ) <= currentBatchLength(3 downto 0);
+							currentIndexBatch(to_integer(currentIndexBatchLength + 1) ) <= existingVertMatchIndexB;
+							currentIndexBatch(to_integer(currentIndexBatchLength + 2) ) <= existingVertMatchIndexC;
+						when others => -- when "111" =>
+							currentIndexBatch(to_integer(currentIndexBatchLength) ) <= existingVertMatchIndexA;
+							currentIndexBatch(to_integer(currentIndexBatchLength + 1) ) <= existingVertMatchIndexB;
+							currentIndexBatch(to_integer(currentIndexBatchLength + 2) ) <= existingVertMatchIndexC;
+					end case;
+
+					case newDrawCallParams.primTopology is
+						when pointList =>
+							currentIndexBatchLength <= currentIndexBatchLength + 1;
+						when lineList | lineStrip =>
+							currentIndexBatchLength <= currentIndexBatchLength + 2;
+						when others => -- when triList | triStrip | triFan =>
+							currentIndexBatchLength <= currentIndexBatchLength + 3;
+					end case;
+
+					case vertsExistInBatch is
+						when "000" =>
+							currentBatch(to_integer(currentBatchLength) ) <= currentPoppedPrim.indexA;
+							currentBatch(to_integer(currentBatchLength + 1) ) <= currentPoppedPrim.indexB;
+							currentBatch(to_integer(currentBatchLength + 2) ) <= currentPoppedPrim.indexC;
+							currentBatchLength <= currentBatchLength + 3;
+						when "001" =>
+							currentBatch(to_integer(currentBatchLength) ) <= currentPoppedPrim.indexB;
+							currentBatch(to_integer(currentBatchLength + 1) ) <= currentPoppedPrim.indexC;
+							currentBatchLength <= currentBatchLength + 2;
+						when "010" =>
+							currentBatch(to_integer(currentBatchLength) ) <= currentPoppedPrim.indexA;
+							currentBatch(to_integer(currentBatchLength + 1) ) <= currentPoppedPrim.indexC;
+							currentBatchLength <= currentBatchLength + 2;
+						when "011" =>
+							currentBatch(to_integer(currentBatchLength) ) <= currentPoppedPrim.indexC;
+							currentBatchLength <= currentBatchLength + 1;
+						when "100" =>
+							currentBatch(to_integer(currentBatchLength) ) <= currentPoppedPrim.indexA;
+							currentBatch(to_integer(currentBatchLength + 1) ) <= currentPoppedPrim.indexB;
+							currentBatchLength <= currentBatchLength + 2;
+						when "101" =>
+							currentBatch(to_integer(currentBatchLength) ) <= currentPoppedPrim.indexB;
+							currentBatchLength <= currentBatchLength + 1;
+						when "110" =>
+							currentBatch(to_integer(currentBatchLength) ) <= currentPoppedPrim.indexA;
+							currentBatchLength <= currentBatchLength + 1;
+						when others => -- when "111" =>
+							-- Do nothing, all our verts are already inserted into the vertex batch
+					end case;
+
+					leftoverPrimitiveNextBatch <= '0';
+					currentState <= fillBatch;
+				else
+					-- Finish off our current batch by filling the remaining elements with 0xFFFF's
+					leftoverPrimitiveNextBatch <= '1';
+					currentState <= finishAndSubmitBatch;
+				end if;
+
 			when finishAndSubmitBatch =>
+				currentState <= finishAndSubmitBatch2;				
+
+			when finishAndSubmitBatch2 =>
 				for x in 0 to 15 loop
-					if (currentBatchLength < (x + 1) ) then
+					if (batchVertsAreUsed(x) = '0') then
 						currentBatch(x) <= X"FFFF";
+					end if;
+				end loop;
+				for y in 0 to 63 loop
+					if (batchIndicesAreUsed(y) = '0') then
+						currentIndexBatch(y) <= X"F";
 					end if;
 				end loop;
 				currentState <= submitBatch;
@@ -356,157 +813,39 @@ begin
 			when submitBatch =>
 				if (VERTBATCH_FIFO_full = '0') then -- FIFO is ready
 					VERTBATCH_FIFO_wr_en <= '1';
-					if (currentlyDoingIndexedDrawing = '1') then
-						VERTBATCH_FIFO_wr_data <= std_logic_vector(SerializeBatch(currentBatch, currentBatchStartingIndex, currentIndexID) );
-					else
-						VERTBATCH_FIFO_wr_data <= std_logic_vector(SerializeBatch(currentBatch, currentBatchStartingIndex, currentBatchStartingIndex) );
-					end if;
-					currentBatchLength <= (others => '0');
-					if (currentBatchRemainingPrims > 0 and currentBatchRemainingPrims(31) = '0') then -- More polys remaining
-						if (currentlyDoingIndexedDrawing = '1') then
-							case currentPrimToplogy is
-								when triList =>
-									currentState <= drawLoopIndexed_triListA;
-								when triStrip =>
-									currentState <= drawLoopIndexed_triStrip;
-								when triFan =>
-									currentState <= drawLoopIndexed_triFan;
-								when others =>
-									currentState <= finishCooldown;
-							end case;
-						else
-							case currentPrimToplogy is
-								when triList =>
-									currentState <= drawLoopNonindexed_triList;
-								when triStrip =>
-									currentState <= drawLoopNonindexed_triStrip;
-								when triFan =>
-									currentState <= drawLoopNonindexed_triFan;
-								when others =>
-									currentState <= finishCooldown;
-							end case;
-						end if;
-					else -- All polys complete
+					VERTBATCH_FIFO_wr_data <= std_logic_vector(SerializeIndexBatch(currentIndexBatch, currentIndexBatchLength, newDrawCallParams.isIndexedDraw) ) & std_logic_vector(SerializeBatch(currentBatch, currentBatchLength) );
+					if (leftoverPrimitiveNextBatch = '0' and doneGeneratingIndices = '1') then
 						currentState <= finishCooldown;
+					else
+						leftoverPrimitiveNextBatch <= '0'; -- Clear our leftover flag
+						case newDrawCallParams.primTopology is
+							when pointList =>
+								currentBatch(0) <= currentPoppedPrim.indexA;
+								currentBatchLength <= to_unsigned(1, 5);
+								currentIndexBatchLength <= to_unsigned(1, 7);
+							when lineList | lineStrip =>
+								currentBatch(0) <= currentPoppedPrim.indexA;
+								currentBatch(1) <= currentPoppedPrim.indexB;
+								currentBatchLength <= to_unsigned(2, 5);
+								currentIndexBatchLength <= to_unsigned(2, 7);
+							when others => -- when triList | triStrip | triFan =>
+								currentBatch(0) <= currentPoppedPrim.indexA;
+								currentBatch(1) <= currentPoppedPrim.indexB;
+								currentBatch(2) <= currentPoppedPrim.indexC;
+								currentBatchLength <= to_unsigned(3, 5);
+								currentIndexBatchLength <= to_unsigned(3, 7);
+						end case;
+						currentState <= fillBatch;
 					end if;
-				else -- FIFO is not ready
+				else -- FIFO is not ready yet
 					VERTBATCH_FIFO_wr_en <= '0';
 				end if;
 
-			when drawLoopIndexed_constantOut =>
-				currentBatch(0) <= x"0000";
-				currentBatch(1) <= x"0001";
-				currentBatch(2) <= x"0002";
-				currentBatch(3) <= x"0003";
-				currentBatch(4) <= x"0004";
-				--currentBatch(5) <= x"0006";
-				--currentBatch(6) <= x"0007";
-				--currentBatch(7) <= x"0005";
-				currentBatch(5) <= x"0005";
-				currentBatch(6) <= x"0006";
-				currentBatch(7) <= x"0007";
-				currentBatch(8) <= x"FFFF";
-				currentBatch(9) <= x"FFFF";
-				currentBatch(10) <= x"FFFF";
-				currentBatch(11) <= x"FFFF";
-				currentBatch(12) <= x"FFFF";
-				currentBatch(13) <= x"FFFF";
-				currentBatch(14) <= x"FFFF";
-				currentBatch(15) <= x"FFFF";
-				currentIndexID <= resize(currentBatchRemainingPrims, 16) * to_unsigned(3, 16);
-				currentBatchRemainingPrims <= (others => '0');
-				currentState <= submitBatch;
-
-			when drawLoopIndexed_triListA =>
-				VERTBATCH_FIFO_wr_en <= '0';
-				if (currentBatchRemainingPrims > 0) then
-					IBC_ReadAddr <= std_logic_vector(IndexIDToIndexAddress(currentIndexID, currentIndexBufferAddr, currentIndexBufferFmt)(29 downto 0) );
-					IBC_ReadEnable <= '1';
-					currentIndexID <= currentIndexID + 3;
-					currentState <= drawLoopIndexed_triListB;
-				else
-					currentState <= finishAndSubmitBatch;
-				end if;
-
-			when drawLoopIndexed_triListB =>
-				if (IBC_ReadReady = '1') then
-					currentIndexValueA <= GetIndexValueMasked(unsigned(IBC_ReadData), currentIndexBufferFmt);
-					IBC_ReadAddr <= std_logic_vector(IndexIDToIndexAddress(currentIndexIDPlus1, currentIndexBufferAddr, currentIndexBufferFmt)(29 downto 0) );
-					currentIndexIDPlus1 <= currentIndexIDPlus1 + 3;
-					IBC_ReadEnable <= '1';
-					currentState <= drawLoopIndexed_triListC;
-				end if;
-
-			when drawLoopIndexed_triListC =>
-				if (IBC_ReadReady = '1') then
-					currentIndexValueB <= GetIndexValueMasked(unsigned(IBC_ReadData), currentIndexBufferFmt);
-					IBC_ReadAddr <= std_logic_vector(IndexIDToIndexAddress(currentIndexIDPlus2, currentIndexBufferAddr, currentIndexBufferFmt)(29 downto 0) );
-					currentIndexIDPlus2 <= currentIndexIDPlus2 + 3;
-					IBC_ReadEnable <= '1';
-					currentState <= drawLoopIndexed_waitForIndex;
-				end if;
-
-			when drawLoopIndexed_waitForIndex =>
-				if (IBC_ReadReady = '1') then
-					IBC_ReadEnable <= '0';
-					newBatchLength := currentBatchLength;
-					if (IsValueInCurrentBatch(currentBatch, newBatchLength, currentIndexValueA) = '0') then
-						currentBatch(to_integer(newBatchLength) ) <= currentIndexValueA;
-						newBatchLength := newBatchLength + 1;
-					end if;
-					if (IsValueInCurrentBatch(currentBatch, newBatchLength, currentIndexValueB ) = '0') then
-						currentBatch(to_integer(newBatchLength) ) <= currentIndexValueB;
-						newBatchLength := newBatchLength + 1;
-					end if;
-					if (IsValueInCurrentBatch(currentBatch, newBatchLength, GetIndexValueMasked(unsigned(IBC_ReadData), currentIndexBufferFmt) ) = '0') then
-						currentBatch(to_integer(newBatchLength) ) <= GetIndexValueMasked(unsigned(IBC_ReadData), currentIndexBufferFmt);
-						newBatchLength := newBatchLength + 1;
-					end if;
-
-					if (newBatchLength >= 16) then
-						if (currentBatchLength = 16) then
-							currentState <= submitBatch;
-						else
-							currentState <= finishAndSubmitBatch;
-						end if;
-					else
-						currentBatchLength <= newBatchLength;
-
-						if (currentBatchRemainingPrims(31) = '1' or currentBatchRemainingPrims = 0) then
-							currentBatchRemainingPrims <= (others => '0');
-							currentState <= finishAndSubmitBatch;
-						else
-							currentBatchRemainingPrims <= currentBatchRemainingPrims - 1;
-							currentState <= drawLoopIndexed_triListA;
-						end if;
-					end if;
-				end if;
-
-			when drawLoopIndexed_triStrip =>
-				-- TODO: Implement non-TriList indexed drawing
-				VERTBATCH_FIFO_wr_en <= '0';
-				currentState <= finishCooldown; -- Just go back to the ready state for now
-
-			when drawLoopIndexed_triFan =>
-				-- TODO: Implement non-TriList indexed drawing
-				VERTBATCH_FIFO_wr_en <= '0';
-				currentState <= finishCooldown; -- Just go back to the ready state for now
-
 			when finishCooldown =>
 				VERTBATCH_FIFO_wr_en <= '0';
-				currentState <= finishCooldown2;
-
-			when finishCooldown2 =>
-				VERTBATCH_FIFO_wr_en <= '0';
-				currentState <= finishCooldown3;
-
-			when finishCooldown3 =>
-				VERTBATCH_FIFO_wr_en <= '0';
 				currentState <= readyState;
-
-			when others =>
 		end case;
 	end if;
-end process;
+end process MainVertexBatchBuilderProcess;
 
 end Behavioral;

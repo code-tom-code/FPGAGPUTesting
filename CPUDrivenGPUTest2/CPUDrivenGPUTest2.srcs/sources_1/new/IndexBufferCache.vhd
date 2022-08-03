@@ -14,6 +14,7 @@ entity IndexBufferCache is
 		VBB_ReadAddr : in STD_LOGIC_VECTOR(29 downto 0);
 		VBB_ReadData : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 		VBB_ReadReady : out STD_LOGIC := '0';
+		VBB_InvalidateIndexCache : in STD_LOGIC;
 	-- Vertex Batch Builder interfaces end
 
 	-- Memory controller interfaces begin
@@ -59,14 +60,14 @@ type eCacheState is
 
 signal currentState : eCacheState := initState;
 
-signal currentCache0BaseAddr : unsigned(24 downto 0) := (others => '0');
-signal currentCache1BaseAddr : unsigned(24 downto 0) := (others => '0');
-signal currentCache2BaseAddr : unsigned(24 downto 0) := (others => '0');
-signal currentCache3BaseAddr : unsigned(24 downto 0) := (others => '0');
-signal currentCache0Data : unsigned(255 downto 0) := (others => '0');
-signal currentCache1Data : unsigned(255 downto 0) := (others => '0');
-signal currentCache2Data : unsigned(255 downto 0) := (others => '0');
-signal currentCache3Data : unsigned(255 downto 0) := (others => '0');
+signal currentCache0BaseAddr : unsigned(24 downto 0) := (others => '1');
+signal currentCache1BaseAddr : unsigned(24 downto 0) := (others => '1');
+signal currentCache2BaseAddr : unsigned(24 downto 0) := (others => '1');
+signal currentCache3BaseAddr : unsigned(24 downto 0) := (others => '1');
+signal currentCache0Data : unsigned(255 downto 0) := (others => '1');
+signal currentCache1Data : unsigned(255 downto 0) := (others => '1');
+signal currentCache2Data : unsigned(255 downto 0) := (others => '1');
+signal currentCache3Data : unsigned(255 downto 0) := (others => '1');
 signal nextCacheLineWrite : unsigned(1 downto 0) := (others => '0');
 
 pure function IsAddressInCurrentCache(addr : unsigned(24 downto 0); cache0BaseAddr : unsigned(24 downto 0); cache1BaseAddr : unsigned(24 downto 0); cache2BaseAddr : unsigned(24 downto 0); cache3BaseAddr : unsigned(24 downto 0) ) return std_logic is
@@ -149,7 +150,13 @@ begin
 			when readyState =>
 				IBCReadResponsesFIFO_rd_en <= '0';
 				IBCReadRequestsFIFO_wr_en <= '0';
-				if (VBB_ReadEnable = '1') then
+				VBB_ReadReady <= '0';
+				if (VBB_InvalidateIndexCache = '1') then
+					currentCache0BaseAddr <= (others => '1');
+					currentCache1BaseAddr <= (others => '1');
+					currentCache2BaseAddr <= (others => '1');
+					currentCache3BaseAddr <= (others => '1');
+				elsif (VBB_ReadEnable = '1') then
 					if (IsAddressInCurrentCache(unsigned(VBB_ReadAddr(29 downto 5) ), currentCache0BaseAddr, currentCache1BaseAddr, currentCache2BaseAddr, currentCache3BaseAddr) = '1') then
 						case GetCurrentCacheIndexForAddress(unsigned(VBB_ReadAddr(29 downto 5) ), currentCache0BaseAddr, currentCache1BaseAddr, currentCache2BaseAddr, currentCache3BaseAddr ) is
 							when "00" =>
@@ -163,15 +170,12 @@ begin
 						end case;
 						VBB_ReadReady <= '1';
 					else
-						VBB_ReadReady <= '0';
 						if (IBCReadRequestsFIFO_full = '0') then
 							IBCReadRequestsFIFO_wr_data <= VBB_ReadAddr(29 downto 5) & "00000";
 							IBCReadRequestsFIFO_wr_en <= '1';
 							currentState <= waitForMemReadState;
 						end if;
 					end if;
-				else
-					VBB_ReadReady <= '0';
 				end if;
 
 			when waitForMemReadState =>

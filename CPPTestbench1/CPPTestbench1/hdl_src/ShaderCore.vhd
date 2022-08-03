@@ -31,17 +31,21 @@ entity ShaderCore is
 		-- Vertex Batch Builder (VBB) signals:
 		VBB_Done : in STD_LOGIC; -- Set to 1 when there's no more pending work to push into the FIFO. Shading is complete when this is 1 and VERTBATCH_FIFO_empty is 1 at the same time.
 		VERTBATCH_FIFO_empty : in STD_LOGIC;
-		VERTBATCH_FIFO_rd_data : in STD_LOGIC_VECTOR(18*16-1 downto 0);
+		VERTBATCH_FIFO_rd_data : in STD_LOGIC_VECTOR(528-1 downto 0);
 		VERTBATCH_FIFO_rd_en : out STD_LOGIC := '0';
 
 		-- Vertex Batch Output (VBO) signals:
 		VBO_Pushed : out STD_LOGIC := '0'; -- Set to 1 when we've completed pushing our next fully shaded batch of output verts
-		VBO_BatchStartingIndex : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
-		VBO_BatchEndingIndex : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
+		VBO_NumVertices : out STD_LOGIC_VECTOR(4 downto 0) := (others => '0');
+		VBO_NumIndices : out STD_LOGIC_VECTOR(6 downto 0) := (others => '0');
+		VBO_IsIndexedDrawCall : out STD_LOGIC := '0';
 		VBO_Ready : in STD_LOGIC;
 		VERTOUT_FIFO_full : in STD_LOGIC;
 		VERTOUT_FIFO_wr_data : out STD_LOGIC_VECTOR(127 downto 0);
 		VERTOUT_FIFO_wr_en : out STD_LOGIC := '0';
+		INDEXOUT_FIFO_full : in STD_LOGIC;
+		INDEXOUT_FIFO_wr_data : out STD_LOGIC_VECTOR(255 downto 0);
+		INDEXOUT_FIFO_wr_en : out STD_LOGIC := '0';
 
 		-- Vertex Stream Cache (VSC) signals:
 		VSC_ReadEnable : out STD_LOGIC := '0'; -- Note: ReadEnable *must* be kept held high until ReadReady is '1'. You cannot pulse this for a single cycle.
@@ -95,7 +99,7 @@ entity ShaderCore is
 		FPUALL_IMUL_GO : out STD_LOGIC := '0'; -- MUL pipe operates in 5 clock cycles
 		FPUALL_IADD_GO : out STD_LOGIC := '0'; -- ADD pipe operates in 4 clock cycles
 		FPUALL_ICMP_GO : out STD_LOGIC := '0'; -- CMP pipe operates in 1 clock cycle
-		FPUALL_ICNV_GO : out STD_LOGIC := '0'; -- CNV pipe operates in 2 clock cycles
+		FPUALL_ICNV_GO : out STD_LOGIC := '0'; -- CNV pipe operates in 3 clock cycles
 		FPUALL_ISPEC_GO : out STD_LOGIC := '0'; -- SPEC pipe operates in 14 clock cycles
 		FPUALL_IBIT_GO : out STD_LOGIC := '0'; -- BIT pipe operates in 1 clock cycle
 
@@ -132,7 +136,7 @@ entity ShaderCore is
 		DBG_CurrentFetchWave : out STD_LOGIC_VECTOR(3 downto 0) := (others => '0');
 		DBG_CurrentDWORD : out STD_LOGIC_VECTOR(2 downto 0) := (others => '0');
 		DBG_CurrentStreamID : out STD_LOGIC_VECTOR(2 downto 0) := (others => '0');
-		DBG_ActiveLanesBitmask : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
+		DBG_ActiveLanesBitmask : out STD_LOGIC_VECTOR(16 downto 0) := (others => '0');
 		DBG_InstructionPointer : out STD_LOGIC_VECTOR(8 downto 0) := (others => '0');
 		DBG_CurrentlyExecutingInstruction : out STD_LOGIC_VECTOR(63 downto 0) := (others => '0');
 		DBG_CyclesRemainingCurrentInstruction : out STD_LOGIC_VECTOR(4 downto 0) := (others => '0');
@@ -162,6 +166,9 @@ ATTRIBUTE X_INTERFACE_INFO of VERTBATCH_FIFO_empty: SIGNAL is "xilinx.com:interf
 ATTRIBUTE X_INTERFACE_INFO of VERTOUT_FIFO_wr_data: SIGNAL is "xilinx.com:interface:fifo_write:1.0 VERTOUT_FIFO WR_DATA";
 ATTRIBUTE X_INTERFACE_INFO of VERTOUT_FIFO_wr_en: SIGNAL is "xilinx.com:interface:fifo_write:1.0 VERTOUT_FIFO WR_EN";
 ATTRIBUTE X_INTERFACE_INFO of VERTOUT_FIFO_full: SIGNAL is "xilinx.com:interface:fifo_write:1.0 VERTOUT_FIFO FULL";
+ATTRIBUTE X_INTERFACE_INFO of INDEXOUT_FIFO_wr_data: SIGNAL is "xilinx.com:interface:fifo_write:1.0 INDEXOUT_FIFO WR_DATA";
+ATTRIBUTE X_INTERFACE_INFO of INDEXOUT_FIFO_wr_en: SIGNAL is "xilinx.com:interface:fifo_write:1.0 INDEXOUT_FIFO WR_EN";
+ATTRIBUTE X_INTERFACE_INFO of INDEXOUT_FIFO_full: SIGNAL is "xilinx.com:interface:fifo_write:1.0 INDEXOUT_FIFO FULL";
 
 ATTRIBUTE X_INTERFACE_INFO of ICache_Clk: SIGNAL is "xilinx.com:interface:bram:1.0 ICache CLK";
 ATTRIBUTE X_INTERFACE_PARAMETER of ICache_Clk: SIGNAL is "FREQ_HZ 333250000";
@@ -201,26 +208,27 @@ type eShaderCoreState is
 	unpackColorData_Lane1, -- 19
 	unpackColorData_Lane2, -- 20
 	unpackColorData_Lane3, -- 21
-	unpackColorData_WriteX, -- 22
-	unpackColorData_WriteY, -- 23
-	unpackColorData_WriteZ, -- 24
-	unpackColorData_WriteW, -- 25
+	unpackColorData_WriteWait, -- 22
+	unpackColorData_WriteX, -- 23
+	unpackColorData_WriteY, -- 24
+	unpackColorData_WriteZ, -- 25
+	unpackColorData_WriteW, -- 26
 
-	setupRunShader, -- 26
-	setupRunShader2, -- 27
-	setupRunShader3, -- 28
-	setupRunShader4, -- 29
-	runShader, -- 30
-	waitForWritesToComplete, -- 31
+	setupRunShader, -- 27
+	setupRunShader2, -- 28
+	setupRunShader3, -- 29
+	setupRunShader4, -- 30
+	runShader, -- 31
+	waitForWritesToComplete, -- 32
 
-	dbgOutputRegisterData, -- 32
-	dbgOutputRegisterDataRFWait0, -- 33
-	dbgOutputRegisterDataRFWait1, -- 34
-	dbgOutputRegisterDataRFWait2, -- 35
-	dbgOutputRegisterDataOutput, -- 36
+	dbgOutputRegisterData, -- 33
+	dbgOutputRegisterDataRFWait0, -- 34
+	dbgOutputRegisterDataRFWait1, -- 35
+	dbgOutputRegisterDataRFWait2, -- 36
+	dbgOutputRegisterDataOutput, -- 37
 
-	collectShaderResults, -- 37
-	submitShaderResults -- 38
+	collectShaderResults, -- 38
+	submitShaderResults -- 39
 );
 
 type InstructionOperation is (
@@ -957,17 +965,42 @@ begin
 	end case;
 end function;
 
-pure function ComputeActiveLanesBitmask(ib16indices : unsigned(255 downto 0) ) return unsigned is
-	variable retBitmask : unsigned(15 downto 0);
+pure function ComputeActiveLanesBitmask(numVertsInBatch : unsigned(4 downto 0) ) return unsigned is
 begin
-	for i in 0 to 15 loop
-		if (ib16indices( (i + 1) * 16 - 1 downto i * 16) = X"FFFF") then
-			retBitmask(i) := '0';
-		else
-			retBitmask(i) := '1';
-		end if;
-	end loop;
-	return retBitmask;
+	case numVertsInBatch is
+		when "00001" =>
+			return "00000000000000001";
+		when "00010" =>
+			return "00000000000000011";
+		when "00011" =>
+			return "00000000000000111";
+		when "00100" =>
+			return "00000000000001111";
+		when "00101" =>
+			return "00000000000011111";
+		when "00110" =>
+			return "00000000000111111";
+		when "00111" =>
+			return "00000000001111111";
+		when "01000" =>
+			return "00000000011111111";
+		when "01001" =>
+			return "00000000111111111";
+		when "01010" =>
+			return "00000001111111111";
+		when "01011" =>
+			return "00000011111111111";
+		when "01100" =>
+			return "00000111111111111";
+		when "01101" =>
+			return "00001111111111111";
+		when "01110" =>
+			return "00011111111111111";
+		when "01111" =>
+			return "00111111111111111";
+		when others => -- when "10000" =>
+			return "01111111111111111";
+	end case;
 end function;
 
 -- Clamps our GPR quad indices between 0 and 3:
@@ -977,51 +1010,6 @@ begin
 		return 3;
 	else
 		return unclampedIndex;
-	end if;
-end function;
-
-pure function ComputeActiveLanesCount(activeLanesBitmask : unsigned(15 downto 0) ) return unsigned is
-begin
-	-- For vertex shaders that always fill all bits from 0 up to the wave size, we can just find the
-	-- topmost set bit and use that for the count. However, for pixel/compute shaders we need to actually
-	-- sum up the bits because there might be gaps in the middle of the bitmask.
-
-
-	-- Just assume vertex shaders only for now and find the topmost bit:
-	if (activeLanesBitmask(15) = '1') then
-		return to_unsigned(16, 5);
-	elsif (activeLanesBitmask(14) = '1') then
-		return to_unsigned(15, 5);
-	elsif (activeLanesBitmask(13) = '1') then
-		return to_unsigned(14, 5);
-	elsif (activeLanesBitmask(12) = '1') then
-		return to_unsigned(13, 5);
-	elsif (activeLanesBitmask(11) = '1') then
-		return to_unsigned(12, 5);
-	elsif (activeLanesBitmask(10) = '1') then
-		return to_unsigned(11, 5);
-	elsif (activeLanesBitmask(9) = '1') then
-		return to_unsigned(10, 5);
-	elsif (activeLanesBitmask(8) = '1') then
-		return to_unsigned(9, 5);
-	elsif (activeLanesBitmask(7) = '1') then
-		return to_unsigned(8, 5);
-	elsif (activeLanesBitmask(6) = '1') then
-		return to_unsigned(7, 5);
-	elsif (activeLanesBitmask(5) = '1') then
-		return to_unsigned(6, 5);
-	elsif (activeLanesBitmask(4) = '1') then
-		return to_unsigned(5, 5);
-	elsif (activeLanesBitmask(3) = '1') then
-		return to_unsigned(4, 5);
-	elsif (activeLanesBitmask(2) = '1') then
-		return to_unsigned(3, 5);
-	elsif (activeLanesBitmask(1) = '1') then
-		return to_unsigned(2, 5);
-	elsif (activeLanesBitmask(0) = '1') then
-		return to_unsigned(1, 5);
-	else
-		return to_unsigned(0, 5);
 	end if;
 end function;
 
@@ -1063,7 +1051,7 @@ end function;
 signal currentState : eShaderCoreState := initState;
 
 -- This bitmask determines which lanes are currently active (1) and which are inactive (0)
-signal activeWaveLanesBitmask : unsigned(15 downto 0) := (others => '0');
+signal activeWaveLanesBitmask : unsigned(16 downto 0) := (others => '0');
 
 -- Counter of how many active lanes there are in this wave (1-16). If this reaches zero then
 -- our whole wave is done.
@@ -1083,7 +1071,7 @@ signal vertexScaleProduct : unsigned(21 downto 0) := (others => '0');
 signal thisDwordOffset : unsigned(5 downto 0) := (others => '0');
 
 -- FetchVertexStreamData signals
-signal currentFetchWave : unsigned(3 downto 0) := (others => '0');
+signal currentFetchWave : unsigned(4 downto 0) := (others => '0');
 signal currentStreamID : unsigned(2 downto 0) := (others => '0');
 signal currentDWORDID : unsigned(2 downto 0) := (others => '0');
 signal currentFetchRegisters : unsigned(127 downto 0) := (others => '0');
@@ -1111,9 +1099,8 @@ signal dbgRegisterDumpChannel : unsigned(1 downto 0) := (others => '0');
 signal dbgRegisterDumpReadQuad : unsigned(1 downto 0) := (others => '0');
 
 -- Vertex output signals
-signal currentBitOutput : unsigned(3 downto 0) := (others => '0');
+signal currentBitOutput : unsigned(4 downto 0) := (others => '0');
 signal currentOutputInstructionPointer : unsigned(3 downto 0) := (others => '0');
-signal currentOutputIteration : unsigned(3 downto 0) := (others => '0');
 signal currentOutputDWORDs : OutputRegistersArray := (others => (others => '0') );
 
 -- PortW Pipeline data:
@@ -1121,9 +1108,12 @@ signal Pipe_Data : PortW_PipelineArrayType;
 --signal NegativeOutputPipeData : NegativeOutputPipelineType;
 
 -- Contains our 16 16-bit index values
-signal vertexBatchData : VertexIndicesArray;
-signal vertexBatchStartingIndex : unsigned(15 downto 0) := (others => '0');
-signal vertexBatchEndingIndex : unsigned(15 downto 0) := (others => '0');
+signal vertexBatchData : VertexIndicesArray := (others => (others => '0') );
+signal indexBatchData : unsigned(64 * 4 - 1 downto 0) := (others => '0');
+signal numVerticesInBatch : unsigned(4 downto 0) := (others => '0');
+signal numIndicesInBatch : unsigned(6 downto 0) := (others => '0');
+signal isIndexedDrawCall : std_logic := '0';
+signal hasSentIndicesForBatch : std_logic := '0';
 
 begin
 
@@ -1131,7 +1121,7 @@ ICache_Clk <= clk;
 
 CMD_IsReadyForCommand <= '1' when (currentState = readyState) else '0';
 DBG_CurrentState <= std_logic_vector(to_unsigned(eShaderCoreState'pos(currentState), 6) );
-DBG_CurrentFetchWave <= std_logic_vector(currentFetchWave);
+DBG_CurrentFetchWave <= std_logic_vector(currentFetchWave(3 downto 0) );
 DBG_CurrentDWORD <= std_logic_vector(currentDWORDID);
 DBG_CurrentStreamID <= std_logic_vector(currentStreamID);
 DBG_ActiveLanesBitmask <= std_logic_vector(activeWaveLanesBitmask);
@@ -1314,19 +1304,19 @@ begin
 			when getVertexBatch =>
 				VSC_InvalidateCache <= '0';
 				VBO_Pushed <= '0';
-				VBO_BatchStartingIndex <= (others => '0');
-				VBO_BatchEndingIndex <= (others => '0');
 				if (VBB_Done = '1' and VERTBATCH_FIFO_empty = '1') then
 					currentState <= readyState; -- All done shading!
 				elsif (VERTBATCH_FIFO_empty = '0') then
 					for i in 0 to 15 loop
 						vertexBatchData(i) <= unsigned(VERTBATCH_FIFO_rd_data(16 * (i + 1) - 1 downto 16 * i) );
 					end loop;
-					vertexBatchStartingIndex <= unsigned(VERTBATCH_FIFO_rd_data(16 * 17 - 1 downto 16 * 16) );
-					vertexBatchEndingIndex <= unsigned(VERTBATCH_FIFO_rd_data(16 * 18 - 1 downto 16 * 17) );
+					numVerticesInBatch <= unsigned(VERTBATCH_FIFO_rd_data(16 * 16 + 5 - 1 downto 16 * 16) );
+					indexBatchData <= unsigned(VERTBATCH_FIFO_rd_data(519 downto 264) );
+					numIndicesInBatch <= unsigned(VERTBATCH_FIFO_rd_data(526 downto 520) );
+					isIndexedDrawCall <= VERTBATCH_FIFO_rd_data(527);
 					VERTBATCH_FIFO_rd_en <= '1';
 					readyToRunShader <= '0';
-					activeWaveLanesBitmask <= ComputeActiveLanesBitmask(unsigned(VERTBATCH_FIFO_rd_data(255 downto 0) ) );
+					activeWaveLanesBitmask <= ComputeActiveLanesBitmask(unsigned(VERTBATCH_FIFO_rd_data(16 * 16 + 5 - 1 downto 16 * 16) ) );
 					currentFetchWave <= (others => '0'); -- Reset all of our counters to 0 for the start fetching a new vertex batch
 					currentStreamID <= (others => '0');
 					currentDWORDID <= (others => '0');
@@ -1342,9 +1332,9 @@ begin
 				VERTBATCH_FIFO_rd_en <= '0';
 				GPR0_PortW_en <= '0';
 				PortW_MUX <= MUXDest_Special;
-				numActiveWaveLanesCount <= ComputeActiveLanesCount(activeWaveLanesBitmask);
+				numActiveWaveLanesCount <= numVerticesInBatch;
 				VSC_ReadStreamIndex <= std_logic_vector(currentStreamID);
-				vertexScaleProduct <= vertexBatchData(to_integer(currentFetchWave) ) * vertexStreams(to_integer(currentStreamID) ).dwordStreamStride;
+				vertexScaleProduct <= vertexBatchData(to_integer(currentFetchWave(3 downto 0) ) ) * vertexStreams(to_integer(currentStreamID) ).dwordStreamStride;
 				thisDwordOffset <= vertexStreams(to_integer(currentStreamID) ).dwordStreamOffset;
 				currentState <= fetchVertexStreamData1;
 
@@ -1373,7 +1363,7 @@ begin
 					GPR0_PortW_regChan <= std_logic_vector(currentDWORDID(1 downto 0) );
 					GPR0_PortW_regIdx <= std_logic_vector(vertexStreams(to_integer(currentStreamID) ).shaderRegIndex);
 
-					if (currentFetchWave = 15 or activeWaveLanesBitmask(to_integer(currentFetchWave + 1) ) = '0') then
+					if (activeWaveLanesBitmask(to_integer(currentFetchWave + 1) ) = '0') then
 						currentFetchWave <= (others => '0');
 						if (vertexStreams(to_integer(currentStreamID) ).isD3DCOLOR = '1') then
 							currentState <= unpackColorData_Lane0;
@@ -1418,27 +1408,30 @@ begin
 				currentState <= unpackColorData_Lane1;
 
 			when unpackColorData_Lane1 =>
-				currentColorConvertRegisters0(31 downto 0) <= unsigned(UNORM8ToFloat_ConvertedX);
-				currentColorConvertRegisters0(63 downto 32) <= unsigned(UNORM8ToFloat_ConvertedY);
-				currentColorConvertRegisters0(95 downto 64) <= unsigned(UNORM8ToFloat_ConvertedZ);
-				currentColorConvertRegisters0(127 downto 96) <= unsigned(UNORM8ToFloat_ConvertedW);
 				UNORM8ToFloat_ColorIn <= std_logic_vector(currentFetchRegisters(63 downto 32) );
 				currentState <= unpackColorData_Lane2;
 
 			when unpackColorData_Lane2 =>
-				currentColorConvertRegisters1(31 downto 0) <= unsigned(UNORM8ToFloat_ConvertedX);
-				currentColorConvertRegisters1(63 downto 32) <= unsigned(UNORM8ToFloat_ConvertedY);
-				currentColorConvertRegisters1(95 downto 64) <= unsigned(UNORM8ToFloat_ConvertedZ);
-				currentColorConvertRegisters1(127 downto 96) <= unsigned(UNORM8ToFloat_ConvertedW);
+				currentColorConvertRegisters0(31 downto 0) <= unsigned(UNORM8ToFloat_ConvertedX);
+				currentColorConvertRegisters0(63 downto 32) <= unsigned(UNORM8ToFloat_ConvertedY);
+				currentColorConvertRegisters0(95 downto 64) <= unsigned(UNORM8ToFloat_ConvertedZ);
+				currentColorConvertRegisters0(127 downto 96) <= unsigned(UNORM8ToFloat_ConvertedW);
 				UNORM8ToFloat_ColorIn <= std_logic_vector(currentFetchRegisters(95 downto 64) );
 				currentState <= unpackColorData_Lane3;
 
 			when unpackColorData_Lane3 =>
+				currentColorConvertRegisters1(31 downto 0) <= unsigned(UNORM8ToFloat_ConvertedX);
+				currentColorConvertRegisters1(63 downto 32) <= unsigned(UNORM8ToFloat_ConvertedY);
+				currentColorConvertRegisters1(95 downto 64) <= unsigned(UNORM8ToFloat_ConvertedZ);
+				currentColorConvertRegisters1(127 downto 96) <= unsigned(UNORM8ToFloat_ConvertedW);
+				UNORM8ToFloat_ColorIn <= std_logic_vector(currentFetchRegisters(127 downto 96) );
+				currentState <= unpackColorData_WriteWait;
+
+			when unpackColorData_WriteWait =>
 				currentColorConvertRegisters2(31 downto 0) <= unsigned(UNORM8ToFloat_ConvertedX);
 				currentColorConvertRegisters2(63 downto 32) <= unsigned(UNORM8ToFloat_ConvertedY);
 				currentColorConvertRegisters2(95 downto 64) <= unsigned(UNORM8ToFloat_ConvertedZ);
 				currentColorConvertRegisters2(127 downto 96) <= unsigned(UNORM8ToFloat_ConvertedW);
-				UNORM8ToFloat_ColorIn <= std_logic_vector(currentFetchRegisters(127 downto 96) );
 				currentState <= unpackColorData_WriteX;
 
 			when unpackColorData_WriteX =>
@@ -1714,6 +1707,7 @@ begin
 				FPUALL_ISPEC_GO <= '0';
 				FPUALL_ICNV_GO <= '0';
 				FPUALL_IBIT_GO <= '0';
+				hasSentIndicesForBatch <= '0';
 
 				-- Move the pipe stages for each of the write port data
 				for i in 0 to PortW_PipelineArrayType'length - 2 loop
@@ -1808,15 +1802,15 @@ begin
 				FPUALL_ICNV_GO <= '0';
 				FPUALL_IBIT_GO <= '0';
 				VERTOUT_FIFO_wr_en <= '0';
+				INDEXOUT_FIFO_wr_en <= '0';
 				VBO_Pushed <= '0';
-				VBO_BatchStartingIndex <= (others => '0');
-				VBO_BatchEndingIndex <= (others => '0');
 
 				if (activeWaveLanesBitmask(to_integer(currentBitOutput) ) = '0' and VBO_Ready = '1') then
 					currentBitOutput <= (others => '0');
 					VBO_Pushed <= '1';
-					VBO_BatchStartingIndex <= std_logic_vector(vertexBatchStartingIndex);
-					VBO_BatchEndingIndex <= std_logic_vector(vertexBatchEndingIndex);
+					VBO_NumVertices <= std_logic_vector(numVerticesInBatch);
+					VBO_NumIndices <= std_logic_vector(numIndicesInBatch);
+					VBO_IsIndexedDrawCall <= isIndexedDrawCall;
 					currentState <= getVertexBatch;
 				else
 					if (currentOutputInstructionPointer < 8) then
@@ -1857,11 +1851,18 @@ begin
 				end if;
 
 			when submitShaderResults =>
-				if (VERTOUT_FIFO_full = '0' and VBO_Ready = '1') then
+				INDEXOUT_FIFO_wr_en <= '0';
+				VERTOUT_FIFO_wr_en <= '0';
+				if (VERTOUT_FIFO_full = '0' and INDEXOUT_FIFO_full = '0' and VBO_Ready = '1') then
 					VERTOUT_FIFO_wr_data(31 downto 0) <= std_logic_vector(currentOutputDWORDs(0) );
 					VERTOUT_FIFO_wr_data(63 downto 32) <= std_logic_vector(currentOutputDWORDs(1) );
 					VERTOUT_FIFO_wr_data(95 downto 64) <= std_logic_vector(currentOutputDWORDs(2) );
 					VERTOUT_FIFO_wr_data(127 downto 96) <= std_logic_vector(currentOutputDWORDs(3) );
+					if (hasSentIndicesForBatch = '0') then -- Only do this once per batch!
+						INDEXOUT_FIFO_wr_data <= std_logic_vector(indexBatchData);
+						INDEXOUT_FIFO_wr_en <= '1';
+						hasSentIndicesForBatch <= '1';
+					end if;
 					VERTOUT_FIFO_wr_en <= '1';
 					currentState <= collectShaderResults;
 				end if;

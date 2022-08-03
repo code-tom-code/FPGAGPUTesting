@@ -47,26 +47,27 @@ enum eShaderCoreState
 	unpackColorData_Lane1, // 19
 	unpackColorData_Lane2, // 20
 	unpackColorData_Lane3, // 21
-	unpackColorData_WriteX, // 22
-	unpackColorData_WriteY, // 23
-	unpackColorData_WriteZ, // 24
-	unpackColorData_WriteW, // 25
+	unpackColorData_WriteWait, // 22
+	unpackColorData_WriteX, // 23
+	unpackColorData_WriteY, // 24
+	unpackColorData_WriteZ, // 25
+	unpackColorData_WriteW, // 26
 
-	setupRunShader, // 26
-	setupRunShader2, // 27
-	setupRunShader3, // 28
-	setupRunShader4, // 29
-	runShader, // 30
-	waitForWritesToComplete, // 31
+	setupRunShader, // 27
+	setupRunShader2, // 28
+	setupRunShader3, // 29
+	setupRunShader4, // 30
+	runShader, // 31
+	waitForWritesToComplete, // 32
 
-	dbgOutputRegisterData, // 32
-	dbgOutputRegisterDataRFWait0, // 33
-	dbgOutputRegisterDataRFWait1, // 34
-	dbgOutputRegisterDataRFWait2, // 35
-	dbgOutputRegisterDataOutput, // 36
+	dbgOutputRegisterData, // 33
+	dbgOutputRegisterDataRFWait0, // 34
+	dbgOutputRegisterDataRFWait1, // 35
+	dbgOutputRegisterDataRFWait2, // 36
+	dbgOutputRegisterDataOutput, // 37
 
-	collectShaderResults, // 37
-	submitShaderResults // 38
+	collectShaderResults, // 38
+	submitShaderResults // 39
 };
 
 struct float4

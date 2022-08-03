@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
-<EDKSYSTEM EDWVERSION="1.2" TIMESTAMP="Tue Jul 26 19:42:13 2022" VIVADOVERSION="2018.1">
+<EDKSYSTEM EDWVERSION="1.2" TIMESTAMP="Tue Aug  2 21:18:16 2022" VIVADOVERSION="2018.1">
 
   <SYSTEMINFO ARCH="kintexuplus" BOARD="xilinx.com:kcu116:part0:1.3" DEVICE="xcku5p" NAME="design_1" PACKAGE="ffvb676" SPEEDGRADE="-2"/>
 
@@ -647,11 +647,7 @@
             <CONNECTION INSTANCE="InputAssembler2_0" PORT="CMD_SetStateEnable"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="29" NAME="IA_IndexBufferBaseAddr" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_IA_IndexBufferBaseAddr">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="InputAssembler2_0" PORT="CMD_IndexBufferBaseAddr"/>
-          </CONNECTIONS>
-        </PORT>
+        <PORT DIR="O" LEFT="29" NAME="IA_IndexBufferBaseAddr" RIGHT="0" SIGIS="undef"/>
         <PORT DIR="O" LEFT="1" NAME="IA_StateCullMode" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_IA_StateCullMode">
           <CONNECTIONS>
             <CONNECTION INSTANCE="InputAssembler2_0" PORT="CMD_StateCullMode"/>
@@ -662,16 +658,8 @@
             <CONNECTION INSTANCE="InputAssembler2_0" PORT="CMD_StatePrimTopology"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="1" NAME="IA_StateStripCutType" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_IA_StateStripCutType">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="InputAssembler2_0" PORT="CMD_StateStripCutType"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="O" LEFT="1" NAME="IA_StateIndexFormat" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_IA_StateIndexFormat">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="InputAssembler2_0" PORT="CMD_StateIndexFormat"/>
-          </CONNECTIONS>
-        </PORT>
+        <PORT DIR="O" LEFT="1" NAME="IA_StateStripCutType" RIGHT="0" SIGIS="undef"/>
+        <PORT DIR="O" LEFT="1" NAME="IA_StateIndexFormat" RIGHT="0" SIGIS="undef"/>
         <PORT DIR="O" LEFT="1" NAME="VBB_SendCommand" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_VBB_SendCommand">
           <CONNECTIONS>
             <CONNECTION INSTANCE="VertexBatchBuilder_0" PORT="CMD_SendCommand"/>
@@ -4197,7 +4185,7 @@
         <PARAMETER NAME="C_SLOT_0_AXIS_TUSER_WIDTH" VALUE="32"/>
         <PARAMETER NAME="C_SLOT_0_AXIS_TDEST_WIDTH" VALUE="16"/>
         <PARAMETER NAME="C_SLOT_0_AXIS_TID_WIDTH" VALUE="16"/>
-        <PARAMETER NAME="C_SLOT_0_AXI_ID_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_SLOT_0_AXI_ID_WIDTH" VALUE="48"/>
         <PARAMETER NAME="C_SLOT_0_AXI_ARUSER_WIDTH" VALUE="3"/>
         <PARAMETER NAME="C_SLOT_0_AXI_RUSER_WIDTH" VALUE="1"/>
         <PARAMETER NAME="C_SLOT_0_AXI_AWUSER_WIDTH" VALUE="1"/>
@@ -4205,7 +4193,7 @@
         <PARAMETER NAME="C_SLOT_0_AXI_BUSER_WIDTH" VALUE="3"/>
         <PARAMETER NAME="C_PROBE0_WIDTH" VALUE="16"/>
         <PARAMETER NAME="C_PROBE1_WIDTH" VALUE="16"/>
-        <PARAMETER NAME="C_PROBE2_WIDTH" VALUE="4"/>
+        <PARAMETER NAME="C_PROBE2_WIDTH" VALUE="32"/>
         <PARAMETER NAME="C_PROBE3_WIDTH" VALUE="128"/>
         <PARAMETER NAME="C_PROBE4_WIDTH" VALUE="2"/>
         <PARAMETER NAME="C_PROBE5_WIDTH" VALUE="32"/>
@@ -4213,16 +4201,16 @@
         <PARAMETER NAME="C_PROBE7_WIDTH" VALUE="16"/>
         <PARAMETER NAME="C_PROBE8_WIDTH" VALUE="16"/>
         <PARAMETER NAME="C_PROBE9_WIDTH" VALUE="128"/>
-        <PARAMETER NAME="C_PROBE10_WIDTH" VALUE="6"/>
+        <PARAMETER NAME="C_PROBE10_WIDTH" VALUE="32"/>
         <PARAMETER NAME="C_PROBE11_WIDTH" VALUE="6"/>
         <PARAMETER NAME="C_PROBE12_WIDTH" VALUE="4"/>
         <PARAMETER NAME="C_PROBE13_WIDTH" VALUE="9"/>
-        <PARAMETER NAME="C_PROBE14_WIDTH" VALUE="288"/>
+        <PARAMETER NAME="C_PROBE14_WIDTH" VALUE="528"/>
         <PARAMETER NAME="C_PROBE15_WIDTH" VALUE="32"/>
-        <PARAMETER NAME="C_PROBE16_WIDTH" VALUE="1"/>
-        <PARAMETER NAME="C_PROBE17_WIDTH" VALUE="3"/>
+        <PARAMETER NAME="C_PROBE16_WIDTH" VALUE="30"/>
+        <PARAMETER NAME="C_PROBE17_WIDTH" VALUE="32"/>
         <PARAMETER NAME="C_PROBE18_WIDTH" VALUE="22"/>
-        <PARAMETER NAME="C_PROBE19_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_PROBE19_WIDTH" VALUE="48"/>
         <PARAMETER NAME="C_PROBE20_WIDTH" VALUE="30"/>
         <PARAMETER NAME="C_PROBE21_WIDTH" VALUE="1"/>
         <PARAMETER NAME="C_PROBE22_WIDTH" VALUE="3"/>
@@ -4230,14 +4218,14 @@
         <PARAMETER NAME="C_PROBE24_WIDTH" VALUE="32"/>
         <PARAMETER NAME="C_PROBE25_WIDTH" VALUE="10"/>
         <PARAMETER NAME="C_PROBE26_WIDTH" VALUE="32"/>
-        <PARAMETER NAME="C_PROBE27_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_PROBE27_WIDTH" VALUE="5"/>
         <PARAMETER NAME="C_PROBE28_WIDTH" VALUE="32"/>
-        <PARAMETER NAME="C_PROBE29_WIDTH" VALUE="32"/>
+        <PARAMETER NAME="C_PROBE29_WIDTH" VALUE="256"/>
         <PARAMETER NAME="C_PROBE30_WIDTH" VALUE="32"/>
         <PARAMETER NAME="C_PROBE31_WIDTH" VALUE="128"/>
-        <PARAMETER NAME="C_PROBE32_WIDTH" VALUE="2"/>
+        <PARAMETER NAME="C_PROBE32_WIDTH" VALUE="7"/>
         <PARAMETER NAME="C_PROBE33_WIDTH" VALUE="5"/>
-        <PARAMETER NAME="C_PROBE34_WIDTH" VALUE="32"/>
+        <PARAMETER NAME="C_PROBE34_WIDTH" VALUE="24"/>
         <PARAMETER NAME="C_PROBE35_WIDTH" VALUE="3"/>
         <PARAMETER NAME="C_PROBE36_WIDTH" VALUE="1"/>
         <PARAMETER NAME="C_PROBE37_WIDTH" VALUE="1"/>
@@ -4264,7 +4252,7 @@
         <PARAMETER NAME="C_PROBE58_WIDTH" VALUE="1"/>
         <PARAMETER NAME="C_PROBE59_WIDTH" VALUE="32"/>
         <PARAMETER NAME="C_PROBE60_WIDTH" VALUE="128"/>
-        <PARAMETER NAME="C_PROBE61_WIDTH" VALUE="16"/>
+        <PARAMETER NAME="C_PROBE61_WIDTH" VALUE="17"/>
         <PARAMETER NAME="C_PROBE62_WIDTH" VALUE="4"/>
         <PARAMETER NAME="C_PROBE63_WIDTH" VALUE="3"/>
         <PARAMETER NAME="C_PROBE64_WIDTH" VALUE="1"/>
@@ -7304,19 +7292,19 @@
             <CONNECTION INSTANCE="MemorySystem_ddr4_0" PORT="c0_ddr4_ui_clk"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="15" NAME="probe0" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v0PosX">
+        <PORT DIR="I" LEFT="15" NAME="probe0" RIGHT="0" SIGIS="undef" SIGNAME="xlconstant_2_dout">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="InputAssembler2_0" PORT="TRISETUP_v0PosX"/>
+            <CONNECTION INSTANCE="xlconstant_2" PORT="dout"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="15" NAME="probe1" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v0PosY">
+        <PORT DIR="I" LEFT="15" NAME="probe1" RIGHT="0" SIGIS="undef" SIGNAME="xlconstant_2_dout">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="InputAssembler2_0" PORT="TRISETUP_v0PosY"/>
+            <CONNECTION INSTANCE="xlconstant_2" PORT="dout"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="3" NAME="probe2" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_DBG_IA_VertexIDPerBatch">
+        <PORT DIR="I" LEFT="31" NAME="probe2" RIGHT="0" SIGIS="undef" SIGNAME="ShaderCoreSystem_ShaderCore_0_FPU3_IN_A">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="InputAssembler2_0" PORT="DBG_IA_VertexIDPerBatch"/>
+            <CONNECTION INSTANCE="ShaderCoreSystem_ShaderCore_0" PORT="FPU3_IN_A"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="I" LEFT="127" NAME="probe3" RIGHT="0" SIGIS="undef" SIGNAME="ShaderCoreSystem_ShaderCore_0_GPR0_PortW_writeInData">
@@ -7329,24 +7317,24 @@
             <CONNECTION INSTANCE="ShaderCoreSystem_ShaderCore_0" PORT="DBG_PortW_MUX"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="probe5" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_vertColor0_RGBA">
+        <PORT DIR="I" LEFT="31" NAME="probe5" RIGHT="0" SIGIS="undef" SIGNAME="ShaderCoreSystem_ShaderCore_0_FPU3_IN_B">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="InputAssembler2_0" PORT="TRISETUP_vertColor0_RGBA"/>
+            <CONNECTION INSTANCE="ShaderCoreSystem_ShaderCore_0" PORT="FPU3_IN_B"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="15" NAME="probe6" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v1PosX">
+        <PORT DIR="I" LEFT="15" NAME="probe6" RIGHT="0" SIGIS="undef" SIGNAME="xlconstant_2_dout">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="InputAssembler2_0" PORT="TRISETUP_v1PosX"/>
+            <CONNECTION INSTANCE="xlconstant_2" PORT="dout"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="15" NAME="probe7" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v1PosY">
+        <PORT DIR="I" LEFT="15" NAME="probe7" RIGHT="0" SIGIS="undef" SIGNAME="xlconstant_2_dout">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="InputAssembler2_0" PORT="TRISETUP_v1PosY"/>
+            <CONNECTION INSTANCE="xlconstant_2" PORT="dout"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="15" NAME="probe8" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v2PosX">
+        <PORT DIR="I" LEFT="15" NAME="probe8" RIGHT="0" SIGIS="undef" SIGNAME="xlconstant_2_dout">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="InputAssembler2_0" PORT="TRISETUP_v2PosX"/>
+            <CONNECTION INSTANCE="xlconstant_2" PORT="dout"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="I" LEFT="127" NAME="probe9" RIGHT="0" SIGIS="undef" SIGNAME="VBO_FIFO_dout">
@@ -7354,9 +7342,9 @@
             <CONNECTION INSTANCE="VBO_FIFO" PORT="dout"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="5" NAME="probe10" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_DBG_IA_State">
+        <PORT DIR="I" LEFT="31" NAME="probe10" RIGHT="0" SIGIS="undef" SIGNAME="ShaderCoreSystem_FloatALU_3_OUT_RESULT">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="InputAssembler2_0" PORT="DBG_IA_State"/>
+            <CONNECTION INSTANCE="ShaderCoreSystem_FloatALU_3" PORT="OUT_RESULT"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="I" LEFT="5" NAME="probe11" RIGHT="0" SIGIS="undef" SIGNAME="ShaderCoreSystem_ShaderCore_0_DBG_CurrentState">
@@ -7374,9 +7362,9 @@
             <CONNECTION INSTANCE="ShaderCoreSystem_ShaderCore_0" PORT="DBG_InstructionPointer"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="287" NAME="probe14" RIGHT="0" SIGIS="undef" SIGNAME="fifo_generator_0_dout">
+        <PORT DIR="I" LEFT="527" NAME="probe14" RIGHT="0" SIGIS="undef" SIGNAME="VBB_FIFO_dout">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="fifo_generator_0" PORT="dout"/>
+            <CONNECTION INSTANCE="VBB_FIFO" PORT="dout"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="I" LEFT="31" NAME="probe15" RIGHT="0" SIGIS="undef" SIGNAME="ShaderCoreSystem_VertexStreamCache_0_VSC_ReadData">
@@ -7384,14 +7372,14 @@
             <CONNECTION INSTANCE="ShaderCoreSystem_VertexStreamCache_0" PORT="VSC_ReadData"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="0" NAME="probe16" RIGHT="0" SIGIS="undef" SIGNAME="ShaderCoreSystem_ShaderCore_0_VSC_ReadEnable">
+        <PORT DIR="I" LEFT="29" NAME="probe16" RIGHT="0" SIGIS="undef" SIGNAME="VertexBatchBuilder_0_IBC_ReadAddr">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="ShaderCoreSystem_ShaderCore_0" PORT="VSC_ReadEnable"/>
+            <CONNECTION INSTANCE="VertexBatchBuilder_0" PORT="IBC_ReadAddr"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="2" NAME="probe17" RIGHT="0" SIGIS="undef" SIGNAME="ShaderCoreSystem_ShaderCore_0_VSC_ReadStreamIndex">
+        <PORT DIR="I" LEFT="31" NAME="probe17" RIGHT="0" SIGIS="undef" SIGNAME="IndexBufferCache_0_VBB_ReadData">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="ShaderCoreSystem_ShaderCore_0" PORT="VSC_ReadStreamIndex"/>
+            <CONNECTION INSTANCE="IndexBufferCache_0" PORT="VBB_ReadData"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="I" LEFT="21" NAME="probe18" RIGHT="0" SIGIS="undef" SIGNAME="ShaderCoreSystem_ShaderCore_0_VSC_ReadDWORDAddr">
@@ -7399,9 +7387,9 @@
             <CONNECTION INSTANCE="ShaderCoreSystem_ShaderCore_0" PORT="VSC_ReadDWORDAddr"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="0" NAME="probe19" RIGHT="0" SIGIS="undef" SIGNAME="ShaderCoreSystem_ShaderCore_0_VSC_SetStreamVBAddress">
+        <PORT DIR="I" LEFT="47" NAME="probe19" RIGHT="0" SIGIS="undef" SIGNAME="VertexBatchBuilder_0_DBG_LastPolygonIndices">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="ShaderCoreSystem_ShaderCore_0" PORT="VSC_SetStreamVBAddress"/>
+            <CONNECTION INSTANCE="VertexBatchBuilder_0" PORT="DBG_LastPolygonIndices"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="I" LEFT="29" NAME="probe20" RIGHT="0" SIGIS="undef" SIGNAME="ShaderCoreSystem_ShaderCore_0_VSC_StreamVBAddress">
@@ -7439,9 +7427,9 @@
             <CONNECTION INSTANCE="ShaderCoreSystem_ShaderCore_0" PORT="FPU1_IN_A"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="0" NAME="probe27" RIGHT="0" SIGIS="undef" SIGNAME="IndexBufferCache_1_VBB_ReadReady">
+        <PORT DIR="I" LEFT="4" NAME="probe27" RIGHT="0" SIGIS="undef" SIGNAME="ShaderCoreSystem_ShaderCore_0_VBO_NumVertices">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="IndexBufferCache_1" PORT="VBB_ReadReady"/>
+            <CONNECTION INSTANCE="ShaderCoreSystem_ShaderCore_0" PORT="VBO_NumVertices"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="I" LEFT="31" NAME="probe28" RIGHT="0" SIGIS="undef" SIGNAME="ShaderCoreSystem_ShaderCore_0_FPU1_IN_B">
@@ -7449,9 +7437,9 @@
             <CONNECTION INSTANCE="ShaderCoreSystem_ShaderCore_0" PORT="FPU1_IN_B"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="probe29" RIGHT="0" SIGIS="undef" SIGNAME="IndexBufferCache_1_VBB_ReadData">
+        <PORT DIR="I" LEFT="255" NAME="probe29" RIGHT="0" SIGIS="undef" SIGNAME="VBO_INDEX_FIFO_dout">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="IndexBufferCache_1" PORT="VBB_ReadData"/>
+            <CONNECTION INSTANCE="VBO_INDEX_FIFO" PORT="dout"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="I" LEFT="31" NAME="probe30" RIGHT="0" SIGIS="undef" SIGNAME="ShaderCoreSystem_FloatALU_1_OUT_RESULT">
@@ -7464,9 +7452,9 @@
             <CONNECTION INSTANCE="ShaderCoreSystem_GPRQuadSystem_GPRQuad2_0" PORT="portB_readOutData"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="1" NAME="probe32" RIGHT="0" SIGIS="undef" SIGNAME="IndexBufferCache_1_DBG_State">
+        <PORT DIR="I" LEFT="6" NAME="probe32" RIGHT="0" SIGIS="undef" SIGNAME="ShaderCoreSystem_ShaderCore_0_VBO_NumIndices">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="IndexBufferCache_1" PORT="DBG_State"/>
+            <CONNECTION INSTANCE="ShaderCoreSystem_ShaderCore_0" PORT="VBO_NumIndices"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="I" LEFT="4" NAME="probe33" RIGHT="0" SIGIS="undef" SIGNAME="VertexBatchBuilder_0_DBG_CurrentBatchLength">
@@ -7474,7 +7462,7 @@
             <CONNECTION INSTANCE="VertexBatchBuilder_0" PORT="DBG_CurrentBatchLength"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="probe34" RIGHT="0" SIGIS="undef" SIGNAME="VertexBatchBuilder_0_DBG_CurrentBatchRemainingPrims">
+        <PORT DIR="I" LEFT="23" NAME="probe34" RIGHT="0" SIGIS="undef" SIGNAME="VertexBatchBuilder_0_DBG_CurrentBatchRemainingPrims">
           <CONNECTIONS>
             <CONNECTION INSTANCE="VertexBatchBuilder_0" PORT="DBG_CurrentBatchRemainingPrims"/>
           </CONNECTIONS>
@@ -7609,7 +7597,7 @@
             <CONNECTION INSTANCE="CommandProcessor_0" PORT="SHADER_SetConstantData"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="15" NAME="probe61" RIGHT="0" SIGIS="undef" SIGNAME="ShaderCoreSystem_ShaderCore_0_DBG_ActiveLanesBitmask">
+        <PORT DIR="I" LEFT="16" NAME="probe61" RIGHT="0" SIGIS="undef" SIGNAME="ShaderCoreSystem_ShaderCore_0_DBG_ActiveLanesBitmask">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ShaderCoreSystem_ShaderCore_0" PORT="DBG_ActiveLanesBitmask"/>
           </CONNECTIONS>
@@ -10850,7 +10838,7 @@
         <PARAMETER NAME="C_SLOT_0_AXI_PROTOCOL" VALUE="AXI4"/>
         <PARAMETER NAME="C_NUM_MONITOR_SLOTS" VALUE="1"/>
         <PARAMETER NAME="C_ENABLE_ILA_AXI_MON" VALUE="0"/>
-        <PARAMETER NAME="C_NUM_OF_PROBES" VALUE="42"/>
+        <PARAMETER NAME="C_NUM_OF_PROBES" VALUE="56"/>
         <PARAMETER NAME="C_DATA_DEPTH" VALUE="1024"/>
         <PARAMETER NAME="C_MAJOR_VERSION" VALUE="2018"/>
         <PARAMETER NAME="C_MINOR_VERSION" VALUE="1"/>
@@ -10872,7 +10860,7 @@
         <PARAMETER NAME="C_SLOT_0_AXI_ARUSER_WIDTH" VALUE="16"/>
         <PARAMETER NAME="C_SLOT_0_AXI_RUSER_WIDTH" VALUE="32"/>
         <PARAMETER NAME="C_SLOT_0_AXI_AWUSER_WIDTH" VALUE="32"/>
-        <PARAMETER NAME="C_SLOT_0_AXI_WUSER_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_SLOT_0_AXI_WUSER_WIDTH" VALUE="16"/>
         <PARAMETER NAME="C_SLOT_0_AXI_BUSER_WIDTH" VALUE="1"/>
         <PARAMETER NAME="C_PROBE0_WIDTH" VALUE="24"/>
         <PARAMETER NAME="C_PROBE1_WIDTH" VALUE="24"/>
@@ -10916,20 +10904,20 @@
         <PARAMETER NAME="C_PROBE39_WIDTH" VALUE="32"/>
         <PARAMETER NAME="C_PROBE40_WIDTH" VALUE="32"/>
         <PARAMETER NAME="C_PROBE41_WIDTH" VALUE="32"/>
-        <PARAMETER NAME="C_PROBE42_WIDTH" VALUE="1"/>
-        <PARAMETER NAME="C_PROBE43_WIDTH" VALUE="1"/>
-        <PARAMETER NAME="C_PROBE44_WIDTH" VALUE="1"/>
-        <PARAMETER NAME="C_PROBE45_WIDTH" VALUE="1"/>
-        <PARAMETER NAME="C_PROBE46_WIDTH" VALUE="1"/>
-        <PARAMETER NAME="C_PROBE47_WIDTH" VALUE="1"/>
-        <PARAMETER NAME="C_PROBE48_WIDTH" VALUE="1"/>
-        <PARAMETER NAME="C_PROBE49_WIDTH" VALUE="1"/>
-        <PARAMETER NAME="C_PROBE50_WIDTH" VALUE="1"/>
-        <PARAMETER NAME="C_PROBE51_WIDTH" VALUE="1"/>
-        <PARAMETER NAME="C_PROBE52_WIDTH" VALUE="1"/>
-        <PARAMETER NAME="C_PROBE53_WIDTH" VALUE="1"/>
-        <PARAMETER NAME="C_PROBE54_WIDTH" VALUE="1"/>
-        <PARAMETER NAME="C_PROBE55_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_PROBE42_WIDTH" VALUE="16"/>
+        <PARAMETER NAME="C_PROBE43_WIDTH" VALUE="16"/>
+        <PARAMETER NAME="C_PROBE44_WIDTH" VALUE="16"/>
+        <PARAMETER NAME="C_PROBE45_WIDTH" VALUE="16"/>
+        <PARAMETER NAME="C_PROBE46_WIDTH" VALUE="16"/>
+        <PARAMETER NAME="C_PROBE47_WIDTH" VALUE="16"/>
+        <PARAMETER NAME="C_PROBE48_WIDTH" VALUE="32"/>
+        <PARAMETER NAME="C_PROBE49_WIDTH" VALUE="32"/>
+        <PARAMETER NAME="C_PROBE50_WIDTH" VALUE="32"/>
+        <PARAMETER NAME="C_PROBE51_WIDTH" VALUE="6"/>
+        <PARAMETER NAME="C_PROBE52_WIDTH" VALUE="4"/>
+        <PARAMETER NAME="C_PROBE53_WIDTH" VALUE="12"/>
+        <PARAMETER NAME="C_PROBE54_WIDTH" VALUE="128"/>
+        <PARAMETER NAME="C_PROBE55_WIDTH" VALUE="256"/>
         <PARAMETER NAME="C_PROBE56_WIDTH" VALUE="1"/>
         <PARAMETER NAME="C_PROBE57_WIDTH" VALUE="1"/>
         <PARAMETER NAME="C_PROBE58_WIDTH" VALUE="1"/>
@@ -14185,6 +14173,76 @@
             <CONNECTION INSTANCE="TriSetup_0" PORT="DBG_TwiceTriArea"/>
           </CONNECTIONS>
         </PORT>
+        <PORT DIR="I" LEFT="15" NAME="probe42" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v0PosX">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="InputAssembler2_0" PORT="TRISETUP_v0PosX"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="15" NAME="probe43" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v0PosY">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="InputAssembler2_0" PORT="TRISETUP_v0PosY"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="15" NAME="probe44" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v1PosX">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="InputAssembler2_0" PORT="TRISETUP_v1PosX"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="15" NAME="probe45" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v1PosY">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="InputAssembler2_0" PORT="TRISETUP_v1PosY"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="15" NAME="probe46" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v2PosX">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="InputAssembler2_0" PORT="TRISETUP_v2PosX"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="15" NAME="probe47" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v2PosY">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="InputAssembler2_0" PORT="TRISETUP_v2PosY"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="31" NAME="probe48" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_vertColor0_RGBA">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="InputAssembler2_0" PORT="TRISETUP_vertColor0_RGBA"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="31" NAME="probe49" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_vertColor1_RGBA">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="InputAssembler2_0" PORT="TRISETUP_vertColor1_RGBA"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="31" NAME="probe50" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_vertColor2_RGBA">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="InputAssembler2_0" PORT="TRISETUP_vertColor2_RGBA"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="5" NAME="probe51" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_DBG_IA_State">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="InputAssembler2_0" PORT="DBG_IA_State"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="3" NAME="probe52" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_DBG_IA_VertexIDPerBatch">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="InputAssembler2_0" PORT="DBG_IA_VertexIDPerBatch"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="11" NAME="probe53" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_DBG_IA_CurrentTriIndices">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="InputAssembler2_0" PORT="DBG_IA_CurrentTriIndices"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="127" NAME="probe54" RIGHT="0" SIGIS="undef" SIGNAME="VBO_FIFO_dout">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="VBO_FIFO" PORT="dout"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="255" NAME="probe55" RIGHT="0" SIGIS="undef" SIGNAME="VBO_INDEX_FIFO_dout">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="VBO_INDEX_FIFO" PORT="dout"/>
+          </CONNECTIONS>
+        </PORT>
       </PORTS>
       <BUSINTERFACES/>
     </MODULE>
@@ -14212,12 +14270,18 @@
         </PORT>
         <PORT DIR="O" LEFT="31" NAME="VBB_ReadData" RIGHT="0" SIGIS="undef" SIGNAME="IndexBufferCache_0_VBB_ReadData">
           <CONNECTIONS>
+            <CONNECTION INSTANCE="ILA_IA" PORT="probe17"/>
             <CONNECTION INSTANCE="VertexBatchBuilder_0" PORT="IBC_ReadData"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" NAME="VBB_ReadReady" SIGIS="undef" SIGNAME="IndexBufferCache_0_VBB_ReadReady">
           <CONNECTIONS>
             <CONNECTION INSTANCE="VertexBatchBuilder_0" PORT="IBC_ReadReady"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="VBB_InvalidateIndexCache" SIGIS="undef" SIGNAME="VertexBatchBuilder_0_IBC_InvalidateIndexCache">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="VertexBatchBuilder_0" PORT="IBC_InvalidateIndexCache"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="I" NAME="IBCReadRequestsFIFO_full" SIGIS="undef" SIGNAME="IndexBufferCache_0_IBCReadRequestsFIFO_full">
@@ -14271,95 +14335,6 @@
         </BUSINTERFACE>
       </BUSINTERFACES>
     </MODULE>
-    <MODULE FULLNAME="/IndexBufferCache_1" HWVERSION="1.0" INSTANCE="IndexBufferCache_1" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="IndexBufferCache" VLNV="xilinx.com:module_ref:IndexBufferCache:1.0">
-      <DOCUMENTS/>
-      <PARAMETERS>
-        <PARAMETER NAME="Component_Name" VALUE="design_1_IndexBufferCache_1_1"/>
-        <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
-      </PARAMETERS>
-      <PORTS>
-        <PORT CLKFREQUENCY="333250000" DIR="I" NAME="clk" SIGIS="clk" SIGNAME="MemorySystem_ddr4_0_c0_ddr4_ui_clk">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="MemorySystem_ddr4_0" PORT="c0_ddr4_ui_clk"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" NAME="VBB_ReadEnable" SIGIS="undef" SIGNAME="InputAssembler2_0_IBC_ReadEnable">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="InputAssembler2_0" PORT="IBC_ReadEnable"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" LEFT="29" NAME="VBB_ReadAddr" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_IBC_ReadAddr">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="InputAssembler2_0" PORT="IBC_ReadAddr"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="O" LEFT="31" NAME="VBB_ReadData" RIGHT="0" SIGIS="undef" SIGNAME="IndexBufferCache_1_VBB_ReadData">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="ILA_IA" PORT="probe29"/>
-            <CONNECTION INSTANCE="InputAssembler2_0" PORT="IBC_ReadData"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="O" NAME="VBB_ReadReady" SIGIS="undef" SIGNAME="IndexBufferCache_1_VBB_ReadReady">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="ILA_IA" PORT="probe27"/>
-            <CONNECTION INSTANCE="InputAssembler2_0" PORT="IBC_ReadReady"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" NAME="IBCReadRequestsFIFO_full" SIGIS="undef" SIGNAME="IndexBufferCache_1_IBCReadRequestsFIFO_full">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="MemorySystem_IBCPostReadRequestsFIFO" PORT="full"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="O" LEFT="29" NAME="IBCReadRequestsFIFO_wr_data" RIGHT="0" SIGIS="undef" SIGNAME="IndexBufferCache_1_IBCReadRequestsFIFO_wr_data">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="MemorySystem_IBCPostReadRequestsFIFO" PORT="din"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="O" NAME="IBCReadRequestsFIFO_wr_en" SIGIS="undef" SIGNAME="IndexBufferCache_1_IBCReadRequestsFIFO_wr_en">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="MemorySystem_IBCPostReadRequestsFIFO" PORT="wr_en"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" LEFT="285" NAME="IBCReadResponsesFIFO_rd_data" RIGHT="0" SIGIS="undef" SIGNAME="IndexBufferCache_1_IBCReadResponsesFIFO_rd_data">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="MemorySystem_IBCPostReadResponsesFIFO" PORT="dout"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" NAME="IBCReadResponsesFIFO_empty" SIGIS="undef" SIGNAME="IndexBufferCache_1_IBCReadResponsesFIFO_empty">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="MemorySystem_IBCPostReadResponsesFIFO" PORT="empty"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="O" NAME="IBCReadResponsesFIFO_rd_en" SIGIS="undef" SIGNAME="IndexBufferCache_1_IBCReadResponsesFIFO_rd_en">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="MemorySystem_IBCPostReadResponsesFIFO" PORT="rd_en"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="O" LEFT="1" NAME="DBG_State" RIGHT="0" SIGIS="undef" SIGNAME="IndexBufferCache_1_DBG_State">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="ILA_IA" PORT="probe32"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="O" NAME="DBG_IBCReadRequestsFIFO_full" SIGIS="undef"/>
-        <PORT DIR="O" NAME="DBG_IBCReadResponsesFIFO_empty" SIGIS="undef"/>
-      </PORTS>
-      <BUSINTERFACES>
-        <BUSINTERFACE BUSNAME="IndexBufferCache_1_IBCacheReadRequests" NAME="IBCacheReadRequests" TYPE="INITIATOR" VLNV="xilinx.com:interface:fifo_write:1.0">
-          <PORTMAPS>
-            <PORTMAP LOGICAL="WR_DATA" PHYSICAL="IBCReadRequestsFIFO_wr_data"/>
-            <PORTMAP LOGICAL="WR_EN" PHYSICAL="IBCReadRequestsFIFO_wr_en"/>
-            <PORTMAP LOGICAL="FULL" PHYSICAL="IBCReadRequestsFIFO_full"/>
-          </PORTMAPS>
-        </BUSINTERFACE>
-        <BUSINTERFACE BUSNAME="IndexBufferCache_1_IBCacheReadResponses" NAME="IBCacheReadResponses" TYPE="INITIATOR" VLNV="xilinx.com:interface:fifo_read:1.0">
-          <PORTMAPS>
-            <PORTMAP LOGICAL="RD_DATA" PHYSICAL="IBCReadResponsesFIFO_rd_data"/>
-            <PORTMAP LOGICAL="RD_EN" PHYSICAL="IBCReadResponsesFIFO_rd_en"/>
-            <PORTMAP LOGICAL="EMPTY" PHYSICAL="IBCReadResponsesFIFO_empty"/>
-          </PORTMAPS>
-        </BUSINTERFACE>
-      </BUSINTERFACES>
-    </MODULE>
     <MODULE FULLNAME="/InputAssembler2_0" HWVERSION="1.0" INSTANCE="InputAssembler2_0" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="InputAssembler2" VLNV="xilinx.com:module_ref:InputAssembler2:1.0">
       <DOCUMENTS/>
       <PARAMETERS>
@@ -14374,14 +14349,14 @@
         </PORT>
         <PORT DIR="O" LEFT="15" NAME="TRISETUP_v0PosX" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v0PosX">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="ILA_IA" PORT="probe0"/>
             <CONNECTION INSTANCE="TriSetup_0" PORT="IA_v0_in_x"/>
+            <CONNECTION INSTANCE="ILA_TriSetup" PORT="probe42"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="15" NAME="TRISETUP_v0PosY" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v0PosY">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="ILA_IA" PORT="probe1"/>
             <CONNECTION INSTANCE="TriSetup_0" PORT="IA_v0_in_y"/>
+            <CONNECTION INSTANCE="ILA_TriSetup" PORT="probe43"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="23" NAME="TRISETUP_v0PosInvZ" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v0PosInvZ">
@@ -14391,14 +14366,14 @@
         </PORT>
         <PORT DIR="O" LEFT="15" NAME="TRISETUP_v1PosX" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v1PosX">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="ILA_IA" PORT="probe6"/>
             <CONNECTION INSTANCE="TriSetup_0" PORT="IA_v1_in_x"/>
+            <CONNECTION INSTANCE="ILA_TriSetup" PORT="probe44"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="15" NAME="TRISETUP_v1PosY" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v1PosY">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="ILA_IA" PORT="probe7"/>
             <CONNECTION INSTANCE="TriSetup_0" PORT="IA_v1_in_y"/>
+            <CONNECTION INSTANCE="ILA_TriSetup" PORT="probe45"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="23" NAME="TRISETUP_v1PosInvZ" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v1PosInvZ">
@@ -14408,13 +14383,14 @@
         </PORT>
         <PORT DIR="O" LEFT="15" NAME="TRISETUP_v2PosX" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v2PosX">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="ILA_IA" PORT="probe8"/>
             <CONNECTION INSTANCE="TriSetup_0" PORT="IA_v2_in_x"/>
+            <CONNECTION INSTANCE="ILA_TriSetup" PORT="probe46"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="15" NAME="TRISETUP_v2PosY" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v2PosY">
           <CONNECTIONS>
             <CONNECTION INSTANCE="TriSetup_0" PORT="IA_v2_in_y"/>
+            <CONNECTION INSTANCE="ILA_TriSetup" PORT="probe47"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="23" NAME="TRISETUP_v2PosInvZ" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v2PosInvZ">
@@ -14454,18 +14430,20 @@
         </PORT>
         <PORT DIR="O" LEFT="31" NAME="TRISETUP_vertColor0_RGBA" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_vertColor0_RGBA">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="ILA_IA" PORT="probe5"/>
             <CONNECTION INSTANCE="TriSetup_0" PORT="IA_v0_in_RGBA"/>
+            <CONNECTION INSTANCE="ILA_TriSetup" PORT="probe48"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="31" NAME="TRISETUP_vertColor1_RGBA" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_vertColor1_RGBA">
           <CONNECTIONS>
             <CONNECTION INSTANCE="TriSetup_0" PORT="IA_v1_in_RGBA"/>
+            <CONNECTION INSTANCE="ILA_TriSetup" PORT="probe49"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="31" NAME="TRISETUP_vertColor2_RGBA" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_vertColor2_RGBA">
           <CONNECTIONS>
             <CONNECTION INSTANCE="TriSetup_0" PORT="IA_v2_in_RGBA"/>
+            <CONNECTION INSTANCE="ILA_TriSetup" PORT="probe50"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="I" NAME="TRISETUP_readyForNewTri" SIGIS="undef" SIGNAME="TriSetup_0_IA_readyForNewTri">
@@ -14478,39 +14456,24 @@
             <CONNECTION INSTANCE="TriSetup_0" PORT="IA_newTriBegin"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" NAME="IBC_ReadEnable" SIGIS="undef" SIGNAME="InputAssembler2_0_IBC_ReadEnable">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="IndexBufferCache_1" PORT="VBB_ReadEnable"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="O" LEFT="29" NAME="IBC_ReadAddr" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_IBC_ReadAddr">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="IndexBufferCache_1" PORT="VBB_ReadAddr"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" LEFT="31" NAME="IBC_ReadData" RIGHT="0" SIGIS="undef" SIGNAME="IndexBufferCache_1_VBB_ReadData">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="IndexBufferCache_1" PORT="VBB_ReadData"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" NAME="IBC_ReadReady" SIGIS="undef" SIGNAME="IndexBufferCache_1_VBB_ReadReady">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="IndexBufferCache_1" PORT="VBB_ReadReady"/>
-          </CONNECTIONS>
-        </PORT>
         <PORT DIR="I" NAME="VBO_Pushed" SIGIS="undef" SIGNAME="ShaderCoreSystem_ShaderCore_0_VBO_Pushed">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ShaderCoreSystem_ShaderCore_0" PORT="VBO_Pushed"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="15" NAME="VBO_BatchStartingIndex" RIGHT="0" SIGIS="undef" SIGNAME="ShaderCoreSystem_ShaderCore_0_VBO_BatchStartingIndex">
+        <PORT DIR="I" LEFT="4" NAME="VBO_NumVertices" RIGHT="0" SIGIS="undef" SIGNAME="ShaderCoreSystem_ShaderCore_0_VBO_NumVertices">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="ShaderCoreSystem_ShaderCore_0" PORT="VBO_BatchStartingIndex"/>
+            <CONNECTION INSTANCE="ShaderCoreSystem_ShaderCore_0" PORT="VBO_NumVertices"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="15" NAME="VBO_BatchEndingIndex" RIGHT="0" SIGIS="undef" SIGNAME="ShaderCoreSystem_ShaderCore_0_VBO_BatchEndingIndex">
+        <PORT DIR="I" LEFT="6" NAME="VBO_NumIndices" RIGHT="0" SIGIS="undef" SIGNAME="ShaderCoreSystem_ShaderCore_0_VBO_NumIndices">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="ShaderCoreSystem_ShaderCore_0" PORT="VBO_BatchEndingIndex"/>
+            <CONNECTION INSTANCE="ShaderCoreSystem_ShaderCore_0" PORT="VBO_NumIndices"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="VBO_IsIndexedDrawCall" SIGIS="undef" SIGNAME="ShaderCoreSystem_ShaderCore_0_VBO_IsIndexedDrawCall">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ShaderCoreSystem_ShaderCore_0" PORT="VBO_IsIndexedDrawCall"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" NAME="VBO_Ready" SIGIS="undef" SIGNAME="InputAssembler2_0_VBO_Ready">
@@ -14534,6 +14497,22 @@
             <CONNECTION INSTANCE="VBO_FIFO" PORT="rd_en"/>
           </CONNECTIONS>
         </PORT>
+        <PORT DIR="I" NAME="INDEXOUT_FIFO_empty" SIGIS="undef" SIGNAME="InputAssembler2_0_INDEXOUT_FIFO_empty">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="VBO_INDEX_FIFO" PORT="empty"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="255" NAME="INDEXOUT_FIFO_rd_data" RIGHT="0" SIGIS="undef" SIGNAME="VBO_INDEX_FIFO_dout">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="VBO_INDEX_FIFO" PORT="dout"/>
+            <CONNECTION INSTANCE="VBO_INDEX_FIFO" PORT="dout"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="INDEXOUT_FIFO_rd_en" SIGIS="undef" SIGNAME="InputAssembler2_0_INDEXOUT_FIFO_rd_en">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="VBO_INDEX_FIFO" PORT="rd_en"/>
+          </CONNECTIONS>
+        </PORT>
         <PORT DIR="O" NAME="CMD_DrawReady" SIGIS="undef" SIGNAME="InputAssembler2_0_CMD_DrawReady">
           <CONNECTIONS>
             <CONNECTION INSTANCE="CommandProcessor_0" PORT="IA_DrawReady"/>
@@ -14549,11 +14528,6 @@
             <CONNECTION INSTANCE="CommandProcessor_0" PORT="IA_SetStateEnable"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="29" NAME="CMD_IndexBufferBaseAddr" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_IA_IndexBufferBaseAddr">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="IA_IndexBufferBaseAddr"/>
-          </CONNECTIONS>
-        </PORT>
         <PORT DIR="I" LEFT="1" NAME="CMD_StateCullMode" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_IA_StateCullMode">
           <CONNECTIONS>
             <CONNECTION INSTANCE="CommandProcessor_0" PORT="IA_StateCullMode"/>
@@ -14562,16 +14536,6 @@
         <PORT DIR="I" LEFT="2" NAME="CMD_StatePrimTopology" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_IA_StatePrimTopology">
           <CONNECTIONS>
             <CONNECTION INSTANCE="CommandProcessor_0" PORT="IA_StatePrimTopology"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" LEFT="1" NAME="CMD_StateStripCutType" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_IA_StateStripCutType">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="IA_StateStripCutType"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" LEFT="1" NAME="CMD_StateIndexFormat" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_IA_StateIndexFormat">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="IA_StateIndexFormat"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" NAME="CMD_IA_Idle" SIGIS="undef" SIGNAME="InputAssembler2_0_CMD_IA_Idle">
@@ -14601,17 +14565,17 @@
         </PORT>
         <PORT DIR="O" LEFT="5" NAME="DBG_IA_State" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_DBG_IA_State">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="ILA_IA" PORT="probe10"/>
+            <CONNECTION INSTANCE="ILA_TriSetup" PORT="probe51"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="3" NAME="DBG_IA_VertexIDPerBatch" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_DBG_IA_VertexIDPerBatch">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="ILA_IA" PORT="probe2"/>
+            <CONNECTION INSTANCE="ILA_TriSetup" PORT="probe52"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" NAME="DBG_UsePrebuiltIB" SIGIS="undef" SIGNAME="vio_0_probe_out0">
+        <PORT DIR="O" LEFT="11" NAME="DBG_IA_CurrentTriIndices" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_DBG_IA_CurrentTriIndices">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="vio_0" PORT="probe_out0"/>
+            <CONNECTION INSTANCE="ILA_TriSetup" PORT="probe53"/>
           </CONNECTIONS>
         </PORT>
       </PORTS>
@@ -14621,6 +14585,13 @@
             <PORTMAP LOGICAL="RD_DATA" PHYSICAL="VERTOUT_FIFO_rd_data"/>
             <PORTMAP LOGICAL="RD_EN" PHYSICAL="VERTOUT_FIFO_rd_en"/>
             <PORTMAP LOGICAL="EMPTY" PHYSICAL="VERTOUT_FIFO_empty"/>
+          </PORTMAPS>
+        </BUSINTERFACE>
+        <BUSINTERFACE BUSNAME="InputAssembler2_0_INDEXOUT_FIFO" NAME="INDEXOUT_FIFO" TYPE="INITIATOR" VLNV="xilinx.com:interface:fifo_read:1.0">
+          <PORTMAPS>
+            <PORTMAP LOGICAL="RD_DATA" PHYSICAL="INDEXOUT_FIFO_rd_data"/>
+            <PORTMAP LOGICAL="RD_EN" PHYSICAL="INDEXOUT_FIFO_rd_en"/>
+            <PORTMAP LOGICAL="EMPTY" PHYSICAL="INDEXOUT_FIFO_empty"/>
           </PORTMAPS>
         </BUSINTERFACE>
       </BUSINTERFACES>
@@ -17687,16 +17658,8 @@
             <CONNECTION INSTANCE="MemorySystem_ddr4_0" PORT="c0_ddr4_ui_clk"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="29" NAME="din" RIGHT="0" SIGIS="undef" SIGNAME="IndexBufferCache_1_IBCReadRequestsFIFO_wr_data">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="IndexBufferCache_1" PORT="IBCReadRequestsFIFO_wr_data"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" NAME="wr_en" SIGIS="undef" SIGNAME="IndexBufferCache_1_IBCReadRequestsFIFO_wr_en">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="IndexBufferCache_1" PORT="IBCReadRequestsFIFO_wr_en"/>
-          </CONNECTIONS>
-        </PORT>
+        <PORT DIR="I" LEFT="29" NAME="din" RIGHT="0" SIGIS="undef"/>
+        <PORT DIR="I" NAME="wr_en" SIGIS="undef"/>
         <PORT DIR="I" NAME="rd_en" SIGIS="undef" SIGNAME="MemorySystem_IBCPostReadRequestsFIFO_rd_en">
           <CONNECTIONS>
             <CONNECTION INSTANCE="MemorySystem_MemoryController_0" PORT="IBCPostReadRequestsFIFO_rd_en"/>
@@ -17707,11 +17670,7 @@
             <CONNECTION INSTANCE="MemorySystem_MemoryController_0" PORT="IBCPostReadRequestsFIFO_rd_data"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" NAME="full" SIGIS="undef" SIGNAME="IndexBufferCache_1_IBCReadRequestsFIFO_full">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="IndexBufferCache_1" PORT="IBCReadRequestsFIFO_full"/>
-          </CONNECTIONS>
-        </PORT>
+        <PORT DIR="O" NAME="full" SIGIS="undef"/>
         <PORT DIR="O" NAME="empty" SIGIS="undef" SIGNAME="MemorySystem_IBCPostReadRequestsFIFO_empty">
           <CONNECTIONS>
             <CONNECTION INSTANCE="MemorySystem_MemoryController_0" PORT="IBCPostReadRequestsFIFO_empty"/>
@@ -17721,7 +17680,7 @@
         <PORT DIR="O" NAME="rd_rst_busy" SIGIS="undef"/>
       </PORTS>
       <BUSINTERFACES>
-        <BUSINTERFACE BUSNAME="IndexBufferCache_1_IBCacheReadRequests" NAME="FIFO_WRITE" TYPE="TARGET" VLNV="xilinx.com:interface:fifo_write:1.0">
+        <BUSINTERFACE BUSNAME="__NOC__" NAME="FIFO_WRITE" TYPE="TARGET" VLNV="xilinx.com:interface:fifo_write:1.0">
           <PORTMAPS>
             <PORTMAP LOGICAL="FULL" PHYSICAL="full"/>
             <PORTMAP LOGICAL="WR_DATA" PHYSICAL="din"/>
@@ -18135,26 +18094,14 @@
             <CONNECTION INSTANCE="MemorySystem_MemoryController_0" PORT="IBCPostReadResponsesFIFO_wr_en"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" NAME="rd_en" SIGIS="undef" SIGNAME="IndexBufferCache_1_IBCReadResponsesFIFO_rd_en">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="IndexBufferCache_1" PORT="IBCReadResponsesFIFO_rd_en"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="O" LEFT="285" NAME="dout" RIGHT="0" SIGIS="undef" SIGNAME="IndexBufferCache_1_IBCReadResponsesFIFO_rd_data">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="IndexBufferCache_1" PORT="IBCReadResponsesFIFO_rd_data"/>
-          </CONNECTIONS>
-        </PORT>
+        <PORT DIR="I" NAME="rd_en" SIGIS="undef"/>
+        <PORT DIR="O" LEFT="285" NAME="dout" RIGHT="0" SIGIS="undef"/>
         <PORT DIR="O" NAME="full" SIGIS="undef" SIGNAME="MemorySystem_IBCPostReadResponsesFIFO_full">
           <CONNECTIONS>
             <CONNECTION INSTANCE="MemorySystem_MemoryController_0" PORT="IBCPostReadResponsesFIFO_full"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" NAME="empty" SIGIS="undef" SIGNAME="IndexBufferCache_1_IBCReadResponsesFIFO_empty">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="IndexBufferCache_1" PORT="IBCReadResponsesFIFO_empty"/>
-          </CONNECTIONS>
-        </PORT>
+        <PORT DIR="O" NAME="empty" SIGIS="undef"/>
         <PORT DIR="O" NAME="wr_rst_busy" SIGIS="undef"/>
         <PORT DIR="O" NAME="rd_rst_busy" SIGIS="undef"/>
       </PORTS>
@@ -18166,7 +18113,7 @@
             <PORTMAP LOGICAL="WR_EN" PHYSICAL="wr_en"/>
           </PORTMAPS>
         </BUSINTERFACE>
-        <BUSINTERFACE BUSNAME="IndexBufferCache_1_IBCacheReadResponses" NAME="FIFO_READ" TYPE="TARGET" VLNV="xilinx.com:interface:fifo_read:1.0">
+        <BUSINTERFACE BUSNAME="__NOC__" NAME="FIFO_READ" TYPE="TARGET" VLNV="xilinx.com:interface:fifo_read:1.0">
           <PORTMAPS>
             <PORTMAP LOGICAL="EMPTY" PHYSICAL="empty"/>
             <PORTMAP LOGICAL="RD_DATA" PHYSICAL="dout"/>
@@ -25014,10 +24961,8 @@
             <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="clk"/>
             <CONNECTION INSTANCE="ILA_TexSampler" PORT="clk"/>
             <CONNECTION INSTANCE="TextureCache_128x128x32bits" PORT="clka"/>
-            <CONNECTION INSTANCE="fifo_generator_0" PORT="clk"/>
+            <CONNECTION INSTANCE="VBB_FIFO" PORT="clk"/>
             <CONNECTION INSTANCE="VBO_FIFO" PORT="clk"/>
-            <CONNECTION INSTANCE="IndexBufferCache_0" PORT="clk"/>
-            <CONNECTION INSTANCE="IndexBufferCache_1" PORT="clk"/>
             <CONNECTION INSTANCE="TriSetup_0" PORT="clk"/>
             <CONNECTION INSTANCE="Rasterizer_0" PORT="clk"/>
             <CONNECTION INSTANCE="AttrInterpolator_0" PORT="clk"/>
@@ -25028,22 +24973,24 @@
             <CONNECTION INSTANCE="StatsCollector_0" PORT="clk"/>
             <CONNECTION INSTANCE="ROP_0" PORT="clk"/>
             <CONNECTION INSTANCE="TexSample_0" PORT="clk"/>
-            <CONNECTION INSTANCE="VertexBatchBuilder_0" PORT="clk"/>
-            <CONNECTION INSTANCE="InputAssembler2_0" PORT="clk"/>
             <CONNECTION INSTANCE="vio_0" PORT="clk"/>
+            <CONNECTION INSTANCE="VBO_INDEX_FIFO" PORT="clk"/>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="clk"/>
+            <CONNECTION INSTANCE="VertexBatchBuilder_0" PORT="clk"/>
+            <CONNECTION INSTANCE="IndexBufferCache_0" PORT="clk"/>
+            <CONNECTION INSTANCE="InputAssembler2_0" PORT="clk"/>
             <CONNECTION INSTANCE="SerialPacketSystem_ValidIncomingPacketsFIFO" PORT="rd_clk"/>
             <CONNECTION INSTANCE="SerialPacketSystem_ReturnOutputPacketsFIFO" PORT="wr_clk"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_InstructionCache" PORT="clka"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_VertexStreamCache_0" PORT="clk"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_ConstantBuffer_0" PORT="clk"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_UNORM8ToFloat_0" PORT="clk"/>
+            <CONNECTION INSTANCE="ShaderCoreSystem_GPRQuadSystem_GPRQuad2_0" PORT="clk"/>
+            <CONNECTION INSTANCE="ShaderCoreSystem_ShaderCore_0" PORT="clk"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_FloatALU_0" PORT="clk"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_FloatALU_1" PORT="clk"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_FloatALU_2" PORT="clk"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_FloatALU_3" PORT="clk"/>
-            <CONNECTION INSTANCE="ShaderCoreSystem_ShaderCore_0" PORT="clk"/>
-            <CONNECTION INSTANCE="ShaderCoreSystem_GPRQuadSystem_GPRQuad2_0" PORT="clk"/>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="clk"/>
             <CONNECTION INSTANCE="MemorySystem_ScanoutReadRequestsFIFO" PORT="rd_clk"/>
             <CONNECTION INSTANCE="MemorySystem_ZStencilReadRequestsFIFO" PORT="rd_clk"/>
             <CONNECTION INSTANCE="MemorySystem_ZStencilReadRequestsFIFO" PORT="wr_clk"/>
@@ -26039,10 +25986,10 @@
         </PORT>
         <PORT DIR="O" NAME="resetn" SIGIS="rst" SIGNAME="ResetN_UntilClockLoc_0_resetn">
           <CONNECTIONS>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="resetn"/>
             <CONNECTION INSTANCE="MemorySystem_MemoryController_0" PORT="M_AXI_ARESETN"/>
             <CONNECTION INSTANCE="SerialPacketSystem_axi_uartlite_0" PORT="s_axi_aresetn"/>
             <CONNECTION INSTANCE="SerialPacketSystem_PacketProcessor_0" PORT="M_AXI_ARESETN"/>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="resetn"/>
           </CONNECTIONS>
         </PORT>
       </PORTS>
@@ -32068,6 +32015,7 @@
         </PORT>
         <PORT DIR="O" LEFT="31" NAME="OUT_RESULT" RIGHT="0" SIGIS="undef" SIGNAME="ShaderCoreSystem_FloatALU_3_OUT_RESULT">
           <CONNECTIONS>
+            <CONNECTION INSTANCE="ILA_IA" PORT="probe10"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_ShaderCore_0" PORT="FPU3_OUT_RESULT"/>
           </CONNECTIONS>
         </PORT>
@@ -34888,17 +34836,17 @@
         </PORT>
         <PORT DIR="I" NAME="VERTBATCH_FIFO_empty" SIGIS="undef" SIGNAME="ShaderCoreSystem_ShaderCore_0_VERTBATCH_FIFO_empty">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="fifo_generator_0" PORT="empty"/>
+            <CONNECTION INSTANCE="VBB_FIFO" PORT="empty"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="287" NAME="VERTBATCH_FIFO_rd_data" RIGHT="0" SIGIS="undef" SIGNAME="ShaderCoreSystem_ShaderCore_0_VERTBATCH_FIFO_rd_data">
+        <PORT DIR="I" LEFT="527" NAME="VERTBATCH_FIFO_rd_data" RIGHT="0" SIGIS="undef" SIGNAME="ShaderCoreSystem_ShaderCore_0_VERTBATCH_FIFO_rd_data">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="fifo_generator_0" PORT="dout"/>
+            <CONNECTION INSTANCE="VBB_FIFO" PORT="dout"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" NAME="VERTBATCH_FIFO_rd_en" SIGIS="undef" SIGNAME="ShaderCoreSystem_ShaderCore_0_VERTBATCH_FIFO_rd_en">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="fifo_generator_0" PORT="rd_en"/>
+            <CONNECTION INSTANCE="VBB_FIFO" PORT="rd_en"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" NAME="VBO_Pushed" SIGIS="undef" SIGNAME="ShaderCoreSystem_ShaderCore_0_VBO_Pushed">
@@ -34906,14 +34854,21 @@
             <CONNECTION INSTANCE="InputAssembler2_0" PORT="VBO_Pushed"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="15" NAME="VBO_BatchStartingIndex" RIGHT="0" SIGIS="undef" SIGNAME="ShaderCoreSystem_ShaderCore_0_VBO_BatchStartingIndex">
+        <PORT DIR="O" LEFT="4" NAME="VBO_NumVertices" RIGHT="0" SIGIS="undef" SIGNAME="ShaderCoreSystem_ShaderCore_0_VBO_NumVertices">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="InputAssembler2_0" PORT="VBO_BatchStartingIndex"/>
+            <CONNECTION INSTANCE="ILA_IA" PORT="probe27"/>
+            <CONNECTION INSTANCE="InputAssembler2_0" PORT="VBO_NumVertices"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="15" NAME="VBO_BatchEndingIndex" RIGHT="0" SIGIS="undef" SIGNAME="ShaderCoreSystem_ShaderCore_0_VBO_BatchEndingIndex">
+        <PORT DIR="O" LEFT="6" NAME="VBO_NumIndices" RIGHT="0" SIGIS="undef" SIGNAME="ShaderCoreSystem_ShaderCore_0_VBO_NumIndices">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="InputAssembler2_0" PORT="VBO_BatchEndingIndex"/>
+            <CONNECTION INSTANCE="ILA_IA" PORT="probe32"/>
+            <CONNECTION INSTANCE="InputAssembler2_0" PORT="VBO_NumIndices"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="VBO_IsIndexedDrawCall" SIGIS="undef" SIGNAME="ShaderCoreSystem_ShaderCore_0_VBO_IsIndexedDrawCall">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="InputAssembler2_0" PORT="VBO_IsIndexedDrawCall"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="I" NAME="VBO_Ready" SIGIS="undef" SIGNAME="InputAssembler2_0_VBO_Ready">
@@ -34936,15 +34891,28 @@
             <CONNECTION INSTANCE="VBO_FIFO" PORT="wr_en"/>
           </CONNECTIONS>
         </PORT>
+        <PORT DIR="I" NAME="INDEXOUT_FIFO_full" SIGIS="undef" SIGNAME="ShaderCoreSystem_ShaderCore_0_INDEXOUT_FIFO_full">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="VBO_INDEX_FIFO" PORT="full"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="255" NAME="INDEXOUT_FIFO_wr_data" RIGHT="0" SIGIS="undef" SIGNAME="ShaderCoreSystem_ShaderCore_0_INDEXOUT_FIFO_wr_data">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="VBO_INDEX_FIFO" PORT="din"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="INDEXOUT_FIFO_wr_en" SIGIS="undef" SIGNAME="ShaderCoreSystem_ShaderCore_0_INDEXOUT_FIFO_wr_en">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="VBO_INDEX_FIFO" PORT="wr_en"/>
+          </CONNECTIONS>
+        </PORT>
         <PORT DIR="O" NAME="VSC_ReadEnable" SIGIS="undef" SIGNAME="ShaderCoreSystem_ShaderCore_0_VSC_ReadEnable">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="ILA_IA" PORT="probe16"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_VertexStreamCache_0" PORT="VSC_ReadEnable"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="2" NAME="VSC_ReadStreamIndex" RIGHT="0" SIGIS="undef" SIGNAME="ShaderCoreSystem_ShaderCore_0_VSC_ReadStreamIndex">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="ILA_IA" PORT="probe17"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_VertexStreamCache_0" PORT="VSC_ReadStreamIndex"/>
           </CONNECTIONS>
         </PORT>
@@ -34966,7 +34934,6 @@
         </PORT>
         <PORT DIR="O" NAME="VSC_SetStreamVBAddress" SIGIS="undef" SIGNAME="ShaderCoreSystem_ShaderCore_0_VSC_SetStreamVBAddress">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="ILA_IA" PORT="probe19"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_VertexStreamCache_0" PORT="VSC_SetStreamVBAddress"/>
           </CONNECTIONS>
         </PORT>
@@ -35263,11 +35230,13 @@
         </PORT>
         <PORT DIR="O" LEFT="31" NAME="FPU3_IN_A" RIGHT="0" SIGIS="undef" SIGNAME="ShaderCoreSystem_ShaderCore_0_FPU3_IN_A">
           <CONNECTIONS>
+            <CONNECTION INSTANCE="ILA_IA" PORT="probe2"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_FloatALU_3" PORT="IN_A"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="31" NAME="FPU3_IN_B" RIGHT="0" SIGIS="undef" SIGNAME="ShaderCoreSystem_ShaderCore_0_FPU3_IN_B">
           <CONNECTIONS>
+            <CONNECTION INSTANCE="ILA_IA" PORT="probe5"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_FloatALU_3" PORT="IN_B"/>
           </CONNECTIONS>
         </PORT>
@@ -35322,7 +35291,7 @@
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="2" NAME="DBG_CurrentStreamID" RIGHT="0" SIGIS="undef"/>
-        <PORT DIR="O" LEFT="15" NAME="DBG_ActiveLanesBitmask" RIGHT="0" SIGIS="undef" SIGNAME="ShaderCoreSystem_ShaderCore_0_DBG_ActiveLanesBitmask">
+        <PORT DIR="O" LEFT="16" NAME="DBG_ActiveLanesBitmask" RIGHT="0" SIGIS="undef" SIGNAME="ShaderCoreSystem_ShaderCore_0_DBG_ActiveLanesBitmask">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ILA_IA" PORT="probe61"/>
           </CONNECTIONS>
@@ -35370,6 +35339,13 @@
             <PORTMAP LOGICAL="WR_DATA" PHYSICAL="VERTOUT_FIFO_wr_data"/>
             <PORTMAP LOGICAL="WR_EN" PHYSICAL="VERTOUT_FIFO_wr_en"/>
             <PORTMAP LOGICAL="FULL" PHYSICAL="VERTOUT_FIFO_full"/>
+          </PORTMAPS>
+        </BUSINTERFACE>
+        <BUSINTERFACE BUSNAME="ShaderCoreSystem_ShaderCore_0_INDEXOUT_FIFO" NAME="INDEXOUT_FIFO" TYPE="INITIATOR" VLNV="xilinx.com:interface:fifo_write:1.0">
+          <PORTMAPS>
+            <PORTMAP LOGICAL="WR_DATA" PHYSICAL="INDEXOUT_FIFO_wr_data"/>
+            <PORTMAP LOGICAL="WR_EN" PHYSICAL="INDEXOUT_FIFO_wr_en"/>
+            <PORTMAP LOGICAL="FULL" PHYSICAL="INDEXOUT_FIFO_full"/>
           </PORTMAPS>
         </BUSINTERFACE>
         <BUSINTERFACE BUSNAME="__NOC__" NAME="ICache" TYPE="INITIATOR" VLNV="xilinx.com:interface:bram:1.0">
@@ -37178,6 +37154,440 @@
       </PORTS>
       <BUSINTERFACES/>
     </MODULE>
+    <MODULE FULLNAME="/VBB_FIFO" HWVERSION="13.2" INSTANCE="VBB_FIFO" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="fifo_generator" VLNV="xilinx.com:ip:fifo_generator:13.2">
+      <DOCUMENTS>
+        <DOCUMENT SOURCE="http://www.xilinx.com/cgi-bin/docs/ipdoc?c=fifo_generator;v=v13_2;d=pg057-fifo-generator.pdf"/>
+      </DOCUMENTS>
+      <PARAMETERS>
+        <PARAMETER NAME="C_COMMON_CLOCK" VALUE="1"/>
+        <PARAMETER NAME="C_SELECT_XPM" VALUE="0"/>
+        <PARAMETER NAME="C_COUNT_TYPE" VALUE="0"/>
+        <PARAMETER NAME="C_DATA_COUNT_WIDTH" VALUE="9"/>
+        <PARAMETER NAME="C_DEFAULT_VALUE" VALUE="BlankString"/>
+        <PARAMETER NAME="C_DIN_WIDTH" VALUE="528"/>
+        <PARAMETER NAME="C_DOUT_RST_VAL" VALUE="0"/>
+        <PARAMETER NAME="C_DOUT_WIDTH" VALUE="528"/>
+        <PARAMETER NAME="C_ENABLE_RLOCS" VALUE="0"/>
+        <PARAMETER NAME="C_FAMILY" VALUE="kintexuplus"/>
+        <PARAMETER NAME="C_FULL_FLAGS_RST_VAL" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_ALMOST_EMPTY" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_ALMOST_FULL" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_BACKUP" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_DATA_COUNT" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_INT_CLK" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_MEMINIT_FILE" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_OVERFLOW" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_RD_DATA_COUNT" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_RD_RST" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_RST" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_SRST" VALUE="1"/>
+        <PARAMETER NAME="C_HAS_UNDERFLOW" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_VALID" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_WR_ACK" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_WR_DATA_COUNT" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_WR_RST" VALUE="0"/>
+        <PARAMETER NAME="C_IMPLEMENTATION_TYPE" VALUE="6"/>
+        <PARAMETER NAME="C_INIT_WR_PNTR_VAL" VALUE="0"/>
+        <PARAMETER NAME="C_MEMORY_TYPE" VALUE="4"/>
+        <PARAMETER NAME="C_MIF_FILE_NAME" VALUE="BlankString"/>
+        <PARAMETER NAME="C_OPTIMIZATION_MODE" VALUE="0"/>
+        <PARAMETER NAME="C_OVERFLOW_LOW" VALUE="0"/>
+        <PARAMETER NAME="C_PRELOAD_LATENCY" VALUE="0"/>
+        <PARAMETER NAME="C_PRELOAD_REGS" VALUE="1"/>
+        <PARAMETER NAME="C_PRIM_FIFO_TYPE" VALUE="512x72"/>
+        <PARAMETER NAME="C_PROG_EMPTY_THRESH_ASSERT_VAL" VALUE="4"/>
+        <PARAMETER NAME="C_PROG_EMPTY_THRESH_NEGATE_VAL" VALUE="5"/>
+        <PARAMETER NAME="C_PROG_EMPTY_TYPE" VALUE="0"/>
+        <PARAMETER NAME="C_PROG_FULL_THRESH_ASSERT_VAL" VALUE="511"/>
+        <PARAMETER NAME="C_PROG_FULL_THRESH_NEGATE_VAL" VALUE="510"/>
+        <PARAMETER NAME="C_PROG_FULL_TYPE" VALUE="0"/>
+        <PARAMETER NAME="C_RD_DATA_COUNT_WIDTH" VALUE="9"/>
+        <PARAMETER NAME="C_RD_DEPTH" VALUE="512"/>
+        <PARAMETER NAME="C_RD_FREQ" VALUE="1"/>
+        <PARAMETER NAME="C_RD_PNTR_WIDTH" VALUE="9"/>
+        <PARAMETER NAME="C_UNDERFLOW_LOW" VALUE="0"/>
+        <PARAMETER NAME="C_USE_DOUT_RST" VALUE="1"/>
+        <PARAMETER NAME="C_USE_ECC" VALUE="0"/>
+        <PARAMETER NAME="C_USE_EMBEDDED_REG" VALUE="0"/>
+        <PARAMETER NAME="C_USE_PIPELINE_REG" VALUE="0"/>
+        <PARAMETER NAME="C_POWER_SAVING_MODE" VALUE="0"/>
+        <PARAMETER NAME="C_USE_FIFO16_FLAGS" VALUE="0"/>
+        <PARAMETER NAME="C_USE_FWFT_DATA_COUNT" VALUE="0"/>
+        <PARAMETER NAME="C_VALID_LOW" VALUE="0"/>
+        <PARAMETER NAME="C_WR_ACK_LOW" VALUE="0"/>
+        <PARAMETER NAME="C_WR_DATA_COUNT_WIDTH" VALUE="9"/>
+        <PARAMETER NAME="C_WR_DEPTH" VALUE="512"/>
+        <PARAMETER NAME="C_WR_FREQ" VALUE="1"/>
+        <PARAMETER NAME="C_WR_PNTR_WIDTH" VALUE="9"/>
+        <PARAMETER NAME="C_WR_RESPONSE_LATENCY" VALUE="1"/>
+        <PARAMETER NAME="C_MSGON_VAL" VALUE="1"/>
+        <PARAMETER NAME="C_ENABLE_RST_SYNC" VALUE="1"/>
+        <PARAMETER NAME="C_EN_SAFETY_CKT" VALUE="0"/>
+        <PARAMETER NAME="C_ERROR_INJECTION_TYPE" VALUE="0"/>
+        <PARAMETER NAME="C_SYNCHRONIZER_STAGE" VALUE="2"/>
+        <PARAMETER NAME="C_INTERFACE_TYPE" VALUE="0"/>
+        <PARAMETER NAME="C_AXI_TYPE" VALUE="1"/>
+        <PARAMETER NAME="C_HAS_AXI_WR_CHANNEL" VALUE="1"/>
+        <PARAMETER NAME="C_HAS_AXI_RD_CHANNEL" VALUE="1"/>
+        <PARAMETER NAME="C_HAS_SLAVE_CE" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_MASTER_CE" VALUE="0"/>
+        <PARAMETER NAME="C_ADD_NGC_CONSTRAINT" VALUE="0"/>
+        <PARAMETER NAME="C_USE_COMMON_OVERFLOW" VALUE="0"/>
+        <PARAMETER NAME="C_USE_COMMON_UNDERFLOW" VALUE="0"/>
+        <PARAMETER NAME="C_USE_DEFAULT_SETTINGS" VALUE="0"/>
+        <PARAMETER NAME="C_AXI_ID_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_AXI_ADDR_WIDTH" VALUE="32"/>
+        <PARAMETER NAME="C_AXI_DATA_WIDTH" VALUE="64"/>
+        <PARAMETER NAME="C_AXI_LEN_WIDTH" VALUE="8"/>
+        <PARAMETER NAME="C_AXI_LOCK_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_HAS_AXI_ID" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_AXI_AWUSER" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_AXI_WUSER" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_AXI_BUSER" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_AXI_ARUSER" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_AXI_RUSER" VALUE="0"/>
+        <PARAMETER NAME="C_AXI_ARUSER_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_AXI_AWUSER_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_AXI_WUSER_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_AXI_BUSER_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_AXI_RUSER_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_HAS_AXIS_TDATA" VALUE="1"/>
+        <PARAMETER NAME="C_HAS_AXIS_TID" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_AXIS_TDEST" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_AXIS_TUSER" VALUE="1"/>
+        <PARAMETER NAME="C_HAS_AXIS_TREADY" VALUE="1"/>
+        <PARAMETER NAME="C_HAS_AXIS_TLAST" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_AXIS_TSTRB" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_AXIS_TKEEP" VALUE="0"/>
+        <PARAMETER NAME="C_AXIS_TDATA_WIDTH" VALUE="8"/>
+        <PARAMETER NAME="C_AXIS_TID_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_AXIS_TDEST_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_AXIS_TUSER_WIDTH" VALUE="4"/>
+        <PARAMETER NAME="C_AXIS_TSTRB_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_AXIS_TKEEP_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_WACH_TYPE" VALUE="0"/>
+        <PARAMETER NAME="C_WDCH_TYPE" VALUE="0"/>
+        <PARAMETER NAME="C_WRCH_TYPE" VALUE="0"/>
+        <PARAMETER NAME="C_RACH_TYPE" VALUE="0"/>
+        <PARAMETER NAME="C_RDCH_TYPE" VALUE="0"/>
+        <PARAMETER NAME="C_AXIS_TYPE" VALUE="0"/>
+        <PARAMETER NAME="C_IMPLEMENTATION_TYPE_WACH" VALUE="2"/>
+        <PARAMETER NAME="C_IMPLEMENTATION_TYPE_WDCH" VALUE="1"/>
+        <PARAMETER NAME="C_IMPLEMENTATION_TYPE_WRCH" VALUE="2"/>
+        <PARAMETER NAME="C_IMPLEMENTATION_TYPE_RACH" VALUE="2"/>
+        <PARAMETER NAME="C_IMPLEMENTATION_TYPE_RDCH" VALUE="1"/>
+        <PARAMETER NAME="C_IMPLEMENTATION_TYPE_AXIS" VALUE="1"/>
+        <PARAMETER NAME="C_APPLICATION_TYPE_WACH" VALUE="0"/>
+        <PARAMETER NAME="C_APPLICATION_TYPE_WDCH" VALUE="0"/>
+        <PARAMETER NAME="C_APPLICATION_TYPE_WRCH" VALUE="0"/>
+        <PARAMETER NAME="C_APPLICATION_TYPE_RACH" VALUE="0"/>
+        <PARAMETER NAME="C_APPLICATION_TYPE_RDCH" VALUE="0"/>
+        <PARAMETER NAME="C_APPLICATION_TYPE_AXIS" VALUE="0"/>
+        <PARAMETER NAME="C_PRIM_FIFO_TYPE_WACH" VALUE="512x36"/>
+        <PARAMETER NAME="C_PRIM_FIFO_TYPE_WDCH" VALUE="512x72"/>
+        <PARAMETER NAME="C_PRIM_FIFO_TYPE_WRCH" VALUE="512x36"/>
+        <PARAMETER NAME="C_PRIM_FIFO_TYPE_RACH" VALUE="512x36"/>
+        <PARAMETER NAME="C_PRIM_FIFO_TYPE_RDCH" VALUE="512x72"/>
+        <PARAMETER NAME="C_PRIM_FIFO_TYPE_AXIS" VALUE="1kx18"/>
+        <PARAMETER NAME="C_USE_ECC_WACH" VALUE="0"/>
+        <PARAMETER NAME="C_USE_ECC_WDCH" VALUE="0"/>
+        <PARAMETER NAME="C_USE_ECC_WRCH" VALUE="0"/>
+        <PARAMETER NAME="C_USE_ECC_RACH" VALUE="0"/>
+        <PARAMETER NAME="C_USE_ECC_RDCH" VALUE="0"/>
+        <PARAMETER NAME="C_USE_ECC_AXIS" VALUE="0"/>
+        <PARAMETER NAME="C_ERROR_INJECTION_TYPE_WACH" VALUE="0"/>
+        <PARAMETER NAME="C_ERROR_INJECTION_TYPE_WDCH" VALUE="0"/>
+        <PARAMETER NAME="C_ERROR_INJECTION_TYPE_WRCH" VALUE="0"/>
+        <PARAMETER NAME="C_ERROR_INJECTION_TYPE_RACH" VALUE="0"/>
+        <PARAMETER NAME="C_ERROR_INJECTION_TYPE_RDCH" VALUE="0"/>
+        <PARAMETER NAME="C_ERROR_INJECTION_TYPE_AXIS" VALUE="0"/>
+        <PARAMETER NAME="C_DIN_WIDTH_WACH" VALUE="1"/>
+        <PARAMETER NAME="C_DIN_WIDTH_WDCH" VALUE="64"/>
+        <PARAMETER NAME="C_DIN_WIDTH_WRCH" VALUE="2"/>
+        <PARAMETER NAME="C_DIN_WIDTH_RACH" VALUE="32"/>
+        <PARAMETER NAME="C_DIN_WIDTH_RDCH" VALUE="64"/>
+        <PARAMETER NAME="C_DIN_WIDTH_AXIS" VALUE="1"/>
+        <PARAMETER NAME="C_WR_DEPTH_WACH" VALUE="16"/>
+        <PARAMETER NAME="C_WR_DEPTH_WDCH" VALUE="1024"/>
+        <PARAMETER NAME="C_WR_DEPTH_WRCH" VALUE="16"/>
+        <PARAMETER NAME="C_WR_DEPTH_RACH" VALUE="16"/>
+        <PARAMETER NAME="C_WR_DEPTH_RDCH" VALUE="1024"/>
+        <PARAMETER NAME="C_WR_DEPTH_AXIS" VALUE="1024"/>
+        <PARAMETER NAME="C_WR_PNTR_WIDTH_WACH" VALUE="4"/>
+        <PARAMETER NAME="C_WR_PNTR_WIDTH_WDCH" VALUE="10"/>
+        <PARAMETER NAME="C_WR_PNTR_WIDTH_WRCH" VALUE="4"/>
+        <PARAMETER NAME="C_WR_PNTR_WIDTH_RACH" VALUE="4"/>
+        <PARAMETER NAME="C_WR_PNTR_WIDTH_RDCH" VALUE="10"/>
+        <PARAMETER NAME="C_WR_PNTR_WIDTH_AXIS" VALUE="10"/>
+        <PARAMETER NAME="C_HAS_DATA_COUNTS_WACH" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_DATA_COUNTS_WDCH" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_DATA_COUNTS_WRCH" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_DATA_COUNTS_RACH" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_DATA_COUNTS_RDCH" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_DATA_COUNTS_AXIS" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_PROG_FLAGS_WACH" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_PROG_FLAGS_WDCH" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_PROG_FLAGS_WRCH" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_PROG_FLAGS_RACH" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_PROG_FLAGS_RDCH" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_PROG_FLAGS_AXIS" VALUE="0"/>
+        <PARAMETER NAME="C_PROG_FULL_TYPE_WACH" VALUE="0"/>
+        <PARAMETER NAME="C_PROG_FULL_TYPE_WDCH" VALUE="0"/>
+        <PARAMETER NAME="C_PROG_FULL_TYPE_WRCH" VALUE="0"/>
+        <PARAMETER NAME="C_PROG_FULL_TYPE_RACH" VALUE="0"/>
+        <PARAMETER NAME="C_PROG_FULL_TYPE_RDCH" VALUE="0"/>
+        <PARAMETER NAME="C_PROG_FULL_TYPE_AXIS" VALUE="0"/>
+        <PARAMETER NAME="C_PROG_FULL_THRESH_ASSERT_VAL_WACH" VALUE="1023"/>
+        <PARAMETER NAME="C_PROG_FULL_THRESH_ASSERT_VAL_WDCH" VALUE="1023"/>
+        <PARAMETER NAME="C_PROG_FULL_THRESH_ASSERT_VAL_WRCH" VALUE="1023"/>
+        <PARAMETER NAME="C_PROG_FULL_THRESH_ASSERT_VAL_RACH" VALUE="1023"/>
+        <PARAMETER NAME="C_PROG_FULL_THRESH_ASSERT_VAL_RDCH" VALUE="1023"/>
+        <PARAMETER NAME="C_PROG_FULL_THRESH_ASSERT_VAL_AXIS" VALUE="1023"/>
+        <PARAMETER NAME="C_PROG_EMPTY_TYPE_WACH" VALUE="0"/>
+        <PARAMETER NAME="C_PROG_EMPTY_TYPE_WDCH" VALUE="0"/>
+        <PARAMETER NAME="C_PROG_EMPTY_TYPE_WRCH" VALUE="0"/>
+        <PARAMETER NAME="C_PROG_EMPTY_TYPE_RACH" VALUE="0"/>
+        <PARAMETER NAME="C_PROG_EMPTY_TYPE_RDCH" VALUE="0"/>
+        <PARAMETER NAME="C_PROG_EMPTY_TYPE_AXIS" VALUE="0"/>
+        <PARAMETER NAME="C_PROG_EMPTY_THRESH_ASSERT_VAL_WACH" VALUE="1022"/>
+        <PARAMETER NAME="C_PROG_EMPTY_THRESH_ASSERT_VAL_WDCH" VALUE="1022"/>
+        <PARAMETER NAME="C_PROG_EMPTY_THRESH_ASSERT_VAL_WRCH" VALUE="1022"/>
+        <PARAMETER NAME="C_PROG_EMPTY_THRESH_ASSERT_VAL_RACH" VALUE="1022"/>
+        <PARAMETER NAME="C_PROG_EMPTY_THRESH_ASSERT_VAL_RDCH" VALUE="1022"/>
+        <PARAMETER NAME="C_PROG_EMPTY_THRESH_ASSERT_VAL_AXIS" VALUE="1022"/>
+        <PARAMETER NAME="C_REG_SLICE_MODE_WACH" VALUE="0"/>
+        <PARAMETER NAME="C_REG_SLICE_MODE_WDCH" VALUE="0"/>
+        <PARAMETER NAME="C_REG_SLICE_MODE_WRCH" VALUE="0"/>
+        <PARAMETER NAME="C_REG_SLICE_MODE_RACH" VALUE="0"/>
+        <PARAMETER NAME="C_REG_SLICE_MODE_RDCH" VALUE="0"/>
+        <PARAMETER NAME="C_REG_SLICE_MODE_AXIS" VALUE="0"/>
+        <PARAMETER NAME="Component_Name" VALUE="design_1_fifo_generator_0_14"/>
+        <PARAMETER NAME="Fifo_Implementation" VALUE="Common_Clock_Builtin_FIFO"/>
+        <PARAMETER NAME="synchronization_stages" VALUE="2"/>
+        <PARAMETER NAME="synchronization_stages_axi" VALUE="2"/>
+        <PARAMETER NAME="INTERFACE_TYPE" VALUE="Native"/>
+        <PARAMETER NAME="Performance_Options" VALUE="First_Word_Fall_Through"/>
+        <PARAMETER NAME="asymmetric_port_width" VALUE="false"/>
+        <PARAMETER NAME="Input_Data_Width" VALUE="528"/>
+        <PARAMETER NAME="Input_Depth" VALUE="512"/>
+        <PARAMETER NAME="Output_Data_Width" VALUE="528"/>
+        <PARAMETER NAME="Output_Depth" VALUE="512"/>
+        <PARAMETER NAME="Enable_ECC" VALUE="false"/>
+        <PARAMETER NAME="Use_Embedded_Registers" VALUE="false"/>
+        <PARAMETER NAME="Reset_Pin" VALUE="true"/>
+        <PARAMETER NAME="Enable_Reset_Synchronization" VALUE="true"/>
+        <PARAMETER NAME="Reset_Type" VALUE="Synchronous_Reset"/>
+        <PARAMETER NAME="Full_Flags_Reset_Value" VALUE="0"/>
+        <PARAMETER NAME="Use_Dout_Reset" VALUE="true"/>
+        <PARAMETER NAME="Dout_Reset_Value" VALUE="0"/>
+        <PARAMETER NAME="dynamic_power_saving" VALUE="false"/>
+        <PARAMETER NAME="Almost_Full_Flag" VALUE="false"/>
+        <PARAMETER NAME="Almost_Empty_Flag" VALUE="false"/>
+        <PARAMETER NAME="Valid_Flag" VALUE="false"/>
+        <PARAMETER NAME="Valid_Sense" VALUE="Active_High"/>
+        <PARAMETER NAME="Underflow_Flag" VALUE="false"/>
+        <PARAMETER NAME="Underflow_Sense" VALUE="Active_High"/>
+        <PARAMETER NAME="Write_Acknowledge_Flag" VALUE="false"/>
+        <PARAMETER NAME="Write_Acknowledge_Sense" VALUE="Active_High"/>
+        <PARAMETER NAME="Overflow_Flag" VALUE="false"/>
+        <PARAMETER NAME="Overflow_Sense" VALUE="Active_High"/>
+        <PARAMETER NAME="Inject_Sbit_Error" VALUE="false"/>
+        <PARAMETER NAME="Inject_Dbit_Error" VALUE="false"/>
+        <PARAMETER NAME="ecc_pipeline_reg" VALUE="false"/>
+        <PARAMETER NAME="Use_Extra_Logic" VALUE="false"/>
+        <PARAMETER NAME="Data_Count" VALUE="false"/>
+        <PARAMETER NAME="Data_Count_Width" VALUE="9"/>
+        <PARAMETER NAME="Write_Data_Count" VALUE="false"/>
+        <PARAMETER NAME="Write_Data_Count_Width" VALUE="9"/>
+        <PARAMETER NAME="Read_Data_Count" VALUE="false"/>
+        <PARAMETER NAME="Read_Data_Count_Width" VALUE="9"/>
+        <PARAMETER NAME="Disable_Timing_Violations" VALUE="false"/>
+        <PARAMETER NAME="Read_Clock_Frequency" VALUE="1"/>
+        <PARAMETER NAME="Write_Clock_Frequency" VALUE="1"/>
+        <PARAMETER NAME="Programmable_Full_Type" VALUE="No_Programmable_Full_Threshold"/>
+        <PARAMETER NAME="Full_Threshold_Assert_Value" VALUE="511"/>
+        <PARAMETER NAME="Full_Threshold_Negate_Value" VALUE="510"/>
+        <PARAMETER NAME="Programmable_Empty_Type" VALUE="No_Programmable_Empty_Threshold"/>
+        <PARAMETER NAME="Empty_Threshold_Assert_Value" VALUE="4"/>
+        <PARAMETER NAME="Empty_Threshold_Negate_Value" VALUE="5"/>
+        <PARAMETER NAME="PROTOCOL" VALUE="AXI4"/>
+        <PARAMETER NAME="Clock_Type_AXI" VALUE="Common_Clock"/>
+        <PARAMETER NAME="HAS_ACLKEN" VALUE="false"/>
+        <PARAMETER NAME="Clock_Enable_Type" VALUE="Slave_Interface_Clock_Enable"/>
+        <PARAMETER NAME="READ_WRITE_MODE" VALUE="READ_WRITE"/>
+        <PARAMETER NAME="ID_WIDTH" VALUE="0"/>
+        <PARAMETER NAME="ADDRESS_WIDTH" VALUE="32"/>
+        <PARAMETER NAME="DATA_WIDTH" VALUE="64"/>
+        <PARAMETER NAME="AWUSER_Width" VALUE="0"/>
+        <PARAMETER NAME="WUSER_Width" VALUE="0"/>
+        <PARAMETER NAME="BUSER_Width" VALUE="0"/>
+        <PARAMETER NAME="ARUSER_Width" VALUE="0"/>
+        <PARAMETER NAME="RUSER_Width" VALUE="0"/>
+        <PARAMETER NAME="TDATA_NUM_BYTES" VALUE="1"/>
+        <PARAMETER NAME="TID_WIDTH" VALUE="0"/>
+        <PARAMETER NAME="TDEST_WIDTH" VALUE="0"/>
+        <PARAMETER NAME="TUSER_WIDTH" VALUE="4"/>
+        <PARAMETER NAME="Enable_TREADY" VALUE="true"/>
+        <PARAMETER NAME="Enable_TLAST" VALUE="false"/>
+        <PARAMETER NAME="HAS_TSTRB" VALUE="false"/>
+        <PARAMETER NAME="TSTRB_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="HAS_TKEEP" VALUE="false"/>
+        <PARAMETER NAME="TKEEP_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="wach_type" VALUE="FIFO"/>
+        <PARAMETER NAME="FIFO_Implementation_wach" VALUE="Common_Clock_Distributed_RAM"/>
+        <PARAMETER NAME="FIFO_Application_Type_wach" VALUE="Data_FIFO"/>
+        <PARAMETER NAME="Enable_ECC_wach" VALUE="false"/>
+        <PARAMETER NAME="Inject_Sbit_Error_wach" VALUE="false"/>
+        <PARAMETER NAME="Inject_Dbit_Error_wach" VALUE="false"/>
+        <PARAMETER NAME="Input_Depth_wach" VALUE="16"/>
+        <PARAMETER NAME="Enable_Data_Counts_wach" VALUE="false"/>
+        <PARAMETER NAME="Programmable_Full_Type_wach" VALUE="No_Programmable_Full_Threshold"/>
+        <PARAMETER NAME="Full_Threshold_Assert_Value_wach" VALUE="1023"/>
+        <PARAMETER NAME="Programmable_Empty_Type_wach" VALUE="No_Programmable_Empty_Threshold"/>
+        <PARAMETER NAME="Empty_Threshold_Assert_Value_wach" VALUE="1022"/>
+        <PARAMETER NAME="wdch_type" VALUE="FIFO"/>
+        <PARAMETER NAME="FIFO_Implementation_wdch" VALUE="Common_Clock_Block_RAM"/>
+        <PARAMETER NAME="FIFO_Application_Type_wdch" VALUE="Data_FIFO"/>
+        <PARAMETER NAME="Enable_ECC_wdch" VALUE="false"/>
+        <PARAMETER NAME="Inject_Sbit_Error_wdch" VALUE="false"/>
+        <PARAMETER NAME="Inject_Dbit_Error_wdch" VALUE="false"/>
+        <PARAMETER NAME="Input_Depth_wdch" VALUE="1024"/>
+        <PARAMETER NAME="Enable_Data_Counts_wdch" VALUE="false"/>
+        <PARAMETER NAME="Programmable_Full_Type_wdch" VALUE="No_Programmable_Full_Threshold"/>
+        <PARAMETER NAME="Full_Threshold_Assert_Value_wdch" VALUE="1023"/>
+        <PARAMETER NAME="Programmable_Empty_Type_wdch" VALUE="No_Programmable_Empty_Threshold"/>
+        <PARAMETER NAME="Empty_Threshold_Assert_Value_wdch" VALUE="1022"/>
+        <PARAMETER NAME="wrch_type" VALUE="FIFO"/>
+        <PARAMETER NAME="FIFO_Implementation_wrch" VALUE="Common_Clock_Distributed_RAM"/>
+        <PARAMETER NAME="FIFO_Application_Type_wrch" VALUE="Data_FIFO"/>
+        <PARAMETER NAME="Enable_ECC_wrch" VALUE="false"/>
+        <PARAMETER NAME="Inject_Sbit_Error_wrch" VALUE="false"/>
+        <PARAMETER NAME="Inject_Dbit_Error_wrch" VALUE="false"/>
+        <PARAMETER NAME="Input_Depth_wrch" VALUE="16"/>
+        <PARAMETER NAME="Enable_Data_Counts_wrch" VALUE="false"/>
+        <PARAMETER NAME="Programmable_Full_Type_wrch" VALUE="No_Programmable_Full_Threshold"/>
+        <PARAMETER NAME="Full_Threshold_Assert_Value_wrch" VALUE="1023"/>
+        <PARAMETER NAME="Programmable_Empty_Type_wrch" VALUE="No_Programmable_Empty_Threshold"/>
+        <PARAMETER NAME="Empty_Threshold_Assert_Value_wrch" VALUE="1022"/>
+        <PARAMETER NAME="rach_type" VALUE="FIFO"/>
+        <PARAMETER NAME="FIFO_Implementation_rach" VALUE="Common_Clock_Distributed_RAM"/>
+        <PARAMETER NAME="FIFO_Application_Type_rach" VALUE="Data_FIFO"/>
+        <PARAMETER NAME="Enable_ECC_rach" VALUE="false"/>
+        <PARAMETER NAME="Inject_Sbit_Error_rach" VALUE="false"/>
+        <PARAMETER NAME="Inject_Dbit_Error_rach" VALUE="false"/>
+        <PARAMETER NAME="Input_Depth_rach" VALUE="16"/>
+        <PARAMETER NAME="Enable_Data_Counts_rach" VALUE="false"/>
+        <PARAMETER NAME="Programmable_Full_Type_rach" VALUE="No_Programmable_Full_Threshold"/>
+        <PARAMETER NAME="Full_Threshold_Assert_Value_rach" VALUE="1023"/>
+        <PARAMETER NAME="Programmable_Empty_Type_rach" VALUE="No_Programmable_Empty_Threshold"/>
+        <PARAMETER NAME="Empty_Threshold_Assert_Value_rach" VALUE="1022"/>
+        <PARAMETER NAME="rdch_type" VALUE="FIFO"/>
+        <PARAMETER NAME="FIFO_Implementation_rdch" VALUE="Common_Clock_Block_RAM"/>
+        <PARAMETER NAME="FIFO_Application_Type_rdch" VALUE="Data_FIFO"/>
+        <PARAMETER NAME="Enable_ECC_rdch" VALUE="false"/>
+        <PARAMETER NAME="Inject_Sbit_Error_rdch" VALUE="false"/>
+        <PARAMETER NAME="Inject_Dbit_Error_rdch" VALUE="false"/>
+        <PARAMETER NAME="Input_Depth_rdch" VALUE="1024"/>
+        <PARAMETER NAME="Enable_Data_Counts_rdch" VALUE="false"/>
+        <PARAMETER NAME="Programmable_Full_Type_rdch" VALUE="No_Programmable_Full_Threshold"/>
+        <PARAMETER NAME="Full_Threshold_Assert_Value_rdch" VALUE="1023"/>
+        <PARAMETER NAME="Programmable_Empty_Type_rdch" VALUE="No_Programmable_Empty_Threshold"/>
+        <PARAMETER NAME="Empty_Threshold_Assert_Value_rdch" VALUE="1022"/>
+        <PARAMETER NAME="axis_type" VALUE="FIFO"/>
+        <PARAMETER NAME="FIFO_Implementation_axis" VALUE="Common_Clock_Block_RAM"/>
+        <PARAMETER NAME="FIFO_Application_Type_axis" VALUE="Data_FIFO"/>
+        <PARAMETER NAME="Enable_ECC_axis" VALUE="false"/>
+        <PARAMETER NAME="Inject_Sbit_Error_axis" VALUE="false"/>
+        <PARAMETER NAME="Inject_Dbit_Error_axis" VALUE="false"/>
+        <PARAMETER NAME="Input_Depth_axis" VALUE="1024"/>
+        <PARAMETER NAME="Enable_Data_Counts_axis" VALUE="false"/>
+        <PARAMETER NAME="Programmable_Full_Type_axis" VALUE="No_Programmable_Full_Threshold"/>
+        <PARAMETER NAME="Full_Threshold_Assert_Value_axis" VALUE="1023"/>
+        <PARAMETER NAME="Programmable_Empty_Type_axis" VALUE="No_Programmable_Empty_Threshold"/>
+        <PARAMETER NAME="Empty_Threshold_Assert_Value_axis" VALUE="1022"/>
+        <PARAMETER NAME="Register_Slice_Mode_wach" VALUE="Fully_Registered"/>
+        <PARAMETER NAME="Register_Slice_Mode_wdch" VALUE="Fully_Registered"/>
+        <PARAMETER NAME="Register_Slice_Mode_wrch" VALUE="Fully_Registered"/>
+        <PARAMETER NAME="Register_Slice_Mode_rach" VALUE="Fully_Registered"/>
+        <PARAMETER NAME="Register_Slice_Mode_rdch" VALUE="Fully_Registered"/>
+        <PARAMETER NAME="Register_Slice_Mode_axis" VALUE="Fully_Registered"/>
+        <PARAMETER NAME="Underflow_Flag_AXI" VALUE="false"/>
+        <PARAMETER NAME="Underflow_Sense_AXI" VALUE="Active_High"/>
+        <PARAMETER NAME="Overflow_Flag_AXI" VALUE="false"/>
+        <PARAMETER NAME="Overflow_Sense_AXI" VALUE="Active_High"/>
+        <PARAMETER NAME="Disable_Timing_Violations_AXI" VALUE="false"/>
+        <PARAMETER NAME="Add_NGC_Constraint_AXI" VALUE="false"/>
+        <PARAMETER NAME="Enable_Common_Underflow" VALUE="false"/>
+        <PARAMETER NAME="Enable_Common_Overflow" VALUE="false"/>
+        <PARAMETER NAME="enable_read_pointer_increment_by2" VALUE="false"/>
+        <PARAMETER NAME="Use_Embedded_Registers_axis" VALUE="false"/>
+        <PARAMETER NAME="enable_low_latency" VALUE="false"/>
+        <PARAMETER NAME="use_dout_register" VALUE="false"/>
+        <PARAMETER NAME="Master_interface_Clock_enable_memory_mapped" VALUE="false"/>
+        <PARAMETER NAME="Slave_interface_Clock_enable_memory_mapped" VALUE="false"/>
+        <PARAMETER NAME="Output_Register_Type" VALUE="Embedded_Reg"/>
+        <PARAMETER NAME="Enable_Safety_Circuit" VALUE="false"/>
+        <PARAMETER NAME="Enable_ECC_Type" VALUE="Hard_ECC"/>
+        <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
+      </PARAMETERS>
+      <PORTS>
+        <PORT CLKFREQUENCY="333250000" DIR="I" NAME="clk" SIGIS="clk" SIGNAME="MemorySystem_ddr4_0_c0_ddr4_ui_clk">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="MemorySystem_ddr4_0" PORT="c0_ddr4_ui_clk"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="srst" SIGIS="undef"/>
+        <PORT DIR="I" LEFT="527" NAME="din" RIGHT="0" SIGIS="undef" SIGNAME="VBB_FIFO_din">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="VertexBatchBuilder_0" PORT="VERTBATCH_FIFO_wr_data"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="wr_en" SIGIS="undef" SIGNAME="VBB_FIFO_wr_en">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="VertexBatchBuilder_0" PORT="VERTBATCH_FIFO_wr_en"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="rd_en" SIGIS="undef" SIGNAME="ShaderCoreSystem_ShaderCore_0_VERTBATCH_FIFO_rd_en">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ShaderCoreSystem_ShaderCore_0" PORT="VERTBATCH_FIFO_rd_en"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="527" NAME="dout" RIGHT="0" SIGIS="undef" SIGNAME="VBB_FIFO_dout">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ShaderCoreSystem_ShaderCore_0" PORT="VERTBATCH_FIFO_rd_data"/>
+            <CONNECTION INSTANCE="ILA_IA" PORT="probe14"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="full" SIGIS="undef" SIGNAME="VBB_FIFO_full">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="VertexBatchBuilder_0" PORT="VERTBATCH_FIFO_full"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="empty" SIGIS="undef" SIGNAME="ShaderCoreSystem_ShaderCore_0_VERTBATCH_FIFO_empty">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ShaderCoreSystem_ShaderCore_0" PORT="VERTBATCH_FIFO_empty"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="wr_rst_busy" SIGIS="undef"/>
+        <PORT DIR="O" NAME="rd_rst_busy" SIGIS="undef"/>
+      </PORTS>
+      <BUSINTERFACES>
+        <BUSINTERFACE BUSNAME="VertexBatchBuilder_0_VertexBatchFIFO" NAME="FIFO_WRITE" TYPE="TARGET" VLNV="xilinx.com:interface:fifo_write:1.0">
+          <PORTMAPS>
+            <PORTMAP LOGICAL="FULL" PHYSICAL="full"/>
+            <PORTMAP LOGICAL="WR_DATA" PHYSICAL="din"/>
+            <PORTMAP LOGICAL="WR_EN" PHYSICAL="wr_en"/>
+          </PORTMAPS>
+        </BUSINTERFACE>
+        <BUSINTERFACE BUSNAME="ShaderCoreSystem_ShaderCore_0_VERTBATCH_FIFO" NAME="FIFO_READ" TYPE="TARGET" VLNV="xilinx.com:interface:fifo_read:1.0">
+          <PORTMAPS>
+            <PORTMAP LOGICAL="EMPTY" PHYSICAL="empty"/>
+            <PORTMAP LOGICAL="RD_DATA" PHYSICAL="dout"/>
+            <PORTMAP LOGICAL="RD_EN" PHYSICAL="rd_en"/>
+          </PORTMAPS>
+        </BUSINTERFACE>
+      </BUSINTERFACES>
+    </MODULE>
     <MODULE FULLNAME="/VBO_FIFO" HWVERSION="13.2" INSTANCE="VBO_FIFO" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="fifo_generator" VLNV="xilinx.com:ip:fifo_generator:13.2">
       <DOCUMENTS>
         <DOCUMENT SOURCE="http://www.xilinx.com/cgi-bin/docs/ipdoc?c=fifo_generator;v=v13_2;d=pg057-fifo-generator.pdf"/>
@@ -37581,6 +37991,7 @@
             <CONNECTION INSTANCE="InputAssembler2_0" PORT="VERTOUT_FIFO_rd_data"/>
             <CONNECTION INSTANCE="ILA_IA" PORT="probe9"/>
             <CONNECTION INSTANCE="InputAssembler2_0" PORT="VERTOUT_FIFO_rd_data"/>
+            <CONNECTION INSTANCE="ILA_TriSetup" PORT="probe54"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" NAME="full" SIGIS="undef" SIGNAME="ShaderCoreSystem_ShaderCore_0_VERTOUT_FIFO_full">
@@ -37613,135 +38024,7 @@
         </BUSINTERFACE>
       </BUSINTERFACES>
     </MODULE>
-    <MODULE FULLNAME="/VertexBatchBuilder_0" HWVERSION="1.0" INSTANCE="VertexBatchBuilder_0" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="VertexBatchBuilder" VLNV="xilinx.com:module_ref:VertexBatchBuilder:1.0">
-      <DOCUMENTS/>
-      <PARAMETERS>
-        <PARAMETER NAME="Component_Name" VALUE="design_1_VertexBatchBuilder_0_0"/>
-        <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
-      </PARAMETERS>
-      <PORTS>
-        <PORT CLKFREQUENCY="333250000" DIR="I" NAME="clk" SIGIS="clk" SIGNAME="MemorySystem_ddr4_0_c0_ddr4_ui_clk">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="MemorySystem_ddr4_0" PORT="c0_ddr4_ui_clk"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" LEFT="1" NAME="CMD_SendCommand" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_VBB_SendCommand">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="VBB_SendCommand"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" LEFT="31" NAME="CMD_CommandArg0" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_VBB_CommandArg0">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="VBB_CommandArg0"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" LEFT="31" NAME="CMD_CommandArg1" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_VBB_CommandArg1">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="VBB_CommandArg1"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" LEFT="2" NAME="CMD_CommandArgType" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_VBB_CommandArgType">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="VBB_CommandArgType"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="O" NAME="CMD_ReadyState" SIGIS="undef" SIGNAME="VertexBatchBuilder_0_CMD_ReadyState">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="VBB_ReadyState"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="O" NAME="IBC_ReadEnable" SIGIS="undef" SIGNAME="VertexBatchBuilder_0_IBC_ReadEnable">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="IndexBufferCache_0" PORT="VBB_ReadEnable"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="O" LEFT="29" NAME="IBC_ReadAddr" RIGHT="0" SIGIS="undef" SIGNAME="VertexBatchBuilder_0_IBC_ReadAddr">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="IndexBufferCache_0" PORT="VBB_ReadAddr"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" LEFT="31" NAME="IBC_ReadData" RIGHT="0" SIGIS="undef" SIGNAME="IndexBufferCache_0_VBB_ReadData">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="IndexBufferCache_0" PORT="VBB_ReadData"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" NAME="IBC_ReadReady" SIGIS="undef" SIGNAME="IndexBufferCache_0_VBB_ReadReady">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="IndexBufferCache_0" PORT="VBB_ReadReady"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="O" NAME="SHADER_Done" SIGIS="undef" SIGNAME="VertexBatchBuilder_0_SHADER_Done">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="ShaderCoreSystem_ShaderCore_0" PORT="VBB_Done"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" NAME="VERTBATCH_FIFO_full" SIGIS="undef" SIGNAME="VertexBatchBuilder_0_VERTBATCH_FIFO_full">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="fifo_generator_0" PORT="full"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="O" LEFT="287" NAME="VERTBATCH_FIFO_wr_data" RIGHT="0" SIGIS="undef" SIGNAME="VertexBatchBuilder_0_VERTBATCH_FIFO_wr_data">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="fifo_generator_0" PORT="din"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="O" NAME="VERTBATCH_FIFO_wr_en" SIGIS="undef" SIGNAME="VertexBatchBuilder_0_VERTBATCH_FIFO_wr_en">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="fifo_generator_0" PORT="wr_en"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" NAME="DBG_UseConstantOutput" SIGIS="undef" SIGNAME="vio_0_probe_out1">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="vio_0" PORT="probe_out1"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="O" LEFT="3" NAME="DBG_CurrentState" RIGHT="0" SIGIS="undef" SIGNAME="VertexBatchBuilder_0_DBG_CurrentState">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="ILA_IA" PORT="probe12"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="O" LEFT="4" NAME="DBG_CurrentBatchLength" RIGHT="0" SIGIS="undef" SIGNAME="VertexBatchBuilder_0_DBG_CurrentBatchLength">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="ILA_IA" PORT="probe33"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="O" LEFT="31" NAME="DBG_CurrentBatchRemainingPrims" RIGHT="0" SIGIS="undef" SIGNAME="VertexBatchBuilder_0_DBG_CurrentBatchRemainingPrims">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="ILA_IA" PORT="probe34"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="O" LEFT="31" NAME="DBG_CurrentIndexID" RIGHT="0" SIGIS="undef"/>
-        <PORT DIR="O" LEFT="31" NAME="DBG_CurrentIndexIDPlus1" RIGHT="0" SIGIS="undef"/>
-        <PORT DIR="O" LEFT="31" NAME="DBG_CurrentIndexIDPlus2" RIGHT="0" SIGIS="undef"/>
-      </PORTS>
-      <BUSINTERFACES>
-        <BUSINTERFACE BUSNAME="VertexBatchBuilder_0_VertexBatchFIFO" NAME="VertexBatchFIFO" TYPE="INITIATOR" VLNV="xilinx.com:interface:fifo_write:1.0">
-          <PORTMAPS>
-            <PORTMAP LOGICAL="WR_DATA" PHYSICAL="VERTBATCH_FIFO_wr_data"/>
-            <PORTMAP LOGICAL="WR_EN" PHYSICAL="VERTBATCH_FIFO_wr_en"/>
-            <PORTMAP LOGICAL="FULL" PHYSICAL="VERTBATCH_FIFO_full"/>
-          </PORTMAPS>
-        </BUSINTERFACE>
-      </BUSINTERFACES>
-    </MODULE>
-    <MODULE FULLNAME="/constant_always_locked" HWVERSION="1.1" INSTANCE="constant_always_locked" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="xlconstant" VLNV="xilinx.com:ip:xlconstant:1.1">
-      <DOCUMENTS/>
-      <PARAMETERS>
-        <PARAMETER NAME="CONST_WIDTH" VALUE="1"/>
-        <PARAMETER NAME="CONST_VAL" VALUE="0x1"/>
-        <PARAMETER NAME="Component_Name" VALUE="design_1_xlconstant_0_0"/>
-        <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
-      </PARAMETERS>
-      <PORTS>
-        <PORT DIR="O" LEFT="0" NAME="dout" RIGHT="0" SIGIS="undef" SIGNAME="constant_always_locked_dout">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="ResetN_UntilClockLoc_0" PORT="locked"/>
-          </CONNECTIONS>
-        </PORT>
-      </PORTS>
-      <BUSINTERFACES/>
-    </MODULE>
-    <MODULE FULLNAME="/fifo_generator_0" HWVERSION="13.2" INSTANCE="fifo_generator_0" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="fifo_generator" VLNV="xilinx.com:ip:fifo_generator:13.2">
+    <MODULE FULLNAME="/VBO_INDEX_FIFO" HWVERSION="13.2" INSTANCE="VBO_INDEX_FIFO" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="fifo_generator" VLNV="xilinx.com:ip:fifo_generator:13.2">
       <DOCUMENTS>
         <DOCUMENT SOURCE="http://www.xilinx.com/cgi-bin/docs/ipdoc?c=fifo_generator;v=v13_2;d=pg057-fifo-generator.pdf"/>
       </DOCUMENTS>
@@ -37751,9 +38034,9 @@
         <PARAMETER NAME="C_COUNT_TYPE" VALUE="0"/>
         <PARAMETER NAME="C_DATA_COUNT_WIDTH" VALUE="9"/>
         <PARAMETER NAME="C_DEFAULT_VALUE" VALUE="BlankString"/>
-        <PARAMETER NAME="C_DIN_WIDTH" VALUE="288"/>
+        <PARAMETER NAME="C_DIN_WIDTH" VALUE="256"/>
         <PARAMETER NAME="C_DOUT_RST_VAL" VALUE="0"/>
-        <PARAMETER NAME="C_DOUT_WIDTH" VALUE="288"/>
+        <PARAMETER NAME="C_DOUT_WIDTH" VALUE="256"/>
         <PARAMETER NAME="C_ENABLE_RLOCS" VALUE="0"/>
         <PARAMETER NAME="C_FAMILY" VALUE="kintexuplus"/>
         <PARAMETER NAME="C_FULL_FLAGS_RST_VAL" VALUE="0"/>
@@ -37858,10 +38141,10 @@
         <PARAMETER NAME="C_RACH_TYPE" VALUE="0"/>
         <PARAMETER NAME="C_RDCH_TYPE" VALUE="0"/>
         <PARAMETER NAME="C_AXIS_TYPE" VALUE="0"/>
-        <PARAMETER NAME="C_IMPLEMENTATION_TYPE_WACH" VALUE="2"/>
+        <PARAMETER NAME="C_IMPLEMENTATION_TYPE_WACH" VALUE="1"/>
         <PARAMETER NAME="C_IMPLEMENTATION_TYPE_WDCH" VALUE="1"/>
-        <PARAMETER NAME="C_IMPLEMENTATION_TYPE_WRCH" VALUE="2"/>
-        <PARAMETER NAME="C_IMPLEMENTATION_TYPE_RACH" VALUE="2"/>
+        <PARAMETER NAME="C_IMPLEMENTATION_TYPE_WRCH" VALUE="1"/>
+        <PARAMETER NAME="C_IMPLEMENTATION_TYPE_RACH" VALUE="1"/>
         <PARAMETER NAME="C_IMPLEMENTATION_TYPE_RDCH" VALUE="1"/>
         <PARAMETER NAME="C_IMPLEMENTATION_TYPE_AXIS" VALUE="1"/>
         <PARAMETER NAME="C_APPLICATION_TYPE_WACH" VALUE="0"/>
@@ -37948,16 +38231,16 @@
         <PARAMETER NAME="C_REG_SLICE_MODE_RACH" VALUE="0"/>
         <PARAMETER NAME="C_REG_SLICE_MODE_RDCH" VALUE="0"/>
         <PARAMETER NAME="C_REG_SLICE_MODE_AXIS" VALUE="0"/>
-        <PARAMETER NAME="Component_Name" VALUE="design_1_fifo_generator_0_14"/>
+        <PARAMETER NAME="Component_Name" VALUE="design_1_fifo_generator_0_19"/>
         <PARAMETER NAME="Fifo_Implementation" VALUE="Common_Clock_Builtin_FIFO"/>
         <PARAMETER NAME="synchronization_stages" VALUE="2"/>
         <PARAMETER NAME="synchronization_stages_axi" VALUE="2"/>
         <PARAMETER NAME="INTERFACE_TYPE" VALUE="Native"/>
         <PARAMETER NAME="Performance_Options" VALUE="First_Word_Fall_Through"/>
         <PARAMETER NAME="asymmetric_port_width" VALUE="false"/>
-        <PARAMETER NAME="Input_Data_Width" VALUE="288"/>
+        <PARAMETER NAME="Input_Data_Width" VALUE="256"/>
         <PARAMETER NAME="Input_Depth" VALUE="512"/>
-        <PARAMETER NAME="Output_Data_Width" VALUE="288"/>
+        <PARAMETER NAME="Output_Data_Width" VALUE="256"/>
         <PARAMETER NAME="Output_Depth" VALUE="512"/>
         <PARAMETER NAME="Enable_ECC" VALUE="false"/>
         <PARAMETER NAME="Use_Embedded_Registers" VALUE="false"/>
@@ -38021,7 +38304,7 @@
         <PARAMETER NAME="HAS_TKEEP" VALUE="false"/>
         <PARAMETER NAME="TKEEP_WIDTH" VALUE="1"/>
         <PARAMETER NAME="wach_type" VALUE="FIFO"/>
-        <PARAMETER NAME="FIFO_Implementation_wach" VALUE="Common_Clock_Distributed_RAM"/>
+        <PARAMETER NAME="FIFO_Implementation_wach" VALUE="Common_Clock_Block_RAM"/>
         <PARAMETER NAME="FIFO_Application_Type_wach" VALUE="Data_FIFO"/>
         <PARAMETER NAME="Enable_ECC_wach" VALUE="false"/>
         <PARAMETER NAME="Inject_Sbit_Error_wach" VALUE="false"/>
@@ -38045,7 +38328,7 @@
         <PARAMETER NAME="Programmable_Empty_Type_wdch" VALUE="No_Programmable_Empty_Threshold"/>
         <PARAMETER NAME="Empty_Threshold_Assert_Value_wdch" VALUE="1022"/>
         <PARAMETER NAME="wrch_type" VALUE="FIFO"/>
-        <PARAMETER NAME="FIFO_Implementation_wrch" VALUE="Common_Clock_Distributed_RAM"/>
+        <PARAMETER NAME="FIFO_Implementation_wrch" VALUE="Common_Clock_Block_RAM"/>
         <PARAMETER NAME="FIFO_Application_Type_wrch" VALUE="Data_FIFO"/>
         <PARAMETER NAME="Enable_ECC_wrch" VALUE="false"/>
         <PARAMETER NAME="Inject_Sbit_Error_wrch" VALUE="false"/>
@@ -38057,7 +38340,7 @@
         <PARAMETER NAME="Programmable_Empty_Type_wrch" VALUE="No_Programmable_Empty_Threshold"/>
         <PARAMETER NAME="Empty_Threshold_Assert_Value_wrch" VALUE="1022"/>
         <PARAMETER NAME="rach_type" VALUE="FIFO"/>
-        <PARAMETER NAME="FIFO_Implementation_rach" VALUE="Common_Clock_Distributed_RAM"/>
+        <PARAMETER NAME="FIFO_Implementation_rach" VALUE="Common_Clock_Block_RAM"/>
         <PARAMETER NAME="FIFO_Application_Type_rach" VALUE="Data_FIFO"/>
         <PARAMETER NAME="Enable_ECC_rach" VALUE="false"/>
         <PARAMETER NAME="Inject_Sbit_Error_rach" VALUE="false"/>
@@ -38124,49 +38407,51 @@
           </CONNECTIONS>
         </PORT>
         <PORT DIR="I" NAME="srst" SIGIS="undef"/>
-        <PORT DIR="I" LEFT="287" NAME="din" RIGHT="0" SIGIS="undef" SIGNAME="VertexBatchBuilder_0_VERTBATCH_FIFO_wr_data">
+        <PORT DIR="I" LEFT="255" NAME="din" RIGHT="0" SIGIS="undef" SIGNAME="ShaderCoreSystem_ShaderCore_0_INDEXOUT_FIFO_wr_data">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="VertexBatchBuilder_0" PORT="VERTBATCH_FIFO_wr_data"/>
+            <CONNECTION INSTANCE="ShaderCoreSystem_ShaderCore_0" PORT="INDEXOUT_FIFO_wr_data"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" NAME="wr_en" SIGIS="undef" SIGNAME="VertexBatchBuilder_0_VERTBATCH_FIFO_wr_en">
+        <PORT DIR="I" NAME="wr_en" SIGIS="undef" SIGNAME="ShaderCoreSystem_ShaderCore_0_INDEXOUT_FIFO_wr_en">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="VertexBatchBuilder_0" PORT="VERTBATCH_FIFO_wr_en"/>
+            <CONNECTION INSTANCE="ShaderCoreSystem_ShaderCore_0" PORT="INDEXOUT_FIFO_wr_en"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" NAME="rd_en" SIGIS="undef" SIGNAME="ShaderCoreSystem_ShaderCore_0_VERTBATCH_FIFO_rd_en">
+        <PORT DIR="I" NAME="rd_en" SIGIS="undef" SIGNAME="InputAssembler2_0_INDEXOUT_FIFO_rd_en">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="ShaderCoreSystem_ShaderCore_0" PORT="VERTBATCH_FIFO_rd_en"/>
+            <CONNECTION INSTANCE="InputAssembler2_0" PORT="INDEXOUT_FIFO_rd_en"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="287" NAME="dout" RIGHT="0" SIGIS="undef" SIGNAME="fifo_generator_0_dout">
+        <PORT DIR="O" LEFT="255" NAME="dout" RIGHT="0" SIGIS="undef" SIGNAME="VBO_INDEX_FIFO_dout">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="ShaderCoreSystem_ShaderCore_0" PORT="VERTBATCH_FIFO_rd_data"/>
-            <CONNECTION INSTANCE="ILA_IA" PORT="probe14"/>
+            <CONNECTION INSTANCE="InputAssembler2_0" PORT="INDEXOUT_FIFO_rd_data"/>
+            <CONNECTION INSTANCE="ILA_IA" PORT="probe29"/>
+            <CONNECTION INSTANCE="InputAssembler2_0" PORT="INDEXOUT_FIFO_rd_data"/>
+            <CONNECTION INSTANCE="ILA_TriSetup" PORT="probe55"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" NAME="full" SIGIS="undef" SIGNAME="VertexBatchBuilder_0_VERTBATCH_FIFO_full">
+        <PORT DIR="O" NAME="full" SIGIS="undef" SIGNAME="ShaderCoreSystem_ShaderCore_0_INDEXOUT_FIFO_full">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="VertexBatchBuilder_0" PORT="VERTBATCH_FIFO_full"/>
+            <CONNECTION INSTANCE="ShaderCoreSystem_ShaderCore_0" PORT="INDEXOUT_FIFO_full"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" NAME="empty" SIGIS="undef" SIGNAME="ShaderCoreSystem_ShaderCore_0_VERTBATCH_FIFO_empty">
+        <PORT DIR="O" NAME="empty" SIGIS="undef" SIGNAME="InputAssembler2_0_INDEXOUT_FIFO_empty">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="ShaderCoreSystem_ShaderCore_0" PORT="VERTBATCH_FIFO_empty"/>
+            <CONNECTION INSTANCE="InputAssembler2_0" PORT="INDEXOUT_FIFO_empty"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" NAME="wr_rst_busy" SIGIS="undef"/>
         <PORT DIR="O" NAME="rd_rst_busy" SIGIS="undef"/>
       </PORTS>
       <BUSINTERFACES>
-        <BUSINTERFACE BUSNAME="VertexBatchBuilder_0_VertexBatchFIFO" NAME="FIFO_WRITE" TYPE="TARGET" VLNV="xilinx.com:interface:fifo_write:1.0">
+        <BUSINTERFACE BUSNAME="ShaderCoreSystem_ShaderCore_0_INDEXOUT_FIFO" NAME="FIFO_WRITE" TYPE="TARGET" VLNV="xilinx.com:interface:fifo_write:1.0">
           <PORTMAPS>
             <PORTMAP LOGICAL="FULL" PHYSICAL="full"/>
             <PORTMAP LOGICAL="WR_DATA" PHYSICAL="din"/>
             <PORTMAP LOGICAL="WR_EN" PHYSICAL="wr_en"/>
           </PORTMAPS>
         </BUSINTERFACE>
-        <BUSINTERFACE BUSNAME="ShaderCoreSystem_ShaderCore_0_VERTBATCH_FIFO" NAME="FIFO_READ" TYPE="TARGET" VLNV="xilinx.com:interface:fifo_read:1.0">
+        <BUSINTERFACE BUSNAME="InputAssembler2_0_INDEXOUT_FIFO" NAME="FIFO_READ" TYPE="TARGET" VLNV="xilinx.com:interface:fifo_read:1.0">
           <PORTMAPS>
             <PORTMAP LOGICAL="EMPTY" PHYSICAL="empty"/>
             <PORTMAP LOGICAL="RD_DATA" PHYSICAL="dout"/>
@@ -38174,6 +38459,147 @@
           </PORTMAPS>
         </BUSINTERFACE>
       </BUSINTERFACES>
+    </MODULE>
+    <MODULE FULLNAME="/VertexBatchBuilder_0" HWVERSION="1.0" INSTANCE="VertexBatchBuilder_0" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="VertexBatchBuilder" VLNV="xilinx.com:module_ref:VertexBatchBuilder:1.0">
+      <DOCUMENTS/>
+      <PARAMETERS>
+        <PARAMETER NAME="Component_Name" VALUE="design_1_VertexBatchBuilder_0_0"/>
+        <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
+      </PARAMETERS>
+      <PORTS>
+        <PORT CLKFREQUENCY="333250000" DIR="I" NAME="clk" SIGIS="clk" SIGNAME="MemorySystem_ddr4_0_c0_ddr4_ui_clk">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="MemorySystem_ddr4_0" PORT="c0_ddr4_ui_clk"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="1" NAME="CMD_SendCommand" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_VBB_SendCommand">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="VBB_SendCommand"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="31" NAME="CMD_CommandArg0" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_VBB_CommandArg0">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="VBB_CommandArg0"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="31" NAME="CMD_CommandArg1" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_VBB_CommandArg1">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="VBB_CommandArg1"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="2" NAME="CMD_CommandArgType" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_VBB_CommandArgType">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="VBB_CommandArgType"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="CMD_ReadyState" SIGIS="undef" SIGNAME="VertexBatchBuilder_0_CMD_ReadyState">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="VBB_ReadyState"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="IBC_ReadEnable" SIGIS="undef" SIGNAME="VertexBatchBuilder_0_IBC_ReadEnable">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="IndexBufferCache_0" PORT="VBB_ReadEnable"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="29" NAME="IBC_ReadAddr" RIGHT="0" SIGIS="undef" SIGNAME="VertexBatchBuilder_0_IBC_ReadAddr">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ILA_IA" PORT="probe16"/>
+            <CONNECTION INSTANCE="IndexBufferCache_0" PORT="VBB_ReadAddr"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="31" NAME="IBC_ReadData" RIGHT="0" SIGIS="undef" SIGNAME="IndexBufferCache_0_VBB_ReadData">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="IndexBufferCache_0" PORT="VBB_ReadData"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="IBC_ReadReady" SIGIS="undef" SIGNAME="IndexBufferCache_0_VBB_ReadReady">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="IndexBufferCache_0" PORT="VBB_ReadReady"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="IBC_InvalidateIndexCache" SIGIS="undef" SIGNAME="VertexBatchBuilder_0_IBC_InvalidateIndexCache">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="IndexBufferCache_0" PORT="VBB_InvalidateIndexCache"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="SHADER_Done" SIGIS="undef" SIGNAME="VertexBatchBuilder_0_SHADER_Done">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ShaderCoreSystem_ShaderCore_0" PORT="VBB_Done"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="VERTBATCH_FIFO_full" SIGIS="undef" SIGNAME="VBB_FIFO_full">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="VBB_FIFO" PORT="full"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="527" NAME="VERTBATCH_FIFO_wr_data" RIGHT="0" SIGIS="undef" SIGNAME="VBB_FIFO_din">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="VBB_FIFO" PORT="din"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="VERTBATCH_FIFO_wr_en" SIGIS="undef" SIGNAME="VBB_FIFO_wr_en">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="VBB_FIFO" PORT="wr_en"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="DBG_UseConstantOutput" SIGIS="undef" SIGNAME="vio_0_probe_out1">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="vio_0" PORT="probe_out1"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="3" NAME="DBG_CurrentState" RIGHT="0" SIGIS="undef" SIGNAME="VertexBatchBuilder_0_DBG_CurrentState">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ILA_IA" PORT="probe12"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="4" NAME="DBG_CurrentBatchLength" RIGHT="0" SIGIS="undef" SIGNAME="VertexBatchBuilder_0_DBG_CurrentBatchLength">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ILA_IA" PORT="probe33"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="6" NAME="DBG_CurrentIndexBatchLength" RIGHT="0" SIGIS="undef"/>
+        <PORT DIR="O" LEFT="23" NAME="DBG_CurrentBatchRemainingPrims" RIGHT="0" SIGIS="undef" SIGNAME="VertexBatchBuilder_0_DBG_CurrentBatchRemainingPrims">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ILA_IA" PORT="probe34"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="DBG_QueueIsFull" SIGIS="undef"/>
+        <PORT DIR="O" NAME="DBG_QueueIsEmpty" SIGIS="undef"/>
+        <PORT DIR="O" NAME="DBG_DoneGeneratingIndices" SIGIS="undef"/>
+        <PORT DIR="O" LEFT="23" NAME="DBG_IndexGeneratorRemainingPrims" RIGHT="0" SIGIS="undef"/>
+        <PORT DIR="O" LEFT="47" NAME="DBG_LastPolygonIndices" RIGHT="0" SIGIS="undef" SIGNAME="VertexBatchBuilder_0_DBG_LastPolygonIndices">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ILA_IA" PORT="probe19"/>
+          </CONNECTIONS>
+        </PORT>
+      </PORTS>
+      <BUSINTERFACES>
+        <BUSINTERFACE BUSNAME="VertexBatchBuilder_0_VertexBatchFIFO" NAME="VertexBatchFIFO" TYPE="INITIATOR" VLNV="xilinx.com:interface:fifo_write:1.0">
+          <PORTMAPS>
+            <PORTMAP LOGICAL="WR_DATA" PHYSICAL="VERTBATCH_FIFO_wr_data"/>
+            <PORTMAP LOGICAL="WR_EN" PHYSICAL="VERTBATCH_FIFO_wr_en"/>
+            <PORTMAP LOGICAL="FULL" PHYSICAL="VERTBATCH_FIFO_full"/>
+          </PORTMAPS>
+        </BUSINTERFACE>
+      </BUSINTERFACES>
+    </MODULE>
+    <MODULE FULLNAME="/constant_always_locked" HWVERSION="1.1" INSTANCE="constant_always_locked" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="xlconstant" VLNV="xilinx.com:ip:xlconstant:1.1">
+      <DOCUMENTS/>
+      <PARAMETERS>
+        <PARAMETER NAME="CONST_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="CONST_VAL" VALUE="0x1"/>
+        <PARAMETER NAME="Component_Name" VALUE="design_1_xlconstant_0_0"/>
+        <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
+      </PARAMETERS>
+      <PORTS>
+        <PORT DIR="O" LEFT="0" NAME="dout" RIGHT="0" SIGIS="undef" SIGNAME="constant_always_locked_dout">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ResetN_UntilClockLoc_0" PORT="locked"/>
+          </CONNECTIONS>
+        </PORT>
+      </PORTS>
+      <BUSINTERFACES/>
     </MODULE>
     <MODULE FULLNAME="/ila_333_250" HWVERSION="6.2" INSTANCE="ila_333_250" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="ila" VLNV="xilinx.com:ip:ila:6.2">
       <DOCUMENTS>
@@ -42849,11 +43275,7 @@
             <CONNECTION INSTANCE="MemorySystem_ddr4_0" PORT="c0_ddr4_ui_clk"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="0" NAME="probe_out0" RIGHT="0" SIGIS="undef" SIGNAME="vio_0_probe_out0">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="InputAssembler2_0" PORT="DBG_UsePrebuiltIB"/>
-          </CONNECTIONS>
-        </PORT>
+        <PORT DIR="O" LEFT="0" NAME="probe_out0" RIGHT="0" SIGIS="undef"/>
         <PORT DIR="O" LEFT="0" NAME="probe_out1" RIGHT="0" SIGIS="undef" SIGNAME="vio_0_probe_out1">
           <CONNECTIONS>
             <CONNECTION INSTANCE="VertexBatchBuilder_0" PORT="DBG_UseConstantOutput"/>
@@ -42891,6 +43313,27 @@
         <PORT DIR="O" LEFT="31" NAME="dout" RIGHT="0" SIGIS="undef" SIGNAME="xlconstant_1_dout">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ILA_TexSampler" PORT="probe6"/>
+          </CONNECTIONS>
+        </PORT>
+      </PORTS>
+      <BUSINTERFACES/>
+    </MODULE>
+    <MODULE FULLNAME="/xlconstant_2" HWVERSION="1.1" INSTANCE="xlconstant_2" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="xlconstant" VLNV="xilinx.com:ip:xlconstant:1.1">
+      <DOCUMENTS/>
+      <PARAMETERS>
+        <PARAMETER NAME="CONST_WIDTH" VALUE="16"/>
+        <PARAMETER NAME="CONST_VAL" VALUE="0x0000"/>
+        <PARAMETER NAME="Component_Name" VALUE="design_1_xlconstant_2_0"/>
+        <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
+      </PARAMETERS>
+      <PORTS>
+        <PORT DIR="O" LEFT="15" NAME="dout" RIGHT="0" SIGIS="undef" SIGNAME="xlconstant_2_dout">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ILA_IA" PORT="probe0"/>
+            <CONNECTION INSTANCE="ILA_IA" PORT="probe1"/>
+            <CONNECTION INSTANCE="ILA_IA" PORT="probe6"/>
+            <CONNECTION INSTANCE="ILA_IA" PORT="probe7"/>
+            <CONNECTION INSTANCE="ILA_IA" PORT="probe8"/>
           </CONNECTIONS>
         </PORT>
       </PORTS>

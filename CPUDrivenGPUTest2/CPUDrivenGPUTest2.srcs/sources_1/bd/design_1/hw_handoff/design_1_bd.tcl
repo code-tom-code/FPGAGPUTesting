@@ -40,7 +40,7 @@ if { [string first $scripts_vivado_version $current_vivado_version] == -1 } {
 
 # The design that will be created by this Tcl script contains the following 
 # module references:
-# AttrInterpolator, ClearBlock, CommandProcessor, IndexBufferCache, IndexBufferCache, InputAssembler2, Reciprocal, ROP, Rasterizer, ResetN_UntilClockLocked, StatsCollector, TexSample, Reciprocal, TriSetup, TriWorkCache, VertexBatchBuilder, MemoryController, ScanOut, dvid, obuf_outputs, PacketProcessor, ConstantBuffer, FloatALU, FloatALU, FloatALU, FloatALU, ShaderCore, UNORM8ToFloat, VertexStreamCache, GPRQuad2
+# AttrInterpolator, ClearBlock, CommandProcessor, IndexBufferCache, InputAssembler2, Reciprocal, ROP, Rasterizer, ResetN_UntilClockLocked, StatsCollector, TexSample, Reciprocal, TriSetup, TriWorkCache, VertexBatchBuilder, MemoryController, ScanOut, dvid, obuf_outputs, PacketProcessor, ConstantBuffer, FloatALU, FloatALU, FloatALU, FloatALU, ShaderCore, UNORM8ToFloat, VertexStreamCache, GPRQuad2
 
 # Please add the sources of those modules before sourcing this Tcl script.
 
@@ -433,6 +433,7 @@ proc create_hier_cell_ShaderCoreSystem { parentCell nameHier } {
   current_bd_instance $hier_obj
 
   # Create interface pins
+  create_bd_intf_pin -mode Master -vlnv xilinx.com:interface:fifo_write_rtl:1.0 INDEXOUT_FIFO
   create_bd_intf_pin -mode Master -vlnv xilinx.com:interface:fifo_write_rtl:1.0 VBCacheReadRequests_0
   create_bd_intf_pin -mode Master -vlnv xilinx.com:interface:fifo_read_rtl:1.0 VBCacheReadResponses_0
   create_bd_intf_pin -mode Master -vlnv xilinx.com:interface:fifo_read_rtl:1.0 VERTBATCH_FIFO_0
@@ -457,7 +458,7 @@ proc create_hier_cell_ShaderCoreSystem { parentCell nameHier } {
   create_bd_pin -dir I -from 2 -to 0 CMD_SetVertexStreamID_0
   create_bd_pin -dir I CMD_SetVertexStreamIsD3DCOLOR_0
   create_bd_pin -dir I -from 2 -to 0 CMD_SetVertexStreamShaderRegIndex_0
-  create_bd_pin -dir O -from 15 -to 0 DBG_ActiveLanesBitmask
+  create_bd_pin -dir O -from 16 -to 0 DBG_ActiveLanesBitmask
   create_bd_pin -dir O -from 2 -to 0 DBG_CurrentDWORD
   create_bd_pin -dir O -from 3 -to 0 DBG_CurrentFetchWave
   create_bd_pin -dir O -from 5 -to 0 DBG_CurrentState
@@ -472,6 +473,8 @@ proc create_hier_cell_ShaderCoreSystem { parentCell nameHier } {
   create_bd_pin -dir O -from 31 -to 0 FPU0_IN_B
   create_bd_pin -dir O -from 31 -to 0 FPU1_IN_A
   create_bd_pin -dir O -from 31 -to 0 FPU1_IN_B
+  create_bd_pin -dir O -from 31 -to 0 FPU3_IN_A
+  create_bd_pin -dir O -from 31 -to 0 FPU3_IN_B
   create_bd_pin -dir O FPUALL_IADD_GO
   create_bd_pin -dir O FPUALL_ICMP_GO
   create_bd_pin -dir O FPUALL_ICNV_GO
@@ -493,17 +496,16 @@ proc create_hier_cell_ShaderCoreSystem { parentCell nameHier } {
   create_bd_pin -dir O -from 1 -to 0 GPR0_WriteQuadIndex
   create_bd_pin -dir O -from 31 -to 0 OUT_RESULT
   create_bd_pin -dir O -from 31 -to 0 OUT_RESULT1
+  create_bd_pin -dir O -from 31 -to 0 OUT_RESULT2
   create_bd_pin -dir I VBB_Done_0
-  create_bd_pin -dir O -from 15 -to 0 VBO_BatchEndingIndex_0
-  create_bd_pin -dir O -from 15 -to 0 VBO_BatchStartingIndex_0
+  create_bd_pin -dir O VBO_IsIndexedDrawCall
+  create_bd_pin -dir O -from 6 -to 0 VBO_NumIndices
+  create_bd_pin -dir O -from 4 -to 0 VBO_NumVertices
   create_bd_pin -dir O VBO_Pushed_0
   create_bd_pin -dir I VBO_Ready_0
   create_bd_pin -dir O -from 21 -to 0 VSC_ReadDWORDAddr
   create_bd_pin -dir O -from 31 -to 0 VSC_ReadData
-  create_bd_pin -dir O VSC_ReadEnable
   create_bd_pin -dir O VSC_ReadReady
-  create_bd_pin -dir O -from 2 -to 0 VSC_ReadStreamIndex
-  create_bd_pin -dir O VSC_SetStreamVBAddress
   create_bd_pin -dir O -from 29 -to 0 VSC_StreamVBAddress
   create_bd_pin -dir O -from 9 -to 0 VertexCache_addra
   create_bd_pin -dir O -from 31 -to 0 VertexCache_dina
@@ -657,6 +659,7 @@ proc create_hier_cell_ShaderCoreSystem { parentCell nameHier } {
   connect_bd_intf_net -intf_net Conn2 [get_bd_intf_pins VERTOUT_FIFO_0] [get_bd_intf_pins ShaderCore_0/VERTOUT_FIFO]
   connect_bd_intf_net -intf_net Conn3 [get_bd_intf_pins VBCacheReadRequests_0] [get_bd_intf_pins VertexStreamCache_0/VBCacheReadRequests]
   connect_bd_intf_net -intf_net Conn4 [get_bd_intf_pins VBCacheReadResponses_0] [get_bd_intf_pins VertexStreamCache_0/VBCacheReadResponses]
+  connect_bd_intf_net -intf_net Conn5 [get_bd_intf_pins INDEXOUT_FIFO] [get_bd_intf_pins ShaderCore_0/INDEXOUT_FIFO]
   connect_bd_intf_net -intf_net ConstantBuffer_0_ConstBufferBRAM [get_bd_intf_pins ConstantBuffer_0/ConstBufferBRAM] [get_bd_intf_pins ConstantBuffer_BRAM/BRAM_PORTA]
   connect_bd_intf_net -intf_net VertexStreamCache_0_VBCache [get_bd_intf_pins VB_Cache/BRAM_PORTA] [get_bd_intf_pins VertexStreamCache_0/VBCache]
 
@@ -678,7 +681,7 @@ proc create_hier_cell_ShaderCoreSystem { parentCell nameHier } {
   connect_bd_net -net FloatALU_0_OUT_RESULT [get_bd_pins OUT_RESULT] [get_bd_pins FloatALU_0/OUT_RESULT] [get_bd_pins ShaderCore_0/FPU0_OUT_RESULT]
   connect_bd_net -net FloatALU_1_OUT_RESULT [get_bd_pins OUT_RESULT1] [get_bd_pins FloatALU_1/OUT_RESULT] [get_bd_pins ShaderCore_0/FPU1_OUT_RESULT]
   connect_bd_net -net FloatALU_2_OUT_RESULT [get_bd_pins FloatALU_2/OUT_RESULT] [get_bd_pins ShaderCore_0/FPU2_OUT_RESULT]
-  connect_bd_net -net FloatALU_3_OUT_RESULT [get_bd_pins FloatALU_3/OUT_RESULT] [get_bd_pins ShaderCore_0/FPU3_OUT_RESULT]
+  connect_bd_net -net FloatALU_3_OUT_RESULT [get_bd_pins OUT_RESULT2] [get_bd_pins FloatALU_3/OUT_RESULT] [get_bd_pins ShaderCore_0/FPU3_OUT_RESULT]
   connect_bd_net -net GPRQuadSystem_portA_readOutData_0 [get_bd_pins portA_readOutData_0] [get_bd_pins GPRQuadSystem/portA_readOutData_0] [get_bd_pins ShaderCore_0/GPR0_PortA_readOutData]
   connect_bd_net -net GPRQuadSystem_portB_readOutData_0 [get_bd_pins portB_readOutData_0] [get_bd_pins GPRQuadSystem/portB_readOutData_0] [get_bd_pins ShaderCore_0/GPR0_PortB_readOutData]
   connect_bd_net -net ShaderCore_0_CB_Enable [get_bd_pins CB_Enable] [get_bd_pins ConstantBuffer_0/enable] [get_bd_pins ShaderCore_0/CB_Enable]
@@ -702,8 +705,8 @@ proc create_hier_cell_ShaderCoreSystem { parentCell nameHier } {
   connect_bd_net -net ShaderCore_0_FPU1_IN_B [get_bd_pins FPU1_IN_B] [get_bd_pins FloatALU_1/IN_B] [get_bd_pins ShaderCore_0/FPU1_IN_B]
   connect_bd_net -net ShaderCore_0_FPU2_IN_A [get_bd_pins FloatALU_2/IN_A] [get_bd_pins ShaderCore_0/FPU2_IN_A]
   connect_bd_net -net ShaderCore_0_FPU2_IN_B [get_bd_pins FloatALU_2/IN_B] [get_bd_pins ShaderCore_0/FPU2_IN_B]
-  connect_bd_net -net ShaderCore_0_FPU3_IN_A [get_bd_pins FloatALU_3/IN_A] [get_bd_pins ShaderCore_0/FPU3_IN_A]
-  connect_bd_net -net ShaderCore_0_FPU3_IN_B [get_bd_pins FloatALU_3/IN_B] [get_bd_pins ShaderCore_0/FPU3_IN_B]
+  connect_bd_net -net ShaderCore_0_FPU3_IN_A [get_bd_pins FPU3_IN_A] [get_bd_pins FloatALU_3/IN_A] [get_bd_pins ShaderCore_0/FPU3_IN_A]
+  connect_bd_net -net ShaderCore_0_FPU3_IN_B [get_bd_pins FPU3_IN_B] [get_bd_pins FloatALU_3/IN_B] [get_bd_pins ShaderCore_0/FPU3_IN_B]
   connect_bd_net -net ShaderCore_0_FPUALL_IADD_GO [get_bd_pins FPUALL_IADD_GO] [get_bd_pins FloatALU_0/IADD_GO] [get_bd_pins FloatALU_1/IADD_GO] [get_bd_pins FloatALU_2/IADD_GO] [get_bd_pins FloatALU_3/IADD_GO] [get_bd_pins ShaderCore_0/FPUALL_IADD_GO]
   connect_bd_net -net ShaderCore_0_FPUALL_IBIT_GO [get_bd_pins FloatALU_0/IBIT_GO] [get_bd_pins FloatALU_1/IBIT_GO] [get_bd_pins FloatALU_2/IBIT_GO] [get_bd_pins FloatALU_3/IBIT_GO] [get_bd_pins ShaderCore_0/FPUALL_IBIT_GO]
   connect_bd_net -net ShaderCore_0_FPUALL_ICMP_GO [get_bd_pins FPUALL_ICMP_GO] [get_bd_pins FloatALU_0/ICMP_GO] [get_bd_pins FloatALU_1/ICMP_GO] [get_bd_pins FloatALU_2/ICMP_GO] [get_bd_pins FloatALU_3/ICMP_GO] [get_bd_pins ShaderCore_0/FPUALL_ICMP_GO]
@@ -718,14 +721,15 @@ proc create_hier_cell_ShaderCoreSystem { parentCell nameHier } {
   connect_bd_net -net ShaderCore_0_ICache_WriteMode [get_bd_pins InstructionCache/wea] [get_bd_pins ShaderCore_0/ICache_WriteMode]
   connect_bd_net -net ShaderCore_0_UNORM8ToFloat_ColorIn [get_bd_pins ShaderCore_0/UNORM8ToFloat_ColorIn] [get_bd_pins UNORM8ToFloat_0/D3DColorIn]
   connect_bd_net -net ShaderCore_0_UNORM8ToFloat_Enable [get_bd_pins ShaderCore_0/UNORM8ToFloat_Enable] [get_bd_pins UNORM8ToFloat_0/Enable]
-  connect_bd_net -net ShaderCore_0_VBO_BatchEndingIndex [get_bd_pins VBO_BatchEndingIndex_0] [get_bd_pins ShaderCore_0/VBO_BatchEndingIndex]
-  connect_bd_net -net ShaderCore_0_VBO_BatchStartingIndex [get_bd_pins VBO_BatchStartingIndex_0] [get_bd_pins ShaderCore_0/VBO_BatchStartingIndex]
+  connect_bd_net -net ShaderCore_0_VBO_IsIndexedDrawCall [get_bd_pins VBO_IsIndexedDrawCall] [get_bd_pins ShaderCore_0/VBO_IsIndexedDrawCall]
+  connect_bd_net -net ShaderCore_0_VBO_NumIndices [get_bd_pins VBO_NumIndices] [get_bd_pins ShaderCore_0/VBO_NumIndices]
+  connect_bd_net -net ShaderCore_0_VBO_NumVertices [get_bd_pins VBO_NumVertices] [get_bd_pins ShaderCore_0/VBO_NumVertices]
   connect_bd_net -net ShaderCore_0_VBO_Pushed [get_bd_pins VBO_Pushed_0] [get_bd_pins ShaderCore_0/VBO_Pushed]
   connect_bd_net -net ShaderCore_0_VSC_InvalidateCache [get_bd_pins ShaderCore_0/VSC_InvalidateCache] [get_bd_pins VertexStreamCache_0/VSC_InvalidateCache]
   connect_bd_net -net ShaderCore_0_VSC_ReadDWORDAddr [get_bd_pins VSC_ReadDWORDAddr] [get_bd_pins ShaderCore_0/VSC_ReadDWORDAddr] [get_bd_pins VertexStreamCache_0/VSC_ReadDWORDAddr]
-  connect_bd_net -net ShaderCore_0_VSC_ReadEnable [get_bd_pins VSC_ReadEnable] [get_bd_pins ShaderCore_0/VSC_ReadEnable] [get_bd_pins VertexStreamCache_0/VSC_ReadEnable]
-  connect_bd_net -net ShaderCore_0_VSC_ReadStreamIndex [get_bd_pins VSC_ReadStreamIndex] [get_bd_pins ShaderCore_0/VSC_ReadStreamIndex] [get_bd_pins VertexStreamCache_0/VSC_ReadStreamIndex]
-  connect_bd_net -net ShaderCore_0_VSC_SetStreamVBAddress [get_bd_pins VSC_SetStreamVBAddress] [get_bd_pins ShaderCore_0/VSC_SetStreamVBAddress] [get_bd_pins VertexStreamCache_0/VSC_SetStreamVBAddress]
+  connect_bd_net -net ShaderCore_0_VSC_ReadEnable [get_bd_pins ShaderCore_0/VSC_ReadEnable] [get_bd_pins VertexStreamCache_0/VSC_ReadEnable]
+  connect_bd_net -net ShaderCore_0_VSC_ReadStreamIndex [get_bd_pins ShaderCore_0/VSC_ReadStreamIndex] [get_bd_pins VertexStreamCache_0/VSC_ReadStreamIndex]
+  connect_bd_net -net ShaderCore_0_VSC_SetStreamVBAddress [get_bd_pins ShaderCore_0/VSC_SetStreamVBAddress] [get_bd_pins VertexStreamCache_0/VSC_SetStreamVBAddress]
   connect_bd_net -net ShaderCore_0_VSC_StreamIndex [get_bd_pins ShaderCore_0/VSC_StreamIndex] [get_bd_pins VertexStreamCache_0/VSC_StreamIndex]
   connect_bd_net -net ShaderCore_0_VSC_StreamVBAddress [get_bd_pins VSC_StreamVBAddress] [get_bd_pins ShaderCore_0/VSC_StreamVBAddress] [get_bd_pins VertexStreamCache_0/VSC_StreamVBAddress]
   connect_bd_net -net UNORM8ToFloat_0_FloatWOut [get_bd_pins ShaderCore_0/UNORM8ToFloat_ConvertedW] [get_bd_pins UNORM8ToFloat_0/FloatWOut]
@@ -1818,16 +1822,16 @@ proc create_root_design { parentCell } {
    CONFIG.C_NUM_OF_PROBES {64} \
    CONFIG.C_PROBE0_TYPE {0} \
    CONFIG.C_PROBE0_WIDTH {16} \
-   CONFIG.C_PROBE10_WIDTH {6} \
+   CONFIG.C_PROBE10_WIDTH {32} \
    CONFIG.C_PROBE11_WIDTH {6} \
    CONFIG.C_PROBE12_WIDTH {4} \
    CONFIG.C_PROBE13_WIDTH {9} \
-   CONFIG.C_PROBE14_WIDTH {288} \
+   CONFIG.C_PROBE14_WIDTH {528} \
    CONFIG.C_PROBE15_WIDTH {32} \
-   CONFIG.C_PROBE16_WIDTH {1} \
-   CONFIG.C_PROBE17_WIDTH {3} \
+   CONFIG.C_PROBE16_WIDTH {30} \
+   CONFIG.C_PROBE17_WIDTH {32} \
    CONFIG.C_PROBE18_WIDTH {22} \
-   CONFIG.C_PROBE19_WIDTH {1} \
+   CONFIG.C_PROBE19_WIDTH {48} \
    CONFIG.C_PROBE1_TYPE {0} \
    CONFIG.C_PROBE1_WIDTH {16} \
    CONFIG.C_PROBE20_WIDTH {30} \
@@ -1836,15 +1840,16 @@ proc create_root_design { parentCell } {
    CONFIG.C_PROBE24_WIDTH {32} \
    CONFIG.C_PROBE25_WIDTH {10} \
    CONFIG.C_PROBE26_WIDTH {32} \
+   CONFIG.C_PROBE27_WIDTH {5} \
    CONFIG.C_PROBE28_WIDTH {32} \
-   CONFIG.C_PROBE29_WIDTH {32} \
+   CONFIG.C_PROBE29_WIDTH {256} \
    CONFIG.C_PROBE2_TYPE {0} \
-   CONFIG.C_PROBE2_WIDTH {4} \
+   CONFIG.C_PROBE2_WIDTH {32} \
    CONFIG.C_PROBE30_WIDTH {32} \
    CONFIG.C_PROBE31_WIDTH {128} \
-   CONFIG.C_PROBE32_WIDTH {2} \
+   CONFIG.C_PROBE32_WIDTH {7} \
    CONFIG.C_PROBE33_WIDTH {5} \
-   CONFIG.C_PROBE34_WIDTH {32} \
+   CONFIG.C_PROBE34_WIDTH {24} \
    CONFIG.C_PROBE35_WIDTH {3} \
    CONFIG.C_PROBE3_TYPE {0} \
    CONFIG.C_PROBE3_WIDTH {128} \
@@ -1869,7 +1874,7 @@ proc create_root_design { parentCell } {
    CONFIG.C_PROBE5_TYPE {0} \
    CONFIG.C_PROBE5_WIDTH {32} \
    CONFIG.C_PROBE60_WIDTH {128} \
-   CONFIG.C_PROBE61_WIDTH {16} \
+   CONFIG.C_PROBE61_WIDTH {17} \
    CONFIG.C_PROBE62_WIDTH {4} \
    CONFIG.C_PROBE63_WIDTH {3} \
    CONFIG.C_PROBE6_WIDTH {16} \
@@ -1902,7 +1907,7 @@ proc create_root_design { parentCell } {
   set_property -dict [ list \
    CONFIG.C_ENABLE_ILA_AXI_MON {false} \
    CONFIG.C_MONITOR_TYPE {Native} \
-   CONFIG.C_NUM_OF_PROBES {42} \
+   CONFIG.C_NUM_OF_PROBES {56} \
    CONFIG.C_PROBE0_WIDTH {24} \
    CONFIG.C_PROBE10_WIDTH {32} \
    CONFIG.C_PROBE11_WIDTH {32} \
@@ -1935,7 +1940,21 @@ proc create_root_design { parentCell } {
    CONFIG.C_PROBE3_WIDTH {24} \
    CONFIG.C_PROBE40_WIDTH {32} \
    CONFIG.C_PROBE41_WIDTH {32} \
+   CONFIG.C_PROBE42_WIDTH {16} \
+   CONFIG.C_PROBE43_WIDTH {16} \
+   CONFIG.C_PROBE44_WIDTH {16} \
+   CONFIG.C_PROBE45_WIDTH {16} \
+   CONFIG.C_PROBE46_WIDTH {16} \
+   CONFIG.C_PROBE47_WIDTH {16} \
+   CONFIG.C_PROBE48_WIDTH {32} \
+   CONFIG.C_PROBE49_WIDTH {32} \
    CONFIG.C_PROBE4_WIDTH {16} \
+   CONFIG.C_PROBE50_WIDTH {32} \
+   CONFIG.C_PROBE51_WIDTH {6} \
+   CONFIG.C_PROBE52_WIDTH {4} \
+   CONFIG.C_PROBE53_WIDTH {12} \
+   CONFIG.C_PROBE54_WIDTH {128} \
+   CONFIG.C_PROBE55_WIDTH {256} \
    CONFIG.C_PROBE5_WIDTH {16} \
    CONFIG.C_PROBE6_WIDTH {16} \
    CONFIG.C_PROBE7_WIDTH {16} \
@@ -1950,17 +1969,6 @@ proc create_root_design { parentCell } {
      catch {common::send_msg_id "BD_TCL-105" "ERROR" "Unable to add referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
      return 1
    } elseif { $IndexBufferCache_0 eq "" } {
-     catch {common::send_msg_id "BD_TCL-106" "ERROR" "Unable to referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
-     return 1
-   }
-  
-  # Create instance: IndexBufferCache_1, and set properties
-  set block_name IndexBufferCache
-  set block_cell_name IndexBufferCache_1
-  if { [catch {set IndexBufferCache_1 [create_bd_cell -type module -reference $block_name $block_cell_name] } errmsg] } {
-     catch {common::send_msg_id "BD_TCL-105" "ERROR" "Unable to add referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
-     return 1
-   } elseif { $IndexBufferCache_1 eq "" } {
      catch {common::send_msg_id "BD_TCL-106" "ERROR" "Unable to referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
      return 1
    }
@@ -2116,40 +2124,8 @@ proc create_root_design { parentCell } {
      return 1
    }
   
-  # Create instance: VBO_FIFO, and set properties
-  set VBO_FIFO [ create_bd_cell -type ip -vlnv xilinx.com:ip:fifo_generator:13.2 VBO_FIFO ]
-  set_property -dict [ list \
-   CONFIG.Data_Count_Width {9} \
-   CONFIG.Empty_Threshold_Assert_Value {4} \
-   CONFIG.Empty_Threshold_Negate_Value {5} \
-   CONFIG.Full_Threshold_Assert_Value {511} \
-   CONFIG.Full_Threshold_Negate_Value {510} \
-   CONFIG.Input_Data_Width {128} \
-   CONFIG.Input_Depth {512} \
-   CONFIG.Output_Data_Width {128} \
-   CONFIG.Output_Depth {512} \
-   CONFIG.Performance_Options {First_Word_Fall_Through} \
-   CONFIG.Read_Data_Count_Width {9} \
-   CONFIG.Use_Embedded_Registers {false} \
-   CONFIG.Write_Data_Count_Width {9} \
- ] $VBO_FIFO
-
-  # Create instance: VertexBatchBuilder_0, and set properties
-  set block_name VertexBatchBuilder
-  set block_cell_name VertexBatchBuilder_0
-  if { [catch {set VertexBatchBuilder_0 [create_bd_cell -type module -reference $block_name $block_cell_name] } errmsg] } {
-     catch {common::send_msg_id "BD_TCL-105" "ERROR" "Unable to add referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
-     return 1
-   } elseif { $VertexBatchBuilder_0 eq "" } {
-     catch {common::send_msg_id "BD_TCL-106" "ERROR" "Unable to referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
-     return 1
-   }
-  
-  # Create instance: constant_always_locked, and set properties
-  set constant_always_locked [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant:1.1 constant_always_locked ]
-
-  # Create instance: fifo_generator_0, and set properties
-  set fifo_generator_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:fifo_generator:13.2 fifo_generator_0 ]
+  # Create instance: VBB_FIFO, and set properties
+  set VBB_FIFO [ create_bd_cell -type ip -vlnv xilinx.com:ip:fifo_generator:13.2 VBB_FIFO ]
   set_property -dict [ list \
    CONFIG.Data_Count_Width {9} \
    CONFIG.Empty_Threshold_Assert_Value {4} \
@@ -2169,9 +2145,9 @@ proc create_root_design { parentCell } {
    CONFIG.Full_Threshold_Assert_Value_wrch {1023} \
    CONFIG.Full_Threshold_Negate_Value {510} \
    CONFIG.INTERFACE_TYPE {Native} \
-   CONFIG.Input_Data_Width {288} \
+   CONFIG.Input_Data_Width {528} \
    CONFIG.Input_Depth {512} \
-   CONFIG.Output_Data_Width {288} \
+   CONFIG.Output_Data_Width {528} \
    CONFIG.Output_Depth {512} \
    CONFIG.Performance_Options {First_Word_Fall_Through} \
    CONFIG.Read_Data_Count_Width {9} \
@@ -2179,7 +2155,57 @@ proc create_root_design { parentCell } {
    CONFIG.Use_Embedded_Registers {false} \
    CONFIG.Write_Data_Count_Width {9} \
    CONFIG.asymmetric_port_width {false} \
- ] $fifo_generator_0
+ ] $VBB_FIFO
+
+  # Create instance: VBO_FIFO, and set properties
+  set VBO_FIFO [ create_bd_cell -type ip -vlnv xilinx.com:ip:fifo_generator:13.2 VBO_FIFO ]
+  set_property -dict [ list \
+   CONFIG.Data_Count_Width {9} \
+   CONFIG.Empty_Threshold_Assert_Value {4} \
+   CONFIG.Empty_Threshold_Negate_Value {5} \
+   CONFIG.Full_Threshold_Assert_Value {511} \
+   CONFIG.Full_Threshold_Negate_Value {510} \
+   CONFIG.Input_Data_Width {128} \
+   CONFIG.Input_Depth {512} \
+   CONFIG.Output_Data_Width {128} \
+   CONFIG.Output_Depth {512} \
+   CONFIG.Performance_Options {First_Word_Fall_Through} \
+   CONFIG.Read_Data_Count_Width {9} \
+   CONFIG.Use_Embedded_Registers {false} \
+   CONFIG.Write_Data_Count_Width {9} \
+ ] $VBO_FIFO
+
+  # Create instance: VBO_INDEX_FIFO, and set properties
+  set VBO_INDEX_FIFO [ create_bd_cell -type ip -vlnv xilinx.com:ip:fifo_generator:13.2 VBO_INDEX_FIFO ]
+  set_property -dict [ list \
+   CONFIG.Data_Count_Width {9} \
+   CONFIG.Empty_Threshold_Assert_Value {4} \
+   CONFIG.Empty_Threshold_Negate_Value {5} \
+   CONFIG.Full_Threshold_Assert_Value {511} \
+   CONFIG.Full_Threshold_Negate_Value {510} \
+   CONFIG.Input_Data_Width {256} \
+   CONFIG.Input_Depth {512} \
+   CONFIG.Output_Data_Width {256} \
+   CONFIG.Output_Depth {512} \
+   CONFIG.Performance_Options {First_Word_Fall_Through} \
+   CONFIG.Read_Data_Count_Width {9} \
+   CONFIG.Use_Embedded_Registers {false} \
+   CONFIG.Write_Data_Count_Width {9} \
+ ] $VBO_INDEX_FIFO
+
+  # Create instance: VertexBatchBuilder_0, and set properties
+  set block_name VertexBatchBuilder
+  set block_cell_name VertexBatchBuilder_0
+  if { [catch {set VertexBatchBuilder_0 [create_bd_cell -type module -reference $block_name $block_cell_name] } errmsg] } {
+     catch {common::send_msg_id "BD_TCL-105" "ERROR" "Unable to add referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
+     return 1
+   } elseif { $VertexBatchBuilder_0 eq "" } {
+     catch {common::send_msg_id "BD_TCL-106" "ERROR" "Unable to referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
+     return 1
+   }
+  
+  # Create instance: constant_always_locked, and set properties
+  set constant_always_locked [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant:1.1 constant_always_locked ]
 
   # Create instance: ila_333_250, and set properties
   set ila_333_250 [ create_bd_cell -type ip -vlnv xilinx.com:ip:ila:6.2 ila_333_250 ]
@@ -2319,6 +2345,13 @@ proc create_root_design { parentCell } {
    CONFIG.CONST_WIDTH {32} \
  ] $xlconstant_1
 
+  # Create instance: xlconstant_2, and set properties
+  set xlconstant_2 [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant:1.1 xlconstant_2 ]
+  set_property -dict [ list \
+   CONFIG.CONST_VAL {0} \
+   CONFIG.CONST_WIDTH {16} \
+ ] $xlconstant_2
+
   # Create interface connections
   connect_bd_intf_net -intf_net AttrInterpolator_0_RASTOUT_FIFO [get_bd_intf_pins AttrInterpolator_0/RASTOUT_FIFO] [get_bd_intf_pins rast_out_fifo/FIFO_READ]
   connect_bd_intf_net -intf_net ClearBlock_0_ClearBlockWriteRequestsFIFO [get_bd_intf_pins ClearBlock_0/ClearBlockWriteRequestsFIFO] [get_bd_intf_pins MemorySystem/ClearBlockWriteRequestsFIFO]
@@ -2327,10 +2360,9 @@ proc create_root_design { parentCell } {
   connect_bd_intf_net -intf_net CommandProcessor_0_CommandProcWriteRequests [get_bd_intf_pins CommandProcessor_0/CommandProcWriteRequests] [get_bd_intf_pins MemorySystem/CommandProcWriteRequestsFIFO]
   connect_bd_intf_net -intf_net CommandProcessor_0_returnPacketsFIFO [get_bd_intf_pins CommandProcessor_0/returnPacketsFIFO] [get_bd_intf_pins SerialPacketSystem/FIFO_WRITE]
   connect_bd_intf_net -intf_net CommandProcessor_0_validPacketsFIFO [get_bd_intf_pins CommandProcessor_0/validPacketsFIFO] [get_bd_intf_pins SerialPacketSystem/FIFO_READ]
-  connect_bd_intf_net -intf_net IBCPostReadRequestsFIFO_1 [get_bd_intf_pins IndexBufferCache_1/IBCacheReadRequests] [get_bd_intf_pins MemorySystem/IBCPostReadRequestsFIFO]
-  connect_bd_intf_net -intf_net IBCPostReadResponsesFIFO_1 [get_bd_intf_pins IndexBufferCache_1/IBCacheReadResponses] [get_bd_intf_pins MemorySystem/IBCPostReadResponsesFIFO]
   connect_bd_intf_net -intf_net IBCPreReadRequestsFIFO_1 [get_bd_intf_pins IndexBufferCache_0/IBCacheReadRequests] [get_bd_intf_pins MemorySystem/IBCPreReadRequestsFIFO]
   connect_bd_intf_net -intf_net IBCPreReadResponsesFIFO_1 [get_bd_intf_pins IndexBufferCache_0/IBCacheReadResponses] [get_bd_intf_pins MemorySystem/IBCPreReadResponsesFIFO]
+  connect_bd_intf_net -intf_net InputAssembler2_0_INDEXOUT_FIFO [get_bd_intf_pins InputAssembler2_0/INDEXOUT_FIFO] [get_bd_intf_pins VBO_INDEX_FIFO/FIFO_READ]
   connect_bd_intf_net -intf_net InputAssembler2_0_VERTOUT_FIFO [get_bd_intf_pins InputAssembler2_0/VERTOUT_FIFO] [get_bd_intf_pins VBO_FIFO/FIFO_READ]
   connect_bd_intf_net -intf_net ROP_0_ROPReadRequestsFIFO [get_bd_intf_pins MemorySystem/ROPReadRequestsFIFO] [get_bd_intf_pins ROP_0/ROPReadRequestsFIFO]
   connect_bd_intf_net -intf_net ROP_0_ROPReadResponses [get_bd_intf_pins MemorySystem/ROPReadResponsesFIFO] [get_bd_intf_pins ROP_0/ROPReadResponses]
@@ -2339,15 +2371,16 @@ proc create_root_design { parentCell } {
   connect_bd_intf_net -intf_net ScanOut_0_ScanoutReadRequestsFIFO [get_bd_intf_pins MemorySystem/ScanoutReadRequestsFIFO] [get_bd_intf_pins ScanoutSystem/ScanoutReadRequestsFIFO]
   connect_bd_intf_net -intf_net ScanOut_0_ScanoutReadResponses [get_bd_intf_pins MemorySystem/ScanoutReadResponsesFIFO] [get_bd_intf_pins ScanoutSystem/ScanoutReadResponses]
   connect_bd_intf_net -intf_net SerialPacketSystem_rs232_uart [get_bd_intf_ports rs232_uart] [get_bd_intf_pins SerialPacketSystem/rs232_uart]
+  connect_bd_intf_net -intf_net ShaderCoreSystem_INDEXOUT_FIFO [get_bd_intf_pins ShaderCoreSystem/INDEXOUT_FIFO] [get_bd_intf_pins VBO_INDEX_FIFO/FIFO_WRITE]
   connect_bd_intf_net -intf_net ShaderCoreSystem_VBCacheReadRequests_0 [get_bd_intf_pins MemorySystem/IAReadRequestsFIFO] [get_bd_intf_pins ShaderCoreSystem/VBCacheReadRequests_0]
   connect_bd_intf_net -intf_net ShaderCoreSystem_VBCacheReadResponses_0 [get_bd_intf_pins MemorySystem/IAReadResponsesFIFO] [get_bd_intf_pins ShaderCoreSystem/VBCacheReadResponses_0]
-  connect_bd_intf_net -intf_net ShaderCoreSystem_VERTBATCH_FIFO_0 [get_bd_intf_pins ShaderCoreSystem/VERTBATCH_FIFO_0] [get_bd_intf_pins fifo_generator_0/FIFO_READ]
+  connect_bd_intf_net -intf_net ShaderCoreSystem_VERTBATCH_FIFO_0 [get_bd_intf_pins ShaderCoreSystem/VERTBATCH_FIFO_0] [get_bd_intf_pins VBB_FIFO/FIFO_READ]
   connect_bd_intf_net -intf_net ShaderCoreSystem_VERTOUT_FIFO_0 [get_bd_intf_pins ShaderCoreSystem/VERTOUT_FIFO_0] [get_bd_intf_pins VBO_FIFO/FIFO_WRITE]
   connect_bd_intf_net -intf_net StatsCollector_0_StatsWriteRequestsFIFO [get_bd_intf_pins MemorySystem/StatsWriteRequestsFIFO] [get_bd_intf_pins StatsCollector_0/StatsWriteRequestsFIFO]
   connect_bd_intf_net -intf_net TexSample_0_TexCache [get_bd_intf_pins TexSample_0/TexCache] [get_bd_intf_pins TextureCache_128x128x32bits/BRAM_PORTA]
   connect_bd_intf_net -intf_net TexSample_0_TexSampReadRequestsFIFO [get_bd_intf_pins MemorySystem/TexFetchReadRequestsFIFO] [get_bd_intf_pins TexSample_0/TexSampReadRequestsFIFO]
   connect_bd_intf_net -intf_net TexSample_0_TexSampReadResponses [get_bd_intf_pins MemorySystem/TexFetchReadResponsesFIFO] [get_bd_intf_pins TexSample_0/TexSampReadResponses]
-  connect_bd_intf_net -intf_net VertexBatchBuilder_0_VertexBatchFIFO [get_bd_intf_pins VertexBatchBuilder_0/VertexBatchFIFO] [get_bd_intf_pins fifo_generator_0/FIFO_WRITE]
+  connect_bd_intf_net -intf_net VertexBatchBuilder_0_VertexBatchFIFO [get_bd_intf_pins VBB_FIFO/FIFO_WRITE] [get_bd_intf_pins VertexBatchBuilder_0/VertexBatchFIFO]
   connect_bd_intf_net -intf_net ddr4_0_C0_DDR4 [get_bd_intf_ports ddr4_sdram_c1] [get_bd_intf_pins MemorySystem/ddr4_sdram_c1]
   connect_bd_intf_net -intf_net default_sysclk1_300_1 [get_bd_intf_ports default_sysclk1_300] [get_bd_intf_pins MemorySystem/default_sysclk1_300]
 
@@ -2395,12 +2428,9 @@ proc create_root_design { parentCell } {
   connect_bd_net -net CommandProcessor_0_DBG_LAST_OUT_PACKET [get_bd_pins CommandProcessor_0/DBG_LAST_OUT_PACKET] [get_bd_pins ila_333_250/probe2]
   connect_bd_net -net CommandProcessor_0_DBG_LAST_READ_DATA [get_bd_pins CommandProcessor_0/DBG_LAST_READ_DATA] [get_bd_pins ila_333_250/probe3]
   connect_bd_net -net CommandProcessor_0_DBG_PACKETSTATE [get_bd_pins CommandProcessor_0/DBG_CMDPACKETSTATE] [get_bd_pins ila_333_250/probe0]
-  connect_bd_net -net CommandProcessor_0_IA_IndexBufferBaseAddr [get_bd_pins CommandProcessor_0/IA_IndexBufferBaseAddr] [get_bd_pins InputAssembler2_0/CMD_IndexBufferBaseAddr]
   connect_bd_net -net CommandProcessor_0_IA_SetStateEnable [get_bd_pins CommandProcessor_0/IA_SetStateEnable] [get_bd_pins InputAssembler2_0/CMD_SetStateEnable]
   connect_bd_net -net CommandProcessor_0_IA_StateCullMode [get_bd_pins CommandProcessor_0/IA_StateCullMode] [get_bd_pins InputAssembler2_0/CMD_StateCullMode]
-  connect_bd_net -net CommandProcessor_0_IA_StateIndexFormat [get_bd_pins CommandProcessor_0/IA_StateIndexFormat] [get_bd_pins InputAssembler2_0/CMD_StateIndexFormat]
   connect_bd_net -net CommandProcessor_0_IA_StatePrimTopology [get_bd_pins CommandProcessor_0/IA_StatePrimTopology] [get_bd_pins InputAssembler2_0/CMD_StatePrimTopology]
-  connect_bd_net -net CommandProcessor_0_IA_StateStripCutType [get_bd_pins CommandProcessor_0/IA_StateStripCutType] [get_bd_pins InputAssembler2_0/CMD_StateStripCutType]
   connect_bd_net -net CommandProcessor_0_ROP_ClearSignal [get_bd_pins CommandProcessor_0/ROP_ClearSignal] [get_bd_pins ROP_0/CMD_ClearSignal]
   connect_bd_net -net CommandProcessor_0_ROP_FlushCacheSignal [get_bd_pins CommandProcessor_0/ROP_FlushCacheSignal] [get_bd_pins ROP_0/CMD_FlushCacheSignal]
   connect_bd_net -net CommandProcessor_0_ROP_SetAlphaTestEnabled [get_bd_pins CommandProcessor_0/ROP_SetAlphaTestEnabled] [get_bd_pins ROP_0/CMD_SetAlphaTestEnabled]
@@ -2434,18 +2464,14 @@ proc create_root_design { parentCell } {
   connect_bd_net -net CommandProcessor_0_VBB_CommandArg1 [get_bd_pins CommandProcessor_0/VBB_CommandArg1] [get_bd_pins VertexBatchBuilder_0/CMD_CommandArg1]
   connect_bd_net -net CommandProcessor_0_VBB_CommandArgType [get_bd_pins CommandProcessor_0/VBB_CommandArgType] [get_bd_pins VertexBatchBuilder_0/CMD_CommandArgType]
   connect_bd_net -net CommandProcessor_0_VBB_SendCommand [get_bd_pins CommandProcessor_0/VBB_SendCommand] [get_bd_pins VertexBatchBuilder_0/CMD_SendCommand]
-  connect_bd_net -net IndexBufferCache_0_VBB_ReadData [get_bd_pins IndexBufferCache_0/VBB_ReadData] [get_bd_pins VertexBatchBuilder_0/IBC_ReadData]
+  connect_bd_net -net IndexBufferCache_0_VBB_ReadData [get_bd_pins ILA_IA/probe17] [get_bd_pins IndexBufferCache_0/VBB_ReadData] [get_bd_pins VertexBatchBuilder_0/IBC_ReadData]
   connect_bd_net -net IndexBufferCache_0_VBB_ReadReady [get_bd_pins IndexBufferCache_0/VBB_ReadReady] [get_bd_pins VertexBatchBuilder_0/IBC_ReadReady]
-  connect_bd_net -net IndexBufferCache_1_DBG_State [get_bd_pins ILA_IA/probe32] [get_bd_pins IndexBufferCache_1/DBG_State]
-  connect_bd_net -net IndexBufferCache_1_VBB_ReadData [get_bd_pins ILA_IA/probe29] [get_bd_pins IndexBufferCache_1/VBB_ReadData] [get_bd_pins InputAssembler2_0/IBC_ReadData]
-  connect_bd_net -net IndexBufferCache_1_VBB_ReadReady [get_bd_pins ILA_IA/probe27] [get_bd_pins IndexBufferCache_1/VBB_ReadReady] [get_bd_pins InputAssembler2_0/IBC_ReadReady]
   connect_bd_net -net InputAssembler2_0_CMD_DrawReady [get_bd_pins CommandProcessor_0/IA_DrawReady] [get_bd_pins InputAssembler2_0/CMD_DrawReady]
   connect_bd_net -net InputAssembler2_0_CMD_IA_Idle [get_bd_pins CommandProcessor_0/CMD_IA_Idle] [get_bd_pins InputAssembler2_0/CMD_IA_Idle]
   connect_bd_net -net InputAssembler2_0_CMD_SetStateReady [get_bd_pins CommandProcessor_0/IA_SetStateReady] [get_bd_pins InputAssembler2_0/CMD_SetStateReady]
-  connect_bd_net -net InputAssembler2_0_DBG_IA_State [get_bd_pins ILA_IA/probe10] [get_bd_pins InputAssembler2_0/DBG_IA_State]
-  connect_bd_net -net InputAssembler2_0_DBG_IA_VertexIDPerBatch [get_bd_pins ILA_IA/probe2] [get_bd_pins InputAssembler2_0/DBG_IA_VertexIDPerBatch]
-  connect_bd_net -net InputAssembler2_0_IBC_ReadAddr [get_bd_pins IndexBufferCache_1/VBB_ReadAddr] [get_bd_pins InputAssembler2_0/IBC_ReadAddr]
-  connect_bd_net -net InputAssembler2_0_IBC_ReadEnable [get_bd_pins IndexBufferCache_1/VBB_ReadEnable] [get_bd_pins InputAssembler2_0/IBC_ReadEnable]
+  connect_bd_net -net InputAssembler2_0_DBG_IA_CurrentTriIndices [get_bd_pins ILA_TriSetup/probe53] [get_bd_pins InputAssembler2_0/DBG_IA_CurrentTriIndices]
+  connect_bd_net -net InputAssembler2_0_DBG_IA_State [get_bd_pins ILA_TriSetup/probe51] [get_bd_pins InputAssembler2_0/DBG_IA_State]
+  connect_bd_net -net InputAssembler2_0_DBG_IA_VertexIDPerBatch [get_bd_pins ILA_TriSetup/probe52] [get_bd_pins InputAssembler2_0/DBG_IA_VertexIDPerBatch]
   connect_bd_net -net InputAssembler2_0_STAT_CyclesIdle [get_bd_pins InputAssembler2_0/STAT_CyclesIdle] [get_bd_pins StatsCollector_0/IA_CyclesIdle]
   connect_bd_net -net InputAssembler2_0_STAT_CyclesLoadingDataToCache [get_bd_pins InputAssembler2_0/STAT_CyclesLoadingDataToCache] [get_bd_pins StatsCollector_0/IA_CyclesLoadingDataToCache]
   connect_bd_net -net InputAssembler2_0_STAT_CyclesSpentWorking [get_bd_pins InputAssembler2_0/STAT_CyclesSpentWorking] [get_bd_pins StatsCollector_0/IA_CyclesSpentWorking]
@@ -2457,18 +2483,18 @@ proc create_root_design { parentCell } {
   connect_bd_net -net InputAssembler2_0_TRISETUP_tex2_Y [get_bd_pins InputAssembler2_0/TRISETUP_tex2_Y] [get_bd_pins TriSetup_0/IA_t2_in_y]
   connect_bd_net -net InputAssembler2_0_TRISETUP_v1PosInvZ [get_bd_pins InputAssembler2_0/TRISETUP_v1PosInvZ] [get_bd_pins TriSetup_0/IA_v1_in_invZ]
   connect_bd_net -net InputAssembler2_0_TRISETUP_v2PosInvZ [get_bd_pins InputAssembler2_0/TRISETUP_v2PosInvZ] [get_bd_pins TriSetup_0/IA_v2_in_invZ]
-  connect_bd_net -net InputAssembler2_0_TRISETUP_vertColor1_RGBA [get_bd_pins InputAssembler2_0/TRISETUP_vertColor1_RGBA] [get_bd_pins TriSetup_0/IA_v1_in_RGBA]
-  connect_bd_net -net InputAssembler2_0_TRISETUP_vertColor2_RGBA [get_bd_pins InputAssembler2_0/TRISETUP_vertColor2_RGBA] [get_bd_pins TriSetup_0/IA_v2_in_RGBA]
+  connect_bd_net -net InputAssembler2_0_TRISETUP_vertColor1_RGBA [get_bd_pins ILA_TriSetup/probe49] [get_bd_pins InputAssembler2_0/TRISETUP_vertColor1_RGBA] [get_bd_pins TriSetup_0/IA_v1_in_RGBA]
+  connect_bd_net -net InputAssembler2_0_TRISETUP_vertColor2_RGBA [get_bd_pins ILA_TriSetup/probe50] [get_bd_pins InputAssembler2_0/TRISETUP_vertColor2_RGBA] [get_bd_pins TriSetup_0/IA_v2_in_RGBA]
   connect_bd_net -net InputAssembler_0_TRISETUP_tex0_X [get_bd_pins InputAssembler2_0/TRISETUP_tex0_X] [get_bd_pins TriSetup_0/IA_t0_in_x]
   connect_bd_net -net InputAssembler_0_TRISETUP_tex0_Y [get_bd_pins InputAssembler2_0/TRISETUP_tex0_Y] [get_bd_pins TriSetup_0/IA_t0_in_y]
   connect_bd_net -net InputAssembler_0_TRISETUP_v0PosInvZ [get_bd_pins InputAssembler2_0/TRISETUP_v0PosInvZ] [get_bd_pins TriSetup_0/IA_v0_in_invZ]
-  connect_bd_net -net InputAssembler_0_TRISETUP_v0PosX [get_bd_pins ILA_IA/probe0] [get_bd_pins InputAssembler2_0/TRISETUP_v0PosX] [get_bd_pins TriSetup_0/IA_v0_in_x]
-  connect_bd_net -net InputAssembler_0_TRISETUP_v0PosY [get_bd_pins ILA_IA/probe1] [get_bd_pins InputAssembler2_0/TRISETUP_v0PosY] [get_bd_pins TriSetup_0/IA_v0_in_y]
-  connect_bd_net -net InputAssembler_0_TRISETUP_v1PosX [get_bd_pins ILA_IA/probe6] [get_bd_pins InputAssembler2_0/TRISETUP_v1PosX] [get_bd_pins TriSetup_0/IA_v1_in_x]
-  connect_bd_net -net InputAssembler_0_TRISETUP_v1PosY [get_bd_pins ILA_IA/probe7] [get_bd_pins InputAssembler2_0/TRISETUP_v1PosY] [get_bd_pins TriSetup_0/IA_v1_in_y]
-  connect_bd_net -net InputAssembler_0_TRISETUP_v2PosX [get_bd_pins ILA_IA/probe8] [get_bd_pins InputAssembler2_0/TRISETUP_v2PosX] [get_bd_pins TriSetup_0/IA_v2_in_x]
-  connect_bd_net -net InputAssembler_0_TRISETUP_v2PosY [get_bd_pins InputAssembler2_0/TRISETUP_v2PosY] [get_bd_pins TriSetup_0/IA_v2_in_y]
-  connect_bd_net -net InputAssembler_0_TRISETUP_vertColor0_RGBA [get_bd_pins ILA_IA/probe5] [get_bd_pins InputAssembler2_0/TRISETUP_vertColor0_RGBA] [get_bd_pins TriSetup_0/IA_v0_in_RGBA]
+  connect_bd_net -net InputAssembler_0_TRISETUP_v0PosX [get_bd_pins ILA_TriSetup/probe42] [get_bd_pins InputAssembler2_0/TRISETUP_v0PosX] [get_bd_pins TriSetup_0/IA_v0_in_x]
+  connect_bd_net -net InputAssembler_0_TRISETUP_v0PosY [get_bd_pins ILA_TriSetup/probe43] [get_bd_pins InputAssembler2_0/TRISETUP_v0PosY] [get_bd_pins TriSetup_0/IA_v0_in_y]
+  connect_bd_net -net InputAssembler_0_TRISETUP_v1PosX [get_bd_pins ILA_TriSetup/probe44] [get_bd_pins InputAssembler2_0/TRISETUP_v1PosX] [get_bd_pins TriSetup_0/IA_v1_in_x]
+  connect_bd_net -net InputAssembler_0_TRISETUP_v1PosY [get_bd_pins ILA_TriSetup/probe45] [get_bd_pins InputAssembler2_0/TRISETUP_v1PosY] [get_bd_pins TriSetup_0/IA_v1_in_y]
+  connect_bd_net -net InputAssembler_0_TRISETUP_v2PosX [get_bd_pins ILA_TriSetup/probe46] [get_bd_pins InputAssembler2_0/TRISETUP_v2PosX] [get_bd_pins TriSetup_0/IA_v2_in_x]
+  connect_bd_net -net InputAssembler_0_TRISETUP_v2PosY [get_bd_pins ILA_TriSetup/probe47] [get_bd_pins InputAssembler2_0/TRISETUP_v2PosY] [get_bd_pins TriSetup_0/IA_v2_in_y]
+  connect_bd_net -net InputAssembler_0_TRISETUP_vertColor0_RGBA [get_bd_pins ILA_TriSetup/probe48] [get_bd_pins InputAssembler2_0/TRISETUP_vertColor0_RGBA] [get_bd_pins TriSetup_0/IA_v0_in_RGBA]
   connect_bd_net -net InterpolatorRecip_outInv24 [get_bd_pins AttrInterpolator_0/RECIP_OutputVal] [get_bd_pins InterpolatorRecip/outInv24]
   connect_bd_net -net InterpolatorRecip_outNewOutValueIsValid [get_bd_pins AttrInterpolator_0/RECIP_NewOutValIsValid] [get_bd_pins InterpolatorRecip/outNewOutValueIsValid]
   connect_bd_net -net InterpolatorRecip_outReadyForNewValue [get_bd_pins AttrInterpolator_0/RECIP_ReadyForNewInput] [get_bd_pins InterpolatorRecip/outReadyForNewValue]
@@ -2575,6 +2601,8 @@ proc create_root_design { parentCell } {
   connect_bd_net -net ShaderCoreSystem_FPU0_IN_B [get_bd_pins ILA_IA/probe43] [get_bd_pins ShaderCoreSystem/FPU0_IN_B]
   connect_bd_net -net ShaderCoreSystem_FPU1_IN_A [get_bd_pins ILA_IA/probe26] [get_bd_pins ShaderCoreSystem/FPU1_IN_A]
   connect_bd_net -net ShaderCoreSystem_FPU1_IN_B [get_bd_pins ILA_IA/probe28] [get_bd_pins ShaderCoreSystem/FPU1_IN_B]
+  connect_bd_net -net ShaderCoreSystem_FPU3_IN_A [get_bd_pins ILA_IA/probe2] [get_bd_pins ShaderCoreSystem/FPU3_IN_A]
+  connect_bd_net -net ShaderCoreSystem_FPU3_IN_B [get_bd_pins ILA_IA/probe5] [get_bd_pins ShaderCoreSystem/FPU3_IN_B]
   connect_bd_net -net ShaderCoreSystem_FPUALL_IADD_GO [get_bd_pins ILA_IA/probe38] [get_bd_pins ShaderCoreSystem/FPUALL_IADD_GO]
   connect_bd_net -net ShaderCoreSystem_FPUALL_ICMP_GO [get_bd_pins ILA_IA/probe39] [get_bd_pins ShaderCoreSystem/FPUALL_ICMP_GO]
   connect_bd_net -net ShaderCoreSystem_FPUALL_ICNV_GO [get_bd_pins ILA_IA/probe40] [get_bd_pins ShaderCoreSystem/FPUALL_ICNV_GO]
@@ -2593,15 +2621,14 @@ proc create_root_design { parentCell } {
   connect_bd_net -net ShaderCoreSystem_GPR0_WriteQuadIndex [get_bd_pins ILA_IA/probe50] [get_bd_pins ShaderCoreSystem/GPR0_WriteQuadIndex]
   connect_bd_net -net ShaderCoreSystem_OUT_RESULT [get_bd_pins ILA_IA/probe44] [get_bd_pins ShaderCoreSystem/OUT_RESULT]
   connect_bd_net -net ShaderCoreSystem_OUT_RESULT1 [get_bd_pins ILA_IA/probe30] [get_bd_pins ShaderCoreSystem/OUT_RESULT1]
-  connect_bd_net -net ShaderCoreSystem_VBO_BatchEndingIndex_0 [get_bd_pins InputAssembler2_0/VBO_BatchEndingIndex] [get_bd_pins ShaderCoreSystem/VBO_BatchEndingIndex_0]
-  connect_bd_net -net ShaderCoreSystem_VBO_BatchStartingIndex_0 [get_bd_pins InputAssembler2_0/VBO_BatchStartingIndex] [get_bd_pins ShaderCoreSystem/VBO_BatchStartingIndex_0]
+  connect_bd_net -net ShaderCoreSystem_OUT_RESULT2 [get_bd_pins ILA_IA/probe10] [get_bd_pins ShaderCoreSystem/OUT_RESULT2]
+  connect_bd_net -net ShaderCoreSystem_VBO_IsIndexedDrawCall [get_bd_pins InputAssembler2_0/VBO_IsIndexedDrawCall] [get_bd_pins ShaderCoreSystem/VBO_IsIndexedDrawCall]
+  connect_bd_net -net ShaderCoreSystem_VBO_NumIndices [get_bd_pins ILA_IA/probe32] [get_bd_pins InputAssembler2_0/VBO_NumIndices] [get_bd_pins ShaderCoreSystem/VBO_NumIndices]
+  connect_bd_net -net ShaderCoreSystem_VBO_NumVertices [get_bd_pins ILA_IA/probe27] [get_bd_pins InputAssembler2_0/VBO_NumVertices] [get_bd_pins ShaderCoreSystem/VBO_NumVertices]
   connect_bd_net -net ShaderCoreSystem_VBO_Pushed_0 [get_bd_pins InputAssembler2_0/VBO_Pushed] [get_bd_pins ShaderCoreSystem/VBO_Pushed_0]
   connect_bd_net -net ShaderCoreSystem_VSC_ReadDWORDAddr [get_bd_pins ILA_IA/probe18] [get_bd_pins ShaderCoreSystem/VSC_ReadDWORDAddr]
   connect_bd_net -net ShaderCoreSystem_VSC_ReadData [get_bd_pins ILA_IA/probe15] [get_bd_pins ShaderCoreSystem/VSC_ReadData]
-  connect_bd_net -net ShaderCoreSystem_VSC_ReadEnable [get_bd_pins ILA_IA/probe16] [get_bd_pins ShaderCoreSystem/VSC_ReadEnable]
   connect_bd_net -net ShaderCoreSystem_VSC_ReadReady [get_bd_pins ILA_IA/probe21] [get_bd_pins ShaderCoreSystem/VSC_ReadReady]
-  connect_bd_net -net ShaderCoreSystem_VSC_ReadStreamIndex [get_bd_pins ILA_IA/probe17] [get_bd_pins ShaderCoreSystem/VSC_ReadStreamIndex]
-  connect_bd_net -net ShaderCoreSystem_VSC_SetStreamVBAddress [get_bd_pins ILA_IA/probe19] [get_bd_pins ShaderCoreSystem/VSC_SetStreamVBAddress]
   connect_bd_net -net ShaderCoreSystem_VSC_StreamVBAddress [get_bd_pins ILA_IA/probe20] [get_bd_pins ShaderCoreSystem/VSC_StreamVBAddress]
   connect_bd_net -net ShaderCoreSystem_VertexCache_addra [get_bd_pins ILA_IA/probe25] [get_bd_pins ShaderCoreSystem/VertexCache_addra]
   connect_bd_net -net ShaderCoreSystem_VertexCache_dina [get_bd_pins ILA_IA/probe23] [get_bd_pins ShaderCoreSystem/VertexCache_dina]
@@ -2697,27 +2724,31 @@ proc create_root_design { parentCell } {
   connect_bd_net -net TriWorkCache_0_INTERP_outT2Y [get_bd_pins AttrInterpolator_0/TRICACHE_inT2Y] [get_bd_pins TriWorkCache_0/INTERP_outT2Y]
   connect_bd_net -net TriWorkCache_0_RAST_NewTriSlotIndex [get_bd_pins Rasterizer_0/TRICACHE_NewTriSlotIndex] [get_bd_pins TriWorkCache_0/RAST_NewTriSlotIndex]
   connect_bd_net -net TriWorkCache_0_RAST_NewTriSlotIndexValid [get_bd_pins Rasterizer_0/TRICACHE_NewTriSlotIndexValid] [get_bd_pins TriWorkCache_0/RAST_NewTriSlotIndexValid]
-  connect_bd_net -net VBO_FIFO_dout [get_bd_pins ILA_IA/probe9] [get_bd_pins InputAssembler2_0/VERTOUT_FIFO_rd_data] [get_bd_pins VBO_FIFO/dout]
+  connect_bd_net -net VBO_FIFO_dout [get_bd_pins ILA_IA/probe9] [get_bd_pins ILA_TriSetup/probe54] [get_bd_pins InputAssembler2_0/VERTOUT_FIFO_rd_data] [get_bd_pins VBO_FIFO/dout]
+  connect_bd_net -net VBO_INDEX_FIFO_dout [get_bd_pins ILA_IA/probe29] [get_bd_pins ILA_TriSetup/probe55] [get_bd_pins InputAssembler2_0/INDEXOUT_FIFO_rd_data] [get_bd_pins VBO_INDEX_FIFO/dout]
   connect_bd_net -net VBO_Ready_0_1 [get_bd_pins InputAssembler2_0/VBO_Ready] [get_bd_pins ShaderCoreSystem/VBO_Ready_0]
   connect_bd_net -net VertexBatchBuilder_0_CMD_ReadyState [get_bd_pins CommandProcessor_0/VBB_ReadyState] [get_bd_pins VertexBatchBuilder_0/CMD_ReadyState]
   connect_bd_net -net VertexBatchBuilder_0_DBG_CurrentBatchLength [get_bd_pins ILA_IA/probe33] [get_bd_pins VertexBatchBuilder_0/DBG_CurrentBatchLength]
   connect_bd_net -net VertexBatchBuilder_0_DBG_CurrentBatchRemainingPrims [get_bd_pins ILA_IA/probe34] [get_bd_pins VertexBatchBuilder_0/DBG_CurrentBatchRemainingPrims]
   connect_bd_net -net VertexBatchBuilder_0_DBG_CurrentState [get_bd_pins ILA_IA/probe12] [get_bd_pins VertexBatchBuilder_0/DBG_CurrentState]
-  connect_bd_net -net VertexBatchBuilder_0_IBC_ReadAddr [get_bd_pins IndexBufferCache_0/VBB_ReadAddr] [get_bd_pins VertexBatchBuilder_0/IBC_ReadAddr]
+  connect_bd_net -net VertexBatchBuilder_0_DBG_LastPolygonIndices [get_bd_pins ILA_IA/probe19] [get_bd_pins VertexBatchBuilder_0/DBG_LastPolygonIndices]
+  connect_bd_net -net VertexBatchBuilder_0_IBC_InvalidateIndexCache [get_bd_pins IndexBufferCache_0/VBB_InvalidateIndexCache] [get_bd_pins VertexBatchBuilder_0/IBC_InvalidateIndexCache]
+  connect_bd_net -net VertexBatchBuilder_0_IBC_ReadAddr [get_bd_pins ILA_IA/probe16] [get_bd_pins IndexBufferCache_0/VBB_ReadAddr] [get_bd_pins VertexBatchBuilder_0/IBC_ReadAddr]
   connect_bd_net -net VertexBatchBuilder_0_IBC_ReadEnable [get_bd_pins IndexBufferCache_0/VBB_ReadEnable] [get_bd_pins VertexBatchBuilder_0/IBC_ReadEnable]
   connect_bd_net -net VertexBatchBuilder_0_SHADER_Done [get_bd_pins ShaderCoreSystem/VBB_Done_0] [get_bd_pins VertexBatchBuilder_0/SHADER_Done]
   connect_bd_net -net ddr4_0_addn_ui_clkout1 [get_bd_pins MemorySystem/addn_ui_clkout1] [get_bd_pins ScanoutSystem/clk_in1] [get_bd_pins SerialPacketSystem/s_axi_aclk] [get_bd_pins proc_sys_reset_0/slowest_sync_clk]
-  connect_bd_net -net ddr4_0_c0_ddr4_ui_clk [get_bd_pins AttrInterpolator_0/clk] [get_bd_pins ClearBlock_0/clk] [get_bd_pins CommandProcessor_0/clk] [get_bd_pins ILA_AttrInterpolator/clk] [get_bd_pins ILA_IA/clk] [get_bd_pins ILA_TexSampler/clk] [get_bd_pins ILA_TriSetup/clk] [get_bd_pins IndexBufferCache_0/clk] [get_bd_pins IndexBufferCache_1/clk] [get_bd_pins InputAssembler2_0/clk] [get_bd_pins InterpolatorRecip/clk] [get_bd_pins MemorySystem/c0_ddr4_ui_clk] [get_bd_pins ROP_0/clk] [get_bd_pins Rasterizer_0/clk] [get_bd_pins SerialPacketSystem/rd_clk] [get_bd_pins ShaderCoreSystem/clk_0] [get_bd_pins StatsCollector_0/clk] [get_bd_pins TexSample_0/clk] [get_bd_pins TextureCache_128x128x32bits/clka] [get_bd_pins TriSetupRecip/clk] [get_bd_pins TriSetup_0/clk] [get_bd_pins TriWorkCache_0/clk] [get_bd_pins VBO_FIFO/clk] [get_bd_pins VertexBatchBuilder_0/clk] [get_bd_pins fifo_generator_0/clk] [get_bd_pins ila_333_250/clk] [get_bd_pins rast_out_fifo/clk] [get_bd_pins vio_0/clk]
-  connect_bd_net -net fifo_generator_0_dout [get_bd_pins ILA_IA/probe14] [get_bd_pins ShaderCoreSystem/VERTBATCH_FIFO_0_rd_data] [get_bd_pins fifo_generator_0/dout]
+  connect_bd_net -net ddr4_0_c0_ddr4_ui_clk [get_bd_pins AttrInterpolator_0/clk] [get_bd_pins ClearBlock_0/clk] [get_bd_pins CommandProcessor_0/clk] [get_bd_pins ILA_AttrInterpolator/clk] [get_bd_pins ILA_IA/clk] [get_bd_pins ILA_TexSampler/clk] [get_bd_pins ILA_TriSetup/clk] [get_bd_pins IndexBufferCache_0/clk] [get_bd_pins InputAssembler2_0/clk] [get_bd_pins InterpolatorRecip/clk] [get_bd_pins MemorySystem/c0_ddr4_ui_clk] [get_bd_pins ROP_0/clk] [get_bd_pins Rasterizer_0/clk] [get_bd_pins SerialPacketSystem/rd_clk] [get_bd_pins ShaderCoreSystem/clk_0] [get_bd_pins StatsCollector_0/clk] [get_bd_pins TexSample_0/clk] [get_bd_pins TextureCache_128x128x32bits/clka] [get_bd_pins TriSetupRecip/clk] [get_bd_pins TriSetup_0/clk] [get_bd_pins TriWorkCache_0/clk] [get_bd_pins VBB_FIFO/clk] [get_bd_pins VBO_FIFO/clk] [get_bd_pins VBO_INDEX_FIFO/clk] [get_bd_pins VertexBatchBuilder_0/clk] [get_bd_pins ila_333_250/clk] [get_bd_pins rast_out_fifo/clk] [get_bd_pins vio_0/clk]
+  connect_bd_net -net fifo_generator_0_dout [get_bd_pins ILA_IA/probe14] [get_bd_pins ShaderCoreSystem/VERTBATCH_FIFO_0_rd_data] [get_bd_pins VBB_FIFO/dout]
   connect_bd_net -net no_reset_dout [get_bd_pins no_reset/dout] [get_bd_pins rast_out_fifo/srst]
   connect_bd_net -net placeholder_texcfg_dout [get_bd_pins TriSetup_0/TEXCFG_nointerpolation] [get_bd_pins placeholder_texcfg/dout]
   connect_bd_net -net rd_clk_1 [get_bd_pins MemorySystem/rd_clk] [get_bd_pins ScanoutSystem/clk_out1]
   connect_bd_net -net reset_1 [get_bd_ports reset] [get_bd_pins MemorySystem/reset] [get_bd_pins ResetN_UntilClockLoc_0/reset] [get_bd_pins ScanoutSystem/reset] [get_bd_pins SerialPacketSystem/reset] [get_bd_pins proc_sys_reset_0/ext_reset_in]
-  connect_bd_net -net vio_0_probe_out0 [get_bd_pins InputAssembler2_0/DBG_UsePrebuiltIB] [get_bd_pins vio_0/probe_out0]
+  connect_bd_net -net vio_0_probe_out0 [get_bd_pins vio_0/probe_out0]
   connect_bd_net -net vio_0_probe_out1 [get_bd_pins VertexBatchBuilder_0/DBG_UseConstantOutput] [get_bd_pins vio_0/probe_out1]
   connect_bd_net -net xlconstant_0_dout [get_bd_pins ResetN_UntilClockLoc_0/locked] [get_bd_pins constant_always_locked/dout]
   connect_bd_net -net xlconstant_0_dout1 [get_bd_pins ila_333_250/probe4] [get_bd_pins xlconstant_0/dout]
   connect_bd_net -net xlconstant_1_dout [get_bd_pins ILA_TexSampler/probe6] [get_bd_pins xlconstant_1/dout]
+  connect_bd_net -net xlconstant_2_dout [get_bd_pins ILA_IA/probe0] [get_bd_pins ILA_IA/probe1] [get_bd_pins ILA_IA/probe6] [get_bd_pins ILA_IA/probe7] [get_bd_pins ILA_IA/probe8] [get_bd_pins xlconstant_2/dout]
 
   # Create address segments
   create_bd_addr_seg -range 0x40000000 -offset 0x00000000 [get_bd_addr_spaces MemorySystem/MemoryController_0/M_AXI] [get_bd_addr_segs MemorySystem/ddr4_0/C0_DDR4_MEMORY_MAP/C0_DDR4_ADDRESS_BLOCK] SEG_ddr4_0_C0_DDR4_ADDRESS_BLOCK

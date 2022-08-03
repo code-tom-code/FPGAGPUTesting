@@ -320,6 +320,146 @@ static const int RunTestsFloatRCP(Xsi::Loader& loader, std_logic_port& clk, std_
 		return fabs(simulationResult - trueResult) < epsilon;
 	};
 
+	const auto pipelinedRcpTest = [&]() -> bool
+	{
+		static_assert(RCP_CYCLES == 14u, "Need to rewrite this function if the instruction latency of the RCP pipe changes!");
+		IN_A = 0.0f;
+		ISPEC_GO = false;
+		{
+			scoped_timestep time(loader, clk, 100);
+		}
+		IN_A = 0.0f;
+		ISPEC_GO = true;
+		{
+			scoped_timestep time(loader, clk, 100);
+		}
+		IN_A = 1.0f;
+		{
+			scoped_timestep time(loader, clk, 100);
+		}
+		IN_A = 0.5f;
+		{
+			scoped_timestep time(loader, clk, 100);
+		}
+		IN_A = 2.0f;
+		{
+			scoped_timestep time(loader, clk, 100);
+		}
+		IN_A = 1.0f / 3.0f;
+		{
+			scoped_timestep time(loader, clk, 100);
+		}
+		IN_A = 3.0f;
+		{
+			scoped_timestep time(loader, clk, 100);
+		}
+		IN_A = 1.0f / 4.0f;
+		{
+			scoped_timestep time(loader, clk, 100);
+		}
+		IN_A = 4.0f;
+		{
+			scoped_timestep time(loader, clk, 100);
+		}
+		IN_A = 1.0f / 5.0f;
+		{
+			scoped_timestep time(loader, clk, 100);
+		}
+		IN_A = 5.0f;
+		{
+			scoped_timestep time(loader, clk, 100);
+		}
+		IN_A = 0.0f;
+		{
+			scoped_timestep time(loader, clk, 100);
+		}
+		IN_A = NAN;
+		{
+			scoped_timestep time(loader, clk, 100);
+		}
+		IN_A = -1.0f;
+		{
+			scoped_timestep time(loader, clk, 100);
+		}
+		IN_A = 3.1415926f;
+		{
+			scoped_timestep time(loader, clk, 100);
+		}
+		ISPEC_GO = false;
+		const float aResult = OUT_RESULT.GetFloat32Val();
+		const bool aValid = CompareFloatBitwise(aResult, INFINITY); // rcp(0.0f) = INF
+		{
+			scoped_timestep time(loader, clk, 100);
+		}
+		const float bResult = OUT_RESULT.GetFloat32Val();
+		const bool bValid = CompareFloatBitwise(bResult, 1.0f); // rcp(1.0f) = 1.0f
+		{
+			scoped_timestep time(loader, clk, 100);
+		}
+		const float cResult = OUT_RESULT.GetFloat32Val();
+		const bool cValid = CompareFloatBitwise(cResult, 2.0f); // rcp(0.5f) = 2.0f
+		{
+			scoped_timestep time(loader, clk, 100);
+		}
+		const float dResult = OUT_RESULT.GetFloat32Val();
+		const bool dValid = CompareFloatBitwise(dResult, 0.5f); // rcp(2.0f) = 0.5f
+		{
+			scoped_timestep time(loader, clk, 100);
+		}
+		const float eResult = OUT_RESULT.GetFloat32Val();
+		const bool eValid = rcpCloseEnoughTest(eResult, 3.0f, 0.000001f); // rcp(1.0f / 3.0f) = 3.0f
+		{
+			scoped_timestep time(loader, clk, 100);
+		}
+		const float fResult = OUT_RESULT.GetFloat32Val();
+		const bool fValid = rcpCloseEnoughTest(fResult, 1.0f / 3.0f, 0.0000001f); // rcp(3.0f) = 1.0f / 3.0f
+		{
+			scoped_timestep time(loader, clk, 100);
+		}
+		const float gResult = OUT_RESULT.GetFloat32Val();
+		const bool gValid = CompareFloatBitwise(gResult, 4.0f); // rcp(0.25f) = 4.0f
+		{
+			scoped_timestep time(loader, clk, 100);
+		}
+		const float hResult = OUT_RESULT.GetFloat32Val();
+		const bool hValid = CompareFloatBitwise(hResult, 0.25f); // rcp(4.0f) = 0.25f
+		{
+			scoped_timestep time(loader, clk, 100);
+		}
+		const float iResult = OUT_RESULT.GetFloat32Val();
+		const bool iValid = rcpCloseEnoughTest(iResult, 5.0f, 0.00001f); // rcp(1.0f / 5.0f) = 5.0f
+		{
+			scoped_timestep time(loader, clk, 100);
+		}
+		const float jResult = OUT_RESULT.GetFloat32Val();
+		const bool jValid = rcpCloseEnoughTest(jResult, 1.0f / 5.0f, 0.0000001f); // rcp(5.0f) = 1.0f / 5.0f
+		{
+			scoped_timestep time(loader, clk, 100);
+		}
+		const float kResult = OUT_RESULT.GetFloat32Val();
+		const bool kValid = CompareFloatBitwise(kResult, INFINITY); // rcp(0.0f) = INFINITY
+		{
+			scoped_timestep time(loader, clk, 100);
+		}
+		const float lResult = OUT_RESULT.GetFloat32Val();
+		const bool lValid = isnan(lResult); // rcp(NAN) = NAN
+		{
+			scoped_timestep time(loader, clk, 100);
+		}
+		const float mResult = OUT_RESULT.GetFloat32Val();
+		const bool mValid = CompareFloatBitwise(mResult, -1.0f); // rcp(-1.0f) = -1.0f
+		{
+			scoped_timestep time(loader, clk, 100);
+		}
+		const float nResult = OUT_RESULT.GetFloat32Val();
+		const bool nValid = rcpCloseEnoughTest(nResult, 1.0f / 3.1415926f, 0.0000001f); // rcp(3.1415926f) = 1.0f / 3.1415926f
+		{
+			scoped_timestep time(loader, clk, 100);
+		}
+
+		return aValid && bValid && cValid && dValid && eValid && fValid && gValid && hValid && iValid && jValid && kValid && lValid && mValid && nValid;
+	};
+
 	for (unsigned x = 1; x <= 1024; ++x)
 	{
 		const float inputf = (const float)x;
@@ -354,6 +494,8 @@ static const int RunTestsFloatRCP(Xsi::Loader& loader, std_logic_port& clk, std_
 	allTestsSuccessful &= CompareFloatBitwise(rcpTestFunc(-INFINITY), -0.0f); // rcp(-INF) = -0.0f
 	allTestsSuccessful &= isnan(rcpTestFunc(NAN) ); // rcp(NAN) = NAN
 	allTestsSuccessful &= isnan(rcpTestFunc(-NAN) ); // rcp(-NAN) = -NAN
+
+	allTestsSuccessful &= pipelinedRcpTest();
 
 	// Turn off the SPEC pipe when we're done using it
 	ISPEC_GO = false;
@@ -855,6 +997,7 @@ static const int RunTestsFloatADD(Xsi::Loader& loader, std_logic_port& clk, std_
 		{
 			scoped_timestep time(loader, clk, 100);
 		}
+		IADD_GO = false;
 		const float ae = OUT_RESULT.GetFloat32Val();
 		{
 			scoped_timestep time(loader, clk, 100);
@@ -1025,6 +1168,7 @@ static const int RunTestsFloatMUL(Xsi::Loader& loader, std_logic_port& clk, std_
 		{
 			scoped_timestep time(loader, clk, 100);
 		}
+		IMUL_GO = false;
 		const float ad = OUT_RESULT.GetFloat32Val();
 		{
 			scoped_timestep time(loader, clk, 100);
@@ -1129,6 +1273,62 @@ static const int RunTestsFloatCNV(Xsi::Loader& loader, std_logic_port& clk, std_
 			return 0xFFFF;
 		else
 			return (const unsigned short)(a * 65535.0f);
+	};
+
+	const auto pipelinedCnvTestFunc = [&]() -> bool
+	{
+		static_assert(CNV_CYCLES == 3u, "Need to rewrite this function if the instruction latency of the CNV pipe changes!");
+		IN_A = 0.0f;
+		IN_MODE = F_to_I24_Trunc;
+		ICNV_GO = false;
+		{
+			scoped_timestep time(loader, clk, 100);
+		}
+		IN_A = 101.5f;
+		IN_MODE = F_to_I16_RoundNearestEven;
+		ICNV_GO = true;
+		{
+			scoped_timestep time(loader, clk, 100);
+		}
+		IN_A = 101.5f;
+		IN_MODE = F_to_I24_Trunc;
+		{
+			scoped_timestep time(loader, clk, 100);
+		}
+		IN_A = -NAN;
+		IN_MODE = F_to_UNORM16;
+		{
+			scoped_timestep time(loader, clk, 100);
+		}
+		const int a = OUT_RESULT.GetInt32Val();
+		const bool aValid = (a == 102);
+		IN_A = INFINITY;
+		IN_MODE = F_to_UNORM8;
+		{
+			scoped_timestep time(loader, clk, 100);
+		}
+		const int b = OUT_RESULT.GetInt32Val();
+		const bool bValid = (b == 101);
+		IN_A = 0.0f;
+		IN_MODE = F_to_I23_RoundNearestEven;
+		{
+			scoped_timestep time(loader, clk, 100);
+		}
+		const unsigned short c = OUT_RESULT.GetUint16Val();
+		const bool cValid = (c == 0);
+		ICNV_GO = false;
+		{
+			scoped_timestep time(loader, clk, 100);
+		}
+		const unsigned char d = OUT_RESULT.GetUint8Val();
+		const bool dValid = (d == 255);
+		{
+			scoped_timestep time(loader, clk, 100);
+		}
+		const int e = OUT_RESULT.GetInt32Val();
+		const bool eValid = (e == 0);
+
+		return aValid && bValid && cValid && dValid && eValid;
 	};
 
 	bool allTestsSuccessful = true;
@@ -1258,6 +1458,9 @@ static const int RunTestsFloatCNV(Xsi::Loader& loader, std_logic_port& clk, std_
 	allTestsSuccessful &= (cnvTestFunc(-INFINITY, F_to_UNORM8) == 0);
 	allTestsSuccessful &= (cnvTestFunc(NAN, F_to_UNORM8) == 0);
 	allTestsSuccessful &= (cnvTestFunc(-NAN, F_to_UNORM8) == 0);
+
+	// Run the pipelining test:
+	allTestsSuccessful &= pipelinedCnvTestFunc();
 
 	// Turn off the CNV pipe when we're done using it
 	ICNV_GO = false;

@@ -36,21 +36,18 @@ entity InputAssembler2 is
 		TRISETUP_newTriBegin : out STD_LOGIC := '0';
 	-- Triangle Setup interfaces end
 
-	-- Index Buffer Cache interfaces begin
-		IBC_ReadEnable : out STD_LOGIC := '0';
-		IBC_ReadAddr : out STD_LOGIC_VECTOR(29 downto 0) := (others => '0');
-		IBC_ReadData : in STD_LOGIC_VECTOR(31 downto 0);
-		IBC_ReadReady : in STD_LOGIC;
-	-- Index Buffer Cache interfaces end
-
 	-- Vertex Batch Output (VBO) interfaces begin
 		VBO_Pushed : in STD_LOGIC; -- Set to 1 when we've completed pushing our next fully shaded batch of output verts
-		VBO_BatchStartingIndex : in STD_LOGIC_VECTOR(15 downto 0); -- Both the starting and ending indices are set to the same value in the case of a non-indexed draw call
-		VBO_BatchEndingIndex : in STD_LOGIC_VECTOR(15 downto 0);
+		VBO_NumVertices : in STD_LOGIC_VECTOR(4 downto 0);
+		VBO_NumIndices : in STD_LOGIC_VECTOR(6 downto 0);
+		VBO_IsIndexedDrawCall : in STD_LOGIC;
 		VBO_Ready : out STD_LOGIC := '0'; -- Set to 1 when we're ready for more vertices
 		VERTOUT_FIFO_empty : in STD_LOGIC;
 		VERTOUT_FIFO_rd_data : in STD_LOGIC_VECTOR(127 downto 0);
 		VERTOUT_FIFO_rd_en : out STD_LOGIC := '0';
+		INDEXOUT_FIFO_empty : in STD_LOGIC;
+		INDEXOUT_FIFO_rd_data : in STD_LOGIC_VECTOR(255 downto 0);
+		INDEXOUT_FIFO_rd_en : out STD_LOGIC := '0';
 	-- Vertex Batch Output (VBO) interfaces end
 
 	-- Command processor interfaces begin
@@ -58,11 +55,8 @@ entity InputAssembler2 is
 
 		CMD_SetStateReady : out STD_LOGIC := '0';
 		CMD_SetStateEnable : in STD_LOGIC;
-		CMD_IndexBufferBaseAddr : in STD_LOGIC_VECTOR(29 downto 0);
 		CMD_StateCullMode : in STD_LOGIC_VECTOR(1 downto 0);
 		CMD_StatePrimTopology : in STD_LOGIC_VECTOR(2 downto 0);
-		CMD_StateStripCutType : in STD_LOGIC_VECTOR(1 downto 0);
-		CMD_StateIndexFormat : in STD_LOGIC_VECTOR(1 downto 0);
 
 		CMD_IA_Idle : out STD_LOGIC := '0'; -- Signal to let the command processor know that we are idle (have no work to do)
 	-- Command processor interfaces end
@@ -77,7 +71,7 @@ entity InputAssembler2 is
 	-- Debug signals
 		DBG_IA_State : out STD_LOGIC_VECTOR(5 downto 0) := (others => '0');
 		DBG_IA_VertexIDPerBatch : out STD_LOGIC_VECTOR(3 downto 0) := (others => '0');
-		DBG_UsePrebuiltIB : in STD_LOGIC
+		DBG_IA_CurrentTriIndices : out STD_LOGIC_VECTOR(11 downto 0) := (others => '0')
 		);
 end InputAssembler2;
 
@@ -93,15 +87,9 @@ ATTRIBUTE X_INTERFACE_INFO of VERTOUT_FIFO_rd_data : SIGNAL is "xilinx.com:inter
 ATTRIBUTE X_INTERFACE_INFO of VERTOUT_FIFO_rd_en : SIGNAL is "xilinx.com:interface:fifo_read:1.0 VERTOUT_FIFO RD_EN";
 ATTRIBUTE X_INTERFACE_INFO of VERTOUT_FIFO_empty : SIGNAL is "xilinx.com:interface:fifo_read:1.0 VERTOUT_FIFO EMPTY";
 
-signal currentIndexA : unsigned(15 downto 0) := x"0000";
-signal currentIndexB : unsigned(15 downto 0) := x"0001";
-signal currentIndexC : unsigned(15 downto 0) := x"0002";
-
-signal currentIndexValA : unsigned(15 downto 0) := (others => '0');
-signal currentIndexValB : unsigned(15 downto 0) := (others => '0');
-signal currentIndexValC : unsigned(15 downto 0) := (others => '0');
-
-signal IBAddrBase : unsigned(29 downto 0) := (others => '0');
+ATTRIBUTE X_INTERFACE_INFO of INDEXOUT_FIFO_rd_data : SIGNAL is "xilinx.com:interface:fifo_read:1.0 INDEXOUT_FIFO RD_DATA";
+ATTRIBUTE X_INTERFACE_INFO of INDEXOUT_FIFO_rd_en : SIGNAL is "xilinx.com:interface:fifo_read:1.0 INDEXOUT_FIFO RD_EN";
+ATTRIBUTE X_INTERFACE_INFO of INDEXOUT_FIFO_empty : SIGNAL is "xilinx.com:interface:fifo_read:1.0 INDEXOUT_FIFO EMPTY";
 
 type IA_state_t is (
 	IAstate_readyIdleState, -- 0
@@ -109,19 +97,11 @@ type IA_state_t is (
 	IAstate_sendTriData, -- 1
 	IAstate_sendTriDataNoCulling, -- 2
 
-	IAState_readVertexData, -- 3
-	IAState_readVertexDataCooldown, -- 4
+	IAState_readIndexData, -- 3
+	IAState_readVertexData, -- 4
+	IAState_readVertexDataCooldown, -- 5
 
-	IAstate_advanceIndices, -- 5
-	IAstate_readIndicesA, -- 6
-	IAstate_readIndicesACooldown, -- 7
-	IAstate_readIndicesB, -- 8
-	IAstate_readIndicesBCooldown, -- 9
-	IAstate_readIndicesC, -- 10
-	IAstate_readIndicesCCooldown, -- 11
-	IAstate_indexedAssemble, -- 12
-
-	IAstate_usePrebuiltIB -- 13
+	IAstate_advanceIndices -- 6
 );
     
 type vertexPos is record
@@ -162,58 +142,15 @@ end record indexTriplet;
 
 type vertexDataBatch is array(15 downto 0) of vertexData;
 
-type indexTranslationArray is array(15 downto 0) of unsigned(31 downto 0);
+type indexBatchArray is array(63 downto 0) of unsigned(3 downto 0);
 
 type constantIndexArray is array(11 downto 0) of indexTriplet;
 
-constant constIndices : constantIndexArray := (
-	0 => (i0 => x"0000", i1 => x"0001", i2 => x"0002"),
-	1 => (i0 => x"0002", i1 => x"0001", i2 => x"0003"),
-	2 => (i0 => x"0004", i1 => x"0005", i2 => x"0000"),
-	3 => (i0 => x"0000", i1 => x"0005", i2 => x"0001"),
-	4 => (i0 => x"0004", i1 => x"0000", i2 => x"0006"),
-	5 => (i0 => x"0006", i1 => x"0000", i2 => x"0002"),
-	6 => (i0 => x"0007", i1 => x"0005", i2 => x"0006"),
-	7 => (i0 => x"0006", i1 => x"0005", i2 => x"0004"),
-	8 => (i0 => x"0003", i1 => x"0001", i2 => x"0007"),
-	9 => (i0 => x"0007", i1 => x"0001", i2 => x"0005"),
-	10 => (i0 => x"0003", i1 => x"0007", i2 => x"0002"),
-	11 => (i0 => x"0002", i1 => x"0007", i2 => x"0006") );
-
-procedure IncrementIndicesByPrimitiveTopology(signal indexA : inout unsigned(15 downto 0); 
-	signal indexB : inout unsigned(15 downto 0); 
-	signal indexC : inout unsigned(15 downto 0); 
-	signal primTopology : in ePrimTopology;
-	variable isEvenTriangle : in std_logic) is
+procedure AssembleTrianglesFromVertices(signal indexBase : in unsigned(6 downto 0); signal indexData : in indexBatchArray; signal vertexData : in vertexDataBatch; signal fillTriangle : out triangleData) is
 begin
-	case primTopology is
-		when PRIMTOP_TriangleStrip =>
-			if (isEvenTriangle = '1') then -- Triangle strips alternate their winding with every other triangle
-				indexA <= indexC;
-				indexB <= indexB;
-			else
-				indexA <= indexB;
-				indexB <= indexC;
-			end if;
-			indexC <= indexC + 1;
-
-		when PRIMTOP_TriangleFan =>
-			indexA <= to_unsigned(0, 16); -- indexA never changes for triangle fans
-			indexB <= indexC;
-			indexC <= indexC + 1;
-
-		when others => --when PRIMTOP_TriangleList =>
-			indexA <= indexA + 3;
-			indexB <= indexB + 3;
-			indexC <= indexC + 3;
-	end case;
-end procedure;
-
-procedure AssembleTrianglesFromVertices(signal indexA : in unsigned(15 downto 0); signal indexB : in unsigned(15 downto 0); signal indexC : in unsigned(15 downto 0); signal vertexData : in vertexDataBatch; signal fillTriangle : out triangleData) is
-begin
-	fillTriangle.v0 <= vertexData(to_integer(indexA(3 downto 0) ) );
-	fillTriangle.v1 <= vertexData(to_integer(indexB(3 downto 0) ) );
-	fillTriangle.v2 <= vertexData(to_integer(indexC(3 downto 0) ) );
+	fillTriangle.v0 <= vertexData(to_integer(indexData(to_integer(indexBase * 3) ) ) );
+	fillTriangle.v1 <= vertexData(to_integer(indexData(to_integer(indexBase * 3 + 1) ) ) );
+	fillTriangle.v2 <= vertexData(to_integer(indexData(to_integer(indexBase * 3 + 2) ) ) );
 end procedure;
 
 pure function UnpackVertexDataFromBuffer(vertDataBits : unsigned(127 downto 0) ) return vertexData is
@@ -230,64 +167,26 @@ begin
 	ret.color.a := vertDataBits(127 downto 120);
 	return ret;
 end function;
-
-pure function IsIndexAlreadyInBatch(knownIndices : indexTranslationArray; newIndex : unsigned(31 downto 0) ) return std_logic is
-begin
-	for i in 0 to 15 loop
-		if (knownIndices(i) = newIndex) then
-			return '1';
-		end if;
-	end loop;
-	return '0';
-end function;
-
--- Do not call this function unless you have previously called IsIndexAlreadyInBatch() and it returned true
-pure function GetIndexAlreadyInBatch(knownIndices : indexTranslationArray; lookupIndex : unsigned(31 downto 0) ) return unsigned is
-begin
-	for i in 0 to 15 loop
-		if (knownIndices(i) = lookupIndex) then
-			return to_unsigned(i, 4);
-		end if;
-	end loop;
-	return to_unsigned(0, 4);
-end function;
-
-pure function IndexIDToIndexAddress(indexID : unsigned(17 downto 0); IBBaseAddr : unsigned(29 downto 0); IBFormat : eIndexFormat ) return unsigned is
-begin
-	case IBFormat is
-		when IBFMT_Index16 =>
-			return IBBaseAddr + (indexID sll 1); -- Multiply by 2
-		when IBFMT_Index32 =>
-			return IBBaseAddr + (indexID sll 2); -- Multiply by 4
-		when IBFMT_Index8 =>
-			return IBBaseAddr + indexID; -- Multiply by 1
-		when others =>
-			return IBBaseAddr;
-	end case;
-end function;
     
 signal currentState : IA_state_t := IAstate_readyIdleState;
 
 signal currentTri : triangleData;
 signal currentVertexData : vertexDataBatch;
+signal currentIndexData : indexBatchArray := (others => (others => '0') );
 
 signal cullState : eCullMode := CM_CullCCW;
 signal primTopologyState : ePrimTopology := PRIMTOP_TriangleList;
-signal stripCutState : eStripCutType := SCT_CutDisabled;
-signal indexFormatState : eIndexFormat := IBFMT_NoIndices;
 
--- Primitive number that resets to 0 at the start of each Draw() call
-signal SV_PrimitiveID : unsigned(31 downto 0) := (others => '0');
+-- Primitive number that resets to 0 at the start of each new vertex batch
+signal SV_PrimitiveID : unsigned(6 downto 0) := (others => '0');
 signal LastPrimitiveIDIsOdd : std_logic := '0';
 
-signal batchStartingIndex : unsigned(15 downto 0) := (others => '0');
-signal batchEndingIndex : unsigned(15 downto 0) := (others => '0');
 signal currentDrawIsIndexed : std_logic := '1'; -- If 1 then this is an indexed draw call (ie. DrawIndexedPrimitive), if 0 then this is a non-indexed draw call (ie. DrawPrimitive)
 
-signal indexTranslation : indexTranslationArray := (others => (others => '1') );
-signal indicesUsedPerBatch : unsigned(3 downto 0) := (others => '0');
+signal verticesUsedPerBatch : unsigned(4 downto 0) := (others => '0');
+signal indicesUsedPerBatch : unsigned(6 downto 0) := (others => '0');
 
-signal vertexIDPerBatch : unsigned(3 downto 0) := (others => '0');
+signal vertexIDPerBatch : unsigned(4 downto 0) := (others => '0');
 
 -- These signals are tied directly to output ports:
 signal drawReady : std_logic := '0';
@@ -313,7 +212,7 @@ STAT_CyclesWaitingForOutput <= std_logic_vector(statCyclesWaitingForOutput);
 STAT_CyclesLoadingDataToCache <= std_logic_vector(statCyclesLoadingDataToCache);
 
 DBG_IA_State <= std_logic_vector(to_unsigned(IA_state_t'pos(currentState), 6) );
-DBG_IA_VertexIDPerBatch <= std_logic_vector(vertexIDPerBatch);
+DBG_IA_VertexIDPerBatch <= std_logic_vector(vertexIDPerBatch(3 downto 0) );
 
 	process(clk)
 	begin
@@ -325,7 +224,7 @@ DBG_IA_VertexIDPerBatch <= std_logic_vector(vertexIDPerBatch);
 				when IAstate_sendTriData | IAstate_sendTriDataNoCulling =>
 					statCyclesWaitingForOutput <= statCyclesWaitingForOutput + 1;
 
-				when IAstate_readIndicesA | IAstate_readIndicesB | IAstate_readIndicesC =>
+				when IAState_readVertexData | IAState_readVertexDataCooldown | IAState_readIndexData =>
 					statCyclesLoadingDataToCache <= statCyclesLoadingDataToCache + 1;
 
 				when others =>
@@ -334,22 +233,14 @@ DBG_IA_VertexIDPerBatch <= std_logic_vector(vertexIDPerBatch);
 		end if;
 	end process;
 
-	process(clk)   
-		variable vertColorDWORD : unsigned(31 downto 0) := (others => '0');
-		variable isCurrentTriangleStripTriEven : std_logic := '0';
+	process(clk)
 	begin
 		if (rising_edge(clk) ) then
 			case currentState is
 				when IAstate_readyIdleState =>
 					newTriBegin <= '0';
 
-					SV_PrimitiveID <= x"00000000"; -- Reset the primitive ID as we are done with our previous draw call
-					currentIndexA <= x"0000"; -- Reset the index buffer back to 0, 1, 2
-					currentIndexB <= x"0001";
-					currentIndexC <= x"0002";
-					currentIndexValA <= x"0000";
-					currentIndexValB <= x"0001";
-					currentIndexValC <= x"0002";
+					SV_PrimitiveID <= (others => '0'); -- Reset the primitive ID as we are done with our previous draw call
 
 					-- Wait for the load or draw signals:
 					if (CMD_SetStateEnable = '1' and setStateReady = '1') then
@@ -357,16 +248,6 @@ DBG_IA_VertexIDPerBatch <= std_logic_vector(vertexIDPerBatch);
 						setStateReady <= '0';
 						VBO_Ready <= '0';
 						cullState <= eCullMode'val(to_integer(unsigned(CMD_StateCullMode) ) );
-						indexFormatState <= eIndexFormat'val(to_integer(unsigned(CMD_StateIndexFormat) ) );
-						IBAddrBase <= unsigned(CMD_IndexBufferBaseAddr);
-						case (eStripCutType'val(to_integer(unsigned(CMD_StateStripCutType) ) ) ) is
-							when SCT_Cut0xFFFF =>
-								stripCutState <= SCT_Cut0xFFFF;
-							when SCT_Cut0xFFFFFFFF =>
-								stripCutState <= SCT_Cut0xFFFFFFFF;
-							when others => --when SCT_CutDisabled =>
-								stripCutState <= SCT_CutDisabled;
-						end case;
 						case (ePrimTopology'val(to_integer(unsigned(CMD_StatePrimTopology) ) ) ) is
 							when PRIMTOP_PointList =>
 								primTopologyState <= PRIMTOP_PointList;
@@ -389,20 +270,14 @@ DBG_IA_VertexIDPerBatch <= std_logic_vector(vertexIDPerBatch);
 						setStateReady <= '0';
 						drawReady <= '0';
 						VBO_Ready <= '0';
-						batchStartingIndex <= unsigned(VBO_BatchStartingIndex);
-						batchEndingIndex <= unsigned(VBO_BatchEndingIndex);
 						vertexIDPerBatch <= (others => '0');
-						indicesUsedPerBatch <= (others => '0');
-						indexTranslation <= (others => (others => '1') );
-						if (unsigned(VBO_BatchStartingIndex) = unsigned(VBO_BatchEndingIndex) ) then
-							currentDrawIsIndexed <= '0';
-						else
-							currentDrawIsIndexed <= '1';
-						end if;
+						verticesUsedPerBatch <= unsigned(VBO_NumVertices);
+						indicesUsedPerBatch <= unsigned(VBO_NumIndices);
+						currentDrawIsIndexed <= VBO_IsIndexedDrawCall;
 						if (cullState = CM_CullBoth) then
 							-- Do nothing! Skip the whole draw call because we're culling everything today!
 						else
-							currentState <= IAState_readVertexData;
+							currentState <= IAState_readIndexData;
 						end if;
 					else
 						-- Set our "ready" and "idle" signals (this *is* called the ready-idle state, after all...):
@@ -413,12 +288,21 @@ DBG_IA_VertexIDPerBatch <= std_logic_vector(vertexIDPerBatch);
 						currentState <= IAstate_readyIdleState;
 					end if;
 
+				when IAState_readIndexData =>
+					for i in 0 to 63 loop
+						currentIndexData(i) <= unsigned(INDEXOUT_FIFO_rd_data( (i + 1) * 4 - 1 downto i * 4) );
+					end loop;
+					INDEXOUT_FIFO_rd_en <= '1';
+					currentState <= IAState_readVertexData;
+
 				when IAState_readVertexData =>
+					INDEXOUT_FIFO_rd_en <= '0'; -- Deassert after one clock cycle
+
 					currentVertexData(to_integer(vertexIDPerBatch) ) <= UnpackVertexDataFromBuffer(unsigned(VERTOUT_FIFO_rd_data) );
 
-					if (vertexIDPerBatch = "1111" or VERTOUT_FIFO_empty = '1') then
+					if (vertexIDPerBatch(3 downto 0) = "1111" or VERTOUT_FIFO_empty = '1') then
 						vertexIDPerBatch <= (others => '0');
-						VERTOUT_FIFO_rd_en <= '0';
+						VERTOUT_FIFO_rd_en <= '1';
 						currentState <= IAstate_advanceIndices;
 					else
 						VERTOUT_FIFO_rd_en <= '1';
@@ -478,7 +362,11 @@ DBG_IA_VertexIDPerBatch <= std_logic_vector(vertexIDPerBatch);
 						if (cullState = CM_CullNone) then
 							currentState <= IAstate_sendTriDataNoCulling;
 						else
-							currentState <= IAstate_advanceIndices;
+							if (SV_PrimitiveID * 3 > indicesUsedPerBatch) then
+								currentState <= IAstate_readyIdleState;
+							else
+								currentState <= IAstate_advanceIndices;
+							end if;
 						end if;
 					else
 						newTriBegin <= '1';
@@ -512,118 +400,29 @@ DBG_IA_VertexIDPerBatch <= std_logic_vector(vertexIDPerBatch);
 
 					if (newTriBegin = '1' and TRISETUP_readyForNewTri = '1') then
 						newTriBegin <= '0';
-						currentState <= IAstate_advanceIndices;
+						if (SV_PrimitiveID * 3 > indicesUsedPerBatch) then
+							currentState <= IAstate_readyIdleState;
+						else
+							currentState <= IAstate_advanceIndices;
+						end if;
 					else
 						newTriBegin <= '1';
 					end if;
 
 				when IAstate_advanceIndices =>
+					VERTOUT_FIFO_rd_en <= '0';
+
+					DBG_IA_CurrentTriIndices(3 downto 0) <= std_logic_vector(currentIndexData(to_integer(SV_PrimitiveID * 3) ) );
+					DBG_IA_CurrentTriIndices(7 downto 4) <= std_logic_vector(currentIndexData(to_integer(SV_PrimitiveID * 3 + 1) ) );
+					DBG_IA_CurrentTriIndices(11 downto 8) <= std_logic_vector(currentIndexData(to_integer(SV_PrimitiveID * 3 + 2) ) );
+
+					AssembleTrianglesFromVertices(SV_PrimitiveID,
+						currentIndexData,
+						currentVertexData,
+						currentTri);
+
 					SV_PrimitiveID <= SV_PrimitiveID + 1;
                     
-					if (currentIndexC < batchEndingIndex) then
-						if (currentDrawIsIndexed = '1') then
-							if (DBG_UsePrebuiltIB = '1') then
-								currentState <= IAstate_usePrebuiltIB;
-							else
-								IBC_ReadEnable <= '1';
-								IBC_ReadAddr <= std_logic_vector(IndexIDToIndexAddress("00" & currentIndexA, IBAddrBase, indexFormatState) );
-								currentState <= IAstate_readIndicesA;
-							end if;
-						else
-							AssembleTrianglesFromVertices(currentIndexA, currentIndexB, currentIndexC, currentVertexData, currentTri);
-							isCurrentTriangleStripTriEven := not SV_PrimitiveID(0);
-							IncrementIndicesByPrimitiveTopology(currentIndexA, currentIndexB, currentIndexC, primTopologyState, isCurrentTriangleStripTriEven);
-
-							-- For non-indexed draw calls, the vertex index values are just the counting indices
-							currentIndexValA <= currentIndexA;
-							currentIndexValB <= currentIndexB;
-							currentIndexValC <= currentIndexC;
-							currentState <= IAstate_sendTriData;
-						end if;
-					else
-						currentState <= IAstate_readyIdleState;
-					end if;
-
-				when IAstate_readIndicesA =>
-					if (IBC_ReadReady = '1') then
-						--currentIndexValA <= unsigned(IBC_ReadData(15 downto 0) );
-						IBC_ReadEnable <= '0';
-						if (IsIndexAlreadyInBatch(indexTranslation, X"0000" & unsigned(IBC_ReadData(15 downto 0) ) ) = '0') then
-							indexTranslation(to_integer(indicesUsedPerBatch) ) <= X"0000" & unsigned(IBC_ReadData(15 downto 0) );
-							currentIndexValA <= "000000000000" & indicesUsedPerBatch;
-							indicesUsedPerBatch <= indicesUsedPerBatch + 1;
-						else
-							currentIndexValA <= "000000000000" & GetIndexAlreadyInBatch(indexTranslation, X"0000" & unsigned(IBC_ReadData(15 downto 0) ) );
-						end if;
-						currentState <= IAstate_readIndicesACooldown;
-					else
-						IBC_ReadEnable <= '1'; -- IBC_ReadEnable must be held high until IBC_ReadReady is '1'
-					end if;
-
-					-- Not sure exactly why yet, but these cooldown states are necessary to prevent the IndexBufferCache from getting stuck in a state where
-					-- it never properly empties the incoming memory responses queue (this freezes the memory controller, and the whole GPU with it).
-				when IAstate_readIndicesACooldown =>
-					if (IBC_ReadReady = '0') then
-						IBC_ReadEnable <= '1';
-						IBC_ReadAddr <= std_logic_vector(IndexIDToIndexAddress("00" & currentIndexB, IBAddrBase, indexFormatState) );
-						currentState <= IAstate_readIndicesB;
-					end if;
-
-				when IAstate_readIndicesB =>
-					if (IBC_ReadReady = '1') then
-						--currentIndexValB <= unsigned(IBC_ReadData(15 downto 0) );
-						IBC_ReadEnable <= '0';
-						if (IsIndexAlreadyInBatch(indexTranslation, X"0000" & unsigned(IBC_ReadData(15 downto 0) ) ) = '0') then
-							indexTranslation(to_integer(indicesUsedPerBatch) ) <= X"0000" & unsigned(IBC_ReadData(15 downto 0) );
-							currentIndexValB <= "000000000000" & indicesUsedPerBatch;
-							indicesUsedPerBatch <= indicesUsedPerBatch + 1;
-						else
-							currentIndexValB <= "000000000000" & GetIndexAlreadyInBatch(indexTranslation, X"0000" & unsigned(IBC_ReadData(15 downto 0) ) );
-						end if;
-						currentState <= IAstate_readIndicesBCooldown;
-					else
-						IBC_ReadEnable <= '1'; -- IBC_ReadEnable must be held high until IBC_ReadReady is '1'
-					end if;
-
-				when IAstate_readIndicesBCooldown =>
-					if (IBC_ReadReady = '0') then
-						IBC_ReadEnable <= '1';
-						IBC_ReadAddr <= std_logic_vector(IndexIDToIndexAddress("00" & currentIndexC, IBAddrBase, indexFormatState) );
-						currentState <= IAstate_readIndicesC;
-					end if;
-
-				when IAstate_readIndicesC =>
-					if (IBC_ReadReady = '1') then
-						IBC_ReadEnable <= '0';
-						--currentIndexValC <= unsigned(IBC_ReadData(15 downto 0) );
-						if (IsIndexAlreadyInBatch(indexTranslation, X"0000" & unsigned(IBC_ReadData(15 downto 0) ) ) = '0') then
-							indexTranslation(to_integer(indicesUsedPerBatch) ) <= X"0000" & unsigned(IBC_ReadData(15 downto 0) );
-							currentIndexValC <= "000000000000" & indicesUsedPerBatch;
-							indicesUsedPerBatch <= indicesUsedPerBatch + 1;
-						else
-							currentIndexValC <= "000000000000" & GetIndexAlreadyInBatch(indexTranslation, X"0000" & unsigned(IBC_ReadData(15 downto 0) ) );
-						end if;
-						currentState <= IAstate_readIndicesCCooldown;
-					else
-						IBC_ReadEnable <= '1'; -- IBC_ReadEnable must be held high until IBC_ReadReady is '1'
-					end if;
-
-				when IAstate_readIndicesCCooldown =>
-					IBC_ReadEnable <= '0';
-					if (IBC_ReadReady = '0') then
-						currentState <= IAstate_indexedAssemble;
-					end if;
-
-				when IAstate_usePrebuiltIB =>
-					currentIndexValA <= constIndices(to_integer(SV_PrimitiveID - 1) ).i0;
-					currentIndexValB <= constIndices(to_integer(SV_PrimitiveID - 1) ).i1;
-					currentIndexValC <= constIndices(to_integer(SV_PrimitiveID - 1) ).i2;
-					currentState <= IAstate_indexedAssemble;
-
-				when IAstate_indexedAssemble =>
-					AssembleTrianglesFromVertices(currentIndexValA, currentIndexValB, currentIndexValC, currentVertexData, currentTri);
-					isCurrentTriangleStripTriEven := not SV_PrimitiveID(0);
-					IncrementIndicesByPrimitiveTopology(currentIndexA, currentIndexB, currentIndexC, primTopologyState, isCurrentTriangleStripTriEven);
 					currentState <= IAstate_sendTriData;
 
 			end case;

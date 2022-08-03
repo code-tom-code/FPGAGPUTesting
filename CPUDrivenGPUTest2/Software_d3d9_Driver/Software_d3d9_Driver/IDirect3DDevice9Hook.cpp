@@ -1225,7 +1225,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::Present(THI
 	ResetHoldingDownEndToSkip();
 #endif // ENABLE_END_TO_SKIP_DRAWS
 
-	if (GetAsyncKeyState(VK_SNAPSHOT) )
+	if (GetPrintScreenCapturesScreenshot() && GetAsyncKeyState(VK_SNAPSHOT) )
 	{
 		static const char* const outputFilename = "ScreencapDump.tga";
 		printf("Dumping file to \"%s\" (please be patient)...\n", outputFilename);
@@ -11071,6 +11071,12 @@ IDirect3DDevice9Hook::IDirect3DDevice9Hook(LPDIRECT3DDEVICE9 _d3d9dev, IDirect3D
 	emulateCommandLists = true;
 #else
 	emulateCommandLists = false;
+#endif
+
+#ifdef _DEBUG
+	printScrnCapturesScreenshot = true;
+#else
+	printScrnCapturesScreenshot = false;
 #endif
 
 	memset(&deviceCS, 0, sizeof(deviceCS) );

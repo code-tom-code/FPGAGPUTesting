@@ -228,6 +228,7 @@
     <None Include="hdl_src\GPRQuad.vhd" />
     <None Include="hdl_src\GPRQuad2.vhd" />
     <None Include="hdl_src\IndexBufferCache.vhd" />
+    <None Include="hdl_src\IndexBufferCacheTestbench.vhd" />
     <None Include="hdl_src\InputAssembler2.vhd" />
     <None Include="hdl_src\MemoryController.vhd" />
     <None Include="hdl_src\PacketType.vhd" />

@@ -385,6 +385,11 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3D9Hook::CreateDevice(THIS
 		MessageBoxA(NULL, createDeviceSettings, "CreateDevice success.", NULL);
 	}
 
+	if (GetKeyState(VK_SCROLL) & 0x0001)
+	{
+		MessageBoxA(NULL, "Warning: Scroll Lock is toggled on. The driver is configured to make this STEP-FRAME mode. Please disable Scroll Lock to advance frames normally!", "Warning!", MB_OK);
+	}
+
 	void* const alignedAlloc = _aligned_malloc(sizeof(IDirect3DDevice9Hook), 16);
 	IDirect3DDevice9Hook* newHookDevice = new (alignedAlloc) IDirect3DDevice9Hook(realDevice, this);
 	*ppReturnedDeviceInterface = newHookDevice;

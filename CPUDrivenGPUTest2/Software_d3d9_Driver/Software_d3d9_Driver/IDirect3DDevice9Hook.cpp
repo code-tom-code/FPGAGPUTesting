@@ -1303,12 +1303,32 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::Present(THI
 				char buffer[64] = {0};
 #pragma warning(push)
 #pragma warning(disable:4996)
-				const unsigned len = sprintf(buffer, "%03.3fms per frame (%03.3fFPS)\n", timeDeltaSeconds * 1000.0f, 1.0f / timeDeltaSeconds);
+				const unsigned len = sprintf(buffer, "%s%03.3fms per frame (%03.3fFPS)\n", 
+					(GetKeyState(VK_SCROLL) & 0x0001) ? "[Paused] " : "", 
+					timeDeltaSeconds * 1000.0f, 1.0f / timeDeltaSeconds);
 #pragma warning(pop)
 				DWORD numCharsWritten = 0;
 
 				SetWindowTextA(mainWindowWnd, buffer);
 				lastPrintTime = currentTime;
+			}
+		}
+
+		// While SCROLL LOCK is toggled on
+		while (GetKeyState(VK_SCROLL) & 0x0001)
+		{
+			// Sleep to not burn all of our CPU cycles doing nothing
+			Sleep(8);
+
+			if ( (GetAsyncKeyState(VK_RIGHT) & 0x0001) ||
+				(GetAsyncKeyState(VK_UP) & 0x0001) ||
+				(GetAsyncKeyState(VK_LEFT) & 0x0001) ||
+				(GetAsyncKeyState(VK_DOWN) & 0x0001) ||
+				(GetAsyncKeyState(VK_SCROLL) & 0x0001) )
+			{
+				// Break out of our loop to step to the next frame if we press one of the arrow keys
+				QueryPerformanceCounter(&currentPresentTime); // Reset our currentPresentTime to the time when we exited the pause loop
+				break;
 			}
 		}
 

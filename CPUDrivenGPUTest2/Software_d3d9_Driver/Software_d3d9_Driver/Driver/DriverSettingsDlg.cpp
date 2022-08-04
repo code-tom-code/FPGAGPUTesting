@@ -31,6 +31,10 @@ static INT_PTR CALLBACK DriverSettingsDialogProc(_In_ HWND hWnd, _In_ UINT MSG, 
 			SendDlgItemMessageA(hWnd, IDC_LST_OVERRIDETEXMODE, LB_SETITEMDATA, SendDlgItemMessageA(hWnd, IDC_LST_OVERRIDETEXMODE, LB_ADDSTRING, NULL, (LPARAM)"(4)Texcoords"), 4);
 			SendDlgItemMessageA(hWnd, IDC_LST_OVERRIDETEXMODE, LB_SETITEMDATA, SendDlgItemMessageA(hWnd, IDC_LST_OVERRIDETEXMODE, LB_ADDSTRING, NULL, (LPARAM)"(5)BilinearInterp"), 5);
 			SendDlgItemMessageA(hWnd, IDC_LST_OVERRIDETEXMODE, LB_SETITEMDATA, SendDlgItemMessageA(hWnd, IDC_LST_OVERRIDETEXMODE, LB_ADDSTRING, NULL, (LPARAM)"(6)TexModVC"), 6);
+			if (d3d9devhook->DoOverrideTexCombinerMode() )
+			{
+				SendDlgItemMessageA(hWnd, IDC_LST_OVERRIDETEXMODE, LB_SETCURSEL, d3d9devhook->GetOverrideTexCombinerMode(), 0);
+			}
 			static_assert(cbm_MAX_NUM_COMBINER_MODES == 7, "Must extend strings to match list of combiner modes!");
 		}
 		return TRUE;
@@ -149,7 +153,14 @@ void DriverSettingsDlg::UpdateDialog()
 		while (PeekMessageA(&msg, driverOptionsDlgWnd, 0, 0, PM_REMOVE) )
 		{
 			// Dispatch message to dialog box window if it's a dialogue message
-			IsDialogMessageA(driverOptionsDlgWnd, &msg);
+			if (IsDialogMessageA(driverOptionsDlgWnd, &msg) )
+			{
+			}
+			else
+			{
+				TranslateMessage(&msg);
+				DispatchMessageA(&msg);
+			}
 		}
 	}
 }

@@ -4360,7 +4360,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawPrimiti
 			DeviceSetVertexStreamsAndDecl();
 			DeviceLoadVertexDataPOSITIONTVerticesAttributes(PrimitiveType, PrimitiveCount, false, 0, 0); // Upload the vertex data to the GPU
 			DeviceSetCurrentState(PrimitiveType, NULL); // Update the device state
-			baseDevice->DeviceDrawPrimitive(PrimitiveType, PrimitiveCount);
+			baseDevice->DeviceDrawPrimitive(PrimitiveType, PrimitiveCount, StartVertex);
 
 			CreateOrUseCachedCommandList(newRecordingCommandList, cachedCommandLists);
 			CallRunCommandList(newRecordingCommandList);
@@ -4413,12 +4413,12 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawPrimiti
 		GPUCommandList newRecordingCommandList;
 		baseDevice->BeginRecordingCommandList(&newRecordingCommandList);
 		DeviceSetCurrentState(PrimitiveType, NULL); // Update the device state
+		DeviceSetVertexShader(); // Set our current vertex shader on the device (has the side effect of overwriting the 0th stream source register, so make sure to call this before DeviceSetVertexStreamsAndDecl() )
 		DeviceSetVertexStreamsAndDecl(); // Bind our current vertex streams and set up our vertex decl
-		DeviceSetVertexShader(); // Set our current vertex shader on the device
-		DeviceSetUsedVertexShaderConstants(); // Copy over and set our vertex shader constant registers
-		baseDevice->DeviceDrawPrimitive(PrimitiveType, PrimitiveCount);
+		baseDevice->DeviceDrawPrimitive(PrimitiveType, PrimitiveCount, StartVertex);
 
 		CreateOrUseCachedCommandList(newRecordingCommandList, cachedCommandLists);
+		DeviceSetUsedVertexShaderConstants(); // Copy over and set our vertex shader constant registers
 		CallRunCommandList(newRecordingCommandList);
 	}
 
@@ -5496,7 +5496,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawIndexed
 			DeviceLoadIndexBuffer( ( (const USHORT* const)currentState.currentIndexBuffer->GetBufferBytes() ), currentState.currentIndexBuffer->GetInternalLength() / sizeof(USHORT) );
 			DeviceLoadVertexDataPOSITIONTVerticesAttributes(PrimitiveType, primCount, true, BaseVertexIndex, startIndex); // Upload the vertex data to the GPU
 			DeviceSetCurrentState(PrimitiveType, currentState.currentIndexBuffer); // Update the device state
-			baseDevice->DeviceDrawIndexedPrimitive(PrimitiveType, primCount);
+			baseDevice->DeviceDrawIndexedPrimitive(PrimitiveType, primCount, startIndex, BaseVertexIndex);
 
 			CreateOrUseCachedCommandList(newRecordingCommandList, cachedCommandLists);
 			CallRunCommandList(newRecordingCommandList);
@@ -5555,7 +5555,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawIndexed
 		DeviceLoadIndexBuffer(currentState.currentIndexBuffer); // Set our index buffer (only needed for DrawIndexedX() calls)
 		DeviceSetCurrentState(PrimitiveType, currentState.currentIndexBuffer); // Update the device state
 
-		DeviceSetVertexShader(); // Set our current vertex shader on the device
+		DeviceSetVertexShader(); // Set our current vertex shader on the device (has the side effect of overwriting the 0th stream source register, so make sure to call this before DeviceSetVertexStreamsAndDecl() )
 
 		DeviceSetVertexStreamsAndDecl(); // Bind our current vertex streams and set up our vertex decl
 
@@ -5581,7 +5581,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawIndexed
 				}
 
 				baseDevice->DeviceEnableShaderDebuggingForNextDrawCall(allocatedDebugShaderRegisterFile);
-				baseDevice->DeviceDrawIndexedPrimitive(PrimitiveType, primCount);
+				baseDevice->DeviceDrawIndexedPrimitive(PrimitiveType, primCount, startIndex, BaseVertexIndex);
 				DeviceRegisterFile regFile;
 				memset(&regFile, 0, sizeof(regFile) );
 				deviceComms->ReadFromDevice(allocatedDebugShaderRegisterFile, &regFile, sizeof(regFile) );
@@ -5601,7 +5601,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawIndexed
 		}
 		else
 		{
-			baseDevice->DeviceDrawIndexedPrimitive(PrimitiveType, primCount);
+			baseDevice->DeviceDrawIndexedPrimitive(PrimitiveType, primCount, startIndex, BaseVertexIndex);
 		}
 
 		CreateOrUseCachedCommandList(newRecordingCommandList, cachedCommandLists);

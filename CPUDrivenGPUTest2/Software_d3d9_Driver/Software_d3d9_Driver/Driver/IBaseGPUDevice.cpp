@@ -1220,7 +1220,7 @@ HRESULT __stdcall IBaseGPUDevice::DeviceEnableShaderDebuggingForNextDrawCall(con
 	return debugHR;
 }
 
-HRESULT __stdcall IBaseGPUDevice::DeviceDrawIndexedPrimitive(const D3DPRIMITIVETYPE primType, const unsigned primitiveCount)
+HRESULT __stdcall IBaseGPUDevice::DeviceDrawIndexedPrimitive(const D3DPRIMITIVETYPE primType, const unsigned primitiveCount, const unsigned startIndex /*= 0*/, const int BaseVertexIndex /*= 0*/)
 {
 	if (DoCacheDeviceState() )
 	{
@@ -1259,6 +1259,30 @@ HRESULT __stdcall IBaseGPUDevice::DeviceDrawIndexedPrimitive(const D3DPRIMITIVET
 		return E_INVALIDARG;
 	}
 
+	// For "reasons", the startIndex is smaller for DrawPrimitive() (16 bits) than it is for DrawIndexedPrimitive() (20 bits)
+	if (startIndex >= (1 << 20) )
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Error: startIndex is out of range for our device!
+#endif
+		return E_INVALIDARG;
+	}
+
+	if (BaseVertexIndex >= MAXSHORT)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Error: BaseVertexIndex is out of range for our device!
+#endif
+		return E_INVALIDARG;
+	}
+	if (BaseVertexIndex <= (const int)( (const short)MINSHORT) )
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Error: BaseVertexIndex is out of range for our device!
+#endif
+		return E_INVALIDARG;
+	}
+
 	// Can't render more than the maximum number of vertices allowed per draw call (2^24 vertices per draw call)
 	if (primitiveCount > 0xFFFFFF / 3)
 	{
@@ -1271,8 +1295,21 @@ HRESULT __stdcall IBaseGPUDevice::DeviceDrawIndexedPrimitive(const D3DPRIMITIVET
 	drawIndexedCommand drawCommand;
 	drawCommand.isIndexedDrawCall = true;
 	drawCommand.numPrimitivesToDraw = primitiveCount;
-	drawCommand.startIndex = 0;
+	drawCommand.startIndexHigh = drawIndexedCommand::GetStartIndexHighBits(startIndex);
+	drawCommand.startIndexLow = drawIndexedCommand::GetStartIndexLowBits(startIndex);
+	drawCommand.BaseVertexIndex = drawIndexedCommand::ConvertBaseVertexIndex(BaseVertexIndex);
 	drawCommand.primTopology = primType - 1;
+
+#ifdef _DEBUG
+	if (drawCommand.ExtractStartIndex() != startIndex)
+	{
+		__debugbreak();
+	}
+	if (drawCommand.ExtractBaseVertexIndex() != BaseVertexIndex)
+	{
+		__debugbreak();
+	}
+#endif
 
 	drawCommand.checksum = command::ComputeChecksum(&drawCommand, sizeof(drawCommand) );
 #ifdef _DEBUG
@@ -1290,7 +1327,7 @@ HRESULT __stdcall IBaseGPUDevice::DeviceDrawIndexedPrimitive(const D3DPRIMITIVET
 	return drawHR;
 }
 
-HRESULT __stdcall IBaseGPUDevice::DeviceDrawPrimitive(const D3DPRIMITIVETYPE primType, const unsigned primitiveCount)
+HRESULT __stdcall IBaseGPUDevice::DeviceDrawPrimitive(const D3DPRIMITIVETYPE primType, const unsigned primitiveCount, const unsigned StartVertex /*= 0*/)
 {
 	if (DoCacheDeviceState() )
 	{
@@ -1319,6 +1356,15 @@ HRESULT __stdcall IBaseGPUDevice::DeviceDrawPrimitive(const D3DPRIMITIVETYPE pri
 		return E_INVALIDARG;
 	}
 
+	// For "reasons", the StartVertex is smaller for DrawPrimitive() (16 bits) than it is for DrawIndexedPrimitive() (20 bits)
+	if (StartVertex >= (1 << 16) )
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Error: StartVertex is out of range for our device!
+#endif
+		return E_INVALIDARG;
+	}
+
 	// Can't render more than the maximum number of vertices allowed per draw call (2^24 vertices per draw call)
 	if (primitiveCount > 0xFFFFFF / 3)
 	{
@@ -1330,9 +1376,18 @@ HRESULT __stdcall IBaseGPUDevice::DeviceDrawPrimitive(const D3DPRIMITIVETYPE pri
 
 	drawIndexedCommand drawCommand;
 	drawCommand.isIndexedDrawCall = false;
-	drawCommand.startIndex = 0;
+	drawCommand.startIndexHigh = drawIndexedCommand::GetStartIndexHighBits(StartVertex);
+	drawCommand.startIndexLow = drawIndexedCommand::GetStartIndexLowBits(StartVertex);
+	drawCommand.BaseVertexIndex = 0;
 	drawCommand.numPrimitivesToDraw = primitiveCount;
 	drawCommand.primTopology = primType - 1;
+
+#ifdef _DEBUG
+	if (drawCommand.ExtractStartIndex() != StartVertex)
+	{
+		__debugbreak();
+	}
+#endif
 
 	drawCommand.checksum = command::ComputeChecksum(&drawCommand, sizeof(drawCommand) );
 #ifdef _DEBUG

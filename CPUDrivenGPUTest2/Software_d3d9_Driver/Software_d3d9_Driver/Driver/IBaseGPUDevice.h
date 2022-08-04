@@ -137,8 +137,8 @@ __declspec(align(16) ) struct IBaseGPUDevice
 
 	HRESULT __stdcall DeviceEnableShaderDebuggingForNextDrawCall(const gpuvoid* registerFileDumpAddress);
 
-	HRESULT __stdcall DeviceDrawIndexedPrimitive(const D3DPRIMITIVETYPE primType, const unsigned primitiveCount);
-	HRESULT __stdcall DeviceDrawPrimitive(const D3DPRIMITIVETYPE primType, const unsigned primitiveCount);
+	HRESULT __stdcall DeviceDrawIndexedPrimitive(const D3DPRIMITIVETYPE primType, const unsigned primitiveCount, const unsigned startIndex = 0, const int BaseVertexIndex = 0);
+	HRESULT __stdcall DeviceDrawPrimitive(const D3DPRIMITIVETYPE primType, const unsigned primitiveCount, const unsigned StartVertex = 0);
 
 	// Runs a command list on the GPU's command processor
 	HRESULT __stdcall DeviceExecuteCommandList(const GPUCommandList& commandList);

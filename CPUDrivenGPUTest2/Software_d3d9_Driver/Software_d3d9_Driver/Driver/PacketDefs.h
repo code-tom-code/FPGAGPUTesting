@@ -387,20 +387,52 @@ struct waitResponse : command
 struct drawIndexedCommand : command
 {
 	drawIndexedCommand() : command(PT_DRAWINDEXED),
-		numPrimitivesToDraw(0), isIndexedDrawCall(false), unused0(0),
-		startIndex(0), primTopology(0), unused1(0)
+		numPrimitivesToDraw(0), isIndexedDrawCall(false), BaseVertexIndex(0),
+		startIndexHigh(0), startIndexLow(0), primTopology(0)
 	{
+	}
+
+	static const DWORD GetStartIndexHighBits(const UINT StartIndex)
+	{
+		const DWORD clampedStartIndex = StartIndex & 0xFFFFF;
+		return clampedStartIndex >> 13; // Return just the upper 7 bits of our 20 bit number
+	}
+
+	static const DWORD GetStartIndexLowBits(const UINT StartIndex)
+	{
+		const DWORD clampedStartIndex = StartIndex & 0xFFFFF;
+		return clampedStartIndex & 0x1FFF; // AND mask with the low 13 bits of our 20 bit number enabled
+	}
+
+	static const DWORD ConvertBaseVertexIndex(const INT BaseVertexIndex)
+	{
+		const SHORT truncatedBaseIndex = static_cast<const SHORT>(BaseVertexIndex);
+		const DWORD retVal = static_cast<const DWORD>(truncatedBaseIndex);
+		return retVal;
+	}
+
+	const INT ExtractBaseVertexIndex(void) const
+	{
+		const SHORT extractedVal = BaseVertexIndex;
+		const INT extendedRet = static_cast<const INT>(extractedVal);
+		return extendedRet;
+	}
+
+	const UINT ExtractStartIndex(void) const
+	{
+		const UINT combinedBits = (startIndexHigh << 7) | (startIndexLow);
+		return combinedBits;
 	}
 
 	// Payload 0:
 	DWORD numPrimitivesToDraw : 24; // 23 downto 0
 	DWORD isIndexedDrawCall : 1; // 24
-	DWORD unused0 : 7; // 31 downto 25
+	DWORD startIndexHigh : 7; // (corresponds to the startIndex param passed into DrawIndexedPrimitive() or the StartVertex param passed into DrawPrimitive() ) // 31 downto 25 (high bits) in payload0 and also 12 downto 0 (low bits) in payload1
 
 	// Payload 1:
-	DWORD startIndex : 24; // (corresponds to the startIndex param passed into DrawIndexedPrimitive() ) // 23 downto 0
-	DWORD primTopology : 3; // 26 downto 24
-	DWORD unused1 : 5; // 31 downto 27
+	DWORD startIndexLow : 13; // 12 downto 0 (low bits) in payload1
+	DWORD BaseVertexIndex : 16; // This is the signed BaseVertexIndex param passed into DrawIndexedPrimitive() or 0 for DrawPrimitive() // 28 downto 13
+	DWORD primTopology : 3; // 31 downto 29
 };
 
 struct setScanoutPointerCommand : command

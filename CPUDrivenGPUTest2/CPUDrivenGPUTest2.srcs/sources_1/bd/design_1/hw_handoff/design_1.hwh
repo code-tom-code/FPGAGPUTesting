@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
-<EDKSYSTEM EDWVERSION="1.2" TIMESTAMP="Tue Aug  2 21:18:16 2022" VIVADOVERSION="2018.1">
+<EDKSYSTEM EDWVERSION="1.2" TIMESTAMP="Wed Aug  3 22:56:28 2022" VIVADOVERSION="2018.1">
 
   <SYSTEMINFO ARCH="kintexuplus" BOARD="xilinx.com:kcu116:part0:1.3" DEVICE="xcku5p" NAME="design_1" PACKAGE="ffvb676" SPEEDGRADE="-2"/>
 
@@ -667,16 +667,25 @@
         </PORT>
         <PORT DIR="O" LEFT="31" NAME="VBB_CommandArg0" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_VBB_CommandArg0">
           <CONNECTIONS>
+            <CONNECTION INSTANCE="ila_333_250" PORT="probe43"/>
             <CONNECTION INSTANCE="VertexBatchBuilder_0" PORT="CMD_CommandArg0"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="31" NAME="VBB_CommandArg1" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_VBB_CommandArg1">
+        <PORT DIR="O" LEFT="19" NAME="VBB_CommandArg1" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_VBB_CommandArg1">
           <CONNECTIONS>
+            <CONNECTION INSTANCE="ila_333_250" PORT="probe44"/>
             <CONNECTION INSTANCE="VertexBatchBuilder_0" PORT="CMD_CommandArg1"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="15" NAME="VBB_CommandArg2" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_VBB_CommandArg2">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ila_333_250" PORT="probe45"/>
+            <CONNECTION INSTANCE="VertexBatchBuilder_0" PORT="CMD_CommandArg2"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="2" NAME="VBB_CommandArgType" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_VBB_CommandArgType">
           <CONNECTIONS>
+            <CONNECTION INSTANCE="ila_333_250" PORT="probe42"/>
             <CONNECTION INSTANCE="VertexBatchBuilder_0" PORT="CMD_CommandArgType"/>
           </CONNECTIONS>
         </PORT>
@@ -4190,7 +4199,7 @@
         <PARAMETER NAME="C_SLOT_0_AXI_RUSER_WIDTH" VALUE="1"/>
         <PARAMETER NAME="C_SLOT_0_AXI_AWUSER_WIDTH" VALUE="1"/>
         <PARAMETER NAME="C_SLOT_0_AXI_WUSER_WIDTH" VALUE="32"/>
-        <PARAMETER NAME="C_SLOT_0_AXI_BUSER_WIDTH" VALUE="3"/>
+        <PARAMETER NAME="C_SLOT_0_AXI_BUSER_WIDTH" VALUE="4"/>
         <PARAMETER NAME="C_PROBE0_WIDTH" VALUE="16"/>
         <PARAMETER NAME="C_PROBE1_WIDTH" VALUE="16"/>
         <PARAMETER NAME="C_PROBE2_WIDTH" VALUE="32"/>
@@ -4213,7 +4222,7 @@
         <PARAMETER NAME="C_PROBE19_WIDTH" VALUE="48"/>
         <PARAMETER NAME="C_PROBE20_WIDTH" VALUE="30"/>
         <PARAMETER NAME="C_PROBE21_WIDTH" VALUE="1"/>
-        <PARAMETER NAME="C_PROBE22_WIDTH" VALUE="3"/>
+        <PARAMETER NAME="C_PROBE22_WIDTH" VALUE="4"/>
         <PARAMETER NAME="C_PROBE23_WIDTH" VALUE="32"/>
         <PARAMETER NAME="C_PROBE24_WIDTH" VALUE="32"/>
         <PARAMETER NAME="C_PROBE25_WIDTH" VALUE="10"/>
@@ -7402,7 +7411,7 @@
             <CONNECTION INSTANCE="ShaderCoreSystem_VertexStreamCache_0" PORT="VSC_ReadReady"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="2" NAME="probe22" RIGHT="0" SIGIS="undef" SIGNAME="ShaderCoreSystem_VertexStreamCache_0_DBG_State">
+        <PORT DIR="I" LEFT="3" NAME="probe22" RIGHT="0" SIGIS="undef" SIGNAME="ShaderCoreSystem_VertexStreamCache_0_DBG_State">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ShaderCoreSystem_VertexStreamCache_0" PORT="DBG_State"/>
           </CONNECTIONS>
@@ -24975,22 +24984,22 @@
             <CONNECTION INSTANCE="TexSample_0" PORT="clk"/>
             <CONNECTION INSTANCE="vio_0" PORT="clk"/>
             <CONNECTION INSTANCE="VBO_INDEX_FIFO" PORT="clk"/>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="clk"/>
-            <CONNECTION INSTANCE="VertexBatchBuilder_0" PORT="clk"/>
             <CONNECTION INSTANCE="IndexBufferCache_0" PORT="clk"/>
             <CONNECTION INSTANCE="InputAssembler2_0" PORT="clk"/>
             <CONNECTION INSTANCE="SerialPacketSystem_ValidIncomingPacketsFIFO" PORT="rd_clk"/>
             <CONNECTION INSTANCE="SerialPacketSystem_ReturnOutputPacketsFIFO" PORT="wr_clk"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_InstructionCache" PORT="clka"/>
-            <CONNECTION INSTANCE="ShaderCoreSystem_VertexStreamCache_0" PORT="clk"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_ConstantBuffer_0" PORT="clk"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_UNORM8ToFloat_0" PORT="clk"/>
-            <CONNECTION INSTANCE="ShaderCoreSystem_GPRQuadSystem_GPRQuad2_0" PORT="clk"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_ShaderCore_0" PORT="clk"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_FloatALU_0" PORT="clk"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_FloatALU_1" PORT="clk"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_FloatALU_2" PORT="clk"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_FloatALU_3" PORT="clk"/>
+            <CONNECTION INSTANCE="ShaderCoreSystem_GPRQuadSystem_GPRQuad2_0" PORT="clk"/>
+            <CONNECTION INSTANCE="ShaderCoreSystem_VertexStreamCache_0" PORT="clk"/>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="clk"/>
+            <CONNECTION INSTANCE="VertexBatchBuilder_0" PORT="clk"/>
             <CONNECTION INSTANCE="MemorySystem_ScanoutReadRequestsFIFO" PORT="rd_clk"/>
             <CONNECTION INSTANCE="MemorySystem_ZStencilReadRequestsFIFO" PORT="rd_clk"/>
             <CONNECTION INSTANCE="MemorySystem_ZStencilReadRequestsFIFO" PORT="wr_clk"/>
@@ -25986,10 +25995,10 @@
         </PORT>
         <PORT DIR="O" NAME="resetn" SIGIS="rst" SIGNAME="ResetN_UntilClockLoc_0_resetn">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="resetn"/>
             <CONNECTION INSTANCE="MemorySystem_MemoryController_0" PORT="M_AXI_ARESETN"/>
             <CONNECTION INSTANCE="SerialPacketSystem_axi_uartlite_0" PORT="s_axi_aresetn"/>
             <CONNECTION INSTANCE="SerialPacketSystem_PacketProcessor_0" PORT="M_AXI_ARESETN"/>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="resetn"/>
           </CONNECTIONS>
         </PORT>
       </PORTS>
@@ -35745,7 +35754,7 @@
             <CONNECTION INSTANCE="MemorySystem_IAReadResponsesFIFO" PORT="rd_en"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="2" NAME="DBG_State" RIGHT="0" SIGIS="undef" SIGNAME="ShaderCoreSystem_VertexStreamCache_0_DBG_State">
+        <PORT DIR="O" LEFT="3" NAME="DBG_State" RIGHT="0" SIGIS="undef" SIGNAME="ShaderCoreSystem_VertexStreamCache_0_DBG_State">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ILA_IA" PORT="probe22"/>
           </CONNECTIONS>
@@ -38482,9 +38491,14 @@
             <CONNECTION INSTANCE="CommandProcessor_0" PORT="VBB_CommandArg0"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="CMD_CommandArg1" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_VBB_CommandArg1">
+        <PORT DIR="I" LEFT="19" NAME="CMD_CommandArg1" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_VBB_CommandArg1">
           <CONNECTIONS>
             <CONNECTION INSTANCE="CommandProcessor_0" PORT="VBB_CommandArg1"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="15" NAME="CMD_CommandArg2" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_VBB_CommandArg2">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="VBB_CommandArg2"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="I" LEFT="2" NAME="CMD_CommandArgType" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_VBB_CommandArgType">
@@ -38621,7 +38635,7 @@
         <PARAMETER NAME="C_SLOT_0_AXI_PROTOCOL" VALUE="AXI4"/>
         <PARAMETER NAME="C_NUM_MONITOR_SLOTS" VALUE="1"/>
         <PARAMETER NAME="C_ENABLE_ILA_AXI_MON" VALUE="0"/>
-        <PARAMETER NAME="C_NUM_OF_PROBES" VALUE="42"/>
+        <PARAMETER NAME="C_NUM_OF_PROBES" VALUE="46"/>
         <PARAMETER NAME="C_DATA_DEPTH" VALUE="1024"/>
         <PARAMETER NAME="C_MAJOR_VERSION" VALUE="2018"/>
         <PARAMETER NAME="C_MINOR_VERSION" VALUE="1"/>
@@ -38643,7 +38657,7 @@
         <PARAMETER NAME="C_SLOT_0_AXI_ARUSER_WIDTH" VALUE="30"/>
         <PARAMETER NAME="C_SLOT_0_AXI_RUSER_WIDTH" VALUE="8"/>
         <PARAMETER NAME="C_SLOT_0_AXI_AWUSER_WIDTH" VALUE="8"/>
-        <PARAMETER NAME="C_SLOT_0_AXI_WUSER_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_SLOT_0_AXI_WUSER_WIDTH" VALUE="32"/>
         <PARAMETER NAME="C_SLOT_0_AXI_BUSER_WIDTH" VALUE="30"/>
         <PARAMETER NAME="C_PROBE0_WIDTH" VALUE="8"/>
         <PARAMETER NAME="C_PROBE1_WIDTH" VALUE="88"/>
@@ -38687,10 +38701,10 @@
         <PARAMETER NAME="C_PROBE39_WIDTH" VALUE="8"/>
         <PARAMETER NAME="C_PROBE40_WIDTH" VALUE="5"/>
         <PARAMETER NAME="C_PROBE41_WIDTH" VALUE="8"/>
-        <PARAMETER NAME="C_PROBE42_WIDTH" VALUE="1"/>
-        <PARAMETER NAME="C_PROBE43_WIDTH" VALUE="1"/>
-        <PARAMETER NAME="C_PROBE44_WIDTH" VALUE="1"/>
-        <PARAMETER NAME="C_PROBE45_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_PROBE42_WIDTH" VALUE="3"/>
+        <PARAMETER NAME="C_PROBE43_WIDTH" VALUE="32"/>
+        <PARAMETER NAME="C_PROBE44_WIDTH" VALUE="20"/>
+        <PARAMETER NAME="C_PROBE45_WIDTH" VALUE="16"/>
         <PARAMETER NAME="C_PROBE46_WIDTH" VALUE="1"/>
         <PARAMETER NAME="C_PROBE47_WIDTH" VALUE="1"/>
         <PARAMETER NAME="C_PROBE48_WIDTH" VALUE="1"/>
@@ -41954,6 +41968,26 @@
         <PORT DIR="I" LEFT="7" NAME="probe41" RIGHT="0" SIGIS="undef" SIGNAME="MemorySystem_MemoryController_0_DBG_ReadResponsesFullBitmask">
           <CONNECTIONS>
             <CONNECTION INSTANCE="MemorySystem_MemoryController_0" PORT="DBG_ReadResponsesFullBitmask"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="2" NAME="probe42" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_VBB_CommandArgType">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="VBB_CommandArgType"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="31" NAME="probe43" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_VBB_CommandArg0">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="VBB_CommandArg0"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="19" NAME="probe44" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_VBB_CommandArg1">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="VBB_CommandArg1"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="15" NAME="probe45" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_VBB_CommandArg2">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="VBB_CommandArg2"/>
           </CONNECTIONS>
         </PORT>
       </PORTS>

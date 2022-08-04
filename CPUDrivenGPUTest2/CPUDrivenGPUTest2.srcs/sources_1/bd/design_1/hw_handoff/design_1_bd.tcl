@@ -468,7 +468,7 @@ proc create_hier_cell_ShaderCoreSystem { parentCell nameHier } {
   create_bd_pin -dir O -from 127 -to 0 DBG_ReadRegisterOutData
   create_bd_pin -dir O DBG_ReadRegisterOutDataReady
   create_bd_pin -dir I DBG_ReadRegisterOutRequest
-  create_bd_pin -dir O -from 2 -to 0 DBG_State
+  create_bd_pin -dir O -from 3 -to 0 DBG_State
   create_bd_pin -dir O -from 31 -to 0 FPU0_IN_A
   create_bd_pin -dir O -from 31 -to 0 FPU0_IN_B
   create_bd_pin -dir O -from 31 -to 0 FPU1_IN_A
@@ -1835,7 +1835,7 @@ proc create_root_design { parentCell } {
    CONFIG.C_PROBE1_TYPE {0} \
    CONFIG.C_PROBE1_WIDTH {16} \
    CONFIG.C_PROBE20_WIDTH {30} \
-   CONFIG.C_PROBE22_WIDTH {3} \
+   CONFIG.C_PROBE22_WIDTH {4} \
    CONFIG.C_PROBE23_WIDTH {32} \
    CONFIG.C_PROBE24_WIDTH {32} \
    CONFIG.C_PROBE25_WIDTH {10} \
@@ -2212,7 +2212,7 @@ proc create_root_design { parentCell } {
   set_property -dict [ list \
    CONFIG.C_ENABLE_ILA_AXI_MON {false} \
    CONFIG.C_MONITOR_TYPE {Native} \
-   CONFIG.C_NUM_OF_PROBES {42} \
+   CONFIG.C_NUM_OF_PROBES {46} \
    CONFIG.C_PROBE0_TYPE {0} \
    CONFIG.C_PROBE0_WIDTH {8} \
    CONFIG.C_PROBE10_TYPE {0} \
@@ -2271,6 +2271,10 @@ proc create_root_design { parentCell } {
    CONFIG.C_PROBE3_WIDTH {32} \
    CONFIG.C_PROBE40_WIDTH {5} \
    CONFIG.C_PROBE41_WIDTH {8} \
+   CONFIG.C_PROBE42_WIDTH {3} \
+   CONFIG.C_PROBE43_WIDTH {32} \
+   CONFIG.C_PROBE44_WIDTH {20} \
+   CONFIG.C_PROBE45_WIDTH {16} \
    CONFIG.C_PROBE4_TYPE {0} \
    CONFIG.C_PROBE4_WIDTH {6} \
    CONFIG.C_PROBE5_TYPE {0} \
@@ -2460,9 +2464,10 @@ proc create_root_design { parentCell } {
   connect_bd_net -net CommandProcessor_0_TEXSAMP_SetTextureStateCombinerModeAlpha [get_bd_pins CommandProcessor_0/TEXSAMP_SetTextureStateCombinerModeAlpha] [get_bd_pins TexSample_0/CMD_SetTextureStateCombinerModeAlpha]
   connect_bd_net -net CommandProcessor_0_TEXSAMP_SetTextureStateCombinerModeColor [get_bd_pins CommandProcessor_0/TEXSAMP_SetTextureStateCombinerModeColor] [get_bd_pins TexSample_0/CMD_SetTextureStateCombinerModeColor]
   connect_bd_net -net CommandProcessor_0_TEXSAMP_SetTextureStateUseBilinear [get_bd_pins CommandProcessor_0/TEXSAMP_SetTextureStateUseBilinear] [get_bd_pins TexSample_0/CMD_SetTextureStateUseBilinear]
-  connect_bd_net -net CommandProcessor_0_VBB_CommandArg0 [get_bd_pins CommandProcessor_0/VBB_CommandArg0] [get_bd_pins VertexBatchBuilder_0/CMD_CommandArg0]
-  connect_bd_net -net CommandProcessor_0_VBB_CommandArg1 [get_bd_pins CommandProcessor_0/VBB_CommandArg1] [get_bd_pins VertexBatchBuilder_0/CMD_CommandArg1]
-  connect_bd_net -net CommandProcessor_0_VBB_CommandArgType [get_bd_pins CommandProcessor_0/VBB_CommandArgType] [get_bd_pins VertexBatchBuilder_0/CMD_CommandArgType]
+  connect_bd_net -net CommandProcessor_0_VBB_CommandArg0 [get_bd_pins CommandProcessor_0/VBB_CommandArg0] [get_bd_pins VertexBatchBuilder_0/CMD_CommandArg0] [get_bd_pins ila_333_250/probe43]
+  connect_bd_net -net CommandProcessor_0_VBB_CommandArg1 [get_bd_pins CommandProcessor_0/VBB_CommandArg1] [get_bd_pins VertexBatchBuilder_0/CMD_CommandArg1] [get_bd_pins ila_333_250/probe44]
+  connect_bd_net -net CommandProcessor_0_VBB_CommandArg2 [get_bd_pins CommandProcessor_0/VBB_CommandArg2] [get_bd_pins VertexBatchBuilder_0/CMD_CommandArg2] [get_bd_pins ila_333_250/probe45]
+  connect_bd_net -net CommandProcessor_0_VBB_CommandArgType [get_bd_pins CommandProcessor_0/VBB_CommandArgType] [get_bd_pins VertexBatchBuilder_0/CMD_CommandArgType] [get_bd_pins ila_333_250/probe42]
   connect_bd_net -net CommandProcessor_0_VBB_SendCommand [get_bd_pins CommandProcessor_0/VBB_SendCommand] [get_bd_pins VertexBatchBuilder_0/CMD_SendCommand]
   connect_bd_net -net IndexBufferCache_0_VBB_ReadData [get_bd_pins ILA_IA/probe17] [get_bd_pins IndexBufferCache_0/VBB_ReadData] [get_bd_pins VertexBatchBuilder_0/IBC_ReadData]
   connect_bd_net -net IndexBufferCache_0_VBB_ReadReady [get_bd_pins IndexBufferCache_0/VBB_ReadReady] [get_bd_pins VertexBatchBuilder_0/IBC_ReadReady]

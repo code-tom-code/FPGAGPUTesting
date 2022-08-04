@@ -15,14 +15,15 @@ entity VertexBatchBuilder is
 
 		-- Commands from command processor to VertexBatchBuilder are:
 		-- - SetIndexBuffer(uint32 addr, uint2 format) (format can either be: INDEX8, INDEX16, or INDEX32)
-		-- - DrawPrimitive(uint32 startingVertex, uint32 numPrimsToRender, uint3 primType)
-		-- - DrawIndexedPrimitive(uint32 startingVertex, uint32 indexOffset, uint32 numPrimsToRender, uint3 primType)
+		-- - DrawPrimitive(uint32 numPrimsToRender, uint16 startingVertex, uint3 primType)
+		-- - DrawIndexedPrimitive(uint32 numPrimsToRender, uint20 startingVertex, int16 BaseVertexIndex, uint3 primType)
 
 	-- Command processor interfaces begin
 		CMD_SendCommand : in STD_LOGIC_VECTOR(1 downto 0);
-		CMD_CommandArg0 : in STD_LOGIC_VECTOR(31 downto 0);
-		CMD_CommandArg1 : in STD_LOGIC_VECTOR(31 downto 0);
-		CMD_CommandArgType : in STD_LOGIC_VECTOR(2 downto 0);
+		CMD_CommandArg0 : in STD_LOGIC_VECTOR(31 downto 0); -- Used for our index buffer address (SetIndexBuffer), as well as our primitive count (DrawPrimitive/DrawIndexedPrimitive)
+		CMD_CommandArg1 : in STD_LOGIC_VECTOR(19 downto 0); -- Used for our uint StartIndex
+		CMD_CommandArg2 : in STD_LOGIC_VECTOR(15 downto 0); -- Used for our signed short BaseVertexIndex
+		CMD_CommandArgType : in STD_LOGIC_VECTOR(2 downto 0); -- Transmits our PrimitiveType
 		CMD_ReadyState : out STD_LOGIC := '0';
 	-- Command processor interfaces end
 
@@ -78,12 +79,13 @@ type eVertexBatchBuilderState is
 	fillBatch, -- 2
 	startupState, -- 3
 	comparitorState, -- 4
-	batchInsertState, -- 5
-	finishAndSubmitBatch, -- 6
-	finishAndSubmitBatch2, -- 7
-	submitBatch, -- 8
-	finishCooldown, -- 9
-	fillBatch_constantOut -- 10
+	comparitorState2, -- 5
+	batchInsertState, -- 6
+	finishAndSubmitBatch, -- 7
+	finishAndSubmitBatch2, -- 8
+	submitBatch, -- 9
+	finishCooldown, -- 10
+	fillBatch_constantOut -- 11
 );
 
 type eIndexFormat is
@@ -129,10 +131,14 @@ type DrawCallParams is record
 	primTopology : ePrimTopology;
 	isIndexedDraw : std_logic;
 	indexBufferPtr : unsigned(29 downto 0);
+	BaseVertexIndex : signed(15 downto 0);
+	startIndex : unsigned(19 downto 0);
+	primIsEven : std_logic;
+	isFirstPolygon : std_logic;
 	indexFormat : eIndexFormat;
 end record DrawCallParams;
 
-constant DefaultDrawCallParams : DrawCallParams := (remainingPrimCount => (others => '0'), primTopology => triList, isIndexedDraw => '0', indexBufferPtr => (others => '0'), indexFormat => index16);
+constant DefaultDrawCallParams : DrawCallParams := (remainingPrimCount => (others => '0'), primTopology => triList, isIndexedDraw => '0', indexBufferPtr => (others => '0'), BaseVertexIndex => (others => '0'), startIndex => (others => '0'), primIsEven => '1', isFirstPolygon => '1', indexFormat => index16);
 
 pure function TrimIndexValueToIndexFormat(indexData : unsigned(31 downto 0); indexFormat : eIndexFormat) return unsigned is
 begin
@@ -168,7 +174,7 @@ begin
 end procedure;
 
 procedure IncrementIndexBufferPointerByIndexFormat(signal indexBufferPointer : inout unsigned(29 downto 0);
-	signal indexBufferFormat : eIndexFormat) is
+	signal indexBufferFormat : in eIndexFormat) is
 begin
 	case indexBufferFormat is
 		when index8 =>
@@ -177,6 +183,21 @@ begin
 			indexBufferPointer <= indexBufferPointer + 2;
 		when index32 =>
 			indexBufferPointer <= indexBufferPointer + 4;
+	end case;
+end procedure;
+
+procedure IncrementIndexBufferPointerByIndexFormatOffset(signal newIndexBufferPointer : out unsigned(29 downto 0);
+	signal existingIndexBufferPointer : in unsigned(29 downto 0);
+	signal startIndex : in unsigned(19 downto 0);
+	signal indexBufferFormat : in eIndexFormat) is
+begin
+	case indexBufferFormat is
+		when index8 =>
+			newIndexBufferPointer <= existingIndexBufferPointer + startIndex;
+		when index16 =>
+			newIndexBufferPointer <= existingIndexBufferPointer + (startIndex & "0");
+		when index32 =>
+			newIndexBufferPointer <= existingIndexBufferPointer + (startIndex & "00");
 	end case;
 end procedure;
 
@@ -346,9 +367,13 @@ signal currentPoppedPrim : PrimitiveIndices := (others => (others => '1') ); -- 
 
 -- Output state from the comparitor process
 signal vertsExistInBatch : STD_LOGIC_VECTOR(2 downto 0) := (others => '0'); -- Bit-map of which vertices exist in the vertex batch already
+signal vertsExistInBatch_cycle2 : STD_LOGIC_VECTOR(2 downto 0) := (others => '0');
 signal existingVertMatchIndexA : unsigned(3 downto 0) := (others => '1'); -- Index of the vertex in the vertex batch that matches our new indexA
 signal existingVertMatchIndexB : unsigned(3 downto 0) := (others => '1'); -- Index of the vertex in the vertex batch that matches our new indexB
 signal existingVertMatchIndexC : unsigned(3 downto 0) := (others => '1'); -- Index of the vertex in the vertex batch that matches our new indexC
+signal existingVertMatchIndexA_cycle2 : unsigned(3 downto 0) := (others => '1');
+signal existingVertMatchIndexB_cycle2 : unsigned(3 downto 0) := (others => '1');
+signal existingVertMatchIndexC_cycle2 : unsigned(3 downto 0) := (others => '1');
 signal batchVertsAreUsed : STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
 signal batchIndicesAreUsed : STD_LOGIC_VECTOR(63 downto 0) := (others => '0');
 
@@ -356,7 +381,6 @@ signal batchIndicesAreUsed : STD_LOGIC_VECTOR(63 downto 0) := (others => '0');
 signal currentState : eVertexBatchBuilderState := initState;
 signal currentBatch : VertexBatchType := (others => (others => '1') );
 signal currentIndexBatch : IndexBatchType := (others => (others => '1') );
-signal currentBatchStartingIndex : unsigned(31 downto 0) := (others => '0');
 signal currentBatchLength : unsigned(4 downto 0) := to_unsigned(0, 5); -- How many vertices do we currently have in our vertex batch?
 signal currentIndexBatchLength : unsigned(6 downto 0) := to_unsigned(0, 7); -- How many indices do we currently have in our index batch?
 signal leftoverPrimitiveNextBatch : std_logic := '0'; -- Do we have an extra primitive left over to be the start of next batch?
@@ -387,6 +411,14 @@ IBC_ReadAddr <= std_logic_vector(currentIndexBufferAddr);
 BatchComparitorProcess : process(clk)
 begin
 	if (rising_edge(clk) ) then
+	
+		-- Propogate our pipeline registers:
+		vertsExistInBatch_cycle2 <= vertsExistInBatch;
+		existingVertMatchIndexA_cycle2 <= existingVertMatchIndexA;
+		existingVertMatchIndexB_cycle2 <= existingVertMatchIndexB;
+		existingVertMatchIndexC_cycle2 <= existingVertMatchIndexC;
+
+		-- Compute whether our three new polygon vertices exist in the current batch or not:
 		vertsExistInBatch(0) <= IsValueInCurrentBatch(currentBatch, currentBatchLength, currentPoppedPrim.indexA);
 		if (ePrimTopology'pos(newDrawCallParams.primTopology) >= ePrimTopology'pos(lineList) ) then
 			vertsExistInBatch(1) <= IsValueInCurrentBatch(currentBatch, currentBatchLength, currentPoppedPrim.indexB);
@@ -398,9 +430,12 @@ begin
 		else
 			vertsExistInBatch(2) <= '1';
 		end if;
+
+		-- This GetCurrentBatchIndexFromVertexIndex() is the really expensive part of this process. Let's pipeline it out to another cycle.
 		existingVertMatchIndexA <= GetCurrentBatchIndexFromVertexIndex(currentBatch, currentPoppedPrim.indexA);
 		existingVertMatchIndexB <= GetCurrentBatchIndexFromVertexIndex(currentBatch, currentPoppedPrim.indexB);
 		existingVertMatchIndexC <= GetCurrentBatchIndexFromVertexIndex(currentBatch, currentPoppedPrim.indexC);
+
 		for x in 0 to 15 loop
 			if (currentBatchLength < (x + 1) ) then
 				batchVertsAreUsed(x) <= '0';
@@ -444,6 +479,7 @@ begin
 					case currentDrawCallParams.primTopology is
 						when pointList =>
 							workPrim.indexA := TrimIndexValueToIndexFormat(unsigned(IBC_ReadData), currentDrawCallParams.indexFormat);
+							workPrim.indexA := unsigned(signed(workPrim.indexA) + currentDrawCallParams.BaseVertexIndex); -- Apply our BaseVertexIndex
 							IncrementIndexBufferPointerByIndexFormat(currentIndexBufferAddr, currentDrawCallParams.indexFormat);
 							currentDrawCallParams.remainingPrimCount <= currentDrawCallParams.remainingPrimCount - 1;
 							-- Point Lists have no index-based degeneracy case, so there's nothing to test here
@@ -453,10 +489,12 @@ begin
 							case currentPrimVertex is
 								when "001" =>
 									workPrim.indexA := TrimIndexValueToIndexFormat(unsigned(IBC_ReadData), currentDrawCallParams.indexFormat);
+									workPrim.indexA := unsigned(signed(workPrim.indexA) + currentDrawCallParams.BaseVertexIndex); -- Apply our BaseVertexIndex
 									IncrementIndexBufferPointerByIndexFormat(currentIndexBufferAddr, currentDrawCallParams.indexFormat);
 									currentPrimVertex <= "010";
 								when others => -- when "010" =>
 									workPrim.indexB := TrimIndexValueToIndexFormat(unsigned(IBC_ReadData), currentDrawCallParams.indexFormat);
+									workPrim.indexB := unsigned(signed(workPrim.indexB) + currentDrawCallParams.BaseVertexIndex); -- Apply our BaseVertexIndex
 									IncrementIndexBufferPointerByIndexFormat(currentIndexBufferAddr, currentDrawCallParams.indexFormat);
 									currentPrimVertex <= "001";
 									currentDrawCallParams.remainingPrimCount <= currentDrawCallParams.remainingPrimCount - 1;
@@ -469,10 +507,12 @@ begin
 							case currentPrimVertex is
 								when "001" =>
 									workPrim.indexA := TrimIndexValueToIndexFormat(unsigned(IBC_ReadData), currentDrawCallParams.indexFormat);
+									workPrim.indexA := unsigned(signed(workPrim.indexA) + currentDrawCallParams.BaseVertexIndex); -- Apply our BaseVertexIndex
 									IncrementIndexBufferPointerByIndexFormat(currentIndexBufferAddr, currentDrawCallParams.indexFormat);
 									currentPrimVertex <= "010";
 								when others => -- when "010" =>
 									workPrim.indexB := TrimIndexValueToIndexFormat(unsigned(IBC_ReadData), currentDrawCallParams.indexFormat);
+									workPrim.indexB := unsigned(signed(workPrim.indexB) + currentDrawCallParams.BaseVertexIndex); -- Apply our BaseVertexIndex
 									IncrementIndexBufferPointerByIndexFormat(currentIndexBufferAddr, currentDrawCallParams.indexFormat);
 									currentPrimVertex <= "010";
 									currentDrawCallParams.remainingPrimCount <= currentDrawCallParams.remainingPrimCount - 1;
@@ -486,14 +526,17 @@ begin
 							case currentPrimVertex is
 								when "001" =>
 									workPrim.indexA := TrimIndexValueToIndexFormat(unsigned(IBC_ReadData), currentDrawCallParams.indexFormat);
+									workPrim.indexA := unsigned(signed(workPrim.indexA) + currentDrawCallParams.BaseVertexIndex); -- Apply our BaseVertexIndex
 									IncrementIndexBufferPointerByIndexFormat(currentIndexBufferAddr, currentDrawCallParams.indexFormat);
 									currentPrimVertex <= "010";
 								when "010" =>
 									workPrim.indexB := TrimIndexValueToIndexFormat(unsigned(IBC_ReadData), currentDrawCallParams.indexFormat);
+									workPrim.indexB := unsigned(signed(workPrim.indexB) + currentDrawCallParams.BaseVertexIndex); -- Apply our BaseVertexIndex
 									IncrementIndexBufferPointerByIndexFormat(currentIndexBufferAddr, currentDrawCallParams.indexFormat);
 									currentPrimVertex <= "100";
 								when others => -- when "100" =>
 									workPrim.indexC := TrimIndexValueToIndexFormat(unsigned(IBC_ReadData), currentDrawCallParams.indexFormat);
+									workPrim.indexC := unsigned(signed(workPrim.indexC) + currentDrawCallParams.BaseVertexIndex); -- Apply our BaseVertexIndex
 									IncrementIndexBufferPointerByIndexFormat(currentIndexBufferAddr, currentDrawCallParams.indexFormat);
 									currentPrimVertex <= "001";
 									currentDrawCallParams.remainingPrimCount <= currentDrawCallParams.remainingPrimCount - 1;
@@ -506,43 +549,60 @@ begin
 							case currentPrimVertex is
 								when "001" =>
 									workPrim.indexA := TrimIndexValueToIndexFormat(unsigned(IBC_ReadData), currentDrawCallParams.indexFormat);
+									workPrim.indexA := unsigned(signed(workPrim.indexA) + currentDrawCallParams.BaseVertexIndex); -- Apply our BaseVertexIndex
 									IncrementIndexBufferPointerByIndexFormat(currentIndexBufferAddr, currentDrawCallParams.indexFormat);
 									currentPrimVertex <= "010";
 								when "010" =>
 									workPrim.indexB := TrimIndexValueToIndexFormat(unsigned(IBC_ReadData), currentDrawCallParams.indexFormat);
+									workPrim.indexB := unsigned(signed(workPrim.indexB) + currentDrawCallParams.BaseVertexIndex); -- Apply our BaseVertexIndex
 									IncrementIndexBufferPointerByIndexFormat(currentIndexBufferAddr, currentDrawCallParams.indexFormat);
 									currentPrimVertex <= "100";
 								when others => -- when "100" =>
 									workPrim.indexC := TrimIndexValueToIndexFormat(unsigned(IBC_ReadData), currentDrawCallParams.indexFormat);
+									workPrim.indexC := unsigned(signed(workPrim.indexC) + currentDrawCallParams.BaseVertexIndex); -- Apply our BaseVertexIndex
 									IncrementIndexBufferPointerByIndexFormat(currentIndexBufferAddr, currentDrawCallParams.indexFormat);
 									currentPrimVertex <= "100";
 									currentDrawCallParams.remainingPrimCount <= currentDrawCallParams.remainingPrimCount - 1;
 									if (TestTriangleIsDegenerate(workPrim) = false) then
 										QueuePushNewWriteEntry(PrimitiveIndicesQueue, workPrim);
 									end if;
-									workPrim.indexA := workPrim.indexB;
-									workPrim.indexB := workPrim.indexC;
+
+									if (currentDrawCallParams.primIsEven = '1') then
+										workPrim.indexA := workPrim.indexB;
+										workPrim.indexB := workPrim.indexC;
+										currentDrawCallParams.primIsEven <= '0';
+									else
+										workPrim.indexA := workPrim.indexC;
+										workPrim.indexB := workPrim.indexB;
+										currentDrawCallParams.primIsEven <= '1';
+									end if;
 							end case;
 
 						when triFan =>
 							case currentPrimVertex is
 								when "001" =>
 									workPrim.indexA := TrimIndexValueToIndexFormat(unsigned(IBC_ReadData), currentDrawCallParams.indexFormat);
+									workPrim.indexA := unsigned(signed(workPrim.indexA) + currentDrawCallParams.BaseVertexIndex); -- Apply our BaseVertexIndex
 									IncrementIndexBufferPointerByIndexFormat(currentIndexBufferAddr, currentDrawCallParams.indexFormat);
 									currentPrimVertex <= "010";
 								when "010" =>
 									workPrim.indexB := TrimIndexValueToIndexFormat(unsigned(IBC_ReadData), currentDrawCallParams.indexFormat);
+									workPrim.indexB := unsigned(signed(workPrim.indexB) + currentDrawCallParams.BaseVertexIndex); -- Apply our BaseVertexIndex
 									IncrementIndexBufferPointerByIndexFormat(currentIndexBufferAddr, currentDrawCallParams.indexFormat);
 									currentPrimVertex <= "100";
 								when others => -- when "100" =>
+									if (currentDrawCallParams.isFirstPolygon = '0') then
+										workPrim.indexB := workPrim.indexC;
+									end if;
 									workPrim.indexC := TrimIndexValueToIndexFormat(unsigned(IBC_ReadData), currentDrawCallParams.indexFormat);
+									workPrim.indexC := unsigned(signed(workPrim.indexC) + currentDrawCallParams.BaseVertexIndex); -- Apply our BaseVertexIndex
 									IncrementIndexBufferPointerByIndexFormat(currentIndexBufferAddr, currentDrawCallParams.indexFormat);
 									currentPrimVertex <= "100";
 									currentDrawCallParams.remainingPrimCount <= currentDrawCallParams.remainingPrimCount - 1;
 									if (TestTriangleIsDegenerate(workPrim) = false) then
 										QueuePushNewWriteEntry(PrimitiveIndicesQueue, workPrim);
 									end if;
-									workPrim.indexB := workPrim.indexC;
+									currentDrawCallParams.isFirstPolygon <= '0';
 							end case;
 
 						when others => -- when quadList =>
@@ -568,12 +628,19 @@ begin
 						workPrim.indexC := workPrim.indexC + 3;
 
 					when triStrip =>
-						workPrim.indexA := workPrim.indexB;
-						workPrim.indexB := workPrim.indexC;
+						if (currentDrawCallParams.primIsEven = '1') then
+							workPrim.indexA := workPrim.indexB;
+							workPrim.indexB := workPrim.indexC;
+							currentDrawCallParams.primIsEven <= '0';
+						else
+							workPrim.indexA := workPrim.indexC;
+							workPrim.indexB := workPrim.indexB;
+							currentDrawCallParams.primIsEven <= '1';
+						end if;
 						workPrim.indexC := workPrim.indexC + 1;
 
 					when triFan =>
-						workPrim.indexA := (others => '0');
+						workPrim.indexA := workPrim.indexA;
 						workPrim.indexB := workPrim.indexC;
 						workPrim.indexC := workPrim.indexC + 1;
 
@@ -584,7 +651,7 @@ begin
 			end if;
 		elsif (newDrawCallSignal = '1') then
 			currentDrawCallParams <= newDrawCallParams;
-			currentIndexBufferAddr <= newDrawCallParams.indexBufferPtr;
+			IncrementIndexBufferPointerByIndexFormatOffset(currentIndexBufferAddr, newDrawCallParams.indexBufferPtr, newDrawCallParams.startIndex, newDrawCallParams.indexFormat);
 			if (newDrawCallParams.isIndexedDraw = '1') then
 				IBC_ReadEnable <= '1'; -- Begin reading from our first index address right away to save one cycle
 				cooldownState <= '1';
@@ -597,9 +664,9 @@ begin
 				doneGeneratingIndices <= '0';
 			end if;
 			currentPrimVertex <= "001";
-			workPrim.indexA := to_unsigned(0, 16);
-			workPrim.indexB := to_unsigned(1, 16);
-			workPrim.indexC := to_unsigned(2, 16);
+			workPrim.indexA := newDrawCallParams.startIndex(15 downto 0);
+			workPrim.indexB := newDrawCallParams.startIndex(15 downto 0) + 1;
+			workPrim.indexC := newDrawCallParams.startIndex(15 downto 0) + 2;
 		end if;
 	end if;
 end process IndexGeneratorProcess;
@@ -621,12 +688,15 @@ begin
 						savedIndexBufferAddr <= unsigned(CMD_CommandArg0(29 downto 0) );
 						savedIndexBufferFmt <= eIndexFormat'val(to_integer(unsigned(CMD_CommandArg0(31 downto 30) ) ) );
 					when DrawPrimitive =>
-						currentBatchStartingIndex <= (others => '0'); -- Non-indexed batches have no starting index (it always starts at 0)
 						newDrawCallParams.remainingPrimCount <= unsigned(CMD_CommandArg0(23 downto 0) );
 						newDrawCallParams.primTopology <= GetPrimitiveToplogyFromUnsigned(unsigned(CMD_CommandArgType) );
 						newDrawCallParams.isIndexedDraw <= '0';
+						newDrawCallParams.BaseVertexIndex <= (others => '0'); -- DrawPrimitive() doesn't use the BaseVertexIndex param
+						newDrawCallParams.startIndex <= unsigned(CMD_CommandArg1);
 						newDrawCallParams.indexBufferPtr <= (others => '0');
 						newDrawCallParams.indexFormat <= index16;
+						newDrawCallParams.primIsEven <= '1';
+						newDrawCallParams.isFirstPolygon <= '1';
 						currentBatchLength <= (others => '0');
 						currentIndexBatchLength <= (others => '0');
 						SHADER_Done <= '0';
@@ -635,10 +705,13 @@ begin
 						currentState <= startupState;
 					when DrawIndexedPrimitive =>
 						newDrawCallParams.remainingPrimCount <= unsigned(CMD_CommandArg0(23 downto 0) );
-						currentBatchStartingIndex <= unsigned(CMD_CommandArg1);
 						newDrawCallParams.primTopology <= GetPrimitiveToplogyFromUnsigned(unsigned(CMD_CommandArgType) );
+						newDrawCallParams.BaseVertexIndex <= signed(CMD_CommandArg2);
+						newDrawCallParams.startIndex <= unsigned(CMD_CommandArg1);
 						newDrawCallParams.indexBufferPtr <= savedIndexBufferAddr;
 						newDrawCallParams.indexFormat <= savedIndexBufferFmt;
+						newDrawCallParams.primIsEven <= '1';
+						newDrawCallParams.isFirstPolygon <= '1';
 						currentBatchLength <= (others => '0');
 						currentIndexBatchLength <= (others => '0');
 						newDrawCallParams.isIndexedDraw <= '1';
@@ -705,45 +778,47 @@ begin
 				end if;
 
 			when comparitorState =>
-				-- The comparisons are happening in parallel in its own process
-				-- TODO: Make this state last for multiple clock cycles if we end up needing to pipeline the comparisons
+				-- The comparisons are happening in parallel in its own process. This takes two cycles now in order to meet timing.
+				currentState <= comparitorState2;
+
+			when comparitorState2 =>
 				currentState <= batchInsertState;
 
 			when batchInsertState =>
-				if (NewPrimFitsIntoBatch(currentBatchLength, currentIndexBatchLength, vertsExistInBatch, newDrawCallParams.primTopology) ) then
-					case vertsExistInBatch is
+				if (NewPrimFitsIntoBatch(currentBatchLength, currentIndexBatchLength, vertsExistInBatch_cycle2, newDrawCallParams.primTopology) ) then
+					case vertsExistInBatch_cycle2 is
 						when "000" =>
 							currentIndexBatch(to_integer(currentIndexBatchLength) ) <= currentBatchLength(3 downto 0);
 							currentIndexBatch(to_integer(currentIndexBatchLength + 1) ) <= currentBatchLength(3 downto 0) + 1;
 							currentIndexBatch(to_integer(currentIndexBatchLength + 2) ) <= currentBatchLength(3 downto 0) + 2;
 						when "001" =>
-							currentIndexBatch(to_integer(currentIndexBatchLength) ) <= existingVertMatchIndexA;
+							currentIndexBatch(to_integer(currentIndexBatchLength) ) <= existingVertMatchIndexA_cycle2;
 							currentIndexBatch(to_integer(currentIndexBatchLength + 1) ) <= currentBatchLength(3 downto 0);
 							currentIndexBatch(to_integer(currentIndexBatchLength + 2) ) <= currentBatchLength(3 downto 0) + 1;
 						when "010" =>
 							currentIndexBatch(to_integer(currentIndexBatchLength) ) <= currentBatchLength(3 downto 0);
-							currentIndexBatch(to_integer(currentIndexBatchLength + 1) ) <= existingVertMatchIndexB;
+							currentIndexBatch(to_integer(currentIndexBatchLength + 1) ) <= existingVertMatchIndexB_cycle2;
 							currentIndexBatch(to_integer(currentIndexBatchLength + 2) ) <= currentBatchLength(3 downto 0) + 1;
 						when "011" =>
-							currentIndexBatch(to_integer(currentIndexBatchLength) ) <= existingVertMatchIndexA;
-							currentIndexBatch(to_integer(currentIndexBatchLength + 1) ) <= existingVertMatchIndexB;
+							currentIndexBatch(to_integer(currentIndexBatchLength) ) <= existingVertMatchIndexA_cycle2;
+							currentIndexBatch(to_integer(currentIndexBatchLength + 1) ) <= existingVertMatchIndexB_cycle2;
 							currentIndexBatch(to_integer(currentIndexBatchLength + 2) ) <= currentBatchLength(3 downto 0);
 						when "100" =>
 							currentIndexBatch(to_integer(currentIndexBatchLength) ) <= currentBatchLength(3 downto 0);
 							currentIndexBatch(to_integer(currentIndexBatchLength + 1) ) <= currentBatchLength(3 downto 0) + 1;
-							currentIndexBatch(to_integer(currentIndexBatchLength + 2) ) <= existingVertMatchIndexC;
+							currentIndexBatch(to_integer(currentIndexBatchLength + 2) ) <= existingVertMatchIndexC_cycle2;
 						when "101" =>
-							currentIndexBatch(to_integer(currentIndexBatchLength) ) <= existingVertMatchIndexA;
+							currentIndexBatch(to_integer(currentIndexBatchLength) ) <= existingVertMatchIndexA_cycle2;
 							currentIndexBatch(to_integer(currentIndexBatchLength + 1) ) <= currentBatchLength(3 downto 0);
-							currentIndexBatch(to_integer(currentIndexBatchLength + 2) ) <= existingVertMatchIndexC;
+							currentIndexBatch(to_integer(currentIndexBatchLength + 2) ) <= existingVertMatchIndexC_cycle2;
 						when "110" =>
 							currentIndexBatch(to_integer(currentIndexBatchLength) ) <= currentBatchLength(3 downto 0);
-							currentIndexBatch(to_integer(currentIndexBatchLength + 1) ) <= existingVertMatchIndexB;
-							currentIndexBatch(to_integer(currentIndexBatchLength + 2) ) <= existingVertMatchIndexC;
+							currentIndexBatch(to_integer(currentIndexBatchLength + 1) ) <= existingVertMatchIndexB_cycle2;
+							currentIndexBatch(to_integer(currentIndexBatchLength + 2) ) <= existingVertMatchIndexC_cycle2;
 						when others => -- when "111" =>
-							currentIndexBatch(to_integer(currentIndexBatchLength) ) <= existingVertMatchIndexA;
-							currentIndexBatch(to_integer(currentIndexBatchLength + 1) ) <= existingVertMatchIndexB;
-							currentIndexBatch(to_integer(currentIndexBatchLength + 2) ) <= existingVertMatchIndexC;
+							currentIndexBatch(to_integer(currentIndexBatchLength) ) <= existingVertMatchIndexA_cycle2;
+							currentIndexBatch(to_integer(currentIndexBatchLength + 1) ) <= existingVertMatchIndexB_cycle2;
+							currentIndexBatch(to_integer(currentIndexBatchLength + 2) ) <= existingVertMatchIndexC_cycle2;
 					end case;
 
 					case newDrawCallParams.primTopology is
@@ -755,7 +830,7 @@ begin
 							currentIndexBatchLength <= currentIndexBatchLength + 3;
 					end case;
 
-					case vertsExistInBatch is
+					case vertsExistInBatch_cycle2 is
 						when "000" =>
 							currentBatch(to_integer(currentBatchLength) ) <= currentPoppedPrim.indexA;
 							currentBatch(to_integer(currentBatchLength + 1) ) <= currentPoppedPrim.indexB;

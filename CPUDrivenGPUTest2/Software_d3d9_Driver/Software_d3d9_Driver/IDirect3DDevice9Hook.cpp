@@ -3752,7 +3752,7 @@ void IDirect3DDevice9Hook::ProcessVerticesToBufferInner(const IDirect3DVertexDec
 			// Uhhhh, this isn't correct except for point-lists, line-lists, and triangle-lists:
 			vertJobCollector newJob;
 			newJob.outputRegs = outputBufferPtr;
-			newJob.vertexIndex = x + BaseVertexIndex;
+			newJob.vertexIndex = x + startIndex;
 			vertJobsToShade.push_back(newJob);
 
 			// Increment the registers pointer

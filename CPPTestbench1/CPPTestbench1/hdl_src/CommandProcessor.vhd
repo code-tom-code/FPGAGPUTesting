@@ -94,9 +94,10 @@ entity CommandProcessor is
 
 	-- Vertex Batch Builder interfaces begin
 		VBB_SendCommand : out STD_LOGIC_VECTOR(1 downto 0) := (others => '0');
-		VBB_CommandArg0 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-		VBB_CommandArg1 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-		VBB_CommandArgType : out STD_LOGIC_VECTOR(2 downto 0) := (others => '0');
+		VBB_CommandArg0 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0'); -- Used for our index buffer address (SetIndexBuffer), as well as our primitive count (DrawPrimitive/DrawIndexedPrimitive)
+		VBB_CommandArg1 : out STD_LOGIC_VECTOR(19 downto 0) := (others => '0'); -- Used for our uint StartIndex
+		VBB_CommandArg2 : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0'); -- Used for our signed short BaseVertexIndex
+		VBB_CommandArgType : out STD_LOGIC_VECTOR(2 downto 0) := (others => '0'); -- Transmits our PrimitiveType
 		VBB_ReadyState : in STD_LOGIC;
 	-- Vertex Batch Builder interfaces end
 
@@ -786,13 +787,15 @@ begin
 							-- Signal to the VBB to begin collecting vertices and batching them up for our draw call:
 							if (localIncomingPacket.payload0(24) = '1') then
 								VBB_SendCommand <= std_logic_vector(to_unsigned(eVBB_CMDPacket'pos(DrawIndexedPrimitive), 2) );
+								VBB_CommandArg2 <= std_logic_vector(localIncomingPacket.payload1(28 downto 13) );
 							else
 								VBB_SendCommand <= std_logic_vector(to_unsigned(eVBB_CMDPacket'pos(DrawPrimitive), 2) );
+								VBB_CommandArg2 <= (others => '0');
 							end if;
 							VBB_CommandArg0 <= "00000000" & std_logic_vector(localIncomingPacket.payload0(23 downto 0) );
-							VBB_CommandArg1 <= "00000000" & std_logic_vector(localIncomingPacket.payload1(23 downto 0) );
-							VBB_CommandArgType <= std_logic_vector(localIncomingPacket.payload1(26 downto 24) );
-							mst_packet_state <= DRAW_COMMAND2;							
+							VBB_CommandArg1 <= std_logic_vector(localIncomingPacket.payload0(31 downto 25) ) & std_logic_vector(localIncomingPacket.payload1(12 downto 0) );
+							VBB_CommandArgType <= std_logic_vector(localIncomingPacket.payload1(31 downto 29) );
+							mst_packet_state <= DRAW_COMMAND2;
 						end if;
 
 					when DRAW_COMMAND2 =>

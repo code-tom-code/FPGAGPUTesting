@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
-<EDKSYSTEM EDWVERSION="1.2" TIMESTAMP="Wed Aug  3 22:56:28 2022" VIVADOVERSION="2018.1">
+<EDKSYSTEM EDWVERSION="1.2" TIMESTAMP="Fri Aug  5 19:29:40 2022" VIVADOVERSION="2018.1">
 
   <SYSTEMINFO ARCH="kintexuplus" BOARD="xilinx.com:kcu116:part0:1.3" DEVICE="xcku5p" NAME="design_1" PACKAGE="ffvb676" SPEEDGRADE="-2"/>
 
@@ -24986,6 +24986,7 @@
             <CONNECTION INSTANCE="VBO_INDEX_FIFO" PORT="clk"/>
             <CONNECTION INSTANCE="IndexBufferCache_0" PORT="clk"/>
             <CONNECTION INSTANCE="InputAssembler2_0" PORT="clk"/>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="clk"/>
             <CONNECTION INSTANCE="SerialPacketSystem_ValidIncomingPacketsFIFO" PORT="rd_clk"/>
             <CONNECTION INSTANCE="SerialPacketSystem_ReturnOutputPacketsFIFO" PORT="wr_clk"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_InstructionCache" PORT="clka"/>
@@ -24996,9 +24997,8 @@
             <CONNECTION INSTANCE="ShaderCoreSystem_FloatALU_1" PORT="clk"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_FloatALU_2" PORT="clk"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_FloatALU_3" PORT="clk"/>
-            <CONNECTION INSTANCE="ShaderCoreSystem_GPRQuadSystem_GPRQuad2_0" PORT="clk"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_VertexStreamCache_0" PORT="clk"/>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="clk"/>
+            <CONNECTION INSTANCE="ShaderCoreSystem_GPRQuadSystem_GPRQuad2_0" PORT="clk"/>
             <CONNECTION INSTANCE="VertexBatchBuilder_0" PORT="clk"/>
             <CONNECTION INSTANCE="MemorySystem_ScanoutReadRequestsFIFO" PORT="rd_clk"/>
             <CONNECTION INSTANCE="MemorySystem_ZStencilReadRequestsFIFO" PORT="rd_clk"/>
@@ -25995,10 +25995,10 @@
         </PORT>
         <PORT DIR="O" NAME="resetn" SIGIS="rst" SIGNAME="ResetN_UntilClockLoc_0_resetn">
           <CONNECTIONS>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="resetn"/>
             <CONNECTION INSTANCE="MemorySystem_MemoryController_0" PORT="M_AXI_ARESETN"/>
             <CONNECTION INSTANCE="SerialPacketSystem_axi_uartlite_0" PORT="s_axi_aresetn"/>
             <CONNECTION INSTANCE="SerialPacketSystem_PacketProcessor_0" PORT="M_AXI_ARESETN"/>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="resetn"/>
           </CONNECTIONS>
         </PORT>
       </PORTS>

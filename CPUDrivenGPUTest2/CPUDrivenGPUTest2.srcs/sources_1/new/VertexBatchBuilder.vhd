@@ -455,6 +455,7 @@ end process BatchComparitorProcess;
 
 IndexGeneratorProcess : process(clk)
 	variable workPrim : PrimitiveIndices;
+	variable workTempIndex : unsigned(15 downto 0);
 begin
 	if (rising_edge(clk) ) then
 		if (currentDrawCallParams.remainingPrimCount = 0) then
@@ -558,6 +559,7 @@ begin
 									IncrementIndexBufferPointerByIndexFormat(currentIndexBufferAddr, currentDrawCallParams.indexFormat);
 									currentPrimVertex <= "100";
 								when others => -- when "100" =>
+									workTempIndex := workPrim.indexC;
 									workPrim.indexC := TrimIndexValueToIndexFormat(unsigned(IBC_ReadData), currentDrawCallParams.indexFormat);
 									workPrim.indexC := unsigned(signed(workPrim.indexC) + currentDrawCallParams.BaseVertexIndex); -- Apply our BaseVertexIndex
 									IncrementIndexBufferPointerByIndexFormat(currentIndexBufferAddr, currentDrawCallParams.indexFormat);
@@ -568,12 +570,10 @@ begin
 									end if;
 
 									if (currentDrawCallParams.primIsEven = '1') then
-										workPrim.indexA := workPrim.indexB;
-										workPrim.indexB := workPrim.indexC;
+										workPrim.indexA := workTempIndex;
 										currentDrawCallParams.primIsEven <= '0';
 									else
-										workPrim.indexA := workPrim.indexC;
-										workPrim.indexB := workPrim.indexB;
+										workPrim.indexB := workTempIndex;
 										currentDrawCallParams.primIsEven <= '1';
 									end if;
 							end case;
@@ -609,7 +609,9 @@ begin
 					end case;
 				end if;
 			else -- Non-indexed draw call case:
+
 				QueuePushNewWriteEntry(PrimitiveIndicesQueue, workPrim);
+
 				case currentDrawCallParams.primTopology is
 					when pointList =>
 						workPrim.indexA := workPrim.indexA + 1;
@@ -629,12 +631,10 @@ begin
 
 					when triStrip =>
 						if (currentDrawCallParams.primIsEven = '1') then
-							workPrim.indexA := workPrim.indexB;
-							workPrim.indexB := workPrim.indexC;
+							workPrim.indexA := workPrim.indexC;
 							currentDrawCallParams.primIsEven <= '0';
 						else
-							workPrim.indexA := workPrim.indexC;
-							workPrim.indexB := workPrim.indexB;
+							workPrim.indexB := workPrim.indexC;
 							currentDrawCallParams.primIsEven <= '1';
 						end if;
 						workPrim.indexC := workPrim.indexC + 1;

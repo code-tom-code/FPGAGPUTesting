@@ -52,7 +52,7 @@ entity VertexStreamCache is
 	-- Memory controller interfaces end
 
 	-- Debug interfaces begin
-		DBG_State : out STD_LOGIC_VECTOR(2 downto 0) := (others => '0');
+		DBG_State : out STD_LOGIC_VECTOR(3 downto 0) := (others => '0');
 		DBG_CacheSetIndex : out STD_LOGIC_VECTOR(4 downto 0) := (others => '0');
 		DBG_CacheElementIndex : out STD_LOGIC_VECTOR(1 downto 0) := (others => '0')
 	-- Debug interfaces end
@@ -88,15 +88,17 @@ type eCacheState is
 
 	readyState, -- 1
 
-	cacheMissState, -- 2
+	lookupState, -- 2
 
-	waitForMemReadState, -- 3
-	writeToCacheState, -- 4
+	cacheMissState, -- 3
 
-	waitForBRAMReadState, -- 5
-	waitForBRAMReadState2, -- 6
+	waitForMemReadState, -- 4
+	writeToCacheState, -- 5
 
-	cooldownState -- 7
+	waitForBRAMReadState, -- 6
+	waitForBRAMReadState2, -- 7
+
+	cooldownState -- 8
 );
 
 type structCacheEntry is record
@@ -123,6 +125,8 @@ signal vertexStreamAddresses : vertexStreamAddresses_t := (others => (others => 
 signal currentState : eCacheState := initState;
 
 signal writeCacheLineDWORD : unsigned(2 downto 0) := (others => '0');
+
+signal addressHitsCache : std_logic := '0';
 
 pure function GetCacheSetIndexFromDWORDAddr(DWORDAddr : unsigned(21 downto 0); requestStreamIndex : unsigned(2 downto 0) ) return unsigned is
 begin
@@ -167,7 +171,7 @@ begin
 VertexCache_clk <= clk;
 VSC_ReadData <= VertexCache_douta;
 
-DBG_State <= std_logic_vector(to_unsigned(eCacheState'pos(currentState), 3) );
+DBG_State <= std_logic_vector(to_unsigned(eCacheState'pos(currentState), 4) );
 
 -- Use a separate process to handle writing the new vertex buffer stream addresses to keep things a little cleaner:
 process(clk)
@@ -211,19 +215,27 @@ begin
 						InvalidateCacheEntries(iter);
 					end loop;
 				elsif (VSC_ReadEnable = '1') then
-					selectedCacheSetIndexInt := to_integer(GetCacheSetIndexFromDWORDAddr(unsigned(VSC_ReadDWORDAddr), unsigned(VSC_ReadStreamIndex) ) );
-					if (IsAddressInCurrentCache(unsigned(VSC_ReadStreamIndex), unsigned(VSC_ReadDWORDAddr(21 downto 8) ), cacheLines(selectedCacheSetIndexInt) ) = '1') then -- Cache hit
-						VertexCache_addra <= std_logic_vector(GetBRAMAddress(GetCacheSetIndexFromDWORDAddr(unsigned(VSC_ReadDWORDAddr), unsigned(VSC_ReadStreamIndex) ), 
-							GetCacheHitIndex(unsigned(VSC_ReadStreamIndex), unsigned(VSC_ReadDWORDAddr(21 downto 8) ), cacheLines(selectedCacheSetIndexInt) ), 
-							unsigned(VSC_ReadDWORDAddr(2 downto 0) ) ) );
-						VertexCache_ena <= '1';
-						currentState <= waitForBRAMReadState;
-					else -- Cache miss
-						VSCReadRequestsFIFO_wr_data <= std_logic_vector(resize(vertexStreamAddresses(to_integer(unsigned(VSC_ReadStreamIndex) ) ) + (unsigned(VSC_ReadDWORDAddr) sll 2), 30) );
-						VSCReadRequestsFIFO_wr_en <= '1';
+					currentState <= lookupState;
 
-						currentState <= cacheMissState;
-					end if;
+					selectedCacheSetIndexInt := to_integer(GetCacheSetIndexFromDWORDAddr(unsigned(VSC_ReadDWORDAddr), unsigned(VSC_ReadStreamIndex) ) );
+					addressHitsCache <= IsAddressInCurrentCache(unsigned(VSC_ReadStreamIndex), unsigned(VSC_ReadDWORDAddr(21 downto 8) ), cacheLines(selectedCacheSetIndexInt) );
+				end if;
+
+			when lookupState =>
+				selectedCacheSetIndexInt := to_integer(GetCacheSetIndexFromDWORDAddr(unsigned(VSC_ReadDWORDAddr), unsigned(VSC_ReadStreamIndex) ) );
+				if (addressHitsCache = '1') then -- Cache hit
+					VertexCache_addra <= std_logic_vector(GetBRAMAddress(GetCacheSetIndexFromDWORDAddr(unsigned(VSC_ReadDWORDAddr), unsigned(VSC_ReadStreamIndex) ), 
+						GetCacheHitIndex(unsigned(VSC_ReadStreamIndex), unsigned(VSC_ReadDWORDAddr(21 downto 8) ), cacheLines(selectedCacheSetIndexInt) ), 
+						unsigned(VSC_ReadDWORDAddr(2 downto 0) ) ) );
+					VertexCache_ena <= '1';
+
+					currentState <= waitForBRAMReadState;
+				else -- Cache miss
+					VertexCache_ena <= '0';
+					VSCReadRequestsFIFO_wr_data <= std_logic_vector(resize(vertexStreamAddresses(to_integer(unsigned(VSC_ReadStreamIndex) ) ) + (unsigned(VSC_ReadDWORDAddr) sll 2), 30) );
+					VSCReadRequestsFIFO_wr_en <= '1';
+
+					currentState <= cacheMissState;
 				end if;
 
 			when cacheMissState =>

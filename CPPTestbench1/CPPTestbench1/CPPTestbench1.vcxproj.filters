@@ -196,5 +196,8 @@
     <None Include="hdl_src\IndexBufferCacheTestbench.vhd">
       <Filter>HDL</Filter>
     </None>
+    <None Include="hdl_src\CDC_Command_Scanout.vhd">
+      <Filter>HDL</Filter>
+    </None>
   </ItemGroup>
 </Project>

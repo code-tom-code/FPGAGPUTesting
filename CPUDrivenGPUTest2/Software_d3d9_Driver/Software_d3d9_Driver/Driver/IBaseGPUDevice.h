@@ -70,10 +70,15 @@ struct GPUDeviceState
 	eTexChannelMUX deviceCachedTexA = tcm_MAX;
 	combinerMode deviceCachedCombinerModeColor = cbm_MAX_NUM_COMBINER_MODES;
 	combinerMode deviceCachedCombinerModeAlpha = cbm_MAX_NUM_COMBINER_MODES;
+	setScanoutPointerCommand::eDisplayChannelSwizzle deviceScanoutSwizzleR = setScanoutPointerCommand::dcs_red;
+	setScanoutPointerCommand::eDisplayChannelSwizzle deviceScanoutSwizzleG = setScanoutPointerCommand::dcs_green;
+	setScanoutPointerCommand::eDisplayChannelSwizzle deviceScanoutSwizzleB = setScanoutPointerCommand::dcs_blue;
+	bool deviceCachedScanoutEnabled = false;
 	bool deviceCachedZTestEnabled = false;
 	bool deviceCachedZWriteEnabled = false;
 	bool deviceCachedAlphaTestEnabled = false;
 	BYTE deviceCachedAlphaTestRefVal = 0x00;
+	bool deviceCachedScanoutInvertColors = false;
 	eCmpFunc deviceCachedAlphaTestCmpFunc = cmp_MAX_CMP_FUNCS;
 	CachedVertexStream deviceCachedVertexStreams[GPU_MAX_NUM_VERTEX_STREAMS];
 	float4 deviceCachedConstantRegisters[GPU_SHADER_MAX_NUM_CONSTANT_FLOAT_REG];
@@ -120,7 +125,8 @@ __declspec(align(16) ) struct IBaseGPUDevice
 
 	HRESULT __stdcall DeviceSetIAState(const eCullMode cullMode, const ePrimTopology primTopology, const eStripCutType stripCut, const eIndexFormat indexFormat, const gpuvoid* const indexBufferBaseAddr);
 
-	HRESULT __stdcall DeviceSetScanoutBuffer(const gpuvoid* const renderTargetMemory, const bool bEnableScanout = true);
+	HRESULT __stdcall DeviceSetScanoutBuffer(const gpuvoid* const renderTargetMemory, const bool bEnableScanout = true, const bool invertScanoutColors = false, 
+		const setScanoutPointerCommand::eDisplayChannelSwizzle redChannelSwizzle = setScanoutPointerCommand::dcs_red, const setScanoutPointerCommand::eDisplayChannelSwizzle greenChannelSwizzle = setScanoutPointerCommand::dcs_green, const setScanoutPointerCommand::eDisplayChannelSwizzle blueChannelSwizzle = setScanoutPointerCommand::dcs_blue);
 	HRESULT __stdcall DeviceDownloadEndOfFrameStats(const gpuvoid* const statsMemory, DWORD* const outReadbackStatsData);
 
 	HRESULT __stdcall DeviceSetIndexBuffer(const gpuvoid* const indexBufferMemory, const unsigned indexBuffer16LengthIndices, const eIndexFormat indexFormat);

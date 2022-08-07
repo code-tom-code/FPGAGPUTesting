@@ -11017,7 +11017,7 @@ void IDirect3DDevice9Hook::InitializeState(const D3DPRESENT_PARAMETERS& d3dpp, c
 	}
 
 	// Set up the initial device state:
-	baseDevice->DeviceSetScanoutBuffer(backbufferSurfaceHook->GetDeviceSurfaceBytes(), enableScanout);
+	baseDevice->DeviceSetScanoutBuffer(backbufferSurfaceHook->GetDeviceSurfaceBytes(), enableScanout, invertScanoutColors, scanoutRedSwizzle, scanoutGreenSwizzle, scanoutBlueSwizzle);
 
 	// Init our stats buffer:
 	deviceStats.InitStatsBuffer();
@@ -11057,7 +11057,8 @@ void IDirect3DDevice9Hook::InitializeState(const D3DPRESENT_PARAMETERS& d3dpp, c
 
 IDirect3DDevice9Hook::IDirect3DDevice9Hook(LPDIRECT3DDEVICE9 _d3d9dev, IDirect3D9Hook* _parentHook) : d3d9dev(_d3d9dev), parentHook(_parentHook), refCount(1), initialDevType(D3DDEVTYPE_HAL), initialCreateFlags(D3DCREATE_HARDWARE_VERTEXPROCESSING),
 	enableDialogs(FALSE), sceneBegun(FALSE), implicitSwapChain(NULL), hConsoleHandle(INVALID_HANDLE_VALUE), numPixelsPassedZTest(0), initialCreateFocusWindow(NULL), initialCreateDeviceWindow(NULL),
-	processedVertexBuffer(NULL), processedVertsUsed(0), processVertsAllocated(0), currentlyRecordingStateBlock(NULL), currentSwvpEnabled(FALSE), deviceComms(NULL), baseDevice(NULL), overrideTexCombinerMode(-1), allocatedDebugShaderRegisterFile(NULL)
+	processedVertexBuffer(NULL), processedVertsUsed(0), processVertsAllocated(0), currentlyRecordingStateBlock(NULL), currentSwvpEnabled(FALSE), deviceComms(NULL), baseDevice(NULL), overrideTexCombinerMode(-1), allocatedDebugShaderRegisterFile(NULL),
+	invertScanoutColors(false), scanoutRedSwizzle(setScanoutPointerCommand::dcs_red), scanoutGreenSwizzle(setScanoutPointerCommand::dcs_green), scanoutBlueSwizzle(setScanoutPointerCommand::dcs_blue)
 {
 #ifdef _DEBUG
 	m_FirstMember = false;
@@ -11079,6 +11080,12 @@ IDirect3DDevice9Hook::IDirect3DDevice9Hook(LPDIRECT3DDEVICE9 _d3d9dev, IDirect3D
 	enableScanout = true;
 #else
 	enableScanout = true;
+#endif
+
+#ifdef _DEBUG
+	enableVSyncWait = false;
+#else
+	enableVSyncWait = true;
 #endif
 
 #ifdef _DEBUG

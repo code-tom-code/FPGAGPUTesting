@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
-<EDKSYSTEM EDWVERSION="1.2" TIMESTAMP="Fri Aug  5 19:29:40 2022" VIVADOVERSION="2018.1">
+<EDKSYSTEM EDWVERSION="1.2" TIMESTAMP="Sat Aug  6 18:15:38 2022" VIVADOVERSION="2018.1_AR73068">
 
   <SYSTEMINFO ARCH="kintexuplus" BOARD="xilinx.com:kcu116:part0:1.3" DEVICE="xcku5p" NAME="design_1" PACKAGE="ffvb676" SPEEDGRADE="-2"/>
 
@@ -526,9 +526,9 @@
             <CONNECTION INSTANCE="Rasterizer_0" PORT="CMD_Rasterizer_Idle"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" NAME="CMD_VSync" SIGIS="undef" SIGNAME="ScanoutSystem_ScanOut_0_vsync">
+        <PORT DIR="I" NAME="CMD_VSync" SIGIS="undef" SIGNAME="ScanoutSystem_CDC_Command_Scanout_0_CMD_VSync">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="ScanoutSystem_ScanOut_0" PORT="vsync"/>
+            <CONNECTION INSTANCE="ScanoutSystem_CDC_Command_Scanout_0" PORT="CMD_VSync"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="I" NAME="CMD_TexSampler_Idle" SIGIS="undef" SIGNAME="TexSample_0_CMD_TexSampleIsIdle">
@@ -824,22 +824,22 @@
         </PORT>
         <PORT DIR="O" LEFT="29" NAME="SCANOUT_RenderTargetBaseAddr" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_SCANOUT_RenderTargetBaseAddr">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="ScanoutSystem_ScanOut_0" PORT="CMD_BaseRenderTargetAddr"/>
+            <CONNECTION INSTANCE="ScanoutSystem_CDC_Command_Scanout_0" PORT="CMD_RenderTargetBaseAddr"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" NAME="SCANOUT_ScanEnable" SIGIS="undef" SIGNAME="CommandProcessor_0_SCANOUT_ScanEnable">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="ScanoutSystem_ScanOut_0" PORT="CMD_ScanoutEnable"/>
+            <CONNECTION INSTANCE="ScanoutSystem_CDC_Command_Scanout_0" PORT="CMD_ScanEnable"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" NAME="SCANOUT_InvertOutputColor" SIGIS="undef" SIGNAME="CommandProcessor_0_SCANOUT_InvertOutputColor">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="ScanoutSystem_ScanOut_0" PORT="CMD_InvertOutputColor"/>
+            <CONNECTION INSTANCE="ScanoutSystem_CDC_Command_Scanout_0" PORT="CMD_InvertOutputColor"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="8" NAME="SCANOUT_OutputColorChannels" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_SCANOUT_OutputColorChannels">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="ScanoutSystem_ScanOut_0" PORT="CMD_OutputColorChannels"/>
+            <CONNECTION INSTANCE="ScanoutSystem_CDC_Command_Scanout_0" PORT="CMD_OutputColorChannels"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" NAME="CLEAR_ClearBlockBeginSignal" SIGIS="undef" SIGNAME="CommandProcessor_0_CLEAR_ClearBlockBeginSignal">
@@ -24986,7 +24986,7 @@
             <CONNECTION INSTANCE="VBO_INDEX_FIFO" PORT="clk"/>
             <CONNECTION INSTANCE="IndexBufferCache_0" PORT="clk"/>
             <CONNECTION INSTANCE="InputAssembler2_0" PORT="clk"/>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="clk"/>
+            <CONNECTION INSTANCE="VertexBatchBuilder_0" PORT="clk"/>
             <CONNECTION INSTANCE="SerialPacketSystem_ValidIncomingPacketsFIFO" PORT="rd_clk"/>
             <CONNECTION INSTANCE="SerialPacketSystem_ReturnOutputPacketsFIFO" PORT="wr_clk"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_InstructionCache" PORT="clka"/>
@@ -24999,7 +24999,8 @@
             <CONNECTION INSTANCE="ShaderCoreSystem_FloatALU_3" PORT="clk"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_VertexStreamCache_0" PORT="clk"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_GPRQuadSystem_GPRQuad2_0" PORT="clk"/>
-            <CONNECTION INSTANCE="VertexBatchBuilder_0" PORT="clk"/>
+            <CONNECTION INSTANCE="ScanoutSystem_CDC_Command_Scanout_0" PORT="cmd_clk"/>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="clk"/>
             <CONNECTION INSTANCE="MemorySystem_ScanoutReadRequestsFIFO" PORT="rd_clk"/>
             <CONNECTION INSTANCE="MemorySystem_ZStencilReadRequestsFIFO" PORT="rd_clk"/>
             <CONNECTION INSTANCE="MemorySystem_ZStencilReadRequestsFIFO" PORT="wr_clk"/>
@@ -25995,10 +25996,80 @@
         </PORT>
         <PORT DIR="O" NAME="resetn" SIGIS="rst" SIGNAME="ResetN_UntilClockLoc_0_resetn">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="resetn"/>
             <CONNECTION INSTANCE="MemorySystem_MemoryController_0" PORT="M_AXI_ARESETN"/>
             <CONNECTION INSTANCE="SerialPacketSystem_axi_uartlite_0" PORT="s_axi_aresetn"/>
             <CONNECTION INSTANCE="SerialPacketSystem_PacketProcessor_0" PORT="M_AXI_ARESETN"/>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="resetn"/>
+          </CONNECTIONS>
+        </PORT>
+      </PORTS>
+      <BUSINTERFACES/>
+    </MODULE>
+    <MODULE FULLNAME="/ScanoutSystem/CDC_Command_Scanout_0" HWVERSION="1.0" INSTANCE="ScanoutSystem_CDC_Command_Scanout_0" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="CDC_Command_Scanout" VLNV="xilinx.com:module_ref:CDC_Command_Scanout:1.0">
+      <DOCUMENTS/>
+      <PARAMETERS>
+        <PARAMETER NAME="Component_Name" VALUE="design_1_CDC_Command_Scanout_0_0"/>
+        <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
+      </PARAMETERS>
+      <PORTS>
+        <PORT CLKFREQUENCY="333250000" DIR="I" NAME="cmd_clk" SIGIS="clk" SIGNAME="MemorySystem_ddr4_0_c0_ddr4_ui_clk">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="MemorySystem_ddr4_0" PORT="c0_ddr4_ui_clk"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="CMD_VSync" SIGIS="undef" SIGNAME="ScanoutSystem_CDC_Command_Scanout_0_CMD_VSync">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="CMD_VSync"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="29" NAME="CMD_RenderTargetBaseAddr" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_SCANOUT_RenderTargetBaseAddr">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="SCANOUT_RenderTargetBaseAddr"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="CMD_ScanEnable" SIGIS="undef" SIGNAME="CommandProcessor_0_SCANOUT_ScanEnable">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="SCANOUT_ScanEnable"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="CMD_InvertOutputColor" SIGIS="undef" SIGNAME="CommandProcessor_0_SCANOUT_InvertOutputColor">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="SCANOUT_InvertOutputColor"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="8" NAME="CMD_OutputColorChannels" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_SCANOUT_OutputColorChannels">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="SCANOUT_OutputColorChannels"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT CLKFREQUENCY="251750000" DIR="I" NAME="scanout_clk" SIGIS="clk" SIGNAME="ScanoutSystem_scanout_clk_25_175_x10_clk_x10">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ScanoutSystem_scanout_clk_25_175_x10" PORT="clk_x10"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="SCANOUT_VSync" SIGIS="undef" SIGNAME="ScanoutSystem_ScanOut_0_vsync">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ScanoutSystem_ScanOut_0" PORT="vsync"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="29" NAME="SCANOUT_RenderTargetBaseAddr" RIGHT="0" SIGIS="undef" SIGNAME="ScanoutSystem_CDC_Command_Scanout_0_SCANOUT_RenderTargetBaseAddr">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ScanoutSystem_ScanOut_0" PORT="CMD_BaseRenderTargetAddr"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="SCANOUT_ScanEnable" SIGIS="undef" SIGNAME="ScanoutSystem_CDC_Command_Scanout_0_SCANOUT_ScanEnable">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ScanoutSystem_ScanOut_0" PORT="CMD_ScanoutEnable"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="SCANOUT_InvertOutputColor" SIGIS="undef" SIGNAME="ScanoutSystem_CDC_Command_Scanout_0_SCANOUT_InvertOutputColor">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ScanoutSystem_ScanOut_0" PORT="CMD_InvertOutputColor"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="8" NAME="SCANOUT_OutputColorChannels" RIGHT="0" SIGIS="undef" SIGNAME="ScanoutSystem_CDC_Command_Scanout_0_SCANOUT_OutputColorChannels">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ScanoutSystem_ScanOut_0" PORT="CMD_OutputColorChannels"/>
           </CONNECTIONS>
         </PORT>
       </PORTS>
@@ -26016,24 +26087,24 @@
             <CONNECTION INSTANCE="ScanoutSystem_scanout_clk_25_175_x10" PORT="clk_x10"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="29" NAME="CMD_BaseRenderTargetAddr" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_SCANOUT_RenderTargetBaseAddr">
+        <PORT DIR="I" LEFT="29" NAME="CMD_BaseRenderTargetAddr" RIGHT="0" SIGIS="undef" SIGNAME="ScanoutSystem_CDC_Command_Scanout_0_SCANOUT_RenderTargetBaseAddr">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="SCANOUT_RenderTargetBaseAddr"/>
+            <CONNECTION INSTANCE="ScanoutSystem_CDC_Command_Scanout_0" PORT="SCANOUT_RenderTargetBaseAddr"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" NAME="CMD_ScanoutEnable" SIGIS="undef" SIGNAME="CommandProcessor_0_SCANOUT_ScanEnable">
+        <PORT DIR="I" NAME="CMD_ScanoutEnable" SIGIS="undef" SIGNAME="ScanoutSystem_CDC_Command_Scanout_0_SCANOUT_ScanEnable">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="SCANOUT_ScanEnable"/>
+            <CONNECTION INSTANCE="ScanoutSystem_CDC_Command_Scanout_0" PORT="SCANOUT_ScanEnable"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" NAME="CMD_InvertOutputColor" SIGIS="undef" SIGNAME="CommandProcessor_0_SCANOUT_InvertOutputColor">
+        <PORT DIR="I" NAME="CMD_InvertOutputColor" SIGIS="undef" SIGNAME="ScanoutSystem_CDC_Command_Scanout_0_SCANOUT_InvertOutputColor">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="SCANOUT_InvertOutputColor"/>
+            <CONNECTION INSTANCE="ScanoutSystem_CDC_Command_Scanout_0" PORT="SCANOUT_InvertOutputColor"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="8" NAME="CMD_OutputColorChannels" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_SCANOUT_OutputColorChannels">
+        <PORT DIR="I" LEFT="8" NAME="CMD_OutputColorChannels" RIGHT="0" SIGIS="undef" SIGNAME="ScanoutSystem_CDC_Command_Scanout_0_SCANOUT_OutputColorChannels">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="SCANOUT_OutputColorChannels"/>
+            <CONNECTION INSTANCE="ScanoutSystem_CDC_Command_Scanout_0" PORT="SCANOUT_OutputColorChannels"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="9" NAME="outXCoord" RIGHT="0" SIGIS="undef"/>
@@ -26075,8 +26146,8 @@
         </PORT>
         <PORT DIR="O" NAME="vsync" SIGIS="undef" SIGNAME="ScanoutSystem_ScanOut_0_vsync">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="CMD_VSync"/>
             <CONNECTION INSTANCE="ScanoutSystem_dvid_0" PORT="vsync"/>
+            <CONNECTION INSTANCE="ScanoutSystem_CDC_Command_Scanout_0" PORT="SCANOUT_VSync"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" NAME="hsync" SIGIS="undef" SIGNAME="ScanoutSystem_ScanOut_0_hsync">
@@ -26852,8 +26923,9 @@
           <CONNECTIONS>
             <CONNECTION INSTANCE="MemorySystem_ScanoutReadResponsesFIFO" PORT="rd_clk"/>
             <CONNECTION INSTANCE="MemorySystem_ScanoutReadRequestsFIFO" PORT="wr_clk"/>
-            <CONNECTION INSTANCE="ScanoutSystem_dvid_0" PORT="clk_x10"/>
             <CONNECTION INSTANCE="ScanoutSystem_ScanOut_0" PORT="clk_x10"/>
+            <CONNECTION INSTANCE="ScanoutSystem_dvid_0" PORT="clk_x10"/>
+            <CONNECTION INSTANCE="ScanoutSystem_CDC_Command_Scanout_0" PORT="scanout_clk"/>
           </CONNECTIONS>
         </PORT>
         <PORT CLKFREQUENCY="25175000" DIR="O" NAME="pixelclk_x1" SIGIS="clk" SIGNAME="ScanoutSystem_scanout_clk_25_175_x10_pixelclk_x1">

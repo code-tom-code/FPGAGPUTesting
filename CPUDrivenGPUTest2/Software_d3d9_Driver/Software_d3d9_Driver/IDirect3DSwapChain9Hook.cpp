@@ -112,19 +112,21 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DSwapChain9Hook::Present(
 	// Flush the ROP's to the back buffer in case they have outstanding writes in their caches
 	parentDevice->GetBaseDevice()->DeviceFlushROPCache();
 
-	// Request a full pipeline flush wait on each present so that the CPU doesn't get ahead of the GPU
-	parentDevice->GetBaseDevice()->DeviceWaitForIdle(waitForDeviceIdleCommand::waitForFullPipelineFlush, true);
+	// Request a full pipeline flush wait on each present so that the CPU doesn't get ahead of the GPU (optional VSync wait here also)
+	if (parentDevice->GetEnableVSyncWait() )
+		parentDevice->GetBaseDevice()->DeviceWaitForIdle(waitForDeviceIdleCommand::waitForFullPipelineFlushAndVSync, true);
+	else
+		parentDevice->GetBaseDevice()->DeviceWaitForIdle(waitForDeviceIdleCommand::waitForFullPipelineFlush, true);
 
 	// Swap our buffers if double-buffering is enabled (otherwise, just keep rendering and presenting from the one buffer)
+	const IDirect3DSurface9Hook* newScanoutBuffer = backBuffer;
 	if (parentDevice->GetUseDoubleBuffering() )
 	{
 		frontBuffer->FrontbufferBackbufferSwap(backBuffer);
-		parentDevice->GetBaseDevice()->DeviceSetScanoutBuffer(frontBuffer->GetDeviceSurfaceBytes(), parentDevice->GetScanoutEnabled() );
+		newScanoutBuffer = frontBuffer;
 	}
-	else
-	{
-		parentDevice->GetBaseDevice()->DeviceSetScanoutBuffer(backBuffer->GetDeviceSurfaceBytes(), parentDevice->GetScanoutEnabled() );
-	}
+	parentDevice->GetBaseDevice()->DeviceSetScanoutBuffer(newScanoutBuffer->GetDeviceSurfaceBytes(), parentDevice->GetScanoutEnabled(), parentDevice->GetInvertScanoutColors(), parentDevice->GetScanoutSwizzleR(), 
+		parentDevice->GetScanoutSwizzleG(), parentDevice->GetScanoutSwizzleB() );
 
 	// Don't download stats every frame since pulling them is relatively expensive over serial UART and it will affect total frame-times:
 	if (parentDevice->DoEnableGPUStats() )

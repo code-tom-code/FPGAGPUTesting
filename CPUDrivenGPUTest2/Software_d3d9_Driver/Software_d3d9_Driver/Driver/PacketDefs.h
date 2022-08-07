@@ -437,7 +437,9 @@ struct drawIndexedCommand : command
 
 struct setScanoutPointerCommand : command
 {
-	setScanoutPointerCommand() : command(PT_SETSCANOUTPOINTER)
+	setScanoutPointerCommand() : command(PT_SETSCANOUTPOINTER),
+		scanoutEnable(true), invertColor(false), unused0(0),
+		channelSwizzleR(dcs_red), channelSwizzleG(dcs_green), channelSwizzleB(dcs_blue), unused1(0)
 	{
 	}
 
@@ -456,10 +458,27 @@ struct setScanoutPointerCommand : command
 		DISPLAYMODE_MAX_COUNT // This must always be last
 	};
 
+	enum eDisplayChannelSwizzle : unsigned char
+	{
+		dcs_red = 0,
+		dcs_green = 1,
+		dcs_blue = 2,
+		dcs_alpha = 3,
+		dcs_black = 4,
+		dcs_white = 5,
+		dcs_MAX_ITEMS, // This has to be the last used item
+		dcs_undefined1 = 6, // This is unused currently
+		dcs_undefined2 = 7 // This is unused currently
+	};
+
 	// Payload 1:
-	BYTE scanoutEnable = 0xFF; // Toggles scanout on/off (effectively "plugs in" or "unplugs" the monitor from the GPU) // 7 downto 0
-	BYTE unused0 = 0; // 15 downto 8
-	BYTE unused1 = 0; // 23 downto 16
+	BYTE scanoutEnable : 1; // Toggles scanout on/off (effectively "plugs in" or "unplugs" the monitor from the GPU) // 0
+	BYTE invertColor : 1; // Inverts the color values of each of the channels (is applied *after* taking channel swizzling into account) // 1
+	BYTE unused0 : 6; // 7 downto 2
+	unsigned short channelSwizzleR : 3; // 10 downto 8
+	unsigned short channelSwizzleG : 3; // 13 downto 11
+	unsigned short channelSwizzleB : 3; // 16 downto 14
+	unsigned short unused1 : 7; // 23 downto 17
 	eDisplayMode displayMode = dm_default; // 31 downto 24
 };
 

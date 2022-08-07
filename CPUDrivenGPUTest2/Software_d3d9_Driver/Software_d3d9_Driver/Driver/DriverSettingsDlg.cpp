@@ -4,6 +4,25 @@
 
 static const UINT WM_USER_DLG_INIT_MSG = WM_USER + 0x3E9F;
 
+static const char* const scanoutSwizzleStrings[] =
+{
+	"Red",
+	"Green",
+	"Blue",
+	"Alpha",
+	"Black",
+	"White"
+};
+static_assert(ARRAYSIZE(scanoutSwizzleStrings) == setScanoutPointerCommand::dcs_MAX_ITEMS, "Error: Need to update string list to match enum entries!");
+
+static void PopulateScanoutSwizzleDropdownList(_In_ HWND hWnd, _In_ const int dialogItemID)
+{
+	for (unsigned x = 0; x < ARRAYSIZE(scanoutSwizzleStrings); ++x)
+	{
+		SendDlgItemMessageA(hWnd, dialogItemID, CB_ADDSTRING, 0, (LPARAM)(scanoutSwizzleStrings[x]) );
+	}
+}
+
 static INT_PTR CALLBACK DriverSettingsDialogProc(_In_ HWND hWnd, _In_ UINT MSG, _In_ WPARAM wParam, _In_ LPARAM lParam)
 {
 	IDirect3DDevice9Hook* const d3d9devhook = (IDirect3DDevice9Hook* const)GetWindowLongPtrA(hWnd, DWL_USER);
@@ -23,6 +42,14 @@ static INT_PTR CALLBACK DriverSettingsDialogProc(_In_ HWND hWnd, _In_ UINT MSG, 
 			CheckDlgButton(hWnd, IDC_CHK_EMULATECOMMANDLISTS, d3d9devhook->GetEmulateCommandLists() ? BST_CHECKED : BST_UNCHECKED);
 			CheckDlgButton(hWnd, IDC_CHK_PRINTSCRNSAVESSCREENSHOT, d3d9devhook->GetPrintScreenCapturesScreenshot() ? BST_CHECKED : BST_UNCHECKED);
 			CheckDlgButton(hWnd, IDC_CHK_DISABLESTATECACHING, d3d9devhook->GetBaseDevice()->GetDisallowDeviceStateCaching() ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hWnd, IDC_CHK_INVERTSCANOUTCOLORS, d3d9devhook->GetInvertScanoutColors() ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hWnd, IDC_CHK_WAITFORVSYNC, d3d9devhook->GetEnableVSyncWait() ? BST_CHECKED : BST_UNCHECKED);
+			PopulateScanoutSwizzleDropdownList(hWnd, IDC_CMB_SCANOUTSWIZZLER);
+			PopulateScanoutSwizzleDropdownList(hWnd, IDC_CMB_SCANOUTSWIZZLEG);
+			PopulateScanoutSwizzleDropdownList(hWnd, IDC_CMB_SCANOUTSWIZZLEB);
+			SendDlgItemMessageA(hWnd, IDC_CMB_SCANOUTSWIZZLER, CB_SETCURSEL, d3d9devhook->GetScanoutSwizzleR(), 0);
+			SendDlgItemMessageA(hWnd, IDC_CMB_SCANOUTSWIZZLEG, CB_SETCURSEL, d3d9devhook->GetScanoutSwizzleG(), 0);
+			SendDlgItemMessageA(hWnd, IDC_CMB_SCANOUTSWIZZLEB, CB_SETCURSEL, d3d9devhook->GetScanoutSwizzleB(), 0);
 			EnableWindow(GetDlgItem(hWnd, IDC_LST_OVERRIDETEXMODE), d3d9devhook->DoOverrideTexCombinerMode() ? TRUE : FALSE);
 			SendDlgItemMessageA(hWnd, IDC_LST_OVERRIDETEXMODE, LB_SETITEMDATA, SendDlgItemMessageA(hWnd, IDC_LST_OVERRIDETEXMODE, LB_ADDSTRING, NULL, (LPARAM)"(0)Black"), 0);
 			SendDlgItemMessageA(hWnd, IDC_LST_OVERRIDETEXMODE, LB_SETITEMDATA, SendDlgItemMessageA(hWnd, IDC_LST_OVERRIDETEXMODE, LB_ADDSTRING, NULL, (LPARAM)"(1)White"), 1);
@@ -73,6 +100,39 @@ static INT_PTR CALLBACK DriverSettingsDialogProc(_In_ HWND hWnd, _In_ UINT MSG, 
 				return TRUE;
 			case IDC_CHK_DISABLESTATECACHING:
 				d3d9devhook->GetBaseDevice()->SetDisallowDeviceStateCaching(IsDlgButtonChecked(hWnd, IDC_CHK_DISABLESTATECACHING) ? true : false);
+				return TRUE;
+			case IDC_CHK_INVERTSCANOUTCOLORS:
+				d3d9devhook->SetInvertScanoutColors(IsDlgButtonChecked(hWnd, IDC_CHK_INVERTSCANOUTCOLORS) ? true : false);
+				return TRUE;
+			case IDC_CHK_WAITFORVSYNC:
+				d3d9devhook->SetEnableVSyncWait(IsDlgButtonChecked(hWnd, IDC_CHK_WAITFORVSYNC) ? true : false);
+				return TRUE;
+			case IDC_CMB_SCANOUTSWIZZLER:
+			{
+				const int comboboxIndex = SendDlgItemMessageA(hWnd, IDC_CMB_SCANOUTSWIZZLER, CB_GETCURSEL, 0, 0);
+				if (comboboxIndex >= 0)
+				{
+					d3d9devhook->SetScanoutSwizzleR( (const setScanoutPointerCommand::eDisplayChannelSwizzle)comboboxIndex);
+				}
+			}
+				return TRUE;
+			case IDC_CMB_SCANOUTSWIZZLEG:
+			{
+				const int comboboxIndex = SendDlgItemMessageA(hWnd, IDC_CMB_SCANOUTSWIZZLEG, CB_GETCURSEL, 0, 0);
+				if (comboboxIndex >= 0)
+				{
+					d3d9devhook->SetScanoutSwizzleG( (const setScanoutPointerCommand::eDisplayChannelSwizzle)comboboxIndex);
+				}
+			}
+				return TRUE;
+			case IDC_CMB_SCANOUTSWIZZLEB:
+			{
+				const int comboboxIndex = SendDlgItemMessageA(hWnd, IDC_CMB_SCANOUTSWIZZLEB, CB_GETCURSEL, 0, 0);
+				if (comboboxIndex >= 0)
+				{
+					d3d9devhook->SetScanoutSwizzleB( (const setScanoutPointerCommand::eDisplayChannelSwizzle)comboboxIndex);
+				}
+			}
 				return TRUE;
 			case IDC_CHK_OVERRIDETEXMODE:
 				if (IsDlgButtonChecked(hWnd, IDC_CHK_OVERRIDETEXMODE) )
@@ -150,9 +210,9 @@ void DriverSettingsDlg::UpdateDialog()
 	if (driverOptionsDlgWnd != NULL)
 	{
 		MSG msg = {0};
-		while (PeekMessageA(&msg, driverOptionsDlgWnd, 0, 0, PM_REMOVE) )
+		while (PeekMessageA(&msg, NULL, 0, 0, PM_REMOVE) )
 		{
-			// Dispatch message to dialog box window if it's a dialogue message
+			// Dispatch message to dialog box window if it's a dialog message
 			if (IsDialogMessageA(driverOptionsDlgWnd, &msg) )
 			{
 			}

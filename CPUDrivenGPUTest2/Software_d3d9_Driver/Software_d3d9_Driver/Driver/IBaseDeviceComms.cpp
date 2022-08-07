@@ -255,13 +255,21 @@ __declspec(nothrow) HRESULT __stdcall IBaseDeviceComms::ReadFromDevice(const gpu
 #endif
 			return E_FAIL;
 		}
+		if (memResponse.type != command::PT_READMEMRESPONSE)
+		{
+			printf("Unexpected response packet type receieved!\n");
+#ifdef _DEBUG
+			__debugbreak();
+#endif
+			return E_FAIL;
+		}
 		if (memResponse.readDWORDAddr == newReadMemPacket.readDWORDAddr)
 		{
 			writeMem[dwordID] = memResponse.value;
 		}
 		else
 		{
-			printf("Unexpected response packet address received!\n");
+			printf("Unexpected response packet address received (addr [0x%08X] = 0x%08X). Expected addr 0x%08X.\n", memResponse.readDWORDAddr, memResponse.value, newReadMemPacket.readDWORDAddr);
 #ifdef _DEBUG
 			__debugbreak();
 #endif

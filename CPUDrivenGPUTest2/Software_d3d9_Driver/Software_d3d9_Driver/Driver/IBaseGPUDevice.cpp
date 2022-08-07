@@ -479,7 +479,8 @@ HRESULT __stdcall IBaseGPUDevice::DeviceSetIAState(const eCullMode cullMode, con
 	return hRet;
 }
 
-HRESULT __stdcall IBaseGPUDevice::DeviceSetScanoutBuffer(const gpuvoid* const renderTargetMemory, const bool bEnableScanout/* = true*/)
+HRESULT __stdcall IBaseGPUDevice::DeviceSetScanoutBuffer(const gpuvoid* const renderTargetMemory, const bool bEnableScanout/* = true*/, const bool invertScanoutColors /*= false*/, 
+		const setScanoutPointerCommand::eDisplayChannelSwizzle redChannelSwizzle /*= setScanoutPointerCommand::dcs_red*/, const setScanoutPointerCommand::eDisplayChannelSwizzle greenChannelSwizzle /*= setScanoutPointerCommand::dcs_green*/, const setScanoutPointerCommand::eDisplayChannelSwizzle blueChannelSwizzle /*= setScanoutPointerCommand::dcs_blue*/)
 {
 	if (!ValidateAddress(renderTargetMemory) )
 		return E_INVALIDARG;
@@ -492,13 +493,42 @@ HRESULT __stdcall IBaseGPUDevice::DeviceSetScanoutBuffer(const gpuvoid* const re
 		return E_INVALIDARG;
 	}
 
-	if (DoCacheDeviceState() && currentCachedState.deviceCachedScanoutBuffer == renderTargetMemory)
+	if (redChannelSwizzle >= setScanoutPointerCommand::dcs_undefined1)
+	{
+#ifdef _DEBUG
+		__debugbreak();
+#endif
+		return E_INVALIDARG;
+	}
+
+	if (greenChannelSwizzle >= setScanoutPointerCommand::dcs_undefined1)
+	{
+#ifdef _DEBUG
+		__debugbreak();
+#endif
+		return E_INVALIDARG;
+	}
+
+	if (blueChannelSwizzle >= setScanoutPointerCommand::dcs_undefined1)
+	{
+#ifdef _DEBUG
+		__debugbreak();
+#endif
+		return E_INVALIDARG;
+	}
+
+	if (DoCacheDeviceState() && currentCachedState.deviceCachedScanoutBuffer == renderTargetMemory && currentCachedState.deviceCachedScanoutEnabled == bEnableScanout && currentCachedState.deviceCachedScanoutInvertColors == invertScanoutColors &&
+		currentCachedState.deviceScanoutSwizzleR == redChannelSwizzle && currentCachedState.deviceScanoutSwizzleG == greenChannelSwizzle && currentCachedState.deviceScanoutSwizzleB == blueChannelSwizzle)
 		return S_OK;
 
 	setScanoutPointerCommand setScanoutCmd;
 	setScanoutCmd.bufferAddress = (const DWORD)renderTargetMemory;
 	setScanoutCmd.displayMode = setScanoutPointerCommand::dm_640x480_60Hz;
-	setScanoutCmd.scanoutEnable = bEnableScanout ? 0xFF : 0x00;
+	setScanoutCmd.scanoutEnable = bEnableScanout;
+	setScanoutCmd.invertColor = invertScanoutColors;
+	setScanoutCmd.channelSwizzleR = redChannelSwizzle;
+	setScanoutCmd.channelSwizzleG = greenChannelSwizzle;
+	setScanoutCmd.channelSwizzleB = blueChannelSwizzle;
 	setScanoutCmd.checksum = command::ComputeChecksum(&setScanoutCmd, sizeof(setScanoutCmd) );
 #ifdef _DEBUG
 	if (!command::IsValidPacket(&setScanoutCmd, sizeof(setScanoutCmd) ) )
@@ -510,6 +540,11 @@ HRESULT __stdcall IBaseGPUDevice::DeviceSetScanoutBuffer(const gpuvoid* const re
 	if (SUCCEEDED(hRet) && DoCacheDeviceState() )
 	{
 		currentCachedState.deviceCachedScanoutBuffer = renderTargetMemory;
+		currentCachedState.deviceCachedScanoutEnabled = bEnableScanout;
+		currentCachedState.deviceCachedScanoutInvertColors = invertScanoutColors;
+		currentCachedState.deviceScanoutSwizzleR = redChannelSwizzle;
+		currentCachedState.deviceScanoutSwizzleG = greenChannelSwizzle;
+		currentCachedState.deviceScanoutSwizzleB = blueChannelSwizzle;
 	}
 	if (FAILED(hRet) )
 		return hRet;
@@ -699,6 +734,18 @@ HRESULT __stdcall IBaseGPUDevice::DeviceLoadVertexShader(const gpuvoid* const ve
 
 	if (DoCacheDeviceState() )
 	{
+		// When we call SetVertexShader, the Command Processor instructs the ShaderCore to load the new vertex shader program into
+		// the instruction cache. The ShaderCore's only way to access memory is through the VertexStreamCache, so it has to overwrite
+		// vertex stream 0 to do this. Here we'll clobber whatever was cached in stream 0 so that the caching logic will make sure to
+		// reset it on the next draw call:
+		currentCachedState.deviceCachedVertexStreams[0].deviceCachedVertexBuffer = NULL;
+		currentCachedState.deviceCachedVertexStreams[0].dwordOffset = 0;
+		currentCachedState.deviceCachedVertexStreams[0].dwordCount = sizeof(instructionSlot) / sizeof(DWORD);
+		currentCachedState.deviceCachedVertexStreams[0].dwordStride = sizeof(instructionSlot) / sizeof(DWORD);
+		currentCachedState.deviceCachedVertexStreams[0].isD3DCOLOR = false;
+		currentCachedState.deviceCachedVertexStreams[0].streamID = 0;
+		currentCachedState.deviceCachedVertexStreams[0].shaderInputRegIndex = 0;
+
 		currentCachedState.deviceCachedVertexShader = vertexShaderMemory;
 	}
 
@@ -1591,16 +1638,9 @@ const bool __stdcall IBaseGPUDevice::ValidateDeviceStateIsSetForDraw() const
 		return false;
 	}
 
-	bool vertexStreamIsValid = false;
-	for (unsigned x = 0; x < ARRAYSIZE(currentCachedState.deviceCachedVertexStreams); ++x)
-	{
-		const CachedVertexStream& thisVertexStream = currentCachedState.deviceCachedVertexStreams[x];
-		if (thisVertexStream.deviceCachedVertexBuffer != NULL)
-		{
-			vertexStreamIsValid = true;
-		}
-	}
-	if (vertexStreamIsValid == false)
+	// Vertex stream 0 must *always* be set before a draw call!
+	const bool vertexStream0IsValid = currentCachedState.deviceCachedVertexStreams[0].deviceCachedVertexBuffer != NULL;
+	if (!vertexStream0IsValid)
 	{
 #ifdef _DEBUG
 		__debugbreak();

@@ -221,6 +221,7 @@
     <None Include="ConstantBuffer.prj" />
     <None Include="FloatALU.prj" />
     <None Include="GPRQuad.prj" />
+    <None Include="hdl_src\CDC_Command_Scanout.vhd" />
     <None Include="hdl_src\CommandProcessor.vhd" />
     <None Include="hdl_src\ConstantBuffer.vhd" />
     <None Include="hdl_src\FloatALU.vhd" />

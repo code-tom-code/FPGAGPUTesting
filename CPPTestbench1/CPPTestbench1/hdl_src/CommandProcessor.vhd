@@ -10,11 +10,12 @@ entity CommandProcessor is
 	generic (
 	-- Width of address bus. 
 		ADDR_WIDTH_BITS	: integer range 8 to 32 := 30;
-		-- Width of M_AXI data bus. 
+
+	-- Width of M_AXI data bus. 
     -- The master issues write data and accept read data where the width of the data bus is DATA_WIDTH_BITS
 		DATA_WIDTH_BITS	: integer range 16 to 1024 := 256
 	);
-    Port ( 
+    Port (
 		clk	: in std_logic;
 
 		-- active low reset signal
@@ -274,6 +275,15 @@ architecture Behavioral of CommandProcessor is
 		currentPacketMemoryDRAMLine : unsigned(215 downto 0);
 	end record commandListExecState;
 
+	type scanoutSendState is record
+		RenderTargetBaseAddr : STD_LOGIC_VECTOR(29 downto 0);
+		ScanEnable : STD_LOGIC;
+		InvertOutputColor : STD_LOGIC;
+		OutputColorChannels : STD_LOGIC_VECTOR(8 downto 0);
+	end record scanoutSendState;
+
+	constant DefaultScanoutSendState : scanoutSendState := (RenderTargetBaseAddr => (others => '0'), ScanEnable => '0', InvertOutputColor => '0', OutputColorChannels => "010001000" );
+
 	signal mst_packet_state : packetState := PACKETINITSTATE;
 	signal has_new_read_data : std_logic := '0';
 	signal writer_has_consumed_data : std_logic := '0';
@@ -312,6 +322,8 @@ architecture Behavioral of CommandProcessor is
 	signal constantBufferLoadAddr : unsigned(29 downto 0) := (others => '0');
 	signal constantBufferLoadRegisterIndex : unsigned(7 downto 0) := (others => '0');
 	signal constantBufferLoadRemainingRegs : unsigned(7 downto 0) := (others => '0');
+
+	signal currentScanoutSendState : scanoutSendState := DefaultScanoutSendState;
 
 	signal commandListState : commandListExecState;
 
@@ -387,7 +399,10 @@ begin
 	ROP_FlushCacheSignal <= flushROPCache;
 	IA_SetStateEnable <= setIAStateEnable;
 
-	SCANOUT_OutputColorChannels <= "010001000";
+	SCANOUT_ScanEnable <= currentScanoutSendState.ScanEnable;
+	SCANOUT_RenderTargetBaseAddr <= currentScanoutSendState.RenderTargetBaseAddr;
+	SCANOUT_InvertOutputColor <= currentScanoutSendState.InvertOutputColor;
+	SCANOUT_OutputColorChannels <= currentScanoutSendState.OutputColorChannels;
 
 	STAT_CyclesIdle <= std_logic_vector(statCyclesIdle);
 	STAT_CyclesSpentWorking <= std_logic_vector(statCyclesWorking);
@@ -810,8 +825,10 @@ begin
 						end if;
 
 					when SET_SCANOUT_POINTER =>
-						SCANOUT_RenderTargetBaseAddr <= std_logic_vector(localIncomingPacket.payload0(29 downto 0) );
-						SCANOUT_ScanEnable <= localIncomingPacket.payload1(0);
+						currentScanoutSendState.RenderTargetBaseAddr <= std_logic_vector(localIncomingPacket.payload0(29 downto 0) );
+						currentScanoutSendState.ScanEnable <= localIncomingPacket.payload1(0);
+						currentScanoutSendState.InvertOutputColor <= localIncomingPacket.payload1(1);
+						currentScanoutSendState.OutputColorChannels <= std_logic_vector(localIncomingPacket.payload1(16 downto 8) );
 						mst_packet_state <= READ_NEXT_PACKET_FROM_FIFO;
 
 					when SET_IA_STATE =>

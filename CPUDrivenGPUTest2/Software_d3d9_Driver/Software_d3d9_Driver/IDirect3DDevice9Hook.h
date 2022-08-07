@@ -1431,6 +1431,16 @@ public:
 		useDoubleBuffering = newUseDoubleBuffering;
 	}
 
+	const bool GetEnableVSyncWait() const
+	{
+		return enableVSyncWait;
+	}
+
+	void SetEnableVSyncWait(const bool newEnableVSyncWait)
+	{
+		enableVSyncWait = newEnableVSyncWait;
+	}
+
 	const bool DoOverrideTexCombinerMode() const
 	{
 		return overrideTexCombinerMode >= 0;
@@ -1464,6 +1474,46 @@ public:
 	void SetPrintScreenCapturesScreenshot(const bool bNewPrintScrnCapturesScreenshot)
 	{
 		printScrnCapturesScreenshot = bNewPrintScrnCapturesScreenshot;
+	}
+
+	const bool GetInvertScanoutColors() const
+	{
+		return invertScanoutColors;
+	}
+
+	void SetInvertScanoutColors(const bool newScanoutInvertColors)
+	{
+		invertScanoutColors = newScanoutInvertColors;
+	}
+
+	const setScanoutPointerCommand::eDisplayChannelSwizzle GetScanoutSwizzleR() const
+	{
+		return scanoutRedSwizzle;
+	}
+
+	const setScanoutPointerCommand::eDisplayChannelSwizzle GetScanoutSwizzleG() const
+	{
+		return scanoutGreenSwizzle;
+	}
+
+	const setScanoutPointerCommand::eDisplayChannelSwizzle GetScanoutSwizzleB() const
+	{
+		return scanoutBlueSwizzle;
+	}
+
+	void SetScanoutSwizzleR(const setScanoutPointerCommand::eDisplayChannelSwizzle newScanoutSwizzle)
+	{
+		scanoutRedSwizzle = newScanoutSwizzle;
+	}
+
+	void SetScanoutSwizzleG(const setScanoutPointerCommand::eDisplayChannelSwizzle newScanoutSwizzle)
+	{
+		scanoutGreenSwizzle = newScanoutSwizzle;
+	}
+
+	void SetScanoutSwizzleB(const setScanoutPointerCommand::eDisplayChannelSwizzle newScanoutSwizzle)
+	{
+		scanoutBlueSwizzle = newScanoutSwizzle;
 	}
 
 protected:
@@ -1529,9 +1579,14 @@ protected:
 	bool enableGPUStats;
 	bool enableScanout;
 	bool useDoubleBuffering; // Set this to false for GPU single-step debugging purposes to only have a frontbuffer instead of a frontbuffer + backbuffer
+	bool enableVSyncWait;
 	bool emulateCommandLists;
 	bool printScrnCapturesScreenshot;
 	int overrideTexCombinerMode;
+	bool invertScanoutColors;
+	setScanoutPointerCommand::eDisplayChannelSwizzle scanoutRedSwizzle;
+	setScanoutPointerCommand::eDisplayChannelSwizzle scanoutGreenSwizzle;
+	setScanoutPointerCommand::eDisplayChannelSwizzle scanoutBlueSwizzle;
 
 	gpuvoid* allocatedDebugShaderRegisterFile;
 

@@ -83,6 +83,13 @@ __declspec(align(16) ) struct __declspec(novtable) IBaseDeviceComms
 		packetStatsTotal.Accumulate(packetStatsCurrentFrame);
 		packetStatsCurrentFrame.Reset();
 
+#ifdef _DEBUG
+		if (!sentPacketsThisFrame.empty() )
+			sentPacketsEver.insert(sentPacketsEver.end(), sentPacketsThisFrame.begin(), sentPacketsThisFrame.end() );
+		if (!recvdPacketsThisFrame.empty() )
+			recvdPacketsEver.insert(recvdPacketsEver.end(), recvdPacketsThisFrame.begin(), recvdPacketsThisFrame.end() );
+#endif
+
 		sentPacketsThisFrame.clear();
 		recvdPacketsThisFrame.clear();
 	}
@@ -119,6 +126,11 @@ protected:
 	PacketStats packetStatsCurrentFrame;
 	std::vector<genericCommand> sentPacketsThisFrame;
 	std::vector<genericCommand> recvdPacketsThisFrame;
+
+#ifdef _DEBUG
+	std::vector<genericCommand> sentPacketsEver;
+	std::vector<genericCommand> recvdPacketsEver;
+#endif
 
 private:
 	static IBaseDeviceComms* globalDeviceComms;

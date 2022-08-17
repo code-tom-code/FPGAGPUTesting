@@ -161,15 +161,83 @@ HRESULT __stdcall IBaseGPUDevice::DeviceClearRendertarget(gpuvoid* const renderT
 	return clearHR;
 }
 
-// Not yet implemented!
 HRESULT __stdcall IBaseGPUDevice::DeviceClearDepthStencil(gpuvoid* const zStencilMemory, const bool bDoClearDepth, const bool bDoClearStencil, 
 	const float clearDepth/* = 1.0f*/, const BYTE clearStencil/* = 0x00*/)
 {
-	if (!ValidateAddress(zStencilMemory) )
-		return E_INVALIDARG;
+	//if (!ValidateAddress(zStencilMemory) )
+		//return E_INVALIDARG;
 
-	// Not yet implemented!
-	return E_NOTIMPL;
+	if (clearDepth < 0.0f)
+	{
+#ifdef _DEBUG
+		__debugbreak();
+#endif
+		return E_INVALIDARG;
+	}
+
+	if (clearDepth > 1.0f)
+	{
+#ifdef _DEBUG
+		__debugbreak();
+#endif
+		return E_INVALIDARG;
+	}
+
+	if (isnan(clearDepth) )
+	{
+#ifdef _DEBUG
+		__debugbreak();
+#endif
+		return E_INVALIDARG;
+	}
+
+	clearZStencilCommand::eZSType clearComboType;
+	switch ( ( (const unsigned)bDoClearDepth) | ( ( (const unsigned)bDoClearStencil) << 1) )
+	{
+	case 0:
+#ifdef _DEBUG
+		__debugbreak();
+#endif
+		return E_INVALIDARG;
+	case 1:
+		clearComboType = clearZStencilCommand::EZS_ZClear;
+		break;
+	case 2:
+		clearComboType = clearZStencilCommand::EZS_StencilClear;
+		break;
+	case 3:
+		clearComboType = clearZStencilCommand::EZS_Both;
+		break;
+	}
+
+	clearZStencilCommand clearZStencil;
+	clearZStencil.clearType = clearComboType;
+	clearZStencil.writeZValue = *(reinterpret_cast<const DWORD* const>(&clearDepth) );
+	clearZStencil.writeStencilValue = clearStencil;
+
+	if (clearDepth == 1.0f)
+	{
+		--clearZStencil.writeZValue;
+	}
+	else if (clearDepth < 0.5f)
+	{
+		clearZStencil.writeZValue = 0x00000000;
+	}
+
+	clearZStencil.checksum = command::ComputeChecksum(&clearZStencil, sizeof(clearZStencil) );
+#ifdef _DEBUG
+	if (!command::IsValidPacket(&clearZStencil, sizeof(clearZStencil) ) )
+	{
+		__debugbreak();
+	}
+#endif
+	const HRESULT clearZStencilHR = SendOrStorePacket(&clearZStencil);
+	if (FAILED(clearZStencilHR) )
+		return clearZStencilHR;
+
+	if (DoSyncEveryCall() )
+		return DeviceWaitForIdle();
+	return clearZStencilHR;
 }
 
 HRESULT __stdcall IBaseGPUDevice::DeviceSetTexture(const gpuvoid* const textureMemory, const eTexFormat textureFormat, const unsigned texWidth, const unsigned texHeight)
@@ -325,8 +393,7 @@ HRESULT __stdcall IBaseGPUDevice::DeviceSetTextureState(const unsigned texWidth,
 	return hRet;
 }
 
-HRESULT __stdcall IBaseGPUDevice::DeviceSetBlendState(gpuvoid* const renderTargetMemory, const eBlendMode blendingMode, const eBlendMask writeMask, const bool zTestEnabled, const bool zWriteEnabled, 
-		const bool alphaTestEnabled, const BYTE alphaTestRefVal, const eCmpFunc alphaTestCmpFunc)
+HRESULT __stdcall IBaseGPUDevice::DeviceSetBlendState(gpuvoid* const renderTargetMemory, const eBlendMode blendingMode, const eBlendMask writeMask, const bool alphaTestEnabled, const BYTE alphaTestRefVal, const eCmpFunc alphaTestCmpFunc)
 {
 	if (!ValidateAddress(renderTargetMemory) )
 		return E_INVALIDARG;
@@ -363,7 +430,7 @@ HRESULT __stdcall IBaseGPUDevice::DeviceSetBlendState(gpuvoid* const renderTarge
 		return E_INVALIDARG;
 	}
 
-	if (DoCacheDeviceState() && currentCachedState.deviceCachedRenderTarget == renderTargetMemory && currentCachedState.deviceCachedBlendMode == blendingMode && currentCachedState.deviceCachedWriteMask == writeMask && currentCachedState.deviceCachedZTestEnabled == zTestEnabled && currentCachedState.deviceCachedZWriteEnabled == zWriteEnabled &&
+	if (DoCacheDeviceState() && currentCachedState.deviceCachedRenderTarget == renderTargetMemory && currentCachedState.deviceCachedBlendMode == blendingMode && currentCachedState.deviceCachedWriteMask == writeMask &&
 		currentCachedState.deviceCachedAlphaTestEnabled == alphaTestEnabled && currentCachedState.deviceCachedAlphaTestRefVal == alphaTestRefVal && currentCachedState.deviceCachedAlphaTestCmpFunc == alphaTestCmpFunc)
 		return S_OK;
 
@@ -371,8 +438,6 @@ HRESULT __stdcall IBaseGPUDevice::DeviceSetBlendState(gpuvoid* const renderTarge
 	setBlendState.renderTargetBaseAddress = (const DWORD)renderTargetMemory;
 	setBlendState.newBlendType = blendingMode;
 	setBlendState.writeMask = writeMask;
-	setBlendState.zTestEnabled = zTestEnabled;
-	setBlendState.zWriteEnabled = zWriteEnabled;
 	setBlendState.alphaTestEnabled = alphaTestEnabled;
 	setBlendState.alphaTestRefValue = alphaTestRefVal;
 	setBlendState.alphaTestFunc = alphaTestCmpFunc;
@@ -389,11 +454,57 @@ HRESULT __stdcall IBaseGPUDevice::DeviceSetBlendState(gpuvoid* const renderTarge
 		currentCachedState.deviceCachedRenderTarget = renderTargetMemory;
 		currentCachedState.deviceCachedBlendMode = blendingMode;
 		currentCachedState.deviceCachedWriteMask = writeMask;
-		currentCachedState.deviceCachedZTestEnabled = zTestEnabled;
-		currentCachedState.deviceCachedZWriteEnabled = zWriteEnabled;
 		currentCachedState.deviceCachedAlphaTestEnabled = alphaTestEnabled;
 		currentCachedState.deviceCachedAlphaTestRefVal = alphaTestRefVal;
 		currentCachedState.deviceCachedAlphaTestCmpFunc = alphaTestCmpFunc;
+	}
+	if (FAILED(hRet) )
+		return hRet;
+	
+	if (DoSyncEveryCall() )
+		return DeviceWaitForIdle();
+	return hRet;
+}
+
+HRESULT __stdcall IBaseGPUDevice::DeviceSetDepthState(const bool zEnabled, const bool zWriteEnabled, const eCmpFunc zTestCmpFunc)
+{
+	if (zTestCmpFunc >= cmp_MAX_CMP_FUNCS)
+	{
+#ifdef _DEBUG
+		__debugbreak();
+#endif
+		return E_INVALIDARG;
+	}
+
+	if (DoCacheDeviceState() && currentCachedState.deviceCachedZEnabled == zEnabled && currentCachedState.deviceCachedZWriteEnabled == zWriteEnabled && currentCachedState.deviceCachedDepthTestCmpFunc == zTestCmpFunc)
+		return S_OK;
+
+	setDepthStateCommand setDepthState;
+
+	if (zEnabled)
+	{
+		setDepthState.zWriteEnable = zWriteEnabled;
+		setDepthState.zFunc = zTestCmpFunc;
+	}
+	else
+	{
+		setDepthState.zWriteEnable = false;
+		setDepthState.zFunc = cmp_always;
+	}
+
+	setDepthState.checksum = command::ComputeChecksum(&setDepthState, sizeof(setDepthState) );
+#ifdef _DEBUG
+	if (!command::IsValidPacket(&setDepthState, sizeof(setDepthState) ) )
+	{
+		__debugbreak();
+	}
+#endif
+	const HRESULT hRet = SendOrStorePacket(&setDepthState);
+	if (SUCCEEDED(hRet) && DoCacheDeviceState() )
+	{
+		currentCachedState.deviceCachedZEnabled = zEnabled;
+		currentCachedState.deviceCachedZWriteEnabled = zWriteEnabled;
+		currentCachedState.deviceCachedDepthTestCmpFunc = zTestCmpFunc;
 	}
 	if (FAILED(hRet) )
 		return hRet;
@@ -1760,6 +1871,7 @@ const bool IBaseGPUDevice::PacketIsValidForRecording(const command::ePacketType 
 	case command::PT_SETINDEXBUFFER:
 	case command::PT_SETSHADERCONSTANTSPECIAL:
 	case command::PT_SETSHADERSTARTADDRESS:
+	case command::PT_SETDEPTHSTATE:
 		return true;
 	default:
 #ifdef _DEBUG
@@ -1778,7 +1890,7 @@ const bool IBaseGPUDevice::PacketIsValidForRecording(const command::ePacketType 
 	case command::PT_DEBUGSHADERNEXTDRAWCALL:
 		return false;
 	}
-	static_assert(command::PT_MAX_PACKET_TYPES == 27, "Reminder: Need to update this switch statement with new cases when adding new packets!");
+	static_assert(command::PT_MAX_PACKET_TYPES == 28, "Reminder: Need to update this switch statement with new cases when adding new packets!");
 }
 
 HRESULT IBaseGPUDevice::SendOrStorePacket(const command* const sendPacket)

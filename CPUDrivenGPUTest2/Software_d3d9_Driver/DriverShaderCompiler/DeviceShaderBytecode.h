@@ -30,10 +30,9 @@ enum InstructionOperation : unsigned __int64
 	Op_BSHFTR24 = 25,
 	Op_OR = 26,
 	Op_AND = 27,
-
-	Op_UNUSED28 = 28,
-	Op_UNUSED29 = 29,
-	Op_UNUSED30 = 30,
+	Op_CNV_F_TO_HALF = 28,
+	Op_CNV_HALF_TO_F = 29,
+	Op_CNV_U32_TO_F = 30,
 
 	Op_END = 31
 };
@@ -157,7 +156,9 @@ enum eConvertMode : unsigned char
 	F_to_I16_RoundNearestEven, // 2
 	F_to_UNORM16, // 3
 	F_to_UNORM8, // 4
-	// F_to_Half // 5
+	F_to_Half, // 5
+	Half_to_F, // 6
+	U32_to_F // 7
 };
 
 union instructionSlot
@@ -192,7 +193,7 @@ static_assert(sizeof(instructionSlot) == sizeof(unsigned __int64), "Error: Unexp
 
 static const char* const InstructionOpToString(const InstructionOperation op)
 {
-	static_assert(Op_END == 31 && Op_UNUSED28 == 28 && Op_UNUSED30 == 30, "Need to update this string table to match the new enum!");
+	static_assert(Op_END == 31, "Need to update this string table to match the new enum!");
 	switch (op)
 	{
 	default:
@@ -252,6 +253,12 @@ static const char* const InstructionOpToString(const InstructionOperation op)
 		return "or";
 	case Op_AND:
 		return "and";
+	case Op_CNV_F_TO_HALF:
+		return "cvt_f_to_half";
+	case Op_CNV_HALF_TO_F:
+		return "cvt_half_to_f";
+	case Op_CNV_U32_TO_F:
+		return "cvt_u32_to_f";
 	case Op_END:
 		return "end";
 	}

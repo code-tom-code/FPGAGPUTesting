@@ -5237,13 +5237,15 @@ void IDirect3DDevice9Hook::DeviceSetCurrentState(const D3DPRIMITIVETYPE primType
 	// Set the IA state:
 	baseDevice->DeviceSetIAState(cullMode, primTopology, sct_CutDisabled, indexFormat, currentIB ? currentIB->GetGPUBytes() : NULL);
 
-	// Set the blend state:
-	const bool zTestEnable = currentState.currentRenderStates.renderStatesUnion.namedStates.zEnable != D3DZB_FALSE;
+	// Set the blend and depth states:
+	const bool zEnable = currentState.currentRenderStates.renderStatesUnion.namedStates.zEnable != D3DZB_FALSE;
 	const bool zWriteEnable = currentState.currentRenderStates.renderStatesUnion.namedStates.zWriteEnable ? true : false;
 	const bool alphaTestEnable = currentState.currentRenderStates.renderStatesUnion.namedStates.alphaTestEnable ? true : false;
 	const BYTE alphaTestRefVal = (const BYTE)(currentState.currentRenderStates.renderStatesUnion.namedStates.alphaRef & 0xFF);
 	const D3DCMPFUNC alphaTestCmpFunc = currentState.currentRenderStates.renderStatesUnion.namedStates.alphaFunc;
-	baseDevice->DeviceSetBlendState(deviceBackbuffer, deviceBlendMode, eWriteMask, zTestEnable, zWriteEnable, alphaTestEnable, alphaTestRefVal, ConvertToDeviceCmpFunc(alphaTestCmpFunc) );
+	const D3DCMPFUNC zCmpFunc = currentState.currentRenderStates.renderStatesUnion.namedStates.zFunc;
+	baseDevice->DeviceSetBlendState(deviceBackbuffer, deviceBlendMode, eWriteMask, alphaTestEnable, alphaTestRefVal, ConvertToDeviceCmpFunc(alphaTestCmpFunc) );
+	baseDevice->DeviceSetDepthState(zEnable, zWriteEnable, ConvertToDeviceCmpFunc(zCmpFunc) );
 
 	// Do some soft-conversions from texture stage states to combiner modes:
 	combinerMode cbModeColor = cbm_textureModulateVertexColor;
@@ -10056,7 +10058,14 @@ void IDirect3DDevice9Hook::RasterizeTriangle(PShaderEngine* const pShaderEngine,
 					_mm_sub_epi32(currentBarycentric[2], topleftEdgeBias), 
 					_mm_sub_epi32(currentBarycentric[3], topleftEdgeBias)
 				};
+#ifdef RUN_SHADERS_IN_WARPS
 				CreateNewPixelShadeJob4(x4, y4, barycentricsAdjusted4, primitiveData);
+#else
+				CreateNewPixelShadeJob(x4.m128i_i32[0], y4.m128i_i32[0], barycentricsAdjusted4[0], primitiveData);
+				CreateNewPixelShadeJob(x4.m128i_i32[1], y4.m128i_i32[1], barycentricsAdjusted4[1], primitiveData);
+				CreateNewPixelShadeJob(x4.m128i_i32[2], y4.m128i_i32[2], barycentricsAdjusted4[2], primitiveData);
+				CreateNewPixelShadeJob(x4.m128i_i32[3], y4.m128i_i32[3], barycentricsAdjusted4[3], primitiveData);
+#endif
 			}
 			else if (unifiedMask4 > 0) // At least one pixel inside triangle and pass early-Z
 			{
@@ -11022,14 +11031,21 @@ void IDirect3DDevice9Hook::InitializeState(const D3DPRESENT_PARAMETERS& d3dpp, c
 	// Init our stats buffer:
 	deviceStats.InitStatsBuffer();
 
-	const bool zTestEnable = false;
+	const bool zEnable = false;
 	const bool zWriteEnable = false;
 	const bool alphaTestEnable = false;
+	const bool clearDepth = true;
+	const bool clearStencil = true;
+	const float clearZValue = 1.0f;
+	const BYTE clearStencilValue = 0x00;
 	const BYTE alphaTestRefVal = 0x00;
 	const D3DCMPFUNC alphaTestCmpFunc = D3DCMP_ALWAYS;
-	baseDevice->DeviceSetBlendState(backbufferSurfaceHook->GetDeviceSurfaceBytes(), noBlending, wm_writeAll, zTestEnable, zWriteEnable, alphaTestEnable, alphaTestRefVal, ConvertToDeviceCmpFunc(alphaTestCmpFunc) );
+	const D3DCMPFUNC zCmpFunc = D3DCMP_ALWAYS;
+	baseDevice->DeviceSetBlendState(backbufferSurfaceHook->GetDeviceSurfaceBytes(), noBlending, wm_writeAll, alphaTestEnable, alphaTestRefVal, ConvertToDeviceCmpFunc(alphaTestCmpFunc) );
 	baseDevice->DeviceClearRendertarget(backbufferSurfaceHook->GetDeviceSurfaceBytes(), D3DCOLOR_ARGB(255, 0, 0, 0) ); // Perform initial device clear so that our backbuffer doesn't start out as garbage
 	baseDevice->DeviceSetTextureState(128, 128, TF_bilinearFilter, tcm_r, tcm_g, tcm_b, tcm_a, cbm_textureModulateVertexColor, cbm_textureModulateVertexColor);
+	baseDevice->DeviceSetDepthState(zEnable, zWriteEnable, ConvertToDeviceCmpFunc(zCmpFunc) );
+	baseDevice->DeviceClearDepthStencil(currentState.currentDepthStencil ? currentState.currentDepthStencil->GetDeviceSurfaceBytes() : NULL, clearDepth, clearStencil, clearZValue, clearStencilValue);
 
 #ifdef MULTITHREAD_SHADING
 	MAX_NUM_JOBS = d3dpp.BackBufferWidth * d3dpp.BackBufferHeight * NUM_JOBS_PER_PIXEL;

@@ -260,11 +260,9 @@ type InstructionOperation is (
 	Op_BSHFTR24, -- 25
 	Op_OR, -- 26
 	Op_AND, -- 27
-
-	-- These instructions are currently unused!
-	Op_UNUSED28, -- 28
-	Op_UNUSED29, -- 29
-	Op_UNUSED30, -- 30
+	Op_CNV_F_TO_HALF, -- 28
+	Op_CNV_HALF_TO_F, -- 29
+	Op_CNV_U32_TO_F, -- 30
 
 	Op_END -- 31
 );
@@ -508,7 +506,7 @@ begin
 			return to_unsigned(MUL_CYCLES, 5);
 		when Op_ADD => -- 4 cycle operation latency for ADD pipe
 			return to_unsigned(ADD_CYCLES, 5);
-		when Op_CNV_UNORM16 | Op_CNV_UNORM8 | Op_RND_SINT16NE | Op_RND_SINT23NE | Op_RND_SINT24Z => -- 3 cycle operation latency for CNV pipe
+		when Op_CNV_UNORM16 | Op_CNV_UNORM8 | Op_RND_SINT16NE | Op_RND_SINT23NE | Op_RND_SINT24Z | Op_CNV_F_TO_HALF | Op_CNV_HALF_TO_F | Op_CNV_U32_TO_F => -- 3 cycle operation latency for CNV pipe
 			return to_unsigned(CNV_CYCLES, 5);
 		when Op_SHFT => -- 1 cycle operation latency for SHFT pipe
 			return to_unsigned(SHFT_CYCLES, 5);
@@ -787,6 +785,12 @@ begin
 			return to_unsigned(eConvertMode'pos(F_to_UNORM16), 3);
 		when Op_CNV_UNORM8 =>
 			return to_unsigned(eConvertMode'pos(F_to_UNORM8), 3);
+		when Op_CNV_F_TO_HALF =>
+			return to_unsigned(eConvertMode'pos(F_to_Half), 3);
+		when Op_CNV_HALF_TO_F =>
+			return to_unsigned(eConvertMode'pos(Half_to_F), 3);
+		when Op_CNV_U32_TO_F =>
+			return to_unsigned(eConvertMode'pos(U32_to_F), 3);
 		when Op_BSHFTL8 =>
 			return to_unsigned(eBitMode'pos(BShftL8), 3);
 		when Op_BSHFTL16 =>
@@ -871,7 +875,7 @@ end function;
 pure function InstructionIsFPUCnv(instructionData : unsigned(63 downto 0) ) return std_logic is
 begin
 	case InstructionGetOperation(instructionData) is
-		when Op_RND_SINT24Z | Op_RND_SINT23NE | Op_RND_SINT16NE | Op_CNV_UNORM16 | Op_CNV_UNORM8 =>
+		when Op_RND_SINT24Z | Op_RND_SINT23NE | Op_RND_SINT16NE | Op_CNV_UNORM16 | Op_CNV_UNORM8 | Op_CNV_F_TO_HALF | Op_CNV_HALF_TO_F | Op_CNV_U32_TO_F =>
 			return '1';
 		when others =>
 			return '0';

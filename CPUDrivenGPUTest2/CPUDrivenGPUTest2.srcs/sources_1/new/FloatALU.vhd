@@ -54,6 +54,9 @@ constant oneF : unsigned(31 downto 0) := X"3F800000"; -- Constant for 1.0f
 constant halfF : unsigned(31 downto 0) := X"3F000000"; -- Constant for 0.5f
 constant negOneF : unsigned(31 downto 0) := X"BF800000"; -- Constant for -1.0f
 
+constant maxRepresentableHalfF : unsigned(31 downto 0) := X"477FE000"; -- Constant for 65504.0f which is the largest float that can be represented as a half
+constant minReprensetableHalfF : unsigned(31 downto 0) := X"33800000"; -- Constant for 5.9604644775390625e-8f which is the smallest float that can be represented as a half (besides zero)
+
 -- VHDL doesn't support the MAXIMUM() or MINIMUM() functions as built-ins until VHDL2008, so we have to
 -- define our own, sadly.
 pure function maxVal(a : integer; b : integer) return integer is
@@ -581,6 +584,76 @@ begin
 	return tempBuffer(7 downto 0);
 end function;
 
+pure function CnvFloatToHalf_GetEarlyOutType(a : unsigned(31 downto 0); aIsNan : std_logic) return eCnvEarlyOutType is
+begin
+	if (aIsNan = '1') then
+		return CnvNaNEarlyOut;
+	elsif (a(30 downto 0) > maxRepresentableHalfF(30 downto 0) ) then
+		return CnvAboveMaxEarlyOut;
+	elsif (a(30 downto 0) < minReprensetableHalfF(30 downto 0) ) then
+		return CnvBelowMinEarlyOut;
+	else
+		return CnvNoEarlyOut;
+	end if;
+end function;
+
+-- Converts a float32 input to a half (float16) output
+pure function CnvFloatToHalf_Cycle2(inputNormalFloat : unsigned(31 downto 0) ) return unsigned is
+	variable tempExponent : signed(7 downto 0);
+begin
+	-- TODO: Proper handling of denorm half values
+	tempExponent := GetSignedExponent(inputNormalFloat) + to_signed(15, 8);
+	return unsigned(tempExponent(4 downto 0) ) & inputNormalFloat(22 downto 13);
+end function;
+
+pure function CnvHalfToFloat_GetEarlyOutType(a : unsigned(14 downto 0) ) return eCnvEarlyOutType is
+begin
+	if (a(14 downto 10) = "11111" and a(9 downto 0) /= "0000000000") then
+		return CnvNaNEarlyOut;
+	elsif (a(14 downto 0) >= "111110000000000") then
+		return CnvAboveMaxEarlyOut;
+	elsif (a(14 downto 0) = "000000000000000") then
+		return CnvBelowMinEarlyOut;
+	else
+		return CnvNoEarlyOut;
+	end if;
+end function;
+
+-- Converts a half (float16) input to a float32 output
+pure function CnvHalfToFloat_Cycle2(a : unsigned(14 downto 0) ) return unsigned is
+	variable tempExponent : signed(7 downto 0);
+begin
+	-- TODO: Proper handling of denorm half values
+	tempExponent := signed("000" & std_logic_vector(a(14 downto 10) ) ) - to_signed(15, 8);
+	tempExponent := tempExponent + to_signed(127, 8);
+	return unsigned(tempExponent) & a(9 downto 0) & "0000000000000";
+end function;
+
+-- Finds the first set bit (starting at the MSB) of the uint32
+pure function CnvU32ToFloat_GetFirstHighBitSet(a : unsigned(31 downto 0) ) return unsigned is
+begin
+	for i in 31 downto 1 loop
+		if (a(i) = '1') then
+			return to_unsigned(i, 5);
+		end if;
+	end loop;
+	return to_unsigned(0, 5);
+end function;
+
+pure function CnvU32ToFloat_GetEarlyOutType(a : unsigned(31 downto 0) ) return eCnvEarlyOutType is
+begin
+	if (a = X"00000000") then
+		return CnvBelowMinEarlyOut;
+	else
+		return CnvNoEarlyOut;
+	end if;
+end function;
+
+pure function CnvU32ToFloat_Cycle2(exponent : unsigned(4 downto 0); shiftedMantissa : unsigned(31 downto 0) ) return unsigned is
+begin
+	return (to_unsigned(127, 8) + exponent) & shiftedMantissa(22 downto 0);
+end function;
+
 pure function IsShiftUp(shftMode : eShftMode) return std_logic is
 begin
 	case shftMode is
@@ -800,7 +873,11 @@ signal cnvEarlyOutType1 : eCnvEarlyOutType := CnvNoEarlyOut;
 signal cnvShiftAmount : signed(7 downto 0) := (others => '0');
 signal cnvIsNegative0 : std_logic := '0';
 signal cnvIsNegative1 : std_logic := '0';
+signal cnvU32ShiftAmount0 : unsigned(4 downto 0) := (others => '0');
+signal cnvU32ShiftAmount1 : unsigned(4 downto 0) := (others => '0');
+signal cnvU32ShiftRight : std_logic := '0';
 signal cnvInput : unsigned(31 downto 0) := (others => '0');
+signal cnvInput1 : unsigned(31 downto 0) := (others => '0');
 signal cnvShiftedTemporary : unsigned(31 downto 0) := (others => '0');
 signal cnvIsValid : std_logic := '0';
 signal cnvIsValid1 : std_logic := '0';
@@ -1555,6 +1632,7 @@ end process MULStage4;
 -- Conversion (CNV) pipe process:
 CNVStage0 : process(clk)
 	variable earlyOutType : eCnvEarlyOutType;
+	variable shiftU32HighBitIndex : unsigned(4 downto 0);
 begin
 	if (rising_edge(clk) ) then
 		if (ICNV_GO = '1') then
@@ -1593,6 +1671,25 @@ begin
 					if (earlyOutType = CnvNoEarlyOut) then
 						cnvShiftAmount <= CnvFloatToUNORM8_Cycle0(comSignedExponentA);
 					end if;
+				when F_to_Half =>
+					earlyOutType := CnvFloatToHalf_GetEarlyOutType(unsigned(IN_A), comAIsNaN);
+					cnvEarlyOutType0 <= earlyOutType;
+					cnvShiftAmount <= (others => '0');
+				when Half_to_F =>
+					earlyOutType := CnvHalfToFloat_GetEarlyOutType(unsigned(IN_A(14 downto 0) ) );
+					cnvEarlyOutType0 <= earlyOutType;
+					cnvShiftAmount <= (others => '0');
+				when U32_to_F =>
+					earlyOutType := CnvU32ToFloat_GetEarlyOutType(unsigned(IN_A) );
+					cnvEarlyOutType0 <= earlyOutType;
+					shiftU32HighBitIndex := CnvU32ToFloat_GetFirstHighBitSet(unsigned(IN_A) );
+					cnvU32ShiftAmount0 <= shiftU32HighBitIndex;
+					if (shiftU32HighBitIndex >= 23) then
+						cnvU32ShiftRight <= '1';
+					else
+						cnvU32ShiftRight <= '0';
+					end if;
+					cnvShiftAmount <= (others => '0');
 				when others =>
 					cnvEarlyOutType0 <= CnvNoEarlyOut;
 					cnvShiftAmount <= (others => '0');
@@ -1611,9 +1708,19 @@ begin
 		cnvMode1 <= cnvMode0;
 		cnvIsNegative1 <= cnvIsNegative0;
 		cnvEarlyOutType1 <= cnvEarlyOutType0;
+		cnvU32ShiftAmount1 <= cnvU32ShiftAmount0;
 
-		tempBuffer := "000000001" & signed(GetMantissa(cnvInput) );
-		cnvShiftedTemporary <= unsigned(tempBuffer srl to_integer(cnvShiftAmount) );
+		if (cnvMode0 = U32_to_F) then
+			if (cnvU32ShiftRight = '1') then
+				cnvShiftedTemporary <= cnvInput srl to_integer(cnvU32ShiftAmount0 - 23);
+			else
+				cnvShiftedTemporary <= cnvInput sll to_integer(23 - cnvU32ShiftAmount0);
+			end if;
+		else
+			tempBuffer := "000000001" & signed(GetMantissa(cnvInput) );
+			cnvShiftedTemporary <= unsigned(tempBuffer srl to_integer(cnvShiftAmount) );
+		end if;
+		cnvInput1 <= cnvInput;
 	end if;
 end process CNVStage1;
 
@@ -1677,6 +1784,35 @@ begin
 							OCNV <= X"00000000"; -- This is 0
 						when CnvAboveMaxEarlyOut =>
 							OCNV <= X"000000FF"; -- This is 255
+					end case;
+				when F_to_Half =>
+					case cnvEarlyOutType1 is
+						when CnvNoEarlyOut =>
+							OCNV <= X"0000" & cnvIsNegative1 & std_logic_vector(CnvFloatToHalf_Cycle2(cnvInput1) );
+						when CnvNaNEarlyOut =>
+							OCNV <= X"0000" & cnvIsNegative1 & "11111" & "1111111111"; -- +/- NaN
+						when CnvBelowMinEarlyOut =>
+							OCNV <= X"0000" & cnvIsNegative1 & "00000" & "0000000000"; -- Saturate to +/- 0.0f
+						when CnvAboveMaxEarlyOut =>
+							OCNV <= X"0000" & cnvIsNegative1 & "11111" & "0000000000"; -- Saturate to +/- INF
+					end case;
+				when Half_to_F =>
+					case cnvEarlyOutType1 is
+						when CnvNoEarlyOut =>
+							OCNV <= cnvInput1(15) & std_logic_vector(CnvHalfToFloat_Cycle2(cnvInput1(14 downto 0) ) );
+						when CnvNaNEarlyOut =>
+							OCNV <= cnvInput1(15) & "11111111" & "11111111111111111111111"; -- +/- NaN
+						when CnvBelowMinEarlyOut =>
+							OCNV <= cnvInput1(15) & "00000000" & "00000000000000000000000"; -- +/- 0.0f
+						when CnvAboveMaxEarlyOut =>
+							OCNV <= cnvInput1(15) & "11111111" & "00000000000000000000000"; -- Saturate to +/- INF
+					end case;
+				when U32_to_F =>
+					case cnvEarlyOutType1 is
+						when CnvNoEarlyOut =>
+							OCNV <= '0' & std_logic_vector(CnvU32ToFloat_Cycle2(cnvU32ShiftAmount1, cnvShiftedTemporary) );
+						when others => -- 0x00000000 = 0.0f
+							OCNV <= (others => '0');
 					end case;
 				when others =>
 					OCNV <= (others => '0');

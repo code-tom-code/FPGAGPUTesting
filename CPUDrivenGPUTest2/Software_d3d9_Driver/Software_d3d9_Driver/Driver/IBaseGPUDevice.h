@@ -74,12 +74,13 @@ struct GPUDeviceState
 	setScanoutPointerCommand::eDisplayChannelSwizzle deviceScanoutSwizzleG = setScanoutPointerCommand::dcs_green;
 	setScanoutPointerCommand::eDisplayChannelSwizzle deviceScanoutSwizzleB = setScanoutPointerCommand::dcs_blue;
 	bool deviceCachedScanoutEnabled = false;
-	bool deviceCachedZTestEnabled = false;
+	bool deviceCachedZEnabled = false;
 	bool deviceCachedZWriteEnabled = false;
 	bool deviceCachedAlphaTestEnabled = false;
 	BYTE deviceCachedAlphaTestRefVal = 0x00;
 	bool deviceCachedScanoutInvertColors = false;
 	eCmpFunc deviceCachedAlphaTestCmpFunc = cmp_MAX_CMP_FUNCS;
+	eCmpFunc deviceCachedDepthTestCmpFunc = cmp_MAX_CMP_FUNCS;
 	CachedVertexStream deviceCachedVertexStreams[GPU_MAX_NUM_VERTEX_STREAMS];
 	float4 deviceCachedConstantRegisters[GPU_SHADER_MAX_NUM_CONSTANT_FLOAT_REG];
 
@@ -111,7 +112,6 @@ __declspec(align(16) ) struct IBaseGPUDevice
 
 	HRESULT __stdcall DeviceClearRendertarget(gpuvoid* const renderTargetMemory, const D3DCOLOR clearColor);
 
-	// Not yet implemented!
 	HRESULT __stdcall DeviceClearDepthStencil(gpuvoid* const zStencilMemory, const bool bDoClearDepth, const bool bDoClearStencil, 
 		const float clearDepth = 1.0f, const BYTE clearStencil = 0x00);
 
@@ -120,8 +120,9 @@ __declspec(align(16) ) struct IBaseGPUDevice
 	HRESULT __stdcall DeviceSetTextureState(const unsigned texWidth, const unsigned texHeight, const eTexFilterMode filterMode, 
 		const eTexChannelMUX rChannel, const eTexChannelMUX gChannel, const eTexChannelMUX bChannel, const eTexChannelMUX aChannel, const combinerMode cbModeColor, const combinerMode cbModeAlpha);
 
-	HRESULT __stdcall DeviceSetBlendState(gpuvoid* const renderTargetMemory, const eBlendMode blendingMode, const eBlendMask writeMask, const bool zTestEnabled, const bool zWriteEnabled, 
-		const bool alphaTestEnabled, const BYTE alphaTestRefVal, const eCmpFunc alphaTestCmpFunc);
+	HRESULT __stdcall DeviceSetBlendState(gpuvoid* const renderTargetMemory, const eBlendMode blendingMode, const eBlendMask writeMask,	const bool alphaTestEnabled, const BYTE alphaTestRefVal, const eCmpFunc alphaTestCmpFunc);
+
+	HRESULT __stdcall DeviceSetDepthState(const bool zEnabled, const bool zWriteEnabled, const eCmpFunc zTestCmpFunc);
 
 	HRESULT __stdcall DeviceSetIAState(const eCullMode cullMode, const ePrimTopology primTopology, const eStripCutType stripCut, const eIndexFormat indexFormat, const gpuvoid* const indexBufferBaseAddr);
 

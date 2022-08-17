@@ -40,6 +40,7 @@ struct command
 		PT_SETSHADERCONSTANTSPECIAL = 24,
 		PT_SETSHADERSTARTADDRESS = 25,
 		PT_DEBUGSHADERNEXTDRAWCALL = 26,
+		PT_SETDEPTHSTATE = 27,
 
 		PT_MAX_PACKET_TYPES // This must always be last
 	};
@@ -266,7 +267,7 @@ struct loadTexCacheDataCommand : command
 
 struct setBlendStateCommand : command
 {
-	setBlendStateCommand() : command(PT_SETBLENDSTATE), newBlendType(noBlending), zWriteEnabled(false), zTestEnabled(false), alphaTestEnabled(false), unusedBits(0)
+	setBlendStateCommand() : command(PT_SETBLENDSTATE), newBlendType(noBlending), unused0(false), unused1(false), alphaTestEnabled(false), unusedBits(0)
 	{
 	}
 
@@ -276,8 +277,8 @@ struct setBlendStateCommand : command
 
 	// Payload 1:
 	eBlendMask writeMask = wm_writeAll; // 7 downto 0
-	BYTE zWriteEnabled : 1; // Not yet implemented // 8
-	BYTE zTestEnabled : 1; // Not yet implemented // 9
+	BYTE unused0 : 1; // Unused // 8
+	BYTE unused1 : 1; // Unused // 9
 	BYTE alphaTestEnabled : 1; // 10
 	BYTE unusedBits : 5; // 11, 12, 13, 14, 15
 	BYTE alphaTestRefValue = 0xFF; // 23 downto 16
@@ -353,10 +354,11 @@ struct waitForDeviceIdleCommand : command
 		// Waits for all DRAM reads/writes to have flushed
 		waitForMemControllerIdle = 0x40, // bit 6
 
-		waitForUnused = 0x80, // bit 7 (currently unused)
+		// Waits for the depth buffer clear to have completed and for the depth buffer to have no in-flight pixels remaining
+		waitForDepthBuffer = 0x80, // bit 7
 
 		// Waits for the whole GPU to be idle and drained of any work (waits for everything except VSync)
-		waitForFullPipelineFlush = waitForIAIdle | waitForRasterizerIdle | waitForTexSamplerIdle | waitForClearBlockIdle | waitForROPIdle | waitForMemControllerIdle,
+		waitForFullPipelineFlush = waitForIAIdle | waitForRasterizerIdle | waitForTexSamplerIdle | waitForClearBlockIdle | waitForROPIdle | waitForMemControllerIdle | waitForDepthBuffer,
 
 		// Waits for everything
 		waitForFullPipelineFlushAndVSync = waitForFullPipelineFlush | waitForVSync
@@ -850,7 +852,7 @@ struct setIndexBufferCommand : command
 	DWORD indexType : 2; // INDEX16 = 0, INDEX32 = 1, INDEX8 = 2, UNUSED = 3 // 31 downto 30
 
 	// Payload 1:
-	DWORD unused2 = 0x00000000;
+	DWORD unused2 = 0x00000000; // 31 downto 0
 };
 
 // This configures the index buffer address and type for the pretransformed index cache in the Vertex Batch Builder.
@@ -867,7 +869,7 @@ struct setShaderStartAddressCommand : command
 	DWORD unused0 : 23; // 31 downto 9
 
 	// Payload 1:
-	DWORD unused1 = 0x00000000;
+	DWORD unused1 = 0x00000000; // 31 downto 0
 };
 
 // This instructs the command processor that when the next draw call completes, we should dump the shader core's register file data to GPU DRAM
@@ -884,7 +886,23 @@ struct debugShaderNextDrawCallCommand : command
 	DWORD unused0 : 2; // 31 downto 30
 
 	// Payload 1:
-	DWORD unused1 = 0x00000000;
+	DWORD unused1 = 0x00000000; // 31 downto 0
+};
+
+// This configures the depth buffer state corresponding to the D3D9 render states D3DRS_ZWRITE and D3DRS_ZFUNC.
+struct setDepthStateCommand : command
+{
+	setDepthStateCommand() : command(PT_SETDEPTHSTATE)
+	{
+	}
+
+	// Payload 0:
+	eCmpFunc zFunc = cmp_lessequal; // 7 downto 0
+	bool zWriteEnable = true; // 15 downto 8
+	unsigned short unused0 = 0; // 31 downto 16
+
+	// Payload 1:
+	DWORD unused1 = 0x00000000; // 31 downto 0
 };
 
 // TODO: One day implement variable-sized packets and then this can go away
@@ -914,6 +932,7 @@ static_assert(sizeof(genericCommand) == sizeof(doNothingCommand) &&
 	sizeof(genericCommand) == sizeof(setShaderConstantSpecialCommand) &&
 	sizeof(genericCommand) == sizeof(setShaderStartAddressCommand) &&
 	sizeof(genericCommand) == sizeof(debugShaderNextDrawCallCommand) && 
+	sizeof(genericCommand) == sizeof(setDepthStateCommand) &&
 	sizeof(genericCommand) == 11, "Error: Unexpected struct size!");
 
 #pragma pack(pop) // End pragma pack 1 region

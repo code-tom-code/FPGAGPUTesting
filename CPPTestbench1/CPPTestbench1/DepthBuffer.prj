@@ -1,0 +1,5 @@
+# vhdl work DepthBuffer.vhd
+# List other files here
+vhdl xil_defaultlib  \
+"hdl_src/PacketType.vhd" \
+"hdl_src/DepthBuffer.vhd" \

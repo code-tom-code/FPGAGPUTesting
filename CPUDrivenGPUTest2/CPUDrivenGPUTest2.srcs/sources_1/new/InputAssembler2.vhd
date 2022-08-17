@@ -16,13 +16,13 @@ entity InputAssembler2 is
 	-- Triangle Setup interfaces begin
 		TRISETUP_v0PosX : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
 		TRISETUP_v0PosY : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
-		TRISETUP_v0PosInvZ : out STD_LOGIC_VECTOR(23 downto 0) := (others => '0');
+		TRISETUP_v0PosInvZ : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 		TRISETUP_v1PosX : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
 		TRISETUP_v1PosY : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
-		TRISETUP_v1PosInvZ : out STD_LOGIC_VECTOR(23 downto 0) := (others => '0');
+		TRISETUP_v1PosInvZ : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 		TRISETUP_v2PosX : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
 		TRISETUP_v2PosY : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
-		TRISETUP_v2PosInvZ : out STD_LOGIC_VECTOR(23 downto 0) := (others => '0');
+		TRISETUP_v2PosInvZ : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 		TRISETUP_tex0_X : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
 		TRISETUP_tex0_Y : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
 		TRISETUP_tex1_X : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
@@ -107,12 +107,12 @@ type IA_state_t is (
 type vertexPos is record
 	vx : signed(15 downto 0);
 	vy : signed(15 downto 0);
-	vInvZ : unsigned(31 downto 0); -- Unsigned normalized (0.0f to 1.0f) value packed into 24 bits
+	vInvZ : unsigned(31 downto 0); -- float32 inverse Z value (1.0f / z)
 end record vertexPos;
 
 type vertexTexcoord is record
-	tx : unsigned(15 downto 0);
-	ty : unsigned(15 downto 0);
+	tx : unsigned(15 downto 0); -- half (float16) texcoord value
+	ty : unsigned(15 downto 0); -- half (float16) texcoord value
 end record vertexTexcoord;
 
 type vertexColor is record
@@ -158,7 +158,7 @@ pure function UnpackVertexDataFromBuffer(vertDataBits : unsigned(127 downto 0) )
 begin
 	ret.pos.vx := signed(vertDataBits(15 downto 0) );
 	ret.pos.vy := signed(vertDataBits(31 downto 16) );
-	ret.pos.vInvZ := "00000000" & vertDataBits(54 downto 32) & '0'; -- Extract the 24-bit Z value from the float32 mantissa
+	ret.pos.vInvZ := vertDataBits(63 downto 32);
 	ret.texcoord.tx := vertDataBits(79 downto 64);
 	ret.texcoord.ty := vertDataBits(95 downto 80);
 	ret.color.r := vertDataBits(103 downto 96);
@@ -317,7 +317,7 @@ DBG_IA_VertexIDPerBatch <= std_logic_vector(vertexIDPerBatch(3 downto 0) );
 				when IAstate_sendTriData =>
 					TRISETUP_v0PosX <= std_logic_vector(currentTri.v0.pos.vx);
 					TRISETUP_v0PosY <= std_logic_vector(currentTri.v0.pos.vy);
-					TRISETUP_v0PosInvZ <= std_logic_vector(currentTri.v0.pos.vInvZ(23 downto 0) );
+					TRISETUP_v0PosInvZ <= std_logic_vector(currentTri.v0.pos.vInvZ);
 
 					TRISETUP_tex0_X <= std_logic_vector(currentTri.v0.texcoord.tx);
 					TRISETUP_tex0_Y <= std_logic_vector(currentTri.v0.texcoord.ty);
@@ -328,10 +328,10 @@ DBG_IA_VertexIDPerBatch <= std_logic_vector(vertexIDPerBatch(3 downto 0) );
 					if (cullState = CM_CullCW) then
 						TRISETUP_v1PosX <= std_logic_vector(currentTri.v2.pos.vx);
 						TRISETUP_v1PosY <= std_logic_vector(currentTri.v2.pos.vy);
-						TRISETUP_v1PosInvZ <= std_logic_vector(currentTri.v2.pos.vInvZ(23 downto 0) );
+						TRISETUP_v1PosInvZ <= std_logic_vector(currentTri.v2.pos.vInvZ);
 						TRISETUP_v2PosX <= std_logic_vector(currentTri.v1.pos.vx);
 						TRISETUP_v2PosY <= std_logic_vector(currentTri.v1.pos.vy);
-						TRISETUP_v2PosInvZ <= std_logic_vector(currentTri.v1.pos.vInvZ(23 downto 0) );
+						TRISETUP_v2PosInvZ <= std_logic_vector(currentTri.v1.pos.vInvZ);
 
 						TRISETUP_tex1_X <= std_logic_vector(currentTri.v2.texcoord.tx);
 						TRISETUP_tex1_Y <= std_logic_vector(currentTri.v2.texcoord.ty);
@@ -343,10 +343,10 @@ DBG_IA_VertexIDPerBatch <= std_logic_vector(vertexIDPerBatch(3 downto 0) );
 					else
 						TRISETUP_v1PosX <= std_logic_vector(currentTri.v1.pos.vx);
 						TRISETUP_v1PosY <= std_logic_vector(currentTri.v1.pos.vy);
-						TRISETUP_v1PosInvZ <= std_logic_vector(currentTri.v1.pos.vInvZ(23 downto 0) );
+						TRISETUP_v1PosInvZ <= std_logic_vector(currentTri.v1.pos.vInvZ);
 						TRISETUP_v2PosX <= std_logic_vector(currentTri.v2.pos.vx);
 						TRISETUP_v2PosY <= std_logic_vector(currentTri.v2.pos.vy);
-						TRISETUP_v2PosInvZ <= std_logic_vector(currentTri.v2.pos.vInvZ(23 downto 0) );
+						TRISETUP_v2PosInvZ <= std_logic_vector(currentTri.v2.pos.vInvZ);
 
 						TRISETUP_tex1_X <= std_logic_vector(currentTri.v1.texcoord.tx);
 						TRISETUP_tex1_Y <= std_logic_vector(currentTri.v1.texcoord.ty);
@@ -376,7 +376,7 @@ DBG_IA_VertexIDPerBatch <= std_logic_vector(vertexIDPerBatch(3 downto 0) );
 					-- Send the same triangle with a reversed vertex ordering in order to draw the back side of it:
 					TRISETUP_v0PosX <= std_logic_vector(currentTri.v0.pos.vx);
 					TRISETUP_v0PosY <= std_logic_vector(currentTri.v0.pos.vy);
-					TRISETUP_v0PosInvZ <= std_logic_vector(currentTri.v0.pos.vInvZ(23 downto 0) );
+					TRISETUP_v0PosInvZ <= std_logic_vector(currentTri.v0.pos.vInvZ);
 
 					TRISETUP_tex0_X <= std_logic_vector(currentTri.v0.texcoord.tx);
 					TRISETUP_tex0_Y <= std_logic_vector(currentTri.v0.texcoord.ty);
@@ -385,10 +385,10 @@ DBG_IA_VertexIDPerBatch <= std_logic_vector(vertexIDPerBatch(3 downto 0) );
 
 					TRISETUP_v1PosX <= std_logic_vector(currentTri.v2.pos.vx);
 					TRISETUP_v1PosY <= std_logic_vector(currentTri.v2.pos.vy);
-					TRISETUP_v1PosInvZ <= std_logic_vector(currentTri.v2.pos.vInvZ(23 downto 0) );
+					TRISETUP_v1PosInvZ <= std_logic_vector(currentTri.v2.pos.vInvZ);
 					TRISETUP_v2PosX <= std_logic_vector(currentTri.v1.pos.vx);
 					TRISETUP_v2PosY <= std_logic_vector(currentTri.v1.pos.vy);
-					TRISETUP_v2PosInvZ <= std_logic_vector(currentTri.v1.pos.vInvZ(23 downto 0) );
+					TRISETUP_v2PosInvZ <= std_logic_vector(currentTri.v1.pos.vInvZ);
 
 					TRISETUP_tex1_X <= std_logic_vector(currentTri.v2.texcoord.tx);
 					TRISETUP_tex1_Y <= std_logic_vector(currentTri.v2.texcoord.ty);

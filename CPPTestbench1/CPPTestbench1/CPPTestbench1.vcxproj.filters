@@ -199,5 +199,14 @@
     <None Include="hdl_src\CDC_Command_Scanout.vhd">
       <Filter>HDL</Filter>
     </None>
+    <None Include="hdl_src\DepthBuffer.vhd">
+      <Filter>HDL</Filter>
+    </None>
+    <None Include="DepthBuffer.prj">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="hdl_src\TriSetup.vhd">
+      <Filter>HDL</Filter>
+    </None>
   </ItemGroup>
 </Project>

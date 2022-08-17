@@ -47,6 +47,7 @@ package PacketType is
 		PT_SETSHADERCONSTANTSPECIAL, -- 24
 		PT_SETSHADERSTARTADDRESS, -- 25
 		PT_DEBUGSHADERNEXTDRAWCALL, -- 26
+		PT_SETDEPTHSTATE, -- 27
 
 		PT_MAX_PACKET_TYPES -- Must always be last!
 	);
@@ -133,6 +134,7 @@ package PacketType is
 		TCM_1 -- 5
 	);
 
+	-- Note that this exactly matches the D3DCMPFUNC enum but is subtracted down by 1 to fit into 3 bits
 	type eCmpFunc is
 	(
 		cmp_never, -- 0

@@ -4,6 +4,7 @@
 
 #include "../CPPTestbench.h"
 #include "ShaderCoreALUCommon.h"
+#include <intrin.h>
 
 static const float negInf = -(INFINITY);
 static const float posInf = -(INFINITY);
@@ -1275,6 +1276,184 @@ static const int RunTestsFloatCNV(Xsi::Loader& loader, std_logic_port& clk, std_
 			return (const unsigned short)(a * 65535.0f);
 	};
 
+	// Note that this half to float conversion does not comply to the IEEE spec for Half's in that it doesn't properly handle denormal halfs.
+	// But that's okay, we don't really care too much about that, we just want to use a very Half-like format as smaller storage for our float data.
+	// It does properly handle NaN and INF cases though.
+	const auto softFloatToHalf = [](const float a) -> unsigned short
+	{
+		const unsigned uFa = *(const unsigned* const)&a;
+		const unsigned short signBit = (const unsigned short)( (uFa >> 31) << 15);
+		unsigned short exponent = 0x0000;
+		unsigned short mantissa = 0x0000;
+		if (isnan(a) )
+		{
+			exponent = 0x7C00;
+			mantissa = 0x0001;
+		}
+		else if (isinf(a) )
+		{
+			exponent = 0x7C00;
+			mantissa = 0x0000;
+		}
+		else if (a == 0.0f)
+		{
+			exponent = 0x0000;
+			mantissa = 0x0000;
+		}
+		else
+		{
+			const unsigned floatMantissa = uFa & 0x7FFFFF;
+			const unsigned biasedExponent = (uFa >> 23) & 0xFF;
+			const int signedExponent = ( (const int)biasedExponent) - 127;
+			if (fabs(a) > 65504.0f) // Saturate to infinity
+			{
+				exponent = 0x7C00;
+				mantissa = 0x0000;
+			}
+			else if (fabs(a) < 5.9604644775390625e-8f) // Saturate to 0
+			{
+				exponent = 0x0000;
+				mantissa = 0x0000;
+			}
+			else if (fabs(a) < 0.00006103515625f) // Handle denormals case
+			{
+				// TODO: Do we need to handle denormals as a special case here?
+				exponent = 0x0000;
+				mantissa = (const unsigned short)(floatMantissa >> 13); // Just treat it as a normal for now
+			}
+			else // Handle the normal case
+			{
+				const unsigned short biasedHalfExponent = signedExponent + 15;
+				exponent = biasedHalfExponent << 10;
+
+				mantissa = (const unsigned short)(floatMantissa >> 13);
+			}
+		}
+
+		return signBit | exponent | mantissa;
+	};
+
+	// Note that this half to float conversion does not comply to the IEEE spec for Half's in that it doesn't properly handle denormal halfs.
+	// But that's okay, we don't really care too much about that, we just want to use a very Half-like format as smaller storage for our float data.
+	// It does properly handle NaN and INF cases though.
+	const auto softHalfToFloat = [](const unsigned short a) -> float
+	{
+		const unsigned short mantissa = a & 0x3FF;
+		const unsigned short biasedExponent = (a >> 10) & 0x1F;
+		const signed short signedExponent = ( (const signed short)biasedExponent) - 15;
+		const unsigned signBit = ( (const unsigned)(a >> 15) ) << 31;
+
+		unsigned retMantissa = 0x00000000;
+		unsigned retExponent = 0x00000000;
+
+		if (biasedExponent == 31)
+		{
+			if (mantissa != 0)
+			{
+				if (signBit)
+					return -NAN;
+				else
+					return NAN;
+			}
+			else
+			{
+				if (signBit)
+					return -INFINITY;
+				else
+					return INFINITY;
+			}
+		}
+		else if (biasedExponent == 0)
+		{
+			if (mantissa == 0)
+			{
+				retMantissa = 0x0000;
+				retExponent = 0x0000;
+			}
+			else // TODO: Handle special case of denormal numbers
+			{
+				// For now, just use the non-denormal code
+				retMantissa = mantissa << 13;
+				retExponent = (signedExponent + 127) << 23;
+			}
+		}
+		else // Handle the normal case
+		{
+			retMantissa = mantissa << 13;
+			retExponent = (signedExponent + 127) << 23;
+		}
+
+		const unsigned tempRet = signBit | retExponent | retMantissa;
+		return *(const float* const)&tempRet;
+	};
+
+	// Note that this uint32 to float conversion may be off from the correct value by +/- 1 because we don't
+	// perform any rounding for simplicity's sake.
+	const auto softUInt32ToFloat = [](unsigned a) -> float
+	{
+		if (a == 0)
+			return 0.0f;
+
+		unsigned bitIndex = 31;
+		for (; bitIndex >= 0; --bitIndex)
+		{
+			if ( (1 << bitIndex) & a)
+			{
+				if (bitIndex >= 23)
+				{
+					a >>= (bitIndex - 23);
+				}
+				else
+				{
+					a <<= (23 - bitIndex);
+				}
+				break;
+			}
+		}
+
+		unsigned char biasedExp = 127 + bitIndex;
+
+		// Clear the implicit 1 bit:
+		a &= (~(1 << 23) );
+
+		const unsigned uResult = (biasedExp << 23) | a;
+		return *(const float* const)&uResult;
+	};
+
+	// Verify that our soft conversion routine is accurate:
+	for (unsigned __int64 x = 0; x < 
+#ifdef _DEBUG
+		(1ull << 25ull);
+#else
+		(1ull << 32ull);
+#endif
+		++x)
+	{
+		const float fx = softUInt32ToFloat( (const unsigned)x);
+		const float referenceFloat = (const float)(const unsigned)x;
+		if (fx != referenceFloat)
+		{
+			const int diffBits = *(const int* const)&fx - *(const int* const)&referenceFloat;
+			if (abs(diffBits) > 1) // We don't do any rounding, so it's okay for us to be off by +/- 1 in either direction
+			{
+				__debugbreak();
+			}
+		}
+	}
+
+	unsigned mismatchCount = 0;
+	for (unsigned x = 0; x < 65536; ++x)
+	{
+		const unsigned short inputHalf = (const unsigned short)x;
+		const float fVal = softHalfToFloat(inputHalf);
+		const unsigned short roundTrippedHalf = softFloatToHalf(fVal);
+		if (inputHalf != roundTrippedHalf && !isnan(fVal) )
+		{
+			++mismatchCount;
+		}
+	}
+	printf("%u mismatches\n", mismatchCount);
+
 	const auto pipelinedCnvTestFunc = [&]() -> bool
 	{
 		static_assert(CNV_CYCLES == 3u, "Need to rewrite this function if the instruction latency of the CNV pipe changes!");
@@ -1291,7 +1470,7 @@ static const int RunTestsFloatCNV(Xsi::Loader& loader, std_logic_port& clk, std_
 			scoped_timestep time(loader, clk, 100);
 		}
 		IN_A = 101.5f;
-		IN_MODE = F_to_I24_Trunc;
+		IN_MODE = F_to_I23_RoundNearestEven;
 		{
 			scoped_timestep time(loader, clk, 100);
 		}
@@ -1300,35 +1479,49 @@ static const int RunTestsFloatCNV(Xsi::Loader& loader, std_logic_port& clk, std_
 		{
 			scoped_timestep time(loader, clk, 100);
 		}
-		const int a = OUT_RESULT.GetInt32Val();
+		const signed short a = OUT_RESULT.GetInt16Val();
 		const bool aValid = (a == 102);
+		IN_A = 0.354248046875f;
+		IN_MODE = F_to_Half;
+		{
+			scoped_timestep time(loader, clk, 100);
+		}
+		const int b = OUT_RESULT.GetInt32Val();
+		const bool bValid = (b == 102);
 		IN_A = INFINITY;
 		IN_MODE = F_to_UNORM8;
 		{
 			scoped_timestep time(loader, clk, 100);
 		}
-		const int b = OUT_RESULT.GetInt32Val();
-		const bool bValid = (b == 101);
+		const signed short c = OUT_RESULT.GetInt16Val();
+		const bool cValid = (c == 0);
+		IN_A = 0x35AB;
+		IN_MODE = Half_to_F;
+		{
+			scoped_timestep time(loader, clk, 100);
+		}
+		const unsigned short d = OUT_RESULT.GetUint16Val();
+		const bool dValid = (d == 0x35AB);
 		IN_A = 0.0f;
 		IN_MODE = F_to_I23_RoundNearestEven;
 		{
 			scoped_timestep time(loader, clk, 100);
 		}
-		const unsigned short c = OUT_RESULT.GetUint16Val();
-		const bool cValid = (c == 0);
+		const unsigned char e = OUT_RESULT.GetUint8Val();
+		const bool eValid = (e == 0xFF);
 		ICNV_GO = false;
 		{
 			scoped_timestep time(loader, clk, 100);
 		}
-		const unsigned char d = OUT_RESULT.GetUint8Val();
-		const bool dValid = (d == 255);
+		const float f = OUT_RESULT.GetFloat32Val();
+		const bool fValid = CompareFloatBitwise(f, 0.354248046875f);
 		{
 			scoped_timestep time(loader, clk, 100);
 		}
-		const int e = OUT_RESULT.GetInt32Val();
-		const bool eValid = (e == 0);
+		const int g = OUT_RESULT.GetInt32Val();
+		const bool gValid = (g == 0);
 
-		return aValid && bValid && cValid && dValid && eValid;
+		return aValid && bValid && cValid && dValid && eValid && fValid && gValid;
 	};
 
 	bool allTestsSuccessful = true;
@@ -1458,6 +1651,96 @@ static const int RunTestsFloatCNV(Xsi::Loader& loader, std_logic_port& clk, std_
 	allTestsSuccessful &= (cnvTestFunc(-INFINITY, F_to_UNORM8) == 0);
 	allTestsSuccessful &= (cnvTestFunc(NAN, F_to_UNORM8) == 0);
 	allTestsSuccessful &= (cnvTestFunc(-NAN, F_to_UNORM8) == 0);
+
+	// Convert float to half:
+	for (float fx = -16.0f; fx <= 16.0f; fx += 0.07f)
+	{
+		const unsigned short cnvResult = (const unsigned short)cnvTestFunc(fx, F_to_Half);
+		const unsigned short softResult = softFloatToHalf(fx);
+		const bool result = (cnvResult == softResult);
+		allTestsSuccessful &= result;
+	}
+
+	// Test a bunch of edge cases:
+	allTestsSuccessful &= (cnvTestFunc(0.0f, F_to_Half) == 0x0000);
+	allTestsSuccessful &= (cnvTestFunc(-0.0f, F_to_Half) == 0x8000);
+	allTestsSuccessful &= (cnvTestFunc(1.0f, F_to_Half) == 0x3C00);
+	allTestsSuccessful &= (cnvTestFunc(-1.0f, F_to_Half) == 0xBC00);
+	allTestsSuccessful &= (cnvTestFunc(65505.0f, F_to_Half) == 0x7C00);
+	allTestsSuccessful &= (cnvTestFunc(-65505.0f, F_to_Half) == 0xFC00);
+	allTestsSuccessful &= (cnvTestFunc(denormalFloat, F_to_Half) == 0x0000);
+	allTestsSuccessful &= (cnvTestFunc(-denormalFloat, F_to_Half) == 0x8000);
+	allTestsSuccessful &= (cnvTestFunc(INFINITY, F_to_Half) == 0x7C00);
+	allTestsSuccessful &= (cnvTestFunc(-INFINITY, F_to_Half) == 0xFC00);
+	allTestsSuccessful &= ( (cnvTestFunc(NAN, F_to_Half) & 0x7FFF) == 0x7FFF);
+	allTestsSuccessful &= ( (cnvTestFunc(-NAN, F_to_Half) & 0x7FFF) == 0x7FFF);
+
+	// Convert half to float:
+	for (float fx = -32.0f; fx <= 32.0f; fx += 0.07f)
+	{
+		const unsigned halfInput = softFloatToHalf(fx);
+		const int cnvIntResult = cnvTestFunc(*(const float* const)&halfInput, Half_to_F);
+		const float cnvResult = *(const float* const)&cnvIntResult;
+		const float softResult = softHalfToFloat(halfInput);
+		const bool result = (cnvResult == softResult);
+		allTestsSuccessful &= result;
+	}
+
+	// Make sure that half -> float -> half will round-trip to exactly the same number!
+	for (unsigned short fx = 0x0400; fx <= 0x7BFF; ++fx) // Test values in the range between 0.00006103515625f (minimum non-denormal half) and 65504.0f (maximum non-infinite half)
+	{
+		const unsigned halfValExtended = fx;
+		const int cnvIntResult = cnvTestFunc(*(const float* const)&halfValExtended, Half_to_F);
+		const float floatResult = *(const float* const)&cnvIntResult;
+		const unsigned short cnvHalf = (const unsigned short)cnvTestFunc(floatResult, F_to_Half);
+		const bool result = (cnvHalf == fx);
+		allTestsSuccessful &= result;
+	}
+
+	// Make sure that float -> half -> float will round-trip to nearly the same number (with rounding error)!
+	for (float fx = -32.0f; fx <= 32.0f; fx += 0.07f)
+	{
+		const int inputIntVal = *(const int* const)&fx;
+		const unsigned cnvHalf = (const unsigned short)cnvTestFunc(fx, F_to_Half);
+		const int cnvIntResult = cnvTestFunc(*(const float* const)&cnvHalf, Half_to_F);
+		const float cnvResult = *(const float* const)&cnvIntResult;
+		const int delta = cnvIntResult - inputIntVal;
+		const bool result = (abs(delta) < (1 << 13) ); // Compare using an epsilon of 2^13 which is 1<<13 because float32 has a 23 bit mantissa and float16 only has a 10 bit mantissa (13 bit difference)
+		allTestsSuccessful &= result;
+	}
+
+	// Test a bunch of edge cases:
+	{ const unsigned halfTestVal = 0x0000; const int cnvIntResult = cnvTestFunc(*(const float* const)&halfTestVal, Half_to_F); allTestsSuccessful &= CompareFloatBitwise(*(const float* const)&cnvIntResult, 0.0f); }
+	{ const unsigned halfTestVal = 0x8000; const int cnvIntResult = cnvTestFunc(*(const float* const)&halfTestVal, Half_to_F); allTestsSuccessful &= CompareFloatBitwise(*(const float* const)&cnvIntResult, -0.0f); }
+	{ const unsigned halfTestVal = 0x3C00; const int cnvIntResult = cnvTestFunc(*(const float* const)&halfTestVal, Half_to_F); allTestsSuccessful &= CompareFloatBitwise(*(const float* const)&cnvIntResult, 1.0f); }
+	{ const unsigned halfTestVal = 0xBC00; const int cnvIntResult = cnvTestFunc(*(const float* const)&halfTestVal, Half_to_F); allTestsSuccessful &= CompareFloatBitwise(*(const float* const)&cnvIntResult, -1.0f); }
+	{ const unsigned halfTestVal = 0x7BFF; const int cnvIntResult = cnvTestFunc(*(const float* const)&halfTestVal, Half_to_F); allTestsSuccessful &= CompareFloatBitwise(*(const float* const)&cnvIntResult, 65504.0f); }
+	{ const unsigned halfTestVal = 0xFBFF; const int cnvIntResult = cnvTestFunc(*(const float* const)&halfTestVal, Half_to_F); allTestsSuccessful &= CompareFloatBitwise(*(const float* const)&cnvIntResult, -65504.0f); }
+	{ const unsigned halfTestVal = 0x7C00; const int cnvIntResult = cnvTestFunc(*(const float* const)&halfTestVal, Half_to_F); allTestsSuccessful &= CompareFloatBitwise(*(const float* const)&cnvIntResult, INFINITY); }
+	{ const unsigned halfTestVal = 0xFC00; const int cnvIntResult = cnvTestFunc(*(const float* const)&halfTestVal, Half_to_F); allTestsSuccessful &= CompareFloatBitwise(*(const float* const)&cnvIntResult, -INFINITY); }
+	{ const unsigned halfTestVal = 0x7FFF; const int cnvIntResult = cnvTestFunc(*(const float* const)&halfTestVal, Half_to_F); allTestsSuccessful &= isnan(*(const float* const)&cnvIntResult); }
+	{ const unsigned halfTestVal = 0xFFFF; const int cnvIntResult = cnvTestFunc(*(const float* const)&halfTestVal, Half_to_F); allTestsSuccessful &= isnan(*(const float* const)&cnvIntResult); }
+
+	for (unsigned x = 0; x < 1026; ++x)
+	{
+		const int iCnvResult = cnvTestFunc(*(const float* const)&x, U32_to_F);
+		const float fResult = *(const float* const)&iCnvResult;
+		const float fSoftResult = softUInt32ToFloat(x);
+		allTestsSuccessful &= CompareFloatBitwise(fSoftResult, fResult);
+	}
+
+	for (unsigned x = 0; x < 31; ++x)
+	{
+		const unsigned baseNum = 1 << x;
+		for (int y = -1; y <= 1; ++y)
+		{
+			const unsigned modifiedNum = (const unsigned)(baseNum + y);
+			const int iCnvResult = cnvTestFunc(*(const float* const)&modifiedNum, U32_to_F);
+			const float fResult = *(const float* const)&iCnvResult;
+			const float fSoftResult = softUInt32ToFloat(modifiedNum);
+			allTestsSuccessful &= CompareFloatBitwise(fSoftResult, fResult);
+		}
+	}
 
 	// Run the pipelining test:
 	allTestsSuccessful &= pipelinedCnvTestFunc();

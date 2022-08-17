@@ -28,11 +28,11 @@ entity Rasterizer is
 		TRISETUP_inBarycentricYDeltaA : in STD_LOGIC_VECTOR(15 downto 0);
 		TRISETUP_inBarycentricYDeltaB : in STD_LOGIC_VECTOR(15 downto 0);
 		TRISETUP_inBarycentricYDeltaC : in STD_LOGIC_VECTOR(15 downto 0);
-		TRISETUP_inBarycentricInverse : in STD_LOGIC_VECTOR(23 downto 0);
+		TRISETUP_inBarycentricInverse : in STD_LOGIC_VECTOR(31 downto 0);
 
-		TRISETUP_inInvZ0 : in STD_LOGIC_VECTOR(23 downto 0);
-		TRISETUP_inInvZ1 : in STD_LOGIC_VECTOR(23 downto 0);
-		TRISETUP_inInvZ2 : in STD_LOGIC_VECTOR(23 downto 0);
+		TRISETUP_inInvZ0 : in STD_LOGIC_VECTOR(31 downto 0);
+		TRISETUP_inInvZ1 : in STD_LOGIC_VECTOR(31 downto 0);
+		TRISETUP_inInvZ2 : in STD_LOGIC_VECTOR(31 downto 0);
 
 		TRISETUP_inTX0 : in STD_LOGIC_VECTOR(15 downto 0);
 		TRISETUP_inTY0 : in STD_LOGIC_VECTOR(15 downto 0);
@@ -53,14 +53,14 @@ entity Rasterizer is
 	-- Rasterizer Output FIFO interface end
 		
 	-- TriWorkCache interface begin
-		TRICACHE_BarycentricInverse : out STD_LOGIC_VECTOR(23 downto 0) := (others => '0');
+		TRICACHE_BarycentricInverse : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 		TRICACHE_PrimitiveID : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
 		TRICACHE_DrawCallID : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
 		TRICACHE_VFACE : out STD_LOGIC := '0';
 
-		TRICACHE_InvZ0 : out STD_LOGIC_VECTOR(23 downto 0) := (others => '0');
-		TRICACHE_InvZ1 : out STD_LOGIC_VECTOR(23 downto 0) := (others => '0');
-		TRICACHE_InvZ2 : out STD_LOGIC_VECTOR(23 downto 0) := (others => '0');
+		TRICACHE_InvZ0 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		TRICACHE_InvZ1 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		TRICACHE_InvZ2 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 
 		TRICACHE_TX0 : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
 		TRICACHE_TX1 : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
@@ -139,7 +139,7 @@ end record vertexColor;
 type vertexAttributes is record
 	texcoord : vertexTexcoord;
 	color : vertexColor;
-	invZ : unsigned(23 downto 0);
+	invZ : unsigned(31 downto 0);
 end record vertexAttributes;
 
 	pure function barycentricInside(barycentricVal : signed(31 downto 0) ) return std_logic is
@@ -176,7 +176,7 @@ signal barycentricYDeltaA : signed(15 downto 0) := (others => '0');
 signal barycentricYDeltaB : signed(15 downto 0) := (others => '0');
 signal barycentricYDeltaC : signed(15 downto 0) := (others => '0');
 
-signal barycentricInverse : unsigned(23 downto 0) := (others => '0');
+signal barycentricInverse : unsigned(31 downto 0) := (others => '0');
 
 signal pixelNumber : unsigned(15 downto 0) := (others => '0'); -- stores values from 0 to 64k, but we only need from 0 to 800
 signal lineNumber : unsigned(15 downto 0) := (others => '0'); -- stores values from 0 to 64k, but we only need from 0 to 525

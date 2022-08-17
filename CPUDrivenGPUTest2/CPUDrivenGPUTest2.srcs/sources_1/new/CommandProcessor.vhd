@@ -58,6 +58,7 @@ entity CommandProcessor is
 		CMD_ClearBlock_Idle : in STD_LOGIC;
 		CMD_ROP_Idle : in STD_LOGIC;
 		CMD_MemController_Idle : in STD_LOGIC;
+		CMD_Depth_Idle : in STD_LOGIC;
 	-- Idle signals from the various systems end
 
 	-- Shader Core interfaces begin
@@ -101,6 +102,14 @@ entity CommandProcessor is
 		VBB_CommandArgType : out STD_LOGIC_VECTOR(2 downto 0) := (others => '0'); -- Transmits our PrimitiveType
 		VBB_ReadyState : in STD_LOGIC;
 	-- Vertex Batch Builder interfaces end
+
+	-- Depth Buffer interfaces begin
+		DEPTH_ClearDepthBuffer : out STD_LOGIC := '0';
+		DEPTH_ClearDepthValue : out STD_LOGIC_VECTOR(23 downto 0) := (others => '0');
+		DEPTH_DepthWriteEnable : out STD_LOGIC := '0';
+		DEPTH_DepthFunction : out STD_LOGIC_VECTOR(2 downto 0) := (others => '0');
+		DEPTH_SetDepthParams : out STD_LOGIC := '0';
+	-- Depth Buffer interfaces end
 
 	-- Texture sampler interfaces begin
 		TEXSAMP_LoadTexCacheBeginSignal : out STD_LOGIC := '0';
@@ -171,7 +180,7 @@ entity CommandProcessor is
 		DBG_LAST_WRITE_ADDR : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 		DBG_LAST_WRITE_DATA : out STD_LOGIC_VECTOR(DATA_WIDTH_BITS-1 downto 0) := (others => '0');
 
-		DBG_IdleSignalsVector : out STD_LOGIC_VECTOR(6 downto 0) := (others => '0')
+		DBG_IdleSignalsVector : out STD_LOGIC_VECTOR(7 downto 0) := (others => '0')
 		);
 end CommandProcessor;
 
@@ -262,10 +271,13 @@ architecture Behavioral of CommandProcessor is
 						SET_SHADER_CONSTANT_SPECIAL, -- 42
 						SET_SHADER_START_ADDRESS, -- 43
 
-						DBG_SHADER_NEXT_DRAW_CALL, -- 44
-						DBG_DUMP_SHADER_REGISTERS, -- 45
-						DBG_DUMP_SHADER_REGISTERS_HIGH, -- 46
-						DBG_DUMP_SHADER_REGISTERS_MEMWRITE -- 47
+						SET_DEPTH_STATE, -- 44
+						INITIATE_DEPTH_BUFFER_CLEAR, -- 45
+
+						DBG_SHADER_NEXT_DRAW_CALL, -- 46
+						DBG_DUMP_SHADER_REGISTERS, -- 47
+						DBG_DUMP_SHADER_REGISTERS_HIGH, -- 48
+						DBG_DUMP_SHADER_REGISTERS_MEMWRITE -- 49
 						);
 
 	type commandListExecState is record
@@ -337,8 +349,9 @@ architecture Behavioral of CommandProcessor is
 	signal ClearBlockIdleSig : STD_LOGIC := '0';
 	signal ROPIdleSig : STD_LOGIC := '0';
 	signal MemControllerIdleSig : STD_LOGIC := '0';
+	signal DepthBufferIdleSig : STD_LOGIC := '0';
 	
-	signal CombinedIdleSignals : STD_LOGIC_VECTOR(6 downto 0) := (others => '0');
+	signal CombinedIdleSignals : STD_LOGIC_VECTOR(7 downto 0) := (others => '0');
 
 	signal statCyclesIdle : unsigned(31 downto 0) := (others => '0');
 	signal statCyclesWorking : unsigned(31 downto 0) := (others => '0');
@@ -426,6 +439,25 @@ begin
 		end if;
 	end process;
 
+	process(clk)
+	begin
+		if (rising_edge(clk) ) then
+			CombinedIdleSignals <= DepthBufferIdleSig & MemControllerIdleSig & ROPIdleSig & ClearBlockIdleSig & TexSamplerIdleSig & VSyncResolvedSig & RasterizerIdleSig & IAIdleSig;
+
+			-- Sample the idle flags into registers to be read next cycle:
+			IAIdleSig <= CMD_IA_Idle;
+			RasterizerIdleSig <= CMD_Rasterizer_Idle;
+			VSyncSigM1 <= VSyncSig; -- VSync needs two signal registers that get AND'd together because it's running on a different 
+			VSyncSig <= CMD_VSync; -- clock domain from the rest of the pipeline
+			VSyncResolvedSig <= VSyncSigM1 and VSyncSig;
+			TexSamplerIdleSig <= CMD_TexSampler_Idle;
+			ClearBlockIdleSig <= CMD_ClearBlock_Idle;
+			ROPIdleSig <= CMD_ROP_Idle;
+			MemControllerIdleSig <= CMD_MemController_Idle;
+			DepthBufferIdleSig <= CMD_Depth_Idle;
+		end if;
+	end process;
+
 	-- Packet state machine
 	process(clk)
 		variable writeDataTemp : std_logic_vector(DATA_WIDTH_BITS-1 downto 0) := (others => '0');
@@ -472,6 +504,8 @@ begin
 						-- Deassert these signals after one clock cycle
 						SHADER_InCommand <= std_logic_vector(to_unsigned(eShaderCMDPacket'pos(DoNothingCommand), 3) );
 						VBB_SendCommand <= std_logic_vector(to_unsigned(eVBB_CMDPacket'pos(NoCommand), 2) );
+						DEPTH_SetDepthParams <= '0';
+						DEPTH_ClearDepthBuffer <= '0';
 						CommandProcReadResponsesFIFO_rd_en <= '0';
 
 						if (commandListState.numRemainingCommands > 0) then -- If we're executing a command list from memory:
@@ -521,7 +555,7 @@ begin
 								mst_packet_state <= ISSUE_CLEARBLOCK;
 
 							when PT_CLEARZSTENCILBUFFER =>
-								mst_packet_state <= DONOTHING_PACKET; -- TODO: Implement this!
+								mst_packet_state <= INITIATE_DEPTH_BUFFER_CLEAR;
 
 							when PT_LOADTEXCACHEDATA =>
 								mst_packet_state <= LOAD_TEXTURE_DATA;
@@ -573,6 +607,9 @@ begin
 
 							when PT_DEBUGSHADERNEXTDRAWCALL =>
 								mst_packet_state <= DBG_SHADER_NEXT_DRAW_CALL;
+
+							when PT_SETDEPTHSTATE =>
+								mst_packet_state <= SET_DEPTH_STATE;
 
 							when others => --when PT_DONOTHING =>
 								mst_packet_state <= DONOTHING_PACKET;
@@ -722,23 +759,9 @@ begin
 						end if;
 
 					when WAIT_FOR_IDLE =>
-						-- Sample the idle flags into registers to be read next cycle:
-						IAIdleSig <= CMD_IA_Idle;
-						RasterizerIdleSig <= CMD_Rasterizer_Idle;
-						VSyncSigM1 <= VSyncSig; -- VSync needs two signal registers that get AND'd together because it's running on a different 
-						VSyncSig <= CMD_VSync; -- clock domain from the rest of the pipeline
-						VSyncResolvedSig <= VSyncSigM1 and VSyncSig;
-						TexSamplerIdleSig <= CMD_TexSampler_Idle;
-						ClearBlockIdleSig <= CMD_ClearBlock_Idle;
-						ROPIdleSig <= CMD_ROP_Idle;
-						MemControllerIdleSig <= CMD_MemController_Idle;
-
-						CombinedIdleSignals <= MemControllerIdleSig & ROPIdleSig & ClearBlockIdleSig & TexSamplerIdleSig & VSyncResolvedSig & RasterizerIdleSig & IAIdleSig;
-
 						-- The wait is completed when ( (waitFlags & waitSignals) == waitFlags):
 						if ( (localIncomingPacket.payload0(7 downto 0) and 
-							('1' & MemControllerIdleSig & ROPIdleSig & ClearBlockIdleSig &
-							TexSamplerIdleSig & VSyncResolvedSig & RasterizerIdleSig & IAIdleSig) ) = localIncomingPacket.payload0(7 downto 0) ) then
+							unsigned(CombinedIdleSignals) ) = localIncomingPacket.payload0(7 downto 0) ) then
 							if (localIncomingPacket.payload0(8) = '0') then -- Send back a DWORD (from payload1) after wait completes or not?
 								mst_packet_state <= READ_NEXT_PACKET_FROM_FIFO;
 							else
@@ -1075,6 +1098,21 @@ begin
 							mst_packet_state <= DBG_DUMP_SHADER_REGISTERS;
 						else
 							CommandProcWriteRequestsFIFO_wr_en <= '0';
+						end if;
+
+					when SET_DEPTH_STATE =>
+						if (DepthBufferIdleSig = '1' and CMD_Depth_Idle = '1') then
+							DEPTH_SetDepthParams <= '1';
+							DEPTH_DepthFunction <= std_logic_vector(localIncomingPacket.payload0(2 downto 0) );
+							DEPTH_DepthWriteEnable <= localIncomingPacket.payload0(8);
+							mst_packet_state <= READ_NEXT_PACKET_FROM_FIFO;
+						end if;
+
+					when INITIATE_DEPTH_BUFFER_CLEAR =>
+						if (DepthBufferIdleSig = '1' and CMD_Depth_Idle = '1') then
+							DEPTH_ClearDepthBuffer <= '1';
+							DEPTH_ClearDepthValue <= '1' & std_logic_vector(localIncomingPacket.payload0(22 downto 0) );
+							mst_packet_state <= READ_NEXT_PACKET_FROM_FIFO;
 						end if;
 
 					-- Removed! May repurpose this case

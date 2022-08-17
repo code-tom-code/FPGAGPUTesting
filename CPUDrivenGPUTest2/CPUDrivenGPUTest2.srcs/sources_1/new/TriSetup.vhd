@@ -5,19 +5,21 @@ use IEEE.STD_LOGIC_1164.ALL;
 -- arithmetic functions with Signed or Unsigned values
 use IEEE.NUMERIC_STD.ALL;
 
+use work.FloatALU_Types.all;
+
 entity TriSetup is
 	Port ( clk : in STD_LOGIC;
 
 	-- Input Assembler interfaces begin
 		IA_v0_in_x : in STD_LOGIC_VECTOR(15 downto 0);
 		IA_v0_in_y : in STD_LOGIC_VECTOR(15 downto 0);
-		IA_v0_in_invZ : in STD_LOGIC_VECTOR(23 downto 0);
+		IA_v0_in_invZ : in STD_LOGIC_VECTOR(31 downto 0);
 		IA_v1_in_x : in STD_LOGIC_VECTOR(15 downto 0);
 		IA_v1_in_y : in STD_LOGIC_VECTOR(15 downto 0);
-		IA_v1_in_invZ : in STD_LOGIC_VECTOR(23 downto 0);
+		IA_v1_in_invZ : in STD_LOGIC_VECTOR(31 downto 0);
 		IA_v2_in_x : in STD_LOGIC_VECTOR(15 downto 0);
 		IA_v2_in_y : in STD_LOGIC_VECTOR(15 downto 0);
-		IA_v2_in_invZ : in STD_LOGIC_VECTOR(23 downto 0);
+		IA_v2_in_invZ : in STD_LOGIC_VECTOR(31 downto 0);
 		IA_t0_in_x : in STD_LOGIC_VECTOR(15 downto 0);
 		IA_t0_in_y : in STD_LOGIC_VECTOR(15 downto 0);
 		IA_t1_in_x : in STD_LOGIC_VECTOR(15 downto 0);
@@ -37,10 +39,10 @@ entity TriSetup is
 	-- TexConfig interfaces end
 
 	-- Rasterizer interfaces begin
-		RAST_outBarycentricInverse : out STD_LOGIC_VECTOR(23 downto 0) := (others => '0'); -- This is a fixed-point value in unsigned Q0.24 format
-		RAST_v0_out_invZ : out STD_LOGIC_VECTOR(23 downto 0) := (others => '0');
-		RAST_v1_out_invZ : out STD_LOGIC_VECTOR(23 downto 0) := (others => '0');
-		RAST_v2_out_invZ : out STD_LOGIC_VECTOR(23 downto 0) := (others => '0');
+		RAST_outBarycentricInverse : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0'); -- This is a floating point value
+		RAST_v0_out_invZ : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		RAST_v1_out_invZ : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		RAST_v2_out_invZ : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 		RAST_t0_out_x : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
 		RAST_t0_out_y : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
 		RAST_t1_out_x : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
@@ -72,15 +74,19 @@ entity TriSetup is
 		RAST_triSetupDataIsValid : out STD_LOGIC := '0';
 	-- Rasterizer interfaces end
 
-	-- Reciprocal unit interfaces begin
-		RECIP_InputVal : out STD_LOGIC_VECTOR(23 downto 0) := (others => '0');
-		RECIP_ReadyForNewInput : in STD_LOGIC;
-		RECIP_NewInputValIsValid : out STD_LOGIC := '0';
-
-		RECIP_OutputVal : in STD_LOGIC_VECTOR(23 downto 0);
-		RECIP_ReadyForValOut : out STD_LOGIC := '0';
-		RECIP_NewOutValIsValid : in STD_LOGIC;
-	-- Reciprocal unit interfaces end
+	-- FPU interfaces begin
+		FPU_A : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		FPU_B : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		FPU_Mode : out STD_LOGIC_VECTOR(2 downto 0) := (others => '0');
+		FPU_ISHFT_GO : out STD_LOGIC := '0';
+		FPU_IMUL_GO : out STD_LOGIC := '0';
+		FPU_IADD_GO : out STD_LOGIC := '0';
+		FPU_ICMP_GO : out STD_LOGIC := '0';
+		FPU_ICNV_GO : out STD_LOGIC := '0';
+		FPU_ISPEC_GO : out STD_LOGIC := '0';
+		FPU_IBIT_GO : out STD_LOGIC := '0';
+		FPU_OUT : in STD_LOGIC_VECTOR(31 downto 0);
+	-- FPU interfaces end
 
 	-- Stats interface begin
 		STAT_CyclesIdle : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
@@ -89,7 +95,7 @@ entity TriSetup is
 	-- Stats interface end
 
 	-- Debug signals
-		DBG_TriSetup_State : out STD_LOGIC_VECTOR(7 downto 0) := (others => '0');
+		DBG_TriSetup_State : out STD_LOGIC_VECTOR(4 downto 0) := (others => '0');
 		DBG_MinX : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
 		DBG_MaxX : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
 		DBG_MinY : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
@@ -116,38 +122,43 @@ ATTRIBUTE X_INTERFACE_PARAMETER of clk: SIGNAL is "FREQ_HZ 333250000";
 		triSetup_waitForTriData, -- 0
 
 		triSetup_duplicateVertexCull, -- 1
+		triSetup_zVertexCull, -- 2
 
 		-- Bounds calculations and trivial rejection culling:
-		triSetup_bounds, -- 2
-		triSetup_boundsClamp, -- 3
-		triSetup_boundsCull, -- 4
+		triSetup_bounds, -- 3
+		triSetup_boundsClamp, -- 4
+		triSetup_boundsCull, -- 5
 
 		-- Compute cross-product to get (signed) twiceTriangleArea
-		triSetup_crossProduct, -- 5
-		triSetup_crossProduct2, -- 6
-		triSetup_crossProduct4, -- 7
+		triSetup_crossProduct, -- 6
+		triSetup_crossProduct2, -- 7
+		triSetup_crossProduct4, -- 8
 
 		-- Backface cull (cull if twiceTriangleArea <= 0)
-		triSetup_backfaceCull, -- 8
+		triSetup_backfaceCull, -- 9
 
 		-- Send data to reciprocal unit
-		triSetup_sendToRecip, -- 9
+		triSetup_sendToRecip, -- 10
+		triSetup_waitForConvert0, -- 11
+		triSetup_waitForConvert1, -- 12
+		triSetup_waitForConvert2, -- 13
+		triSetup_setupRecip, -- 14
 
 		-- Compute top-left edge rule offsets
-		triSetup_topLeftBiasA, -- 10
+		triSetup_topLeftBiasA, -- 15
 
 		-- Compute barycentric deltas
-		triSetup_barycentricXDeltaA, -- 11
+		triSetup_barycentricXDeltaA, -- 16
 
 		-- Compute barycentric values
-		triSetup_leftInner0, -- 12
-		triSetup_leftProduct0, -- 13
-		triSetup_crossProductSumA, -- 14
-		triSetup_applyTopLeftRule, --15
+		triSetup_leftInner0, -- 17
+		triSetup_leftProduct0, -- 18
+		triSetup_crossProductSumA, -- 19
+		triSetup_applyTopLeftRule, --20
 
-		triSetup_waitForReciprocalResult, -- 16
+		triSetup_waitForReciprocalResult, -- 21
 
-		triSetup_broadcastOutput -- 17
+		triSetup_broadcastOutput -- 22
 		);
 
 	pure function isTopLeftEdge(vertA_X : signed(15 downto 0); 
@@ -216,16 +227,30 @@ ATTRIBUTE X_INTERFACE_PARAMETER of clk: SIGNAL is "FREQ_HZ 333250000";
 		end if;
 	end function;
 
+	constant oneF : unsigned(30 downto 0) := "0111111100000000000000000000000"; -- This is 0x3f800000 with the top (sign) bit cut off
+
+	-- Returns true if vertex is out of bounds, or false if the vertex is in-bounds:
+	pure function IsZOutOfBounds(vertexInvZValue : unsigned(31 downto 0) ) return boolean is
+	begin
+		if (vertexInvZValue(31) = '1') then -- Negative Z values are behind the camera, so return true
+			return true;
+		elsif (vertexInvZValue(30 downto 0) < oneF) then -- Inverse-Z values less than 1.0f must be from Z-values greater than 1.0f
+			return true;
+		else
+			return false;
+		end if;
+	end function;
+
 -- External store signals
 signal v0_store_x : STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
 signal v0_store_y : STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
-signal v0_store_invZ : STD_LOGIC_VECTOR(23 downto 0) := (others => '0');
+signal v0_store_invZ : STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 signal v1_store_x : STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
 signal v1_store_y : STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
-signal v1_store_invZ : STD_LOGIC_VECTOR(23 downto 0) := (others => '0');
+signal v1_store_invZ : STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 signal v2_store_x : STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
 signal v2_store_y : STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
-signal v2_store_invZ : STD_LOGIC_VECTOR(23 downto 0) := (others => '0');
+signal v2_store_invZ : STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 signal t0_store_x : STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
 signal t0_store_y : STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
 signal t1_store_x : STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
@@ -297,8 +322,10 @@ signal isTopLeftEdgeC : STD_LOGIC := '0';
 
 -- Note that the triangle does get backface-culled in the case that this is a negative or zero value
 signal twiceTriangleArea : signed(31 downto 0) := (others => '0'); -- This must be signed so we can test if it's negative or not
+signal twiceTriangleAreaFloat : unsigned(31 downto 0) := (others => '0'); -- This is the floating-point representation of twiceTriangleArea (after the uint32 to float conversion)
+signal reciprocalCycleCounter : unsigned(3 downto 0) := (others => '0'); -- Keeps track of how many cycles we have remaining in our reciprocal calculation
 
-signal barycentricInverse : unsigned(23 downto 0) := (others => '0'); -- Q0.24, value between (0.0, 1.0) that is calculated as (1.0f / twiceTriangleArea) using the reciprocal
+signal barycentricInverse : unsigned(31 downto 0) := (others => '0'); -- float32 value that is calculated as (1.0f / twiceTriangleArea) using the FPU reciprocal unit
 
 signal barycentricRowResetA : signed(31 downto 0) := (others => '0');
 signal barycentricRowResetB : signed(31 downto 0) := (others => '0');
@@ -316,10 +343,8 @@ signal stats_totalTrianglesDuplicateVertCulled : unsigned(11 downto 0) := (other
 signal stats_totalTrianglesZeroAreaBoundsCulled : unsigned(11 downto 0) := (others => '0');
 signal stats_totalTrianglesZeroAreaTriCulled : unsigned(11 downto 0) := (others => '0');
 signal stats_totalTrianglesBackfaceCulled : unsigned(11 downto 0) := (others => '0');
+signal stats_totalTrianglesZCulled : unsigned(11 downto 0) := (others => '0');
 signal stats_totalTrianglesPassed : unsigned(11 downto 0) := (others => '0');
-
-signal recipInputIsValid : std_logic := '0';
-signal recipReadyForValOut : std_logic := '0';
 
 signal triSetupDataIsValid : std_logic := '0';
 
@@ -329,16 +354,22 @@ signal statCyclesWaitingForOutput : unsigned(31 downto 0) := (others => '0');
 
 begin
 
+-- Tie off all of the FPU signals that we aren't going to use to zero:
+FPU_B <= (others => '0');
+FPU_ISHFT_GO <= '0';
+FPU_IMUL_GO <= '0';
+FPU_IADD_GO <= '0';
+FPU_ICMP_GO <= '0';
+FPU_IBIT_GO <= '0';
+
 RAST_triSetupDataIsValid <= triSetupDataIsValid;
 IA_readyForNewTri <= readyForNextTriSig;
-RECIP_NewInputValIsValid <= recipInputIsValid;
-RECIP_ReadyForValOut <= recipReadyForValOut;
 
 STAT_CyclesIdle <= std_logic_vector(statCyclesIdle);
 STAT_CyclesSpentWorking <= std_logic_vector(statCyclesWorking);
 STAT_CyclesWaitingForOutput <= std_logic_vector(statCyclesWaitingForOutput);
 
-DBG_TriSetup_State <= std_logic_vector(to_unsigned(state_t'pos(currentState), 8) );
+DBG_TriSetup_State <= std_logic_vector(to_unsigned(state_t'pos(currentState), 5) );
 DBG_MinX <= std_logic_vector(minX);
 DBG_MaxX <= std_logic_vector(maxX);
 DBG_MinY <= std_logic_vector(minY);
@@ -415,6 +446,16 @@ DBG_TwiceTriArea <= std_logic_vector(twiceTriangleArea);
 						readyForNextTriSig <= '1';
 						currentState <= triSetup_waitForTriData;
 					else
+						currentState <= triSetup_zVertexCull;
+					end if;
+
+					-- TODO: Replace this with real triangle clipping that can create new triangles in the future
+				when triSetup_zVertexCull =>
+					if (IsZOutOfBounds(unsigned(v0_store_invZ) ) or IsZOutOfBounds(unsigned(v1_store_invZ) ) or IsZOutOfBounds(unsigned(v2_store_invZ) ) ) then
+						stats_totalTrianglesZCulled <= stats_totalTrianglesZCulled + 1;
+						readyForNextTriSig <= '1';
+						currentState <= triSetup_waitForTriData;
+					else
 						currentState <= triSetup_bounds;
 					end if;
 
@@ -473,7 +514,7 @@ DBG_TwiceTriArea <= std_logic_vector(twiceTriangleArea);
 				-- Backface cull if the triangle has a negative area (facing away from the screen) or
 				-- if it has zero area (too small)
 				when triSetup_backfaceCull =>
-					if (twiceTriangleArea < 0) then -- Backface culling
+					if (twiceTriangleArea(31) = '1') then -- Backface culling if we have a negative triangle area (topmost sign bit set)
 						stats_totalTrianglesBackfaceCulled <= stats_totalTrianglesBackfaceCulled + 1;
 						readyForNextTriSig <= '1';
 						currentState <= triSetup_waitForTriData;
@@ -490,18 +531,36 @@ DBG_TwiceTriArea <= std_logic_vector(twiceTriangleArea);
 					end if;
 
 				when triSetup_sendToRecip =>
-					if (RECIP_ReadyForNewInput = '1' and recipInputIsValid = '1') then
-						recipInputIsValid <= '0';
-						currentState <= triSetup_topLeftBiasA;
-					else
-						RECIP_InputVal <= std_logic_vector(twiceTriangleArea(23 downto 0) ); -- Clip from uint32 to uint24 (only triangles much larger than the whole screen size should ever have problems here)
-						recipInputIsValid <= '1';
-					end if;
+					FPU_A <= std_logic_vector('0' & twiceTriangleArea(30 downto 0) );
+					FPU_Mode <= std_logic_vector(to_unsigned(eConvertMode'pos(U32_to_F), 3) );
+					FPU_ICNV_GO <= '1'; -- Issue the uint32 -> float conversion on the FPU (takes 3 cycles to complete)
+					currentState <= triSetup_waitForConvert0;
+
+				when triSetup_waitForConvert0 =>
+					FPU_ICNV_GO <= '0'; -- Deassert after one clock cycle
+					currentState <= triSetup_waitForConvert1;
+
+				when triSetup_waitForConvert1 =>
+					currentState <= triSetup_waitForConvert2;
+
+				when triSetup_waitForConvert2 =>
+					currentState <= triSetup_setupRecip;
+
+				when triSetup_setupRecip =>
+					FPU_A <= FPU_OUT; -- Feed the results of the converted uint32 right back into the input again so we can take the reciprocal
+					FPU_Mode <= (others => '0');
+					FPU_ISPEC_GO <= '1'; -- Kick off the floating point reciprocal calculation (takes a whopping 14 cycles to complete)
+					reciprocalCycleCounter <= to_unsigned(SPEC_CYCLES, 4);
+
+					twiceTriangleAreaFloat <= unsigned(FPU_OUT);
+					currentState <= triSetup_topLeftBiasA;
 
 				when triSetup_topLeftBiasA =>
+					FPU_ISPEC_GO <= '0'; -- Deassert after one clock cycle
 					isTopLeftEdgeA <= isTopLeftEdge(v1_x, v1_y, v2_x, v2_y);
 					isTopLeftEdgeB <= isTopLeftEdge(v2_x, v2_y, v0_x, v0_y);
 					isTopLeftEdgeC <= isTopLeftEdge(v0_x, v0_y, v1_x, v1_y);
+					reciprocalCycleCounter <= reciprocalCycleCounter - 1;
 					currentState <= triSetup_barycentricXDeltaA;
 
 				-- Calculate barycentric X and Y deltas (one integer subtraction per cycle)
@@ -520,6 +579,7 @@ DBG_TwiceTriArea <= std_logic_vector(twiceTriangleArea);
 					nv1_y <= -v1_y;
 					nv2_x <= -v2_x;
 					nv2_y <= -v2_y;
+					reciprocalCycleCounter <= reciprocalCycleCounter - 1;
 					currentState <= triSetup_leftInner0;
 
 				-- Calculate inner parenthesis terms for cross-product to calculate rowResetBarycentrics (one signed addition per cycle)
@@ -546,9 +606,10 @@ DBG_TwiceTriArea <= std_logic_vector(twiceTriangleArea);
 					rightSecondTermInner1 <= minX + nv2_x;
 					rightSecondTermInner2 <= minX + nv0_x;
 
+					reciprocalCycleCounter <= reciprocalCycleCounter - 1;
 					currentState <= triSetup_leftProduct0;
 
-				-- 12-bit signed integer multiplication to 23 bit signed integer product (we're starting one signed multiplication per cycle)
+				-- 16-bit signed integer multiplication to 32 bit signed integer product (we're starting one signed multiplication per cycle)
 				when triSetup_leftProduct0 =>
 					leftProduct0 <= leftFirstTermInner0 * leftSecondTermInner0;
 					leftProduct1 <= leftFirstTermInner1 * leftSecondTermInner1;
@@ -556,6 +617,7 @@ DBG_TwiceTriArea <= std_logic_vector(twiceTriangleArea);
 					rightProduct0 <= rightFirstTermInner0 * rightSecondTermInner0;
 					rightProduct1 <= rightFirstTermInner1 * rightSecondTermInner1;
 					rightProduct2 <= rightFirstTermInner2 * rightSecondTermInner2;
+					reciprocalCycleCounter <= reciprocalCycleCounter - 1;
 					currentState <= triSetup_crossProductSumA;
 
 				-- Finish the cross-product sum that yields the final row-reset barycentric values (signed integer addition - one per cycle)
@@ -563,22 +625,22 @@ DBG_TwiceTriArea <= std_logic_vector(twiceTriangleArea);
 					barycentricRowResetA <= leftProduct0 - rightProduct0;
 					barycentricRowResetB <= leftProduct1 - rightProduct1;
 					barycentricRowResetC <= leftProduct2 - rightProduct2;
+					reciprocalCycleCounter <= reciprocalCycleCounter - 1;
 					currentState <= triSetup_applyTopLeftRule;
 
 				when triSetup_applyTopLeftRule =>
 					barycentricRowResetA <= applyTopLeftRuleBarycentricAdjustment(barycentricRowResetA, isTopLeftEdgeA);
 					barycentricRowResetB <= applyTopLeftRuleBarycentricAdjustment(barycentricRowResetB, isTopLeftEdgeB);
 					barycentricRowResetC <= applyTopLeftRuleBarycentricAdjustment(barycentricRowResetC, isTopLeftEdgeC);
+					reciprocalCycleCounter <= reciprocalCycleCounter - 1;
 					currentState <= triSetup_waitForReciprocalResult;
 
 				when triSetup_waitForReciprocalResult =>
-					if (RECIP_NewOutValIsValid = '1' and recipReadyForValOut = '1') then
-						barycentricInverse <= unsigned(RECIP_OutputVal);
-						recipReadyForValOut <= '0';
-						triSetupDataIsValid <= '0';
+					if (reciprocalCycleCounter = 0) then
+						barycentricInverse <= unsigned(FPU_OUT);
 						currentState <= triSetup_broadcastOutput;
 					else
-						recipReadyForValOut <= '1';
+						reciprocalCycleCounter <= reciprocalCycleCounter - 1;
 					end if;
 
 				when triSetup_broadcastOutput =>

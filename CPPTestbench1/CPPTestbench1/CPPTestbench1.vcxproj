@@ -219,11 +219,13 @@
     <None Include="AttrInterpolator.prj" />
     <None Include="CommandProcessor.prj" />
     <None Include="ConstantBuffer.prj" />
+    <None Include="DepthBuffer.prj" />
     <None Include="FloatALU.prj" />
     <None Include="GPRQuad.prj" />
     <None Include="hdl_src\CDC_Command_Scanout.vhd" />
     <None Include="hdl_src\CommandProcessor.vhd" />
     <None Include="hdl_src\ConstantBuffer.vhd" />
+    <None Include="hdl_src\DepthBuffer.vhd" />
     <None Include="hdl_src\FloatALU.vhd" />
     <None Include="hdl_src\FloatALU_Types.vhd" />
     <None Include="hdl_src\GPRQuad.vhd" />
@@ -235,6 +237,7 @@
     <None Include="hdl_src\PacketType.vhd" />
     <None Include="hdl_src\ShaderCore.vhd" />
     <None Include="hdl_src\TestShaderCoreDriver.vhd" />
+    <None Include="hdl_src\TriSetup.vhd" />
     <None Include="hdl_src\UNORM8ToFloat.vhd" />
     <None Include="hdl_src\VertexBatchBuilder.vhd" />
     <None Include="hdl_src\VertexStreamCache.vhd" />

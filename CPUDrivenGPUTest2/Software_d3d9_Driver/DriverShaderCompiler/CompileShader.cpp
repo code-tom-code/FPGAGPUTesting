@@ -2054,7 +2054,7 @@ const signed short FindUnusedConstantRegisterIndex(const ShaderInfo& inDXShaderI
 void AppendVSViewportTransform(const unsigned cRegIndex, const unsigned oRegIndex, std::vector<instructionSlot>& inOutDeviceInstructionStream, const bool applyZTransform = true)
 {
 	const instructionSlot mulX = { {Op_MUL, DRMod_None, DRTyp_O, oRegIndex /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_O, oRegIndex /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_C, cRegIndex /*src1RegIndex*/, Chan_X} }; // mul oN.x, oN.x, cM.x
-	const instructionSlot mulNegY = { {Op_MUL, DRMod_None, DRTyp_O, oRegIndex /*destRegIndex*/, Chan_Y, SRMod_Neg, SRTyp_O, oRegIndex /*src0RegIndex*/, Chan_Y, SRMod_None, SRTyp_C, cRegIndex /*src1RegIndex*/, Chan_Y} }; // mul oN.y, -oN.y, cM.y
+	const instructionSlot mulNegY = { {Op_MUL, DRMod_None, DRTyp_O, oRegIndex /*destRegIndex*/, Chan_Y, SRMod_Neg, SRTyp_O, oRegIndex /*src0RegIndex*/, Chan_Y, SRMod_None, SRTyp_C, cRegIndex /*src1RegIndex*/, Chan_Y} }; // mul oN.y, -oN.y, cM.y // Note: This is negative to flip the Y-axis upside-down to the correct screen orientation
 	const instructionSlot mulZ = { {Op_MUL, DRMod_None, DRTyp_O, oRegIndex /*destRegIndex*/, Chan_Z, SRMod_None, SRTyp_O, oRegIndex /*src0RegIndex*/, Chan_Z, SRMod_None, SRTyp_C, cRegIndex /*src1RegIndex*/, Chan_Z} }; // mul oN.z, oN.z, cM.z // Note: This Z scale and offset is optional if the viewport Z scale is 1.0f and the Z offset is 0.0f
 	const instructionSlot addX = { {Op_ADD, DRMod_None, DRTyp_O, oRegIndex /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_O, oRegIndex /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_C, cRegIndex /*src1RegIndex*/, Chan_X} }; // add oN.x, oN.x, cM.x
 	const instructionSlot addY = { {Op_ADD, DRMod_None, DRTyp_O, oRegIndex /*destRegIndex*/, Chan_Y, SRMod_None, SRTyp_O, oRegIndex /*src0RegIndex*/, Chan_Y, SRMod_None, SRTyp_C, cRegIndex /*src1RegIndex*/, Chan_Y} }; // add oN.y, oN.y, cM.y
@@ -2116,10 +2116,10 @@ void AppendVSTexcoordCompression(const unsigned oRegIndex, std::vector<instructi
 		__debugbreak();
 	}
 #endif
-	const instructionSlot compressTX = { {Op_CNV_UNORM16, DRMod_None, DRTyp_O, oRegIndex /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_O, oRegIndex /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_0, 0 /*src1RegIndex*/, Chan_X} }; // cnv_unorm16 oN.x, oN.x, 0.x
-	const instructionSlot compressTY = { {Op_CNV_UNORM16, DRMod_None, DRTyp_O, oRegIndex /*destRegIndex*/, Chan_Y, SRMod_None, SRTyp_O, oRegIndex /*src0RegIndex*/, Chan_Y, SRMod_None, SRTyp_0, 0 /*src1RegIndex*/, Chan_X} }; // cnv_unorm16 oN.y, oN.y, 0.x
-	const instructionSlot compressTZ = { {Op_CNV_UNORM16, DRMod_None, DRTyp_O, oRegIndex /*destRegIndex*/, Chan_Z, SRMod_None, SRTyp_O, oRegIndex /*src0RegIndex*/, Chan_Z, SRMod_None, SRTyp_0, 0 /*src1RegIndex*/, Chan_X} }; // cnv_unorm16 oN.z, oN.z, 0.x
-	const instructionSlot compressTW = { {Op_CNV_UNORM16, DRMod_None, DRTyp_O, oRegIndex /*destRegIndex*/, Chan_W, SRMod_None, SRTyp_O, oRegIndex /*src0RegIndex*/, Chan_W, SRMod_None, SRTyp_0, 0 /*src1RegIndex*/, Chan_X} }; // cnv_unorm16 oN.z, oN.z, 0.x
+	const instructionSlot compressTX = { {Op_CNV_F_TO_HALF, DRMod_None, DRTyp_O, oRegIndex /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_O, oRegIndex /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_0, 0 /*src1RegIndex*/, Chan_X} }; // cnv_f_to_half oN.x, oN.x, 0.x
+	const instructionSlot compressTY = { {Op_CNV_F_TO_HALF, DRMod_None, DRTyp_O, oRegIndex /*destRegIndex*/, Chan_Y, SRMod_None, SRTyp_O, oRegIndex /*src0RegIndex*/, Chan_Y, SRMod_None, SRTyp_0, 0 /*src1RegIndex*/, Chan_X} }; // cnv_f_to_half oN.y, oN.y, 0.x
+	const instructionSlot compressTZ = { {Op_CNV_F_TO_HALF, DRMod_None, DRTyp_O, oRegIndex /*destRegIndex*/, Chan_Z, SRMod_None, SRTyp_O, oRegIndex /*src0RegIndex*/, Chan_Z, SRMod_None, SRTyp_0, 0 /*src1RegIndex*/, Chan_X} }; // cnv_f_to_half oN.z, oN.z, 0.x
+	const instructionSlot compressTW = { {Op_CNV_F_TO_HALF, DRMod_None, DRTyp_O, oRegIndex /*destRegIndex*/, Chan_W, SRMod_None, SRTyp_O, oRegIndex /*src0RegIndex*/, Chan_W, SRMod_None, SRTyp_0, 0 /*src1RegIndex*/, Chan_X} }; // cnv_f_to_half oN.z, oN.z, 0.x
 
 	if (texcoordDimension >= 1)
 		inOutDeviceInstructionStream.push_back(compressTX);

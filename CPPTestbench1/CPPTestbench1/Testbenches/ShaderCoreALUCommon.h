@@ -76,5 +76,7 @@ enum eConvertMode : uint8_t
 	F_to_I16_RoundNearestEven, // 2
 	F_to_UNORM16, // 3
 	F_to_UNORM8, // 4
-	// F_to_Half // 5
+	F_to_Half, // 5
+	Half_to_F, // 6
+	U32_to_F // 7
 };

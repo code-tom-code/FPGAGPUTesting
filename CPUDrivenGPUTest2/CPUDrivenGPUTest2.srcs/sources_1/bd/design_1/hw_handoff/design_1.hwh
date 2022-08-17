@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
-<EDKSYSTEM EDWVERSION="1.2" TIMESTAMP="Sat Aug  6 18:15:38 2022" VIVADOVERSION="2018.1_AR73068">
+<EDKSYSTEM EDWVERSION="1.2" TIMESTAMP="Tue Aug 16 12:32:06 2022" VIVADOVERSION="2018.1_AR73068">
 
   <SYSTEMINFO ARCH="kintexuplus" BOARD="xilinx.com:kcu116:part0:1.3" DEVICE="xcku5p" NAME="design_1" PACKAGE="ffvb676" SPEEDGRADE="-2"/>
 
@@ -124,6 +124,124 @@
   </EXTERNALINTERFACES>
 
   <MODULES>
+    <MODULE FULLNAME="/AttrInterp_FPU" HWVERSION="1.0" INSTANCE="AttrInterp_FPU" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="FloatALU" VLNV="xilinx.com:module_ref:FloatALU:1.0">
+      <DOCUMENTS/>
+      <PARAMETERS>
+        <PARAMETER NAME="Component_Name" VALUE="design_1_FloatALU_2_1"/>
+        <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
+      </PARAMETERS>
+      <PORTS>
+        <PORT CLKFREQUENCY="333250000" DIR="I" NAME="clk" SIGIS="clk" SIGNAME="MemorySystem_ddr4_0_c0_ddr4_ui_clk">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="MemorySystem_ddr4_0" PORT="c0_ddr4_ui_clk"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="31" NAME="IN_A" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_FPU_A">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="FPU_A"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="31" NAME="IN_B" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_FPU_B">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="FPU_B"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="2" NAME="IN_MODE" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_FPU_Mode">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="FPU_Mode"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="31" NAME="OUT_RESULT" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterp_FPU_OUT_RESULT">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe16"/>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="FPU_OUT"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="ISHFT_GO" SIGIS="undef" SIGNAME="AttrInterpolator_0_FPU_ISHFT_GO">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="FPU_ISHFT_GO"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="IMUL_GO" SIGIS="undef" SIGNAME="AttrInterpolator_0_FPU_IMUL_GO">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="FPU_IMUL_GO"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="IADD_GO" SIGIS="undef" SIGNAME="AttrInterpolator_0_FPU_IADD_GO">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="FPU_IADD_GO"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="ICMP_GO" SIGIS="undef" SIGNAME="AttrInterpolator_0_FPU_ICMP_GO">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="FPU_ICMP_GO"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="ICNV_GO" SIGIS="undef" SIGNAME="AttrInterpolator_0_FPU_ICNV_GO">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="FPU_ICNV_GO"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="ISPEC_GO" SIGIS="undef" SIGNAME="AttrInterpolator_0_FPU_ISPEC_GO">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="FPU_ISPEC_GO"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="IBIT_GO" SIGIS="undef" SIGNAME="AttrInterpolator_0_FPU_IBIT_GO">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="FPU_IBIT_GO"/>
+          </CONNECTIONS>
+        </PORT>
+      </PORTS>
+      <BUSINTERFACES/>
+    </MODULE>
+    <MODULE FULLNAME="/AttrInterp_UNORM8ToFloat" HWVERSION="1.0" INSTANCE="AttrInterp_UNORM8ToFloat" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="UNORM8ToFloat" VLNV="xilinx.com:module_ref:UNORM8ToFloat:1.0">
+      <DOCUMENTS/>
+      <PARAMETERS>
+        <PARAMETER NAME="Use_Mantissa_Lut" VALUE="true"/>
+        <PARAMETER NAME="Use_Exponent_Lut" VALUE="true"/>
+        <PARAMETER NAME="Component_Name" VALUE="design_1_UNORM8ToFloat_0_1"/>
+        <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
+      </PARAMETERS>
+      <PORTS>
+        <PORT CLKFREQUENCY="333250000" DIR="I" NAME="clk" SIGIS="clk" SIGNAME="MemorySystem_ddr4_0_c0_ddr4_ui_clk">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="MemorySystem_ddr4_0" PORT="c0_ddr4_ui_clk"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="Enable" SIGIS="undef" SIGNAME="AttrInterpolator_0_UNORM8ToFloat_Enable">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="UNORM8ToFloat_Enable"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="31" NAME="D3DColorIn" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_UNORM8ToFloat_ColorIn">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="UNORM8ToFloat_ColorIn"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="31" NAME="FloatXOut" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterp_UNORM8ToFloat_FloatXOut">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="UNORM8ToFloat_ConvertedX"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="31" NAME="FloatYOut" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterp_UNORM8ToFloat_FloatYOut">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="UNORM8ToFloat_ConvertedY"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="31" NAME="FloatZOut" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterp_UNORM8ToFloat_FloatZOut">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="UNORM8ToFloat_ConvertedZ"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="31" NAME="FloatWOut" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterp_UNORM8ToFloat_FloatWOut">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="UNORM8ToFloat_ConvertedW"/>
+          </CONNECTIONS>
+        </PORT>
+      </PORTS>
+      <BUSINTERFACES/>
+    </MODULE>
     <MODULE FULLNAME="/AttrInterpolator_0" HWVERSION="1.0" INSTANCE="AttrInterpolator_0" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="AttrInterpolator" VLNV="xilinx.com:module_ref:AttrInterpolator:1.0">
       <DOCUMENTS/>
       <PARAMETERS>
@@ -136,124 +254,181 @@
             <CONNECTION INSTANCE="MemorySystem_ddr4_0" PORT="c0_ddr4_ui_clk"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="23" NAME="TRICACHE_inBarycentricInverse" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outBarycentricInverse">
+        <PORT DIR="I" NAME="CMD_UseFlatShading" SIGIS="undef" SIGNAME="xlconstant_3_dout">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outBarycentricInverse"/>
+            <CONNECTION INSTANCE="xlconstant_3" PORT="dout"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="23" NAME="TRICACHE_inInvZ0" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outInvZ0">
+        <PORT DIR="O" NAME="DINTERP_ReadyForNewPixel" SIGIS="undef" SIGNAME="AttrInterpolator_0_DINTERP_ReadyForNewPixel">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outInvZ0"/>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="ATTR_ReadyForNewPixel"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="23" NAME="TRICACHE_inInvZ1" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outInvZ1">
+        <PORT DIR="I" NAME="DINTERP_NewPixelValid" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_NewPixelValid">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outInvZ1"/>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="ATTR_NewPixelValid"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="23" NAME="TRICACHE_inInvZ2" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outInvZ2">
+        <PORT DIR="I" LEFT="9" NAME="DINTERP_PosX" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_PosX">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outInvZ2"/>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="ATTR_PosX"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="15" NAME="TRICACHE_inT0X" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outT0X">
+        <PORT DIR="I" LEFT="9" NAME="DINTERP_PosY" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_PosY">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outT0X"/>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="ATTR_PosY"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="15" NAME="TRICACHE_inT0Y" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outT0Y">
+        <PORT DIR="I" LEFT="15" NAME="DINTERP_TX0" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_TX0">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outT0Y"/>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="ATTR_TX0"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="15" NAME="TRICACHE_inT1X" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outT1X">
+        <PORT DIR="I" LEFT="15" NAME="DINTERP_TX1" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_TX1">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outT1X"/>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="ATTR_TX1"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="15" NAME="TRICACHE_inT1Y" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outT1Y">
+        <PORT DIR="I" LEFT="15" NAME="DINTERP_TX2" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_TX2">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outT1Y"/>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="ATTR_TX2"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="15" NAME="TRICACHE_inT2X" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outT2X">
+        <PORT DIR="I" LEFT="15" NAME="DINTERP_TY0" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_TY0">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outT2X"/>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="ATTR_TY0"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="15" NAME="TRICACHE_inT2Y" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outT2Y">
+        <PORT DIR="I" LEFT="15" NAME="DINTERP_TY1" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_TY1">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outT2Y"/>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="ATTR_TY1"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="TRICACHE_inColorRGBA0" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outColorRGBA0">
+        <PORT DIR="I" LEFT="15" NAME="DINTERP_TY2" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_TY2">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outColorRGBA0"/>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="ATTR_TY2"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="TRICACHE_inColorRGBA1" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outColorRGBA1">
+        <PORT DIR="I" LEFT="31" NAME="DINTERP_VC0" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_VC0">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outColorRGBA1"/>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="ATTR_VC0"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="TRICACHE_inColorRGBA2" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outColorRGBA2">
+        <PORT DIR="I" LEFT="31" NAME="DINTERP_VC1" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_VC1">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outColorRGBA2"/>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="ATTR_VC1"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="1" NAME="TRICACHE_CurrentSlotIndex" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_TRICACHE_CurrentSlotIndex">
+        <PORT DIR="I" LEFT="31" NAME="DINTERP_VC2" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_VC2">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_CurrentSlotIndex"/>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="ATTR_VC2"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" NAME="TRICACHE_SignalSlotComplete" SIGIS="undef" SIGNAME="AttrInterpolator_0_TRICACHE_SignalSlotComplete">
+        <PORT DIR="I" LEFT="31" NAME="DINTERP_NormalizedBarycentricDivZ0" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_NormalizedBarycentricDivZ0">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_SignalSlotComplete"/>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="ATTR_NormalizedBarycentricDivZ0"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="127" NAME="RASTOUT_FIFO_rd_data" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_RASTOUT_FIFO_rd_data">
+        <PORT DIR="I" LEFT="31" NAME="DINTERP_NormalizedBarycentricDivZ1" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_NormalizedBarycentricDivZ1">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="rast_out_fifo" PORT="dout"/>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="ATTR_NormalizedBarycentricDivZ1"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" NAME="RASTOUT_FIFO_empty" SIGIS="undef" SIGNAME="AttrInterpolator_0_RASTOUT_FIFO_empty">
+        <PORT DIR="I" LEFT="31" NAME="DINTERP_NormalizedBarycentricDivZ2" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_NormalizedBarycentricDivZ2">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="rast_out_fifo" PORT="empty"/>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="ATTR_NormalizedBarycentricDivZ2"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" NAME="RASTOUT_FIFO_rd_en" SIGIS="undef" SIGNAME="AttrInterpolator_0_RASTOUT_FIFO_rd_en">
+        <PORT DIR="I" LEFT="31" NAME="DINTERP_OutPixelDepth" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_OutPixelDepth">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="rast_out_fifo" PORT="rd_en"/>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="ATTR_OutPixelDepth"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="23" NAME="RECIP_InputVal" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_RECIP_InputVal">
+        <PORT DIR="O" LEFT="31" NAME="FPU_A" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_FPU_A">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="InterpolatorRecip" PORT="inU24"/>
+            <CONNECTION INSTANCE="AttrInterp_FPU" PORT="IN_A"/>
+            <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe15"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" NAME="RECIP_ReadyForNewInput" SIGIS="undef" SIGNAME="InterpolatorRecip_outReadyForNewValue">
+        <PORT DIR="O" LEFT="31" NAME="FPU_B" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_FPU_B">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="InterpolatorRecip" PORT="outReadyForNewValue"/>
+            <CONNECTION INSTANCE="AttrInterp_FPU" PORT="IN_B"/>
+            <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe26"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" NAME="RECIP_NewInputValIsValid" SIGIS="undef" SIGNAME="AttrInterpolator_0_RECIP_NewInputValIsValid">
+        <PORT DIR="O" LEFT="2" NAME="FPU_Mode" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_FPU_Mode">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="InterpolatorRecip" PORT="inNewValueIsValid"/>
+            <CONNECTION INSTANCE="AttrInterp_FPU" PORT="IN_MODE"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="23" NAME="RECIP_OutputVal" RIGHT="0" SIGIS="undef" SIGNAME="InterpolatorRecip_outInv24">
+        <PORT DIR="O" NAME="FPU_ISHFT_GO" SIGIS="undef" SIGNAME="AttrInterpolator_0_FPU_ISHFT_GO">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="InterpolatorRecip" PORT="outInv24"/>
+            <CONNECTION INSTANCE="AttrInterp_FPU" PORT="ISHFT_GO"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" NAME="RECIP_ReadyForValOut" SIGIS="undef" SIGNAME="AttrInterpolator_0_RECIP_ReadyForValOut">
+        <PORT DIR="O" NAME="FPU_IMUL_GO" SIGIS="undef" SIGNAME="AttrInterpolator_0_FPU_IMUL_GO">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="InterpolatorRecip" PORT="inReadyForOutValue"/>
+            <CONNECTION INSTANCE="AttrInterp_FPU" PORT="IMUL_GO"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" NAME="RECIP_NewOutValIsValid" SIGIS="undef" SIGNAME="InterpolatorRecip_outNewOutValueIsValid">
+        <PORT DIR="O" NAME="FPU_IADD_GO" SIGIS="undef" SIGNAME="AttrInterpolator_0_FPU_IADD_GO">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="InterpolatorRecip" PORT="outNewOutValueIsValid"/>
+            <CONNECTION INSTANCE="AttrInterp_FPU" PORT="IADD_GO"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="FPU_ICMP_GO" SIGIS="undef" SIGNAME="AttrInterpolator_0_FPU_ICMP_GO">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="AttrInterp_FPU" PORT="ICMP_GO"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="FPU_ICNV_GO" SIGIS="undef" SIGNAME="AttrInterpolator_0_FPU_ICNV_GO">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="AttrInterp_FPU" PORT="ICNV_GO"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="FPU_ISPEC_GO" SIGIS="undef" SIGNAME="AttrInterpolator_0_FPU_ISPEC_GO">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="AttrInterp_FPU" PORT="ISPEC_GO"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="FPU_IBIT_GO" SIGIS="undef" SIGNAME="AttrInterpolator_0_FPU_IBIT_GO">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="AttrInterp_FPU" PORT="IBIT_GO"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="31" NAME="FPU_OUT" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterp_FPU_OUT_RESULT">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="AttrInterp_FPU" PORT="OUT_RESULT"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="UNORM8ToFloat_Enable" SIGIS="undef" SIGNAME="AttrInterpolator_0_UNORM8ToFloat_Enable">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="AttrInterp_UNORM8ToFloat" PORT="Enable"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="31" NAME="UNORM8ToFloat_ColorIn" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_UNORM8ToFloat_ColorIn">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="AttrInterp_UNORM8ToFloat" PORT="D3DColorIn"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="31" NAME="UNORM8ToFloat_ConvertedX" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterp_UNORM8ToFloat_FloatXOut">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="AttrInterp_UNORM8ToFloat" PORT="FloatXOut"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="31" NAME="UNORM8ToFloat_ConvertedY" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterp_UNORM8ToFloat_FloatYOut">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="AttrInterp_UNORM8ToFloat" PORT="FloatYOut"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="31" NAME="UNORM8ToFloat_ConvertedZ" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterp_UNORM8ToFloat_FloatZOut">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="AttrInterp_UNORM8ToFloat" PORT="FloatZOut"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="31" NAME="UNORM8ToFloat_ConvertedW" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterp_UNORM8ToFloat_FloatWOut">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="AttrInterp_UNORM8ToFloat" PORT="FloatWOut"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="15" NAME="TEXSAMP_outInterpolatedTexcoordX" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_TEXSAMP_outInterpolatedTexcoordX">
@@ -287,11 +462,6 @@
             <CONNECTION INSTANCE="TexSample_0" PORT="INTERP_pixelY"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="23" NAME="TEXSAMP_outPixelInterpolatedDepth" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_TEXSAMP_outPixelInterpolatedDepth">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe5"/>
-          </CONNECTIONS>
-        </PORT>
         <PORT DIR="O" NAME="TEXSAMP_writeIsValid" SIGIS="undef" SIGNAME="AttrInterpolator_0_TEXSAMP_writeIsValid">
           <CONNECTIONS>
             <CONNECTION INSTANCE="TexSample_0" PORT="INTERP_writeStrobe"/>
@@ -317,7 +487,7 @@
             <CONNECTION INSTANCE="StatsCollector_0" PORT="INTERP_CyclesWaitingForOutput"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="5" NAME="DBG_AttrInterpolator_State" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_DBG_AttrInterpolator_State">
+        <PORT DIR="O" LEFT="6" NAME="DBG_AttrInterpolator_State" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_DBG_AttrInterpolator_State">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ila_333_250" PORT="probe7"/>
             <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe6"/>
@@ -339,15 +509,7 @@
           </CONNECTIONS>
         </PORT>
       </PORTS>
-      <BUSINTERFACES>
-        <BUSINTERFACE BUSNAME="AttrInterpolator_0_RASTOUT_FIFO" NAME="RASTOUT_FIFO" TYPE="INITIATOR" VLNV="xilinx.com:interface:fifo_read:1.0">
-          <PORTMAPS>
-            <PORTMAP LOGICAL="RD_DATA" PHYSICAL="RASTOUT_FIFO_rd_data"/>
-            <PORTMAP LOGICAL="RD_EN" PHYSICAL="RASTOUT_FIFO_rd_en"/>
-            <PORTMAP LOGICAL="EMPTY" PHYSICAL="RASTOUT_FIFO_empty"/>
-          </PORTMAPS>
-        </BUSINTERFACE>
-      </BUSINTERFACES>
+      <BUSINTERFACES/>
     </MODULE>
     <MODULE FULLNAME="/ClearBlock_0" HWVERSION="1.0" INSTANCE="ClearBlock_0" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="ClearBlock" VLNV="xilinx.com:module_ref:ClearBlock:1.0">
       <DOCUMENTS/>
@@ -551,6 +713,11 @@
             <CONNECTION INSTANCE="MemorySystem_MemoryController_0" PORT="CMD_MemoryControllerIsIdle"/>
           </CONNECTIONS>
         </PORT>
+        <PORT DIR="I" NAME="CMD_Depth_Idle" SIGIS="undef" SIGNAME="DepthBuffer_0_CMD_DepthIsIdle">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthBuffer_0" PORT="CMD_DepthIsIdle"/>
+          </CONNECTIONS>
+        </PORT>
         <PORT DIR="I" NAME="SHADER_IsReadyForCommand" SIGIS="undef" SIGNAME="ShaderCoreSystem_ShaderCore_0_CMD_IsReadyForCommand">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ShaderCoreSystem_ShaderCore_0" PORT="CMD_IsReadyForCommand"/>
@@ -692,6 +859,31 @@
         <PORT DIR="I" NAME="VBB_ReadyState" SIGIS="undef" SIGNAME="VertexBatchBuilder_0_CMD_ReadyState">
           <CONNECTIONS>
             <CONNECTION INSTANCE="VertexBatchBuilder_0" PORT="CMD_ReadyState"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="DEPTH_ClearDepthBuffer" SIGIS="undef" SIGNAME="CommandProcessor_0_DEPTH_ClearDepthBuffer">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthBuffer_0" PORT="CMD_ClearDepthBuffer"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="23" NAME="DEPTH_ClearDepthValue" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_DEPTH_ClearDepthValue">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthBuffer_0" PORT="CMD_ClearDepthValue"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="DEPTH_DepthWriteEnable" SIGIS="undef" SIGNAME="CommandProcessor_0_DEPTH_DepthWriteEnable">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthBuffer_0" PORT="CMD_DepthWriteEnable"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="2" NAME="DEPTH_DepthFunction" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_DEPTH_DepthFunction">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthBuffer_0" PORT="CMD_DepthFunction"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="DEPTH_SetDepthParams" SIGIS="undef" SIGNAME="CommandProcessor_0_DEPTH_SetDepthParams">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthBuffer_0" PORT="CMD_SetDepthParams"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" NAME="TEXSAMP_LoadTexCacheBeginSignal" SIGIS="undef" SIGNAME="CommandProcessor_0_TEXSAMP_LoadTexCacheBeginSignal">
@@ -909,7 +1101,7 @@
         </PORT>
         <PORT DIR="O" LEFT="31" NAME="DBG_LAST_WRITE_ADDR" RIGHT="0" SIGIS="undef"/>
         <PORT DIR="O" LEFT="255" NAME="DBG_LAST_WRITE_DATA" RIGHT="0" SIGIS="undef"/>
-        <PORT DIR="O" LEFT="6" NAME="DBG_IdleSignalsVector" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_DBG_IdleSignalsVector">
+        <PORT DIR="O" LEFT="7" NAME="DBG_IdleSignalsVector" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_DBG_IdleSignalsVector">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ila_333_250" PORT="probe28"/>
           </CONNECTIONS>
@@ -953,6 +1145,823 @@
         </BUSINTERFACE>
       </BUSINTERFACES>
     </MODULE>
+    <MODULE FULLNAME="/DepthBuffer_0" HWVERSION="1.0" INSTANCE="DepthBuffer_0" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="DepthBuffer" VLNV="xilinx.com:module_ref:DepthBuffer:1.0">
+      <DOCUMENTS/>
+      <PARAMETERS>
+        <PARAMETER NAME="NUM_PIPELINE_STAGES" VALUE="4"/>
+        <PARAMETER NAME="Component_Name" VALUE="design_1_DepthBuffer_0_0"/>
+        <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
+      </PARAMETERS>
+      <PORTS>
+        <PORT CLKFREQUENCY="333250000" DIR="I" NAME="clk" SIGIS="clk" SIGNAME="MemorySystem_ddr4_0_c0_ddr4_ui_clk">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="MemorySystem_ddr4_0" PORT="c0_ddr4_ui_clk"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="RAST_PixelReady" SIGIS="undef" SIGNAME="DepthInterpolator_0_DEPTH_PixelReady">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="DEPTH_PixelReady"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="9" NAME="RAST_PosX" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_DEPTH_PosX">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="DEPTH_PosX"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="9" NAME="RAST_PosY" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_DEPTH_PosY">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="DEPTH_PosY"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="23" NAME="RAST_InPixelDepth" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_DEPTH_OutPixelDepth">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="DEPTH_OutPixelDepth"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="RAST_PixelPassedDepthTest" SIGIS="undef" SIGNAME="DepthBuffer_0_RAST_PixelPassedDepthTest">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="DEPTH_PixelPassedDepthTest"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="RAST_PixelFailedDepthTest" SIGIS="undef" SIGNAME="DepthBuffer_0_RAST_PixelFailedDepthTest">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="DEPTH_PixelFailedDepthTest"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="RAST_DepthTestEnabled" SIGIS="undef" SIGNAME="DepthBuffer_0_RAST_DepthTestEnabled">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="DEPTH_DepthTestEnabled"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="17" NAME="URAM_addra" RIGHT="0" SIGIS="undef" SIGNAME="DepthBuffer_0_URAM_addra">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthBuffer_URAM" PORT="addra"/>
+            <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe28"/>
+          </CONNECTIONS>
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthBuffer_URAM" PORT="addra"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="URAM_clka" SIGIS="clk" SIGNAME="DepthBuffer_0_URAM_clka">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthBuffer_URAM" PORT="clka"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="63" NAME="URAM_dina" RIGHT="0" SIGIS="undef" SIGNAME="DepthBuffer_0_URAM_dina">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe18"/>
+            <CONNECTION INSTANCE="DepthBuffer_URAM" PORT="dina"/>
+          </CONNECTIONS>
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthBuffer_URAM" PORT="dina"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="URAM_ena" SIGIS="undef" SIGNAME="DepthBuffer_0_URAM_ena">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthBuffer_URAM" PORT="ena"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="7" NAME="URAM_wea" RIGHT="0" SIGIS="undef" SIGNAME="DepthBuffer_0_URAM_wea">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe19"/>
+            <CONNECTION INSTANCE="DepthBuffer_URAM" PORT="wea"/>
+          </CONNECTIONS>
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthBuffer_URAM" PORT="wea"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="17" NAME="URAM_addrb" RIGHT="0" SIGIS="undef" SIGNAME="DepthBuffer_0_URAM_addrb">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthBuffer_URAM" PORT="addrb"/>
+            <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe27"/>
+          </CONNECTIONS>
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthBuffer_URAM" PORT="addrb"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="URAM_clkb" SIGIS="clk" SIGNAME="DepthBuffer_0_URAM_clkb">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthBuffer_URAM" PORT="clkb"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="63" NAME="URAM_doutb" RIGHT="0" SIGIS="undef" SIGNAME="DepthBuffer_URAM_doutb">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthBuffer_URAM" PORT="doutb"/>
+            <CONNECTION INSTANCE="DepthBuffer_URAM" PORT="doutb"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="URAM_enb" SIGIS="undef" SIGNAME="DepthBuffer_0_URAM_enb">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthBuffer_URAM" PORT="enb"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="CMD_ClearDepthBuffer" SIGIS="undef" SIGNAME="CommandProcessor_0_DEPTH_ClearDepthBuffer">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="DEPTH_ClearDepthBuffer"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="23" NAME="CMD_ClearDepthValue" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_DEPTH_ClearDepthValue">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="DEPTH_ClearDepthValue"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="CMD_DepthWriteEnable" SIGIS="undef" SIGNAME="CommandProcessor_0_DEPTH_DepthWriteEnable">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="DEPTH_DepthWriteEnable"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="2" NAME="CMD_DepthFunction" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_DEPTH_DepthFunction">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="DEPTH_DepthFunction"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="CMD_SetDepthParams" SIGIS="undef" SIGNAME="CommandProcessor_0_DEPTH_SetDepthParams">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="DEPTH_SetDepthParams"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="CMD_DepthIsIdle" SIGIS="undef" SIGNAME="DepthBuffer_0_CMD_DepthIsIdle">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe30"/>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="CMD_Depth_Idle"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="31" NAME="STAT_PixelsPassedDepthTest" RIGHT="0" SIGIS="undef"/>
+        <PORT DIR="O" LEFT="31" NAME="STAT_PixelsFailedDepthTest" RIGHT="0" SIGIS="undef"/>
+      </PORTS>
+      <BUSINTERFACES>
+        <BUSINTERFACE BUSNAME="DepthBuffer_0_DBufferRAMW" NAME="DBufferRAMW" TYPE="INITIATOR" VLNV="xilinx.com:interface:bram:1.0">
+          <PARAMETER NAME="FREQ_HZ" VALUE="333250000"/>
+          <PARAMETER NAME="MEM_SIZE" VALUE="8192"/>
+          <PARAMETER NAME="MEM_WIDTH" VALUE="32"/>
+          <PARAMETER NAME="MEM_ECC" VALUE="NONE"/>
+          <PARAMETER NAME="MASTER_TYPE" VALUE="OTHER"/>
+          <PARAMETER NAME="READ_WRITE_MODE"/>
+          <PORTMAPS>
+            <PORTMAP LOGICAL="EN" PHYSICAL="URAM_ena"/>
+            <PORTMAP LOGICAL="DIN" PHYSICAL="URAM_dina"/>
+            <PORTMAP LOGICAL="WE" PHYSICAL="URAM_wea"/>
+            <PORTMAP LOGICAL="ADDR" PHYSICAL="URAM_addra"/>
+            <PORTMAP LOGICAL="CLK" PHYSICAL="URAM_clka"/>
+          </PORTMAPS>
+        </BUSINTERFACE>
+        <BUSINTERFACE BUSNAME="DepthBuffer_0_DBufferRAMR" NAME="DBufferRAMR" TYPE="INITIATOR" VLNV="xilinx.com:interface:bram:1.0">
+          <PARAMETER NAME="FREQ_HZ" VALUE="333250000"/>
+          <PARAMETER NAME="MEM_SIZE" VALUE="8192"/>
+          <PARAMETER NAME="MEM_WIDTH" VALUE="32"/>
+          <PARAMETER NAME="MEM_ECC" VALUE="NONE"/>
+          <PARAMETER NAME="MASTER_TYPE" VALUE="OTHER"/>
+          <PARAMETER NAME="READ_WRITE_MODE"/>
+          <PORTMAPS>
+            <PORTMAP LOGICAL="EN" PHYSICAL="URAM_enb"/>
+            <PORTMAP LOGICAL="DOUT" PHYSICAL="URAM_doutb"/>
+            <PORTMAP LOGICAL="ADDR" PHYSICAL="URAM_addrb"/>
+            <PORTMAP LOGICAL="CLK" PHYSICAL="URAM_clkb"/>
+          </PORTMAPS>
+        </BUSINTERFACE>
+      </BUSINTERFACES>
+    </MODULE>
+    <MODULE FULLNAME="/DepthBuffer_AlwaysEnable" HWVERSION="1.1" INSTANCE="DepthBuffer_AlwaysEnable" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="xlconstant" VLNV="xilinx.com:ip:xlconstant:1.1">
+      <DOCUMENTS/>
+      <PARAMETERS>
+        <PARAMETER NAME="CONST_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="CONST_VAL" VALUE="0x1"/>
+        <PARAMETER NAME="Component_Name" VALUE="design_1_xlconstant_3_0"/>
+        <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
+      </PARAMETERS>
+      <PORTS>
+        <PORT DIR="O" LEFT="0" NAME="dout" RIGHT="0" SIGIS="undef" SIGNAME="DepthBuffer_AlwaysEnable_dout">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthBuffer_URAM" PORT="regceb"/>
+          </CONNECTIONS>
+        </PORT>
+      </PORTS>
+      <BUSINTERFACES/>
+    </MODULE>
+    <MODULE FULLNAME="/DepthBuffer_URAM" HWVERSION="8.4" INSTANCE="DepthBuffer_URAM" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="MEMORY" MODTYPE="blk_mem_gen" VLNV="xilinx.com:ip:blk_mem_gen:8.4">
+      <DOCUMENTS>
+        <DOCUMENT SOURCE="http://www.xilinx.com/cgi-bin/docs/ipdoc?c=blk_mem_gen;v=v8_4;d=pg058-blk-mem-gen.pdf"/>
+      </DOCUMENTS>
+      <PARAMETERS>
+        <PARAMETER NAME="C_FAMILY" VALUE="kintexuplus"/>
+        <PARAMETER NAME="C_XDEVICEFAMILY" VALUE="kintexuplus"/>
+        <PARAMETER NAME="C_ELABORATION_DIR" VALUE="./"/>
+        <PARAMETER NAME="C_INTERFACE_TYPE" VALUE="0"/>
+        <PARAMETER NAME="C_AXI_TYPE" VALUE="1"/>
+        <PARAMETER NAME="C_AXI_SLAVE_TYPE" VALUE="0"/>
+        <PARAMETER NAME="C_USE_BRAM_BLOCK" VALUE="0"/>
+        <PARAMETER NAME="C_ENABLE_32BIT_ADDRESS" VALUE="0"/>
+        <PARAMETER NAME="C_CTRL_ECC_ALGO" VALUE="NONE"/>
+        <PARAMETER NAME="C_HAS_AXI_ID" VALUE="0"/>
+        <PARAMETER NAME="C_AXI_ID_WIDTH" VALUE="4"/>
+        <PARAMETER NAME="C_MEM_TYPE" VALUE="1"/>
+        <PARAMETER NAME="C_BYTE_SIZE" VALUE="8"/>
+        <PARAMETER NAME="C_ALGORITHM" VALUE="1"/>
+        <PARAMETER NAME="C_PRIM_TYPE" VALUE="1"/>
+        <PARAMETER NAME="C_LOAD_INIT_FILE" VALUE="0"/>
+        <PARAMETER NAME="C_INIT_FILE_NAME" VALUE="no_coe_file_loaded"/>
+        <PARAMETER NAME="C_INIT_FILE" VALUE="NONE"/>
+        <PARAMETER NAME="C_USE_DEFAULT_DATA" VALUE="0"/>
+        <PARAMETER NAME="C_DEFAULT_DATA" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_RSTA" VALUE="0"/>
+        <PARAMETER NAME="C_RST_PRIORITY_A" VALUE="CE"/>
+        <PARAMETER NAME="C_RSTRAM_A" VALUE="0"/>
+        <PARAMETER NAME="C_INITA_VAL" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_ENA" VALUE="1"/>
+        <PARAMETER NAME="C_HAS_REGCEA" VALUE="0"/>
+        <PARAMETER NAME="C_USE_BYTE_WEA" VALUE="1"/>
+        <PARAMETER NAME="C_WEA_WIDTH" VALUE="8"/>
+        <PARAMETER NAME="C_WRITE_MODE_A" VALUE="WRITE_FIRST"/>
+        <PARAMETER NAME="C_WRITE_WIDTH_A" VALUE="64"/>
+        <PARAMETER NAME="C_READ_WIDTH_A" VALUE="64"/>
+        <PARAMETER NAME="C_WRITE_DEPTH_A" VALUE="153600"/>
+        <PARAMETER NAME="C_READ_DEPTH_A" VALUE="153600"/>
+        <PARAMETER NAME="C_ADDRA_WIDTH" VALUE="18"/>
+        <PARAMETER NAME="C_HAS_RSTB" VALUE="0"/>
+        <PARAMETER NAME="C_RST_PRIORITY_B" VALUE="CE"/>
+        <PARAMETER NAME="C_RSTRAM_B" VALUE="0"/>
+        <PARAMETER NAME="C_INITB_VAL" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_ENB" VALUE="1"/>
+        <PARAMETER NAME="C_HAS_REGCEB" VALUE="1"/>
+        <PARAMETER NAME="C_USE_BYTE_WEB" VALUE="1"/>
+        <PARAMETER NAME="C_WEB_WIDTH" VALUE="8"/>
+        <PARAMETER NAME="C_WRITE_MODE_B" VALUE="READ_FIRST"/>
+        <PARAMETER NAME="C_WRITE_WIDTH_B" VALUE="64"/>
+        <PARAMETER NAME="C_READ_WIDTH_B" VALUE="64"/>
+        <PARAMETER NAME="C_WRITE_DEPTH_B" VALUE="153600"/>
+        <PARAMETER NAME="C_READ_DEPTH_B" VALUE="153600"/>
+        <PARAMETER NAME="C_ADDRB_WIDTH" VALUE="18"/>
+        <PARAMETER NAME="C_HAS_MEM_OUTPUT_REGS_A" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_MEM_OUTPUT_REGS_B" VALUE="1"/>
+        <PARAMETER NAME="C_HAS_MUX_OUTPUT_REGS_A" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_MUX_OUTPUT_REGS_B" VALUE="1"/>
+        <PARAMETER NAME="C_MUX_PIPELINE_STAGES" VALUE="1"/>
+        <PARAMETER NAME="C_HAS_SOFTECC_INPUT_REGS_A" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_SOFTECC_OUTPUT_REGS_B" VALUE="0"/>
+        <PARAMETER NAME="C_USE_SOFTECC" VALUE="0"/>
+        <PARAMETER NAME="C_USE_ECC" VALUE="0"/>
+        <PARAMETER NAME="C_EN_ECC_PIPE" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_INJECTERR" VALUE="0"/>
+        <PARAMETER NAME="C_SIM_COLLISION_CHECK" VALUE="ALL"/>
+        <PARAMETER NAME="C_COMMON_CLK" VALUE="1"/>
+        <PARAMETER NAME="C_DISABLE_WARN_BHV_COLL" VALUE="0"/>
+        <PARAMETER NAME="C_EN_SLEEP_PIN" VALUE="0"/>
+        <PARAMETER NAME="C_USE_URAM" VALUE="1"/>
+        <PARAMETER NAME="C_EN_RDADDRA_CHG" VALUE="0"/>
+        <PARAMETER NAME="C_EN_RDADDRB_CHG" VALUE="0"/>
+        <PARAMETER NAME="C_EN_DEEPSLEEP_PIN" VALUE="0"/>
+        <PARAMETER NAME="C_EN_SHUTDOWN_PIN" VALUE="0"/>
+        <PARAMETER NAME="C_EN_SAFETY_CKT" VALUE="0"/>
+        <PARAMETER NAME="C_DISABLE_WARN_BHV_RANGE" VALUE="0"/>
+        <PARAMETER NAME="C_COUNT_36K_BRAM" VALUE="300"/>
+        <PARAMETER NAME="C_COUNT_18K_BRAM" VALUE="0"/>
+        <PARAMETER NAME="C_EST_POWER_SUMMARY" VALUE="Estimated Power for IP     :     118.64 mW"/>
+        <PARAMETER NAME="Component_Name" VALUE="design_1_blk_mem_gen_0_2"/>
+        <PARAMETER NAME="Interface_Type" VALUE="Native"/>
+        <PARAMETER NAME="AXI_Type" VALUE="AXI4_Full"/>
+        <PARAMETER NAME="AXI_Slave_Type" VALUE="Memory_Slave"/>
+        <PARAMETER NAME="Use_AXI_ID" VALUE="false"/>
+        <PARAMETER NAME="AXI_ID_Width" VALUE="4"/>
+        <PARAMETER NAME="Memory_Type" VALUE="Simple_Dual_Port_RAM"/>
+        <PARAMETER NAME="PRIM_type_to_Implement" VALUE="URAM"/>
+        <PARAMETER NAME="Enable_32bit_Address" VALUE="false"/>
+        <PARAMETER NAME="ecctype" VALUE="No_ECC"/>
+        <PARAMETER NAME="ECC" VALUE="false"/>
+        <PARAMETER NAME="softecc" VALUE="false"/>
+        <PARAMETER NAME="EN_SLEEP_PIN" VALUE="false"/>
+        <PARAMETER NAME="EN_DEEPSLEEP_PIN" VALUE="false"/>
+        <PARAMETER NAME="EN_SHUTDOWN_PIN" VALUE="false"/>
+        <PARAMETER NAME="EN_ECC_PIPE" VALUE="false"/>
+        <PARAMETER NAME="RD_ADDR_CHNG_A" VALUE="false"/>
+        <PARAMETER NAME="RD_ADDR_CHNG_B" VALUE="false"/>
+        <PARAMETER NAME="Use_Error_Injection_Pins" VALUE="false"/>
+        <PARAMETER NAME="Error_Injection_Type" VALUE="Single_Bit_Error_Injection"/>
+        <PARAMETER NAME="Use_Byte_Write_Enable" VALUE="true"/>
+        <PARAMETER NAME="Byte_Size" VALUE="8"/>
+        <PARAMETER NAME="Algorithm" VALUE="Minimum_Area"/>
+        <PARAMETER NAME="Primitive" VALUE="8kx2"/>
+        <PARAMETER NAME="Assume_Synchronous_Clk" VALUE="true"/>
+        <PARAMETER NAME="Write_Width_A" VALUE="64"/>
+        <PARAMETER NAME="Write_Depth_A" VALUE="153600"/>
+        <PARAMETER NAME="Read_Width_A" VALUE="64"/>
+        <PARAMETER NAME="Operating_Mode_A" VALUE="WRITE_FIRST"/>
+        <PARAMETER NAME="Enable_A" VALUE="Use_ENA_Pin"/>
+        <PARAMETER NAME="Write_Width_B" VALUE="64"/>
+        <PARAMETER NAME="Read_Width_B" VALUE="64"/>
+        <PARAMETER NAME="Operating_Mode_B" VALUE="READ_FIRST"/>
+        <PARAMETER NAME="Enable_B" VALUE="Use_ENB_Pin"/>
+        <PARAMETER NAME="Register_PortA_Output_of_Memory_Primitives" VALUE="false"/>
+        <PARAMETER NAME="Register_PortA_Output_of_Memory_Core" VALUE="false"/>
+        <PARAMETER NAME="Use_REGCEA_Pin" VALUE="false"/>
+        <PARAMETER NAME="Register_PortB_Output_of_Memory_Primitives" VALUE="true"/>
+        <PARAMETER NAME="Register_PortB_Output_of_Memory_Core" VALUE="true"/>
+        <PARAMETER NAME="Use_REGCEB_Pin" VALUE="true"/>
+        <PARAMETER NAME="register_porta_input_of_softecc" VALUE="false"/>
+        <PARAMETER NAME="register_portb_output_of_softecc" VALUE="false"/>
+        <PARAMETER NAME="Pipeline_Stages" VALUE="1"/>
+        <PARAMETER NAME="Load_Init_File" VALUE="false"/>
+        <PARAMETER NAME="Coe_File" VALUE="no_coe_file_loaded"/>
+        <PARAMETER NAME="Fill_Remaining_Memory_Locations" VALUE="false"/>
+        <PARAMETER NAME="Remaining_Memory_Locations" VALUE="0"/>
+        <PARAMETER NAME="Use_RSTA_Pin" VALUE="false"/>
+        <PARAMETER NAME="Reset_Memory_Latch_A" VALUE="false"/>
+        <PARAMETER NAME="Reset_Priority_A" VALUE="CE"/>
+        <PARAMETER NAME="Output_Reset_Value_A" VALUE="0"/>
+        <PARAMETER NAME="Use_RSTB_Pin" VALUE="false"/>
+        <PARAMETER NAME="Reset_Memory_Latch_B" VALUE="false"/>
+        <PARAMETER NAME="Reset_Priority_B" VALUE="CE"/>
+        <PARAMETER NAME="Output_Reset_Value_B" VALUE="0"/>
+        <PARAMETER NAME="Reset_Type" VALUE="SYNC"/>
+        <PARAMETER NAME="Additional_Inputs_for_Power_Estimation" VALUE="false"/>
+        <PARAMETER NAME="Port_A_Clock" VALUE="100"/>
+        <PARAMETER NAME="Port_A_Write_Rate" VALUE="50"/>
+        <PARAMETER NAME="Port_B_Clock" VALUE="100"/>
+        <PARAMETER NAME="Port_B_Write_Rate" VALUE="0"/>
+        <PARAMETER NAME="Port_A_Enable_Rate" VALUE="100"/>
+        <PARAMETER NAME="Port_B_Enable_Rate" VALUE="100"/>
+        <PARAMETER NAME="Collision_Warnings" VALUE="ALL"/>
+        <PARAMETER NAME="Disable_Collision_Warnings" VALUE="false"/>
+        <PARAMETER NAME="Disable_Out_of_Range_Warnings" VALUE="false"/>
+        <PARAMETER NAME="use_bram_block" VALUE="Stand_Alone"/>
+        <PARAMETER NAME="MEM_FILE" VALUE="NONE"/>
+        <PARAMETER NAME="CTRL_ECC_ALGO" VALUE="NONE"/>
+        <PARAMETER NAME="EN_SAFETY_CKT" VALUE="false"/>
+        <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
+      </PARAMETERS>
+      <PORTS>
+        <PORT DIR="I" NAME="clka" SIGIS="clk" SIGNAME="DepthBuffer_0_URAM_clka">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthBuffer_0" PORT="URAM_clka"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="ena" SIGIS="undef" SIGNAME="DepthBuffer_0_URAM_ena">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthBuffer_0" PORT="URAM_ena"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="7" NAME="wea" RIGHT="0" SIGIS="undef" SIGNAME="DepthBuffer_0_URAM_wea">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthBuffer_0" PORT="URAM_wea"/>
+          </CONNECTIONS>
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthBuffer_0" PORT="URAM_wea"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="17" NAME="addra" RIGHT="0" SIGIS="undef" SIGNAME="DepthBuffer_0_URAM_addra">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthBuffer_0" PORT="URAM_addra"/>
+          </CONNECTIONS>
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthBuffer_0" PORT="URAM_addra"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="63" NAME="dina" RIGHT="0" SIGIS="undef" SIGNAME="DepthBuffer_0_URAM_dina">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthBuffer_0" PORT="URAM_dina"/>
+          </CONNECTIONS>
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthBuffer_0" PORT="URAM_dina"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="clkb" SIGIS="clk" SIGNAME="DepthBuffer_0_URAM_clkb">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthBuffer_0" PORT="URAM_clkb"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="enb" SIGIS="undef" SIGNAME="DepthBuffer_0_URAM_enb">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthBuffer_0" PORT="URAM_enb"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="regceb" SIGIS="undef" SIGNAME="DepthBuffer_AlwaysEnable_dout">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthBuffer_AlwaysEnable" PORT="dout"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="17" NAME="addrb" RIGHT="0" SIGIS="undef" SIGNAME="DepthBuffer_0_URAM_addrb">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthBuffer_0" PORT="URAM_addrb"/>
+          </CONNECTIONS>
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthBuffer_0" PORT="URAM_addrb"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="63" NAME="doutb" RIGHT="0" SIGIS="undef" SIGNAME="DepthBuffer_URAM_doutb">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthBuffer_0" PORT="URAM_doutb"/>
+            <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe17"/>
+            <CONNECTION INSTANCE="DepthBuffer_0" PORT="URAM_doutb"/>
+          </CONNECTIONS>
+        </PORT>
+      </PORTS>
+      <BUSINTERFACES>
+        <BUSINTERFACE BUSNAME="DepthBuffer_0_DBufferRAMW" NAME="BRAM_PORTA" TYPE="TARGET" VLNV="xilinx.com:interface:bram:1.0">
+          <PARAMETER NAME="MEM_SIZE" VALUE="8192"/>
+          <PARAMETER NAME="MEM_WIDTH" VALUE="32"/>
+          <PARAMETER NAME="MEM_ECC" VALUE="NONE"/>
+          <PARAMETER NAME="MASTER_TYPE" VALUE="OTHER"/>
+          <PARAMETER NAME="READ_WRITE_MODE" VALUE="WRITE_ONLY"/>
+          <PORTMAPS>
+            <PORTMAP LOGICAL="ADDR" PHYSICAL="addra"/>
+            <PORTMAP LOGICAL="CLK" PHYSICAL="clka"/>
+            <PORTMAP LOGICAL="DIN" PHYSICAL="dina"/>
+            <PORTMAP LOGICAL="EN" PHYSICAL="ena"/>
+            <PORTMAP LOGICAL="WE" PHYSICAL="wea"/>
+          </PORTMAPS>
+        </BUSINTERFACE>
+        <BUSINTERFACE BUSNAME="DepthBuffer_0_DBufferRAMR" NAME="BRAM_PORTB" TYPE="TARGET" VLNV="xilinx.com:interface:bram:1.0">
+          <PARAMETER NAME="MEM_SIZE" VALUE="8192"/>
+          <PARAMETER NAME="MEM_WIDTH" VALUE="32"/>
+          <PARAMETER NAME="MEM_ECC" VALUE="NONE"/>
+          <PARAMETER NAME="MASTER_TYPE" VALUE="OTHER"/>
+          <PARAMETER NAME="READ_WRITE_MODE" VALUE="READ_ONLY"/>
+          <PORTMAPS>
+            <PORTMAP LOGICAL="ADDR" PHYSICAL="addrb"/>
+            <PORTMAP LOGICAL="CLK" PHYSICAL="clkb"/>
+            <PORTMAP LOGICAL="DOUT" PHYSICAL="doutb"/>
+            <PORTMAP LOGICAL="EN" PHYSICAL="enb"/>
+          </PORTMAPS>
+        </BUSINTERFACE>
+      </BUSINTERFACES>
+    </MODULE>
+    <MODULE FULLNAME="/DepthInterp_FPU" HWVERSION="1.0" INSTANCE="DepthInterp_FPU" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="FloatALU" VLNV="xilinx.com:module_ref:FloatALU:1.0">
+      <DOCUMENTS/>
+      <PARAMETERS>
+        <PARAMETER NAME="Component_Name" VALUE="design_1_FloatALU_1_1"/>
+        <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
+      </PARAMETERS>
+      <PORTS>
+        <PORT CLKFREQUENCY="333250000" DIR="I" NAME="clk" SIGIS="clk" SIGNAME="MemorySystem_ddr4_0_c0_ddr4_ui_clk">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="MemorySystem_ddr4_0" PORT="c0_ddr4_ui_clk"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="31" NAME="IN_A" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_FPU_A">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="FPU_A"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="31" NAME="IN_B" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_FPU_B">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="FPU_B"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="2" NAME="IN_MODE" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_FPU_Mode">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="FPU_Mode"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="31" NAME="OUT_RESULT" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterp_FPU_OUT_RESULT">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="FPU_OUT"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="ISHFT_GO" SIGIS="undef" SIGNAME="DepthInterpolator_0_FPU_ISHFT_GO">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="FPU_ISHFT_GO"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="IMUL_GO" SIGIS="undef" SIGNAME="DepthInterpolator_0_FPU_IMUL_GO">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="FPU_IMUL_GO"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="IADD_GO" SIGIS="undef" SIGNAME="DepthInterpolator_0_FPU_IADD_GO">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="FPU_IADD_GO"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="ICMP_GO" SIGIS="undef" SIGNAME="DepthInterpolator_0_FPU_ICMP_GO">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="FPU_ICMP_GO"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="ICNV_GO" SIGIS="undef" SIGNAME="DepthInterpolator_0_FPU_ICNV_GO">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="FPU_ICNV_GO"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="ISPEC_GO" SIGIS="undef" SIGNAME="DepthInterpolator_0_FPU_ISPEC_GO">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="FPU_ISPEC_GO"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="IBIT_GO" SIGIS="undef" SIGNAME="DepthInterpolator_0_FPU_IBIT_GO">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="FPU_IBIT_GO"/>
+          </CONNECTIONS>
+        </PORT>
+      </PORTS>
+      <BUSINTERFACES/>
+    </MODULE>
+    <MODULE FULLNAME="/DepthInterpolator_0" HWVERSION="1.0" INSTANCE="DepthInterpolator_0" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="DepthInterpolator" VLNV="xilinx.com:module_ref:DepthInterpolator:1.0">
+      <DOCUMENTS/>
+      <PARAMETERS>
+        <PARAMETER NAME="Component_Name" VALUE="design_1_DepthInterpolator_0_1"/>
+        <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
+      </PARAMETERS>
+      <PORTS>
+        <PORT CLKFREQUENCY="333250000" DIR="I" NAME="clk" SIGIS="clk" SIGNAME="MemorySystem_ddr4_0_c0_ddr4_ui_clk">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="MemorySystem_ddr4_0" PORT="c0_ddr4_ui_clk"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="31" NAME="TRICACHE_inBarycentricInverse" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outBarycentricInverse">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outBarycentricInverse"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="31" NAME="TRICACHE_inInvZ0" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outInvZ0">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outInvZ0"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="31" NAME="TRICACHE_inInvZ1" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outInvZ1">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outInvZ1"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="31" NAME="TRICACHE_inInvZ2" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outInvZ2">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outInvZ2"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="15" NAME="TRICACHE_inT0X" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outT0X">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outT0X"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="15" NAME="TRICACHE_inT0Y" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outT0Y">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outT0Y"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="15" NAME="TRICACHE_inT1X" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outT1X">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outT1X"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="15" NAME="TRICACHE_inT1Y" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outT1Y">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outT1Y"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="15" NAME="TRICACHE_inT2X" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outT2X">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outT2X"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="15" NAME="TRICACHE_inT2Y" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outT2Y">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outT2Y"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="31" NAME="TRICACHE_inColorRGBA0" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outColorRGBA0">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outColorRGBA0"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="31" NAME="TRICACHE_inColorRGBA1" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outColorRGBA1">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outColorRGBA1"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="31" NAME="TRICACHE_inColorRGBA2" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outColorRGBA2">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outColorRGBA2"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="1" NAME="TRICACHE_CurrentSlotIndex" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_TRICACHE_CurrentSlotIndex">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_CurrentSlotIndex"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="TRICACHE_SignalSlotComplete" SIGIS="undef" SIGNAME="DepthInterpolator_0_TRICACHE_SignalSlotComplete">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_SignalSlotComplete"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="127" NAME="RASTOUT_FIFO_rd_data" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_RASTOUT_FIFO_rd_data">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="rast_out_fifo" PORT="dout"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="RASTOUT_FIFO_empty" SIGIS="undef" SIGNAME="DepthInterpolator_0_RASTOUT_FIFO_empty">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="rast_out_fifo" PORT="empty"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="RASTOUT_FIFO_rd_en" SIGIS="undef" SIGNAME="DepthInterpolator_0_RASTOUT_FIFO_rd_en">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="rast_out_fifo" PORT="rd_en"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="31" NAME="FPU_A" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_FPU_A">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthInterp_FPU" PORT="IN_A"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="31" NAME="FPU_B" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_FPU_B">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthInterp_FPU" PORT="IN_B"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="2" NAME="FPU_Mode" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_FPU_Mode">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthInterp_FPU" PORT="IN_MODE"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="FPU_ISHFT_GO" SIGIS="undef" SIGNAME="DepthInterpolator_0_FPU_ISHFT_GO">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthInterp_FPU" PORT="ISHFT_GO"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="FPU_IMUL_GO" SIGIS="undef" SIGNAME="DepthInterpolator_0_FPU_IMUL_GO">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthInterp_FPU" PORT="IMUL_GO"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="FPU_IADD_GO" SIGIS="undef" SIGNAME="DepthInterpolator_0_FPU_IADD_GO">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthInterp_FPU" PORT="IADD_GO"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="FPU_ICMP_GO" SIGIS="undef" SIGNAME="DepthInterpolator_0_FPU_ICMP_GO">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthInterp_FPU" PORT="ICMP_GO"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="FPU_ICNV_GO" SIGIS="undef" SIGNAME="DepthInterpolator_0_FPU_ICNV_GO">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthInterp_FPU" PORT="ICNV_GO"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="FPU_ISPEC_GO" SIGIS="undef" SIGNAME="DepthInterpolator_0_FPU_ISPEC_GO">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthInterp_FPU" PORT="ISPEC_GO"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="FPU_IBIT_GO" SIGIS="undef" SIGNAME="DepthInterpolator_0_FPU_IBIT_GO">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthInterp_FPU" PORT="IBIT_GO"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="31" NAME="FPU_OUT" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterp_FPU_OUT_RESULT">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthInterp_FPU" PORT="OUT_RESULT"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="DEPTH_PixelReady" SIGIS="undef" SIGNAME="DepthInterpolator_0_DEPTH_PixelReady">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthBuffer_0" PORT="RAST_PixelReady"/>
+            <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe31"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="9" NAME="DEPTH_PosX" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_DEPTH_PosX">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthBuffer_0" PORT="RAST_PosX"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="9" NAME="DEPTH_PosY" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_DEPTH_PosY">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthBuffer_0" PORT="RAST_PosY"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="23" NAME="DEPTH_OutPixelDepth" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_DEPTH_OutPixelDepth">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthBuffer_0" PORT="RAST_InPixelDepth"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="DEPTH_PixelPassedDepthTest" SIGIS="undef" SIGNAME="DepthBuffer_0_RAST_PixelPassedDepthTest">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthBuffer_0" PORT="RAST_PixelPassedDepthTest"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="DEPTH_PixelFailedDepthTest" SIGIS="undef" SIGNAME="DepthBuffer_0_RAST_PixelFailedDepthTest">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthBuffer_0" PORT="RAST_PixelFailedDepthTest"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="DEPTH_DepthTestEnabled" SIGIS="undef" SIGNAME="DepthBuffer_0_RAST_DepthTestEnabled">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthBuffer_0" PORT="RAST_DepthTestEnabled"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="ATTR_ReadyForNewPixel" SIGIS="undef" SIGNAME="AttrInterpolator_0_DINTERP_ReadyForNewPixel">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="DINTERP_ReadyForNewPixel"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="ATTR_NewPixelValid" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_NewPixelValid">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="DINTERP_NewPixelValid"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="9" NAME="ATTR_PosX" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_PosX">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="DINTERP_PosX"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="9" NAME="ATTR_PosY" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_PosY">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="DINTERP_PosY"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="15" NAME="ATTR_TX0" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_TX0">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="DINTERP_TX0"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="15" NAME="ATTR_TX1" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_TX1">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="DINTERP_TX1"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="15" NAME="ATTR_TX2" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_TX2">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="DINTERP_TX2"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="15" NAME="ATTR_TY0" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_TY0">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="DINTERP_TY0"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="15" NAME="ATTR_TY1" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_TY1">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="DINTERP_TY1"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="15" NAME="ATTR_TY2" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_TY2">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="DINTERP_TY2"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="31" NAME="ATTR_VC0" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_VC0">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe20"/>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="DINTERP_VC0"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="31" NAME="ATTR_VC1" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_VC1">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe21"/>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="DINTERP_VC1"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="31" NAME="ATTR_VC2" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_VC2">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe22"/>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="DINTERP_VC2"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="31" NAME="ATTR_NormalizedBarycentricDivZ0" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_NormalizedBarycentricDivZ0">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe11"/>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="DINTERP_NormalizedBarycentricDivZ0"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="31" NAME="ATTR_NormalizedBarycentricDivZ1" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_NormalizedBarycentricDivZ1">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe12"/>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="DINTERP_NormalizedBarycentricDivZ1"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="31" NAME="ATTR_NormalizedBarycentricDivZ2" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_NormalizedBarycentricDivZ2">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe13"/>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="DINTERP_NormalizedBarycentricDivZ2"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="31" NAME="ATTR_OutPixelDepth" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_OutPixelDepth">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe5"/>
+            <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe14"/>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="DINTERP_OutPixelDepth"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="31" NAME="STAT_CyclesIdle" RIGHT="0" SIGIS="undef"/>
+        <PORT DIR="O" LEFT="31" NAME="STAT_CyclesSpentWorking" RIGHT="0" SIGIS="undef"/>
+        <PORT DIR="O" LEFT="31" NAME="STAT_CyclesWaitingForOutput" RIGHT="0" SIGIS="undef"/>
+        <PORT DIR="O" LEFT="6" NAME="DBG_DepthInterpolator_State" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_DBG_DepthInterpolator_State">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe29"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="31" NAME="DBG_RastBarycentricA" RIGHT="0" SIGIS="undef"/>
+        <PORT DIR="O" LEFT="31" NAME="DBG_RastBarycentricB" RIGHT="0" SIGIS="undef"/>
+        <PORT DIR="O" LEFT="31" NAME="DBG_RastBarycentricC" RIGHT="0" SIGIS="undef"/>
+      </PORTS>
+      <BUSINTERFACES>
+        <BUSINTERFACE BUSNAME="DepthInterpolator_0_RASTOUT_FIFO" NAME="RASTOUT_FIFO" TYPE="INITIATOR" VLNV="xilinx.com:interface:fifo_read:1.0">
+          <PORTMAPS>
+            <PORTMAP LOGICAL="RD_DATA" PHYSICAL="RASTOUT_FIFO_rd_data"/>
+            <PORTMAP LOGICAL="RD_EN" PHYSICAL="RASTOUT_FIFO_rd_en"/>
+            <PORTMAP LOGICAL="EMPTY" PHYSICAL="RASTOUT_FIFO_empty"/>
+          </PORTMAPS>
+        </BUSINTERFACE>
+      </BUSINTERFACES>
+    </MODULE>
     <MODULE FULLNAME="/ILA_AttrInterpolator" HWVERSION="6.2" INSTANCE="ILA_AttrInterpolator" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="ila" VLNV="xilinx.com:ip:ila:6.2">
       <DOCUMENTS>
         <DOCUMENT SOURCE="http://www.xilinx.com/cgi-bin/docs/ipdoc?c=ila;v=v6_2;d=pg172-ila.pdf"/>
@@ -973,7 +1982,7 @@
         <PARAMETER NAME="C_SLOT_0_AXI_PROTOCOL" VALUE="AXI4"/>
         <PARAMETER NAME="C_NUM_MONITOR_SLOTS" VALUE="1"/>
         <PARAMETER NAME="C_ENABLE_ILA_AXI_MON" VALUE="0"/>
-        <PARAMETER NAME="C_NUM_OF_PROBES" VALUE="11"/>
+        <PARAMETER NAME="C_NUM_OF_PROBES" VALUE="32"/>
         <PARAMETER NAME="C_DATA_DEPTH" VALUE="1024"/>
         <PARAMETER NAME="C_MAJOR_VERSION" VALUE="2018"/>
         <PARAMETER NAME="C_MINOR_VERSION" VALUE="1"/>
@@ -988,45 +1997,45 @@
         <PARAMETER NAME="C_RAM_STYLE" VALUE="SUBCORE"/>
         <PARAMETER NAME="C_TRIGOUT_EN" VALUE="0"/>
         <PARAMETER NAME="C_TRIGIN_EN" VALUE="0"/>
-        <PARAMETER NAME="C_SLOT_0_AXIS_TUSER_WIDTH" VALUE="24"/>
+        <PARAMETER NAME="C_SLOT_0_AXIS_TUSER_WIDTH" VALUE="32"/>
         <PARAMETER NAME="C_SLOT_0_AXIS_TDEST_WIDTH" VALUE="32"/>
         <PARAMETER NAME="C_SLOT_0_AXIS_TID_WIDTH" VALUE="32"/>
-        <PARAMETER NAME="C_SLOT_0_AXI_ID_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_SLOT_0_AXI_ID_WIDTH" VALUE="8"/>
         <PARAMETER NAME="C_SLOT_0_AXI_ARUSER_WIDTH" VALUE="1"/>
         <PARAMETER NAME="C_SLOT_0_AXI_RUSER_WIDTH" VALUE="1"/>
         <PARAMETER NAME="C_SLOT_0_AXI_AWUSER_WIDTH" VALUE="1"/>
         <PARAMETER NAME="C_SLOT_0_AXI_WUSER_WIDTH" VALUE="1"/>
-        <PARAMETER NAME="C_SLOT_0_AXI_BUSER_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_SLOT_0_AXI_BUSER_WIDTH" VALUE="32"/>
         <PARAMETER NAME="C_PROBE0_WIDTH" VALUE="16"/>
         <PARAMETER NAME="C_PROBE1_WIDTH" VALUE="16"/>
         <PARAMETER NAME="C_PROBE2_WIDTH" VALUE="32"/>
         <PARAMETER NAME="C_PROBE3_WIDTH" VALUE="16"/>
         <PARAMETER NAME="C_PROBE4_WIDTH" VALUE="16"/>
-        <PARAMETER NAME="C_PROBE5_WIDTH" VALUE="24"/>
-        <PARAMETER NAME="C_PROBE6_WIDTH" VALUE="6"/>
+        <PARAMETER NAME="C_PROBE5_WIDTH" VALUE="32"/>
+        <PARAMETER NAME="C_PROBE6_WIDTH" VALUE="7"/>
         <PARAMETER NAME="C_PROBE7_WIDTH" VALUE="32"/>
         <PARAMETER NAME="C_PROBE8_WIDTH" VALUE="32"/>
         <PARAMETER NAME="C_PROBE9_WIDTH" VALUE="32"/>
         <PARAMETER NAME="C_PROBE10_WIDTH" VALUE="3"/>
-        <PARAMETER NAME="C_PROBE11_WIDTH" VALUE="1"/>
-        <PARAMETER NAME="C_PROBE12_WIDTH" VALUE="1"/>
-        <PARAMETER NAME="C_PROBE13_WIDTH" VALUE="1"/>
-        <PARAMETER NAME="C_PROBE14_WIDTH" VALUE="1"/>
-        <PARAMETER NAME="C_PROBE15_WIDTH" VALUE="1"/>
-        <PARAMETER NAME="C_PROBE16_WIDTH" VALUE="1"/>
-        <PARAMETER NAME="C_PROBE17_WIDTH" VALUE="1"/>
-        <PARAMETER NAME="C_PROBE18_WIDTH" VALUE="1"/>
-        <PARAMETER NAME="C_PROBE19_WIDTH" VALUE="1"/>
-        <PARAMETER NAME="C_PROBE20_WIDTH" VALUE="1"/>
-        <PARAMETER NAME="C_PROBE21_WIDTH" VALUE="1"/>
-        <PARAMETER NAME="C_PROBE22_WIDTH" VALUE="1"/>
-        <PARAMETER NAME="C_PROBE23_WIDTH" VALUE="1"/>
-        <PARAMETER NAME="C_PROBE24_WIDTH" VALUE="1"/>
-        <PARAMETER NAME="C_PROBE25_WIDTH" VALUE="1"/>
-        <PARAMETER NAME="C_PROBE26_WIDTH" VALUE="1"/>
-        <PARAMETER NAME="C_PROBE27_WIDTH" VALUE="1"/>
-        <PARAMETER NAME="C_PROBE28_WIDTH" VALUE="1"/>
-        <PARAMETER NAME="C_PROBE29_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_PROBE11_WIDTH" VALUE="32"/>
+        <PARAMETER NAME="C_PROBE12_WIDTH" VALUE="32"/>
+        <PARAMETER NAME="C_PROBE13_WIDTH" VALUE="32"/>
+        <PARAMETER NAME="C_PROBE14_WIDTH" VALUE="32"/>
+        <PARAMETER NAME="C_PROBE15_WIDTH" VALUE="32"/>
+        <PARAMETER NAME="C_PROBE16_WIDTH" VALUE="32"/>
+        <PARAMETER NAME="C_PROBE17_WIDTH" VALUE="64"/>
+        <PARAMETER NAME="C_PROBE18_WIDTH" VALUE="64"/>
+        <PARAMETER NAME="C_PROBE19_WIDTH" VALUE="8"/>
+        <PARAMETER NAME="C_PROBE20_WIDTH" VALUE="32"/>
+        <PARAMETER NAME="C_PROBE21_WIDTH" VALUE="32"/>
+        <PARAMETER NAME="C_PROBE22_WIDTH" VALUE="32"/>
+        <PARAMETER NAME="C_PROBE23_WIDTH" VALUE="32"/>
+        <PARAMETER NAME="C_PROBE24_WIDTH" VALUE="32"/>
+        <PARAMETER NAME="C_PROBE25_WIDTH" VALUE="32"/>
+        <PARAMETER NAME="C_PROBE26_WIDTH" VALUE="32"/>
+        <PARAMETER NAME="C_PROBE27_WIDTH" VALUE="18"/>
+        <PARAMETER NAME="C_PROBE28_WIDTH" VALUE="18"/>
+        <PARAMETER NAME="C_PROBE29_WIDTH" VALUE="7"/>
         <PARAMETER NAME="C_PROBE30_WIDTH" VALUE="1"/>
         <PARAMETER NAME="C_PROBE31_WIDTH" VALUE="1"/>
         <PARAMETER NAME="C_PROBE32_WIDTH" VALUE="1"/>
@@ -4123,12 +5132,12 @@
             <CONNECTION INSTANCE="AttrInterpolator_0" PORT="TEXSAMP_outPixelY"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="23" NAME="probe5" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_TEXSAMP_outPixelInterpolatedDepth">
+        <PORT DIR="I" LEFT="31" NAME="probe5" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_OutPixelDepth">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="TEXSAMP_outPixelInterpolatedDepth"/>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="ATTR_OutPixelDepth"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="5" NAME="probe6" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_DBG_AttrInterpolator_State">
+        <PORT DIR="I" LEFT="6" NAME="probe6" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_DBG_AttrInterpolator_State">
           <CONNECTIONS>
             <CONNECTION INSTANCE="AttrInterpolator_0" PORT="DBG_AttrInterpolator_State"/>
           </CONNECTIONS>
@@ -4151,6 +5160,111 @@
         <PORT DIR="I" LEFT="2" NAME="probe10" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_DBG_NumActiveTriangles">
           <CONNECTIONS>
             <CONNECTION INSTANCE="TriWorkCache_0" PORT="DBG_NumActiveTriangles"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="31" NAME="probe11" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_NormalizedBarycentricDivZ0">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="ATTR_NormalizedBarycentricDivZ0"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="31" NAME="probe12" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_NormalizedBarycentricDivZ1">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="ATTR_NormalizedBarycentricDivZ1"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="31" NAME="probe13" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_NormalizedBarycentricDivZ2">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="ATTR_NormalizedBarycentricDivZ2"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="31" NAME="probe14" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_OutPixelDepth">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="ATTR_OutPixelDepth"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="31" NAME="probe15" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_FPU_A">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="FPU_A"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="31" NAME="probe16" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterp_FPU_OUT_RESULT">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="AttrInterp_FPU" PORT="OUT_RESULT"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="63" NAME="probe17" RIGHT="0" SIGIS="undef" SIGNAME="DepthBuffer_URAM_doutb">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthBuffer_URAM" PORT="doutb"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="63" NAME="probe18" RIGHT="0" SIGIS="undef" SIGNAME="DepthBuffer_0_URAM_dina">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthBuffer_0" PORT="URAM_dina"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="7" NAME="probe19" RIGHT="0" SIGIS="undef" SIGNAME="DepthBuffer_0_URAM_wea">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthBuffer_0" PORT="URAM_wea"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="31" NAME="probe20" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_VC0">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="ATTR_VC0"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="31" NAME="probe21" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_VC1">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="ATTR_VC1"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="31" NAME="probe22" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_VC2">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="ATTR_VC2"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="31" NAME="probe23" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outColorRGBA0">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outColorRGBA0"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="31" NAME="probe24" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outColorRGBA1">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outColorRGBA1"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="31" NAME="probe25" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outColorRGBA2">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outColorRGBA2"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="31" NAME="probe26" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_FPU_B">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="FPU_B"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="17" NAME="probe27" RIGHT="0" SIGIS="undef" SIGNAME="DepthBuffer_0_URAM_addrb">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthBuffer_0" PORT="URAM_addrb"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="17" NAME="probe28" RIGHT="0" SIGIS="undef" SIGNAME="DepthBuffer_0_URAM_addra">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthBuffer_0" PORT="URAM_addra"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="6" NAME="probe29" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_DBG_DepthInterpolator_State">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="DBG_DepthInterpolator_State"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="0" NAME="probe30" RIGHT="0" SIGIS="undef" SIGNAME="DepthBuffer_0_CMD_DepthIsIdle">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthBuffer_0" PORT="CMD_DepthIsIdle"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="0" NAME="probe31" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_DEPTH_PixelReady">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="DEPTH_PixelReady"/>
           </CONNECTIONS>
         </PORT>
       </PORTS>
@@ -10847,7 +11961,7 @@
         <PARAMETER NAME="C_SLOT_0_AXI_PROTOCOL" VALUE="AXI4"/>
         <PARAMETER NAME="C_NUM_MONITOR_SLOTS" VALUE="1"/>
         <PARAMETER NAME="C_ENABLE_ILA_AXI_MON" VALUE="0"/>
-        <PARAMETER NAME="C_NUM_OF_PROBES" VALUE="56"/>
+        <PARAMETER NAME="C_NUM_OF_PROBES" VALUE="58"/>
         <PARAMETER NAME="C_DATA_DEPTH" VALUE="1024"/>
         <PARAMETER NAME="C_MAJOR_VERSION" VALUE="2018"/>
         <PARAMETER NAME="C_MINOR_VERSION" VALUE="1"/>
@@ -10871,10 +11985,10 @@
         <PARAMETER NAME="C_SLOT_0_AXI_AWUSER_WIDTH" VALUE="32"/>
         <PARAMETER NAME="C_SLOT_0_AXI_WUSER_WIDTH" VALUE="16"/>
         <PARAMETER NAME="C_SLOT_0_AXI_BUSER_WIDTH" VALUE="1"/>
-        <PARAMETER NAME="C_PROBE0_WIDTH" VALUE="24"/>
-        <PARAMETER NAME="C_PROBE1_WIDTH" VALUE="24"/>
-        <PARAMETER NAME="C_PROBE2_WIDTH" VALUE="24"/>
-        <PARAMETER NAME="C_PROBE3_WIDTH" VALUE="24"/>
+        <PARAMETER NAME="C_PROBE0_WIDTH" VALUE="32"/>
+        <PARAMETER NAME="C_PROBE1_WIDTH" VALUE="32"/>
+        <PARAMETER NAME="C_PROBE2_WIDTH" VALUE="32"/>
+        <PARAMETER NAME="C_PROBE3_WIDTH" VALUE="32"/>
         <PARAMETER NAME="C_PROBE4_WIDTH" VALUE="16"/>
         <PARAMETER NAME="C_PROBE5_WIDTH" VALUE="16"/>
         <PARAMETER NAME="C_PROBE6_WIDTH" VALUE="16"/>
@@ -10901,7 +12015,7 @@
         <PARAMETER NAME="C_PROBE27_WIDTH" VALUE="16"/>
         <PARAMETER NAME="C_PROBE28_WIDTH" VALUE="16"/>
         <PARAMETER NAME="C_PROBE29_WIDTH" VALUE="1"/>
-        <PARAMETER NAME="C_PROBE30_WIDTH" VALUE="8"/>
+        <PARAMETER NAME="C_PROBE30_WIDTH" VALUE="5"/>
         <PARAMETER NAME="C_PROBE31_WIDTH" VALUE="16"/>
         <PARAMETER NAME="C_PROBE32_WIDTH" VALUE="16"/>
         <PARAMETER NAME="C_PROBE33_WIDTH" VALUE="16"/>
@@ -10927,8 +12041,8 @@
         <PARAMETER NAME="C_PROBE53_WIDTH" VALUE="12"/>
         <PARAMETER NAME="C_PROBE54_WIDTH" VALUE="128"/>
         <PARAMETER NAME="C_PROBE55_WIDTH" VALUE="256"/>
-        <PARAMETER NAME="C_PROBE56_WIDTH" VALUE="1"/>
-        <PARAMETER NAME="C_PROBE57_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_PROBE56_WIDTH" VALUE="32"/>
+        <PARAMETER NAME="C_PROBE57_WIDTH" VALUE="32"/>
         <PARAMETER NAME="C_PROBE58_WIDTH" VALUE="1"/>
         <PARAMETER NAME="C_PROBE59_WIDTH" VALUE="1"/>
         <PARAMETER NAME="C_PROBE60_WIDTH" VALUE="1"/>
@@ -13972,22 +15086,22 @@
             <CONNECTION INSTANCE="MemorySystem_ddr4_0" PORT="c0_ddr4_ui_clk"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="23" NAME="probe0" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_outBarycentricInverse">
+        <PORT DIR="I" LEFT="31" NAME="probe0" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_outBarycentricInverse">
           <CONNECTIONS>
             <CONNECTION INSTANCE="TriSetup_0" PORT="RAST_outBarycentricInverse"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="23" NAME="probe1" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_v0_out_invZ">
+        <PORT DIR="I" LEFT="31" NAME="probe1" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_v0_out_invZ">
           <CONNECTIONS>
             <CONNECTION INSTANCE="TriSetup_0" PORT="RAST_v0_out_invZ"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="23" NAME="probe2" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_v1_out_invZ">
+        <PORT DIR="I" LEFT="31" NAME="probe2" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_v1_out_invZ">
           <CONNECTIONS>
             <CONNECTION INSTANCE="TriSetup_0" PORT="RAST_v1_out_invZ"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="23" NAME="probe3" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_v2_out_invZ">
+        <PORT DIR="I" LEFT="31" NAME="probe3" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_v2_out_invZ">
           <CONNECTIONS>
             <CONNECTION INSTANCE="TriSetup_0" PORT="RAST_v2_out_invZ"/>
           </CONNECTIONS>
@@ -14122,7 +15236,7 @@
             <CONNECTION INSTANCE="TriSetup_0" PORT="RAST_triSetupDataIsValid"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="7" NAME="probe30" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_DBG_TriSetup_State">
+        <PORT DIR="I" LEFT="4" NAME="probe30" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_DBG_TriSetup_State">
           <CONNECTIONS>
             <CONNECTION INSTANCE="TriSetup_0" PORT="DBG_TriSetup_State"/>
           </CONNECTIONS>
@@ -14252,6 +15366,16 @@
             <CONNECTION INSTANCE="VBO_INDEX_FIFO" PORT="dout"/>
           </CONNECTIONS>
         </PORT>
+        <PORT DIR="I" LEFT="31" NAME="probe56" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_FPU_A">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriSetup_0" PORT="FPU_A"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="31" NAME="probe57" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_FPU_OUT_RESULT">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriSetup_FPU" PORT="OUT_RESULT"/>
+          </CONNECTIONS>
+        </PORT>
       </PORTS>
       <BUSINTERFACES/>
     </MODULE>
@@ -14358,51 +15482,51 @@
         </PORT>
         <PORT DIR="O" LEFT="15" NAME="TRISETUP_v0PosX" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v0PosX">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriSetup_0" PORT="IA_v0_in_x"/>
             <CONNECTION INSTANCE="ILA_TriSetup" PORT="probe42"/>
+            <CONNECTION INSTANCE="TriSetup_0" PORT="IA_v0_in_x"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="15" NAME="TRISETUP_v0PosY" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v0PosY">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriSetup_0" PORT="IA_v0_in_y"/>
             <CONNECTION INSTANCE="ILA_TriSetup" PORT="probe43"/>
+            <CONNECTION INSTANCE="TriSetup_0" PORT="IA_v0_in_y"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="23" NAME="TRISETUP_v0PosInvZ" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v0PosInvZ">
+        <PORT DIR="O" LEFT="31" NAME="TRISETUP_v0PosInvZ" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v0PosInvZ">
           <CONNECTIONS>
             <CONNECTION INSTANCE="TriSetup_0" PORT="IA_v0_in_invZ"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="15" NAME="TRISETUP_v1PosX" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v1PosX">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriSetup_0" PORT="IA_v1_in_x"/>
             <CONNECTION INSTANCE="ILA_TriSetup" PORT="probe44"/>
+            <CONNECTION INSTANCE="TriSetup_0" PORT="IA_v1_in_x"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="15" NAME="TRISETUP_v1PosY" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v1PosY">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriSetup_0" PORT="IA_v1_in_y"/>
             <CONNECTION INSTANCE="ILA_TriSetup" PORT="probe45"/>
+            <CONNECTION INSTANCE="TriSetup_0" PORT="IA_v1_in_y"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="23" NAME="TRISETUP_v1PosInvZ" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v1PosInvZ">
+        <PORT DIR="O" LEFT="31" NAME="TRISETUP_v1PosInvZ" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v1PosInvZ">
           <CONNECTIONS>
             <CONNECTION INSTANCE="TriSetup_0" PORT="IA_v1_in_invZ"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="15" NAME="TRISETUP_v2PosX" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v2PosX">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriSetup_0" PORT="IA_v2_in_x"/>
             <CONNECTION INSTANCE="ILA_TriSetup" PORT="probe46"/>
+            <CONNECTION INSTANCE="TriSetup_0" PORT="IA_v2_in_x"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="15" NAME="TRISETUP_v2PosY" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v2PosY">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriSetup_0" PORT="IA_v2_in_y"/>
             <CONNECTION INSTANCE="ILA_TriSetup" PORT="probe47"/>
+            <CONNECTION INSTANCE="TriSetup_0" PORT="IA_v2_in_y"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="23" NAME="TRISETUP_v2PosInvZ" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v2PosInvZ">
+        <PORT DIR="O" LEFT="31" NAME="TRISETUP_v2PosInvZ" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v2PosInvZ">
           <CONNECTIONS>
             <CONNECTION INSTANCE="TriSetup_0" PORT="IA_v2_in_invZ"/>
           </CONNECTIONS>
@@ -14439,20 +15563,20 @@
         </PORT>
         <PORT DIR="O" LEFT="31" NAME="TRISETUP_vertColor0_RGBA" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_vertColor0_RGBA">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriSetup_0" PORT="IA_v0_in_RGBA"/>
             <CONNECTION INSTANCE="ILA_TriSetup" PORT="probe48"/>
+            <CONNECTION INSTANCE="TriSetup_0" PORT="IA_v0_in_RGBA"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="31" NAME="TRISETUP_vertColor1_RGBA" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_vertColor1_RGBA">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriSetup_0" PORT="IA_v1_in_RGBA"/>
             <CONNECTION INSTANCE="ILA_TriSetup" PORT="probe49"/>
+            <CONNECTION INSTANCE="TriSetup_0" PORT="IA_v1_in_RGBA"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="31" NAME="TRISETUP_vertColor2_RGBA" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_vertColor2_RGBA">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriSetup_0" PORT="IA_v2_in_RGBA"/>
             <CONNECTION INSTANCE="ILA_TriSetup" PORT="probe50"/>
+            <CONNECTION INSTANCE="TriSetup_0" PORT="IA_v2_in_RGBA"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="I" NAME="TRISETUP_readyForNewTri" SIGIS="undef" SIGNAME="TriSetup_0_IA_readyForNewTri">
@@ -14604,52 +15728,6 @@
           </PORTMAPS>
         </BUSINTERFACE>
       </BUSINTERFACES>
-    </MODULE>
-    <MODULE FULLNAME="/InterpolatorRecip" HWVERSION="1.0" INSTANCE="InterpolatorRecip" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="Reciprocal" VLNV="xilinx.com:module_ref:Reciprocal:1.0">
-      <DOCUMENTS/>
-      <PARAMETERS>
-        <PARAMETER NAME="Num_Newton_Raphson_Iterations" VALUE="7"/>
-        <PARAMETER NAME="Component_Name" VALUE="design_1_Reciprocal_0_1"/>
-        <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
-      </PARAMETERS>
-      <PORTS>
-        <PORT CLKFREQUENCY="333250000" DIR="I" NAME="clk" SIGIS="clk" SIGNAME="MemorySystem_ddr4_0_c0_ddr4_ui_clk">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="MemorySystem_ddr4_0" PORT="c0_ddr4_ui_clk"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" LEFT="23" NAME="inU24" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_RECIP_InputVal">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="RECIP_InputVal"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" NAME="inNewValueIsValid" SIGIS="undef" SIGNAME="AttrInterpolator_0_RECIP_NewInputValIsValid">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="RECIP_NewInputValIsValid"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="O" NAME="outReadyForNewValue" SIGIS="undef" SIGNAME="InterpolatorRecip_outReadyForNewValue">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="RECIP_ReadyForNewInput"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="O" LEFT="23" NAME="outInv24" RIGHT="0" SIGIS="undef" SIGNAME="InterpolatorRecip_outInv24">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="RECIP_OutputVal"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" NAME="inReadyForOutValue" SIGIS="undef" SIGNAME="AttrInterpolator_0_RECIP_ReadyForValOut">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="RECIP_ReadyForValOut"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="O" NAME="outNewOutValueIsValid" SIGIS="undef" SIGNAME="InterpolatorRecip_outNewOutValueIsValid">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="RECIP_NewOutValIsValid"/>
-          </CONNECTIONS>
-        </PORT>
-      </PORTS>
-      <BUSINTERFACES/>
     </MODULE>
     <MODULE FULLNAME="/MemorySystem/ClearBlockWriteRequestsFIFO" HWVERSION="13.2" INSTANCE="MemorySystem_ClearBlockWriteRequestsFIFO" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="fifo_generator" VLNV="xilinx.com:ip:fifo_generator:13.2">
       <DOCUMENTS>
@@ -19681,7 +20759,7 @@
           <PARAMETER NAME="HAS_BRESP" VALUE="1"/>
           <PARAMETER NAME="HAS_RRESP" VALUE="1"/>
           <PARAMETER NAME="PHASE" VALUE="0.00"/>
-          <PARAMETER NAME="CLK_DOMAIN" VALUE="design_1_ddr4_0_0_c0_ddr4_ui_clk"/>
+          <PARAMETER NAME="CLK_DOMAIN" VALUE="design_1_ddr4_0_1_c0_ddr4_ui_clk"/>
           <PARAMETER NAME="NUM_READ_THREADS" VALUE="1"/>
           <PARAMETER NAME="NUM_WRITE_THREADS" VALUE="1"/>
           <PARAMETER NAME="RUSER_BITS_PER_BYTE" VALUE="0"/>
@@ -24874,7 +25952,7 @@
         <PARAMETER NAME="ADDN_UI_CLKOUT3_FREQ_HZ" VALUE="None"/>
         <PARAMETER NAME="ADDN_UI_CLKOUT4_FREQ_HZ" VALUE="None"/>
         <PARAMETER NAME="CLKOUT6" VALUE="false"/>
-        <PARAMETER NAME="Component_Name" VALUE="design_1_ddr4_0_0"/>
+        <PARAMETER NAME="Component_Name" VALUE="design_1_ddr4_0_1"/>
         <PARAMETER NAME="No_Controller" VALUE="1"/>
         <PARAMETER NAME="System_Clock" VALUE="Differential"/>
         <PARAMETER NAME="Reference_Clock" VALUE="Differential"/>
@@ -24972,32 +26050,36 @@
             <CONNECTION INSTANCE="TextureCache_128x128x32bits" PORT="clka"/>
             <CONNECTION INSTANCE="VBB_FIFO" PORT="clk"/>
             <CONNECTION INSTANCE="VBO_FIFO" PORT="clk"/>
-            <CONNECTION INSTANCE="TriSetup_0" PORT="clk"/>
-            <CONNECTION INSTANCE="Rasterizer_0" PORT="clk"/>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="clk"/>
             <CONNECTION INSTANCE="ClearBlock_0" PORT="clk"/>
-            <CONNECTION INSTANCE="TriSetupRecip" PORT="clk"/>
-            <CONNECTION INSTANCE="InterpolatorRecip" PORT="clk"/>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="clk"/>
             <CONNECTION INSTANCE="StatsCollector_0" PORT="clk"/>
-            <CONNECTION INSTANCE="ROP_0" PORT="clk"/>
-            <CONNECTION INSTANCE="TexSample_0" PORT="clk"/>
             <CONNECTION INSTANCE="vio_0" PORT="clk"/>
             <CONNECTION INSTANCE="VBO_INDEX_FIFO" PORT="clk"/>
             <CONNECTION INSTANCE="IndexBufferCache_0" PORT="clk"/>
-            <CONNECTION INSTANCE="InputAssembler2_0" PORT="clk"/>
+            <CONNECTION INSTANCE="ROP_0" PORT="clk"/>
+            <CONNECTION INSTANCE="TexSample_0" PORT="clk"/>
             <CONNECTION INSTANCE="VertexBatchBuilder_0" PORT="clk"/>
+            <CONNECTION INSTANCE="TriWorkCache_0" PORT="clk"/>
+            <CONNECTION INSTANCE="InputAssembler2_0" PORT="clk"/>
+            <CONNECTION INSTANCE="TriSetup_FPU" PORT="clk"/>
+            <CONNECTION INSTANCE="Rasterizer_0" PORT="clk"/>
+            <CONNECTION INSTANCE="DepthInterp_FPU" PORT="clk"/>
+            <CONNECTION INSTANCE="AttrInterp_FPU" PORT="clk"/>
+            <CONNECTION INSTANCE="AttrInterp_UNORM8ToFloat" PORT="clk"/>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="clk"/>
+            <CONNECTION INSTANCE="DepthBuffer_0" PORT="clk"/>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="clk"/>
+            <CONNECTION INSTANCE="TriSetup_0" PORT="clk"/>
             <CONNECTION INSTANCE="SerialPacketSystem_ValidIncomingPacketsFIFO" PORT="rd_clk"/>
             <CONNECTION INSTANCE="SerialPacketSystem_ReturnOutputPacketsFIFO" PORT="wr_clk"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_InstructionCache" PORT="clka"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_ConstantBuffer_0" PORT="clk"/>
-            <CONNECTION INSTANCE="ShaderCoreSystem_UNORM8ToFloat_0" PORT="clk"/>
-            <CONNECTION INSTANCE="ShaderCoreSystem_ShaderCore_0" PORT="clk"/>
+            <CONNECTION INSTANCE="ShaderCoreSystem_VertexStreamCache_0" PORT="clk"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_FloatALU_0" PORT="clk"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_FloatALU_1" PORT="clk"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_FloatALU_2" PORT="clk"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_FloatALU_3" PORT="clk"/>
-            <CONNECTION INSTANCE="ShaderCoreSystem_VertexStreamCache_0" PORT="clk"/>
+            <CONNECTION INSTANCE="ShaderCoreSystem_UNORM8ToFloat_0" PORT="clk"/>
+            <CONNECTION INSTANCE="ShaderCoreSystem_ShaderCore_0" PORT="clk"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_GPRQuadSystem_GPRQuad2_0" PORT="clk"/>
             <CONNECTION INSTANCE="ScanoutSystem_CDC_Command_Scanout_0" PORT="cmd_clk"/>
             <CONNECTION INSTANCE="CommandProcessor_0" PORT="clk"/>
@@ -25300,7 +26382,7 @@
           <PARAMETER NAME="NUM_WRITE_OUTSTANDING" VALUE="0"/>
           <PARAMETER NAME="MAX_BURST_LENGTH" VALUE="1"/>
           <PARAMETER NAME="PHASE" VALUE="0.00"/>
-          <PARAMETER NAME="CLK_DOMAIN" VALUE="design_1_ddr4_0_0_c0_ddr4_ui_clk"/>
+          <PARAMETER NAME="CLK_DOMAIN" VALUE="design_1_ddr4_0_1_c0_ddr4_ui_clk"/>
           <PARAMETER NAME="NUM_READ_THREADS" VALUE="1"/>
           <PARAMETER NAME="NUM_WRITE_THREADS" VALUE="1"/>
           <PARAMETER NAME="RUSER_BITS_PER_BYTE" VALUE="0"/>
@@ -25731,22 +26813,22 @@
             <CONNECTION INSTANCE="TriSetup_0" PORT="RAST_outBarycentricYDeltaC"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="23" NAME="TRISETUP_inBarycentricInverse" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_outBarycentricInverse">
+        <PORT DIR="I" LEFT="31" NAME="TRISETUP_inBarycentricInverse" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_outBarycentricInverse">
           <CONNECTIONS>
             <CONNECTION INSTANCE="TriSetup_0" PORT="RAST_outBarycentricInverse"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="23" NAME="TRISETUP_inInvZ0" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_v0_out_invZ">
+        <PORT DIR="I" LEFT="31" NAME="TRISETUP_inInvZ0" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_v0_out_invZ">
           <CONNECTIONS>
             <CONNECTION INSTANCE="TriSetup_0" PORT="RAST_v0_out_invZ"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="23" NAME="TRISETUP_inInvZ1" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_v1_out_invZ">
+        <PORT DIR="I" LEFT="31" NAME="TRISETUP_inInvZ1" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_v1_out_invZ">
           <CONNECTIONS>
             <CONNECTION INSTANCE="TriSetup_0" PORT="RAST_v1_out_invZ"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="23" NAME="TRISETUP_inInvZ2" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_v2_out_invZ">
+        <PORT DIR="I" LEFT="31" NAME="TRISETUP_inInvZ2" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_v2_out_invZ">
           <CONNECTIONS>
             <CONNECTION INSTANCE="TriSetup_0" PORT="RAST_v2_out_invZ"/>
           </CONNECTIONS>
@@ -25811,7 +26893,7 @@
             <CONNECTION INSTANCE="rast_out_fifo" PORT="wr_en"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="23" NAME="TRICACHE_BarycentricInverse" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_BarycentricInverse">
+        <PORT DIR="O" LEFT="31" NAME="TRICACHE_BarycentricInverse" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_BarycentricInverse">
           <CONNECTIONS>
             <CONNECTION INSTANCE="TriWorkCache_0" PORT="RAST_inBarycentricInverse"/>
           </CONNECTIONS>
@@ -25831,17 +26913,17 @@
             <CONNECTION INSTANCE="TriWorkCache_0" PORT="RAST_inVFACE"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="23" NAME="TRICACHE_InvZ0" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_InvZ0">
+        <PORT DIR="O" LEFT="31" NAME="TRICACHE_InvZ0" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_InvZ0">
           <CONNECTIONS>
             <CONNECTION INSTANCE="TriWorkCache_0" PORT="RAST_inInvZ0"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="23" NAME="TRICACHE_InvZ1" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_InvZ1">
+        <PORT DIR="O" LEFT="31" NAME="TRICACHE_InvZ1" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_InvZ1">
           <CONNECTIONS>
             <CONNECTION INSTANCE="TriWorkCache_0" PORT="RAST_inInvZ1"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="23" NAME="TRICACHE_InvZ2" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_InvZ2">
+        <PORT DIR="O" LEFT="31" NAME="TRICACHE_InvZ2" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_InvZ2">
           <CONNECTIONS>
             <CONNECTION INSTANCE="TriWorkCache_0" PORT="RAST_inInvZ2"/>
           </CONNECTIONS>
@@ -27126,7 +28208,7 @@
           <PARAMETER NAME="NUM_WRITE_OUTSTANDING" VALUE="1"/>
           <PARAMETER NAME="MAX_BURST_LENGTH" VALUE="1"/>
           <PARAMETER NAME="PHASE" VALUE="0"/>
-          <PARAMETER NAME="CLK_DOMAIN" VALUE="design_1_ddr4_0_0_c0_ddr4_ui_clk"/>
+          <PARAMETER NAME="CLK_DOMAIN" VALUE="design_1_ddr4_0_1_c0_ddr4_ui_clk"/>
           <PARAMETER NAME="NUM_READ_THREADS" VALUE="1"/>
           <PARAMETER NAME="NUM_WRITE_THREADS" VALUE="1"/>
           <PARAMETER NAME="RUSER_BITS_PER_BYTE" VALUE="0"/>
@@ -28372,7 +29454,7 @@
           <PARAMETER NAME="NUM_WRITE_OUTSTANDING" VALUE="1"/>
           <PARAMETER NAME="MAX_BURST_LENGTH" VALUE="1"/>
           <PARAMETER NAME="PHASE" VALUE="0"/>
-          <PARAMETER NAME="CLK_DOMAIN" VALUE="design_1_ddr4_0_0_c0_ddr4_ui_clk"/>
+          <PARAMETER NAME="CLK_DOMAIN" VALUE="design_1_ddr4_0_1_c0_ddr4_ui_clk"/>
           <PARAMETER NAME="NUM_READ_THREADS" VALUE="1"/>
           <PARAMETER NAME="NUM_WRITE_THREADS" VALUE="1"/>
           <PARAMETER NAME="RUSER_BITS_PER_BYTE" VALUE="0"/>
@@ -36545,7 +37627,11 @@
             <CONNECTION INSTANCE="TexSample_0" PORT="TexCache_ena"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" NAME="regcea" SIGIS="undef"/>
+        <PORT DIR="I" NAME="regcea" SIGIS="undef" SIGNAME="xlconstant_7_dout">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="xlconstant_7" PORT="dout"/>
+          </CONNECTIONS>
+        </PORT>
         <PORT DIR="I" LEFT="0" NAME="wea" RIGHT="0" SIGIS="undef" SIGNAME="TexSample_0_TexCache_wea">
           <CONNECTIONS>
             <CONNECTION INSTANCE="TexSample_0" PORT="TexCache_wea"/>
@@ -36585,52 +37671,6 @@
         </BUSINTERFACE>
       </BUSINTERFACES>
     </MODULE>
-    <MODULE FULLNAME="/TriSetupRecip" HWVERSION="1.0" INSTANCE="TriSetupRecip" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="Reciprocal" VLNV="xilinx.com:module_ref:Reciprocal:1.0">
-      <DOCUMENTS/>
-      <PARAMETERS>
-        <PARAMETER NAME="Num_Newton_Raphson_Iterations" VALUE="7"/>
-        <PARAMETER NAME="Component_Name" VALUE="design_1_Reciprocal_0_0"/>
-        <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
-      </PARAMETERS>
-      <PORTS>
-        <PORT CLKFREQUENCY="333250000" DIR="I" NAME="clk" SIGIS="clk" SIGNAME="MemorySystem_ddr4_0_c0_ddr4_ui_clk">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="MemorySystem_ddr4_0" PORT="c0_ddr4_ui_clk"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" LEFT="23" NAME="inU24" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RECIP_InputVal">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="TriSetup_0" PORT="RECIP_InputVal"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" NAME="inNewValueIsValid" SIGIS="undef" SIGNAME="TriSetup_0_RECIP_NewInputValIsValid">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="TriSetup_0" PORT="RECIP_NewInputValIsValid"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="O" NAME="outReadyForNewValue" SIGIS="undef" SIGNAME="TriSetupRecip_outReadyForNewValue">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="TriSetup_0" PORT="RECIP_ReadyForNewInput"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="O" LEFT="23" NAME="outInv24" RIGHT="0" SIGIS="undef" SIGNAME="TriSetupRecip_outInv24">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="TriSetup_0" PORT="RECIP_OutputVal"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" NAME="inReadyForOutValue" SIGIS="undef" SIGNAME="TriSetup_0_RECIP_ReadyForValOut">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="TriSetup_0" PORT="RECIP_ReadyForValOut"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="O" NAME="outNewOutValueIsValid" SIGIS="undef" SIGNAME="TriSetupRecip_outNewOutValueIsValid">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="TriSetup_0" PORT="RECIP_NewOutValIsValid"/>
-          </CONNECTIONS>
-        </PORT>
-      </PORTS>
-      <BUSINTERFACES/>
-    </MODULE>
     <MODULE FULLNAME="/TriSetup_0" HWVERSION="1.0" INSTANCE="TriSetup_0" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="TriSetup" VLNV="xilinx.com:module_ref:TriSetup:1.0">
       <DOCUMENTS/>
       <PARAMETERS>
@@ -36653,7 +37693,7 @@
             <CONNECTION INSTANCE="InputAssembler2_0" PORT="TRISETUP_v0PosY"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="23" NAME="IA_v0_in_invZ" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v0PosInvZ">
+        <PORT DIR="I" LEFT="31" NAME="IA_v0_in_invZ" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v0PosInvZ">
           <CONNECTIONS>
             <CONNECTION INSTANCE="InputAssembler2_0" PORT="TRISETUP_v0PosInvZ"/>
           </CONNECTIONS>
@@ -36668,7 +37708,7 @@
             <CONNECTION INSTANCE="InputAssembler2_0" PORT="TRISETUP_v1PosY"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="23" NAME="IA_v1_in_invZ" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v1PosInvZ">
+        <PORT DIR="I" LEFT="31" NAME="IA_v1_in_invZ" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v1PosInvZ">
           <CONNECTIONS>
             <CONNECTION INSTANCE="InputAssembler2_0" PORT="TRISETUP_v1PosInvZ"/>
           </CONNECTIONS>
@@ -36683,7 +37723,7 @@
             <CONNECTION INSTANCE="InputAssembler2_0" PORT="TRISETUP_v2PosY"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="23" NAME="IA_v2_in_invZ" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v2PosInvZ">
+        <PORT DIR="I" LEFT="31" NAME="IA_v2_in_invZ" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v2PosInvZ">
           <CONNECTIONS>
             <CONNECTION INSTANCE="InputAssembler2_0" PORT="TRISETUP_v2PosInvZ"/>
           </CONNECTIONS>
@@ -36748,25 +37788,25 @@
             <CONNECTION INSTANCE="placeholder_texcfg" PORT="dout"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="23" NAME="RAST_outBarycentricInverse" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_outBarycentricInverse">
+        <PORT DIR="O" LEFT="31" NAME="RAST_outBarycentricInverse" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_outBarycentricInverse">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ILA_TriSetup" PORT="probe0"/>
             <CONNECTION INSTANCE="Rasterizer_0" PORT="TRISETUP_inBarycentricInverse"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="23" NAME="RAST_v0_out_invZ" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_v0_out_invZ">
+        <PORT DIR="O" LEFT="31" NAME="RAST_v0_out_invZ" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_v0_out_invZ">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ILA_TriSetup" PORT="probe1"/>
             <CONNECTION INSTANCE="Rasterizer_0" PORT="TRISETUP_inInvZ0"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="23" NAME="RAST_v1_out_invZ" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_v1_out_invZ">
+        <PORT DIR="O" LEFT="31" NAME="RAST_v1_out_invZ" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_v1_out_invZ">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ILA_TriSetup" PORT="probe2"/>
             <CONNECTION INSTANCE="Rasterizer_0" PORT="TRISETUP_inInvZ1"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="23" NAME="RAST_v2_out_invZ" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_v2_out_invZ">
+        <PORT DIR="O" LEFT="31" NAME="RAST_v2_out_invZ" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_v2_out_invZ">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ILA_TriSetup" PORT="probe3"/>
             <CONNECTION INSTANCE="Rasterizer_0" PORT="TRISETUP_inInvZ2"/>
@@ -36933,34 +37973,60 @@
             <CONNECTION INSTANCE="Rasterizer_0" PORT="TRISETUP_newTriBegin"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="23" NAME="RECIP_InputVal" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RECIP_InputVal">
+        <PORT DIR="O" LEFT="31" NAME="FPU_A" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_FPU_A">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriSetupRecip" PORT="inU24"/>
+            <CONNECTION INSTANCE="TriSetup_FPU" PORT="IN_A"/>
+            <CONNECTION INSTANCE="ILA_TriSetup" PORT="probe56"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" NAME="RECIP_ReadyForNewInput" SIGIS="undef" SIGNAME="TriSetupRecip_outReadyForNewValue">
+        <PORT DIR="O" LEFT="31" NAME="FPU_B" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_FPU_B">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriSetupRecip" PORT="outReadyForNewValue"/>
+            <CONNECTION INSTANCE="TriSetup_FPU" PORT="IN_B"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" NAME="RECIP_NewInputValIsValid" SIGIS="undef" SIGNAME="TriSetup_0_RECIP_NewInputValIsValid">
+        <PORT DIR="O" LEFT="2" NAME="FPU_Mode" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_FPU_Mode">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriSetupRecip" PORT="inNewValueIsValid"/>
+            <CONNECTION INSTANCE="TriSetup_FPU" PORT="IN_MODE"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="23" NAME="RECIP_OutputVal" RIGHT="0" SIGIS="undef" SIGNAME="TriSetupRecip_outInv24">
+        <PORT DIR="O" NAME="FPU_ISHFT_GO" SIGIS="undef" SIGNAME="TriSetup_0_FPU_ISHFT_GO">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriSetupRecip" PORT="outInv24"/>
+            <CONNECTION INSTANCE="TriSetup_FPU" PORT="ISHFT_GO"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" NAME="RECIP_ReadyForValOut" SIGIS="undef" SIGNAME="TriSetup_0_RECIP_ReadyForValOut">
+        <PORT DIR="O" NAME="FPU_IMUL_GO" SIGIS="undef" SIGNAME="TriSetup_0_FPU_IMUL_GO">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriSetupRecip" PORT="inReadyForOutValue"/>
+            <CONNECTION INSTANCE="TriSetup_FPU" PORT="IMUL_GO"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" NAME="RECIP_NewOutValIsValid" SIGIS="undef" SIGNAME="TriSetupRecip_outNewOutValueIsValid">
+        <PORT DIR="O" NAME="FPU_IADD_GO" SIGIS="undef" SIGNAME="TriSetup_0_FPU_IADD_GO">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriSetupRecip" PORT="outNewOutValueIsValid"/>
+            <CONNECTION INSTANCE="TriSetup_FPU" PORT="IADD_GO"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="FPU_ICMP_GO" SIGIS="undef" SIGNAME="TriSetup_0_FPU_ICMP_GO">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriSetup_FPU" PORT="ICMP_GO"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="FPU_ICNV_GO" SIGIS="undef" SIGNAME="TriSetup_0_FPU_ICNV_GO">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriSetup_FPU" PORT="ICNV_GO"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="FPU_ISPEC_GO" SIGIS="undef" SIGNAME="TriSetup_0_FPU_ISPEC_GO">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriSetup_FPU" PORT="ISPEC_GO"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="FPU_IBIT_GO" SIGIS="undef" SIGNAME="TriSetup_0_FPU_IBIT_GO">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriSetup_FPU" PORT="IBIT_GO"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="31" NAME="FPU_OUT" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_FPU_OUT_RESULT">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriSetup_FPU" PORT="OUT_RESULT"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="31" NAME="STAT_CyclesIdle" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_STAT_CyclesIdle">
@@ -36978,7 +38044,7 @@
             <CONNECTION INSTANCE="StatsCollector_0" PORT="TRISETUP_CyclesWaitingForOutput"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="7" NAME="DBG_TriSetup_State" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_DBG_TriSetup_State">
+        <PORT DIR="O" LEFT="4" NAME="DBG_TriSetup_State" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_DBG_TriSetup_State">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ila_333_250" PORT="probe5"/>
             <CONNECTION INSTANCE="ILA_TriSetup" PORT="probe30"/>
@@ -37042,6 +38108,77 @@
       </PORTS>
       <BUSINTERFACES/>
     </MODULE>
+    <MODULE FULLNAME="/TriSetup_FPU" HWVERSION="1.0" INSTANCE="TriSetup_FPU" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="FloatALU" VLNV="xilinx.com:module_ref:FloatALU:1.0">
+      <DOCUMENTS/>
+      <PARAMETERS>
+        <PARAMETER NAME="Component_Name" VALUE="design_1_FloatALU_0_1"/>
+        <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
+      </PARAMETERS>
+      <PORTS>
+        <PORT CLKFREQUENCY="333250000" DIR="I" NAME="clk" SIGIS="clk" SIGNAME="MemorySystem_ddr4_0_c0_ddr4_ui_clk">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="MemorySystem_ddr4_0" PORT="c0_ddr4_ui_clk"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="31" NAME="IN_A" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_FPU_A">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriSetup_0" PORT="FPU_A"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="31" NAME="IN_B" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_FPU_B">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriSetup_0" PORT="FPU_B"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="2" NAME="IN_MODE" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_FPU_Mode">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriSetup_0" PORT="FPU_Mode"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="31" NAME="OUT_RESULT" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_FPU_OUT_RESULT">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ILA_TriSetup" PORT="probe57"/>
+            <CONNECTION INSTANCE="TriSetup_0" PORT="FPU_OUT"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="ISHFT_GO" SIGIS="undef" SIGNAME="TriSetup_0_FPU_ISHFT_GO">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriSetup_0" PORT="FPU_ISHFT_GO"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="IMUL_GO" SIGIS="undef" SIGNAME="TriSetup_0_FPU_IMUL_GO">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriSetup_0" PORT="FPU_IMUL_GO"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="IADD_GO" SIGIS="undef" SIGNAME="TriSetup_0_FPU_IADD_GO">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriSetup_0" PORT="FPU_IADD_GO"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="ICMP_GO" SIGIS="undef" SIGNAME="TriSetup_0_FPU_ICMP_GO">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriSetup_0" PORT="FPU_ICMP_GO"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="ICNV_GO" SIGIS="undef" SIGNAME="TriSetup_0_FPU_ICNV_GO">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriSetup_0" PORT="FPU_ICNV_GO"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="ISPEC_GO" SIGIS="undef" SIGNAME="TriSetup_0_FPU_ISPEC_GO">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriSetup_0" PORT="FPU_ISPEC_GO"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="IBIT_GO" SIGIS="undef" SIGNAME="TriSetup_0_FPU_IBIT_GO">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriSetup_0" PORT="FPU_IBIT_GO"/>
+          </CONNECTIONS>
+        </PORT>
+      </PORTS>
+      <BUSINTERFACES/>
+    </MODULE>
     <MODULE FULLNAME="/TriWorkCache_0" HWVERSION="1.0" INSTANCE="TriWorkCache_0" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="TriWorkCache" VLNV="xilinx.com:module_ref:TriWorkCache:1.0">
       <DOCUMENTS/>
       <PARAMETERS>
@@ -37054,85 +38191,88 @@
             <CONNECTION INSTANCE="MemorySystem_ddr4_0" PORT="c0_ddr4_ui_clk"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="23" NAME="INTERP_outBarycentricInverse" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outBarycentricInverse">
+        <PORT DIR="O" LEFT="31" NAME="INTERP_outBarycentricInverse" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outBarycentricInverse">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="TRICACHE_inBarycentricInverse"/>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="TRICACHE_inBarycentricInverse"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="15" NAME="INTERP_outPrimitiveID" RIGHT="0" SIGIS="undef"/>
         <PORT DIR="O" LEFT="15" NAME="INTERP_outDrawCallID" RIGHT="0" SIGIS="undef"/>
         <PORT DIR="O" NAME="INTERP_outVFACE" SIGIS="undef"/>
-        <PORT DIR="O" LEFT="23" NAME="INTERP_outInvZ0" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outInvZ0">
+        <PORT DIR="O" LEFT="31" NAME="INTERP_outInvZ0" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outInvZ0">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="TRICACHE_inInvZ0"/>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="TRICACHE_inInvZ0"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="23" NAME="INTERP_outInvZ1" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outInvZ1">
+        <PORT DIR="O" LEFT="31" NAME="INTERP_outInvZ1" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outInvZ1">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="TRICACHE_inInvZ1"/>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="TRICACHE_inInvZ1"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="23" NAME="INTERP_outInvZ2" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outInvZ2">
+        <PORT DIR="O" LEFT="31" NAME="INTERP_outInvZ2" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outInvZ2">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="TRICACHE_inInvZ2"/>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="TRICACHE_inInvZ2"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="15" NAME="INTERP_outT0X" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outT0X">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="TRICACHE_inT0X"/>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="TRICACHE_inT0X"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="15" NAME="INTERP_outT0Y" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outT0Y">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="TRICACHE_inT0Y"/>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="TRICACHE_inT0Y"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="15" NAME="INTERP_outT1X" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outT1X">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="TRICACHE_inT1X"/>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="TRICACHE_inT1X"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="15" NAME="INTERP_outT1Y" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outT1Y">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="TRICACHE_inT1Y"/>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="TRICACHE_inT1Y"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="15" NAME="INTERP_outT2X" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outT2X">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="TRICACHE_inT2X"/>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="TRICACHE_inT2X"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="15" NAME="INTERP_outT2Y" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outT2Y">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="TRICACHE_inT2Y"/>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="TRICACHE_inT2Y"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="31" NAME="INTERP_outColorRGBA0" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outColorRGBA0">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="TRICACHE_inColorRGBA0"/>
+            <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe23"/>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="TRICACHE_inColorRGBA0"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="31" NAME="INTERP_outColorRGBA1" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outColorRGBA1">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="TRICACHE_inColorRGBA1"/>
+            <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe24"/>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="TRICACHE_inColorRGBA1"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="31" NAME="INTERP_outColorRGBA2" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outColorRGBA2">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="TRICACHE_inColorRGBA2"/>
+            <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe25"/>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="TRICACHE_inColorRGBA2"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="1" NAME="INTERP_CurrentSlotIndex" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_TRICACHE_CurrentSlotIndex">
+        <PORT DIR="I" LEFT="1" NAME="INTERP_CurrentSlotIndex" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_TRICACHE_CurrentSlotIndex">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="TRICACHE_CurrentSlotIndex"/>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="TRICACHE_CurrentSlotIndex"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" NAME="INTERP_SignalSlotComplete" SIGIS="undef" SIGNAME="AttrInterpolator_0_TRICACHE_SignalSlotComplete">
+        <PORT DIR="I" NAME="INTERP_SignalSlotComplete" SIGIS="undef" SIGNAME="DepthInterpolator_0_TRICACHE_SignalSlotComplete">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="TRICACHE_SignalSlotComplete"/>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="TRICACHE_SignalSlotComplete"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="23" NAME="RAST_inBarycentricInverse" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_BarycentricInverse">
+        <PORT DIR="I" LEFT="31" NAME="RAST_inBarycentricInverse" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_BarycentricInverse">
           <CONNECTIONS>
             <CONNECTION INSTANCE="Rasterizer_0" PORT="TRICACHE_BarycentricInverse"/>
           </CONNECTIONS>
@@ -37152,17 +38292,17 @@
             <CONNECTION INSTANCE="Rasterizer_0" PORT="TRICACHE_VFACE"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="23" NAME="RAST_inInvZ0" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_InvZ0">
+        <PORT DIR="I" LEFT="31" NAME="RAST_inInvZ0" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_InvZ0">
           <CONNECTIONS>
             <CONNECTION INSTANCE="Rasterizer_0" PORT="TRICACHE_InvZ0"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="23" NAME="RAST_inInvZ1" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_InvZ1">
+        <PORT DIR="I" LEFT="31" NAME="RAST_inInvZ1" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_InvZ1">
           <CONNECTIONS>
             <CONNECTION INSTANCE="Rasterizer_0" PORT="TRICACHE_InvZ1"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="23" NAME="RAST_inInvZ2" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_InvZ2">
+        <PORT DIR="I" LEFT="31" NAME="RAST_inInvZ2" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_InvZ2">
           <CONNECTIONS>
             <CONNECTION INSTANCE="Rasterizer_0" PORT="TRICACHE_InvZ2"/>
           </CONNECTIONS>
@@ -38071,8 +39211,8 @@
           <CONNECTIONS>
             <CONNECTION INSTANCE="InputAssembler2_0" PORT="VERTOUT_FIFO_rd_data"/>
             <CONNECTION INSTANCE="ILA_IA" PORT="probe9"/>
-            <CONNECTION INSTANCE="InputAssembler2_0" PORT="VERTOUT_FIFO_rd_data"/>
             <CONNECTION INSTANCE="ILA_TriSetup" PORT="probe54"/>
+            <CONNECTION INSTANCE="InputAssembler2_0" PORT="VERTOUT_FIFO_rd_data"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" NAME="full" SIGIS="undef" SIGNAME="ShaderCoreSystem_ShaderCore_0_VERTOUT_FIFO_full">
@@ -38507,8 +39647,8 @@
           <CONNECTIONS>
             <CONNECTION INSTANCE="InputAssembler2_0" PORT="INDEXOUT_FIFO_rd_data"/>
             <CONNECTION INSTANCE="ILA_IA" PORT="probe29"/>
-            <CONNECTION INSTANCE="InputAssembler2_0" PORT="INDEXOUT_FIFO_rd_data"/>
             <CONNECTION INSTANCE="ILA_TriSetup" PORT="probe55"/>
+            <CONNECTION INSTANCE="InputAssembler2_0" PORT="INDEXOUT_FIFO_rd_data"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" NAME="full" SIGIS="undef" SIGNAME="ShaderCoreSystem_ShaderCore_0_INDEXOUT_FIFO_full">
@@ -38629,9 +39769,9 @@
             <CONNECTION INSTANCE="VBB_FIFO" PORT="wr_en"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" NAME="DBG_UseConstantOutput" SIGIS="undef" SIGNAME="vio_0_probe_out1">
+        <PORT DIR="I" NAME="DBG_UseConstantOutput" SIGIS="undef" SIGNAME="vio_0_probe_out0">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="vio_0" PORT="probe_out1"/>
+            <CONNECTION INSTANCE="vio_0" PORT="probe_out0"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="3" NAME="DBG_CurrentState" RIGHT="0" SIGIS="undef" SIGNAME="VertexBatchBuilder_0_DBG_CurrentState">
@@ -38722,8 +39862,8 @@
         <PARAMETER NAME="C_RAM_STYLE" VALUE="SUBCORE"/>
         <PARAMETER NAME="C_TRIGOUT_EN" VALUE="0"/>
         <PARAMETER NAME="C_TRIGIN_EN" VALUE="0"/>
-        <PARAMETER NAME="C_SLOT_0_AXIS_TUSER_WIDTH" VALUE="8"/>
-        <PARAMETER NAME="C_SLOT_0_AXIS_TDEST_WIDTH" VALUE="6"/>
+        <PARAMETER NAME="C_SLOT_0_AXIS_TUSER_WIDTH" VALUE="5"/>
+        <PARAMETER NAME="C_SLOT_0_AXIS_TDEST_WIDTH" VALUE="7"/>
         <PARAMETER NAME="C_SLOT_0_AXIS_TID_WIDTH" VALUE="6"/>
         <PARAMETER NAME="C_SLOT_0_AXI_ID_WIDTH" VALUE="1"/>
         <PARAMETER NAME="C_SLOT_0_AXI_ARUSER_WIDTH" VALUE="30"/>
@@ -38736,9 +39876,9 @@
         <PARAMETER NAME="C_PROBE2_WIDTH" VALUE="88"/>
         <PARAMETER NAME="C_PROBE3_WIDTH" VALUE="32"/>
         <PARAMETER NAME="C_PROBE4_WIDTH" VALUE="6"/>
-        <PARAMETER NAME="C_PROBE5_WIDTH" VALUE="8"/>
+        <PARAMETER NAME="C_PROBE5_WIDTH" VALUE="5"/>
         <PARAMETER NAME="C_PROBE6_WIDTH" VALUE="4"/>
-        <PARAMETER NAME="C_PROBE7_WIDTH" VALUE="6"/>
+        <PARAMETER NAME="C_PROBE7_WIDTH" VALUE="7"/>
         <PARAMETER NAME="C_PROBE8_WIDTH" VALUE="6"/>
         <PARAMETER NAME="C_PROBE9_WIDTH" VALUE="4"/>
         <PARAMETER NAME="C_PROBE10_WIDTH" VALUE="4"/>
@@ -38759,7 +39899,7 @@
         <PARAMETER NAME="C_PROBE25_WIDTH" VALUE="4"/>
         <PARAMETER NAME="C_PROBE26_WIDTH" VALUE="30"/>
         <PARAMETER NAME="C_PROBE27_WIDTH" VALUE="4"/>
-        <PARAMETER NAME="C_PROBE28_WIDTH" VALUE="7"/>
+        <PARAMETER NAME="C_PROBE28_WIDTH" VALUE="8"/>
         <PARAMETER NAME="C_PROBE29_WIDTH" VALUE="16"/>
         <PARAMETER NAME="C_PROBE30_WIDTH" VALUE="16"/>
         <PARAMETER NAME="C_PROBE31_WIDTH" VALUE="16"/>
@@ -41857,7 +42997,7 @@
             <CONNECTION INSTANCE="xlconstant_0" PORT="dout"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="7" NAME="probe5" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_DBG_TriSetup_State">
+        <PORT DIR="I" LEFT="4" NAME="probe5" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_DBG_TriSetup_State">
           <CONNECTIONS>
             <CONNECTION INSTANCE="TriSetup_0" PORT="DBG_TriSetup_State"/>
           </CONNECTIONS>
@@ -41867,7 +43007,7 @@
             <CONNECTION INSTANCE="Rasterizer_0" PORT="DBG_Rasterizer_State"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="5" NAME="probe7" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_DBG_AttrInterpolator_State">
+        <PORT DIR="I" LEFT="6" NAME="probe7" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_DBG_AttrInterpolator_State">
           <CONNECTIONS>
             <CONNECTION INSTANCE="AttrInterpolator_0" PORT="DBG_AttrInterpolator_State"/>
           </CONNECTIONS>
@@ -41972,7 +43112,7 @@
             <CONNECTION INSTANCE="MemorySystem_MemoryController_0" PORT="DBG_LastReadMemoryClientIndex"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="6" NAME="probe28" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_DBG_IdleSignalsVector">
+        <PORT DIR="I" LEFT="7" NAME="probe28" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_DBG_IdleSignalsVector">
           <CONNECTIONS>
             <CONNECTION INSTANCE="CommandProcessor_0" PORT="DBG_IdleSignalsVector"/>
           </CONNECTIONS>
@@ -42537,14 +43677,14 @@
             <CONNECTION INSTANCE="Rasterizer_0" PORT="RASTOUT_FIFO_wr_en"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" NAME="rd_en" SIGIS="undef" SIGNAME="AttrInterpolator_0_RASTOUT_FIFO_rd_en">
+        <PORT DIR="I" NAME="rd_en" SIGIS="undef" SIGNAME="DepthInterpolator_0_RASTOUT_FIFO_rd_en">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="RASTOUT_FIFO_rd_en"/>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="RASTOUT_FIFO_rd_en"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="127" NAME="dout" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_RASTOUT_FIFO_rd_data">
+        <PORT DIR="O" LEFT="127" NAME="dout" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_RASTOUT_FIFO_rd_data">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="RASTOUT_FIFO_rd_data"/>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="RASTOUT_FIFO_rd_data"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" NAME="full" SIGIS="undef" SIGNAME="Rasterizer_0_RASTOUT_FIFO_full">
@@ -42552,9 +43692,9 @@
             <CONNECTION INSTANCE="Rasterizer_0" PORT="RASTOUT_FIFO_full"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" NAME="empty" SIGIS="undef" SIGNAME="AttrInterpolator_0_RASTOUT_FIFO_empty">
+        <PORT DIR="O" NAME="empty" SIGIS="undef" SIGNAME="DepthInterpolator_0_RASTOUT_FIFO_empty">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="RASTOUT_FIFO_empty"/>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="RASTOUT_FIFO_empty"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" NAME="wr_rst_busy" SIGIS="undef"/>
@@ -42568,7 +43708,7 @@
             <PORTMAP LOGICAL="WR_EN" PHYSICAL="wr_en"/>
           </PORTMAPS>
         </BUSINTERFACE>
-        <BUSINTERFACE BUSNAME="AttrInterpolator_0_RASTOUT_FIFO" NAME="FIFO_READ" TYPE="TARGET" VLNV="xilinx.com:interface:fifo_read:1.0">
+        <BUSINTERFACE BUSNAME="DepthInterpolator_0_RASTOUT_FIFO" NAME="FIFO_READ" TYPE="TARGET" VLNV="xilinx.com:interface:fifo_read:1.0">
           <PORTMAPS>
             <PORTMAP LOGICAL="EMPTY" PHYSICAL="empty"/>
             <PORTMAP LOGICAL="RD_DATA" PHYSICAL="dout"/>
@@ -42602,7 +43742,7 @@
         <PARAMETER NAME="C_BUS_DATA_WIDTH" VALUE="16"/>
         <PARAMETER NAME="C_NUM_PROBE_IN" VALUE="0"/>
         <PARAMETER NAME="C_EN_PROBE_IN_ACTIVITY" VALUE="0"/>
-        <PARAMETER NAME="C_NUM_PROBE_OUT" VALUE="2"/>
+        <PARAMETER NAME="C_NUM_PROBE_OUT" VALUE="1"/>
         <PARAMETER NAME="C_EN_SYNCHRONIZATION" VALUE="1"/>
         <PARAMETER NAME="C_PROBE_IN0_WIDTH" VALUE="1"/>
         <PARAMETER NAME="C_PROBE_IN1_WIDTH" VALUE="1"/>
@@ -43116,7 +44256,7 @@
         <PARAMETER NAME="C_PROBE_OUT253_WIDTH" VALUE="1"/>
         <PARAMETER NAME="C_PROBE_OUT254_WIDTH" VALUE="1"/>
         <PARAMETER NAME="C_PROBE_OUT255_WIDTH" VALUE="1"/>
-        <PARAMETER NAME="C_PROBE_OUT0_INIT_VAL" VALUE="0x1"/>
+        <PARAMETER NAME="C_PROBE_OUT0_INIT_VAL" VALUE="0x0"/>
         <PARAMETER NAME="C_PROBE_OUT1_INIT_VAL" VALUE="0x0"/>
         <PARAMETER NAME="C_PROBE_OUT2_INIT_VAL" VALUE="0x0"/>
         <PARAMETER NAME="C_PROBE_OUT3_INIT_VAL" VALUE="0x0"/>
@@ -43381,8 +44521,7 @@
             <CONNECTION INSTANCE="MemorySystem_ddr4_0" PORT="c0_ddr4_ui_clk"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="0" NAME="probe_out0" RIGHT="0" SIGIS="undef"/>
-        <PORT DIR="O" LEFT="0" NAME="probe_out1" RIGHT="0" SIGIS="undef" SIGNAME="vio_0_probe_out1">
+        <PORT DIR="O" LEFT="0" NAME="probe_out0" RIGHT="0" SIGIS="undef" SIGNAME="vio_0_probe_out0">
           <CONNECTIONS>
             <CONNECTION INSTANCE="VertexBatchBuilder_0" PORT="DBG_UseConstantOutput"/>
           </CONNECTIONS>
@@ -43440,6 +44579,40 @@
             <CONNECTION INSTANCE="ILA_IA" PORT="probe6"/>
             <CONNECTION INSTANCE="ILA_IA" PORT="probe7"/>
             <CONNECTION INSTANCE="ILA_IA" PORT="probe8"/>
+          </CONNECTIONS>
+        </PORT>
+      </PORTS>
+      <BUSINTERFACES/>
+    </MODULE>
+    <MODULE FULLNAME="/xlconstant_3" HWVERSION="1.1" INSTANCE="xlconstant_3" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="xlconstant" VLNV="xilinx.com:ip:xlconstant:1.1">
+      <DOCUMENTS/>
+      <PARAMETERS>
+        <PARAMETER NAME="CONST_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="CONST_VAL" VALUE="0x0"/>
+        <PARAMETER NAME="Component_Name" VALUE="design_1_xlconstant_3_1"/>
+        <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
+      </PARAMETERS>
+      <PORTS>
+        <PORT DIR="O" LEFT="0" NAME="dout" RIGHT="0" SIGIS="undef" SIGNAME="xlconstant_3_dout">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="CMD_UseFlatShading"/>
+          </CONNECTIONS>
+        </PORT>
+      </PORTS>
+      <BUSINTERFACES/>
+    </MODULE>
+    <MODULE FULLNAME="/xlconstant_7" HWVERSION="1.1" INSTANCE="xlconstant_7" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="xlconstant" VLNV="xilinx.com:ip:xlconstant:1.1">
+      <DOCUMENTS/>
+      <PARAMETERS>
+        <PARAMETER NAME="CONST_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="CONST_VAL" VALUE="0x1"/>
+        <PARAMETER NAME="Component_Name" VALUE="design_1_xlconstant_7_0"/>
+        <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
+      </PARAMETERS>
+      <PORTS>
+        <PORT DIR="O" LEFT="0" NAME="dout" RIGHT="0" SIGIS="undef" SIGNAME="xlconstant_7_dout">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TextureCache_128x128x32bits" PORT="regcea"/>
           </CONNECTIONS>
         </PORT>
       </PORTS>

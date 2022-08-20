@@ -174,8 +174,10 @@ type attrInterpStateType is
 	compressOutput7, -- 72
 	compressOutput8, -- 73
 	compressOutput9, -- 74
+	compressOutput10, -- 75
+	compressOutput11, -- 76
 
-	waitingForWrite -- 75
+	waitingForWrite -- 77
 );
 
 type VertexFloatData is record
@@ -221,6 +223,8 @@ signal dotProductTemporarySumColorG : unsigned(31 downto 0) := (others => '0');
 signal dotProductTemporarySumColorB : unsigned(31 downto 0) := (others => '0');
 signal dotProductTemporarySumColorA : unsigned(31 downto 0) := (others => '0');
 
+signal wrappedTexcoordTX : unsigned(31 downto 0) := (others => '0');
+signal wrappedTexcoordTY : unsigned(31 downto 0) := (others => '0');
 signal compressedOutPixelDataTX : unsigned(15 downto 0) := (others => '0');
 signal compressedOutPixelDataTY : unsigned(15 downto 0) := (others => '0');
 signal compressedOutPixelDataColorR : unsigned(7 downto 0) := (others => '0');
@@ -733,14 +737,14 @@ DBG_RastBarycentricC <= std_logic_vector(normalizedBarycentricDivZ2);
 					currentState <= compressOutput0;
 
 				when compressOutput0 =>
-					FPU_A <= std_logic_vector(SaturateFloat(unpackedVertex0.tx) );
-					FPU_Mode <= std_logic_vector(to_unsigned(eConvertMode'pos(F_to_UNORM16), 3) );
+					FPU_A <= std_logic_vector(unpackedVertex0.tx);
+					FPU_Mode <= std_logic_vector(to_unsigned(eConvertMode'pos(F_Frc), 3) );
 					FPU_ICNV_GO <= '1';
 					currentState <= compressOutput1;
 
 				when compressOutput1 =>
-					FPU_A <= std_logic_vector(SaturateFloat(unpackedVertex0.ty) );
-					FPU_Mode <= std_logic_vector(to_unsigned(eConvertMode'pos(F_to_UNORM16), 3) );
+					FPU_A <= std_logic_vector(unpackedVertex0.ty);
+					FPU_Mode <= std_logic_vector(to_unsigned(eConvertMode'pos(F_Frc), 3) );
 					FPU_ICNV_GO <= '1';
 					currentState <= compressOutput2;
 
@@ -757,14 +761,14 @@ DBG_RastBarycentricC <= std_logic_vector(normalizedBarycentricDivZ2);
 					currentState <= compressOutput4;
 
 				when compressOutput4 =>
-					compressedOutPixelDataTX <= unsigned(FPU_OUT(15 downto 0) );
+					wrappedTexcoordTX <= unsigned(FPU_OUT);
 					FPU_A <= std_logic_vector(SaturateFloat(unpackedVertex0.color_b) );
 					FPU_Mode <= std_logic_vector(to_unsigned(eConvertMode'pos(F_to_UNORM8), 3) );
 					FPU_ICNV_GO <= '1';
 					currentState <= compressOutput5;
 
 				when compressOutput5 =>
-					compressedOutPixelDataTY <= unsigned(FPU_OUT(15 downto 0) );
+					wrappedTexcoordTY <= unsigned(FPU_OUT);
 					FPU_A <= std_logic_vector(SaturateFloat(unpackedVertex0.color_a) );
 					FPU_Mode <= std_logic_vector(to_unsigned(eConvertMode'pos(F_to_UNORM8), 3) );
 					FPU_ICNV_GO <= '1';
@@ -772,19 +776,33 @@ DBG_RastBarycentricC <= std_logic_vector(normalizedBarycentricDivZ2);
 
 				when compressOutput6 =>
 					compressedOutPixelDataColorR <= unsigned(FPU_OUT(7 downto 0) );
-					FPU_ICNV_GO <= '0';
+					FPU_A <= std_logic_vector(wrappedTexcoordTX);
+					FPU_Mode <= std_logic_vector(to_unsigned(eConvertMode'pos(F_To_UNORM16), 3) );
+					FPU_ICNV_GO <= '1';
 					currentState <= compressOutput7;
 
 				when compressOutput7 =>
 					compressedOutPixelDataColorG <= unsigned(FPU_OUT(7 downto 0) );
+					FPU_A <= std_logic_vector(wrappedTexcoordTY);
+					FPU_Mode <= std_logic_vector(to_unsigned(eConvertMode'pos(F_To_UNORM16), 3) );
+					FPU_ICNV_GO <= '1';
 					currentState <= compressOutput8;
 
 				when compressOutput8 =>
 					compressedOutPixelDataColorB <= unsigned(FPU_OUT(7 downto 0) );
+					FPU_ICNV_GO <= '0';
 					currentState <= compressOutput9;
 
 				when compressOutput9 =>
 					compressedOutPixelDataColorA <= unsigned(FPU_OUT(7 downto 0) );
+					currentState <= compressOutput10;
+
+				when compressOutput10 =>
+					compressedOutPixelDataTX <= unsigned(FPU_OUT(15 downto 0) );
+					currentState <= compressOutput11;
+
+				when compressOutput11 =>
+					compressedOutPixelDataTY <= unsigned(FPU_OUT(15 downto 0) );
 					currentState <= waitingForWrite;
 
 				when waitingForWrite =>

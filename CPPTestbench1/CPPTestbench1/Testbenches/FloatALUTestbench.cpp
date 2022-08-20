@@ -1233,8 +1233,124 @@ static const int RunTestsFloatMUL(Xsi::Loader& loader, std_logic_port& clk, std_
 	return allTestsSuccessful ? S_OK : 1;
 }
 
+static const float ReferenceFrac(const float f)
+{
+	return f - floor(f);
+}
+
+// These are only necessary on x86/x64 CPU's that only look at the bottom 6 bits of the shift amount
+const unsigned SaturateShiftLeftX86(const unsigned value, const unsigned shiftLeftAmount)
+{
+	if (shiftLeftAmount < 32)
+		return value << shiftLeftAmount;
+	else
+		return 0;
+}
+
+// These are only necessary on x86/x64 CPU's that only look at the bottom 6 bits of the shift amount
+const unsigned SaturateShiftRightX86(const unsigned value, const unsigned shiftRightAmount)
+{
+	if (shiftRightAmount < 32)
+		return value >> shiftRightAmount;
+	else
+		return 0;
+}
+
+static const float SoftFrac(float f)
+{
+	if (isnan(f) ) // NaN results in NaN
+		return f;
+
+	if (isinf(f) ) // +/- INF results in NaN
+		return NAN;
+
+	const bool isNegative = ( (*(const unsigned* const)&f) >> 31) != 0;
+	f = fabs(f); // Strip off the sign bit for now
+
+	// Optional early-out:
+	//if (!isNegative && f < 1.0f)
+		//return f;
+
+	unsigned biasedExponent = ( (*(const unsigned* const)&f) & 0x7f800000) >> 23;
+	int exponent = (const int)biasedExponent - (const int)127;
+
+	unsigned mantissa = (*(const unsigned* const)&f) & 0x007fffff;
+
+	// Optional early-out:
+	//if (exponent >= 23)
+		//return 0.0f;
+
+	// After this, the mantissa is now a fixed-point 0.23 value:
+	if (exponent >= 0)
+	{
+		// Don't worry about our implicit one bit, we're overwriting it with our mantissa bits
+		mantissa = SaturateShiftLeftX86(mantissa, exponent) & 0x007fffff;
+	}
+	else
+	{
+		mantissa |= (1 << 23); // Add in our implicit one bit since we're shifting to the right so it'll show up
+		mantissa = SaturateShiftRightX86(mantissa, -exponent) & 0x007fffff;
+	}
+
+	// This early-out is non-optional. We'll get the wrong answer if we try to
+	// compute the rest of this algorithm using a zero mantissa.
+	if (mantissa == 0x00000000)
+		return 0.0f;
+
+	// Invert our mantissa if negative
+	if (isNegative)
+		mantissa = 0x00800000 - mantissa;
+
+	DWORD foundHighBitIndex = 0;
+
+	// Find the highest set bit in the mantissa. We're going to shift that into our implicit 1 bit.
+	// Since we know that our mantissa is non-zero, we know that there must always be at least one set bit to find.
+	_BitScanReverse(&foundHighBitIndex, mantissa);
+	mantissa = (mantissa << (23 - foundHighBitIndex) ) & 0x007fffff; // Make sure to clear the implicit one bit after shifting to it. It should be implicit and not actually present, after all.
+	biasedExponent = foundHighBitIndex + (127 - 23); // This is the same as: (foundHighBitIndex - 23) + 127
+
+	const unsigned retVal = (biasedExponent << 23) | mantissa;
+	return *(const float* const)&retVal;
+}
+
+static void ValidateSoftFracFunc()
+{
+	for (float x = -1025.0f; x <= 1025.0f; x += 0.001f)
+	{
+		const float sfa = SoftFrac(x);
+		const float rfa = ReferenceFrac(x);
+		const int sfi = *(const int* const)&sfa;
+		const int rfi = *(const int* const)&rfa;
+		if (fabs(sfa - rfa) > 0.00005f)
+		{
+			__debugbreak();
+		}
+	}
+
+	for (int x = -1025; x <= 1025; ++x)
+	{
+		const float sfa = SoftFrac( (const float)x);
+		const float rfa = ReferenceFrac( (const float)x);
+		const int sfi = *(const int* const)&sfa;
+		const int rfi = *(const int* const)&rfa;
+		if (sfi != rfi)
+		{
+			__debugbreak();
+		}
+	}
+}
+
+static const bool IsNanBitPattern(const unsigned floatBits)
+{
+	return ( (floatBits & 0x7F800000) == 0x7F800000) && // Exponent part for NaN
+		( (floatBits & 0x007FFFFF) != 0); // Mantissa part for NaN must be nonzero (if it's zero, then that's INF instead of NaN)
+}
+
 static const int RunTestsFloatCNV(Xsi::Loader& loader, std_logic_port& clk, std_logic_vector_port<32>& IN_A, std_logic_vector_port<3>& IN_MODE, std_logic_port& ICNV_GO, std_logic_vector_port<32>& OUT_RESULT)
 {
+	// Make sure that our soft frac() algorithm works correctly since we'll be basing the hardware implementation on that!
+	ValidateSoftFracFunc();
+
 	const auto cnvTestFunc = [&](const float a, const eConvertMode mode) -> int
 	{
 		IN_A = a;
@@ -1457,8 +1573,8 @@ static const int RunTestsFloatCNV(Xsi::Loader& loader, std_logic_port& clk, std_
 	const auto pipelinedCnvTestFunc = [&]() -> bool
 	{
 		static_assert(CNV_CYCLES == 3u, "Need to rewrite this function if the instruction latency of the CNV pipe changes!");
-		IN_A = 0.0f;
-		IN_MODE = F_to_I24_Trunc;
+		IN_A = -9.123f;
+		IN_MODE = F_Frc;
 		ICNV_GO = false;
 		{
 			scoped_timestep time(loader, clk, 100);
@@ -1526,32 +1642,59 @@ static const int RunTestsFloatCNV(Xsi::Loader& loader, std_logic_port& clk, std_
 
 	bool allTestsSuccessful = true;
 
-	// Convert float to signed 24-bit integer with truncation (round toward zero) mode:
-	for (int x = -1024; x <= 1024; ++x)
+	// Test frc/frac operation on a wide range of values:
+	for (float x = -1025.0f; x <= 1025.0f; x += 0.007f)
 	{
-		const float fx = (const float)x;
-		allTestsSuccessful &= (cnvTestFunc(fx, F_to_I24_Trunc) == (const int)fx);
+		const float sfa = SoftFrac(x);
+		const int simResultInt = cnvTestFunc(x, F_Frc);
+		const float simResultFloat = *(const float* const)&simResultInt;
+		const int sfi = *(const int* const)&sfa;
+		if (fabs(sfa - simResultFloat) > 0.00005f)
+		{
+#ifdef _DEBUG
+			__debugbreak();
+#endif
+			allTestsSuccessful = false;
+		}
 	}
 
-	// Convert float to signed 24-bit integer with truncation (round toward zero) mode:
-	for (float fx = -16.0f; fx <= 16.0f; fx += 0.1f)
+	// Test that frc works correctly for all integers between -129 and +129 inclusive:
+	for (int x = -129; x <= 129; ++x)
 	{
-		allTestsSuccessful &= (cnvTestFunc(fx, F_to_I24_Trunc) == (const int)fx);
+		const float sfa = SoftFrac( (const float)x);
+		const int simResultInt = cnvTestFunc( (const float)x, F_Frc);
+		const float simResultFloat = *(const float* const)&simResultInt;
+		const int sfi = *(const int* const)&sfa;
+		if (sfi != simResultInt)
+		{
+#ifdef _DEBUG
+			__debugbreak();
+#endif
+			allTestsSuccessful = false;
+		}
 	}
 
-	// Test a bunch of edge cases:
-	allTestsSuccessful &= (cnvTestFunc(0.0f, F_to_I24_Trunc) == 0);
-	allTestsSuccessful &= (cnvTestFunc(-0.0f, F_to_I24_Trunc) == 0);
-	allTestsSuccessful &= (cnvTestFunc(16777215.0f, F_to_I24_Trunc) == 16777215);
-	allTestsSuccessful &= (cnvTestFunc(-16777216.0f, F_to_I24_Trunc) == -16777216);
-	allTestsSuccessful &= (cnvTestFunc(16777215.0f * 2.0f, F_to_I24_Trunc) == 16777215);
-	allTestsSuccessful &= (cnvTestFunc(-16777216.0f * 2.0f, F_to_I24_Trunc) == -16777216);
-	allTestsSuccessful &= (cnvTestFunc(denormalFloat, F_to_I24_Trunc) == 0);
-	allTestsSuccessful &= (cnvTestFunc(-denormalFloat, F_to_I24_Trunc) == 0);
-	allTestsSuccessful &= (cnvTestFunc(INFINITY, F_to_I24_Trunc) == 16777215);
-	allTestsSuccessful &= (cnvTestFunc(-INFINITY, F_to_I24_Trunc) == -16777216);
-	allTestsSuccessful &= (cnvTestFunc(NAN, F_to_I24_Trunc) == 0);
-	allTestsSuccessful &= (cnvTestFunc(-NAN, F_to_I24_Trunc) == 0);
+	// Test a bunch of edge cases for frc:
+	allTestsSuccessful &= (cnvTestFunc(0.0f, F_Frc) == 0x00000000);
+	allTestsSuccessful &= (cnvTestFunc(-0.0f, F_Frc) == 0x00000000);
+	allTestsSuccessful &= (cnvTestFunc(1.0f, F_Frc) == 0x00000000);
+	allTestsSuccessful &= (cnvTestFunc(-1.0f, F_Frc) == 0x00000000);
+	allTestsSuccessful &= (cnvTestFunc(2.0f, F_Frc) == 0x00000000);
+	allTestsSuccessful &= (cnvTestFunc(-2.0f, F_Frc) == 0x00000000);
+	allTestsSuccessful &= (cnvTestFunc(3.0f, F_Frc) == 0x00000000);
+	allTestsSuccessful &= (cnvTestFunc(-3.0f, F_Frc) == 0x00000000);
+	allTestsSuccessful &= (cnvTestFunc(8388607.5f, F_Frc) == 0x3F000000); // 8388607.5f is the largest float value that can still represent values smaller than 1.0f. 0x3F000000 is +0.5f.
+	allTestsSuccessful &= (cnvTestFunc(-8388607.5f, F_Frc) == 0x3F000000);
+	allTestsSuccessful &= (cnvTestFunc(8388607.0f, F_Frc) == 0x00000000);
+	allTestsSuccessful &= (cnvTestFunc(-8388607.0f, F_Frc) == 0x00000000);
+	allTestsSuccessful &= (cnvTestFunc(8388608.0f, F_Frc) == 0x00000000);
+	allTestsSuccessful &= (cnvTestFunc(-8388608.0f, F_Frc) == 0x00000000);
+	allTestsSuccessful &= (cnvTestFunc(denormalFloat, F_Frc) == 0x00000000);
+	allTestsSuccessful &= (cnvTestFunc(-denormalFloat, F_Frc) == 0x00000000);
+	allTestsSuccessful &= IsNanBitPattern(cnvTestFunc(INFINITY, F_Frc) );
+	allTestsSuccessful &= IsNanBitPattern(cnvTestFunc(-INFINITY, F_Frc) );
+	allTestsSuccessful &= IsNanBitPattern(cnvTestFunc(NAN, F_Frc) );
+	allTestsSuccessful &= IsNanBitPattern(cnvTestFunc(-NAN, F_Frc) );
 
 	// Convert float to signed 23-bit integer with round to nearest even mode:
 	for (int x = -1024; x <= 1024; ++x)

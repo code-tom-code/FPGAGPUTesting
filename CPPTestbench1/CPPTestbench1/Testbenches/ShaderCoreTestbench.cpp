@@ -525,13 +525,8 @@ public:
 		{
 		default:
 			__debugbreak(); // Should never be here
-		case F_to_I24_Trunc: // 0
-			if (a > 16777215)
-				return 16777215;
-			else if (a < -16777216)
-				return -16777216;
-			else
-				return (const int)a;
+		case F_Frc: // 0
+			return a - floorf(a);
 		case F_to_I23_RoundNearestEven: // 1
 			if (a > 8388607)
 				return 8388607;
@@ -648,8 +643,8 @@ private:
 		default:
 			__debugbreak(); // Should never be here
 			return "Unknown";
-		case F_to_I24_Trunc:
-			return "F_to_I24_Trunc";
+		case F_Frc:
+			return "F_Frc";
 		case F_to_I23_RoundNearestEven:
 			return "F_to_I23_RoundNearestEven";
 		case F_to_I16_RoundNearestEven:
@@ -759,7 +754,9 @@ public:
 				{
 				default:
 					__debugbreak(); // Should never be here!
-				case F_to_I24_Trunc:
+				case F_Frc:
+					printf("FPU%u: %s(%u)(%f) = %f\n", fpuIndex, GetConvertModeString(cnvMode), cnvMode, aVal, *(const float* const)&convertResult);
+					break;
 				case F_to_I23_RoundNearestEven:
 				case F_to_UNORM16:
 				case F_to_UNORM8:
@@ -980,8 +977,8 @@ public:
 			return "sge";
 		case Op_SGN:
 			return "sgn";
-		case Op_RND_SINT24Z:
-			return "rnd_sint24z";
+		case Op_Unused14:
+			return "unused14";
 		case Op_RND_SINT23NE:
 			return "rnd_sint23ne";
 		case Op_RND_SINT16NE:

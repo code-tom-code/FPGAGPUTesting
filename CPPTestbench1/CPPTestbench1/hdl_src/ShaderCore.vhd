@@ -246,7 +246,7 @@ type InstructionOperation is (
 	Op_SLT, -- 11
 	Op_SGE, -- 12
 	Op_SGN, -- 13
-	Op_RND_SINT24Z, -- 14
+	Op_Unused14, -- 14
 	Op_RND_SINT23NE, -- 15
 	Op_RND_SINT16NE, -- 16
 	Op_CNV_UNORM16, -- 17
@@ -506,7 +506,7 @@ begin
 			return to_unsigned(MUL_CYCLES, 5);
 		when Op_ADD => -- 4 cycle operation latency for ADD pipe
 			return to_unsigned(ADD_CYCLES, 5);
-		when Op_CNV_UNORM16 | Op_CNV_UNORM8 | Op_RND_SINT16NE | Op_RND_SINT23NE | Op_RND_SINT24Z | Op_CNV_F_TO_HALF | Op_CNV_HALF_TO_F | Op_CNV_U32_TO_F => -- 3 cycle operation latency for CNV pipe
+		when Op_FRC | Op_CNV_UNORM16 | Op_CNV_UNORM8 | Op_RND_SINT16NE | Op_RND_SINT23NE | Op_CNV_F_TO_HALF | Op_CNV_HALF_TO_F | Op_CNV_U32_TO_F => -- 3 cycle operation latency for CNV pipe
 			return to_unsigned(CNV_CYCLES, 5);
 		when Op_SHFT => -- 1 cycle operation latency for SHFT pipe
 			return to_unsigned(SHFT_CYCLES, 5);
@@ -775,8 +775,8 @@ begin
 			return to_unsigned(eCmpType'pos(CmpSgn), 3);
 		when Op_MOV =>
 			return to_unsigned(eCmpType'pos(CmpMov), 3);
-		when Op_RND_SINT24Z =>
-			return to_unsigned(eConvertMode'pos(F_to_I24_Trunc), 3);
+		when Op_FRC =>
+			return to_unsigned(eConvertMode'pos(F_Frc), 3);
 		when Op_RND_SINT23NE =>
 			return to_unsigned(eConvertMode'pos(F_to_I23_RoundNearestEven), 3);
 		when Op_RND_SINT16NE =>
@@ -875,7 +875,7 @@ end function;
 pure function InstructionIsFPUCnv(instructionData : unsigned(63 downto 0) ) return std_logic is
 begin
 	case InstructionGetOperation(instructionData) is
-		when Op_RND_SINT24Z | Op_RND_SINT23NE | Op_RND_SINT16NE | Op_CNV_UNORM16 | Op_CNV_UNORM8 | Op_CNV_F_TO_HALF | Op_CNV_HALF_TO_F | Op_CNV_U32_TO_F =>
+		when Op_FRC | Op_RND_SINT23NE | Op_RND_SINT16NE | Op_CNV_UNORM16 | Op_CNV_UNORM8 | Op_CNV_F_TO_HALF | Op_CNV_HALF_TO_F | Op_CNV_U32_TO_F =>
 			return '1';
 		when others =>
 			return '0';
@@ -939,17 +939,17 @@ begin
 		when DestMod_Saturate =>
 			case PortW_MUX is
 				when MUXDest_ALUResult =>
-					if (signed(FPU_OUT_RESULT) < to_signed(0, 32) ) then
+					if (FPU_OUT_RESULT(31) = '1') then -- If negative (less than zero) then saturate to 0.0f
 						return to_unsigned(0, 32);
-					elsif (signed(FPU_OUT_RESULT) > to_signed(16#3F800000#, 32) ) then
+					elsif (FPU_OUT_RESULT(30 downto 0) > to_unsigned(16#3F800000#, 31) ) then -- If greater than 1.0f then saturate to 1.0f
 						return to_unsigned(16#3F800000#, 32);
 					else
 						return FPU_OUT_RESULT;
 					end if;
 				when MUXDest_Special =>
-					if (signed(currentFetchRegisters) < to_signed(0, 32) ) then
+					if (FPU_OUT_RESULT(31) = '1') then -- If negative (less than zero) then saturate to 0.0f
 						return to_unsigned(0, 32);
-					elsif (signed(currentFetchRegisters) > to_signed(16#3F800000#, 32) ) then
+					elsif (FPU_OUT_RESULT(30 downto 0) > to_unsigned(16#3F800000#, 31) ) then -- If greater than 1.0f then saturate to 1.0f
 						return to_unsigned(16#3F800000#, 32);
 					else
 						return currentFetchRegisters;

@@ -432,38 +432,6 @@ begin
 	end if;
 end function;
 
--- Converts a float32 input to signed int24 using truncation (round towards zero) mode
-pure function CnvFloatToInt24_Trunc_GetEarlyOutType(a : unsigned(31 downto 0); aIsNaN : std_logic; aIsNegative : std_logic) return eCnvEarlyOutType is
-	constant minNegativeVal : unsigned(30 downto 0) := "1001011100000000000000000000000"; -- This is -16777216.0f
-	constant maxPositiveVal : unsigned(30 downto 0) := "1001011011111111111111111111111"; -- This is 16777215.0f
-begin
-	if (aIsNaN = '1') then
-		return CnvNaNEarlyOut;
-	elsif (aIsNegative = '1' and a(30 downto 0) >= minNegativeVal) then
-		return CnvBelowMinEarlyOut; -- This is -16777216
-	elsif (a(30 downto 0) >= maxPositiveVal) then
-		return CnvAboveMaxEarlyOut; -- This is 16777215
-	else
-		return CnvNoEarlyOut;
-	end if;
-end function;
-
--- Converts a float32 input to signed int24 using truncation (round towards zero) mode
-pure function CnvFloatToInt24_Trunc_Cycle0(aSignedExp : signed(7 downto 0) ) return signed is
-begin
-	return 23 - aSignedExp;
-end function;
-
--- Converts a float32 input to signed int24 using truncation (round towards zero) mode
-pure function CnvFloatToInt24_Trunc_Cycle2(tempBuffer : signed(31 downto 0); isNegative : std_logic) return unsigned is
-begin
-	if (isNegative = '1') then
-		return unsigned(-tempBuffer); -- Two's compliment the buffer bits if float is negative
-	else
-		return unsigned(tempBuffer);
-	end if;
-end function;
-
 -- Converts a float32 input to signed int23 using round to nearest even mode
 pure function CnvFloatToInt23_RoundNE_GetEarlyOutType(a : unsigned(31 downto 0); aIsNaN : std_logic; aIsNegative : std_logic) return eCnvEarlyOutType is
 	constant minNegativeVal : unsigned(30 downto 0) := "1001011000000000000000000000000"; -- This is -8388608.0f
@@ -530,6 +498,95 @@ begin
 		newTempBuffer := -newTempBuffer; -- Two's compliment the buffer bits if float is negative
 	end if;
 	return unsigned(newTempBuffer(15 downto 0) );
+end function;
+
+pure function CnvFrc_GetEarlyOutType(a : unsigned(31 downto 0) ) return eCnvEarlyOutType is
+begin
+	if (GetRawExponent(a) = X"FF") then -- +INF, -INF, +NAN, and -NAN all get treated the same for the frc() instruction
+		return CnvNaNEarlyOut;
+	else
+		return CnvNoEarlyOut;
+	end if;
+end function;
+
+-- Returns 23 minus the index of the highest bit set. Assumes that the input value is non-zero (at least one bit is set to locate).
+pure function BitScan23(mantissa : unsigned(22 downto 0) ) return unsigned is
+begin
+	assert mantissa > 0; -- This function assumes that at least one bit is set. An input of zero would return the incorrect value 1!
+
+	if (mantissa(22) = '1') then
+		return to_unsigned(1, 5);
+	elsif (mantissa(21) = '1') then
+		return to_unsigned(2, 5);
+	elsif (mantissa(20) = '1') then
+		return to_unsigned(3, 5);
+	elsif (mantissa(19) = '1') then
+		return to_unsigned(4, 5);
+	elsif (mantissa(18) = '1') then
+		return to_unsigned(5, 5);
+	elsif (mantissa(17) = '1') then
+		return to_unsigned(6, 5);
+	elsif (mantissa(16) = '1') then
+		return to_unsigned(7, 5);
+	elsif (mantissa(15) = '1') then
+		return to_unsigned(8, 5);
+	elsif (mantissa(14) = '1') then
+		return to_unsigned(9, 5);
+	elsif (mantissa(13) = '1') then
+		return to_unsigned(10, 5);
+	elsif (mantissa(12) = '1') then
+		return to_unsigned(11, 5);
+	elsif (mantissa(11) = '1') then
+		return to_unsigned(12, 5);
+	elsif (mantissa(10) = '1') then
+		return to_unsigned(13, 5);
+	elsif (mantissa(9) = '1') then
+		return to_unsigned(14, 5);
+	elsif (mantissa(8) = '1') then
+		return to_unsigned(15, 5);
+	elsif (mantissa(7) = '1') then
+		return to_unsigned(16, 5);
+	elsif (mantissa(6) = '1') then
+		return to_unsigned(17, 5);
+	elsif (mantissa(5) = '1') then
+		return to_unsigned(18, 5);
+	elsif (mantissa(4) = '1') then
+		return to_unsigned(19, 5);
+	elsif (mantissa(3) = '1') then
+		return to_unsigned(20, 5);
+	elsif (mantissa(2) = '1') then
+		return to_unsigned(21, 5);
+	elsif (mantissa(1) = '1') then
+		return to_unsigned(22, 5);
+	else -- if (mantissa(0) = '1') then
+		return to_unsigned(23, 5);
+	end if;
+end function;
+
+pure function CnvFrc_Cycle0(a : unsigned(31 downto 0) ) return unsigned is
+	variable tempMantissa : unsigned(23 downto 0);
+begin
+	if (GetRawExponent(a) >= 127) then -- Positive exponent, shift to the left
+		tempMantissa(23) := '0'; -- We don't care about the implicit one bit in the case of a left-shift since we're overwriting it
+		tempMantissa(22 downto 0) := GetMantissa(a) sll to_integer(GetRawExponent(a) - 127);
+	else -- Negative exponent, shift to the right
+		tempMantissa(23) := '1'; -- We don't care about the implicit one bit in the case of a left-shift since we're overwriting it
+		tempMantissa(22 downto 0) := GetMantissa(a);
+		tempMantissa := tempMantissa srl to_integer(127 - GetRawExponent(a) );
+	end if;
+	return tempMantissa(22 downto 0);
+end function;
+
+pure function CnvFrc_Cycle1(normalizedMantissa : unsigned(22 downto 0) ) return unsigned is
+begin
+	return BitScan23(normalizedMantissa);
+end function;
+
+pure function CnvFrc_Cycle2(cnvU32ShiftAmount1 : unsigned(4 downto 0); normalizedMantissa : unsigned(22 downto 0) ) return unsigned is
+begin
+	return
+	(to_unsigned(127, 8) - cnvU32ShiftAmount1) & -- Exponent with bias
+	(normalizedMantissa sll to_integer(cnvU32ShiftAmount1) ); -- Mantissa
 end function;
 
 -- Converts a float32 input to UNORM16
@@ -876,6 +933,8 @@ signal cnvIsNegative1 : std_logic := '0';
 signal cnvU32ShiftAmount0 : unsigned(4 downto 0) := (others => '0');
 signal cnvU32ShiftAmount1 : unsigned(4 downto 0) := (others => '0');
 signal cnvU32ShiftRight : std_logic := '0';
+signal frcNormalizedMantissa0 : unsigned(22 downto 0) := (others => '0');
+signal frcNormalizedMantissa1 : unsigned(22 downto 0) := (others => '0');
 signal cnvInput : unsigned(31 downto 0) := (others => '0');
 signal cnvInput1 : unsigned(31 downto 0) := (others => '0');
 signal cnvShiftedTemporary : unsigned(31 downto 0) := (others => '0');
@@ -1641,12 +1700,10 @@ begin
 			cnvInput <= unsigned(IN_A);
 			cnvIsNegative0 <= comAIsNeg;
 			case eConvertMode'val(to_integer(unsigned(IN_MODE) ) ) is
-				when F_to_I24_Trunc =>
-					earlyOutType := CnvFloatToInt24_Trunc_GetEarlyOutType(unsigned(IN_A), comAIsNaN, comAIsNeg);
+				when F_Frc =>
+					earlyOutType := CnvFrc_GetEarlyOutType(unsigned(IN_A) );
 					cnvEarlyOutType0 <= earlyOutType;
-					if (earlyOutType = CnvNoEarlyOut) then
-						cnvShiftAmount <= CnvFloatToInt24_Trunc_Cycle0(comSignedExponentA);
-					end if;
+					frcNormalizedMantissa0 <= CnvFrc_Cycle0(unsigned(IN_A) );
 				when F_to_I23_RoundNearestEven =>
 					earlyOutType := CnvFloatToInt23_RoundNE_GetEarlyOutType(unsigned(IN_A), comAIsNaN, comAIsNeg );
 					cnvEarlyOutType0 <= earlyOutType;
@@ -1702,6 +1759,7 @@ end process CNVStage0;
 
 CNVStage1 : process(clk)
 	variable tempBuffer : signed(31 downto 0);
+	variable tempMantissa : unsigned(23 downto 0);
 begin
 	if (rising_edge(clk) ) then
 		cnvIsValid1 <= cnvIsValid;
@@ -1709,18 +1767,34 @@ begin
 		cnvIsNegative1 <= cnvIsNegative0;
 		cnvEarlyOutType1 <= cnvEarlyOutType0;
 		cnvU32ShiftAmount1 <= cnvU32ShiftAmount0;
-
-		if (cnvMode0 = U32_to_F) then
-			if (cnvU32ShiftRight = '1') then
-				cnvShiftedTemporary <= cnvInput srl to_integer(cnvU32ShiftAmount0 - 23);
-			else
-				cnvShiftedTemporary <= cnvInput sll to_integer(23 - cnvU32ShiftAmount0);
-			end if;
-		else
-			tempBuffer := "000000001" & signed(GetMantissa(cnvInput) );
-			cnvShiftedTemporary <= unsigned(tempBuffer srl to_integer(cnvShiftAmount) );
-		end if;
 		cnvInput1 <= cnvInput;
+		frcNormalizedMantissa1 <= frcNormalizedMantissa0;
+
+		case cnvMode0 is
+			when U32_to_F =>
+				if (cnvU32ShiftRight = '1') then
+					cnvShiftedTemporary <= cnvInput srl to_integer(cnvU32ShiftAmount0 - 23);
+				else
+					cnvShiftedTemporary <= cnvInput sll to_integer(23 - cnvU32ShiftAmount0);
+				end if;
+			when F_Frc =>
+				if (frcNormalizedMantissa0 = "00000000000000000000000") then
+					if (cnvEarlyOutType0 = CnvNoEarlyOut) then
+						cnvEarlyOutType1 <= CnvBelowMinEarlyOut;
+					end if;
+				end if;
+
+				if (cnvIsNegative0 = '1') then
+					tempMantissa := to_unsigned(16#00800000#, 24) - frcNormalizedMantissa0; -- Oneminus our mantissa bits from the implicit one value to invert them if this is a negative float
+					cnvU32ShiftAmount1 <= CnvFrc_Cycle1(tempMantissa(22 downto 0) );
+					frcNormalizedMantissa1 <= tempMantissa(22 downto 0);
+				else
+					cnvU32ShiftAmount1 <= CnvFrc_Cycle1(frcNormalizedMantissa0);
+				end if;
+			when others =>
+				tempBuffer := "000000001" & signed(GetMantissa(cnvInput) );
+				cnvShiftedTemporary <= unsigned(tempBuffer srl to_integer(cnvShiftAmount) );
+		end case;
 	end if;
 end process CNVStage1;
 
@@ -1730,16 +1804,15 @@ begin
 	if (rising_edge(clk) ) then
 		if (cnvIsValid1 = '1') then
 			case cnvMode1 is
-				when F_to_I24_Trunc =>
+				when F_Frc =>
 					case cnvEarlyOutType1 is
 						when CnvNoEarlyOut =>
-							OCNV <= std_logic_vector(CnvFloatToInt24_Trunc_Cycle2(signed(cnvShiftedTemporary), cnvIsNegative1) );
+							OCNV <= '0' & -- The result of frc() is always positive, so hardcode the zero sign bit here
+								std_logic_vector(CnvFrc_Cycle2(cnvU32ShiftAmount1, frcNormalizedMantissa1) ); -- This calculuates the float exponent and mantissa bits (30 downto 0)
 						when CnvNaNEarlyOut =>
-							OCNV <= X"00000000";
-						when CnvBelowMinEarlyOut =>
-							OCNV <= X"FF000000"; -- This is -16777216
-						when CnvAboveMaxEarlyOut =>
-							OCNV <= X"00FFFFFF"; -- This is 16777215
+							OCNV <= X"7FFFFFFF"; -- This is +NAN, which is the correct result for an input of any of: +INF, -INF, +NAN, -NAN
+						when others => --when CnvBelowMinEarlyOut =>
+							OCNV <= X"00000000"; -- This is 0.0f
 					end case;
 				when F_to_I23_RoundNearestEven =>
 					case cnvEarlyOutType1 is

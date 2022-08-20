@@ -71,7 +71,7 @@ enum eBitMode : uint8_t
 
 enum eConvertMode : uint8_t
 {
-	F_to_I24_Trunc, // 0
+	F_Frc, // 0
 	F_to_I23_RoundNearestEven, // 1
 	F_to_I16_RoundNearestEven, // 2
 	F_to_UNORM16, // 3

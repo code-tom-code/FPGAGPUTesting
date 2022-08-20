@@ -5245,7 +5245,7 @@ void IDirect3DDevice9Hook::DeviceSetCurrentState(const D3DPRIMITIVETYPE primType
 	const D3DCMPFUNC alphaTestCmpFunc = currentState.currentRenderStates.renderStatesUnion.namedStates.alphaFunc;
 	const D3DCMPFUNC zCmpFunc = currentState.currentRenderStates.renderStatesUnion.namedStates.zFunc;
 	baseDevice->DeviceSetBlendState(deviceBackbuffer, deviceBlendMode, eWriteMask, alphaTestEnable, alphaTestRefVal, ConvertToDeviceCmpFunc(alphaTestCmpFunc) );
-	baseDevice->DeviceSetDepthState(zEnable, zWriteEnable, ConvertToDeviceCmpFunc(zCmpFunc) );
+	baseDevice->DeviceSetDepthState(forceDisableDepth ? false : zEnable, zWriteEnable, ConvertToDeviceCmpFunc(zCmpFunc) );
 
 	// Do some soft-conversions from texture stage states to combiner modes:
 	combinerMode cbModeColor = cbm_textureModulateVertexColor;
@@ -11044,7 +11044,7 @@ void IDirect3DDevice9Hook::InitializeState(const D3DPRESENT_PARAMETERS& d3dpp, c
 	baseDevice->DeviceSetBlendState(backbufferSurfaceHook->GetDeviceSurfaceBytes(), noBlending, wm_writeAll, alphaTestEnable, alphaTestRefVal, ConvertToDeviceCmpFunc(alphaTestCmpFunc) );
 	baseDevice->DeviceClearRendertarget(backbufferSurfaceHook->GetDeviceSurfaceBytes(), D3DCOLOR_ARGB(255, 0, 0, 0) ); // Perform initial device clear so that our backbuffer doesn't start out as garbage
 	baseDevice->DeviceSetTextureState(128, 128, TF_bilinearFilter, tcm_r, tcm_g, tcm_b, tcm_a, cbm_textureModulateVertexColor, cbm_textureModulateVertexColor);
-	baseDevice->DeviceSetDepthState(zEnable, zWriteEnable, ConvertToDeviceCmpFunc(zCmpFunc) );
+	baseDevice->DeviceSetDepthState(forceDisableDepth ? false : zEnable, zWriteEnable, ConvertToDeviceCmpFunc(zCmpFunc) );
 	baseDevice->DeviceClearDepthStencil(currentState.currentDepthStencil ? currentState.currentDepthStencil->GetDeviceSurfaceBytes() : NULL, clearDepth, clearStencil, clearZValue, clearStencilValue);
 
 #ifdef MULTITHREAD_SHADING
@@ -11074,7 +11074,7 @@ void IDirect3DDevice9Hook::InitializeState(const D3DPRESENT_PARAMETERS& d3dpp, c
 IDirect3DDevice9Hook::IDirect3DDevice9Hook(LPDIRECT3DDEVICE9 _d3d9dev, IDirect3D9Hook* _parentHook) : d3d9dev(_d3d9dev), parentHook(_parentHook), refCount(1), initialDevType(D3DDEVTYPE_HAL), initialCreateFlags(D3DCREATE_HARDWARE_VERTEXPROCESSING),
 	enableDialogs(FALSE), sceneBegun(FALSE), implicitSwapChain(NULL), hConsoleHandle(INVALID_HANDLE_VALUE), numPixelsPassedZTest(0), initialCreateFocusWindow(NULL), initialCreateDeviceWindow(NULL),
 	processedVertexBuffer(NULL), processedVertsUsed(0), processVertsAllocated(0), currentlyRecordingStateBlock(NULL), currentSwvpEnabled(FALSE), deviceComms(NULL), baseDevice(NULL), overrideTexCombinerMode(-1), allocatedDebugShaderRegisterFile(NULL),
-	invertScanoutColors(false), scanoutRedSwizzle(setScanoutPointerCommand::dcs_red), scanoutGreenSwizzle(setScanoutPointerCommand::dcs_green), scanoutBlueSwizzle(setScanoutPointerCommand::dcs_blue)
+	invertScanoutColors(false), forceDisableDepth(false), scanoutRedSwizzle(setScanoutPointerCommand::dcs_red), scanoutGreenSwizzle(setScanoutPointerCommand::dcs_green), scanoutBlueSwizzle(setScanoutPointerCommand::dcs_blue)
 {
 #ifdef _DEBUG
 	m_FirstMember = false;

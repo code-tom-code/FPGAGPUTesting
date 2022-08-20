@@ -24,8 +24,9 @@
 #define IDC_RDB_SHOWPERCENT             1011
 #define IDC_CHK_INVERTSCANOUTCOLORS     1011
 #define IDC_RDB_SHOWCYCLE               1012
-#define IDC_CHK_INVERTSCANOUTCOLORS2    1012
 #define IDC_CHK_WAITFORVSYNC            1012
+#define IDC_CHK_WAITFORVSYNC2           1013
+#define IDC_CHK_FORCEDISABLEDEPTH       1013
 #define IDC_STATIC2                     1014
 #define IDC_IA_STAT1                    1015
 #define IDC_IA_STAT2                    1016

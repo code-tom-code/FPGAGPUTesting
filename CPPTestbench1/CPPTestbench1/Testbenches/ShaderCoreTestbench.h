@@ -23,7 +23,7 @@ enum InstructionOperation : unsigned __int64
 	Op_SLT = 11,
 	Op_SGE = 12,
 	Op_SGN = 13,
-	Op_RND_SINT24Z = 14,
+	Op_Unused14 = 14,
 	Op_RND_SINT23NE = 15,
 	Op_RND_SINT16NE = 16,
 	Op_CNV_UNORM16 = 17,

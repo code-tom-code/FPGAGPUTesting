@@ -1486,6 +1486,16 @@ public:
 		invertScanoutColors = newScanoutInvertColors;
 	}
 
+	const bool GetForceDisableDepth() const
+	{
+		return forceDisableDepth;
+	}
+
+	void SetForceDisableDepth(const bool newForceDisableDepth)
+	{
+		forceDisableDepth = newForceDisableDepth;
+	}
+
 	const setScanoutPointerCommand::eDisplayChannelSwizzle GetScanoutSwizzleR() const
 	{
 		return scanoutRedSwizzle;
@@ -1584,6 +1594,7 @@ protected:
 	bool printScrnCapturesScreenshot;
 	int overrideTexCombinerMode;
 	bool invertScanoutColors;
+	bool forceDisableDepth;
 	setScanoutPointerCommand::eDisplayChannelSwizzle scanoutRedSwizzle;
 	setScanoutPointerCommand::eDisplayChannelSwizzle scanoutGreenSwizzle;
 	setScanoutPointerCommand::eDisplayChannelSwizzle scanoutBlueSwizzle;

@@ -147,6 +147,17 @@ package PacketType is
 		cmp_always -- 7
 	);
 
+	type eCombinerMode is
+	(
+		cbm_allBlack, -- 0
+		cbm_allWhite, -- 1
+		cbm_textureOnly, -- 2
+		cbm_vertexColorOnly, -- 3
+		cbm_debugTexcoords, -- 4
+		cbm_debugBilinearInterpolants, -- 5
+		cbm_textureModulateVertexColor -- 6
+	);
+
 	type eTexFormat is
 	(
 		eTexFmtA8R8G8B8, -- 0

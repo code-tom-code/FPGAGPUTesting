@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
-<EDKSYSTEM EDWVERSION="1.2" TIMESTAMP="Sat Aug 20 14:43:08 2022" VIVADOVERSION="2018.1_AR73068">
+<EDKSYSTEM EDWVERSION="1.2" TIMESTAMP="Mon Aug 29 12:06:06 2022" VIVADOVERSION="2018.1_AR73068">
 
   <SYSTEMINFO ARCH="kintexuplus" BOARD="xilinx.com:kcu116:part0:1.3" DEVICE="xcku5p" NAME="design_1" PACKAGE="ffvb676" SPEEDGRADE="-2"/>
 
@@ -1731,7 +1731,7 @@
             <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outColorRGBA2"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="1" NAME="TRICACHE_CurrentSlotIndex" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_TRICACHE_CurrentSlotIndex">
+        <PORT DIR="O" LEFT="2" NAME="TRICACHE_CurrentSlotIndex" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_TRICACHE_CurrentSlotIndex">
           <CONNECTIONS>
             <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_CurrentSlotIndex"/>
           </CONNECTIONS>
@@ -1813,8 +1813,8 @@
         </PORT>
         <PORT DIR="O" NAME="DEPTH_PixelReady" SIGIS="undef" SIGNAME="DepthInterpolator_0_DEPTH_PixelReady">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="DepthBuffer_0" PORT="RAST_PixelReady"/>
             <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe31"/>
+            <CONNECTION INSTANCE="DepthBuffer_0" PORT="RAST_PixelReady"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="9" NAME="DEPTH_PosX" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_DEPTH_PosX">
@@ -2016,7 +2016,7 @@
         <PARAMETER NAME="C_PROBE7_WIDTH" VALUE="32"/>
         <PARAMETER NAME="C_PROBE8_WIDTH" VALUE="32"/>
         <PARAMETER NAME="C_PROBE9_WIDTH" VALUE="32"/>
-        <PARAMETER NAME="C_PROBE10_WIDTH" VALUE="3"/>
+        <PARAMETER NAME="C_PROBE10_WIDTH" VALUE="4"/>
         <PARAMETER NAME="C_PROBE11_WIDTH" VALUE="32"/>
         <PARAMETER NAME="C_PROBE12_WIDTH" VALUE="32"/>
         <PARAMETER NAME="C_PROBE13_WIDTH" VALUE="32"/>
@@ -5157,7 +5157,7 @@
             <CONNECTION INSTANCE="AttrInterpolator_0" PORT="DBG_RastBarycentricC"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="2" NAME="probe10" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_DBG_NumActiveTriangles">
+        <PORT DIR="I" LEFT="3" NAME="probe10" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_DBG_NumActiveTriangles">
           <CONNECTIONS>
             <CONNECTION INSTANCE="TriWorkCache_0" PORT="DBG_NumActiveTriangles"/>
           </CONNECTIONS>
@@ -26055,20 +26055,20 @@
             <CONNECTION INSTANCE="vio_0" PORT="clk"/>
             <CONNECTION INSTANCE="VBO_INDEX_FIFO" PORT="clk"/>
             <CONNECTION INSTANCE="IndexBufferCache_0" PORT="clk"/>
-            <CONNECTION INSTANCE="ROP_0" PORT="clk"/>
-            <CONNECTION INSTANCE="TexSample_0" PORT="clk"/>
-            <CONNECTION INSTANCE="VertexBatchBuilder_0" PORT="clk"/>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="clk"/>
-            <CONNECTION INSTANCE="InputAssembler2_0" PORT="clk"/>
-            <CONNECTION INSTANCE="Rasterizer_0" PORT="clk"/>
             <CONNECTION INSTANCE="AttrInterp_UNORM8ToFloat" PORT="clk"/>
-            <CONNECTION INSTANCE="DepthBuffer_0" PORT="clk"/>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="clk"/>
-            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="clk"/>
             <CONNECTION INSTANCE="TriSetup_FPU" PORT="clk"/>
             <CONNECTION INSTANCE="DepthInterp_FPU" PORT="clk"/>
             <CONNECTION INSTANCE="AttrInterp_FPU" PORT="clk"/>
             <CONNECTION INSTANCE="TriSetup_0" PORT="clk"/>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="clk"/>
+            <CONNECTION INSTANCE="Rasterizer_0" PORT="clk"/>
+            <CONNECTION INSTANCE="TriWorkCache_0" PORT="clk"/>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="clk"/>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="clk"/>
+            <CONNECTION INSTANCE="DepthBuffer_0" PORT="clk"/>
+            <CONNECTION INSTANCE="InputAssembler2_0" PORT="clk"/>
+            <CONNECTION INSTANCE="ROP_0" PORT="clk"/>
+            <CONNECTION INSTANCE="VertexBatchBuilder_0" PORT="clk"/>
             <CONNECTION INSTANCE="SerialPacketSystem_ValidIncomingPacketsFIFO" PORT="rd_clk"/>
             <CONNECTION INSTANCE="SerialPacketSystem_ReturnOutputPacketsFIFO" PORT="wr_clk"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_InstructionCache" PORT="clka"/>
@@ -26082,7 +26082,7 @@
             <CONNECTION INSTANCE="ShaderCoreSystem_ShaderCore_0" PORT="clk"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_GPRQuadSystem_GPRQuad2_0" PORT="clk"/>
             <CONNECTION INSTANCE="ScanoutSystem_CDC_Command_Scanout_0" PORT="cmd_clk"/>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="clk"/>
+            <CONNECTION INSTANCE="TexSample_0" PORT="clk"/>
             <CONNECTION INSTANCE="MemorySystem_ScanoutReadRequestsFIFO" PORT="rd_clk"/>
             <CONNECTION INSTANCE="MemorySystem_ZStencilReadRequestsFIFO" PORT="rd_clk"/>
             <CONNECTION INSTANCE="MemorySystem_ZStencilReadRequestsFIFO" PORT="wr_clk"/>
@@ -26883,6 +26883,11 @@
             <CONNECTION INSTANCE="rast_out_fifo" PORT="full"/>
           </CONNECTIONS>
         </PORT>
+        <PORT DIR="I" NAME="RASTOUT_FIFO_almost_full" SIGIS="undef" SIGNAME="Rasterizer_0_RASTOUT_FIFO_almost_full">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="rast_out_fifo" PORT="almost_full"/>
+          </CONNECTIONS>
+        </PORT>
         <PORT DIR="O" LEFT="127" NAME="RASTOUT_FIFO_wr_data" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_RASTOUT_FIFO_wr_data">
           <CONNECTIONS>
             <CONNECTION INSTANCE="rast_out_fifo" PORT="din"/>
@@ -26983,7 +26988,7 @@
             <CONNECTION INSTANCE="TriWorkCache_0" PORT="RAST_NewTriSlotIndexValid"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="1" NAME="TRICACHE_NewTriSlotIndex" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_RAST_NewTriSlotIndex">
+        <PORT DIR="I" LEFT="2" NAME="TRICACHE_NewTriSlotIndex" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_RAST_NewTriSlotIndex">
           <CONNECTIONS>
             <CONNECTION INSTANCE="TriWorkCache_0" PORT="RAST_NewTriSlotIndex"/>
           </CONNECTIONS>
@@ -27018,16 +27023,19 @@
             <CONNECTION INSTANCE="ila_333_250" PORT="probe6"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="15" NAME="DBG_PixelNumber" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_DBG_PixelNumber">
+        <PORT DIR="O" LEFT="15" NAME="DBG_PixelXPos" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_DBG_PixelXPos">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ila_333_250" PORT="probe29"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="15" NAME="DBG_LineNumber" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_DBG_LineNumber">
+        <PORT DIR="O" LEFT="15" NAME="DBG_PixelYPos" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_DBG_PixelYPos">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ila_333_250" PORT="probe30"/>
           </CONNECTIONS>
         </PORT>
+        <PORT DIR="O" LEFT="31" NAME="DBG_BarycentricA" RIGHT="0" SIGIS="undef"/>
+        <PORT DIR="O" LEFT="31" NAME="DBG_BarycentricB" RIGHT="0" SIGIS="undef"/>
+        <PORT DIR="O" LEFT="31" NAME="DBG_BarycentricC" RIGHT="0" SIGIS="undef"/>
         <PORT DIR="O" LEFT="15" NAME="DBG_MinX" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_DBG_MinX">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ila_333_250" PORT="probe31"/>
@@ -27055,6 +27063,7 @@
             <PORTMAP LOGICAL="WR_DATA" PHYSICAL="RASTOUT_FIFO_wr_data"/>
             <PORTMAP LOGICAL="WR_EN" PHYSICAL="RASTOUT_FIFO_wr_en"/>
             <PORTMAP LOGICAL="FULL" PHYSICAL="RASTOUT_FIFO_full"/>
+            <PORTMAP LOGICAL="ALMOST_FULL" PHYSICAL="RASTOUT_FIFO_almost_full"/>
           </PORTMAPS>
         </BUSINTERFACE>
       </BUSINTERFACES>
@@ -38262,7 +38271,7 @@
             <CONNECTION INSTANCE="DepthInterpolator_0" PORT="TRICACHE_inColorRGBA2"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="1" NAME="INTERP_CurrentSlotIndex" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_TRICACHE_CurrentSlotIndex">
+        <PORT DIR="I" LEFT="2" NAME="INTERP_CurrentSlotIndex" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_TRICACHE_CurrentSlotIndex">
           <CONNECTIONS>
             <CONNECTION INSTANCE="DepthInterpolator_0" PORT="TRICACHE_CurrentSlotIndex"/>
           </CONNECTIONS>
@@ -38362,12 +38371,12 @@
             <CONNECTION INSTANCE="Rasterizer_0" PORT="TRICACHE_NewTriSlotIndexValid"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="1" NAME="RAST_NewTriSlotIndex" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_RAST_NewTriSlotIndex">
+        <PORT DIR="O" LEFT="2" NAME="RAST_NewTriSlotIndex" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_RAST_NewTriSlotIndex">
           <CONNECTIONS>
             <CONNECTION INSTANCE="Rasterizer_0" PORT="TRICACHE_NewTriSlotIndex"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="2" NAME="DBG_NumActiveTriangles" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_DBG_NumActiveTriangles">
+        <PORT DIR="O" LEFT="3" NAME="DBG_NumActiveTriangles" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_DBG_NumActiveTriangles">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe10"/>
           </CONNECTIONS>
@@ -43117,14 +43126,14 @@
             <CONNECTION INSTANCE="CommandProcessor_0" PORT="DBG_IdleSignalsVector"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="15" NAME="probe29" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_DBG_PixelNumber">
+        <PORT DIR="I" LEFT="15" NAME="probe29" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_DBG_PixelXPos">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="Rasterizer_0" PORT="DBG_PixelNumber"/>
+            <CONNECTION INSTANCE="Rasterizer_0" PORT="DBG_PixelXPos"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="15" NAME="probe30" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_DBG_LineNumber">
+        <PORT DIR="I" LEFT="15" NAME="probe30" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_DBG_PixelYPos">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="Rasterizer_0" PORT="DBG_LineNumber"/>
+            <CONNECTION INSTANCE="Rasterizer_0" PORT="DBG_PixelYPos"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="I" LEFT="15" NAME="probe31" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_DBG_MinX">
@@ -43214,11 +43223,7 @@
         <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
       </PARAMETERS>
       <PORTS>
-        <PORT DIR="O" LEFT="0" NAME="dout" RIGHT="0" SIGIS="undef" SIGNAME="no_reset_dout">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="rast_out_fifo" PORT="srst"/>
-          </CONNECTIONS>
-        </PORT>
+        <PORT DIR="O" LEFT="0" NAME="dout" RIGHT="0" SIGIS="undef"/>
       </PORTS>
       <BUSINTERFACES/>
     </MODULE>
@@ -43288,7 +43293,7 @@
         <PARAMETER NAME="C_COMMON_CLOCK" VALUE="1"/>
         <PARAMETER NAME="C_SELECT_XPM" VALUE="0"/>
         <PARAMETER NAME="C_COUNT_TYPE" VALUE="0"/>
-        <PARAMETER NAME="C_DATA_COUNT_WIDTH" VALUE="9"/>
+        <PARAMETER NAME="C_DATA_COUNT_WIDTH" VALUE="10"/>
         <PARAMETER NAME="C_DEFAULT_VALUE" VALUE="BlankString"/>
         <PARAMETER NAME="C_DIN_WIDTH" VALUE="128"/>
         <PARAMETER NAME="C_DOUT_RST_VAL" VALUE="0"/>
@@ -43297,7 +43302,7 @@
         <PARAMETER NAME="C_FAMILY" VALUE="kintexuplus"/>
         <PARAMETER NAME="C_FULL_FLAGS_RST_VAL" VALUE="0"/>
         <PARAMETER NAME="C_HAS_ALMOST_EMPTY" VALUE="0"/>
-        <PARAMETER NAME="C_HAS_ALMOST_FULL" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_ALMOST_FULL" VALUE="1"/>
         <PARAMETER NAME="C_HAS_BACKUP" VALUE="0"/>
         <PARAMETER NAME="C_HAS_DATA_COUNT" VALUE="0"/>
         <PARAMETER NAME="C_HAS_INT_CLK" VALUE="0"/>
@@ -43306,15 +43311,15 @@
         <PARAMETER NAME="C_HAS_RD_DATA_COUNT" VALUE="0"/>
         <PARAMETER NAME="C_HAS_RD_RST" VALUE="0"/>
         <PARAMETER NAME="C_HAS_RST" VALUE="0"/>
-        <PARAMETER NAME="C_HAS_SRST" VALUE="1"/>
+        <PARAMETER NAME="C_HAS_SRST" VALUE="0"/>
         <PARAMETER NAME="C_HAS_UNDERFLOW" VALUE="0"/>
         <PARAMETER NAME="C_HAS_VALID" VALUE="0"/>
         <PARAMETER NAME="C_HAS_WR_ACK" VALUE="0"/>
         <PARAMETER NAME="C_HAS_WR_DATA_COUNT" VALUE="0"/>
         <PARAMETER NAME="C_HAS_WR_RST" VALUE="0"/>
-        <PARAMETER NAME="C_IMPLEMENTATION_TYPE" VALUE="6"/>
+        <PARAMETER NAME="C_IMPLEMENTATION_TYPE" VALUE="0"/>
         <PARAMETER NAME="C_INIT_WR_PNTR_VAL" VALUE="0"/>
-        <PARAMETER NAME="C_MEMORY_TYPE" VALUE="4"/>
+        <PARAMETER NAME="C_MEMORY_TYPE" VALUE="1"/>
         <PARAMETER NAME="C_MIF_FILE_NAME" VALUE="BlankString"/>
         <PARAMETER NAME="C_OPTIMIZATION_MODE" VALUE="0"/>
         <PARAMETER NAME="C_OVERFLOW_LOW" VALUE="0"/>
@@ -43327,21 +43332,21 @@
         <PARAMETER NAME="C_PROG_FULL_THRESH_ASSERT_VAL" VALUE="511"/>
         <PARAMETER NAME="C_PROG_FULL_THRESH_NEGATE_VAL" VALUE="510"/>
         <PARAMETER NAME="C_PROG_FULL_TYPE" VALUE="0"/>
-        <PARAMETER NAME="C_RD_DATA_COUNT_WIDTH" VALUE="9"/>
+        <PARAMETER NAME="C_RD_DATA_COUNT_WIDTH" VALUE="10"/>
         <PARAMETER NAME="C_RD_DEPTH" VALUE="512"/>
         <PARAMETER NAME="C_RD_FREQ" VALUE="1"/>
         <PARAMETER NAME="C_RD_PNTR_WIDTH" VALUE="9"/>
         <PARAMETER NAME="C_UNDERFLOW_LOW" VALUE="0"/>
-        <PARAMETER NAME="C_USE_DOUT_RST" VALUE="1"/>
+        <PARAMETER NAME="C_USE_DOUT_RST" VALUE="0"/>
         <PARAMETER NAME="C_USE_ECC" VALUE="0"/>
-        <PARAMETER NAME="C_USE_EMBEDDED_REG" VALUE="1"/>
+        <PARAMETER NAME="C_USE_EMBEDDED_REG" VALUE="0"/>
         <PARAMETER NAME="C_USE_PIPELINE_REG" VALUE="0"/>
         <PARAMETER NAME="C_POWER_SAVING_MODE" VALUE="0"/>
         <PARAMETER NAME="C_USE_FIFO16_FLAGS" VALUE="0"/>
-        <PARAMETER NAME="C_USE_FWFT_DATA_COUNT" VALUE="0"/>
+        <PARAMETER NAME="C_USE_FWFT_DATA_COUNT" VALUE="1"/>
         <PARAMETER NAME="C_VALID_LOW" VALUE="0"/>
         <PARAMETER NAME="C_WR_ACK_LOW" VALUE="0"/>
-        <PARAMETER NAME="C_WR_DATA_COUNT_WIDTH" VALUE="9"/>
+        <PARAMETER NAME="C_WR_DATA_COUNT_WIDTH" VALUE="10"/>
         <PARAMETER NAME="C_WR_DEPTH" VALUE="512"/>
         <PARAMETER NAME="C_WR_FREQ" VALUE="1"/>
         <PARAMETER NAME="C_WR_PNTR_WIDTH" VALUE="9"/>
@@ -43488,7 +43493,7 @@
         <PARAMETER NAME="C_REG_SLICE_MODE_RDCH" VALUE="0"/>
         <PARAMETER NAME="C_REG_SLICE_MODE_AXIS" VALUE="0"/>
         <PARAMETER NAME="Component_Name" VALUE="design_1_fifo_generator_0_12"/>
-        <PARAMETER NAME="Fifo_Implementation" VALUE="Common_Clock_Builtin_FIFO"/>
+        <PARAMETER NAME="Fifo_Implementation" VALUE="Common_Clock_Block_RAM"/>
         <PARAMETER NAME="synchronization_stages" VALUE="2"/>
         <PARAMETER NAME="synchronization_stages_axi" VALUE="2"/>
         <PARAMETER NAME="INTERFACE_TYPE" VALUE="Native"/>
@@ -43499,15 +43504,15 @@
         <PARAMETER NAME="Output_Data_Width" VALUE="128"/>
         <PARAMETER NAME="Output_Depth" VALUE="512"/>
         <PARAMETER NAME="Enable_ECC" VALUE="false"/>
-        <PARAMETER NAME="Use_Embedded_Registers" VALUE="true"/>
-        <PARAMETER NAME="Reset_Pin" VALUE="true"/>
+        <PARAMETER NAME="Use_Embedded_Registers" VALUE="false"/>
+        <PARAMETER NAME="Reset_Pin" VALUE="false"/>
         <PARAMETER NAME="Enable_Reset_Synchronization" VALUE="true"/>
-        <PARAMETER NAME="Reset_Type" VALUE="Synchronous_Reset"/>
+        <PARAMETER NAME="Reset_Type" VALUE="Asynchronous_Reset"/>
         <PARAMETER NAME="Full_Flags_Reset_Value" VALUE="0"/>
-        <PARAMETER NAME="Use_Dout_Reset" VALUE="true"/>
+        <PARAMETER NAME="Use_Dout_Reset" VALUE="false"/>
         <PARAMETER NAME="Dout_Reset_Value" VALUE="0"/>
         <PARAMETER NAME="dynamic_power_saving" VALUE="false"/>
-        <PARAMETER NAME="Almost_Full_Flag" VALUE="false"/>
+        <PARAMETER NAME="Almost_Full_Flag" VALUE="true"/>
         <PARAMETER NAME="Almost_Empty_Flag" VALUE="false"/>
         <PARAMETER NAME="Valid_Flag" VALUE="false"/>
         <PARAMETER NAME="Valid_Sense" VALUE="Active_High"/>
@@ -43520,13 +43525,13 @@
         <PARAMETER NAME="Inject_Sbit_Error" VALUE="false"/>
         <PARAMETER NAME="Inject_Dbit_Error" VALUE="false"/>
         <PARAMETER NAME="ecc_pipeline_reg" VALUE="false"/>
-        <PARAMETER NAME="Use_Extra_Logic" VALUE="false"/>
+        <PARAMETER NAME="Use_Extra_Logic" VALUE="true"/>
         <PARAMETER NAME="Data_Count" VALUE="false"/>
-        <PARAMETER NAME="Data_Count_Width" VALUE="9"/>
+        <PARAMETER NAME="Data_Count_Width" VALUE="10"/>
         <PARAMETER NAME="Write_Data_Count" VALUE="false"/>
-        <PARAMETER NAME="Write_Data_Count_Width" VALUE="9"/>
+        <PARAMETER NAME="Write_Data_Count_Width" VALUE="10"/>
         <PARAMETER NAME="Read_Data_Count" VALUE="false"/>
-        <PARAMETER NAME="Read_Data_Count_Width" VALUE="9"/>
+        <PARAMETER NAME="Read_Data_Count_Width" VALUE="10"/>
         <PARAMETER NAME="Disable_Timing_Violations" VALUE="false"/>
         <PARAMETER NAME="Read_Clock_Frequency" VALUE="1"/>
         <PARAMETER NAME="Write_Clock_Frequency" VALUE="1"/>
@@ -43662,11 +43667,6 @@
             <CONNECTION INSTANCE="MemorySystem_ddr4_0" PORT="c0_ddr4_ui_clk"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" NAME="srst" SIGIS="undef" SIGNAME="no_reset_dout">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="no_reset" PORT="dout"/>
-          </CONNECTIONS>
-        </PORT>
         <PORT DIR="I" LEFT="127" NAME="din" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_RASTOUT_FIFO_wr_data">
           <CONNECTIONS>
             <CONNECTION INSTANCE="Rasterizer_0" PORT="RASTOUT_FIFO_wr_data"/>
@@ -43692,17 +43692,21 @@
             <CONNECTION INSTANCE="Rasterizer_0" PORT="RASTOUT_FIFO_full"/>
           </CONNECTIONS>
         </PORT>
+        <PORT DIR="O" NAME="almost_full" SIGIS="undef" SIGNAME="Rasterizer_0_RASTOUT_FIFO_almost_full">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="Rasterizer_0" PORT="RASTOUT_FIFO_almost_full"/>
+          </CONNECTIONS>
+        </PORT>
         <PORT DIR="O" NAME="empty" SIGIS="undef" SIGNAME="DepthInterpolator_0_RASTOUT_FIFO_empty">
           <CONNECTIONS>
             <CONNECTION INSTANCE="DepthInterpolator_0" PORT="RASTOUT_FIFO_empty"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" NAME="wr_rst_busy" SIGIS="undef"/>
-        <PORT DIR="O" NAME="rd_rst_busy" SIGIS="undef"/>
       </PORTS>
       <BUSINTERFACES>
         <BUSINTERFACE BUSNAME="Rasterizer_0_RASTOUT_FIFO" NAME="FIFO_WRITE" TYPE="TARGET" VLNV="xilinx.com:interface:fifo_write:1.0">
           <PORTMAPS>
+            <PORTMAP LOGICAL="ALMOST_FULL" PHYSICAL="almost_full"/>
             <PORTMAP LOGICAL="FULL" PHYSICAL="full"/>
             <PORTMAP LOGICAL="WR_DATA" PHYSICAL="din"/>
             <PORTMAP LOGICAL="WR_EN" PHYSICAL="wr_en"/>

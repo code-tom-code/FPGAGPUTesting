@@ -59,6 +59,12 @@ static INT_PTR CALLBACK DriverSettingsDialogProc(_In_ HWND hWnd, _In_ UINT MSG, 
 			SendDlgItemMessageA(hWnd, IDC_LST_OVERRIDETEXMODE, LB_SETITEMDATA, SendDlgItemMessageA(hWnd, IDC_LST_OVERRIDETEXMODE, LB_ADDSTRING, NULL, (LPARAM)"(4)Texcoords"), 4);
 			SendDlgItemMessageA(hWnd, IDC_LST_OVERRIDETEXMODE, LB_SETITEMDATA, SendDlgItemMessageA(hWnd, IDC_LST_OVERRIDETEXMODE, LB_ADDSTRING, NULL, (LPARAM)"(5)BilinearInterp"), 5);
 			SendDlgItemMessageA(hWnd, IDC_LST_OVERRIDETEXMODE, LB_SETITEMDATA, SendDlgItemMessageA(hWnd, IDC_LST_OVERRIDETEXMODE, LB_ADDSTRING, NULL, (LPARAM)"(6)TexModVC"), 6);
+			char textBuffer[256] = {0};
+#pragma warning(push)
+#pragma warning(disable:4996)
+			_itoa(d3d9devhook->GetDrawCallSleepMicros(), textBuffer, 10);
+#pragma warning(pop)
+			SetDlgItemTextA(hWnd, IDC_EDIT_DRAWSLEEPMICROS, textBuffer);
 			if (d3d9devhook->DoOverrideTexCombinerMode() )
 			{
 				SendDlgItemMessageA(hWnd, IDC_LST_OVERRIDETEXMODE, LB_SETCURSEL, d3d9devhook->GetOverrideTexCombinerMode(), 0);
@@ -150,6 +156,13 @@ static INT_PTR CALLBACK DriverSettingsDialogProc(_In_ HWND hWnd, _In_ UINT MSG, 
 					d3d9devhook->SetOverrideTexCombinerMode(-1);
 					SendDlgItemMessageA(hWnd, IDC_LST_OVERRIDETEXMODE, LB_SETCURSEL, (WPARAM)-1, NULL);
 				}
+				return TRUE;
+			case IDC_EDIT_DRAWSLEEPMICROS:
+			{
+				char buffer[256] = {0};
+				GetDlgItemTextA(hWnd, IDC_EDIT_DRAWSLEEPMICROS, buffer, sizeof(buffer) - 1);
+				d3d9devhook->SetDrawCallSleepMicros(strtoul(buffer, NULL, 10) );
+			}
 				return TRUE;
 			case IDC_LST_OVERRIDETEXMODE:
 				switch (HIWORD(wParam))

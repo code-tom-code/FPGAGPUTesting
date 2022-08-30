@@ -25,6 +25,117 @@ float flushdenormstozero(const float a32)
 		return a32;
 }
 
+// Note that this half to float conversion does not comply to the IEEE spec for Half's in that it doesn't properly handle denormal halfs.
+// But that's okay, we don't really care too much about that, we just want to use a very Half-like format as smaller storage for our float data.
+// It does properly handle NaN and INF cases though.
+unsigned short SoftFloatToHalf(const float a)
+{
+	const unsigned uFa = *(const unsigned* const)&a;
+	const unsigned short signBit = (const unsigned short)( (uFa >> 31) << 15);
+	unsigned short exponent = 0x0000;
+	unsigned short mantissa = 0x0000;
+	if (isnan(a) )
+	{
+		exponent = 0x7C00;
+		mantissa = 0x0001;
+	}
+	else if (isinf(a) )
+	{
+		exponent = 0x7C00;
+		mantissa = 0x0000;
+	}
+	else if (a == 0.0f)
+	{
+		exponent = 0x0000;
+		mantissa = 0x0000;
+	}
+	else
+	{
+		const unsigned floatMantissa = uFa & 0x7FFFFF;
+		const unsigned biasedExponent = (uFa >> 23) & 0xFF;
+		const int signedExponent = ( (const int)biasedExponent) - 127;
+		if (fabs(a) > 65504.0f) // Saturate to infinity
+		{
+			exponent = 0x7C00;
+			mantissa = 0x0000;
+		}
+		else if (fabs(a) < 5.9604644775390625e-8f) // Saturate to 0
+		{
+			exponent = 0x0000;
+			mantissa = 0x0000;
+		}
+		else if (fabs(a) < 0.00006103515625f) // Handle denormals case
+		{
+			// TODO: Do we need to handle denormals as a special case here?
+			exponent = 0x0000;
+			mantissa = (const unsigned short)(floatMantissa >> 13); // Just treat it as a normal for now
+		}
+		else // Handle the normal case
+		{
+			const unsigned short biasedHalfExponent = signedExponent + 15;
+			exponent = biasedHalfExponent << 10;
+
+			mantissa = (const unsigned short)(floatMantissa >> 13);
+		}
+	}
+
+	return signBit | exponent | mantissa;
+}
+
+// Note that this half to float conversion does not comply to the IEEE spec for Half's in that it doesn't properly handle denormal halfs.
+// But that's okay, we don't really care too much about that, we just want to use a very Half-like format as smaller storage for our float data.
+// It does properly handle NaN and INF cases though.
+float SoftHalfToFloat(const unsigned short a)
+{
+	const unsigned short mantissa = a & 0x3FF;
+	const unsigned short biasedExponent = (a >> 10) & 0x1F;
+	const signed short signedExponent = ( (const signed short)biasedExponent) - 15;
+	const unsigned signBit = ( (const unsigned)(a >> 15) ) << 31;
+
+	unsigned retMantissa = 0x00000000;
+	unsigned retExponent = 0x00000000;
+
+	if (biasedExponent == 31)
+	{
+		if (mantissa != 0)
+		{
+			if (signBit)
+				return -NAN;
+			else
+				return NAN;
+		}
+		else
+		{
+			if (signBit)
+				return -INFINITY;
+			else
+				return INFINITY;
+		}
+	}
+	else if (biasedExponent == 0)
+	{
+		if (mantissa == 0)
+		{
+			retMantissa = 0x0000;
+			retExponent = 0x0000;
+		}
+		else // TODO: Handle special case of denormal numbers
+		{
+			// For now, just use the non-denormal code
+			retMantissa = mantissa << 13;
+			retExponent = (signedExponent + 127) << 23;
+		}
+	}
+	else // Handle the normal case
+	{
+		retMantissa = mantissa << 13;
+		retExponent = (signedExponent + 127) << 23;
+	}
+
+	const unsigned tempRet = signBit | retExponent | retMantissa;
+	return *(const float* const)&tempRet;
+}
+
 // Checks for exact bitwise equality between two floats (will treat -0.0f and 0.0f differently, or different NaN representations differently).
 // Returns true if the floats are exactly equal, or false otherwise.
 static const bool CompareFloatBitwise(const float a, const float b)
@@ -1392,117 +1503,6 @@ static const int RunTestsFloatCNV(Xsi::Loader& loader, std_logic_port& clk, std_
 			return (const unsigned short)(a * 65535.0f);
 	};
 
-	// Note that this half to float conversion does not comply to the IEEE spec for Half's in that it doesn't properly handle denormal halfs.
-	// But that's okay, we don't really care too much about that, we just want to use a very Half-like format as smaller storage for our float data.
-	// It does properly handle NaN and INF cases though.
-	const auto softFloatToHalf = [](const float a) -> unsigned short
-	{
-		const unsigned uFa = *(const unsigned* const)&a;
-		const unsigned short signBit = (const unsigned short)( (uFa >> 31) << 15);
-		unsigned short exponent = 0x0000;
-		unsigned short mantissa = 0x0000;
-		if (isnan(a) )
-		{
-			exponent = 0x7C00;
-			mantissa = 0x0001;
-		}
-		else if (isinf(a) )
-		{
-			exponent = 0x7C00;
-			mantissa = 0x0000;
-		}
-		else if (a == 0.0f)
-		{
-			exponent = 0x0000;
-			mantissa = 0x0000;
-		}
-		else
-		{
-			const unsigned floatMantissa = uFa & 0x7FFFFF;
-			const unsigned biasedExponent = (uFa >> 23) & 0xFF;
-			const int signedExponent = ( (const int)biasedExponent) - 127;
-			if (fabs(a) > 65504.0f) // Saturate to infinity
-			{
-				exponent = 0x7C00;
-				mantissa = 0x0000;
-			}
-			else if (fabs(a) < 5.9604644775390625e-8f) // Saturate to 0
-			{
-				exponent = 0x0000;
-				mantissa = 0x0000;
-			}
-			else if (fabs(a) < 0.00006103515625f) // Handle denormals case
-			{
-				// TODO: Do we need to handle denormals as a special case here?
-				exponent = 0x0000;
-				mantissa = (const unsigned short)(floatMantissa >> 13); // Just treat it as a normal for now
-			}
-			else // Handle the normal case
-			{
-				const unsigned short biasedHalfExponent = signedExponent + 15;
-				exponent = biasedHalfExponent << 10;
-
-				mantissa = (const unsigned short)(floatMantissa >> 13);
-			}
-		}
-
-		return signBit | exponent | mantissa;
-	};
-
-	// Note that this half to float conversion does not comply to the IEEE spec for Half's in that it doesn't properly handle denormal halfs.
-	// But that's okay, we don't really care too much about that, we just want to use a very Half-like format as smaller storage for our float data.
-	// It does properly handle NaN and INF cases though.
-	const auto softHalfToFloat = [](const unsigned short a) -> float
-	{
-		const unsigned short mantissa = a & 0x3FF;
-		const unsigned short biasedExponent = (a >> 10) & 0x1F;
-		const signed short signedExponent = ( (const signed short)biasedExponent) - 15;
-		const unsigned signBit = ( (const unsigned)(a >> 15) ) << 31;
-
-		unsigned retMantissa = 0x00000000;
-		unsigned retExponent = 0x00000000;
-
-		if (biasedExponent == 31)
-		{
-			if (mantissa != 0)
-			{
-				if (signBit)
-					return -NAN;
-				else
-					return NAN;
-			}
-			else
-			{
-				if (signBit)
-					return -INFINITY;
-				else
-					return INFINITY;
-			}
-		}
-		else if (biasedExponent == 0)
-		{
-			if (mantissa == 0)
-			{
-				retMantissa = 0x0000;
-				retExponent = 0x0000;
-			}
-			else // TODO: Handle special case of denormal numbers
-			{
-				// For now, just use the non-denormal code
-				retMantissa = mantissa << 13;
-				retExponent = (signedExponent + 127) << 23;
-			}
-		}
-		else // Handle the normal case
-		{
-			retMantissa = mantissa << 13;
-			retExponent = (signedExponent + 127) << 23;
-		}
-
-		const unsigned tempRet = signBit | retExponent | retMantissa;
-		return *(const float* const)&tempRet;
-	};
-
 	// Note that this uint32 to float conversion may be off from the correct value by +/- 1 because we don't
 	// perform any rounding for simplicity's sake.
 	const auto softUInt32ToFloat = [](unsigned a) -> float
@@ -1561,8 +1561,8 @@ static const int RunTestsFloatCNV(Xsi::Loader& loader, std_logic_port& clk, std_
 	for (unsigned x = 0; x < 65536; ++x)
 	{
 		const unsigned short inputHalf = (const unsigned short)x;
-		const float fVal = softHalfToFloat(inputHalf);
-		const unsigned short roundTrippedHalf = softFloatToHalf(fVal);
+		const float fVal = SoftHalfToFloat(inputHalf);
+		const unsigned short roundTrippedHalf = SoftFloatToHalf(fVal);
 		if (inputHalf != roundTrippedHalf && !isnan(fVal) )
 		{
 			++mismatchCount;
@@ -1799,7 +1799,7 @@ static const int RunTestsFloatCNV(Xsi::Loader& loader, std_logic_port& clk, std_
 	for (float fx = -16.0f; fx <= 16.0f; fx += 0.07f)
 	{
 		const unsigned short cnvResult = (const unsigned short)cnvTestFunc(fx, F_to_Half);
-		const unsigned short softResult = softFloatToHalf(fx);
+		const unsigned short softResult = SoftFloatToHalf(fx);
 		const bool result = (cnvResult == softResult);
 		allTestsSuccessful &= result;
 	}
@@ -1821,10 +1821,10 @@ static const int RunTestsFloatCNV(Xsi::Loader& loader, std_logic_port& clk, std_
 	// Convert half to float:
 	for (float fx = -32.0f; fx <= 32.0f; fx += 0.07f)
 	{
-		const unsigned halfInput = softFloatToHalf(fx);
+		const unsigned halfInput = SoftFloatToHalf(fx);
 		const int cnvIntResult = cnvTestFunc(*(const float* const)&halfInput, Half_to_F);
 		const float cnvResult = *(const float* const)&cnvIntResult;
-		const float softResult = softHalfToFloat(halfInput);
+		const float softResult = SoftHalfToFloat(halfInput);
 		const bool result = (cnvResult == softResult);
 		allTestsSuccessful &= result;
 	}

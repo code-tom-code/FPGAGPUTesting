@@ -1,4 +1,4 @@
 # vhdl work Reciprocal.vhd
 # List other files here
 vhdl xil_defaultlib  \
-"../../../../GPUHardwareSimulation2.srcs/sources_1/new/Reciprocal.vhd" \
+"hdl_src/Reciprocal.vhd" \

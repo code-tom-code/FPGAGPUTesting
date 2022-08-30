@@ -1,5 +1,9 @@
 #pragma once
 
+#undef UNICODE
+#undef _UNICODE
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
 #include <d3d9.h>
 #include <d3dx9.h>
 
@@ -10,6 +14,11 @@ public:
 
 	void DisplayTexture(const void* const texelData);
 	void RenderLoop();
+
+	LPDIRECT3DDEVICE9 GetD3D9Dev()
+	{
+		return d3d9dev;
+	}
 
 	~RenderWindow();
 

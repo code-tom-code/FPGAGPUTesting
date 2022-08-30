@@ -1441,6 +1441,16 @@ public:
 		enableVSyncWait = newEnableVSyncWait;
 	}
 
+	const unsigned GetDrawCallSleepMicros() const
+	{
+		return drawCallSleepMicros;
+	}
+
+	void SetDrawCallSleepMicros(const unsigned newDrawCallSleepMicros)
+	{
+		drawCallSleepMicros = newDrawCallSleepMicros;
+	}
+
 	const bool DoOverrideTexCombinerMode() const
 	{
 		return overrideTexCombinerMode >= 0;
@@ -1595,6 +1605,7 @@ protected:
 	int overrideTexCombinerMode;
 	bool invertScanoutColors;
 	bool forceDisableDepth;
+	unsigned drawCallSleepMicros;
 	setScanoutPointerCommand::eDisplayChannelSwizzle scanoutRedSwizzle;
 	setScanoutPointerCommand::eDisplayChannelSwizzle scanoutGreenSwizzle;
 	setScanoutPointerCommand::eDisplayChannelSwizzle scanoutBlueSwizzle;

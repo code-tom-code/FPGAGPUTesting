@@ -57,6 +57,21 @@
     <ClCompile Include="Testbenches\InputAssemblerTestbench.cpp">
       <Filter>Source Files\Testbenches</Filter>
     </ClCompile>
+    <ClCompile Include="Testbenches\TriSetupTestbench.cpp">
+      <Filter>Source Files\Testbenches</Filter>
+    </ClCompile>
+    <ClCompile Include="Testbenches\RasterizerTestbench.cpp">
+      <Filter>Source Files\Testbenches</Filter>
+    </ClCompile>
+    <ClCompile Include="Testbenches\DepthInterpTestbench.cpp">
+      <Filter>Source Files\Testbenches</Filter>
+    </ClCompile>
+    <ClCompile Include="Testbenches\AttributeInterpTestbench.cpp">
+      <Filter>Source Files\Testbenches</Filter>
+    </ClCompile>
+    <ClCompile Include="Testbenches\TexSamplerTestbench.cpp">
+      <Filter>Source Files\Testbenches</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="xsi_loader.h">
@@ -99,6 +114,27 @@
       <Filter>Header Files\Testbenches</Filter>
     </ClInclude>
     <ClInclude Include="Testbenches\ShaderCoreALUCommon.h">
+      <Filter>Header Files\Testbenches</Filter>
+    </ClInclude>
+    <ClInclude Include="Testbenches\TriSetupTestbench.h">
+      <Filter>Header Files\Testbenches</Filter>
+    </ClInclude>
+    <ClInclude Include="D3DTriRasterizeTestData.h">
+      <Filter>Header Files\Testbenches</Filter>
+    </ClInclude>
+    <ClInclude Include="Testbenches\RasterizerTestbench.h">
+      <Filter>Header Files\Testbenches</Filter>
+    </ClInclude>
+    <ClInclude Include="Testbenches\PixelPipelineShared.h">
+      <Filter>Header Files\Testbenches</Filter>
+    </ClInclude>
+    <ClInclude Include="Testbenches\DepthInterpTestbench.h">
+      <Filter>Header Files\Testbenches</Filter>
+    </ClInclude>
+    <ClInclude Include="Testbenches\AttributeInterpTestbench.h">
+      <Filter>Header Files\Testbenches</Filter>
+    </ClInclude>
+    <ClInclude Include="Testbenches\TexSamplerTestbench.h">
       <Filter>Header Files\Testbenches</Filter>
     </ClInclude>
   </ItemGroup>
@@ -207,6 +243,33 @@
     </None>
     <None Include="hdl_src\TriSetup.vhd">
       <Filter>HDL</Filter>
+    </None>
+    <None Include="TriSetup.prj">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="hdl_src\Rasterizer.vhd">
+      <Filter>HDL</Filter>
+    </None>
+    <None Include="Rasterizer.prj">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="hdl_src\DepthInterpolator.vhd">
+      <Filter>HDL</Filter>
+    </None>
+    <None Include="DepthInterpolator.prj">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="hdl_src\TriWorkCache.vhd">
+      <Filter>HDL</Filter>
+    </None>
+    <None Include="hdl_src\AttrInterpolator.vhd">
+      <Filter>HDL</Filter>
+    </None>
+    <None Include="hdl_src\TexSample.vhd">
+      <Filter>HDL</Filter>
+    </None>
+    <None Include="TexSample.prj">
+      <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
 </Project>

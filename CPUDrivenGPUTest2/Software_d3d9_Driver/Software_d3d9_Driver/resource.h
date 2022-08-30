@@ -25,7 +25,6 @@
 #define IDC_CHK_INVERTSCANOUTCOLORS     1011
 #define IDC_RDB_SHOWCYCLE               1012
 #define IDC_CHK_WAITFORVSYNC            1012
-#define IDC_CHK_WAITFORVSYNC2           1013
 #define IDC_CHK_FORCEDISABLEDEPTH       1013
 #define IDC_STATIC2                     1014
 #define IDC_IA_STAT1                    1015
@@ -43,6 +42,8 @@
 #define IDC_CMB_SCANOUTSWIZZLEG2        1025
 #define IDC_CMB_SCANOUTSWIZZLEB         1025
 #define IDC_RAST_STAT4                  1026
+#define IDC_EDIT1                       1026
+#define IDC_EDIT_DRAWSLEEPMICROS        1026
 #define IDC_INTERP_STAT1                1027
 #define IDC_INTERP_STAT2                1028
 #define IDC_INTERP_STAT3                1029
@@ -75,7 +76,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        115
 #define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         1024
+#define _APS_NEXT_CONTROL_VALUE         1027
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

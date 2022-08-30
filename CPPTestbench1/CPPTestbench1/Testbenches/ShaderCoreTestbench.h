@@ -37,6 +37,9 @@ enum InstructionOperation : unsigned __int64
 	Op_BSHFTR24 = 25,
 	Op_OR = 26,
 	Op_AND = 27,
+	Op_CNV_F_TO_HALF = 28,
+	Op_CNV_HALF_TO_F = 29,
+	Op_CNV_U32_TO_F = 30,
 
 	Op_END = 31
 };

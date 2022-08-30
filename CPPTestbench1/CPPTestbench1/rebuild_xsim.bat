@@ -1,6 +1,6 @@
 REM Set VIVADO_BIN_DIR to the directory which has vivado executable
 set VIVADO_BIN_DIR=D:\Xilinx\Vivado\2018.1\bin
-set OUT_SIM_SNAPSHOT=FloatALU
+set OUT_SIM_SNAPSHOT=TexSample
 set XSI_INCLUDE_DIR=%VIVADO_BIN_DIR%\..\data\xsim\include
 set XSIM_ELAB=xelab.bat
 

@@ -27,7 +27,7 @@ entity TriWorkCache is
 			INTERP_outColorRGBA1 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 			INTERP_outColorRGBA2 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 
-			INTERP_CurrentSlotIndex : in STD_LOGIC_VECTOR(1 downto 0);
+			INTERP_CurrentSlotIndex : in STD_LOGIC_VECTOR(2 downto 0);
 			INTERP_SignalSlotComplete : in STD_LOGIC;
 		-- TriWorkCache per-triangle interface end
 
@@ -52,11 +52,11 @@ entity TriWorkCache is
 
 			RAST_RequestNewTriSlot : in STD_LOGIC;
 			RAST_NewTriSlotIndexValid : out STD_LOGIC := '0';
-			RAST_NewTriSlotIndex : out STD_LOGIC_VECTOR(1 downto 0) := (others => '0');
+			RAST_NewTriSlotIndex : out STD_LOGIC_VECTOR(2 downto 0) := (others => '0');
 		-- Rasterizer interface end
 
 		-- Debug signals
-			DBG_NumActiveTriangles : out STD_LOGIC_VECTOR(2 downto 0) := (others => '0')
+			DBG_NumActiveTriangles : out STD_LOGIC_VECTOR(3 downto 0) := (others => '0')
 			);
 end TriWorkCache;
 
@@ -68,23 +68,19 @@ ATTRIBUTE X_INTERFACE_PARAMETER : STRING;
 ATTRIBUTE X_INTERFACE_INFO of clk: SIGNAL is "xilinx.com:signal:clock:1.0 clk CLK";
 ATTRIBUTE X_INTERFACE_PARAMETER of clk: SIGNAL is "FREQ_HZ 333250000";
 
-pure function GetActiveTriangleCount(activeSlotsBitmask : STD_LOGIC_VECTOR(3 downto 0) ) return unsigned is
+pure function GetActiveTriangleCount(activeSlotsBitmask : STD_LOGIC_VECTOR(7 downto 0) ) return unsigned is
+	variable numActiveSlots : unsigned(3 downto 0);
 begin
-	case activeSlotsBitmask is
-		when "0000" =>
-			return to_unsigned(0, 3);
-		when "0001" | "0010" | "0100" | "1000" =>
-			return to_unsigned(1, 3);
-		when "1100" | "0110" | "0011" | "1010" | "0101" | "1001" =>
-			return to_unsigned(2, 3);
-		when "1110" | "1101" | "1011" | "0111" =>
-			return to_unsigned(3, 3);
-		when "1111" =>
-			return to_unsigned(4, 3);
-	end case;
+	numActiveSlots := (others => '0');
+	for i in 0 to 7 loop
+		if (activeSlotsBitmask(i) = '1') then
+			numActiveSlots := numActiveSlots + 1;
+		end if;
+	end loop;
+	return numActiveSlots;
 end function;
 
-signal slotsInUse : STD_LOGIC_VECTOR(3 downto 0) := (others => '0');
+signal slotsInUse : STD_LOGIC_VECTOR(7 downto 0) := (others => '0');
 
 type triWorkVertexData is record
 	InvZ : STD_LOGIC_VECTOR(31 downto 0);
@@ -107,7 +103,7 @@ type triWorkCacheEntry is record
 	VertexC : triWorkVertexData;
 end record triWorkCacheEntry;
 
-type triWorkCacheArray is array(3 downto 0) of triWorkCacheEntry;
+type triWorkCacheArray is array(7 downto 0) of triWorkCacheEntry;
 signal triWorkCacheEntries : triWorkCacheArray;
 
 procedure LoadTriDataIntoSlot(
@@ -179,7 +175,7 @@ INTERP_outColorRGBA2 <= triWorkCacheEntries(to_integer(unsigned(INTERP_CurrentSl
 	begin
 		if (rising_edge(clk) ) then
 			if (INTERP_SignalSlotComplete = '1') then
-				RAST_NewTriSlotIndex <= "00";
+				RAST_NewTriSlotIndex <= (others => '0');
 				slotsInUse(to_integer(unsigned(INTERP_CurrentSlotIndex) ) ) <= '0';
 				RAST_NewTriSlotIndexValid <= '0';
 			elsif (RAST_RequestNewTriSlot = '1') then
@@ -187,32 +183,56 @@ INTERP_outColorRGBA2 <= triWorkCacheEntries(to_integer(unsigned(INTERP_CurrentSl
 					slotsInUse(0) <= '1';
 					LoadTriDataIntoSlot(triWorkCacheEntries(0), RAST_inBarycentricInverse, RAST_inPrimitiveID, RAST_inDrawCallID, RAST_inVFACE,
 						RAST_inInvZ0, RAST_inInvZ1, RAST_inInvZ2, RAST_inT0X, RAST_inT0Y, RAST_inT1X, RAST_inT1Y, RAST_inT2X, RAST_inT2Y, RAST_inColorRGBA0, RAST_inColorRGBA1, RAST_inColorRGBA2);
-					RAST_NewTriSlotIndex <= "00";
+					RAST_NewTriSlotIndex <= "000";
 					RAST_NewTriSlotIndexValid <= '1';
 				elsif (slotsInUse(1) = '0') then
 					slotsInUse(1) <= '1';
 					LoadTriDataIntoSlot(triWorkCacheEntries(1), RAST_inBarycentricInverse, RAST_inPrimitiveID, RAST_inDrawCallID, RAST_inVFACE,
 						RAST_inInvZ0, RAST_inInvZ1, RAST_inInvZ2, RAST_inT0X, RAST_inT0Y, RAST_inT1X, RAST_inT1Y, RAST_inT2X, RAST_inT2Y, RAST_inColorRGBA0, RAST_inColorRGBA1, RAST_inColorRGBA2);
-					RAST_NewTriSlotIndex <= "01";
+					RAST_NewTriSlotIndex <= "001";
 					RAST_NewTriSlotIndexValid <= '1';
 				elsif (slotsInUse(2) = '0') then
 					slotsInUse(2) <= '1';
 					LoadTriDataIntoSlot(triWorkCacheEntries(2), RAST_inBarycentricInverse, RAST_inPrimitiveID, RAST_inDrawCallID, RAST_inVFACE,
 						RAST_inInvZ0, RAST_inInvZ1, RAST_inInvZ2, RAST_inT0X, RAST_inT0Y, RAST_inT1X, RAST_inT1Y, RAST_inT2X, RAST_inT2Y, RAST_inColorRGBA0, RAST_inColorRGBA1, RAST_inColorRGBA2);
-					RAST_NewTriSlotIndex <= "10";
+					RAST_NewTriSlotIndex <= "010";
 					RAST_NewTriSlotIndexValid <= '1';
 				elsif (slotsInUse(3) = '0') then
 					slotsInUse(3) <= '1';
 					LoadTriDataIntoSlot(triWorkCacheEntries(3), RAST_inBarycentricInverse, RAST_inPrimitiveID, RAST_inDrawCallID, RAST_inVFACE,
 						RAST_inInvZ0, RAST_inInvZ1, RAST_inInvZ2, RAST_inT0X, RAST_inT0Y, RAST_inT1X, RAST_inT1Y, RAST_inT2X, RAST_inT2Y, RAST_inColorRGBA0, RAST_inColorRGBA1, RAST_inColorRGBA2);
-					RAST_NewTriSlotIndex <= "11";
+					RAST_NewTriSlotIndex <= "011";
+					RAST_NewTriSlotIndexValid <= '1';
+				elsif (slotsInUse(4) = '0') then
+					slotsInUse(4) <= '1';
+					LoadTriDataIntoSlot(triWorkCacheEntries(4), RAST_inBarycentricInverse, RAST_inPrimitiveID, RAST_inDrawCallID, RAST_inVFACE,
+						RAST_inInvZ0, RAST_inInvZ1, RAST_inInvZ2, RAST_inT0X, RAST_inT0Y, RAST_inT1X, RAST_inT1Y, RAST_inT2X, RAST_inT2Y, RAST_inColorRGBA0, RAST_inColorRGBA1, RAST_inColorRGBA2);
+					RAST_NewTriSlotIndex <= "100";
+					RAST_NewTriSlotIndexValid <= '1';
+				elsif (slotsInUse(5) = '0') then
+					slotsInUse(5) <= '1';
+					LoadTriDataIntoSlot(triWorkCacheEntries(5), RAST_inBarycentricInverse, RAST_inPrimitiveID, RAST_inDrawCallID, RAST_inVFACE,
+						RAST_inInvZ0, RAST_inInvZ1, RAST_inInvZ2, RAST_inT0X, RAST_inT0Y, RAST_inT1X, RAST_inT1Y, RAST_inT2X, RAST_inT2Y, RAST_inColorRGBA0, RAST_inColorRGBA1, RAST_inColorRGBA2);
+					RAST_NewTriSlotIndex <= "101";
+					RAST_NewTriSlotIndexValid <= '1';
+				elsif (slotsInUse(6) = '0') then
+					slotsInUse(6) <= '1';
+					LoadTriDataIntoSlot(triWorkCacheEntries(6), RAST_inBarycentricInverse, RAST_inPrimitiveID, RAST_inDrawCallID, RAST_inVFACE,
+						RAST_inInvZ0, RAST_inInvZ1, RAST_inInvZ2, RAST_inT0X, RAST_inT0Y, RAST_inT1X, RAST_inT1Y, RAST_inT2X, RAST_inT2Y, RAST_inColorRGBA0, RAST_inColorRGBA1, RAST_inColorRGBA2);
+					RAST_NewTriSlotIndex <= "110";
+					RAST_NewTriSlotIndexValid <= '1';
+				elsif (slotsInUse(7) = '0') then
+					slotsInUse(7) <= '1';
+					LoadTriDataIntoSlot(triWorkCacheEntries(7), RAST_inBarycentricInverse, RAST_inPrimitiveID, RAST_inDrawCallID, RAST_inVFACE,
+						RAST_inInvZ0, RAST_inInvZ1, RAST_inInvZ2, RAST_inT0X, RAST_inT0Y, RAST_inT1X, RAST_inT1Y, RAST_inT2X, RAST_inT2Y, RAST_inColorRGBA0, RAST_inColorRGBA1, RAST_inColorRGBA2);
+					RAST_NewTriSlotIndex <= "111";
 					RAST_NewTriSlotIndexValid <= '1';
 				else
-					RAST_NewTriSlotIndex <= "00";
+					RAST_NewTriSlotIndex <= (others => '0');
 					RAST_NewTriSlotIndexValid <= '0';
 				end if;
 			else
-				RAST_NewTriSlotIndex <= "00";
+				RAST_NewTriSlotIndex <= (others => '0');
 				RAST_NewTriSlotIndexValid <= '0';
 			end if;
 		end if;

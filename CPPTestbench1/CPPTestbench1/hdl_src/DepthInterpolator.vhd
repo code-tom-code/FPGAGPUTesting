@@ -25,7 +25,7 @@ entity DepthInterpolator is
 		TRICACHE_inColorRGBA1 : in STD_LOGIC_VECTOR(31 downto 0);
 		TRICACHE_inColorRGBA2 : in STD_LOGIC_VECTOR(31 downto 0);
 
-		TRICACHE_CurrentSlotIndex : out STD_LOGIC_VECTOR(1 downto 0) := (others => '0');
+		TRICACHE_CurrentSlotIndex : out STD_LOGIC_VECTOR(2 downto 0) := (others => '0');
 		TRICACHE_SignalSlotComplete : out STD_LOGIC := '0';
 	-- TriWorkCache per-triangle interface end
 
@@ -622,12 +622,12 @@ DBG_RastBarycentricC <= std_logic_vector(storedDbgBarycentricC);
 
 				when setNewPrimitiveSlot =>
 					readFromFifo <= '0'; -- Stop reading from the FIFO after one cycle in order to not pull more than one item off of the queue
-					TRICACHE_CurrentSlotIndex <= std_logic_vector(storedPixelY(1 downto 0) );
+					TRICACHE_CurrentSlotIndex <= std_logic_vector(storedPixelY(2 downto 0) );
 					currentState <= waitingForRead;
 
 				when signalPrimitiveComplete =>
 					readFromFifo <= '0'; -- Stop reading from the FIFO after one cycle in order to not pull more than one item off of the queue
-					TRICACHE_CurrentSlotIndex <= std_logic_vector(storedPixelY(1 downto 0) ); -- This set isn't really necessary...
+					TRICACHE_CurrentSlotIndex <= std_logic_vector(storedPixelY(2 downto 0) ); -- This set isn't really necessary...
 					TRICACHE_SignalSlotComplete <= '1';
 					currentState <= waitingForRead;
 

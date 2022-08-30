@@ -93,6 +93,9 @@ extern HINSTANCE hLThisDLL;
 #define NUM_JOBS_PER_PIXEL 4
 static unsigned MAX_NUM_JOBS = 0;
 
+// Converted value from QueryPerformanceFrequency():
+static long double ldFreq = 0.0;
+
 static volatile struct _workStatus
 {
 	volatile long numJobs; // Read by worker threads, written by driver thread
@@ -487,6 +490,32 @@ static inline void WorkUntilNoMoreWork(void* const jobData)
 	threadWork = CreateThreadpoolWork(&WorkerThreadCallback, NULL, &poolEnvironment);
 	if (!threadWork) __debugbreak();
 }*/
+
+void SpinLoopForMicros(const unsigned numMicros)
+{
+	if (numMicros < 1)
+		return;
+
+	LARGE_INTEGER waitStartTime = {0};
+	QueryPerformanceCounter(&waitStartTime);
+
+	if (ldFreq == 0.0)
+	{
+		LARGE_INTEGER freq = {0};
+		QueryPerformanceFrequency(&freq);
+		ldFreq = (const long double)(freq.QuadPart);
+	}
+
+	const unsigned __int64 numTicksPerWaitDuration = 1 + (const unsigned __int64)( (numMicros * ldFreq) / 1000000.0);
+	const __int64 endTimeLimit = waitStartTime.QuadPart + numTicksPerWaitDuration;
+
+	LARGE_INTEGER waitEndTime = {0};
+	do
+	{
+		YieldProcessor(); // _mm_pause()
+		QueryPerformanceCounter(&waitEndTime);
+	} while(waitEndTime.QuadPart < endTimeLimit);
+}
 
 template <const unsigned numJobsToRunSinglethreaded>
 static inline void SynchronizeThreads()
@@ -1274,7 +1303,6 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::Present(THI
 #endif
 
 	static LARGE_INTEGER lastPresentTime = {0};
-	static long double ldFreq = 0.0;
 	if (lastPresentTime.QuadPart == 0)
 	{
 		QueryPerformanceCounter(&lastPresentTime);
@@ -4328,6 +4356,9 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawPrimiti
 	if (!TotalDrawCallSkipTest() )
 		return ret;
 
+	if (drawCallSleepMicros > 0)
+		SpinLoopForMicros(drawCallSleepMicros);
+
 	bool usePassthroughVertexShader = false;
 	bool usePassthroughPixelShader = false;
 
@@ -5448,6 +5479,9 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawIndexed
 
 	if (!TotalDrawCallSkipTest() )
 		return S_OK;
+
+	if (drawCallSleepMicros > 0)
+		SpinLoopForMicros(drawCallSleepMicros);
 
 	RecomputeCachedStreamEndsIfDirty();
 
@@ -11074,7 +11108,7 @@ void IDirect3DDevice9Hook::InitializeState(const D3DPRESENT_PARAMETERS& d3dpp, c
 IDirect3DDevice9Hook::IDirect3DDevice9Hook(LPDIRECT3DDEVICE9 _d3d9dev, IDirect3D9Hook* _parentHook) : d3d9dev(_d3d9dev), parentHook(_parentHook), refCount(1), initialDevType(D3DDEVTYPE_HAL), initialCreateFlags(D3DCREATE_HARDWARE_VERTEXPROCESSING),
 	enableDialogs(FALSE), sceneBegun(FALSE), implicitSwapChain(NULL), hConsoleHandle(INVALID_HANDLE_VALUE), numPixelsPassedZTest(0), initialCreateFocusWindow(NULL), initialCreateDeviceWindow(NULL),
 	processedVertexBuffer(NULL), processedVertsUsed(0), processVertsAllocated(0), currentlyRecordingStateBlock(NULL), currentSwvpEnabled(FALSE), deviceComms(NULL), baseDevice(NULL), overrideTexCombinerMode(-1), allocatedDebugShaderRegisterFile(NULL),
-	invertScanoutColors(false), forceDisableDepth(false), scanoutRedSwizzle(setScanoutPointerCommand::dcs_red), scanoutGreenSwizzle(setScanoutPointerCommand::dcs_green), scanoutBlueSwizzle(setScanoutPointerCommand::dcs_blue)
+	invertScanoutColors(false), forceDisableDepth(false), drawCallSleepMicros(0), scanoutRedSwizzle(setScanoutPointerCommand::dcs_red), scanoutGreenSwizzle(setScanoutPointerCommand::dcs_green), scanoutBlueSwizzle(setScanoutPointerCommand::dcs_blue)
 {
 #ifdef _DEBUG
 	m_FirstMember = false;
@@ -11101,7 +11135,7 @@ IDirect3DDevice9Hook::IDirect3DDevice9Hook(LPDIRECT3DDEVICE9 _d3d9dev, IDirect3D
 #ifdef _DEBUG
 	enableVSyncWait = false;
 #else
-	enableVSyncWait = true;
+	enableVSyncWait = false;
 #endif
 
 #ifdef _DEBUG

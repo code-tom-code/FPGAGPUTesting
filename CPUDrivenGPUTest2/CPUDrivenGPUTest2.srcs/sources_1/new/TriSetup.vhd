@@ -221,9 +221,9 @@ ATTRIBUTE X_INTERFACE_PARAMETER of clk: SIGNAL is "FREQ_HZ 333250000";
 														isTopLeftEdge : STD_LOGIC ) return SIGNED is
 	begin
 		if (isTopLeftEdge = '1') then
-			return barycentricCoord - 1;
-		else
 			return barycentricCoord;
+		else
+			return barycentricCoord - 1;
 		end if;
 	end function;
 

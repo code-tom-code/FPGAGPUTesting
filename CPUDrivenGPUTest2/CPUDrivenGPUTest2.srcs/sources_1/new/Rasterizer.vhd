@@ -48,6 +48,7 @@ entity Rasterizer is
 
 	-- Rasterizer Output FIFO interface begin
 		RASTOUT_FIFO_full : in STD_LOGIC;
+		RASTOUT_FIFO_almost_full : in STD_LOGIC;
 		RASTOUT_FIFO_wr_data : out STD_LOGIC_VECTOR(32+32+32+16+16 - 1 downto 0) := (others => '0');
 		RASTOUT_FIFO_wr_en : out STD_LOGIC := '0';
 	-- Rasterizer Output FIFO interface end
@@ -76,7 +77,7 @@ entity Rasterizer is
 
 		TRICACHE_RequestNewTriSlot : out STD_LOGIC := '0';
 		TRICACHE_NewTriSlotIndexValid : in STD_LOGIC;
-		TRICACHE_NewTriSlotIndex : in STD_LOGIC_VECTOR(1 downto 0);
+		TRICACHE_NewTriSlotIndex : in STD_LOGIC_VECTOR(2 downto 0);
 	-- TriWorkCache interface end
 
 	-- Command Processor system interface begin
@@ -92,8 +93,11 @@ entity Rasterizer is
 
 	-- Debug signals
 		DBG_Rasterizer_State : out STD_LOGIC_VECTOR(3 downto 0) := (others => '0');
-		DBG_PixelNumber : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
-		DBG_LineNumber : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
+		DBG_PixelXPos : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
+		DBG_PixelYPos : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
+		DBG_BarycentricA : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		DBG_BarycentricB : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		DBG_BarycentricC : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 		DBG_MinX : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
 		DBG_MaxX : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
 		DBG_MinY : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
@@ -112,6 +116,7 @@ ATTRIBUTE X_INTERFACE_PARAMETER of clk: SIGNAL is "FREQ_HZ 333250000";
 ATTRIBUTE X_INTERFACE_INFO of RASTOUT_FIFO_wr_data: SIGNAL is "xilinx.com:interface:fifo_write:1.0 RASTOUT_FIFO WR_DATA";
 ATTRIBUTE X_INTERFACE_INFO of RASTOUT_FIFO_wr_en: SIGNAL is "xilinx.com:interface:fifo_write:1.0 RASTOUT_FIFO WR_EN";
 ATTRIBUTE X_INTERFACE_INFO of RASTOUT_FIFO_full: SIGNAL is "xilinx.com:interface:fifo_write:1.0 RASTOUT_FIFO FULL";
+ATTRIBUTE X_INTERFACE_INFO of RASTOUT_FIFO_almost_full: SIGNAL is "xilinx.com:interface:fifo_write:1.0 RASTOUT_FIFO ALMOST_FULL";
 
 	type state_t is (
 		triRasterize_waitForTriData, -- 0
@@ -142,14 +147,31 @@ type vertexAttributes is record
 	invZ : unsigned(31 downto 0);
 end record vertexAttributes;
 
-	pure function barycentricInside(barycentricVal : signed(31 downto 0) ) return std_logic is
+type rasterizedPixelData is record
+	barycentricA : signed(31 downto 0);
+	barycentricB : signed(31 downto 0);
+	barycentricC : signed(31 downto 0);
+	pixelX : unsigned(15 downto 0);
+	pixelY : unsigned(15 downto 0);
+end record rasterizedPixelData;
+
+constant zeroInitPixelData : rasterizedPixelData := (barycentricA => (others => '0'), barycentricB => (others => '0'), barycentricC => (others => '0'), pixelX => (others => '0'), pixelY => (others => '0') );
+
+	pure function barycentricInside(barycentricVal : signed(31 downto 0) ) return boolean is
 	begin
-		if (barycentricVal >= 0) then
-			return '1';
-		else
-			return '0';
-		end if;
+		return (barycentricVal > -1);
 	end function;
+
+	procedure StoreRasterizedPixelData(signal inPixelX : in unsigned(15 downto 0); signal inPixelY : in unsigned(15 downto 0); 
+		variable inBarycentricA : in signed(31 downto 0); variable inBarycentricB : in signed(31 downto 0); variable inBarycentricC : in signed(31 downto 0);
+		signal fillPixelData : out rasterizedPixelData) is
+	begin
+		fillPixelData.barycentricA <= inBarycentricA;
+		fillPixelData.barycentricB <= inBarycentricB;
+		fillPixelData.barycentricC <= inBarycentricC;
+		fillPixelData.pixelX <= inPixelX;
+		fillPixelData.pixelY <= inPixelY;
+	end procedure;
 
 signal minX : unsigned(15 downto 0) := (others => '0');
 signal minY : unsigned(15 downto 0) := (others => '0');
@@ -178,8 +200,8 @@ signal barycentricYDeltaC : signed(15 downto 0) := (others => '0');
 
 signal barycentricInverse : unsigned(31 downto 0) := (others => '0');
 
-signal pixelNumber : unsigned(15 downto 0) := (others => '0'); -- stores values from 0 to 64k, but we only need from 0 to 800
-signal lineNumber : unsigned(15 downto 0) := (others => '0'); -- stores values from 0 to 64k, but we only need from 0 to 525
+signal pixelXPos : unsigned(15 downto 0) := (others => '0'); -- stores values from 0 to 64k, but we only need from 0 to 800
+signal pixelYPos : unsigned(15 downto 0) := (others => '0'); -- stores values from 0 to 64k, but we only need from 0 to 525
 
 signal currentState : state_t := triRasterize_waitForTriData;
 
@@ -187,15 +209,11 @@ signal stats_totalPixelsRasterized : unsigned(31 downto 0) := (others => '0');
 
 signal readyForNewTri : STD_LOGIC := '0';
 
-signal numPixelsSuccessfulThisTriangle : unsigned(23 downto 0) := (others => '0');
-signal currentTriangleAllocatedSlot : unsigned(1 downto 0) := (others => '0');
+signal hasWrittenPixelsForThisTriangle : std_logic := '0';
+signal currentTriangleAllocatedSlot : unsigned(2 downto 0) := (others => '0');
 
 signal fifoWriteData : STD_LOGIC_VECTOR(32+32+32+16+16 - 1 downto 0) := (others => '0');
 signal fifoWriteEnable : STD_LOGIC := '0';
-
-signal fifoWriteBarycentricA : signed(31 downto 0) := (others => '0');
-signal fifoWriteBarycentricB : signed(31 downto 0) := (others => '0');
-signal fifoWriteBarycentricC : signed(31 downto 0) := (others => '0');
 
 signal vertDataA : vertexAttributes;
 signal vertDataB : vertexAttributes;
@@ -205,6 +223,8 @@ signal statCyclesIdle : unsigned(31 downto 0) := (others => '0');
 signal statCyclesWorking : unsigned(31 downto 0) := (others => '0');
 signal statCyclesWaitingForOutput : unsigned(31 downto 0) := (others => '0');
 signal statCyclesWaitingForTriWorkCache : unsigned(31 downto 0) := (others => '0');
+
+signal writeOutPixelData : rasterizedPixelData := zeroInitPixelData;
 
 begin
 
@@ -218,8 +238,11 @@ STAT_CyclesWaitingForOutput <= std_logic_vector(statCyclesWaitingForOutput);
 STAT_CyclesWaitingForTriWorkCache <= std_logic_vector(statCyclesWaitingForTriWorkCache);
 
 DBG_Rasterizer_State <= std_logic_vector(to_unsigned(state_t'pos(currentState), 4) );
-DBG_PixelNumber <= std_logic_vector(pixelNumber);
-DBG_LineNumber <= std_logic_vector(lineNumber);
+DBG_PixelXPos <= std_logic_vector(pixelXPos);
+DBG_PixelYPos <= std_logic_vector(pixelYPos);
+DBG_BarycentricA <= std_logic_vector(barycentricA);
+DBG_BarycentricB <= std_logic_vector(barycentricB);
+DBG_BarycentricC <= std_logic_vector(barycentricC);
 DBG_MinX <= std_logic_vector(minX);
 DBG_MaxX <= std_logic_vector(maxX);
 DBG_MinY <= std_logic_vector(minY);
@@ -245,14 +268,18 @@ DBG_MaxY <= std_logic_vector(maxY);
 	end process;
 
 	process(clk)
+		variable tempBarycentricA : signed(31 downto 0);
+		variable tempBarycentricB : signed(31 downto 0);
+		variable tempBarycentricC : signed(31 downto 0);
 	begin
 		if (rising_edge(clk) ) then
 			case currentState is
 				-- Load new triangle data
 				when triRasterize_waitForTriData =>
+					fifoWriteEnable <= '0';
 					if (TRISETUP_newTriBegin = '1' and readyForNewTri = '1') then
-						pixelNumber <= unsigned(TRISETUP_inMinX);
-						lineNumber <= unsigned(TRISETUP_inMinY);
+						pixelXPos <= unsigned(TRISETUP_inMinX);
+						pixelYPos <= unsigned(TRISETUP_inMinY);
 
 						CMD_Rasterizer_Idle <= '0'; -- We just got some new work, cancel our idle state!
 
@@ -303,11 +330,11 @@ DBG_MaxY <= std_logic_vector(maxY);
 						vertDataC.invZ <= unsigned(TRISETUP_inInvZ2);
 
 						-- Set the initial values of our barycentric coordinates to the starting row reset values:
-						barycentricA <= signed(TRISETUP_inInitialBarycentricRowResetA);
-						barycentricB <= signed(TRISETUP_inInitialBarycentricRowResetB);
-						barycentricC <= signed(TRISETUP_inInitialBarycentricRowResetC);
+						barycentricA <= signed(TRISETUP_inInitialBarycentricRowResetA) + resize(signed(TRISETUP_inBarycentricXDeltaA), barycentricA'length);
+						barycentricB <= signed(TRISETUP_inInitialBarycentricRowResetB) + resize(signed(TRISETUP_inBarycentricXDeltaB), barycentricB'length);
+						barycentricC <= signed(TRISETUP_inInitialBarycentricRowResetC) + resize(signed(TRISETUP_inBarycentricXDeltaC), barycentricC'length);
 
-						numPixelsSuccessfulThisTriangle <= (others => '0');
+						hasWrittenPixelsForThisTriangle <= '0';
 
 						readyForNewTri <= '0';
 						currentState <= triRasterize_mainLoop;
@@ -320,66 +347,75 @@ DBG_MaxY <= std_logic_vector(maxY);
 					end if;
 
 				when triRasterize_mainLoop =>
-					if (pixelNumber < maxX and lineNumber < maxY) then
-						if (barycentricInside(barycentricA) = '1' and barycentricInside(barycentricB) = '1' and barycentricInside(barycentricC) = '1') then
+					fifoWriteEnable <= '0';
+					if (pixelXPos < maxX and pixelYPos <= maxY) then
+						if (barycentricInside(barycentricA) and barycentricInside(barycentricB) and barycentricInside(barycentricC) ) then
 							if (isTopLeftEdgeA = '0') then
-								fifoWriteBarycentricA <= barycentricA + 1;
+								tempBarycentricA := barycentricA + 1;
 							else
-								fifoWriteBarycentricA <= barycentricA;
+								tempBarycentricA := barycentricA;
 							end if;
 							if (isTopLeftEdgeB = '0') then
-								fifoWriteBarycentricB <= barycentricB + 1;
+								tempBarycentricB := barycentricB + 1;
 							else
-								fifoWriteBarycentricB <= barycentricB;
+								tempBarycentricB := barycentricB;
 							end if;
 							if (isTopLeftEdgeC = '0') then
-								fifoWriteBarycentricC <= barycentricC + 1;
+								tempBarycentricC := barycentricC + 1;
 							else
-								fifoWriteBarycentricC <= barycentricC;
+								tempBarycentricC := barycentricC;
 							end if;
 
-							if (numPixelsSuccessfulThisTriangle = 0) then
-								currentState <= triRasterize_allocateNewTriCacheSlot;
+							if (RASTOUT_FIFO_full = '0' and RASTOUT_FIFO_almost_full = '0' and hasWrittenPixelsForThisTriangle = '1') then
+								fifoWriteEnable <= '1';
+								fifoWriteData <= std_logic_vector(pixelYPos) & std_logic_vector(pixelXPos) & 
+									std_logic_vector(tempBarycentricC) & std_logic_vector(tempBarycentricB) & std_logic_vector(tempBarycentricA);
+								hasWrittenPixelsForThisTriangle <= '1';
+								stats_totalPixelsRasterized <= stats_totalPixelsRasterized + 1;
 							else
+								StoreRasterizedPixelData(pixelXPos, pixelYPos, tempBarycentricA, tempBarycentricB, tempBarycentricC, writeOutPixelData);
 								currentState <= triRasterize_waitForWriteComplete;
+							end if;
+
+							if (hasWrittenPixelsForThisTriangle = '0') then
+								currentState <= triRasterize_allocateNewTriCacheSlot;
 							end if;
 						end if;
 
 						-- We haven't reached anything, keep marching pixels along to the right (+X direction)
-						pixelNumber <= pixelNumber + 1;
+						pixelXPos <= pixelXPos + 1;
 						barycentricA <= barycentricA + resize(barycentricXDeltaA, barycentricA'length);
 						barycentricB <= barycentricB + resize(barycentricXDeltaB, barycentricB'length);
 						barycentricC <= barycentricC + resize(barycentricXDeltaC, barycentricC'length);
-					elsif (lineNumber = maxY) then
+					elsif (pixelYPos > maxY) then
 						-- We've reached the bottom! We're done with this triangle!
-						if (numPixelsSuccessfulThisTriangle > 0) then
+						if (hasWrittenPixelsForThisTriangle = '1') then
 							currentState <= triRasterize_sendFinishTriCommand;
 						else
 							currentState <= triRasterize_waitForTriData;
 						end if;
-					else --elsif (pixelNumber = maxX) then
+					else --elsif (pixelXPos = maxX) then
 						-- We've reached the rightmost pixel, time to restart at the left again:
-						pixelNumber <= minX;
-						lineNumber <= lineNumber + 1;
-						barycentricA <= barycentricRowResetA + resize(barycentricYDeltaA, barycentricRowResetA'length);
-						barycentricB <= barycentricRowResetB + resize(barycentricYDeltaB, barycentricRowResetB'length);
-						barycentricC <= barycentricRowResetC + resize(barycentricYDeltaC, barycentricRowResetC'length);
+						pixelXPos <= minX;
+						pixelYPos <= pixelYPos + 1;
+						barycentricA <= barycentricRowResetA + resize(barycentricYDeltaA, barycentricRowResetA'length) + resize(barycentricXDeltaA, barycentricRowResetA'length);
+						barycentricB <= barycentricRowResetB + resize(barycentricYDeltaB, barycentricRowResetB'length) + resize(barycentricXDeltaB, barycentricRowResetB'length);
+						barycentricC <= barycentricRowResetC + resize(barycentricYDeltaC, barycentricRowResetC'length) + resize(barycentricXDeltaC, barycentricRowResetC'length);
 						barycentricRowResetA <= barycentricRowResetA + resize(barycentricYDeltaA, barycentricRowResetA'length);
 						barycentricRowResetB <= barycentricRowResetB + resize(barycentricYDeltaB, barycentricRowResetB'length);
 						barycentricRowResetC <= barycentricRowResetC + resize(barycentricYDeltaC, barycentricRowResetC'length);
 					end if;
 
 				when triRasterize_waitForWriteComplete =>
-					if (RASTOUT_FIFO_full = '0' and fifoWriteEnable = '1') then
-						fifoWriteEnable <= '0'; -- Deassert after one clock cycle
-						currentState <= triRasterize_mainLoop;
-					elsif (RASTOUT_FIFO_full = '0') then
+					if (RASTOUT_FIFO_full = '0' and RASTOUT_FIFO_almost_full = '0') then
 						fifoWriteEnable <= '1';
-						fifoWriteData <= std_logic_vector(lineNumber) & std_logic_vector(pixelNumber) & 
-							std_logic_vector(fifoWriteBarycentricC) & std_logic_vector(fifoWriteBarycentricB) & std_logic_vector(fifoWriteBarycentricA);
+						fifoWriteData <= std_logic_vector(writeOutPixelData.pixelY) & std_logic_vector(writeOutPixelData.pixelX) & 
+							std_logic_vector(writeOutPixelData.barycentricC) & std_logic_vector(writeOutPixelData.barycentricB) & std_logic_vector(writeOutPixelData.barycentricA);
 
-						numPixelsSuccessfulThisTriangle <= numPixelsSuccessfulThisTriangle + 1;
+						hasWrittenPixelsForThisTriangle <= '1';
 						stats_totalPixelsRasterized <= stats_totalPixelsRasterized + 1;
+
+						currentState <= triRasterize_mainLoop;
 					else
 						fifoWriteEnable <= '0';
 					end if;
@@ -414,25 +450,23 @@ DBG_MaxY <= std_logic_vector(maxY);
 					end if;
 
 				when triRasterize_sendSetNewTriSlotCommand =>
-					if (RASTOUT_FIFO_full = '0' and fifoWriteEnable = '1') then
-						fifoWriteEnable <= '0'; -- Deassert after one clock cycle
-						currentState <= triRasterize_waitForWriteComplete;
-					elsif (RASTOUT_FIFO_full = '0') then
+					if (RASTOUT_FIFO_full = '0' and RASTOUT_FIFO_almost_full = '0') then
 						fifoWriteEnable <= '1';
-						fifoWriteData <= "00000000000000" & std_logic_vector(currentTriangleAllocatedSlot) & x"FFFE" & -- FFFE means "set this new triangle slot"
+						fifoWriteData <= "0000000000000" & std_logic_vector(currentTriangleAllocatedSlot) & x"FFFE" & -- FFFE means "set this new triangle slot"
 							x"00000000" & x"00000000" & x"00000000";
+
+						currentState <= triRasterize_waitForWriteComplete;
 					else
 						fifoWriteEnable <= '0';
 					end if;
 
 				when triRasterize_sendFinishTriCommand =>
-					if (RASTOUT_FIFO_full = '0' and fifoWriteEnable = '1') then
-						fifoWriteEnable <= '0'; -- Deassert after one clock cycle
-						currentState <= triRasterize_waitForTriData;
-					elsif (RASTOUT_FIFO_full = '0') then
+					if (RASTOUT_FIFO_full = '0' and RASTOUT_FIFO_almost_full = '0') then
 						fifoWriteEnable <= '1';
-						fifoWriteData <= "00000000000000" & std_logic_vector(currentTriangleAllocatedSlot) & x"FFFF" & -- FFFF means "finish this triangle"
+						fifoWriteData <= "0000000000000" & std_logic_vector(currentTriangleAllocatedSlot) & x"FFFF" & -- FFFF means "finish this triangle"
 							x"00000000" & x"00000000" & x"00000000";
+
+						currentState <= triRasterize_waitForTriData;
 					else
 						fifoWriteEnable <= '0';
 					end if;

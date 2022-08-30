@@ -1,5 +1,5 @@
-# vhdl work AttrInterpolator.vhd
+# vhdl work DepthInterpolator.vhd
 # List other files here
 vhdl xil_defaultlib  \
 "hdl_src/FloatALU_Types.vhd" \
-"hdl_src/AttrInterpolator.vhd" \
+"hdl_src/DepthInterpolator.vhd" \

@@ -1899,7 +1899,7 @@ proc create_root_design { parentCell } {
    CONFIG.C_MONITOR_TYPE {Native} \
    CONFIG.C_NUM_OF_PROBES {32} \
    CONFIG.C_PROBE0_WIDTH {16} \
-   CONFIG.C_PROBE10_WIDTH {3} \
+   CONFIG.C_PROBE10_WIDTH {4} \
    CONFIG.C_PROBE11_WIDTH {32} \
    CONFIG.C_PROBE12_WIDTH {32} \
    CONFIG.C_PROBE13_WIDTH {32} \
@@ -2418,19 +2418,33 @@ proc create_root_design { parentCell } {
   # Create instance: rast_out_fifo, and set properties
   set rast_out_fifo [ create_bd_cell -type ip -vlnv xilinx.com:ip:fifo_generator:13.2 rast_out_fifo ]
   set_property -dict [ list \
-   CONFIG.Data_Count_Width {9} \
+   CONFIG.Almost_Empty_Flag {false} \
+   CONFIG.Almost_Full_Flag {true} \
+   CONFIG.Data_Count {false} \
+   CONFIG.Data_Count_Width {10} \
    CONFIG.Empty_Threshold_Assert_Value {4} \
    CONFIG.Empty_Threshold_Negate_Value {5} \
+   CONFIG.Fifo_Implementation {Common_Clock_Block_RAM} \
    CONFIG.Full_Threshold_Assert_Value {511} \
    CONFIG.Full_Threshold_Negate_Value {510} \
    CONFIG.Input_Data_Width {128} \
    CONFIG.Input_Depth {512} \
    CONFIG.Output_Data_Width {128} \
    CONFIG.Output_Depth {512} \
+   CONFIG.Overflow_Flag {false} \
    CONFIG.Performance_Options {First_Word_Fall_Through} \
-   CONFIG.Read_Data_Count_Width {9} \
-   CONFIG.Use_Embedded_Registers {true} \
-   CONFIG.Write_Data_Count_Width {9} \
+   CONFIG.Programmable_Empty_Type {No_Programmable_Empty_Threshold} \
+   CONFIG.Programmable_Full_Type {No_Programmable_Full_Threshold} \
+   CONFIG.Read_Data_Count_Width {10} \
+   CONFIG.Reset_Pin {false} \
+   CONFIG.Reset_Type {Asynchronous_Reset} \
+   CONFIG.Underflow_Flag {false} \
+   CONFIG.Use_Dout_Reset {false} \
+   CONFIG.Use_Embedded_Registers {false} \
+   CONFIG.Use_Extra_Logic {true} \
+   CONFIG.Valid_Flag {false} \
+   CONFIG.Write_Acknowledge_Flag {false} \
+   CONFIG.Write_Data_Count_Width {10} \
    CONFIG.asymmetric_port_width {false} \
  ] $rast_out_fifo
 
@@ -2724,12 +2738,12 @@ proc create_root_design { parentCell } {
   connect_bd_net -net ROP_0_STAT_CyclesWaitingForOutput [get_bd_pins ROP_0/STAT_CyclesWaitingForOutput] [get_bd_pins StatsCollector_0/ROP_CyclesWaitingForOutput]
   connect_bd_net -net ROP_0_TEXSAMP_writeAck [get_bd_pins ROP_0/TEXSAMP_writeAck] [get_bd_pins TexSample_0/ROP_writeAck]
   connect_bd_net -net Rasterizer_0_CMD_Rasterizer_Idle [get_bd_pins CommandProcessor_0/CMD_Rasterizer_Idle] [get_bd_pins Rasterizer_0/CMD_Rasterizer_Idle]
-  connect_bd_net -net Rasterizer_0_DBG_LineNumber [get_bd_pins Rasterizer_0/DBG_LineNumber] [get_bd_pins ila_333_250/probe30]
   connect_bd_net -net Rasterizer_0_DBG_MaxX [get_bd_pins Rasterizer_0/DBG_MaxX] [get_bd_pins ila_333_250/probe32]
   connect_bd_net -net Rasterizer_0_DBG_MaxY [get_bd_pins Rasterizer_0/DBG_MaxY] [get_bd_pins ila_333_250/probe34]
   connect_bd_net -net Rasterizer_0_DBG_MinX [get_bd_pins Rasterizer_0/DBG_MinX] [get_bd_pins ila_333_250/probe31]
   connect_bd_net -net Rasterizer_0_DBG_MinY [get_bd_pins Rasterizer_0/DBG_MinY] [get_bd_pins ila_333_250/probe33]
-  connect_bd_net -net Rasterizer_0_DBG_PixelNumber [get_bd_pins Rasterizer_0/DBG_PixelNumber] [get_bd_pins ila_333_250/probe29]
+  connect_bd_net -net Rasterizer_0_DBG_PixelXPos [get_bd_pins Rasterizer_0/DBG_PixelXPos] [get_bd_pins ila_333_250/probe29]
+  connect_bd_net -net Rasterizer_0_DBG_PixelYPos [get_bd_pins Rasterizer_0/DBG_PixelYPos] [get_bd_pins ila_333_250/probe30]
   connect_bd_net -net Rasterizer_0_DBG_Rasterizer_State [get_bd_pins Rasterizer_0/DBG_Rasterizer_State] [get_bd_pins ila_333_250/probe6]
   connect_bd_net -net Rasterizer_0_STAT_CyclesIdle [get_bd_pins Rasterizer_0/STAT_CyclesIdle] [get_bd_pins StatsCollector_0/RAST_CyclesIdle]
   connect_bd_net -net Rasterizer_0_STAT_CyclesSpentWorking [get_bd_pins Rasterizer_0/STAT_CyclesSpentWorking] [get_bd_pins StatsCollector_0/RAST_CyclesSpentWorking]
@@ -2925,7 +2939,6 @@ proc create_root_design { parentCell } {
   connect_bd_net -net ddr4_0_addn_ui_clkout1 [get_bd_pins MemorySystem/addn_ui_clkout1] [get_bd_pins ScanoutSystem/clk_in1] [get_bd_pins SerialPacketSystem/s_axi_aclk] [get_bd_pins proc_sys_reset_0/slowest_sync_clk]
   connect_bd_net -net ddr4_0_c0_ddr4_ui_clk [get_bd_pins AttrInterp_FPU/clk] [get_bd_pins AttrInterp_UNORM8ToFloat/clk] [get_bd_pins AttrInterpolator_0/clk] [get_bd_pins ClearBlock_0/clk] [get_bd_pins CommandProcessor_0/clk] [get_bd_pins DepthBuffer_0/clk] [get_bd_pins DepthInterp_FPU/clk] [get_bd_pins DepthInterpolator_0/clk] [get_bd_pins ILA_AttrInterpolator/clk] [get_bd_pins ILA_IA/clk] [get_bd_pins ILA_TexSampler/clk] [get_bd_pins ILA_TriSetup/clk] [get_bd_pins IndexBufferCache_0/clk] [get_bd_pins InputAssembler2_0/clk] [get_bd_pins MemorySystem/c0_ddr4_ui_clk] [get_bd_pins ROP_0/clk] [get_bd_pins Rasterizer_0/clk] [get_bd_pins ScanoutSystem/cmd_clk] [get_bd_pins SerialPacketSystem/rd_clk] [get_bd_pins ShaderCoreSystem/clk_0] [get_bd_pins StatsCollector_0/clk] [get_bd_pins TexSample_0/clk] [get_bd_pins TextureCache_128x128x32bits/clka] [get_bd_pins TriSetup_0/clk] [get_bd_pins TriSetup_FPU/clk] [get_bd_pins TriWorkCache_0/clk] [get_bd_pins VBB_FIFO/clk] [get_bd_pins VBO_FIFO/clk] [get_bd_pins VBO_INDEX_FIFO/clk] [get_bd_pins VertexBatchBuilder_0/clk] [get_bd_pins ila_333_250/clk] [get_bd_pins rast_out_fifo/clk] [get_bd_pins vio_0/clk]
   connect_bd_net -net fifo_generator_0_dout [get_bd_pins ILA_IA/probe14] [get_bd_pins ShaderCoreSystem/VERTBATCH_FIFO_0_rd_data] [get_bd_pins VBB_FIFO/dout]
-  connect_bd_net -net no_reset_dout [get_bd_pins no_reset/dout] [get_bd_pins rast_out_fifo/srst]
   connect_bd_net -net placeholder_texcfg_dout [get_bd_pins TriSetup_0/TEXCFG_nointerpolation] [get_bd_pins placeholder_texcfg/dout]
   connect_bd_net -net rd_clk_1 [get_bd_pins MemorySystem/rd_clk] [get_bd_pins ScanoutSystem/clk_out1]
   connect_bd_net -net reset_1 [get_bd_ports reset] [get_bd_pins MemorySystem/reset] [get_bd_pins ResetN_UntilClockLoc_0/reset] [get_bd_pins ScanoutSystem/reset] [get_bd_pins SerialPacketSystem/reset] [get_bd_pins proc_sys_reset_0/ext_reset_in]

@@ -47,7 +47,6 @@ void EmulateCPURasterizer(const triSetupOutput& triSetupData, std::vector<raster
 				rasterizedPixelData newPixel;
 				newPixel.pixelX = x;
 				newPixel.pixelY = y;
-				newPixel.barycentricA = adjustedBarycentricA;
 				newPixel.barycentricB = adjustedBarycentricB;
 				newPixel.barycentricC = adjustedBarycentricC;
 				outRasterizedPixels.push_back(newPixel);
@@ -90,25 +89,28 @@ const int RunTestsRasterizer(Xsi::Loader& loader)
 	std_logic_vector_port<32> TRISETUP_inBarycentricInverse(PD_IN, loader, "TRISETUP_inBarycentricInverse");
 
 	std_logic_vector_port<32> TRISETUP_inInvZ0(PD_IN, loader, "TRISETUP_inInvZ0");
-	std_logic_vector_port<32> TRISETUP_inInvZ1(PD_IN, loader, "TRISETUP_inInvZ1");
-	std_logic_vector_port<32> TRISETUP_inInvZ2(PD_IN, loader, "TRISETUP_inInvZ2");
+	std_logic_vector_port<32> TRISETUP_inInvZ10(PD_IN, loader, "TRISETUP_inInvZ10");
+	std_logic_vector_port<32> TRISETUP_inInvZ20(PD_IN, loader, "TRISETUP_inInvZ20");
+	std_logic_vector_port<32> TRISETUP_inInvW0(PD_IN, loader, "TRISETUP_inInvW0");
+	std_logic_vector_port<32> TRISETUP_inInvW10(PD_IN, loader, "TRISETUP_inInvW10");
+	std_logic_vector_port<32> TRISETUP_inInvW20(PD_IN, loader, "TRISETUP_inInvW20");
 
-	std_logic_vector_port<16> TRISETUP_inTX0(PD_IN, loader, "TRISETUP_inTX0");
-	std_logic_vector_port<16> TRISETUP_inTY0(PD_IN, loader, "TRISETUP_inTY0");
-	std_logic_vector_port<16> TRISETUP_inTX1(PD_IN, loader, "TRISETUP_inTX1");
-	std_logic_vector_port<16> TRISETUP_inTY1(PD_IN, loader, "TRISETUP_inTY1");
-	std_logic_vector_port<16> TRISETUP_inTX2(PD_IN, loader, "TRISETUP_inTX2");
-	std_logic_vector_port<16> TRISETUP_inTY2(PD_IN, loader, "TRISETUP_inTY2");
+	std_logic_vector_port<32> TRISETUP_inTX0(PD_IN, loader, "TRISETUP_inTX0");
+	std_logic_vector_port<32> TRISETUP_inTY0(PD_IN, loader, "TRISETUP_inTY0");
+	std_logic_vector_port<32> TRISETUP_inTX10(PD_IN, loader, "TRISETUP_inTX10");
+	std_logic_vector_port<32> TRISETUP_inTY10(PD_IN, loader, "TRISETUP_inTY10");
+	std_logic_vector_port<32> TRISETUP_inTX20(PD_IN, loader, "TRISETUP_inTX20");
+	std_logic_vector_port<32> TRISETUP_inTY20(PD_IN, loader, "TRISETUP_inTY20");
 
-	std_logic_vector_port<32> TRISETUP_inVertColor0(PD_IN, loader, "TRISETUP_inVertColor0");
-	std_logic_vector_port<32> TRISETUP_inVertColor1(PD_IN, loader, "TRISETUP_inVertColor1");
-	std_logic_vector_port<32> TRISETUP_inVertColor2(PD_IN, loader, "TRISETUP_inVertColor2");
+	std_logic_vector_port<128> TRISETUP_inVertColor0(PD_IN, loader, "TRISETUP_inVertColor0");
+	std_logic_vector_port<128> TRISETUP_inVertColor10(PD_IN, loader, "TRISETUP_inVertColor10");
+	std_logic_vector_port<128> TRISETUP_inVertColor20(PD_IN, loader, "TRISETUP_inVertColor20");
 // Triangle Setup interface end
 
 // Rasterizer Output FIFO interface begin
 	std_logic_port RASTOUT_FIFO_full(PD_IN, loader, "RASTOUT_FIFO_full");
 	std_logic_port RASTOUT_FIFO_almost_full(PD_IN, loader, "RASTOUT_FIFO_almost_full");
-	std_logic_vector_port<32+32+32+16+16> RASTOUT_FIFO_wr_data(PD_OUT, loader, "RASTOUT_FIFO_wr_data");
+	std_logic_vector_port<32+32+16+16> RASTOUT_FIFO_wr_data(PD_OUT, loader, "RASTOUT_FIFO_wr_data");
 	std_logic_port RASTOUT_FIFO_wr_en(PD_OUT, loader, "RASTOUT_FIFO_wr_en");
 // Rasterizer Output FIFO interface end
 		
@@ -119,20 +121,24 @@ const int RunTestsRasterizer(Xsi::Loader& loader)
 	std_logic_port TRICACHE_VFACE(PD_OUT, loader, "TRICACHE_VFACE");
 
 	std_logic_vector_port<32> TRICACHE_InvZ0(PD_OUT, loader, "TRICACHE_InvZ0");
-	std_logic_vector_port<32> TRICACHE_InvZ1(PD_OUT, loader, "TRICACHE_InvZ1");
-	std_logic_vector_port<32> TRICACHE_InvZ2(PD_OUT, loader, "TRICACHE_InvZ2");
+	std_logic_vector_port<32> TRICACHE_InvZ10(PD_OUT, loader, "TRICACHE_InvZ10");
+	std_logic_vector_port<32> TRICACHE_InvZ20(PD_OUT, loader, "TRICACHE_InvZ20");
 
-	std_logic_vector_port<16> TRICACHE_TX0(PD_OUT, loader, "TRICACHE_TX0");
-	std_logic_vector_port<16> TRICACHE_TX1(PD_OUT, loader, "TRICACHE_TX1");
-	std_logic_vector_port<16> TRICACHE_TX2(PD_OUT, loader, "TRICACHE_TX2");
+	std_logic_vector_port<32> TRICACHE_InvW0(PD_OUT, loader, "TRICACHE_InvW0");
+	std_logic_vector_port<32> TRICACHE_InvW10(PD_OUT, loader, "TRICACHE_InvW10");
+	std_logic_vector_port<32> TRICACHE_InvW20(PD_OUT, loader, "TRICACHE_InvW20");
 
-	std_logic_vector_port<16> TRICACHE_TY0(PD_OUT, loader, "TRICACHE_TY0");
-	std_logic_vector_port<16> TRICACHE_TY1(PD_OUT, loader, "TRICACHE_TY1");
-	std_logic_vector_port<16> TRICACHE_TY2(PD_OUT, loader, "TRICACHE_TY2");
+	std_logic_vector_port<32> TRICACHE_TX0(PD_OUT, loader, "TRICACHE_TX0");
+	std_logic_vector_port<32> TRICACHE_TX10(PD_OUT, loader, "TRICACHE_TX10");
+	std_logic_vector_port<32> TRICACHE_TX20(PD_OUT, loader, "TRICACHE_TX20");
 
-	std_logic_vector_port<32> TRICACHE_VertColor0(PD_OUT, loader, "TRICACHE_VertColor0");
-	std_logic_vector_port<32> TRICACHE_VertColor1(PD_OUT, loader, "TRICACHE_VertColor1");
-	std_logic_vector_port<32> TRICACHE_VertColor2(PD_OUT, loader, "TRICACHE_VertColor2");
+	std_logic_vector_port<32> TRICACHE_TY0(PD_OUT, loader, "TRICACHE_TY0");
+	std_logic_vector_port<32> TRICACHE_TY10(PD_OUT, loader, "TRICACHE_TY10");
+	std_logic_vector_port<32> TRICACHE_TY20(PD_OUT, loader, "TRICACHE_TY20");
+
+	std_logic_vector_port<128> TRICACHE_VertColor0(PD_OUT, loader, "TRICACHE_VertColor0");
+	std_logic_vector_port<128> TRICACHE_VertColor10(PD_OUT, loader, "TRICACHE_VertColor10");
+	std_logic_vector_port<128> TRICACHE_VertColor20(PD_OUT, loader, "TRICACHE_VertColor20");
 
 	std_logic_port TRICACHE_RequestNewTriSlot(PD_OUT, loader, "TRICACHE_RequestNewTriSlot");
 	std_logic_port TRICACHE_NewTriSlotIndexValid(PD_IN, loader, "TRICACHE_NewTriSlotIndexValid");
@@ -163,22 +169,29 @@ const int RunTestsRasterizer(Xsi::Loader& loader)
 
 	auto validateTriCacheData = [&](const triSetupOutput& triData)
 	{
-		if (TRICACHE_BarycentricInverse.GetFloat32Val() != triData.barycentricInverse ||
-			TRICACHE_InvZ0.GetFloat32Val() != triData.v0.invZ ||
-			TRICACHE_InvZ1.GetFloat32Val() != triData.v1.invZ ||
-			TRICACHE_InvZ2.GetFloat32Val() != triData.v2.invZ ||
-			TRICACHE_TX0.GetInt16Val() != triData.v0.xTex ||
-			TRICACHE_TX1.GetInt16Val() != triData.v1.xTex ||
-			TRICACHE_TX2.GetInt16Val() != triData.v2.xTex ||
-			TRICACHE_TY0.GetInt16Val() != triData.v0.yTex ||
-			TRICACHE_TY1.GetInt16Val() != triData.v1.yTex ||
-			TRICACHE_TY2.GetInt16Val() != triData.v2.yTex ||
-			TRICACHE_VertColor0.GetUint32Val() != triData.v0.rgba ||
-			TRICACHE_VertColor1.GetUint32Val() != triData.v1.rgba ||
-			TRICACHE_VertColor2.GetUint32Val() != triData.v2.rgba)
-		{
-			__debugbreak();
-		}
+		if (TRICACHE_BarycentricInverse.GetFloat32Val() != triData.barycentricInverse) { __debugbreak(); }
+		if (TRICACHE_InvZ0.GetFloat32Val() != triData.v0.invZ) { __debugbreak(); }
+		if (TRICACHE_InvZ10.GetFloat32Val() != triData.v10.invZ) { __debugbreak(); }
+		if (TRICACHE_InvZ20.GetFloat32Val() != triData.v20.invZ) { __debugbreak(); }
+		if (TRICACHE_InvW0.GetFloat32Val() != triData.v0.invW) { __debugbreak(); }
+		if (TRICACHE_InvW10.GetFloat32Val() != triData.v10.invW) { __debugbreak(); }
+		if (TRICACHE_InvW20.GetFloat32Val() != triData.v20.invW) { __debugbreak(); }
+		if (TRICACHE_TX0.GetFloat32Val() != triData.v0.xTex) { __debugbreak(); }
+		if (TRICACHE_TX10.GetFloat32Val() != triData.v10.xTex) { __debugbreak(); }
+		if (TRICACHE_TX20.GetFloat32Val() != triData.v20.xTex) { __debugbreak(); }
+		if (TRICACHE_TY0.GetFloat32Val() != triData.v0.yTex) { __debugbreak(); }
+		if (TRICACHE_TY10.GetFloat32Val() != triData.v10.yTex) { __debugbreak(); }
+		if (TRICACHE_TY20.GetFloat32Val() != triData.v20.yTex) { __debugbreak(); }
+
+		vertAttributes::_rgba vc0;
+		vertAttributes::_rgba vc10;
+		vertAttributes::_rgba vc20;
+		TRICACHE_VertColor0.GetStructVal(vc0);
+		TRICACHE_VertColor10.GetStructVal(vc10);
+		TRICACHE_VertColor20.GetStructVal(vc20);
+		if (memcmp(&triData.v0.rgba, &vc0, sizeof(vc0) ) != 0) { __debugbreak(); }
+		if (memcmp(&triData.v10.rgba, &vc10, sizeof(vc10) ) != 0) { __debugbreak(); }
+		if (memcmp(&triData.v20.rgba, &vc20, sizeof(vc20) ) != 0) { __debugbreak(); }
 	};
 
 	auto simulateRasterizer = [&](const triSetupOutput& triData, std::vector<rasterizedPixelData>& outPixelData) -> unsigned
@@ -282,24 +295,27 @@ const int RunTestsRasterizer(Xsi::Loader& loader)
 			triSetupInput primTriData; 
 			
 			// Draw vertices in "0, 2, 1" order to swizzle CCW to CW ordering for our triangle setup to not consider them backfacing:
-			primTriData.v0.xPos = (const signed short)(vertices[indicesCCW[x * 3] ].posX + 0.5f);
-			primTriData.v0.yPos = (const signed short)(vertices[indicesCCW[x * 3] ].posY + 0.5f);
+			primTriData.v0.xPos = vertices[indicesCCW[x * 3] ].posX;
+			primTriData.v0.yPos = vertices[indicesCCW[x * 3] ].posY;
 			primTriData.v0.invZ = 2.0f;
-			primTriData.v0.xTex = 0x1111;
-			primTriData.v0.yTex = 0x2222;
-			primTriData.v0.rgba = D3DCOLOR_ARGB(255, 255, 0, 0);
-			primTriData.v1.xPos = (const signed short)(vertices[indicesCCW[x * 3 + 2] ].posX + 0.5f);
-			primTriData.v1.yPos = (const signed short)(vertices[indicesCCW[x * 3 + 2] ].posY + 0.5f);
+			primTriData.v0.invW = 1.0f;
+			primTriData.v0.xTex = 1.0f / 15.0f;
+			primTriData.v0.yTex = 2.0f / 15.0f;
+			primTriData.v0.rgba = { 1.0f, 0.0f, 0.0f, 1.0f };
+			primTriData.v1.xPos = vertices[indicesCCW[x * 3 + 2] ].posX;
+			primTriData.v1.yPos = vertices[indicesCCW[x * 3 + 2] ].posY;
 			primTriData.v1.invZ = 2.0f;
-			primTriData.v1.xTex = 0x3333;
-			primTriData.v1.yTex = 0x4444;
-			primTriData.v1.rgba = D3DCOLOR_ARGB(255, 0, 255, 0);
-			primTriData.v2.xPos = (const signed short)(vertices[indicesCCW[x * 3 + 1] ].posX + 0.5f);
-			primTriData.v2.yPos = (const signed short)(vertices[indicesCCW[x * 3 + 1] ].posY + 0.5f);
+			primTriData.v1.invW = 1.0f;
+			primTriData.v1.xTex = 3.0f / 15.0f;
+			primTriData.v1.yTex = 4.0f / 15.0f;
+			primTriData.v1.rgba = { 0.0f, 1.0f, 0.0f, 1.0f };
+			primTriData.v2.xPos = vertices[indicesCCW[x * 3 + 1] ].posX;
+			primTriData.v2.yPos = vertices[indicesCCW[x * 3 + 1] ].posY;
 			primTriData.v2.invZ = 2.0f;
-			primTriData.v2.xTex = -0x5555;
-			primTriData.v2.yTex = -0x6666;
-			primTriData.v2.rgba = D3DCOLOR_ARGB(255, 0, 0, 255);
+			primTriData.v2.invW = 1.0f;
+			primTriData.v2.xTex = -5.0f / 15.0f;
+			primTriData.v2.yTex = -6.0f / 15.0f;
+			primTriData.v2.rgba = { 0.0f, 0.0f, 1.0f, 1.0f };
 			triSetupOutput triSetupData;
 			if (EmulateCPUTriSetup(primTriData, triSetupData) != triSetup_OK) // If this fails, then it's because our triangle got culled or clipped or backface-killed or something
 			{
@@ -307,10 +323,11 @@ const int RunTestsRasterizer(Xsi::Loader& loader)
 				continue;
 			}
 			triSetupData.DeserializeTriSetupOutput(TRISETUP_inBarycentricInverse,
-				TRISETUP_inInvZ0, TRISETUP_inInvZ1, TRISETUP_inInvZ2,
-				TRISETUP_inTX0, TRISETUP_inTX1, TRISETUP_inTX2,
-				TRISETUP_inTY0, TRISETUP_inTY1, TRISETUP_inTY2,
-				TRISETUP_inVertColor0, TRISETUP_inVertColor1, TRISETUP_inVertColor2,
+				TRISETUP_inInvZ0, TRISETUP_inInvZ10, TRISETUP_inInvZ20,
+				TRISETUP_inInvW0, TRISETUP_inInvW10, TRISETUP_inInvW20,
+				TRISETUP_inTX0, TRISETUP_inTX10, TRISETUP_inTX20,
+				TRISETUP_inTY0, TRISETUP_inTY10, TRISETUP_inTY20,
+				TRISETUP_inVertColor0, TRISETUP_inVertColor10, TRISETUP_inVertColor20,
 				TRISETUP_inMinX, TRISETUP_inMinY, TRISETUP_inMaxX, TRISETUP_inMaxY,
 				TRISETUP_inInitialBarycentricRowResetA, TRISETUP_inInitialBarycentricRowResetB, TRISETUP_inInitialBarycentricRowResetC,
 				TRISETUP_inIsTopLeftEdgeA, TRISETUP_inIsTopLeftEdgeB, TRISETUP_inIsTopLeftEdgeC,

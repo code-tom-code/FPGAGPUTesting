@@ -31,25 +31,29 @@ entity Rasterizer is
 		TRISETUP_inBarycentricInverse : in STD_LOGIC_VECTOR(31 downto 0);
 
 		TRISETUP_inInvZ0 : in STD_LOGIC_VECTOR(31 downto 0);
-		TRISETUP_inInvZ1 : in STD_LOGIC_VECTOR(31 downto 0);
-		TRISETUP_inInvZ2 : in STD_LOGIC_VECTOR(31 downto 0);
+		TRISETUP_inInvZ10 : in STD_LOGIC_VECTOR(31 downto 0);
+		TRISETUP_inInvZ20 : in STD_LOGIC_VECTOR(31 downto 0);
 
-		TRISETUP_inTX0 : in STD_LOGIC_VECTOR(15 downto 0);
-		TRISETUP_inTY0 : in STD_LOGIC_VECTOR(15 downto 0);
-		TRISETUP_inTX1 : in STD_LOGIC_VECTOR(15 downto 0);
-		TRISETUP_inTY1 : in STD_LOGIC_VECTOR(15 downto 0);
-		TRISETUP_inTX2 : in STD_LOGIC_VECTOR(15 downto 0);
-		TRISETUP_inTY2 : in STD_LOGIC_VECTOR(15 downto 0);
+		TRISETUP_inInvW0 : in STD_LOGIC_VECTOR(31 downto 0);
+		TRISETUP_inInvW10 : in STD_LOGIC_VECTOR(31 downto 0);
+		TRISETUP_inInvW20 : in STD_LOGIC_VECTOR(31 downto 0);
 
-		TRISETUP_inVertColor0 : in STD_LOGIC_VECTOR(31 downto 0);
-		TRISETUP_inVertColor1 : in STD_LOGIC_VECTOR(31 downto 0);
-		TRISETUP_inVertColor2 : in STD_LOGIC_VECTOR(31 downto 0);
+		TRISETUP_inTX0 : in STD_LOGIC_VECTOR(31 downto 0);
+		TRISETUP_inTY0 : in STD_LOGIC_VECTOR(31 downto 0);
+		TRISETUP_inTX10 : in STD_LOGIC_VECTOR(31 downto 0);
+		TRISETUP_inTY10 : in STD_LOGIC_VECTOR(31 downto 0);
+		TRISETUP_inTX20 : in STD_LOGIC_VECTOR(31 downto 0);
+		TRISETUP_inTY20 : in STD_LOGIC_VECTOR(31 downto 0);
+
+		TRISETUP_inVertColor0 : in STD_LOGIC_VECTOR(127 downto 0);
+		TRISETUP_inVertColor10 : in STD_LOGIC_VECTOR(127 downto 0);
+		TRISETUP_inVertColor20 : in STD_LOGIC_VECTOR(127 downto 0);
 	-- Triangle Setup interface end
 
 	-- Rasterizer Output FIFO interface begin
 		RASTOUT_FIFO_full : in STD_LOGIC;
 		RASTOUT_FIFO_almost_full : in STD_LOGIC;
-		RASTOUT_FIFO_wr_data : out STD_LOGIC_VECTOR(32+32+32+16+16 - 1 downto 0) := (others => '0');
+		RASTOUT_FIFO_wr_data : out STD_LOGIC_VECTOR(32+32+16+16 - 1 downto 0) := (others => '0');
 		RASTOUT_FIFO_wr_en : out STD_LOGIC := '0';
 	-- Rasterizer Output FIFO interface end
 		
@@ -60,20 +64,24 @@ entity Rasterizer is
 		TRICACHE_VFACE : out STD_LOGIC := '0';
 
 		TRICACHE_InvZ0 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-		TRICACHE_InvZ1 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-		TRICACHE_InvZ2 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		TRICACHE_InvZ10 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		TRICACHE_InvZ20 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 
-		TRICACHE_TX0 : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
-		TRICACHE_TX1 : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
-		TRICACHE_TX2 : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
+		TRICACHE_InvW0 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		TRICACHE_InvW10 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		TRICACHE_InvW20 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 
-		TRICACHE_TY0 : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
-		TRICACHE_TY1 : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
-		TRICACHE_TY2 : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
+		TRICACHE_TX0 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		TRICACHE_TX10 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		TRICACHE_TX20 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 
-		TRICACHE_VertColor0 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-		TRICACHE_VertColor1 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-		TRICACHE_VertColor2 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		TRICACHE_TY0 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		TRICACHE_TY10 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		TRICACHE_TY20 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+
+		TRICACHE_VertColor0 : out STD_LOGIC_VECTOR(127 downto 0) := (others => '0');
+		TRICACHE_VertColor10 : out STD_LOGIC_VECTOR(127 downto 0) := (others => '0');
+		TRICACHE_VertColor20 : out STD_LOGIC_VECTOR(127 downto 0) := (others => '0');
 
 		TRICACHE_RequestNewTriSlot : out STD_LOGIC := '0';
 		TRICACHE_NewTriSlotIndexValid : in STD_LOGIC;
@@ -130,32 +138,32 @@ ATTRIBUTE X_INTERFACE_INFO of RASTOUT_FIFO_almost_full: SIGNAL is "xilinx.com:in
 		);
 
 type vertexTexcoord is record
-	tx : unsigned(15 downto 0);
-	ty : unsigned(15 downto 0);
+	tx : unsigned(31 downto 0);
+	ty : unsigned(31 downto 0);
 end record vertexTexcoord;
 
 type vertexColor is record
-	r : unsigned(7 downto 0);
-	g : unsigned(7 downto 0);
-	b : unsigned(7 downto 0);
-	a : unsigned(7 downto 0);
+	r : unsigned(31 downto 0);
+	g : unsigned(31 downto 0);
+	b : unsigned(31 downto 0);
+	a : unsigned(31 downto 0);
 end record vertexColor;
 
 type vertexAttributes is record
 	texcoord : vertexTexcoord;
 	color : vertexColor;
 	invZ : unsigned(31 downto 0);
+	invW : unsigned(31 downto 0);
 end record vertexAttributes;
 
 type rasterizedPixelData is record
-	barycentricA : signed(31 downto 0);
 	barycentricB : signed(31 downto 0);
 	barycentricC : signed(31 downto 0);
 	pixelX : unsigned(15 downto 0);
 	pixelY : unsigned(15 downto 0);
 end record rasterizedPixelData;
 
-constant zeroInitPixelData : rasterizedPixelData := (barycentricA => (others => '0'), barycentricB => (others => '0'), barycentricC => (others => '0'), pixelX => (others => '0'), pixelY => (others => '0') );
+constant zeroInitPixelData : rasterizedPixelData := (barycentricB => (others => '0'), barycentricC => (others => '0'), pixelX => (others => '0'), pixelY => (others => '0') );
 
 	pure function barycentricInside(barycentricVal : signed(31 downto 0) ) return boolean is
 	begin
@@ -163,10 +171,9 @@ constant zeroInitPixelData : rasterizedPixelData := (barycentricA => (others => 
 	end function;
 
 	procedure StoreRasterizedPixelData(signal inPixelX : in unsigned(15 downto 0); signal inPixelY : in unsigned(15 downto 0); 
-		variable inBarycentricA : in signed(31 downto 0); variable inBarycentricB : in signed(31 downto 0); variable inBarycentricC : in signed(31 downto 0);
+		variable inBarycentricB : in signed(31 downto 0); variable inBarycentricC : in signed(31 downto 0);
 		signal fillPixelData : out rasterizedPixelData) is
 	begin
-		fillPixelData.barycentricA <= inBarycentricA;
 		fillPixelData.barycentricB <= inBarycentricB;
 		fillPixelData.barycentricC <= inBarycentricC;
 		fillPixelData.pixelX <= inPixelX;
@@ -212,7 +219,7 @@ signal readyForNewTri : STD_LOGIC := '0';
 signal hasWrittenPixelsForThisTriangle : std_logic := '0';
 signal currentTriangleAllocatedSlot : unsigned(2 downto 0) := (others => '0');
 
-signal fifoWriteData : STD_LOGIC_VECTOR(32+32+32+16+16 - 1 downto 0) := (others => '0');
+signal fifoWriteData : STD_LOGIC_VECTOR(32+32+16+16 - 1 downto 0) := (others => '0');
 signal fifoWriteEnable : STD_LOGIC := '0';
 
 signal vertDataA : vertexAttributes;
@@ -307,27 +314,30 @@ DBG_MaxY <= std_logic_vector(maxY);
 
 						vertDataA.texcoord.tx <= unsigned(TRISETUP_inTX0);
 						vertDataA.texcoord.ty <= unsigned(TRISETUP_inTY0);
-						vertDataA.color.r <= unsigned(TRISETUP_inVertColor0(7 downto 0) );
-						vertDataA.color.g <= unsigned(TRISETUP_inVertColor0(15 downto 8) );
-						vertDataA.color.b <= unsigned(TRISETUP_inVertColor0(23 downto 16) );
-						vertDataA.color.a <= unsigned(TRISETUP_inVertColor0(31 downto 24) );
+						vertDataA.color.r <= unsigned(TRISETUP_inVertColor0(31 downto 0) );
+						vertDataA.color.g <= unsigned(TRISETUP_inVertColor0(63 downto 32) );
+						vertDataA.color.b <= unsigned(TRISETUP_inVertColor0(95 downto 64) );
+						vertDataA.color.a <= unsigned(TRISETUP_inVertColor0(127 downto 96) );
 						vertDataA.invZ <= unsigned(TRISETUP_inInvZ0);
+						vertDataA.invW <= unsigned(TRISETUP_inInvW0);
 
-						vertDataB.texcoord.tx <= unsigned(TRISETUP_inTX1);
-						vertDataB.texcoord.ty <= unsigned(TRISETUP_inTY1);
-						vertDataB.color.r <= unsigned(TRISETUP_inVertColor1(7 downto 0) );
-						vertDataB.color.g <= unsigned(TRISETUP_inVertColor1(15 downto 8) );
-						vertDataB.color.b <= unsigned(TRISETUP_inVertColor1(23 downto 16) );
-						vertDataB.color.a <= unsigned(TRISETUP_inVertColor1(31 downto 24) );
-						vertDataB.invZ <= unsigned(TRISETUP_inInvZ1);
+						vertDataB.texcoord.tx <= unsigned(TRISETUP_inTX10);
+						vertDataB.texcoord.ty <= unsigned(TRISETUP_inTY10);
+						vertDataB.color.r <= unsigned(TRISETUP_inVertColor10(31 downto 0) );
+						vertDataB.color.g <= unsigned(TRISETUP_inVertColor10(63 downto 32) );
+						vertDataB.color.b <= unsigned(TRISETUP_inVertColor10(95 downto 64) );
+						vertDataB.color.a <= unsigned(TRISETUP_inVertColor10(127 downto 96) );
+						vertDataB.invZ <= unsigned(TRISETUP_inInvZ10);
+						vertDataB.invW <= unsigned(TRISETUP_inInvW10);
 
-						vertDataC.texcoord.tx <= unsigned(TRISETUP_inTX2);
-						vertDataC.texcoord.ty <= unsigned(TRISETUP_inTY2);
-						vertDataC.color.r <= unsigned(TRISETUP_inVertColor2(7 downto 0) );
-						vertDataC.color.g <= unsigned(TRISETUP_inVertColor2(15 downto 8) );
-						vertDataC.color.b <= unsigned(TRISETUP_inVertColor2(23 downto 16) );
-						vertDataC.color.a <= unsigned(TRISETUP_inVertColor2(31 downto 24) );
-						vertDataC.invZ <= unsigned(TRISETUP_inInvZ2);
+						vertDataC.texcoord.tx <= unsigned(TRISETUP_inTX20);
+						vertDataC.texcoord.ty <= unsigned(TRISETUP_inTY20);
+						vertDataC.color.r <= unsigned(TRISETUP_inVertColor20(31 downto 0) );
+						vertDataC.color.g <= unsigned(TRISETUP_inVertColor20(63 downto 32) );
+						vertDataC.color.b <= unsigned(TRISETUP_inVertColor20(95 downto 64) );
+						vertDataC.color.a <= unsigned(TRISETUP_inVertColor20(127 downto 96) );
+						vertDataC.invZ <= unsigned(TRISETUP_inInvZ20);
+						vertDataC.invW <= unsigned(TRISETUP_inInvW20);
 
 						-- Set the initial values of our barycentric coordinates to the starting row reset values:
 						barycentricA <= signed(TRISETUP_inInitialBarycentricRowResetA) + resize(signed(TRISETUP_inBarycentricXDeltaA), barycentricA'length);
@@ -369,11 +379,11 @@ DBG_MaxY <= std_logic_vector(maxY);
 							if (RASTOUT_FIFO_full = '0' and RASTOUT_FIFO_almost_full = '0' and hasWrittenPixelsForThisTriangle = '1') then
 								fifoWriteEnable <= '1';
 								fifoWriteData <= std_logic_vector(pixelYPos) & std_logic_vector(pixelXPos) & 
-									std_logic_vector(tempBarycentricC) & std_logic_vector(tempBarycentricB) & std_logic_vector(tempBarycentricA);
+									std_logic_vector(tempBarycentricC) & std_logic_vector(tempBarycentricB);
 								hasWrittenPixelsForThisTriangle <= '1';
 								stats_totalPixelsRasterized <= stats_totalPixelsRasterized + 1;
 							else
-								StoreRasterizedPixelData(pixelXPos, pixelYPos, tempBarycentricA, tempBarycentricB, tempBarycentricC, writeOutPixelData);
+								StoreRasterizedPixelData(pixelXPos, pixelYPos, tempBarycentricB, tempBarycentricC, writeOutPixelData);
 								currentState <= triRasterize_waitForWriteComplete;
 							end if;
 
@@ -410,7 +420,7 @@ DBG_MaxY <= std_logic_vector(maxY);
 					if (RASTOUT_FIFO_full = '0' and RASTOUT_FIFO_almost_full = '0') then
 						fifoWriteEnable <= '1';
 						fifoWriteData <= std_logic_vector(writeOutPixelData.pixelY) & std_logic_vector(writeOutPixelData.pixelX) & 
-							std_logic_vector(writeOutPixelData.barycentricC) & std_logic_vector(writeOutPixelData.barycentricB) & std_logic_vector(writeOutPixelData.barycentricA);
+							std_logic_vector(writeOutPixelData.barycentricC) & std_logic_vector(writeOutPixelData.barycentricB);
 
 						hasWrittenPixelsForThisTriangle <= '1';
 						stats_totalPixelsRasterized <= stats_totalPixelsRasterized + 1;
@@ -430,16 +440,19 @@ DBG_MaxY <= std_logic_vector(maxY);
 						TRICACHE_TY0 <= std_logic_vector(vertDataA.texcoord.ty);
 						TRICACHE_VertColor0 <= std_logic_vector(vertDataA.color.a & vertDataA.color.b & vertDataA.color.g & vertDataA.color.r);
 						TRICACHE_InvZ0 <= std_logic_vector(vertDataA.invZ);
+						TRICACHE_InvW0 <= std_logic_vector(vertDataA.invW);
 
-						TRICACHE_TX1 <= std_logic_vector(vertDataB.texcoord.tx);
-						TRICACHE_TY1 <= std_logic_vector(vertDataB.texcoord.ty);
-						TRICACHE_VertColor1 <= std_logic_vector(vertDataB.color.a & vertDataB.color.b & vertDataB.color.g & vertDataB.color.r);
-						TRICACHE_InvZ1 <= std_logic_vector(vertDataB.invZ);
+						TRICACHE_TX10 <= std_logic_vector(vertDataB.texcoord.tx);
+						TRICACHE_TY10 <= std_logic_vector(vertDataB.texcoord.ty);
+						TRICACHE_VertColor10 <= std_logic_vector(vertDataB.color.a & vertDataB.color.b & vertDataB.color.g & vertDataB.color.r);
+						TRICACHE_InvZ10 <= std_logic_vector(vertDataB.invZ);
+						TRICACHE_InvW10 <= std_logic_vector(vertDataB.invW);
 
-						TRICACHE_TX2 <= std_logic_vector(vertDataC.texcoord.tx);
-						TRICACHE_TY2 <= std_logic_vector(vertDataC.texcoord.ty);
-						TRICACHE_VertColor2 <= std_logic_vector(vertDataC.color.a & vertDataC.color.b & vertDataC.color.g & vertDataC.color.r);
-						TRICACHE_InvZ2 <= std_logic_vector(vertDataC.invZ);
+						TRICACHE_TX20 <= std_logic_vector(vertDataC.texcoord.tx);
+						TRICACHE_TY20 <= std_logic_vector(vertDataC.texcoord.ty);
+						TRICACHE_VertColor20 <= std_logic_vector(vertDataC.color.a & vertDataC.color.b & vertDataC.color.g & vertDataC.color.r);
+						TRICACHE_InvZ20 <= std_logic_vector(vertDataC.invZ);
+						TRICACHE_InvW20 <= std_logic_vector(vertDataC.invW);
 
 						TRICACHE_BarycentricInverse <= std_logic_vector(barycentricInverse);
 						TRICACHE_PrimitiveID <= (others => '0'); -- TODO: Implement primitive ID
@@ -453,7 +466,7 @@ DBG_MaxY <= std_logic_vector(maxY);
 					if (RASTOUT_FIFO_full = '0' and RASTOUT_FIFO_almost_full = '0') then
 						fifoWriteEnable <= '1';
 						fifoWriteData <= "0000000000000" & std_logic_vector(currentTriangleAllocatedSlot) & x"FFFE" & -- FFFE means "set this new triangle slot"
-							x"00000000" & x"00000000" & x"00000000";
+							x"00000000" & x"00000000";
 
 						currentState <= triRasterize_waitForWriteComplete;
 					else
@@ -464,7 +477,7 @@ DBG_MaxY <= std_logic_vector(maxY);
 					if (RASTOUT_FIFO_full = '0' and RASTOUT_FIFO_almost_full = '0') then
 						fifoWriteEnable <= '1';
 						fifoWriteData <= "0000000000000" & std_logic_vector(currentTriangleAllocatedSlot) & x"FFFF" & -- FFFF means "finish this triangle"
-							x"00000000" & x"00000000" & x"00000000";
+							x"00000000" & x"00000000";
 
 						currentState <= triRasterize_waitForTriData;
 					else

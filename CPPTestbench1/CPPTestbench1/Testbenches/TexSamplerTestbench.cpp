@@ -774,24 +774,27 @@ const int RunTestsTexSampler(Xsi::Loader& loader, RenderWindow* renderWindow)
 			triSetupInput primTriData; 
 			
 			// Draw vertices in "0, 2, 1" order to swizzle CCW to CW ordering for our triangle setup to not consider them backfacing:
-			primTriData.v0.xPos = (const signed short)(vertices[indicesCCW[x * 3] ].posX + 0.5f);
-			primTriData.v0.yPos = (const signed short)(vertices[indicesCCW[x * 3] ].posY + 0.5f);
+			primTriData.v0.xPos = vertices[indicesCCW[x * 3] ].posX;
+			primTriData.v0.yPos = vertices[indicesCCW[x * 3] ].posY;
 			primTriData.v0.invZ = 2.0f;
-			primTriData.v0.xTex = DirectX::PackedVector::XMConvertFloatToHalf(0.0f);
-			primTriData.v0.yTex = DirectX::PackedVector::XMConvertFloatToHalf(1.0f);
-			primTriData.v0.rgba = COLOR4_ARGB(255, 255, 0, 0);
-			primTriData.v1.xPos = (const signed short)(vertices[indicesCCW[x * 3 + 2] ].posX + 0.5f);
-			primTriData.v1.yPos = (const signed short)(vertices[indicesCCW[x * 3 + 2] ].posY + 0.5f);
+			primTriData.v0.invW = 1.0f;
+			primTriData.v0.xTex = 0.0f;
+			primTriData.v0.yTex = 1.0f;
+			primTriData.v0.rgba = { 1.0f, 0.0f, 0.0f, 1.0f };
+			primTriData.v1.xPos = vertices[indicesCCW[x * 3 + 2] ].posX;
+			primTriData.v1.yPos = vertices[indicesCCW[x * 3 + 2] ].posY;
 			primTriData.v1.invZ = 2.0f;
-			primTriData.v1.xTex = DirectX::PackedVector::XMConvertFloatToHalf(1.0f);
-			primTriData.v1.yTex = DirectX::PackedVector::XMConvertFloatToHalf(0.0f);
-			primTriData.v1.rgba = COLOR4_ARGB(255, 0, 255, 0);
-			primTriData.v2.xPos = (const signed short)(vertices[indicesCCW[x * 3 + 1] ].posX + 0.5f);
-			primTriData.v2.yPos = (const signed short)(vertices[indicesCCW[x * 3 + 1] ].posY + 0.5f);
+			primTriData.v1.invW = 1.0f;
+			primTriData.v1.xTex = 1.0f;
+			primTriData.v1.yTex = 0.0f;
+			primTriData.v1.rgba = { 0.0f, 1.0f, 0.0f, 1.0f };
+			primTriData.v2.xPos = vertices[indicesCCW[x * 3 + 1] ].posX;
+			primTriData.v2.yPos = vertices[indicesCCW[x * 3 + 1] ].posY;
 			primTriData.v2.invZ = 2.0f;
-			primTriData.v2.xTex = DirectX::PackedVector::XMConvertFloatToHalf(0.0f);
-			primTriData.v2.yTex = DirectX::PackedVector::XMConvertFloatToHalf(0.0f);
-			primTriData.v2.rgba = COLOR4_ARGB(255, 0, 0, 255);
+			primTriData.v2.invW = 1.0f;
+			primTriData.v2.xTex = 0.0f;
+			primTriData.v2.yTex = 0.0f;
+			primTriData.v2.rgba = { 0.0f, 0.0f, 1.0f, 1.0f };
 			if (randomAttributes)
 			{
 				const float randomZ0 = frand() * 0.5f + 0.5f; // We currently only support depth values between 0.5f and 1.0f
@@ -801,17 +804,45 @@ const int RunTestsTexSampler(Xsi::Loader& loader, RenderWindow* renderWindow)
 				primTriData.v1.invZ = 1.0f / randomZ1;
 				primTriData.v2.invZ = 1.0f / randomZ2;
 
-				primTriData.v0.rgba = COLOR4_ARGB(rand() & 0xFF, rand() & 0xFF, rand() & 0xFF, rand() & 0xFF);
-				primTriData.v1.rgba = COLOR4_ARGB(rand() & 0xFF, rand() & 0xFF, rand() & 0xFF, rand() & 0xFF);
-				primTriData.v2.rgba = COLOR4_ARGB(rand() & 0xFF, rand() & 0xFF, rand() & 0xFF, rand() & 0xFF);
+				const float randomW0 = frand() * 0.5f + 0.5f; // We currently only support W values between 0.5f and 1.0f
+				const float randomW1 = frand() * 0.5f + 0.5f;
+				const float randomW2 = frand() * 0.5f + 0.5f;
+				primTriData.v0.invW = 1.0f / randomW0;
+				primTriData.v1.invW = 1.0f / randomW1;
+				primTriData.v2.invW = 1.0f / randomW2;
 
-				primTriData.v0.xTex = DirectX::PackedVector::XMConvertFloatToHalf(frand() * 32.0f - 16.0f);
-				primTriData.v0.yTex = DirectX::PackedVector::XMConvertFloatToHalf(frand() * 32.0f - 16.0f);
-				primTriData.v1.xTex = DirectX::PackedVector::XMConvertFloatToHalf(frand() * 32.0f - 16.0f);
-				primTriData.v1.yTex = DirectX::PackedVector::XMConvertFloatToHalf(frand() * 32.0f - 16.0f);
-				primTriData.v2.xTex = DirectX::PackedVector::XMConvertFloatToHalf(frand() * 32.0f - 16.0f);
-				primTriData.v2.yTex = DirectX::PackedVector::XMConvertFloatToHalf(frand() * 32.0f - 16.0f);
+				primTriData.v0.rgba = { frand(), frand(), frand(), frand() };
+				primTriData.v1.rgba = { frand(), frand(), frand(), frand() };
+				primTriData.v2.rgba = { frand(), frand(), frand(), frand() };
+
+				primTriData.v0.xTex = frand() * 32.0f - 16.0f;
+				primTriData.v0.yTex = frand() * 32.0f - 16.0f;
+				primTriData.v1.xTex = frand() * 32.0f - 16.0f;
+				primTriData.v1.yTex = frand() * 32.0f - 16.0f;
+				primTriData.v2.xTex = frand() * 32.0f - 16.0f;
+				primTriData.v2.yTex = frand() * 32.0f - 16.0f;
 			}
+
+			// Emulate the vertex shader by pre-dividing the perspective-interpolated attributes by W:
+			primTriData.v0.xTex *= primTriData.v0.invW;
+			primTriData.v0.yTex *= primTriData.v0.invW;
+			primTriData.v0.rgba.r *= primTriData.v0.invW;
+			primTriData.v0.rgba.g *= primTriData.v0.invW;
+			primTriData.v0.rgba.b *= primTriData.v0.invW;
+			primTriData.v0.rgba.a *= primTriData.v0.invW;
+			primTriData.v1.xTex *= primTriData.v1.invW;
+			primTriData.v1.yTex *= primTriData.v1.invW;
+			primTriData.v1.rgba.r *= primTriData.v1.invW;
+			primTriData.v1.rgba.g *= primTriData.v1.invW;
+			primTriData.v1.rgba.b *= primTriData.v1.invW;
+			primTriData.v1.rgba.a *= primTriData.v1.invW;
+			primTriData.v2.xTex *= primTriData.v2.invW;
+			primTriData.v2.yTex *= primTriData.v2.invW;
+			primTriData.v2.rgba.r *= primTriData.v2.invW;
+			primTriData.v2.rgba.g *= primTriData.v2.invW;
+			primTriData.v2.rgba.b *= primTriData.v2.invW;
+			primTriData.v2.rgba.a *= primTriData.v2.invW;
+
 			triSetupOutput triSetupData;
 			if (EmulateCPUTriSetup(primTriData, triSetupData) != triSetup_OK) // If this fails, then it's because our triangle got culled or clipped or backface-killed or something
 			{

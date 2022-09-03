@@ -15,17 +15,20 @@ entity TriWorkCache is
 			INTERP_outVFACE : out STD_LOGIC := '0';
 
 			INTERP_outInvZ0 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-			INTERP_outInvZ1 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-			INTERP_outInvZ2 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-			INTERP_outT0X : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
-			INTERP_outT0Y : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
-			INTERP_outT1X : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
-			INTERP_outT1Y : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
-			INTERP_outT2X : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
-			INTERP_outT2Y : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
-			INTERP_outColorRGBA0 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-			INTERP_outColorRGBA1 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-			INTERP_outColorRGBA2 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+			INTERP_outInvZ10 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+			INTERP_outInvZ20 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+			INTERP_outInvW0 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+			INTERP_outInvW10 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+			INTERP_outInvW20 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+			INTERP_outT0X : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+			INTERP_outT0Y : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+			INTERP_outT10X : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+			INTERP_outT10Y : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+			INTERP_outT20X : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+			INTERP_outT20Y : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+			INTERP_outColorRGBA0 : out STD_LOGIC_VECTOR(127 downto 0) := (others => '0');
+			INTERP_outColorRGBA10 : out STD_LOGIC_VECTOR(127 downto 0) := (others => '0');
+			INTERP_outColorRGBA20 : out STD_LOGIC_VECTOR(127 downto 0) := (others => '0');
 
 			INTERP_CurrentSlotIndex : in STD_LOGIC_VECTOR(2 downto 0);
 			INTERP_SignalSlotComplete : in STD_LOGIC;
@@ -38,17 +41,20 @@ entity TriWorkCache is
 			RAST_inVFACE : in STD_LOGIC;
 
 			RAST_inInvZ0 : in STD_LOGIC_VECTOR(31 downto 0);
-			RAST_inInvZ1 : in STD_LOGIC_VECTOR(31 downto 0);
-			RAST_inInvZ2 : in STD_LOGIC_VECTOR(31 downto 0);
-			RAST_inT0X : in STD_LOGIC_VECTOR(15 downto 0);
-			RAST_inT0Y : in STD_LOGIC_VECTOR(15 downto 0);
-			RAST_inT1X : in STD_LOGIC_VECTOR(15 downto 0);
-			RAST_inT1Y : in STD_LOGIC_VECTOR(15 downto 0);
-			RAST_inT2X : in STD_LOGIC_VECTOR(15 downto 0);
-			RAST_inT2Y : in STD_LOGIC_VECTOR(15 downto 0);
-			RAST_inColorRGBA0 : in STD_LOGIC_VECTOR(31 downto 0);
-			RAST_inColorRGBA1 : in STD_LOGIC_VECTOR(31 downto 0);
-			RAST_inColorRGBA2 : in STD_LOGIC_VECTOR(31 downto 0);
+			RAST_inInvZ10 : in STD_LOGIC_VECTOR(31 downto 0);
+			RAST_inInvZ20 : in STD_LOGIC_VECTOR(31 downto 0);
+			RAST_inInvW0 : in STD_LOGIC_VECTOR(31 downto 0);
+			RAST_inInvW10 : in STD_LOGIC_VECTOR(31 downto 0);
+			RAST_inInvW20 : in STD_LOGIC_VECTOR(31 downto 0);
+			RAST_inT0X : in STD_LOGIC_VECTOR(31 downto 0);
+			RAST_inT0Y : in STD_LOGIC_VECTOR(31 downto 0);
+			RAST_inT10X : in STD_LOGIC_VECTOR(31 downto 0);
+			RAST_inT10Y : in STD_LOGIC_VECTOR(31 downto 0);
+			RAST_inT20X : in STD_LOGIC_VECTOR(31 downto 0);
+			RAST_inT20Y : in STD_LOGIC_VECTOR(31 downto 0);
+			RAST_inColorRGBA0 : in STD_LOGIC_VECTOR(127 downto 0);
+			RAST_inColorRGBA10 : in STD_LOGIC_VECTOR(127 downto 0);
+			RAST_inColorRGBA20 : in STD_LOGIC_VECTOR(127 downto 0);
 
 			RAST_RequestNewTriSlot : in STD_LOGIC;
 			RAST_NewTriSlotIndexValid : out STD_LOGIC := '0';
@@ -84,9 +90,10 @@ signal slotsInUse : STD_LOGIC_VECTOR(7 downto 0) := (others => '0');
 
 type triWorkVertexData is record
 	InvZ : STD_LOGIC_VECTOR(31 downto 0);
-	TX : STD_LOGIC_VECTOR(15 downto 0);
-	TY : STD_LOGIC_VECTOR(15 downto 0);
-	ColorRGBA : STD_LOGIC_VECTOR(31 downto 0);
+	InvW : STD_LOGIC_VECTOR(31 downto 0);
+	TX : STD_LOGIC_VECTOR(31 downto 0);
+	TY : STD_LOGIC_VECTOR(31 downto 0);
+	ColorRGBA : STD_LOGIC_VECTOR(127 downto 0);
 end record triWorkVertexData;
 
 type triWorkCacheEntry is record
@@ -98,8 +105,8 @@ type triWorkCacheEntry is record
 	VFACE : STD_LOGIC;
 
 	-- Per-vertex data here:
-	VertexA : triWorkVertexData;
-	VertexB : triWorkVertexData;
+	VertexA : triWorkVertexData; -- Vertex A is the base vertex
+	VertexB : triWorkVertexData; -- Vertices B and C are delta vertices (v1 - v0) and (v2 - v0) respectively
 	VertexC : triWorkVertexData;
 end record triWorkCacheEntry;
 
@@ -115,17 +122,20 @@ procedure LoadTriDataIntoSlot(
 	signal inVFACE : in STD_LOGIC;
 
 	signal inInvZ0 : in STD_LOGIC_VECTOR(31 downto 0);
-	signal inInvZ1 : in STD_LOGIC_VECTOR(31 downto 0);
-	signal inInvZ2 : in STD_LOGIC_VECTOR(31 downto 0);
-	signal inT0X : in STD_LOGIC_VECTOR(15 downto 0);
-	signal inT0Y : in STD_LOGIC_VECTOR(15 downto 0);
-	signal inT1X : in STD_LOGIC_VECTOR(15 downto 0);
-	signal inT1Y : in STD_LOGIC_VECTOR(15 downto 0);
-	signal inT2X : in STD_LOGIC_VECTOR(15 downto 0);
-	signal inT2Y : in STD_LOGIC_VECTOR(15 downto 0);
-	signal inColorRGBA0 : in STD_LOGIC_VECTOR(31 downto 0);
-	signal inColorRGBA1 : in STD_LOGIC_VECTOR(31 downto 0);
-	signal inColorRGBA2 : in STD_LOGIC_VECTOR(31 downto 0)
+	signal inInvZ10 : in STD_LOGIC_VECTOR(31 downto 0);
+	signal inInvZ20 : in STD_LOGIC_VECTOR(31 downto 0);
+	signal inInvW0 : in STD_LOGIC_VECTOR(31 downto 0);
+	signal inInvW10 : in STD_LOGIC_VECTOR(31 downto 0);
+	signal inInvW20 : in STD_LOGIC_VECTOR(31 downto 0);
+	signal inT0X : in STD_LOGIC_VECTOR(31 downto 0);
+	signal inT0Y : in STD_LOGIC_VECTOR(31 downto 0);
+	signal inT10X : in STD_LOGIC_VECTOR(31 downto 0);
+	signal inT10Y : in STD_LOGIC_VECTOR(31 downto 0);
+	signal inT20X : in STD_LOGIC_VECTOR(31 downto 0);
+	signal inT20Y : in STD_LOGIC_VECTOR(31 downto 0);
+	signal inColorRGBA0 : in STD_LOGIC_VECTOR(127 downto 0);
+	signal inColorRGBA10 : in STD_LOGIC_VECTOR(127 downto 0);
+	signal inColorRGBA20 : in STD_LOGIC_VECTOR(127 downto 0)
 	) is
 begin
 	cacheEntry.BarycentricInverse <= inBarycentricInverse;
@@ -134,19 +144,23 @@ begin
 	cacheEntry.VFACE <= '1';
 
 	cacheEntry.VertexA.InvZ <= inInvZ0;
-	cacheEntry.VertexB.InvZ <= inInvZ1;
-	cacheEntry.VertexC.InvZ <= inInvZ2;
+	cacheEntry.VertexB.InvZ <= inInvZ10;
+	cacheEntry.VertexC.InvZ <= inInvZ20;
+
+	cacheEntry.VertexA.InvW <= inInvW0;
+	cacheEntry.VertexB.InvW <= inInvW10;
+	cacheEntry.VertexC.InvW <= inInvW20;
 
 	cacheEntry.VertexA.TX <= inT0X;
 	cacheEntry.VertexA.TY <= inT0Y;
-	cacheEntry.VertexB.TX <= inT1X;
-	cacheEntry.VertexB.TY <= inT1Y;
-	cacheEntry.VertexC.TX <= inT2X;
-	cacheEntry.VertexC.TY <= inT2Y;
+	cacheEntry.VertexB.TX <= inT10X;
+	cacheEntry.VertexB.TY <= inT10Y;
+	cacheEntry.VertexC.TX <= inT20X;
+	cacheEntry.VertexC.TY <= inT20Y;
 
 	cacheEntry.VertexA.ColorRGBA <= inColorRGBA0;
-	cacheEntry.VertexB.ColorRGBA <= inColorRGBA1;
-	cacheEntry.VertexC.ColorRGBA <= inColorRGBA2;
+	cacheEntry.VertexB.ColorRGBA <= inColorRGBA10;
+	cacheEntry.VertexC.ColorRGBA <= inColorRGBA20;
 end procedure;
 
 begin
@@ -159,17 +173,20 @@ INTERP_outDrawCallID <= triWorkCacheEntries(to_integer(unsigned(INTERP_CurrentSl
 INTERP_outVFACE <= triWorkCacheEntries(to_integer(unsigned(INTERP_CurrentSlotIndex) ) ).VFACE;
 
 INTERP_outInvZ0 <= triWorkCacheEntries(to_integer(unsigned(INTERP_CurrentSlotIndex) ) ).VertexA.InvZ;
-INTERP_outInvZ1 <= triWorkCacheEntries(to_integer(unsigned(INTERP_CurrentSlotIndex) ) ).VertexB.InvZ;
-INTERP_outInvZ2 <= triWorkCacheEntries(to_integer(unsigned(INTERP_CurrentSlotIndex) ) ).VertexC.InvZ;
+INTERP_outInvZ10 <= triWorkCacheEntries(to_integer(unsigned(INTERP_CurrentSlotIndex) ) ).VertexB.InvZ;
+INTERP_outInvZ20 <= triWorkCacheEntries(to_integer(unsigned(INTERP_CurrentSlotIndex) ) ).VertexC.InvZ;
+INTERP_outInvW0 <= triWorkCacheEntries(to_integer(unsigned(INTERP_CurrentSlotIndex) ) ).VertexA.InvW;
+INTERP_outInvW10 <= triWorkCacheEntries(to_integer(unsigned(INTERP_CurrentSlotIndex) ) ).VertexB.InvW;
+INTERP_outInvW20 <= triWorkCacheEntries(to_integer(unsigned(INTERP_CurrentSlotIndex) ) ).VertexC.InvW;
 INTERP_outT0X <= triWorkCacheEntries(to_integer(unsigned(INTERP_CurrentSlotIndex) ) ).VertexA.TX;
 INTERP_outT0Y <= triWorkCacheEntries(to_integer(unsigned(INTERP_CurrentSlotIndex) ) ).VertexA.TY;
-INTERP_outT1X <= triWorkCacheEntries(to_integer(unsigned(INTERP_CurrentSlotIndex) ) ).VertexB.TX;
-INTERP_outT1Y <= triWorkCacheEntries(to_integer(unsigned(INTERP_CurrentSlotIndex) ) ).VertexB.TY;
-INTERP_outT2X <= triWorkCacheEntries(to_integer(unsigned(INTERP_CurrentSlotIndex) ) ).VertexC.TX;
-INTERP_outT2Y <= triWorkCacheEntries(to_integer(unsigned(INTERP_CurrentSlotIndex) ) ).VertexC.TY;
+INTERP_outT10X <= triWorkCacheEntries(to_integer(unsigned(INTERP_CurrentSlotIndex) ) ).VertexB.TX;
+INTERP_outT10Y <= triWorkCacheEntries(to_integer(unsigned(INTERP_CurrentSlotIndex) ) ).VertexB.TY;
+INTERP_outT20X <= triWorkCacheEntries(to_integer(unsigned(INTERP_CurrentSlotIndex) ) ).VertexC.TX;
+INTERP_outT20Y <= triWorkCacheEntries(to_integer(unsigned(INTERP_CurrentSlotIndex) ) ).VertexC.TY;
 INTERP_outColorRGBA0 <= triWorkCacheEntries(to_integer(unsigned(INTERP_CurrentSlotIndex) ) ).VertexA.ColorRGBA;
-INTERP_outColorRGBA1 <= triWorkCacheEntries(to_integer(unsigned(INTERP_CurrentSlotIndex) ) ).VertexB.ColorRGBA;
-INTERP_outColorRGBA2 <= triWorkCacheEntries(to_integer(unsigned(INTERP_CurrentSlotIndex) ) ).VertexC.ColorRGBA;
+INTERP_outColorRGBA10 <= triWorkCacheEntries(to_integer(unsigned(INTERP_CurrentSlotIndex) ) ).VertexB.ColorRGBA;
+INTERP_outColorRGBA20 <= triWorkCacheEntries(to_integer(unsigned(INTERP_CurrentSlotIndex) ) ).VertexC.ColorRGBA;
 
 	process(clk)
 	begin
@@ -182,49 +199,49 @@ INTERP_outColorRGBA2 <= triWorkCacheEntries(to_integer(unsigned(INTERP_CurrentSl
 				if (slotsInUse(0) = '0') then
 					slotsInUse(0) <= '1';
 					LoadTriDataIntoSlot(triWorkCacheEntries(0), RAST_inBarycentricInverse, RAST_inPrimitiveID, RAST_inDrawCallID, RAST_inVFACE,
-						RAST_inInvZ0, RAST_inInvZ1, RAST_inInvZ2, RAST_inT0X, RAST_inT0Y, RAST_inT1X, RAST_inT1Y, RAST_inT2X, RAST_inT2Y, RAST_inColorRGBA0, RAST_inColorRGBA1, RAST_inColorRGBA2);
+						RAST_inInvZ0, RAST_inInvZ10, RAST_inInvZ20, RAST_inInvW0, RAST_inInvW10, RAST_inInvW20, RAST_inT0X, RAST_inT0Y, RAST_inT10X, RAST_inT10Y, RAST_inT20X, RAST_inT20Y, RAST_inColorRGBA0, RAST_inColorRGBA10, RAST_inColorRGBA20);
 					RAST_NewTriSlotIndex <= "000";
 					RAST_NewTriSlotIndexValid <= '1';
 				elsif (slotsInUse(1) = '0') then
 					slotsInUse(1) <= '1';
 					LoadTriDataIntoSlot(triWorkCacheEntries(1), RAST_inBarycentricInverse, RAST_inPrimitiveID, RAST_inDrawCallID, RAST_inVFACE,
-						RAST_inInvZ0, RAST_inInvZ1, RAST_inInvZ2, RAST_inT0X, RAST_inT0Y, RAST_inT1X, RAST_inT1Y, RAST_inT2X, RAST_inT2Y, RAST_inColorRGBA0, RAST_inColorRGBA1, RAST_inColorRGBA2);
+						RAST_inInvZ0, RAST_inInvZ10, RAST_inInvZ20, RAST_inInvW0, RAST_inInvW10, RAST_inInvW20, RAST_inT0X, RAST_inT0Y, RAST_inT10X, RAST_inT10Y, RAST_inT20X, RAST_inT20Y, RAST_inColorRGBA0, RAST_inColorRGBA10, RAST_inColorRGBA20);
 					RAST_NewTriSlotIndex <= "001";
 					RAST_NewTriSlotIndexValid <= '1';
 				elsif (slotsInUse(2) = '0') then
 					slotsInUse(2) <= '1';
 					LoadTriDataIntoSlot(triWorkCacheEntries(2), RAST_inBarycentricInverse, RAST_inPrimitiveID, RAST_inDrawCallID, RAST_inVFACE,
-						RAST_inInvZ0, RAST_inInvZ1, RAST_inInvZ2, RAST_inT0X, RAST_inT0Y, RAST_inT1X, RAST_inT1Y, RAST_inT2X, RAST_inT2Y, RAST_inColorRGBA0, RAST_inColorRGBA1, RAST_inColorRGBA2);
+						RAST_inInvZ0, RAST_inInvZ10, RAST_inInvZ20, RAST_inInvW0, RAST_inInvW10, RAST_inInvW20, RAST_inT0X, RAST_inT0Y, RAST_inT10X, RAST_inT10Y, RAST_inT20X, RAST_inT20Y, RAST_inColorRGBA0, RAST_inColorRGBA10, RAST_inColorRGBA20);
 					RAST_NewTriSlotIndex <= "010";
 					RAST_NewTriSlotIndexValid <= '1';
 				elsif (slotsInUse(3) = '0') then
 					slotsInUse(3) <= '1';
 					LoadTriDataIntoSlot(triWorkCacheEntries(3), RAST_inBarycentricInverse, RAST_inPrimitiveID, RAST_inDrawCallID, RAST_inVFACE,
-						RAST_inInvZ0, RAST_inInvZ1, RAST_inInvZ2, RAST_inT0X, RAST_inT0Y, RAST_inT1X, RAST_inT1Y, RAST_inT2X, RAST_inT2Y, RAST_inColorRGBA0, RAST_inColorRGBA1, RAST_inColorRGBA2);
+						RAST_inInvZ0, RAST_inInvZ10, RAST_inInvZ20, RAST_inInvW0, RAST_inInvW10, RAST_inInvW20, RAST_inT0X, RAST_inT0Y, RAST_inT10X, RAST_inT10Y, RAST_inT20X, RAST_inT20Y, RAST_inColorRGBA0, RAST_inColorRGBA10, RAST_inColorRGBA20);
 					RAST_NewTriSlotIndex <= "011";
 					RAST_NewTriSlotIndexValid <= '1';
 				elsif (slotsInUse(4) = '0') then
 					slotsInUse(4) <= '1';
 					LoadTriDataIntoSlot(triWorkCacheEntries(4), RAST_inBarycentricInverse, RAST_inPrimitiveID, RAST_inDrawCallID, RAST_inVFACE,
-						RAST_inInvZ0, RAST_inInvZ1, RAST_inInvZ2, RAST_inT0X, RAST_inT0Y, RAST_inT1X, RAST_inT1Y, RAST_inT2X, RAST_inT2Y, RAST_inColorRGBA0, RAST_inColorRGBA1, RAST_inColorRGBA2);
+						RAST_inInvZ0, RAST_inInvZ10, RAST_inInvZ20, RAST_inInvW0, RAST_inInvW10, RAST_inInvW20, RAST_inT0X, RAST_inT0Y, RAST_inT10X, RAST_inT10Y, RAST_inT20X, RAST_inT20Y, RAST_inColorRGBA0, RAST_inColorRGBA10, RAST_inColorRGBA20);
 					RAST_NewTriSlotIndex <= "100";
 					RAST_NewTriSlotIndexValid <= '1';
 				elsif (slotsInUse(5) = '0') then
 					slotsInUse(5) <= '1';
 					LoadTriDataIntoSlot(triWorkCacheEntries(5), RAST_inBarycentricInverse, RAST_inPrimitiveID, RAST_inDrawCallID, RAST_inVFACE,
-						RAST_inInvZ0, RAST_inInvZ1, RAST_inInvZ2, RAST_inT0X, RAST_inT0Y, RAST_inT1X, RAST_inT1Y, RAST_inT2X, RAST_inT2Y, RAST_inColorRGBA0, RAST_inColorRGBA1, RAST_inColorRGBA2);
+						RAST_inInvZ0, RAST_inInvZ10, RAST_inInvZ20, RAST_inInvW0, RAST_inInvW10, RAST_inInvW20, RAST_inT0X, RAST_inT0Y, RAST_inT10X, RAST_inT10Y, RAST_inT20X, RAST_inT20Y, RAST_inColorRGBA0, RAST_inColorRGBA10, RAST_inColorRGBA20);
 					RAST_NewTriSlotIndex <= "101";
 					RAST_NewTriSlotIndexValid <= '1';
 				elsif (slotsInUse(6) = '0') then
 					slotsInUse(6) <= '1';
 					LoadTriDataIntoSlot(triWorkCacheEntries(6), RAST_inBarycentricInverse, RAST_inPrimitiveID, RAST_inDrawCallID, RAST_inVFACE,
-						RAST_inInvZ0, RAST_inInvZ1, RAST_inInvZ2, RAST_inT0X, RAST_inT0Y, RAST_inT1X, RAST_inT1Y, RAST_inT2X, RAST_inT2Y, RAST_inColorRGBA0, RAST_inColorRGBA1, RAST_inColorRGBA2);
+						RAST_inInvZ0, RAST_inInvZ10, RAST_inInvZ20, RAST_inInvW0, RAST_inInvW10, RAST_inInvW20, RAST_inT0X, RAST_inT0Y, RAST_inT10X, RAST_inT10Y, RAST_inT20X, RAST_inT20Y, RAST_inColorRGBA0, RAST_inColorRGBA10, RAST_inColorRGBA20);
 					RAST_NewTriSlotIndex <= "110";
 					RAST_NewTriSlotIndexValid <= '1';
 				elsif (slotsInUse(7) = '0') then
 					slotsInUse(7) <= '1';
 					LoadTriDataIntoSlot(triWorkCacheEntries(7), RAST_inBarycentricInverse, RAST_inPrimitiveID, RAST_inDrawCallID, RAST_inVFACE,
-						RAST_inInvZ0, RAST_inInvZ1, RAST_inInvZ2, RAST_inT0X, RAST_inT0Y, RAST_inT1X, RAST_inT1Y, RAST_inT2X, RAST_inT2Y, RAST_inColorRGBA0, RAST_inColorRGBA1, RAST_inColorRGBA2);
+						RAST_inInvZ0, RAST_inInvZ10, RAST_inInvZ20, RAST_inInvW0, RAST_inInvW10, RAST_inInvW20, RAST_inT0X, RAST_inT0Y, RAST_inT10X, RAST_inT10Y, RAST_inT20X, RAST_inT20Y, RAST_inColorRGBA0, RAST_inColorRGBA10, RAST_inColorRGBA20);
 					RAST_NewTriSlotIndex <= "111";
 					RAST_NewTriSlotIndexValid <= '1';
 				else

@@ -41,7 +41,7 @@ entity ShaderCore is
 		VBO_IsIndexedDrawCall : out STD_LOGIC := '0';
 		VBO_Ready : in STD_LOGIC;
 		VERTOUT_FIFO_full : in STD_LOGIC;
-		VERTOUT_FIFO_wr_data : out STD_LOGIC_VECTOR(127 downto 0);
+		VERTOUT_FIFO_wr_data : out STD_LOGIC_VECTOR(319 downto 0);
 		VERTOUT_FIFO_wr_en : out STD_LOGIC := '0';
 		INDEXOUT_FIFO_full : in STD_LOGIC;
 		INDEXOUT_FIFO_wr_data : out STD_LOGIC_VECTOR(255 downto 0);
@@ -454,7 +454,7 @@ type VertexStreamData is record
 	dwordStreamOffset : unsigned(5 downto 0);
 end record VertexStreamData;
 
-type OutputRegistersArray is array(3 downto 0) of unsigned(31 downto 0);
+type OutputRegistersArray is array(9 downto 0) of unsigned(31 downto 0);
 
 constant SafeNOPInstruction : unsigned(63 downto 0) := "0000000000000000000000000000000101000000000000101000000011000000"; -- NOP NULL.x, 0.x, 0.x
 constant DefaultPipeOutputState : PipelineOutputState := (Pipe_PortWrite_GPRQuad => (others => '0'),
@@ -1798,6 +1798,8 @@ begin
 				GPR0_PortB_regType <= std_logic_vector(to_unsigned(RegisterFileRegType'pos(RFType_OOutput), 2) );
 				GPR0_PortA_regIdx <= (others => '0');
 				GPR0_PortB_regIdx <= (others => '0');
+				GPR0_PortA_regChan <= (others => '0');
+				GPR0_PortB_regChan <= (others => '0');
 				FPUALL_IADD_GO <= '0';
 				FPUALL_ICMP_GO <= '0';
 				FPUALL_IMUL_GO <= '0';
@@ -1817,31 +1819,82 @@ begin
 					VBO_IsIndexedDrawCall <= isIndexedDrawCall;
 					currentState <= getVertexBatch;
 				else
-					if (currentOutputInstructionPointer < 8) then
+					if (currentOutputInstructionPointer < 9) then
 						GPR0_ReadQuadIndex <= std_logic_vector(currentBitOutput(3 downto 2) );
-						GPR0_PortA_en <= '1';
-						GPR0_PortB_en <= '1';
-						GPR0_PortA_regChan <= std_logic_vector(currentOutputInstructionPointer(1 downto 0) );
-						GPR0_PortB_regChan <= std_logic_vector(currentOutputInstructionPointer(1 downto 0) );
-						-- TODO Optimization: Shave off two cycles per vertex by loading using both Port A and Port B simultaneously
 						case currentOutputInstructionPointer is
 							when x"0" =>
-								-- Load issue
+								-- Load issue: o0.xy
+								GPR0_PortA_regIdx <= std_logic_vector(to_unsigned(0, 3) );
+								GPR0_PortB_regIdx <= std_logic_vector(to_unsigned(0, 3) );
+								GPR0_PortA_regChan <= "00"; -- X
+								GPR0_PortB_regChan <= "01"; -- Y
+								GPR0_PortA_en <= '1';
+								GPR0_PortB_en <= '1';
 							when x"1" =>
+								-- Load issue: o0.zw
+								GPR0_PortA_regIdx <= std_logic_vector(to_unsigned(0, 3) );
+								GPR0_PortB_regIdx <= std_logic_vector(to_unsigned(0, 3) );
+								GPR0_PortA_regChan <= "10"; -- Z
+								GPR0_PortB_regChan <= "11"; -- W
+								GPR0_PortA_en <= '1';
+								GPR0_PortB_en <= '1';
 								-- Loading cycle 1
 							when x"2" =>
+								-- Load issue: o2.xy
+								GPR0_PortA_regIdx <= std_logic_vector(to_unsigned(2, 3) );
+								GPR0_PortB_regIdx <= std_logic_vector(to_unsigned(2, 3) );
+								GPR0_PortA_regChan <= "00"; -- X
+								GPR0_PortB_regChan <= "01"; -- Y
+								GPR0_PortA_en <= '1';
+								GPR0_PortB_en <= '1';
 								-- Loading cycle 2
 							when x"3" =>
+								-- Load issue: o1.xy
+								GPR0_PortA_regIdx <= std_logic_vector(to_unsigned(1, 3) );
+								GPR0_PortB_regIdx <= std_logic_vector(to_unsigned(1, 3) );
+								GPR0_PortA_regChan <= "00"; -- X
+								GPR0_PortB_regChan <= "01"; -- Y
+								GPR0_PortA_en <= '1';
+								GPR0_PortB_en <= '1';
 								-- Loading cycle 3
 							when x"4" =>
-								currentOutputDWORDs(0) <= SelectOutputLane(currentBitOutput(1 downto 0), unsigned(GPR0_PortA_readOutData) );								
+								-- Load issue: o1.zw
+								GPR0_PortA_regIdx <= std_logic_vector(to_unsigned(1, 3) );
+								GPR0_PortB_regIdx <= std_logic_vector(to_unsigned(1, 3) );
+								GPR0_PortA_regChan <= "10"; -- Z
+								GPR0_PortB_regChan <= "11"; -- W
+								GPR0_PortA_en <= '1';
+								GPR0_PortB_en <= '1';
+
+								currentOutputDWORDs(0) <= SelectOutputLane(currentBitOutput(1 downto 0), unsigned(GPR0_PortA_readOutData) ); -- oPos.x (o0.x)
+								currentOutputDWORDs(1) <= SelectOutputLane(currentBitOutput(1 downto 0), unsigned(GPR0_PortB_readOutData) ); -- oPos.y (o0.y)
 							when x"5" =>
-								currentOutputDWORDs(1) <= SelectOutputLane(currentBitOutput(1 downto 0), unsigned(GPR0_PortA_readOutData) );								
+								GPR0_PortA_en <= '1'; -- Enables have to remain high while we still have read data pending because these are actually clock-enables and if we
+								GPR0_PortB_en <= '1'; -- turn it off to save power then our read pipeline stops progressing and our pending reads will never arrive!
+
+								currentOutputDWORDs(2) <= SelectOutputLane(currentBitOutput(1 downto 0), unsigned(GPR0_PortA_readOutData) ); -- oPos.z (o0.z)
+								currentOutputDWORDs(3) <= SelectOutputLane(currentBitOutput(1 downto 0), unsigned(GPR0_PortB_readOutData) ); -- oPos.w (o0.w)
 							when x"6" =>
-								currentOutputDWORDs(2) <= SelectOutputLane(currentBitOutput(1 downto 0), unsigned(GPR0_PortA_readOutData) );
+								GPR0_PortA_en <= '1';
+								GPR0_PortB_en <= '1';
+
+								currentOutputDWORDs(4) <= SelectOutputLane(currentBitOutput(1 downto 0), unsigned(GPR0_PortA_readOutData) ); -- oT0.x (o2.x)
+								currentOutputDWORDs(5) <= SelectOutputLane(currentBitOutput(1 downto 0), unsigned(GPR0_PortB_readOutData) ); -- oT0.y (o2.y)
 							when x"7" =>
-								currentOutputDWORDs(3) <= SelectOutputLane(currentBitOutput(1 downto 0), unsigned(GPR0_PortA_readOutData) );
+								GPR0_PortA_en <= '1';
+								GPR0_PortB_en <= '1';
+
+								currentOutputDWORDs(6) <= SelectOutputLane(currentBitOutput(1 downto 0), unsigned(GPR0_PortA_readOutData) ); -- oD0.x (o1.x)
+								currentOutputDWORDs(7) <= SelectOutputLane(currentBitOutput(1 downto 0), unsigned(GPR0_PortB_readOutData) ); -- oD0.y (o1.y)
+							when x"8" =>
+								GPR0_PortA_en <= '0';
+								GPR0_PortB_en <= '0';
+
+								currentOutputDWORDs(8) <= SelectOutputLane(currentBitOutput(1 downto 0), unsigned(GPR0_PortA_readOutData) ); -- oD0.z (o1.z)
+								currentOutputDWORDs(9) <= SelectOutputLane(currentBitOutput(1 downto 0), unsigned(GPR0_PortB_readOutData) ); -- oD0.w (o1.w)
 							when others =>
+								GPR0_PortA_en <= '0';
+								GPR0_PortB_en <= '0';
 						end case;
 						currentOutputInstructionPointer <= currentOutputInstructionPointer + 1;
 					else
@@ -1858,10 +1911,9 @@ begin
 				INDEXOUT_FIFO_wr_en <= '0';
 				VERTOUT_FIFO_wr_en <= '0';
 				if (VERTOUT_FIFO_full = '0' and INDEXOUT_FIFO_full = '0' and VBO_Ready = '1') then
-					VERTOUT_FIFO_wr_data(31 downto 0) <= std_logic_vector(currentOutputDWORDs(0) );
-					VERTOUT_FIFO_wr_data(63 downto 32) <= std_logic_vector(currentOutputDWORDs(1) );
-					VERTOUT_FIFO_wr_data(95 downto 64) <= std_logic_vector(currentOutputDWORDs(2) );
-					VERTOUT_FIFO_wr_data(127 downto 96) <= std_logic_vector(currentOutputDWORDs(3) );
+					for i in 0 to 9 loop
+						VERTOUT_FIFO_wr_data(32*(i+1)-1 downto 32*i) <= std_logic_vector(currentOutputDWORDs(i) );
+					end loop;
 					if (hasSentIndicesForBatch = '0') then -- Only do this once per batch!
 						INDEXOUT_FIFO_wr_data <= std_logic_vector(indexBatchData);
 						INDEXOUT_FIFO_wr_en <= '1';

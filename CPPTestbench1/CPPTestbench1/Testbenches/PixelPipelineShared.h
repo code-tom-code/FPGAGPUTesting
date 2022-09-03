@@ -2,21 +2,42 @@
 
 struct vertInput
 {
-	signed short xPos;
-	signed short yPos;
-	unsigned short xTex;
-	unsigned short yTex;
+	float xPos;
+	float yPos;
 	float invZ;
-	D3DCOLOR rgba;
+	float invW;
+	float xTex;
+	float yTex;
+	struct _rgba
+	{
+		float r;
+		float g;
+		float b;
+		float a;
+	} rgba;
 };
 
-// Vertex struct without the xPos or yPos
+// Vertex struct without the xPos or yPos attached
 struct vertAttributes
 {
-	signed short xTex;
-	signed short yTex;
+	float xTex;
+	float yTex;
 	float invZ;
-	D3DCOLOR rgba;
+	float invW;
+	struct _rgba
+	{
+		float r;
+		float g;
+		float b;
+		float a;
+	} rgba;
+
+	const bool operator==(const vertAttributes& rhs) const
+	{
+		return xTex == rhs.xTex && yTex == rhs.yTex &&
+			invZ == rhs.invZ && invW == rhs.invW &&
+			rgba.r == rhs.rgba.r && rgba.g == rhs.rgba.g && rgba.b == rhs.rgba.b && rgba.a == rhs.rgba.a;
+	}
 };
 
 struct triSetupBounds
@@ -56,7 +77,7 @@ static const bool IsFloatCloseEnough(const float a, const float b)
 struct triSetupOutput
 {
 	float barycentricInverse; // 1.0f / twiceTriangleArea
-	vertAttributes v0, v1, v2;
+	vertAttributes v0, v10, v20; // Base vertex v0, plus delta vertices v10 (v1 - v0) and v20 (v2 - v0)
 	triSetupBounds triBoundsAABB;
 	int initialBarycentricRowResetA, initialBarycentricRowResetB, initialBarycentricRowResetC;
 	bool isTopLeftEdgeA, isTopLeftEdgeB, isTopLeftEdgeC;
@@ -65,6 +86,9 @@ struct triSetupOutput
 	const bool operator==(const triSetupOutput& rhs) const
 	{
 		return IsFloatCloseEnough(barycentricInverse, rhs.barycentricInverse) &&
+			v0 == rhs.v0 &&
+			v10 == rhs.v10 &&
+			v20 == rhs.v20 &&
 			triBoundsAABB == rhs.triBoundsAABB &&
 			initialBarycentricRowResetA == rhs.initialBarycentricRowResetA &&
 			initialBarycentricRowResetB == rhs.initialBarycentricRowResetB &&
@@ -76,10 +100,11 @@ struct triSetupOutput
 	}
 
 	void SerializeTriSetupOutput(const std_logic_vector_port<32>& outBarycentricInverse,
-		const std_logic_vector_port<32>& outInvZ0, const std_logic_vector_port<32>& outInvZ1, const std_logic_vector_port<32>& outInvZ2,
-		const std_logic_vector_port<16>& outTX0, const std_logic_vector_port<16>& outTX1, const std_logic_vector_port<16>& outTX2,
-		const std_logic_vector_port<16>& outTY0, const std_logic_vector_port<16>& outTY1, const std_logic_vector_port<16>& outTY2,
-		const std_logic_vector_port<32>& outVC0, const std_logic_vector_port<32>& outVC1, const std_logic_vector_port<32>& outVC2,
+		const std_logic_vector_port<32>& outInvZ0, const std_logic_vector_port<32>& outInvZ10, const std_logic_vector_port<32>& outInvZ20,
+		const std_logic_vector_port<32>& outInvW0, const std_logic_vector_port<32>& outInvW10, const std_logic_vector_port<32>& outInvW20,
+		const std_logic_vector_port<32>& outTX0, const std_logic_vector_port<32>& outTX10, const std_logic_vector_port<32>& outTX20,
+		const std_logic_vector_port<32>& outTY0, const std_logic_vector_port<32>& outTY10, const std_logic_vector_port<32>& outTY20,
+		std_logic_vector_port<128>& outVC0, std_logic_vector_port<128>& outVC10, std_logic_vector_port<128>& outVC20,
 		const std_logic_vector_port<16>& outMinX, const std_logic_vector_port<16>& outMinY, const std_logic_vector_port<16>& outMaxX, const std_logic_vector_port<16>& outMaxY,
 		const std_logic_vector_port<32>& outBarycentricRowResetA, const std_logic_vector_port<32>& outBarycentricRowResetB, const std_logic_vector_port<32>& outBarycentricRowResetC,
 		const std_logic_port& outIsTopLeftEdgeA, const std_logic_port& outIsTopLeftEdgeB, const std_logic_port& outIsTopLeftEdgeC,
@@ -87,10 +112,13 @@ struct triSetupOutput
 		const std_logic_vector_port<16>& outBarycentricYDeltaA, const std_logic_vector_port<16>& outBarycentricYDeltaB, const std_logic_vector_port<16>& outBarycentricYDeltaC)
 	{
 		barycentricInverse = outBarycentricInverse.GetFloat32Val();
-		v0.invZ = outInvZ0.GetFloat32Val(); v1.invZ = outInvZ1.GetFloat32Val(); v2.invZ = outInvZ2.GetFloat32Val();
-		v0.xTex = outTX0.GetInt16Val(); v1.xTex = outTX1.GetInt16Val(); v2.xTex = outTX2.GetInt16Val();
-		v0.yTex = outTY0.GetInt16Val(); v1.yTex = outTY1.GetInt16Val(); v2.yTex = outTY2.GetInt16Val();
-		v0.rgba = outVC0.GetUint32Val(); v1.rgba = outVC1.GetUint32Val(); v2.rgba = outVC2.GetUint32Val();
+		v0.invZ = outInvZ0.GetFloat32Val(); v10.invZ = outInvZ10.GetFloat32Val(); v20.invZ = outInvZ20.GetFloat32Val();
+		v0.invW = outInvW0.GetFloat32Val(); v10.invW = outInvW10.GetFloat32Val(); v20.invW = outInvW20.GetFloat32Val();
+		v0.xTex = outTX0.GetFloat32Val(); v10.xTex = outTX10.GetFloat32Val(); v20.xTex = outTX20.GetFloat32Val();
+		v0.yTex = outTY0.GetFloat32Val(); v10.yTex = outTY10.GetFloat32Val(); v20.yTex = outTY20.GetFloat32Val();
+		outVC0.GetStructVal(v0.rgba);
+		outVC10.GetStructVal(v10.rgba);
+		outVC20.GetStructVal(v20.rgba);
 		triBoundsAABB.minX = outMinX.GetInt16Val(); triBoundsAABB.maxX = outMaxX.GetInt16Val();
 		triBoundsAABB.minY = outMinY.GetInt16Val(); triBoundsAABB.maxY = outMaxY.GetInt16Val();
 		initialBarycentricRowResetA = outBarycentricRowResetA.GetInt32Val(); initialBarycentricRowResetB = outBarycentricRowResetB.GetInt32Val(); initialBarycentricRowResetC = outBarycentricRowResetC.GetInt32Val();
@@ -100,10 +128,11 @@ struct triSetupOutput
 	}
 
 	void DeserializeTriSetupOutput(std_logic_vector_port<32>& inBarycentricInverse,
-		std_logic_vector_port<32>& inInvZ0, std_logic_vector_port<32>& inInvZ1, std_logic_vector_port<32>& inInvZ2,
-		std_logic_vector_port<16>& inTX0, std_logic_vector_port<16>& inTX1, std_logic_vector_port<16>& inTX2,
-		std_logic_vector_port<16>& inTY0, std_logic_vector_port<16>& inTY1, std_logic_vector_port<16>& inTY2,
-		std_logic_vector_port<32>& inVC0, std_logic_vector_port<32>& inVC1, std_logic_vector_port<32>& inVC2,
+		std_logic_vector_port<32>& inInvZ0, std_logic_vector_port<32>& inInvZ10, std_logic_vector_port<32>& inInvZ20,
+		std_logic_vector_port<32>& inInvW0, std_logic_vector_port<32>& inInvW10, std_logic_vector_port<32>& inInvW20,
+		std_logic_vector_port<32>& inTX0, std_logic_vector_port<32>& inTX10, std_logic_vector_port<32>& inTX20,
+		std_logic_vector_port<32>& inTY0, std_logic_vector_port<32>& inTY10, std_logic_vector_port<32>& inTY20,
+		std_logic_vector_port<128>& inVC0, std_logic_vector_port<128>& inVC10, std_logic_vector_port<128>& inVC20,
 		std_logic_vector_port<16>& inMinX, std_logic_vector_port<16>& inMinY, std_logic_vector_port<16>& inMaxX, std_logic_vector_port<16>& inMaxY,
 		std_logic_vector_port<32>& inBarycentricRowResetA, std_logic_vector_port<32>& inBarycentricRowResetB, std_logic_vector_port<32>& inBarycentricRowResetC,
 		std_logic_port& inIsTopLeftEdgeA, std_logic_port& inIsTopLeftEdgeB, std_logic_port& inIsTopLeftEdgeC,
@@ -111,10 +140,13 @@ struct triSetupOutput
 		std_logic_vector_port<16>& inBarycentricYDeltaA, std_logic_vector_port<16>& inBarycentricYDeltaB, std_logic_vector_port<16>& inBarycentricYDeltaC) const
 	{
 		inBarycentricInverse = barycentricInverse;
-		inInvZ0 = v0.invZ; inInvZ1 = v1.invZ; inInvZ2 = v2.invZ;
-		inTX0 = v0.xTex; inTX1 = v1.xTex; inTX2 = v2.xTex;
-		inTY0 = v0.yTex; inTY1 = v1.yTex; inTY2 = v2.yTex;
-		inVC0 = static_cast<uint32_t>(v0.rgba); inVC1 = static_cast<uint32_t>(v1.rgba); inVC2 = static_cast<uint32_t>(v2.rgba);
+		inInvZ0 = v0.invZ; inInvZ10 = v10.invZ; inInvZ20 = v20.invZ;
+		inInvW0 = v0.invW; inInvW10 = v10.invW; inInvW20 = v20.invW;
+		inTX0 = v0.xTex; inTX10 = v10.xTex; inTX20 = v20.xTex;
+		inTY0 = v0.yTex; inTY10 = v10.yTex; inTY20 = v20.yTex;
+		inVC0.SetStructVal(v0.rgba);
+		inVC10.SetStructVal(v10.rgba);
+		inVC20.SetStructVal(v20.rgba);
 		inMinX = triBoundsAABB.minX; inMaxX = triBoundsAABB.maxX; inMinY = triBoundsAABB.minY; inMaxY = triBoundsAABB.maxY;
 		inBarycentricRowResetA = initialBarycentricRowResetA; inBarycentricRowResetB = initialBarycentricRowResetB; inBarycentricRowResetC = initialBarycentricRowResetC;
 		inIsTopLeftEdgeA = isTopLeftEdgeA; inIsTopLeftEdgeB = isTopLeftEdgeB; inIsTopLeftEdgeC = isTopLeftEdgeC;
@@ -123,25 +155,31 @@ struct triSetupOutput
 	}
 
 	void DeserializeTriSetupOutput(std_logic_vector_port<32>& inBarycentricInverse,
-		std_logic_vector_port<32>& inInvZ0, std_logic_vector_port<32>& inInvZ1, std_logic_vector_port<32>& inInvZ2,
-		std_logic_vector_port<16>& inTX0, std_logic_vector_port<16>& inTX1, std_logic_vector_port<16>& inTX2,
-		std_logic_vector_port<16>& inTY0, std_logic_vector_port<16>& inTY1, std_logic_vector_port<16>& inTY2,
-		std_logic_vector_port<32>& inVC0, std_logic_vector_port<32>& inVC1, std_logic_vector_port<32>& inVC2) const
+		std_logic_vector_port<32>& inInvZ0, std_logic_vector_port<32>& inInvZ10, std_logic_vector_port<32>& inInvZ20,
+		std_logic_vector_port<32>& inInvW0, std_logic_vector_port<32>& inInvW10, std_logic_vector_port<32>& inInvW20,
+		std_logic_vector_port<32>& inTX0, std_logic_vector_port<32>& inTX10, std_logic_vector_port<32>& inTX20,
+		std_logic_vector_port<32>& inTY0, std_logic_vector_port<32>& inTY10, std_logic_vector_port<32>& inTY20,
+		std_logic_vector_port<128>& inVC0, std_logic_vector_port<128>& inVC10, std_logic_vector_port<128>& inVC20) const
 	{
 		inBarycentricInverse = barycentricInverse;
-		inInvZ0 = v0.invZ; inInvZ1 = v1.invZ; inInvZ2 = v2.invZ;
-		inTX0 = v0.xTex; inTX1 = v1.xTex; inTX2 = v2.xTex;
-		inTY0 = v0.yTex; inTY1 = v1.yTex; inTY2 = v2.yTex;
-		inVC0 = static_cast<uint32_t>(v0.rgba); inVC1 = static_cast<uint32_t>(v1.rgba); inVC2 = static_cast<uint32_t>(v2.rgba);
+		inInvZ0 = v0.invZ; inInvZ10 = v10.invZ; inInvZ20 = v20.invZ;
+		inInvW0 = v0.invW; inInvW10 = v10.invW; inInvW20 = v20.invW;
+		inTX0 = v0.xTex; inTX10 = v10.xTex; inTX20 = v20.xTex;
+		inTY0 = v0.yTex; inTY10 = v10.yTex; inTY20 = v20.yTex;
+		inVC0.SetStructVal(v0.rgba);
+		inVC10.SetStructVal(v10.rgba);
+		inVC20.SetStructVal(v20.rgba);
 	}
 
-	void DeserializeTriSetupOutput(std_logic_vector_port<16>& inTX0, std_logic_vector_port<16>& inTX1, std_logic_vector_port<16>& inTX2,
-		std_logic_vector_port<16>& inTY0, std_logic_vector_port<16>& inTY1, std_logic_vector_port<16>& inTY2,
-		std_logic_vector_port<32>& inVC0, std_logic_vector_port<32>& inVC1, std_logic_vector_port<32>& inVC2) const
+	void DeserializeTriSetupOutput(std_logic_vector_port<32>& inTX0, std_logic_vector_port<32>& inTX10, std_logic_vector_port<32>& inTX20,
+		std_logic_vector_port<32>& inTY0, std_logic_vector_port<32>& inTY10, std_logic_vector_port<32>& inTY20,
+		std_logic_vector_port<128>& inVC0, std_logic_vector_port<128>& inVC10, std_logic_vector_port<128>& inVC20) const
 	{
-		inTX0 = v0.xTex; inTX1 = v1.xTex; inTX2 = v2.xTex;
-		inTY0 = v0.yTex; inTY1 = v1.yTex; inTY2 = v2.yTex;
-		inVC0 = static_cast<uint32_t>(v0.rgba); inVC1 = static_cast<uint32_t>(v1.rgba); inVC2 = static_cast<uint32_t>(v2.rgba);
+		inTX0 = v0.xTex; inTX10 = v10.xTex; inTX20 = v20.xTex;
+		inTY0 = v0.yTex; inTY10 = v10.yTex; inTY20 = v20.yTex;
+		inVC0.SetStructVal(v0.rgba);
+		inVC10.SetStructVal(v10.rgba);
+		inVC20.SetStructVal(v20.rgba);
 	}
 };
 
@@ -149,45 +187,40 @@ struct depthInterpOutputData
 {
 	signed short pixelX;
 	signed short pixelY;
-	float interpolatedPixelDepth;
-	float normalizedBarycentricDivZ0;
-	float normalizedBarycentricDivZ1;
-	float normalizedBarycentricDivZ2;
+	float interpolatedPixelW;
+	float normalizedBarycentricB;
+	float normalizedBarycentricC;
 
 	void Deserialize(std_logic_vector_port<10>& ATTR_PosX, std_logic_vector_port<10>& ATTR_PosY,
-		std_logic_vector_port<32>& ATTR_NormalizedBarycentricDivZ0,
-		std_logic_vector_port<32>& ATTR_NormalizedBarycentricDivZ1,
-		std_logic_vector_port<32>& ATTR_NormalizedBarycentricDivZ2,
-		std_logic_vector_port<32>& ATTR_OutPixelDepth) const
+		std_logic_vector_port<32>& ATTR_NormalizedBarycentricB,
+		std_logic_vector_port<32>& ATTR_NormalizedBarycentricC,
+		std_logic_vector_port<32>& ATTR_OutPixelW) const
 	{
 		ATTR_PosX = pixelX;
 		ATTR_PosY = pixelY;
-		ATTR_NormalizedBarycentricDivZ0 = normalizedBarycentricDivZ0;
-		ATTR_NormalizedBarycentricDivZ1 = normalizedBarycentricDivZ1;
-		ATTR_NormalizedBarycentricDivZ2 = normalizedBarycentricDivZ2;
-		ATTR_OutPixelDepth = interpolatedPixelDepth;
+		ATTR_NormalizedBarycentricB = normalizedBarycentricB;
+		ATTR_NormalizedBarycentricC = normalizedBarycentricC;
+		ATTR_OutPixelW = interpolatedPixelW;
 	}
 
 	void Serialize(const std_logic_vector_port<10>& ATTR_PosX, const std_logic_vector_port<10>& ATTR_PosY,
-		const std_logic_vector_port<32>& ATTR_NormalizedBarycentricDivZ0,
-		const std_logic_vector_port<32>& ATTR_NormalizedBarycentricDivZ1,
-		const std_logic_vector_port<32>& ATTR_NormalizedBarycentricDivZ2,
-		const std_logic_vector_port<32>& ATTR_OutPixelDepth)
+		const std_logic_vector_port<32>& ATTR_NormalizedBarycentricB,
+		const std_logic_vector_port<32>& ATTR_NormalizedBarycentricC,
+		const std_logic_vector_port<32>& ATTR_OutPixelW)
 	{
 		pixelX = ATTR_PosX.GetInt16Val();
 		pixelY = ATTR_PosY.GetInt16Val();
-		normalizedBarycentricDivZ0 = ATTR_NormalizedBarycentricDivZ0.GetFloat32Val();
-		normalizedBarycentricDivZ1 = ATTR_NormalizedBarycentricDivZ1.GetFloat32Val();
-		normalizedBarycentricDivZ2 = ATTR_NormalizedBarycentricDivZ2.GetFloat32Val();
-		interpolatedPixelDepth = ATTR_OutPixelDepth.GetFloat32Val();
+		normalizedBarycentricB = ATTR_NormalizedBarycentricB.GetFloat32Val();
+		normalizedBarycentricC = ATTR_NormalizedBarycentricC.GetFloat32Val();
+		interpolatedPixelW = ATTR_OutPixelW.GetFloat32Val();
 	}
 
 	const bool operator==(const depthInterpOutputData& rhs) const
 	{
 		// Might need to do float-epsilon comparisons here instead
 		return pixelX == rhs.pixelX && pixelY == rhs.pixelY &&
-			interpolatedPixelDepth == rhs.interpolatedPixelDepth &&
-			normalizedBarycentricDivZ0 == rhs.normalizedBarycentricDivZ0 && normalizedBarycentricDivZ1 == rhs.normalizedBarycentricDivZ1 && normalizedBarycentricDivZ2 == rhs.normalizedBarycentricDivZ2;
+			interpolatedPixelW == rhs.interpolatedPixelW &&
+			normalizedBarycentricB == rhs.normalizedBarycentricB && normalizedBarycentricC == rhs.normalizedBarycentricC;
 	}
 };
 
@@ -197,6 +230,7 @@ enum triSetupResultType
 	triSetup_OK,
 
 	// Cull results:
+	triSetup_NAN_INF_Cull, // NAN/INF culling on the XYZW position components for each of the vertices
 	triSetup_DuplicateVertexCull, // Degenerate triangle culling
 	triSetup_CulledZClip, // Triangle intersects near or far clip planes. We need to cull it because we don't support clipping currently.
 	triSetup_ZeroBounds, // Triangle has zero bounds
@@ -211,7 +245,6 @@ struct triSetupInput
 
 struct rasterizedPixelData
 {
-	signed long barycentricA;
 	signed long barycentricB;
 	signed long barycentricC;
 	signed short pixelX;
@@ -220,10 +253,10 @@ struct rasterizedPixelData
 	const bool operator==(const rasterizedPixelData& rhs) const
 	{
 		return (pixelX == rhs.pixelX) && (pixelY == rhs.pixelY) &&
-			(barycentricA == rhs.barycentricA) && (barycentricB == rhs.barycentricB) && (barycentricC == rhs.barycentricC);
+			(barycentricB == rhs.barycentricB) && (barycentricC == rhs.barycentricC);
 	}
 };
-static_assert(sizeof(rasterizedPixelData) == 16, "Error: Unexpected struct packing!");
+static_assert(sizeof(rasterizedPixelData) == 12, "Error: Unexpected struct packing!");
 
 enum triCacheCommand : signed short
 {

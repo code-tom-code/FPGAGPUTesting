@@ -271,5 +271,8 @@
     <None Include="TexSample.prj">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="TriWorkCache.prj">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

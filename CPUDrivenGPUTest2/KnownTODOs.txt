@@ -7,8 +7,7 @@ New Features:
 - Implement DXT Compressed Textures (DXT1, DXT3, DXT5)
 - Implement optional texture formats (R3G3B2 and A8 are currently unsupported)
 - Implement texture palettes (P8 textures)
-- Perspective-correct attribute interpolation
-- Implement frc, log, exp, sincos instructions
+- Implement log, exp, and sincos instructions
 - Implement HDMI data island TERC4 packets (whichever are necessary to enable HDMI capture card capture)
 - Add stats for the new blocks (ShaderCore, VertexStreamCache, VBB, DepthInterpolator, DepthBuffer)
 - Finish implementing support for "passthrough" (D3DFVF_XYZRHW or POSITIONT vertex decl) vertex shaders in the driver
@@ -21,7 +20,7 @@ New Features:
 - Try upgrading to the latest Vivado to see if it improves build-times
 - Implement VS-Vertex Decl pairs (so that rendering using the same fixed function state or same vertex shader but with a different vertex declaration produces a different shader)
 - Implement driver-side shader cache management (storing multiple shaders at once to avoid too many shader reloads and I$ flushes)
-- Have texture samplers support non-power of 2 texture dimensions (non-square textures should already be supported)
+- Have texture samplers support non-power of 2 texture dimensions (non-square textures should already be supported so long as both Width and Height are powers of 2)
 
 Optimizations:
 - Memory System Rewrite to support AXI4 Bursts (up to 128 bursts per read/write, and cannot cross a 4KB address boundary) for much higher bandwidth at the cost of memory latency. Also requires refactoring memory clients to use a new request scheme denoting "how much memory" to read/write at once
@@ -30,7 +29,6 @@ Optimizations:
 	- InputAssembler (lower priority)
 	- Triangle Setup (higher priority)
 - Modify various systems to be able to support at least 1 pixel per clock cycle:
-	- Rasterizer (lower priority, already runs at 2 clocks per pixel and could probably be easily modified for 1 clock per pixel)
 	- DepthInterpolator (higher priority)
 	- Attribute Interpolator (higher priority)
 	- TexSampler (higher priority)
@@ -40,17 +38,18 @@ Optimizations:
 - Implement color buffer compression (ROP and ClearBlock need to know about this)
 - Have the driver auto-detect that index buffers could be using a smaller index format and switch to that one (INDEX32 -> INDEX16 or INDEX16 -> INDEX8)
 - Have the driver auto-detect when an indexed draw call is using an identity index buffer (0, 1, 2, 3, 4, 5, 6, ...) and replace that with a non-indexed draw call to save on time and bandwidth loading from the index buffer
-- Have the driver detect when a vertex buffer uses repeated/constant stream elements and rewrite the vertex buffer data to separate those repeated/constant elements to lower read memory bandwidth from vertex loads
+- Have the driver detect when a vertex buffer uses repeated/constant/unused stream elements and rewrite the vertex buffer data to separate those repeated/constant elements to lower read memory bandwidth from vertex loads
 - Tighten up the cycle scheduling in the ShaderCore, it's likely that 1 or 2 cycles per instruction are still available to be gained back
 - Implement DX-level shader optimization step in shader compiler
 - Implement device-level shader optimization step in shader compiler
 - Don't actually upload vertex/index buffers or vertex shaders until the first time that they are referenced in a draw call
 - If the driver detects that a texture uses fewer than 256 colors, then auto-convert its format to P8
+- If the driver detects that a texture is not using all of its available channels, then auto-convert it to a format with fewer channels
 - If the driver detects that a texture could be using a lower-bandwidth texture format or a smaller resolution, then convert it to that (DXT3/DXT5 with all opaque/fulltransparent texels -> DXT1, solid color texture > 4x4, all colors could be quantized to smaller format)
 - When not using the viewport transform Z scale/offset, omit those instructions from the vertex shader viewport transform code
 - When not using the viewport transform X/Y offset, omit those instructions from the vertex shader viewport transform code
 - Optimize rcp instruction to have better than 14 cycle latency!
-- Optimize vertex load and vertex export to use both ports simultaneously for double the speed of loading and unloading vertex data
+- Optimize vertex load and vertex export to use both ports simultaneously for double the speed of loading vertex data
 - See if it's possible to optimize draw calls by switching from D3DPT_TRIANGLELIST to D3DPT_TRIANGLESTRIP in some cases (saves on index buffer bandwidth)
 
 Bugfixes:

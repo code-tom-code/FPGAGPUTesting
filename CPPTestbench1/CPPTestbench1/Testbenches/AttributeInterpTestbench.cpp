@@ -8,8 +8,6 @@
 #include "ShaderCoreALUCommon.h"
 #include "PixelPipelineShared.h"
 #include <vector>
-#include <DirectXMath.h>
-#include <DirectXPackedVector.h>
 
 static unsigned currentTriCacheIndex = 0;
 
@@ -31,111 +29,78 @@ enum attrInterpStateType
 	init, // 0
 	waitingForRead, // 1
 
-	convertVertexAttributes0, // 2
-	convertVertexAttributes1, // 3
-	convertVertexAttributes2, // 4
-	convertVertexAttributes3, // 5
-	convertVertexAttributes4, // 6
-	convertVertexAttributes5, // 7
-	convertVertexAttributes6, // 8
-	convertVertexAttributes7, // 9
-	convertVertexAttributes8, // 10
-	convertVertexAttributes9, // 11
+	multBarycentricsAndAttr0, // 2
+	multBarycentricsAndAttr1, // 3
+	multBarycentricsAndAttr2, // 4
+	multBarycentricsAndAttr3, // 5
+	multBarycentricsAndAttr4, // 6
+	multBarycentricsAndAttr5, // 7
+	multBarycentricsAndAttr6, // 8
+	multBarycentricsAndAttr7, // 9
+	multBarycentricsAndAttr8, // 10
+	multBarycentricsAndAttr9, // 11
+	multBarycentricsAndAttr10, // 12
+	multBarycentricsAndAttr11, // 13
+	multBarycentricsAndAttr12, // 14
+	multBarycentricsAndAttr13, // 15
+	multBarycentricsAndAttr14, // 16
+	multBarycentricsAndAttr15, // 17
+	multBarycentricsAndAttr16, // 18
+	multBarycentricsAndAttr17, // 19
 
-	multBarycentricsAndAttr0, // 12
-	multBarycentricsAndAttr1, // 13
-	multBarycentricsAndAttr2, // 14
-	multBarycentricsAndAttr3, // 15
-	multBarycentricsAndAttr4, // 16
-	multBarycentricsAndAttr5, // 17
-	multBarycentricsAndAttr6, // 18
-	multBarycentricsAndAttr7, // 19
-	multBarycentricsAndAttr8, // 20
-	multBarycentricsAndAttr9, // 21
-	multBarycentricsAndAttr10, // 22
-	multBarycentricsAndAttr11, // 23
-	multBarycentricsAndAttr12, // 24
-	multBarycentricsAndAttr13, // 25
-	multBarycentricsAndAttr14, // 26
-	multBarycentricsAndAttr15, // 27
-	multBarycentricsAndAttr16, // 28
-	multBarycentricsAndAttr17, // 29
-	multBarycentricsAndAttr18, // 30
-	multBarycentricsAndAttr19, // 31
-	multBarycentricsAndAttr20, // 32
-	multBarycentricsAndAttr21, // 33
-	multBarycentricsAndAttr22, // 34
-	multBarycentricsAndAttr23, // 35
+	addDotProductTerms0, // 20
+	addDotProductTerms1, // 21
+	addDotProductTerms2, // 22
+	addDotProductTerms3, // 23
+	addDotProductTerms4, // 24
+	addDotProductTerms5, // 25
+	addDotProductTerms6, // 26
+	addDotProductTerms7, // 27
+	addDotProductTerms8, // 28
+	addDotProductTerms9, // 29
+	addDotProductTerms10, // 30
+	addDotProductTerms11, // 31
+	addDotProductTerms12, // 32
+	addDotProductTerms13, // 33
+	addDotProductTerms14, // 34
+	addDotProductTerms15, // 35
+	addDotProductTerms16, // 36
 
-	addDotProductTerms0, // 36
-	addDotProductTerms1, // 37
-	addDotProductTerms2, // 38
-	addDotProductTerms3, // 39
-	addDotProductTerms4, // 40
-	addDotProductTerms5, // 41
-	addDotProductTerms6, // 42
-	addDotProductTerms7, // 43
-	addDotProductTerms8, // 44
-	addDotProductTerms9, // 45
-	addDotProductTerms10, // 46
-	addDotProductTerms11, // 47
-	addDotProductTerms12, // 48
-	addDotProductTerms13, // 49
-	addDotProductTerms14, // 50
-	addDotProductTerms15, // 51
-	addDotProductTerms16, // 52
+	multiplyPixelW0, // 37
+	multiplyPixelW1, // 38
+	multiplyPixelW2, // 39
+	multiplyPixelW3, // 40
+	multiplyPixelW4, // 41
+	multiplyPixelW5, // 42
+	multiplyPixelW6, // 43
+	multiplyPixelW7, // 44
+	multiplyPixelW8, // 45
+	multiplyPixelW9, // 46
+	multiplyPixelW10, // 47
+	multiplyPixelW11, // 48
 
-	multiplyPixelDepth0, // 53
-	multiplyPixelDepth1, // 54
-	multiplyPixelDepth2, // 55
-	multiplyPixelDepth3, // 56
-	multiplyPixelDepth4, // 57
-	multiplyPixelDepth5, // 58
-	multiplyPixelDepth6, // 59
-	multiplyPixelDepth7, // 60
-	multiplyPixelDepth8, // 61
-	multiplyPixelDepth9, // 62
-	multiplyPixelDepth10, // 63
-	multiplyPixelDepth11, // 64
+	compressOutput0, // 49
+	compressOutput1, // 50
+	compressOutput2, // 51
+	compressOutput3, // 52
+	compressOutput4, // 53
+	compressOutput5, // 54
+	compressOutput6, // 55
+	compressOutput7, // 56
+	compressOutput8, // 57
+	compressOutput9, // 58
+	compressOutput10, // 59
+	compressOutput11, // 60
 
-	compressOutput0, // 65
-	compressOutput1, // 66
-	compressOutput2, // 67
-	compressOutput3, // 68
-	compressOutput4, // 69
-	compressOutput5, // 70
-	compressOutput6, // 71
-	compressOutput7, // 72
-	compressOutput8, // 73
-	compressOutput9, // 74
-	compressOutput10, // 75
-	compressOutput11, // 76
-
-	waitingForWrite // 77
+	waitingForWrite // 61
 };
 
-static void ConvertCOLOR4ToFloat4(const uint32_t inColor, float& outColorX, float& outColorY, float& outColorZ, float& outColorW)
+static void ConvertCOLOR4ToFloat4(const vertAttributes::_rgba& inColor, float& outColorX, float& outColorY, float& outColorZ, float& outColorW)
 {
-	const unsigned ur = inColor & 0xFF;
-	const unsigned ug = (inColor >> 8) & 0xFF;
-	const unsigned ub = (inColor >> 16) & 0xFF;
-	const unsigned ua = (inColor >> 24) & 0xFF;
-	outColorX = ur / 255.0f;
-	outColorY = ug / 255.0f;
-	outColorZ = ub / 255.0f;
-	outColorW = ua / 255.0f;
-}
-
-static void ConvertD3DCOLORToFloat4(const D3DCOLOR inColor, float& outColorX, float& outColorY, float& outColorZ, float& outColorW)
-{
-	const unsigned ub = inColor & 0xFF;
-	const unsigned ug = (inColor >> 8) & 0xFF;
-	const unsigned ur = (inColor >> 16) & 0xFF;
-	const unsigned ua = (inColor >> 24) & 0xFF;
-	outColorX = ur / 255.0f;
-	outColorY = ug / 255.0f;
-	outColorZ = ub / 255.0f;
-	outColorW = ua / 255.0f;
+	outColorX = inColor.r;
+	outColorY = inColor.g;
+	outColorZ = inColor.b;
+	outColorW = inColor.a;
 }
 
 static void ConvertFloat4ToUBYTE4(const D3DXVECTOR4& inColor, uint32_t& outByte4)
@@ -156,34 +121,42 @@ const unsigned short ConvertFloatToUNORM16(const float fVal)
 
 void EmulateAttributeInterpCPU(const triSetupOutput& triSetupData, const std::vector<depthInterpOutputData>& depthInterpData, std::vector<attributeInterpOutputData>& outAttributeInterpData)
 {
-	D3DXVECTOR2 tex0, tex1, tex2;
-	tex0.x = DirectX::PackedVector::XMConvertHalfToFloat(triSetupData.v0.xTex);
-	tex0.y = DirectX::PackedVector::XMConvertHalfToFloat(triSetupData.v0.yTex);
-	tex1.x = DirectX::PackedVector::XMConvertHalfToFloat(triSetupData.v1.xTex);
-	tex1.y = DirectX::PackedVector::XMConvertHalfToFloat(triSetupData.v1.yTex);
-	tex2.x = DirectX::PackedVector::XMConvertHalfToFloat(triSetupData.v2.xTex);
-	tex2.y = DirectX::PackedVector::XMConvertHalfToFloat(triSetupData.v2.yTex);
-	D3DXVECTOR4 vc0, vc1, vc2;
+	D3DXVECTOR2 tex0, tex10, tex20;
+	tex0.x = triSetupData.v0.xTex;
+	tex0.y = triSetupData.v0.yTex;
+	tex10.x = triSetupData.v10.xTex;
+	tex10.y = triSetupData.v10.yTex;
+	tex20.x = triSetupData.v20.xTex;
+	tex20.y = triSetupData.v20.yTex;
+	D3DXVECTOR4 vc0, vc10, vc20;
 	ConvertCOLOR4ToFloat4(triSetupData.v0.rgba, vc0.x, vc0.y, vc0.z, vc0.w);
-	ConvertCOLOR4ToFloat4(triSetupData.v1.rgba, vc1.x, vc1.y, vc1.z, vc1.w);
-	ConvertCOLOR4ToFloat4(triSetupData.v2.rgba, vc2.x, vc2.y, vc2.z, vc2.w);
+	ConvertCOLOR4ToFloat4(triSetupData.v10.rgba, vc10.x, vc10.y, vc10.z, vc10.w);
+	ConvertCOLOR4ToFloat4(triSetupData.v20.rgba, vc20.x, vc20.y, vc20.z, vc20.w);
 
 	const unsigned numPixels = (const unsigned)depthInterpData.size();
 	for (unsigned x = 0; x < numPixels; ++x)
 	{
 		const depthInterpOutputData& thisPixelData = depthInterpData[x];
 
-		const D3DXVECTOR2 texSum0 = thisPixelData.normalizedBarycentricDivZ0 * tex0;
-		const D3DXVECTOR2 texSum1 = thisPixelData.normalizedBarycentricDivZ1 * tex1;
-		const D3DXVECTOR2 texSum2 = thisPixelData.normalizedBarycentricDivZ2 * tex2;
-		const D3DXVECTOR2 dotProdTex = texSum0 + texSum1 + texSum2;
-		const D3DXVECTOR2 interpolatedTexcoord = dotProdTex * thisPixelData.interpolatedPixelDepth;
+		const D3DXVECTOR2 t0divW = tex0;
+		const D3DXVECTOR2 t10divW = tex10;
+		const D3DXVECTOR2 t20divW = tex20;
 
-		const D3DXVECTOR4 vcSum0 = thisPixelData.normalizedBarycentricDivZ0 * vc0;
-		const D3DXVECTOR4 vcSum1 = thisPixelData.normalizedBarycentricDivZ1 * vc1;
-		const D3DXVECTOR4 vcSum2 = thisPixelData.normalizedBarycentricDivZ2 * vc2;
-		const D3DXVECTOR4 dotProdVertColor = vcSum0 + vcSum1 + vcSum2;
-		const D3DXVECTOR4 interpolatedVertColor = dotProdVertColor * thisPixelData.interpolatedPixelDepth;
+		const D3DXVECTOR2 texSum10 = thisPixelData.normalizedBarycentricB * t10divW;
+		const D3DXVECTOR2 texSum20 = thisPixelData.normalizedBarycentricC * t20divW;
+		const D3DXVECTOR2 dotProdTex = texSum10 + texSum20 + t0divW;
+
+		const D3DXVECTOR2 interpolatedTexcoord = dotProdTex * thisPixelData.interpolatedPixelW;
+
+		const D3DXVECTOR4 vc0divW = vc0;
+		const D3DXVECTOR4 vc10divW = vc10;
+		const D3DXVECTOR4 vc20divW = vc20;
+
+		const D3DXVECTOR4 vcSum10 = thisPixelData.normalizedBarycentricB * vc10divW;
+		const D3DXVECTOR4 vcSum20 = thisPixelData.normalizedBarycentricC * vc20divW;
+		const D3DXVECTOR4 dotProdVertColor = vcSum10 + vcSum20 + vc0divW;
+
+		const D3DXVECTOR4 interpolatedVertColor = dotProdVertColor * thisPixelData.interpolatedPixelW;
 
 		attributeInterpOutputData outInterpolatedData;
 		outInterpolatedData.pixelX = thisPixelData.pixelX;
@@ -206,25 +179,24 @@ const int RunTestsAttributeInterp(Xsi::Loader& loader)
 	std_logic_port CMD_UseFlatShading(PD_IN, loader, "CMD_UseFlatShading");
 // Command Processor interface end
 
-// Attribute Interpolator interface begin
+// Depth Interpolator interface begin
 	std_logic_port DINTERP_ReadyForNewPixel(PD_OUT, loader, "DINTERP_ReadyForNewPixel");
 	std_logic_port DINTERP_NewPixelValid(PD_IN, loader, "DINTERP_NewPixelValid");
 	std_logic_vector_port<10> DINTERP_PosX(PD_IN, loader, "DINTERP_PosX");
 	std_logic_vector_port<10> DINTERP_PosY(PD_IN, loader, "DINTERP_PosY");
-	std_logic_vector_port<16> DINTERP_TX0(PD_IN, loader, "DINTERP_TX0");
-	std_logic_vector_port<16> DINTERP_TY0(PD_IN, loader, "DINTERP_TY0");
-	std_logic_vector_port<16> DINTERP_TX1(PD_IN, loader, "DINTERP_TX1");
-	std_logic_vector_port<16> DINTERP_TY1(PD_IN, loader, "DINTERP_TY1");
-	std_logic_vector_port<16> DINTERP_TX2(PD_IN, loader, "DINTERP_TX2");
-	std_logic_vector_port<16> DINTERP_TY2(PD_IN, loader, "DINTERP_TY2");
-	std_logic_vector_port<32> DINTERP_VC0(PD_IN, loader, "DINTERP_VC0");
-	std_logic_vector_port<32> DINTERP_VC1(PD_IN, loader, "DINTERP_VC1");
-	std_logic_vector_port<32> DINTERP_VC2(PD_IN, loader, "DINTERP_VC2");
-	std_logic_vector_port<32> DINTERP_NormalizedBarycentricDivZ0(PD_IN, loader, "DINTERP_NormalizedBarycentricDivZ0");
-	std_logic_vector_port<32> DINTERP_NormalizedBarycentricDivZ1(PD_IN, loader, "DINTERP_NormalizedBarycentricDivZ1");
-	std_logic_vector_port<32> DINTERP_NormalizedBarycentricDivZ2(PD_IN, loader, "DINTERP_NormalizedBarycentricDivZ2");
-	std_logic_vector_port<32> DINTERP_OutPixelDepth(PD_IN, loader, "DINTERP_OutPixelDepth");
-// Attribute Interpolator interface end
+	std_logic_vector_port<32> DINTERP_TX0(PD_IN, loader, "DINTERP_TX0");
+	std_logic_vector_port<32> DINTERP_TY0(PD_IN, loader, "DINTERP_TY0");
+	std_logic_vector_port<32> DINTERP_TX10(PD_IN, loader, "DINTERP_TX10");
+	std_logic_vector_port<32> DINTERP_TY10(PD_IN, loader, "DINTERP_TY10");
+	std_logic_vector_port<32> DINTERP_TX20(PD_IN, loader, "DINTERP_TX20");
+	std_logic_vector_port<32> DINTERP_TY20(PD_IN, loader, "DINTERP_TY20");
+	std_logic_vector_port<128> DINTERP_VC0(PD_IN, loader, "DINTERP_VC0");
+	std_logic_vector_port<128> DINTERP_VC10(PD_IN, loader, "DINTERP_VC10");
+	std_logic_vector_port<128> DINTERP_VC20(PD_IN, loader, "DINTERP_VC20");
+	std_logic_vector_port<32> DINTERP_NormalizedBarycentricB(PD_IN, loader, "DINTERP_NormalizedBarycentricB");
+	std_logic_vector_port<32> DINTERP_NormalizedBarycentricC(PD_IN, loader, "DINTERP_NormalizedBarycentricC");
+	std_logic_vector_port<32> DINTERP_OutPixelW(PD_IN, loader, "DINTERP_OutPixelW");
+// Depth Interpolator interface end
 
 // FPU interfaces begin
 	std_logic_vector_port<32> FPU_A(PD_OUT, loader, "FPU_A");
@@ -240,15 +212,6 @@ const int RunTestsAttributeInterp(Xsi::Loader& loader)
 	std_logic_port FPU_IBIT_GO(PD_OUT, loader, "FPU_IBIT_GO");
 // FPU interfaces end
 
-// UNORM8ToFloat signals begin
-	std_logic_port UNORM8ToFloat_Enable(PD_OUT, loader, "UNORM8ToFloat_Enable");
-	std_logic_vector_port<32> UNORM8ToFloat_ColorIn(PD_OUT, loader, "UNORM8ToFloat_ColorIn");
-	std_logic_vector_port<32> UNORM8ToFloat_ConvertedX(PD_IN, loader, "UNORM8ToFloat_ConvertedX");
-	std_logic_vector_port<32> UNORM8ToFloat_ConvertedY(PD_IN, loader, "UNORM8ToFloat_ConvertedY");
-	std_logic_vector_port<32> UNORM8ToFloat_ConvertedZ(PD_IN, loader, "UNORM8ToFloat_ConvertedZ");
-	std_logic_vector_port<32> UNORM8ToFloat_ConvertedW(PD_IN, loader, "UNORM8ToFloat_ConvertedW");
-// UNORM8ToFloat signals end
-
 // Texture Sampler interface begin
 	std_logic_vector_port<16> TEXSAMP_outInterpolatedTexcoordX(PD_OUT, loader, "TEXSAMP_outInterpolatedTexcoordX");
 	std_logic_vector_port<16> TEXSAMP_outInterpolatedTexcoordY(PD_OUT, loader, "TEXSAMP_outInterpolatedTexcoordY");
@@ -262,7 +225,6 @@ const int RunTestsAttributeInterp(Xsi::Loader& loader)
 
 // Debug signals
 	std_logic_vector_port<7> DBG_AttrInterpolator_State(PD_OUT, loader, "DBG_AttrInterpolator_State");
-	std_logic_vector_port<32> DBG_RastBarycentricA(PD_OUT, loader, "DBG_RastBarycentricA");
 	std_logic_vector_port<32> DBG_RastBarycentricB(PD_OUT, loader, "DBG_RastBarycentricB");
 	std_logic_vector_port<32> DBG_RastBarycentricC(PD_OUT, loader, "DBG_RastBarycentricC");
 
@@ -279,16 +241,12 @@ const int RunTestsAttributeInterp(Xsi::Loader& loader)
 		CMD_UseFlatShading = false;
 		FPU_OUT = 0.0f;
 		DINTERP_NewPixelValid = false;
-		UNORM8ToFloat_ConvertedX = 0.0f;
-		UNORM8ToFloat_ConvertedY = 0.0f;
-		UNORM8ToFloat_ConvertedZ = 0.0f;
-		UNORM8ToFloat_ConvertedW = 0.0f;
 		TEXSAMP_readyForWrite = true;
 	}
 
 	auto simulateRTLAttributeInterp = [&](const triSetupOutput& triSetupData, const std::vector<depthInterpOutputData>& depthInterpData, std::vector<attributeInterpOutputData>& outAttributeInterpData)
 	{
-		triSetupData.DeserializeTriSetupOutput(DINTERP_TX0, DINTERP_TX1, DINTERP_TX2, DINTERP_TY0, DINTERP_TY1, DINTERP_TY2, DINTERP_VC0, DINTERP_VC1, DINTERP_VC2);
+		triSetupData.DeserializeTriSetupOutput(DINTERP_TX0, DINTERP_TX10, DINTERP_TX20, DINTERP_TY0, DINTERP_TY10, DINTERP_TY20, DINTERP_VC0, DINTERP_VC10, DINTERP_VC20);
 
 		const unsigned numPixels = (const unsigned)depthInterpData.size();
 		for (unsigned x = 0; x < numPixels; ++x)
@@ -301,7 +259,7 @@ const int RunTestsAttributeInterp(Xsi::Loader& loader)
 				scoped_timestep time(loader, clk, 100);
 			}
 
-			thisPixelData.Deserialize(DINTERP_PosX, DINTERP_PosY, DINTERP_NormalizedBarycentricDivZ0, DINTERP_NormalizedBarycentricDivZ1, DINTERP_NormalizedBarycentricDivZ2, DINTERP_OutPixelDepth);
+			thisPixelData.Deserialize(DINTERP_PosX, DINTERP_PosY, DINTERP_NormalizedBarycentricB, DINTERP_NormalizedBarycentricC, DINTERP_OutPixelW);
 
 			// Just pulse this "go signal" for one clock cycle:
 			{
@@ -313,40 +271,11 @@ const int RunTestsAttributeInterp(Xsi::Loader& loader)
 				DINTERP_NewPixelValid = false;
 			}
 
-			// Buffer these to simulate a one cycle latency on the D3DCOLOR to Float4 conversion:
-			float convertedColorsLastCycle[4] = {0};
-
 			while (!TEXSAMP_writeIsValid.GetBoolVal() )
 			{
 				scoped_timestep time(loader, clk, 100);
 
 				attrInterpFPU.Update(FPU_ISHFT_GO, FPU_IMUL_GO, FPU_IADD_GO, FPU_ICMP_GO, FPU_ISPEC_GO, FPU_ICNV_GO, FPU_IBIT_GO, FPU_A, FPU_B, FPU_Mode, FPU_OUT);
-
-				UNORM8ToFloat_ConvertedX = convertedColorsLastCycle[0];
-				UNORM8ToFloat_ConvertedY = convertedColorsLastCycle[1];
-				UNORM8ToFloat_ConvertedZ = convertedColorsLastCycle[2];
-				UNORM8ToFloat_ConvertedW = convertedColorsLastCycle[3];
-
-				if (UNORM8ToFloat_Enable.GetBoolVal() )
-				{
-					const D3DCOLOR convertColor = UNORM8ToFloat_ColorIn.GetUint32Val();
-					float convertedX = 0.0f;
-					float convertedY = 0.0f;
-					float convertedZ = 0.0f;
-					float convertedW = 0.0f;
-					ConvertD3DCOLORToFloat4(convertColor, convertedX, convertedY, convertedZ, convertedW);
-					convertedColorsLastCycle[0] = convertedX;
-					convertedColorsLastCycle[1] = convertedY;
-					convertedColorsLastCycle[2] = convertedZ;
-					convertedColorsLastCycle[3] = convertedW;
-				}
-				else
-				{
-					convertedColorsLastCycle[0] = 0.0f;
-					convertedColorsLastCycle[1] = 0.0f;
-					convertedColorsLastCycle[2] = 0.0f;
-					convertedColorsLastCycle[3] = 0.0f;
-				}
 			}
 
 			attributeInterpOutputData newOutData;
@@ -402,24 +331,27 @@ const int RunTestsAttributeInterp(Xsi::Loader& loader)
 			triSetupInput primTriData; 
 			
 			// Draw vertices in "0, 2, 1" order to swizzle CCW to CW ordering for our triangle setup to not consider them backfacing:
-			primTriData.v0.xPos = (const signed short)(vertices[indicesCCW[x * 3] ].posX + 0.5f);
-			primTriData.v0.yPos = (const signed short)(vertices[indicesCCW[x * 3] ].posY + 0.5f);
+			primTriData.v0.xPos = vertices[indicesCCW[x * 3] ].posX;
+			primTriData.v0.yPos = vertices[indicesCCW[x * 3] ].posY;
 			primTriData.v0.invZ = 2.0f;
-			primTriData.v0.xTex = DirectX::PackedVector::XMConvertFloatToHalf(0.0f);
-			primTriData.v0.yTex = DirectX::PackedVector::XMConvertFloatToHalf(1.0f);
-			primTriData.v0.rgba = COLOR4_ARGB(255, 255, 0, 0);
-			primTriData.v1.xPos = (const signed short)(vertices[indicesCCW[x * 3 + 2] ].posX + 0.5f);
-			primTriData.v1.yPos = (const signed short)(vertices[indicesCCW[x * 3 + 2] ].posY + 0.5f);
+			primTriData.v0.invW = 1.0f;
+			primTriData.v0.xTex = 0.0f;
+			primTriData.v0.yTex = 1.0f;
+			primTriData.v0.rgba = { 1.0f, 0.0f, 0.0f, 1.0f };
+			primTriData.v1.xPos = vertices[indicesCCW[x * 3 + 2] ].posX;
+			primTriData.v1.yPos = vertices[indicesCCW[x * 3 + 2] ].posY;
 			primTriData.v1.invZ = 2.0f;
-			primTriData.v1.xTex = DirectX::PackedVector::XMConvertFloatToHalf(1.0f);
-			primTriData.v1.yTex = DirectX::PackedVector::XMConvertFloatToHalf(0.0f);
-			primTriData.v1.rgba = COLOR4_ARGB(255, 0, 255, 0);
-			primTriData.v2.xPos = (const signed short)(vertices[indicesCCW[x * 3 + 1] ].posX + 0.5f);
-			primTriData.v2.yPos = (const signed short)(vertices[indicesCCW[x * 3 + 1] ].posY + 0.5f);
+			primTriData.v1.invW = 1.0f;
+			primTriData.v1.xTex = 1.0f;
+			primTriData.v1.yTex = 0.0f;
+			primTriData.v1.rgba = { 0.0f, 1.0f, 0.0f, 1.0f };
+			primTriData.v2.xPos = vertices[indicesCCW[x * 3 + 1] ].posX;
+			primTriData.v2.yPos = vertices[indicesCCW[x * 3 + 1] ].posY;
 			primTriData.v2.invZ = 2.0f;
-			primTriData.v2.xTex = DirectX::PackedVector::XMConvertFloatToHalf(0.0f);
-			primTriData.v2.yTex = DirectX::PackedVector::XMConvertFloatToHalf(0.0f);
-			primTriData.v2.rgba = COLOR4_ARGB(255, 0, 0, 255);
+			primTriData.v2.invW = 1.0f;
+			primTriData.v2.xTex = 0.0f;
+			primTriData.v2.yTex = 0.0f;
+			primTriData.v2.rgba = { 0.0f, 0.0f, 1.0f, 1.0f };
 			if (randomAttributes)
 			{
 				const float randomZ0 = frand() * 0.5f + 0.5f; // We currently only support depth values between 0.5f and 1.0f
@@ -429,17 +361,45 @@ const int RunTestsAttributeInterp(Xsi::Loader& loader)
 				primTriData.v1.invZ = 1.0f / randomZ1;
 				primTriData.v2.invZ = 1.0f / randomZ2;
 
-				primTriData.v0.rgba = COLOR4_ARGB(rand() & 0xFF, rand() & 0xFF, rand() & 0xFF, rand() & 0xFF);
-				primTriData.v1.rgba = COLOR4_ARGB(rand() & 0xFF, rand() & 0xFF, rand() & 0xFF, rand() & 0xFF);
-				primTriData.v2.rgba = COLOR4_ARGB(rand() & 0xFF, rand() & 0xFF, rand() & 0xFF, rand() & 0xFF);
+				const float randomW0 = frand() * 0.5f + 0.5f; // We currently only support W values between 0.5f and 1.0f
+				const float randomW1 = frand() * 0.5f + 0.5f;
+				const float randomW2 = frand() * 0.5f + 0.5f;
+				primTriData.v0.invW = 1.0f / randomW0;
+				primTriData.v1.invW = 1.0f / randomW1;
+				primTriData.v2.invW = 1.0f / randomW2;
 
-				primTriData.v0.xTex = DirectX::PackedVector::XMConvertFloatToHalf(frand() * 32.0f - 16.0f);
-				primTriData.v0.yTex = DirectX::PackedVector::XMConvertFloatToHalf(frand() * 32.0f - 16.0f);
-				primTriData.v1.xTex = DirectX::PackedVector::XMConvertFloatToHalf(frand() * 32.0f - 16.0f);
-				primTriData.v1.yTex = DirectX::PackedVector::XMConvertFloatToHalf(frand() * 32.0f - 16.0f);
-				primTriData.v2.xTex = DirectX::PackedVector::XMConvertFloatToHalf(frand() * 32.0f - 16.0f);
-				primTriData.v2.yTex = DirectX::PackedVector::XMConvertFloatToHalf(frand() * 32.0f - 16.0f);
+				primTriData.v0.rgba = { frand(), frand(), frand(), frand() };
+				primTriData.v1.rgba = { frand(), frand(), frand(), frand() };
+				primTriData.v2.rgba = { frand(), frand(), frand(), frand() };
+
+				primTriData.v0.xTex = frand() * 32.0f - 16.0f;
+				primTriData.v0.yTex = frand() * 32.0f - 16.0f;
+				primTriData.v1.xTex = frand() * 32.0f - 16.0f;
+				primTriData.v1.yTex = frand() * 32.0f - 16.0f;
+				primTriData.v2.xTex = frand() * 32.0f - 16.0f;
+				primTriData.v2.yTex = frand() * 32.0f - 16.0f;
 			}
+
+			// Emulate the vertex shader by pre-dividing the perspective-interpolated attributes by W:
+			primTriData.v0.xTex *= primTriData.v0.invW;
+			primTriData.v0.yTex *= primTriData.v0.invW;
+			primTriData.v0.rgba.r *= primTriData.v0.invW;
+			primTriData.v0.rgba.g *= primTriData.v0.invW;
+			primTriData.v0.rgba.b *= primTriData.v0.invW;
+			primTriData.v0.rgba.a *= primTriData.v0.invW;
+			primTriData.v1.xTex *= primTriData.v1.invW;
+			primTriData.v1.yTex *= primTriData.v1.invW;
+			primTriData.v1.rgba.r *= primTriData.v1.invW;
+			primTriData.v1.rgba.g *= primTriData.v1.invW;
+			primTriData.v1.rgba.b *= primTriData.v1.invW;
+			primTriData.v1.rgba.a *= primTriData.v1.invW;
+			primTriData.v2.xTex *= primTriData.v2.invW;
+			primTriData.v2.yTex *= primTriData.v2.invW;
+			primTriData.v2.rgba.r *= primTriData.v2.invW;
+			primTriData.v2.rgba.g *= primTriData.v2.invW;
+			primTriData.v2.rgba.b *= primTriData.v2.invW;
+			primTriData.v2.rgba.a *= primTriData.v2.invW;
+
 			triSetupOutput triSetupData;
 			if (EmulateCPUTriSetup(primTriData, triSetupData) != triSetup_OK) // If this fails, then it's because our triangle got culled or clipped or backface-killed or something
 			{

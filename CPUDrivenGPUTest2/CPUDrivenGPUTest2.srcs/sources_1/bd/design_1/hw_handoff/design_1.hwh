@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
-<EDKSYSTEM EDWVERSION="1.2" TIMESTAMP="Mon Aug 29 12:06:06 2022" VIVADOVERSION="2018.1_AR73068">
+<EDKSYSTEM EDWVERSION="1.2" TIMESTAMP="Sat Sep  3 01:41:29 2022" VIVADOVERSION="2018.1_AR73068">
 
   <SYSTEMINFO ARCH="kintexuplus" BOARD="xilinx.com:kcu116:part0:1.3" DEVICE="xcku5p" NAME="design_1" PACKAGE="ffvb676" SPEEDGRADE="-2"/>
 
@@ -195,53 +195,6 @@
       </PORTS>
       <BUSINTERFACES/>
     </MODULE>
-    <MODULE FULLNAME="/AttrInterp_UNORM8ToFloat" HWVERSION="1.0" INSTANCE="AttrInterp_UNORM8ToFloat" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="UNORM8ToFloat" VLNV="xilinx.com:module_ref:UNORM8ToFloat:1.0">
-      <DOCUMENTS/>
-      <PARAMETERS>
-        <PARAMETER NAME="Use_Mantissa_Lut" VALUE="true"/>
-        <PARAMETER NAME="Use_Exponent_Lut" VALUE="true"/>
-        <PARAMETER NAME="Component_Name" VALUE="design_1_UNORM8ToFloat_0_1"/>
-        <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
-      </PARAMETERS>
-      <PORTS>
-        <PORT CLKFREQUENCY="333250000" DIR="I" NAME="clk" SIGIS="clk" SIGNAME="MemorySystem_ddr4_0_c0_ddr4_ui_clk">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="MemorySystem_ddr4_0" PORT="c0_ddr4_ui_clk"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" NAME="Enable" SIGIS="undef" SIGNAME="AttrInterpolator_0_UNORM8ToFloat_Enable">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="UNORM8ToFloat_Enable"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" LEFT="31" NAME="D3DColorIn" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_UNORM8ToFloat_ColorIn">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="UNORM8ToFloat_ColorIn"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="O" LEFT="31" NAME="FloatXOut" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterp_UNORM8ToFloat_FloatXOut">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="UNORM8ToFloat_ConvertedX"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="O" LEFT="31" NAME="FloatYOut" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterp_UNORM8ToFloat_FloatYOut">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="UNORM8ToFloat_ConvertedY"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="O" LEFT="31" NAME="FloatZOut" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterp_UNORM8ToFloat_FloatZOut">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="UNORM8ToFloat_ConvertedZ"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="O" LEFT="31" NAME="FloatWOut" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterp_UNORM8ToFloat_FloatWOut">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="UNORM8ToFloat_ConvertedW"/>
-          </CONNECTIONS>
-        </PORT>
-      </PORTS>
-      <BUSINTERFACES/>
-    </MODULE>
     <MODULE FULLNAME="/AttrInterpolator_0" HWVERSION="1.0" INSTANCE="AttrInterpolator_0" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="AttrInterpolator" VLNV="xilinx.com:module_ref:AttrInterpolator:1.0">
       <DOCUMENTS/>
       <PARAMETERS>
@@ -279,69 +232,64 @@
             <CONNECTION INSTANCE="DepthInterpolator_0" PORT="ATTR_PosY"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="15" NAME="DINTERP_TX0" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_TX0">
+        <PORT DIR="I" LEFT="31" NAME="DINTERP_TX0" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_TX0">
           <CONNECTIONS>
             <CONNECTION INSTANCE="DepthInterpolator_0" PORT="ATTR_TX0"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="15" NAME="DINTERP_TX1" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_TX1">
+        <PORT DIR="I" LEFT="31" NAME="DINTERP_TX10" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_TX10">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="ATTR_TX1"/>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="ATTR_TX10"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="15" NAME="DINTERP_TX2" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_TX2">
+        <PORT DIR="I" LEFT="31" NAME="DINTERP_TX20" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_TX20">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="ATTR_TX2"/>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="ATTR_TX20"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="15" NAME="DINTERP_TY0" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_TY0">
+        <PORT DIR="I" LEFT="31" NAME="DINTERP_TY0" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_TY0">
           <CONNECTIONS>
             <CONNECTION INSTANCE="DepthInterpolator_0" PORT="ATTR_TY0"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="15" NAME="DINTERP_TY1" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_TY1">
+        <PORT DIR="I" LEFT="31" NAME="DINTERP_TY10" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_TY10">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="ATTR_TY1"/>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="ATTR_TY10"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="15" NAME="DINTERP_TY2" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_TY2">
+        <PORT DIR="I" LEFT="31" NAME="DINTERP_TY20" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_TY20">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="ATTR_TY2"/>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="ATTR_TY20"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="DINTERP_VC0" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_VC0">
+        <PORT DIR="I" LEFT="127" NAME="DINTERP_VC0" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_VC0">
           <CONNECTIONS>
             <CONNECTION INSTANCE="DepthInterpolator_0" PORT="ATTR_VC0"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="DINTERP_VC1" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_VC1">
+        <PORT DIR="I" LEFT="127" NAME="DINTERP_VC10" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_VC10">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="ATTR_VC1"/>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="ATTR_VC10"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="DINTERP_VC2" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_VC2">
+        <PORT DIR="I" LEFT="127" NAME="DINTERP_VC20" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_VC20">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="ATTR_VC2"/>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="ATTR_VC20"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="DINTERP_NormalizedBarycentricDivZ0" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_NormalizedBarycentricDivZ0">
+        <PORT DIR="I" LEFT="31" NAME="DINTERP_NormalizedBarycentricB" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_NormalizedBarycentricB">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="ATTR_NormalizedBarycentricDivZ0"/>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="ATTR_NormalizedBarycentricB"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="DINTERP_NormalizedBarycentricDivZ1" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_NormalizedBarycentricDivZ1">
+        <PORT DIR="I" LEFT="31" NAME="DINTERP_NormalizedBarycentricC" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_NormalizedBarycentricC">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="ATTR_NormalizedBarycentricDivZ1"/>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="ATTR_NormalizedBarycentricC"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="DINTERP_NormalizedBarycentricDivZ2" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_NormalizedBarycentricDivZ2">
+        <PORT DIR="I" LEFT="31" NAME="DINTERP_OutPixelW" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_OutPixelW">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="ATTR_NormalizedBarycentricDivZ2"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" LEFT="31" NAME="DINTERP_OutPixelDepth" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_OutPixelDepth">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="ATTR_OutPixelDepth"/>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="ATTR_OutPixelW"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="31" NAME="FPU_A" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_FPU_A">
@@ -401,36 +349,6 @@
             <CONNECTION INSTANCE="AttrInterp_FPU" PORT="OUT_RESULT"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" NAME="UNORM8ToFloat_Enable" SIGIS="undef" SIGNAME="AttrInterpolator_0_UNORM8ToFloat_Enable">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterp_UNORM8ToFloat" PORT="Enable"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="O" LEFT="31" NAME="UNORM8ToFloat_ColorIn" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_UNORM8ToFloat_ColorIn">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterp_UNORM8ToFloat" PORT="D3DColorIn"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" LEFT="31" NAME="UNORM8ToFloat_ConvertedX" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterp_UNORM8ToFloat_FloatXOut">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterp_UNORM8ToFloat" PORT="FloatXOut"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" LEFT="31" NAME="UNORM8ToFloat_ConvertedY" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterp_UNORM8ToFloat_FloatYOut">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterp_UNORM8ToFloat" PORT="FloatYOut"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" LEFT="31" NAME="UNORM8ToFloat_ConvertedZ" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterp_UNORM8ToFloat_FloatZOut">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterp_UNORM8ToFloat" PORT="FloatZOut"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" LEFT="31" NAME="UNORM8ToFloat_ConvertedW" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterp_UNORM8ToFloat_FloatWOut">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterp_UNORM8ToFloat" PORT="FloatWOut"/>
-          </CONNECTIONS>
-        </PORT>
         <PORT DIR="O" LEFT="15" NAME="TEXSAMP_outInterpolatedTexcoordX" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_TEXSAMP_outInterpolatedTexcoordX">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe0"/>
@@ -448,6 +366,7 @@
             <CONNECTION INSTANCE="ila_333_250" PORT="probe37"/>
             <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe2"/>
             <CONNECTION INSTANCE="TexSample_0" PORT="INTERP_inInterpolatedVertColorRGBA"/>
+            <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe13"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="15" NAME="TEXSAMP_outPixelX" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_TEXSAMP_outPixelX">
@@ -491,11 +410,6 @@
           <CONNECTIONS>
             <CONNECTION INSTANCE="ila_333_250" PORT="probe7"/>
             <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe6"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="O" LEFT="31" NAME="DBG_RastBarycentricA" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_DBG_RastBarycentricA">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe7"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="31" NAME="DBG_RastBarycentricB" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_DBG_RastBarycentricB">
@@ -1676,59 +1590,74 @@
             <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outInvZ0"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="TRICACHE_inInvZ1" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outInvZ1">
+        <PORT DIR="I" LEFT="31" NAME="TRICACHE_inInvZ10" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outInvZ10">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outInvZ1"/>
+            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outInvZ10"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="TRICACHE_inInvZ2" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outInvZ2">
+        <PORT DIR="I" LEFT="31" NAME="TRICACHE_inInvZ20" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outInvZ20">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outInvZ2"/>
+            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outInvZ20"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="15" NAME="TRICACHE_inT0X" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outT0X">
+        <PORT DIR="I" LEFT="31" NAME="TRICACHE_inInvW0" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outInvW0">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outInvW0"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="31" NAME="TRICACHE_inInvW10" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outInvW10">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outInvW10"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="31" NAME="TRICACHE_inInvW20" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outInvW20">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outInvW20"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="31" NAME="TRICACHE_inT0X" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outT0X">
           <CONNECTIONS>
             <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outT0X"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="15" NAME="TRICACHE_inT0Y" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outT0Y">
+        <PORT DIR="I" LEFT="31" NAME="TRICACHE_inT0Y" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outT0Y">
           <CONNECTIONS>
             <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outT0Y"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="15" NAME="TRICACHE_inT1X" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outT1X">
+        <PORT DIR="I" LEFT="31" NAME="TRICACHE_inT10X" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outT10X">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outT1X"/>
+            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outT10X"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="15" NAME="TRICACHE_inT1Y" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outT1Y">
+        <PORT DIR="I" LEFT="31" NAME="TRICACHE_inT10Y" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outT10Y">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outT1Y"/>
+            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outT10Y"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="15" NAME="TRICACHE_inT2X" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outT2X">
+        <PORT DIR="I" LEFT="31" NAME="TRICACHE_inT20X" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outT20X">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outT2X"/>
+            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outT20X"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="15" NAME="TRICACHE_inT2Y" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outT2Y">
+        <PORT DIR="I" LEFT="31" NAME="TRICACHE_inT20Y" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outT20Y">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outT2Y"/>
+            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outT20Y"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="TRICACHE_inColorRGBA0" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outColorRGBA0">
+        <PORT DIR="I" LEFT="127" NAME="TRICACHE_inColorRGBA0" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outColorRGBA0">
           <CONNECTIONS>
             <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outColorRGBA0"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="TRICACHE_inColorRGBA1" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outColorRGBA1">
+        <PORT DIR="I" LEFT="127" NAME="TRICACHE_inColorRGBA10" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outColorRGBA10">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outColorRGBA1"/>
+            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outColorRGBA10"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="TRICACHE_inColorRGBA2" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outColorRGBA2">
+        <PORT DIR="I" LEFT="127" NAME="TRICACHE_inColorRGBA20" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outColorRGBA20">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outColorRGBA2"/>
+            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outColorRGBA20"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="2" NAME="TRICACHE_CurrentSlotIndex" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_TRICACHE_CurrentSlotIndex">
@@ -1741,7 +1670,7 @@
             <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_SignalSlotComplete"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="127" NAME="RASTOUT_FIFO_rd_data" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_RASTOUT_FIFO_rd_data">
+        <PORT DIR="I" LEFT="95" NAME="RASTOUT_FIFO_rd_data" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_RASTOUT_FIFO_rd_data">
           <CONNECTIONS>
             <CONNECTION INSTANCE="rast_out_fifo" PORT="dout"/>
           </CONNECTIONS>
@@ -1830,6 +1759,7 @@
         <PORT DIR="O" LEFT="23" NAME="DEPTH_OutPixelDepth" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_DEPTH_OutPixelDepth">
           <CONNECTIONS>
             <CONNECTION INSTANCE="DepthBuffer_0" PORT="RAST_InPixelDepth"/>
+            <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe5"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="I" NAME="DEPTH_PixelPassedDepthTest" SIGIS="undef" SIGNAME="DepthBuffer_0_RAST_PixelPassedDepthTest">
@@ -1867,77 +1797,70 @@
             <CONNECTION INSTANCE="AttrInterpolator_0" PORT="DINTERP_PosY"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="15" NAME="ATTR_TX0" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_TX0">
+        <PORT DIR="O" LEFT="31" NAME="ATTR_TX0" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_TX0">
           <CONNECTIONS>
+            <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe11"/>
             <CONNECTION INSTANCE="AttrInterpolator_0" PORT="DINTERP_TX0"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="15" NAME="ATTR_TX1" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_TX1">
+        <PORT DIR="O" LEFT="31" NAME="ATTR_TX10" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_TX10">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="DINTERP_TX1"/>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="DINTERP_TX10"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="15" NAME="ATTR_TX2" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_TX2">
+        <PORT DIR="O" LEFT="31" NAME="ATTR_TX20" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_TX20">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="DINTERP_TX2"/>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="DINTERP_TX20"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="15" NAME="ATTR_TY0" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_TY0">
+        <PORT DIR="O" LEFT="31" NAME="ATTR_TY0" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_TY0">
           <CONNECTIONS>
+            <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe12"/>
             <CONNECTION INSTANCE="AttrInterpolator_0" PORT="DINTERP_TY0"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="15" NAME="ATTR_TY1" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_TY1">
+        <PORT DIR="O" LEFT="31" NAME="ATTR_TY10" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_TY10">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="DINTERP_TY1"/>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="DINTERP_TY10"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="15" NAME="ATTR_TY2" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_TY2">
+        <PORT DIR="O" LEFT="31" NAME="ATTR_TY20" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_TY20">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="DINTERP_TY2"/>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="DINTERP_TY20"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="31" NAME="ATTR_VC0" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_VC0">
+        <PORT DIR="O" LEFT="127" NAME="ATTR_VC0" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_VC0">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe20"/>
             <CONNECTION INSTANCE="AttrInterpolator_0" PORT="DINTERP_VC0"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="31" NAME="ATTR_VC1" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_VC1">
+        <PORT DIR="O" LEFT="127" NAME="ATTR_VC10" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_VC10">
           <CONNECTIONS>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="DINTERP_VC10"/>
             <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe21"/>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="DINTERP_VC1"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="31" NAME="ATTR_VC2" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_VC2">
+        <PORT DIR="O" LEFT="127" NAME="ATTR_VC20" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_VC20">
           <CONNECTIONS>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="DINTERP_VC20"/>
             <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe22"/>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="DINTERP_VC2"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="31" NAME="ATTR_NormalizedBarycentricDivZ0" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_NormalizedBarycentricDivZ0">
+        <PORT DIR="O" LEFT="31" NAME="ATTR_NormalizedBarycentricB" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_NormalizedBarycentricB">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe11"/>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="DINTERP_NormalizedBarycentricDivZ0"/>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="DINTERP_NormalizedBarycentricB"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="31" NAME="ATTR_NormalizedBarycentricDivZ1" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_NormalizedBarycentricDivZ1">
+        <PORT DIR="O" LEFT="31" NAME="ATTR_NormalizedBarycentricC" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_NormalizedBarycentricC">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe12"/>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="DINTERP_NormalizedBarycentricDivZ1"/>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="DINTERP_NormalizedBarycentricC"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="31" NAME="ATTR_NormalizedBarycentricDivZ2" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_NormalizedBarycentricDivZ2">
+        <PORT DIR="O" LEFT="31" NAME="ATTR_OutPixelW" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_OutPixelW">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe13"/>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="DINTERP_NormalizedBarycentricDivZ2"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="O" LEFT="31" NAME="ATTR_OutPixelDepth" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_OutPixelDepth">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe5"/>
             <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe14"/>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="DINTERP_OutPixelDepth"/>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="DINTERP_OutPixelW"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="31" NAME="STAT_CyclesIdle" RIGHT="0" SIGIS="undef"/>
@@ -1948,7 +1871,6 @@
             <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe29"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="31" NAME="DBG_RastBarycentricA" RIGHT="0" SIGIS="undef"/>
         <PORT DIR="O" LEFT="31" NAME="DBG_RastBarycentricB" RIGHT="0" SIGIS="undef"/>
         <PORT DIR="O" LEFT="31" NAME="DBG_RastBarycentricC" RIGHT="0" SIGIS="undef"/>
       </PORTS>
@@ -1997,7 +1919,7 @@
         <PARAMETER NAME="C_RAM_STYLE" VALUE="SUBCORE"/>
         <PARAMETER NAME="C_TRIGOUT_EN" VALUE="0"/>
         <PARAMETER NAME="C_TRIGIN_EN" VALUE="0"/>
-        <PARAMETER NAME="C_SLOT_0_AXIS_TUSER_WIDTH" VALUE="32"/>
+        <PARAMETER NAME="C_SLOT_0_AXIS_TUSER_WIDTH" VALUE="24"/>
         <PARAMETER NAME="C_SLOT_0_AXIS_TDEST_WIDTH" VALUE="32"/>
         <PARAMETER NAME="C_SLOT_0_AXIS_TID_WIDTH" VALUE="32"/>
         <PARAMETER NAME="C_SLOT_0_AXI_ID_WIDTH" VALUE="8"/>
@@ -2005,13 +1927,13 @@
         <PARAMETER NAME="C_SLOT_0_AXI_RUSER_WIDTH" VALUE="1"/>
         <PARAMETER NAME="C_SLOT_0_AXI_AWUSER_WIDTH" VALUE="1"/>
         <PARAMETER NAME="C_SLOT_0_AXI_WUSER_WIDTH" VALUE="1"/>
-        <PARAMETER NAME="C_SLOT_0_AXI_BUSER_WIDTH" VALUE="32"/>
+        <PARAMETER NAME="C_SLOT_0_AXI_BUSER_WIDTH" VALUE="128"/>
         <PARAMETER NAME="C_PROBE0_WIDTH" VALUE="16"/>
         <PARAMETER NAME="C_PROBE1_WIDTH" VALUE="16"/>
         <PARAMETER NAME="C_PROBE2_WIDTH" VALUE="32"/>
         <PARAMETER NAME="C_PROBE3_WIDTH" VALUE="16"/>
         <PARAMETER NAME="C_PROBE4_WIDTH" VALUE="16"/>
-        <PARAMETER NAME="C_PROBE5_WIDTH" VALUE="32"/>
+        <PARAMETER NAME="C_PROBE5_WIDTH" VALUE="24"/>
         <PARAMETER NAME="C_PROBE6_WIDTH" VALUE="7"/>
         <PARAMETER NAME="C_PROBE7_WIDTH" VALUE="32"/>
         <PARAMETER NAME="C_PROBE8_WIDTH" VALUE="32"/>
@@ -2026,12 +1948,12 @@
         <PARAMETER NAME="C_PROBE17_WIDTH" VALUE="64"/>
         <PARAMETER NAME="C_PROBE18_WIDTH" VALUE="64"/>
         <PARAMETER NAME="C_PROBE19_WIDTH" VALUE="8"/>
-        <PARAMETER NAME="C_PROBE20_WIDTH" VALUE="32"/>
-        <PARAMETER NAME="C_PROBE21_WIDTH" VALUE="32"/>
-        <PARAMETER NAME="C_PROBE22_WIDTH" VALUE="32"/>
-        <PARAMETER NAME="C_PROBE23_WIDTH" VALUE="32"/>
-        <PARAMETER NAME="C_PROBE24_WIDTH" VALUE="32"/>
-        <PARAMETER NAME="C_PROBE25_WIDTH" VALUE="32"/>
+        <PARAMETER NAME="C_PROBE20_WIDTH" VALUE="128"/>
+        <PARAMETER NAME="C_PROBE21_WIDTH" VALUE="128"/>
+        <PARAMETER NAME="C_PROBE22_WIDTH" VALUE="128"/>
+        <PARAMETER NAME="C_PROBE23_WIDTH" VALUE="128"/>
+        <PARAMETER NAME="C_PROBE24_WIDTH" VALUE="128"/>
+        <PARAMETER NAME="C_PROBE25_WIDTH" VALUE="128"/>
         <PARAMETER NAME="C_PROBE26_WIDTH" VALUE="32"/>
         <PARAMETER NAME="C_PROBE27_WIDTH" VALUE="18"/>
         <PARAMETER NAME="C_PROBE28_WIDTH" VALUE="18"/>
@@ -5132,9 +5054,9 @@
             <CONNECTION INSTANCE="AttrInterpolator_0" PORT="TEXSAMP_outPixelY"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="probe5" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_OutPixelDepth">
+        <PORT DIR="I" LEFT="23" NAME="probe5" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_DEPTH_OutPixelDepth">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="ATTR_OutPixelDepth"/>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="DEPTH_OutPixelDepth"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="I" LEFT="6" NAME="probe6" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_DBG_AttrInterpolator_State">
@@ -5142,9 +5064,9 @@
             <CONNECTION INSTANCE="AttrInterpolator_0" PORT="DBG_AttrInterpolator_State"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="probe7" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_DBG_RastBarycentricA">
+        <PORT DIR="I" LEFT="31" NAME="probe7" RIGHT="0" SIGIS="undef" SIGNAME="xlconstant_4_dout">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="DBG_RastBarycentricA"/>
+            <CONNECTION INSTANCE="xlconstant_4" PORT="dout"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="I" LEFT="31" NAME="probe8" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_DBG_RastBarycentricB">
@@ -5162,24 +5084,24 @@
             <CONNECTION INSTANCE="TriWorkCache_0" PORT="DBG_NumActiveTriangles"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="probe11" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_NormalizedBarycentricDivZ0">
+        <PORT DIR="I" LEFT="31" NAME="probe11" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_TX0">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="ATTR_NormalizedBarycentricDivZ0"/>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="ATTR_TX0"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="probe12" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_NormalizedBarycentricDivZ1">
+        <PORT DIR="I" LEFT="31" NAME="probe12" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_TY0">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="ATTR_NormalizedBarycentricDivZ1"/>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="ATTR_TY0"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="probe13" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_NormalizedBarycentricDivZ2">
+        <PORT DIR="I" LEFT="31" NAME="probe13" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_TEXSAMP_outInterpolatedColorRGBA">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="ATTR_NormalizedBarycentricDivZ2"/>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="TEXSAMP_outInterpolatedColorRGBA"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="probe14" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_OutPixelDepth">
+        <PORT DIR="I" LEFT="31" NAME="probe14" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_OutPixelW">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="ATTR_OutPixelDepth"/>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="ATTR_OutPixelW"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="I" LEFT="31" NAME="probe15" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_FPU_A">
@@ -5207,34 +5129,34 @@
             <CONNECTION INSTANCE="DepthBuffer_0" PORT="URAM_wea"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="probe20" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_VC0">
+        <PORT DIR="I" LEFT="127" NAME="probe20" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_VC0">
           <CONNECTIONS>
             <CONNECTION INSTANCE="DepthInterpolator_0" PORT="ATTR_VC0"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="probe21" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_VC1">
+        <PORT DIR="I" LEFT="127" NAME="probe21" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_VC10">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="ATTR_VC1"/>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="ATTR_VC10"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="probe22" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_VC2">
+        <PORT DIR="I" LEFT="127" NAME="probe22" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_VC20">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="ATTR_VC2"/>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="ATTR_VC20"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="probe23" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outColorRGBA0">
+        <PORT DIR="I" LEFT="127" NAME="probe23" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outColorRGBA0">
           <CONNECTIONS>
             <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outColorRGBA0"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="probe24" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outColorRGBA1">
+        <PORT DIR="I" LEFT="127" NAME="probe24" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outColorRGBA10">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outColorRGBA1"/>
+            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outColorRGBA10"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="probe25" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outColorRGBA2">
+        <PORT DIR="I" LEFT="127" NAME="probe25" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outColorRGBA20">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outColorRGBA2"/>
+            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outColorRGBA20"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="I" LEFT="31" NAME="probe26" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_FPU_B">
@@ -5323,7 +5245,7 @@
         <PARAMETER NAME="C_PROBE6_WIDTH" VALUE="16"/>
         <PARAMETER NAME="C_PROBE7_WIDTH" VALUE="16"/>
         <PARAMETER NAME="C_PROBE8_WIDTH" VALUE="16"/>
-        <PARAMETER NAME="C_PROBE9_WIDTH" VALUE="128"/>
+        <PARAMETER NAME="C_PROBE9_WIDTH" VALUE="320"/>
         <PARAMETER NAME="C_PROBE10_WIDTH" VALUE="32"/>
         <PARAMETER NAME="C_PROBE11_WIDTH" VALUE="6"/>
         <PARAMETER NAME="C_PROBE12_WIDTH" VALUE="4"/>
@@ -8460,7 +8382,7 @@
             <CONNECTION INSTANCE="xlconstant_2" PORT="dout"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="127" NAME="probe9" RIGHT="0" SIGIS="undef" SIGNAME="VBO_FIFO_dout">
+        <PORT DIR="I" LEFT="319" NAME="probe9" RIGHT="0" SIGIS="undef" SIGNAME="VBO_FIFO_dout">
           <CONNECTIONS>
             <CONNECTION INSTANCE="VBO_FIFO" PORT="dout"/>
           </CONNECTIONS>
@@ -11976,28 +11898,28 @@
         <PARAMETER NAME="C_RAM_STYLE" VALUE="SUBCORE"/>
         <PARAMETER NAME="C_TRIGOUT_EN" VALUE="0"/>
         <PARAMETER NAME="C_TRIGIN_EN" VALUE="0"/>
-        <PARAMETER NAME="C_SLOT_0_AXIS_TUSER_WIDTH" VALUE="16"/>
-        <PARAMETER NAME="C_SLOT_0_AXIS_TDEST_WIDTH" VALUE="16"/>
-        <PARAMETER NAME="C_SLOT_0_AXIS_TID_WIDTH" VALUE="16"/>
+        <PARAMETER NAME="C_SLOT_0_AXIS_TUSER_WIDTH" VALUE="32"/>
+        <PARAMETER NAME="C_SLOT_0_AXIS_TDEST_WIDTH" VALUE="32"/>
+        <PARAMETER NAME="C_SLOT_0_AXIS_TID_WIDTH" VALUE="32"/>
         <PARAMETER NAME="C_SLOT_0_AXI_ID_WIDTH" VALUE="32"/>
         <PARAMETER NAME="C_SLOT_0_AXI_ARUSER_WIDTH" VALUE="16"/>
         <PARAMETER NAME="C_SLOT_0_AXI_RUSER_WIDTH" VALUE="32"/>
         <PARAMETER NAME="C_SLOT_0_AXI_AWUSER_WIDTH" VALUE="32"/>
-        <PARAMETER NAME="C_SLOT_0_AXI_WUSER_WIDTH" VALUE="16"/>
+        <PARAMETER NAME="C_SLOT_0_AXI_WUSER_WIDTH" VALUE="32"/>
         <PARAMETER NAME="C_SLOT_0_AXI_BUSER_WIDTH" VALUE="1"/>
         <PARAMETER NAME="C_PROBE0_WIDTH" VALUE="32"/>
         <PARAMETER NAME="C_PROBE1_WIDTH" VALUE="32"/>
         <PARAMETER NAME="C_PROBE2_WIDTH" VALUE="32"/>
         <PARAMETER NAME="C_PROBE3_WIDTH" VALUE="32"/>
-        <PARAMETER NAME="C_PROBE4_WIDTH" VALUE="16"/>
-        <PARAMETER NAME="C_PROBE5_WIDTH" VALUE="16"/>
-        <PARAMETER NAME="C_PROBE6_WIDTH" VALUE="16"/>
-        <PARAMETER NAME="C_PROBE7_WIDTH" VALUE="16"/>
-        <PARAMETER NAME="C_PROBE8_WIDTH" VALUE="16"/>
-        <PARAMETER NAME="C_PROBE9_WIDTH" VALUE="16"/>
-        <PARAMETER NAME="C_PROBE10_WIDTH" VALUE="32"/>
-        <PARAMETER NAME="C_PROBE11_WIDTH" VALUE="32"/>
-        <PARAMETER NAME="C_PROBE12_WIDTH" VALUE="32"/>
+        <PARAMETER NAME="C_PROBE4_WIDTH" VALUE="32"/>
+        <PARAMETER NAME="C_PROBE5_WIDTH" VALUE="32"/>
+        <PARAMETER NAME="C_PROBE6_WIDTH" VALUE="32"/>
+        <PARAMETER NAME="C_PROBE7_WIDTH" VALUE="32"/>
+        <PARAMETER NAME="C_PROBE8_WIDTH" VALUE="32"/>
+        <PARAMETER NAME="C_PROBE9_WIDTH" VALUE="32"/>
+        <PARAMETER NAME="C_PROBE10_WIDTH" VALUE="128"/>
+        <PARAMETER NAME="C_PROBE11_WIDTH" VALUE="128"/>
+        <PARAMETER NAME="C_PROBE12_WIDTH" VALUE="128"/>
         <PARAMETER NAME="C_PROBE13_WIDTH" VALUE="16"/>
         <PARAMETER NAME="C_PROBE14_WIDTH" VALUE="16"/>
         <PARAMETER NAME="C_PROBE15_WIDTH" VALUE="16"/>
@@ -12015,7 +11937,7 @@
         <PARAMETER NAME="C_PROBE27_WIDTH" VALUE="16"/>
         <PARAMETER NAME="C_PROBE28_WIDTH" VALUE="16"/>
         <PARAMETER NAME="C_PROBE29_WIDTH" VALUE="1"/>
-        <PARAMETER NAME="C_PROBE30_WIDTH" VALUE="5"/>
+        <PARAMETER NAME="C_PROBE30_WIDTH" VALUE="6"/>
         <PARAMETER NAME="C_PROBE31_WIDTH" VALUE="16"/>
         <PARAMETER NAME="C_PROBE32_WIDTH" VALUE="16"/>
         <PARAMETER NAME="C_PROBE33_WIDTH" VALUE="16"/>
@@ -12027,19 +11949,19 @@
         <PARAMETER NAME="C_PROBE39_WIDTH" VALUE="32"/>
         <PARAMETER NAME="C_PROBE40_WIDTH" VALUE="32"/>
         <PARAMETER NAME="C_PROBE41_WIDTH" VALUE="32"/>
-        <PARAMETER NAME="C_PROBE42_WIDTH" VALUE="16"/>
-        <PARAMETER NAME="C_PROBE43_WIDTH" VALUE="16"/>
-        <PARAMETER NAME="C_PROBE44_WIDTH" VALUE="16"/>
-        <PARAMETER NAME="C_PROBE45_WIDTH" VALUE="16"/>
-        <PARAMETER NAME="C_PROBE46_WIDTH" VALUE="16"/>
-        <PARAMETER NAME="C_PROBE47_WIDTH" VALUE="16"/>
-        <PARAMETER NAME="C_PROBE48_WIDTH" VALUE="32"/>
-        <PARAMETER NAME="C_PROBE49_WIDTH" VALUE="32"/>
-        <PARAMETER NAME="C_PROBE50_WIDTH" VALUE="32"/>
+        <PARAMETER NAME="C_PROBE42_WIDTH" VALUE="32"/>
+        <PARAMETER NAME="C_PROBE43_WIDTH" VALUE="32"/>
+        <PARAMETER NAME="C_PROBE44_WIDTH" VALUE="32"/>
+        <PARAMETER NAME="C_PROBE45_WIDTH" VALUE="32"/>
+        <PARAMETER NAME="C_PROBE46_WIDTH" VALUE="32"/>
+        <PARAMETER NAME="C_PROBE47_WIDTH" VALUE="32"/>
+        <PARAMETER NAME="C_PROBE48_WIDTH" VALUE="128"/>
+        <PARAMETER NAME="C_PROBE49_WIDTH" VALUE="128"/>
+        <PARAMETER NAME="C_PROBE50_WIDTH" VALUE="128"/>
         <PARAMETER NAME="C_PROBE51_WIDTH" VALUE="6"/>
         <PARAMETER NAME="C_PROBE52_WIDTH" VALUE="4"/>
         <PARAMETER NAME="C_PROBE53_WIDTH" VALUE="12"/>
-        <PARAMETER NAME="C_PROBE54_WIDTH" VALUE="128"/>
+        <PARAMETER NAME="C_PROBE54_WIDTH" VALUE="320"/>
         <PARAMETER NAME="C_PROBE55_WIDTH" VALUE="256"/>
         <PARAMETER NAME="C_PROBE56_WIDTH" VALUE="32"/>
         <PARAMETER NAME="C_PROBE57_WIDTH" VALUE="32"/>
@@ -15096,59 +15018,59 @@
             <CONNECTION INSTANCE="TriSetup_0" PORT="RAST_v0_out_invZ"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="probe2" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_v1_out_invZ">
+        <PORT DIR="I" LEFT="31" NAME="probe2" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_v10_out_invZ">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriSetup_0" PORT="RAST_v1_out_invZ"/>
+            <CONNECTION INSTANCE="TriSetup_0" PORT="RAST_v10_out_invZ"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="probe3" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_v2_out_invZ">
+        <PORT DIR="I" LEFT="31" NAME="probe3" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_v20_out_invZ">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriSetup_0" PORT="RAST_v2_out_invZ"/>
+            <CONNECTION INSTANCE="TriSetup_0" PORT="RAST_v20_out_invZ"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="15" NAME="probe4" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_t0_out_x">
+        <PORT DIR="I" LEFT="31" NAME="probe4" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_t0_out_x">
           <CONNECTIONS>
             <CONNECTION INSTANCE="TriSetup_0" PORT="RAST_t0_out_x"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="15" NAME="probe5" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_t0_out_y">
+        <PORT DIR="I" LEFT="31" NAME="probe5" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_t0_out_y">
           <CONNECTIONS>
             <CONNECTION INSTANCE="TriSetup_0" PORT="RAST_t0_out_y"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="15" NAME="probe6" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_t1_out_x">
+        <PORT DIR="I" LEFT="31" NAME="probe6" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_t10_out_x">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriSetup_0" PORT="RAST_t1_out_x"/>
+            <CONNECTION INSTANCE="TriSetup_0" PORT="RAST_t10_out_x"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="15" NAME="probe7" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_t1_out_y">
+        <PORT DIR="I" LEFT="31" NAME="probe7" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_t10_out_y">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriSetup_0" PORT="RAST_t1_out_y"/>
+            <CONNECTION INSTANCE="TriSetup_0" PORT="RAST_t10_out_y"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="15" NAME="probe8" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_t2_out_x">
+        <PORT DIR="I" LEFT="31" NAME="probe8" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_t20_out_x">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriSetup_0" PORT="RAST_t2_out_x"/>
+            <CONNECTION INSTANCE="TriSetup_0" PORT="RAST_t20_out_x"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="15" NAME="probe9" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_t2_out_y">
+        <PORT DIR="I" LEFT="31" NAME="probe9" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_t20_out_y">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriSetup_0" PORT="RAST_t2_out_y"/>
+            <CONNECTION INSTANCE="TriSetup_0" PORT="RAST_t20_out_y"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="probe10" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_v0_out_colorRGBA">
+        <PORT DIR="I" LEFT="127" NAME="probe10" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_v0_out_colorRGBA">
           <CONNECTIONS>
             <CONNECTION INSTANCE="TriSetup_0" PORT="RAST_v0_out_colorRGBA"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="probe11" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_v1_out_colorRGBA">
+        <PORT DIR="I" LEFT="127" NAME="probe11" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_v10_out_colorRGBA">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriSetup_0" PORT="RAST_v1_out_colorRGBA"/>
+            <CONNECTION INSTANCE="TriSetup_0" PORT="RAST_v10_out_colorRGBA"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="probe12" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_v2_out_colorRGBA">
+        <PORT DIR="I" LEFT="127" NAME="probe12" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_v20_out_colorRGBA">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriSetup_0" PORT="RAST_v2_out_colorRGBA"/>
+            <CONNECTION INSTANCE="TriSetup_0" PORT="RAST_v20_out_colorRGBA"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="I" LEFT="15" NAME="probe13" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_outMinX">
@@ -15236,7 +15158,7 @@
             <CONNECTION INSTANCE="TriSetup_0" PORT="RAST_triSetupDataIsValid"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="4" NAME="probe30" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_DBG_TriSetup_State">
+        <PORT DIR="I" LEFT="5" NAME="probe30" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_DBG_TriSetup_State">
           <CONNECTIONS>
             <CONNECTION INSTANCE="TriSetup_0" PORT="DBG_TriSetup_State"/>
           </CONNECTIONS>
@@ -15296,47 +15218,47 @@
             <CONNECTION INSTANCE="TriSetup_0" PORT="DBG_TwiceTriArea"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="15" NAME="probe42" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v0PosX">
+        <PORT DIR="I" LEFT="31" NAME="probe42" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v0PosX">
           <CONNECTIONS>
             <CONNECTION INSTANCE="InputAssembler2_0" PORT="TRISETUP_v0PosX"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="15" NAME="probe43" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v0PosY">
+        <PORT DIR="I" LEFT="31" NAME="probe43" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v0PosY">
           <CONNECTIONS>
             <CONNECTION INSTANCE="InputAssembler2_0" PORT="TRISETUP_v0PosY"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="15" NAME="probe44" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v1PosX">
+        <PORT DIR="I" LEFT="31" NAME="probe44" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v1PosX">
           <CONNECTIONS>
             <CONNECTION INSTANCE="InputAssembler2_0" PORT="TRISETUP_v1PosX"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="15" NAME="probe45" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v1PosY">
+        <PORT DIR="I" LEFT="31" NAME="probe45" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v1PosY">
           <CONNECTIONS>
             <CONNECTION INSTANCE="InputAssembler2_0" PORT="TRISETUP_v1PosY"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="15" NAME="probe46" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v2PosX">
+        <PORT DIR="I" LEFT="31" NAME="probe46" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v2PosX">
           <CONNECTIONS>
             <CONNECTION INSTANCE="InputAssembler2_0" PORT="TRISETUP_v2PosX"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="15" NAME="probe47" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v2PosY">
+        <PORT DIR="I" LEFT="31" NAME="probe47" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v2PosY">
           <CONNECTIONS>
             <CONNECTION INSTANCE="InputAssembler2_0" PORT="TRISETUP_v2PosY"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="probe48" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_vertColor0_RGBA">
+        <PORT DIR="I" LEFT="127" NAME="probe48" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_vertColor0_RGBA">
           <CONNECTIONS>
             <CONNECTION INSTANCE="InputAssembler2_0" PORT="TRISETUP_vertColor0_RGBA"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="probe49" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_vertColor1_RGBA">
+        <PORT DIR="I" LEFT="127" NAME="probe49" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_vertColor1_RGBA">
           <CONNECTIONS>
             <CONNECTION INSTANCE="InputAssembler2_0" PORT="TRISETUP_vertColor1_RGBA"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="probe50" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_vertColor2_RGBA">
+        <PORT DIR="I" LEFT="127" NAME="probe50" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_vertColor2_RGBA">
           <CONNECTIONS>
             <CONNECTION INSTANCE="InputAssembler2_0" PORT="TRISETUP_vertColor2_RGBA"/>
           </CONNECTIONS>
@@ -15356,7 +15278,7 @@
             <CONNECTION INSTANCE="InputAssembler2_0" PORT="DBG_IA_CurrentTriIndices"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="127" NAME="probe54" RIGHT="0" SIGIS="undef" SIGNAME="VBO_FIFO_dout">
+        <PORT DIR="I" LEFT="319" NAME="probe54" RIGHT="0" SIGIS="undef" SIGNAME="VBO_FIFO_dout">
           <CONNECTIONS>
             <CONNECTION INSTANCE="VBO_FIFO" PORT="dout"/>
           </CONNECTIONS>
@@ -15480,13 +15402,13 @@
             <CONNECTION INSTANCE="MemorySystem_ddr4_0" PORT="c0_ddr4_ui_clk"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="15" NAME="TRISETUP_v0PosX" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v0PosX">
+        <PORT DIR="O" LEFT="31" NAME="TRISETUP_v0PosX" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v0PosX">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ILA_TriSetup" PORT="probe42"/>
             <CONNECTION INSTANCE="TriSetup_0" PORT="IA_v0_in_x"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="15" NAME="TRISETUP_v0PosY" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v0PosY">
+        <PORT DIR="O" LEFT="31" NAME="TRISETUP_v0PosY" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v0PosY">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ILA_TriSetup" PORT="probe43"/>
             <CONNECTION INSTANCE="TriSetup_0" PORT="IA_v0_in_y"/>
@@ -15497,13 +15419,18 @@
             <CONNECTION INSTANCE="TriSetup_0" PORT="IA_v0_in_invZ"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="15" NAME="TRISETUP_v1PosX" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v1PosX">
+        <PORT DIR="O" LEFT="31" NAME="TRISETUP_v0PosInvW" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v0PosInvW">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriSetup_0" PORT="IA_v0_in_invW"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="31" NAME="TRISETUP_v1PosX" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v1PosX">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ILA_TriSetup" PORT="probe44"/>
             <CONNECTION INSTANCE="TriSetup_0" PORT="IA_v1_in_x"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="15" NAME="TRISETUP_v1PosY" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v1PosY">
+        <PORT DIR="O" LEFT="31" NAME="TRISETUP_v1PosY" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v1PosY">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ILA_TriSetup" PORT="probe45"/>
             <CONNECTION INSTANCE="TriSetup_0" PORT="IA_v1_in_y"/>
@@ -15514,13 +15441,18 @@
             <CONNECTION INSTANCE="TriSetup_0" PORT="IA_v1_in_invZ"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="15" NAME="TRISETUP_v2PosX" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v2PosX">
+        <PORT DIR="O" LEFT="31" NAME="TRISETUP_v1PosInvW" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v1PosInvW">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriSetup_0" PORT="IA_v1_in_invW"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="31" NAME="TRISETUP_v2PosX" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v2PosX">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ILA_TriSetup" PORT="probe46"/>
             <CONNECTION INSTANCE="TriSetup_0" PORT="IA_v2_in_x"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="15" NAME="TRISETUP_v2PosY" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v2PosY">
+        <PORT DIR="O" LEFT="31" NAME="TRISETUP_v2PosY" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v2PosY">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ILA_TriSetup" PORT="probe47"/>
             <CONNECTION INSTANCE="TriSetup_0" PORT="IA_v2_in_y"/>
@@ -15531,49 +15463,54 @@
             <CONNECTION INSTANCE="TriSetup_0" PORT="IA_v2_in_invZ"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="15" NAME="TRISETUP_tex0_X" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_tex0_X">
+        <PORT DIR="O" LEFT="31" NAME="TRISETUP_v2PosInvW" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v2PosInvW">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriSetup_0" PORT="IA_v2_in_invW"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="31" NAME="TRISETUP_tex0_X" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_tex0_X">
           <CONNECTIONS>
             <CONNECTION INSTANCE="TriSetup_0" PORT="IA_t0_in_x"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="15" NAME="TRISETUP_tex0_Y" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_tex0_Y">
+        <PORT DIR="O" LEFT="31" NAME="TRISETUP_tex0_Y" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_tex0_Y">
           <CONNECTIONS>
             <CONNECTION INSTANCE="TriSetup_0" PORT="IA_t0_in_y"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="15" NAME="TRISETUP_tex1_X" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_tex1_X">
+        <PORT DIR="O" LEFT="31" NAME="TRISETUP_tex1_X" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_tex1_X">
           <CONNECTIONS>
             <CONNECTION INSTANCE="TriSetup_0" PORT="IA_t1_in_x"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="15" NAME="TRISETUP_tex1_Y" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_tex1_Y">
+        <PORT DIR="O" LEFT="31" NAME="TRISETUP_tex1_Y" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_tex1_Y">
           <CONNECTIONS>
             <CONNECTION INSTANCE="TriSetup_0" PORT="IA_t1_in_y"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="15" NAME="TRISETUP_tex2_X" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_tex2_X">
+        <PORT DIR="O" LEFT="31" NAME="TRISETUP_tex2_X" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_tex2_X">
           <CONNECTIONS>
             <CONNECTION INSTANCE="TriSetup_0" PORT="IA_t2_in_x"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="15" NAME="TRISETUP_tex2_Y" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_tex2_Y">
+        <PORT DIR="O" LEFT="31" NAME="TRISETUP_tex2_Y" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_tex2_Y">
           <CONNECTIONS>
             <CONNECTION INSTANCE="TriSetup_0" PORT="IA_t2_in_y"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="31" NAME="TRISETUP_vertColor0_RGBA" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_vertColor0_RGBA">
+        <PORT DIR="O" LEFT="127" NAME="TRISETUP_vertColor0_RGBA" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_vertColor0_RGBA">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ILA_TriSetup" PORT="probe48"/>
             <CONNECTION INSTANCE="TriSetup_0" PORT="IA_v0_in_RGBA"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="31" NAME="TRISETUP_vertColor1_RGBA" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_vertColor1_RGBA">
+        <PORT DIR="O" LEFT="127" NAME="TRISETUP_vertColor1_RGBA" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_vertColor1_RGBA">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ILA_TriSetup" PORT="probe49"/>
             <CONNECTION INSTANCE="TriSetup_0" PORT="IA_v1_in_RGBA"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="31" NAME="TRISETUP_vertColor2_RGBA" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_vertColor2_RGBA">
+        <PORT DIR="O" LEFT="127" NAME="TRISETUP_vertColor2_RGBA" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_vertColor2_RGBA">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ILA_TriSetup" PORT="probe50"/>
             <CONNECTION INSTANCE="TriSetup_0" PORT="IA_v2_in_RGBA"/>
@@ -15619,7 +15556,7 @@
             <CONNECTION INSTANCE="VBO_FIFO" PORT="empty"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="127" NAME="VERTOUT_FIFO_rd_data" RIGHT="0" SIGIS="undef" SIGNAME="VBO_FIFO_dout">
+        <PORT DIR="I" LEFT="319" NAME="VERTOUT_FIFO_rd_data" RIGHT="0" SIGIS="undef" SIGNAME="VBO_FIFO_dout">
           <CONNECTIONS>
             <CONNECTION INSTANCE="VBO_FIFO" PORT="dout"/>
             <CONNECTION INSTANCE="VBO_FIFO" PORT="dout"/>
@@ -26055,20 +25992,15 @@
             <CONNECTION INSTANCE="vio_0" PORT="clk"/>
             <CONNECTION INSTANCE="VBO_INDEX_FIFO" PORT="clk"/>
             <CONNECTION INSTANCE="IndexBufferCache_0" PORT="clk"/>
-            <CONNECTION INSTANCE="AttrInterp_UNORM8ToFloat" PORT="clk"/>
             <CONNECTION INSTANCE="TriSetup_FPU" PORT="clk"/>
             <CONNECTION INSTANCE="DepthInterp_FPU" PORT="clk"/>
             <CONNECTION INSTANCE="AttrInterp_FPU" PORT="clk"/>
-            <CONNECTION INSTANCE="TriSetup_0" PORT="clk"/>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="clk"/>
-            <CONNECTION INSTANCE="Rasterizer_0" PORT="clk"/>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="clk"/>
-            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="clk"/>
             <CONNECTION INSTANCE="CommandProcessor_0" PORT="clk"/>
             <CONNECTION INSTANCE="DepthBuffer_0" PORT="clk"/>
-            <CONNECTION INSTANCE="InputAssembler2_0" PORT="clk"/>
             <CONNECTION INSTANCE="ROP_0" PORT="clk"/>
             <CONNECTION INSTANCE="VertexBatchBuilder_0" PORT="clk"/>
+            <CONNECTION INSTANCE="TexSample_0" PORT="clk"/>
+            <CONNECTION INSTANCE="InputAssembler2_0" PORT="clk"/>
             <CONNECTION INSTANCE="SerialPacketSystem_ValidIncomingPacketsFIFO" PORT="rd_clk"/>
             <CONNECTION INSTANCE="SerialPacketSystem_ReturnOutputPacketsFIFO" PORT="wr_clk"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_InstructionCache" PORT="clka"/>
@@ -26082,7 +26014,11 @@
             <CONNECTION INSTANCE="ShaderCoreSystem_ShaderCore_0" PORT="clk"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_GPRQuadSystem_GPRQuad2_0" PORT="clk"/>
             <CONNECTION INSTANCE="ScanoutSystem_CDC_Command_Scanout_0" PORT="cmd_clk"/>
-            <CONNECTION INSTANCE="TexSample_0" PORT="clk"/>
+            <CONNECTION INSTANCE="TriSetup_0" PORT="clk"/>
+            <CONNECTION INSTANCE="Rasterizer_0" PORT="clk"/>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="clk"/>
+            <CONNECTION INSTANCE="TriWorkCache_0" PORT="clk"/>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="clk"/>
             <CONNECTION INSTANCE="MemorySystem_ScanoutReadRequestsFIFO" PORT="rd_clk"/>
             <CONNECTION INSTANCE="MemorySystem_ZStencilReadRequestsFIFO" PORT="rd_clk"/>
             <CONNECTION INSTANCE="MemorySystem_ZStencilReadRequestsFIFO" PORT="wr_clk"/>
@@ -26823,59 +26759,74 @@
             <CONNECTION INSTANCE="TriSetup_0" PORT="RAST_v0_out_invZ"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="TRISETUP_inInvZ1" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_v1_out_invZ">
+        <PORT DIR="I" LEFT="31" NAME="TRISETUP_inInvZ10" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_v10_out_invZ">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriSetup_0" PORT="RAST_v1_out_invZ"/>
+            <CONNECTION INSTANCE="TriSetup_0" PORT="RAST_v10_out_invZ"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="TRISETUP_inInvZ2" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_v2_out_invZ">
+        <PORT DIR="I" LEFT="31" NAME="TRISETUP_inInvZ20" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_v20_out_invZ">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriSetup_0" PORT="RAST_v2_out_invZ"/>
+            <CONNECTION INSTANCE="TriSetup_0" PORT="RAST_v20_out_invZ"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="15" NAME="TRISETUP_inTX0" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_t0_out_x">
+        <PORT DIR="I" LEFT="31" NAME="TRISETUP_inInvW0" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_v0_out_invW">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriSetup_0" PORT="RAST_v0_out_invW"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="31" NAME="TRISETUP_inInvW10" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_v10_out_invW">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriSetup_0" PORT="RAST_v10_out_invW"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="31" NAME="TRISETUP_inInvW20" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_v20_out_invW">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriSetup_0" PORT="RAST_v20_out_invW"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="31" NAME="TRISETUP_inTX0" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_t0_out_x">
           <CONNECTIONS>
             <CONNECTION INSTANCE="TriSetup_0" PORT="RAST_t0_out_x"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="15" NAME="TRISETUP_inTY0" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_t0_out_y">
+        <PORT DIR="I" LEFT="31" NAME="TRISETUP_inTY0" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_t0_out_y">
           <CONNECTIONS>
             <CONNECTION INSTANCE="TriSetup_0" PORT="RAST_t0_out_y"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="15" NAME="TRISETUP_inTX1" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_t1_out_x">
+        <PORT DIR="I" LEFT="31" NAME="TRISETUP_inTX10" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_t10_out_x">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriSetup_0" PORT="RAST_t1_out_x"/>
+            <CONNECTION INSTANCE="TriSetup_0" PORT="RAST_t10_out_x"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="15" NAME="TRISETUP_inTY1" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_t1_out_y">
+        <PORT DIR="I" LEFT="31" NAME="TRISETUP_inTY10" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_t10_out_y">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriSetup_0" PORT="RAST_t1_out_y"/>
+            <CONNECTION INSTANCE="TriSetup_0" PORT="RAST_t10_out_y"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="15" NAME="TRISETUP_inTX2" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_t2_out_x">
+        <PORT DIR="I" LEFT="31" NAME="TRISETUP_inTX20" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_t20_out_x">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriSetup_0" PORT="RAST_t2_out_x"/>
+            <CONNECTION INSTANCE="TriSetup_0" PORT="RAST_t20_out_x"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="15" NAME="TRISETUP_inTY2" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_t2_out_y">
+        <PORT DIR="I" LEFT="31" NAME="TRISETUP_inTY20" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_t20_out_y">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriSetup_0" PORT="RAST_t2_out_y"/>
+            <CONNECTION INSTANCE="TriSetup_0" PORT="RAST_t20_out_y"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="TRISETUP_inVertColor0" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_v0_out_colorRGBA">
+        <PORT DIR="I" LEFT="127" NAME="TRISETUP_inVertColor0" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_v0_out_colorRGBA">
           <CONNECTIONS>
             <CONNECTION INSTANCE="TriSetup_0" PORT="RAST_v0_out_colorRGBA"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="TRISETUP_inVertColor1" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_v1_out_colorRGBA">
+        <PORT DIR="I" LEFT="127" NAME="TRISETUP_inVertColor10" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_v10_out_colorRGBA">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriSetup_0" PORT="RAST_v1_out_colorRGBA"/>
+            <CONNECTION INSTANCE="TriSetup_0" PORT="RAST_v10_out_colorRGBA"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="TRISETUP_inVertColor2" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_v2_out_colorRGBA">
+        <PORT DIR="I" LEFT="127" NAME="TRISETUP_inVertColor20" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_v20_out_colorRGBA">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriSetup_0" PORT="RAST_v2_out_colorRGBA"/>
+            <CONNECTION INSTANCE="TriSetup_0" PORT="RAST_v20_out_colorRGBA"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="I" NAME="RASTOUT_FIFO_full" SIGIS="undef" SIGNAME="Rasterizer_0_RASTOUT_FIFO_full">
@@ -26888,7 +26839,7 @@
             <CONNECTION INSTANCE="rast_out_fifo" PORT="almost_full"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="127" NAME="RASTOUT_FIFO_wr_data" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_RASTOUT_FIFO_wr_data">
+        <PORT DIR="O" LEFT="95" NAME="RASTOUT_FIFO_wr_data" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_RASTOUT_FIFO_wr_data">
           <CONNECTIONS>
             <CONNECTION INSTANCE="rast_out_fifo" PORT="din"/>
           </CONNECTIONS>
@@ -26923,59 +26874,74 @@
             <CONNECTION INSTANCE="TriWorkCache_0" PORT="RAST_inInvZ0"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="31" NAME="TRICACHE_InvZ1" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_InvZ1">
+        <PORT DIR="O" LEFT="31" NAME="TRICACHE_InvZ10" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_InvZ10">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="RAST_inInvZ1"/>
+            <CONNECTION INSTANCE="TriWorkCache_0" PORT="RAST_inInvZ10"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="31" NAME="TRICACHE_InvZ2" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_InvZ2">
+        <PORT DIR="O" LEFT="31" NAME="TRICACHE_InvZ20" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_InvZ20">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="RAST_inInvZ2"/>
+            <CONNECTION INSTANCE="TriWorkCache_0" PORT="RAST_inInvZ20"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="15" NAME="TRICACHE_TX0" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_TX0">
+        <PORT DIR="O" LEFT="31" NAME="TRICACHE_InvW0" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_InvW0">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriWorkCache_0" PORT="RAST_inInvW0"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="31" NAME="TRICACHE_InvW10" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_InvW10">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriWorkCache_0" PORT="RAST_inInvW10"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="31" NAME="TRICACHE_InvW20" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_InvW20">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriWorkCache_0" PORT="RAST_inInvW20"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="31" NAME="TRICACHE_TX0" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_TX0">
           <CONNECTIONS>
             <CONNECTION INSTANCE="TriWorkCache_0" PORT="RAST_inT0X"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="15" NAME="TRICACHE_TX1" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_TX1">
+        <PORT DIR="O" LEFT="31" NAME="TRICACHE_TX10" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_TX10">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="RAST_inT1X"/>
+            <CONNECTION INSTANCE="TriWorkCache_0" PORT="RAST_inT10X"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="15" NAME="TRICACHE_TX2" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_TX2">
+        <PORT DIR="O" LEFT="31" NAME="TRICACHE_TX20" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_TX20">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="RAST_inT2X"/>
+            <CONNECTION INSTANCE="TriWorkCache_0" PORT="RAST_inT20X"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="15" NAME="TRICACHE_TY0" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_TY0">
+        <PORT DIR="O" LEFT="31" NAME="TRICACHE_TY0" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_TY0">
           <CONNECTIONS>
             <CONNECTION INSTANCE="TriWorkCache_0" PORT="RAST_inT0Y"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="15" NAME="TRICACHE_TY1" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_TY1">
+        <PORT DIR="O" LEFT="31" NAME="TRICACHE_TY10" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_TY10">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="RAST_inT1Y"/>
+            <CONNECTION INSTANCE="TriWorkCache_0" PORT="RAST_inT10Y"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="15" NAME="TRICACHE_TY2" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_TY2">
+        <PORT DIR="O" LEFT="31" NAME="TRICACHE_TY20" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_TY20">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="RAST_inT2Y"/>
+            <CONNECTION INSTANCE="TriWorkCache_0" PORT="RAST_inT20Y"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="31" NAME="TRICACHE_VertColor0" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_VertColor0">
+        <PORT DIR="O" LEFT="127" NAME="TRICACHE_VertColor0" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_VertColor0">
           <CONNECTIONS>
             <CONNECTION INSTANCE="TriWorkCache_0" PORT="RAST_inColorRGBA0"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="31" NAME="TRICACHE_VertColor1" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_VertColor1">
+        <PORT DIR="O" LEFT="127" NAME="TRICACHE_VertColor10" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_VertColor10">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="RAST_inColorRGBA1"/>
+            <CONNECTION INSTANCE="TriWorkCache_0" PORT="RAST_inColorRGBA10"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="31" NAME="TRICACHE_VertColor2" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_VertColor2">
+        <PORT DIR="O" LEFT="127" NAME="TRICACHE_VertColor20" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_VertColor20">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="RAST_inColorRGBA2"/>
+            <CONNECTION INSTANCE="TriWorkCache_0" PORT="RAST_inColorRGBA20"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" NAME="TRICACHE_RequestNewTriSlot" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_RequestNewTriSlot">
@@ -36053,7 +36019,7 @@
             <CONNECTION INSTANCE="VBO_FIFO" PORT="full"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="127" NAME="VERTOUT_FIFO_wr_data" RIGHT="0" SIGIS="undef" SIGNAME="ShaderCoreSystem_ShaderCore_0_VERTOUT_FIFO_wr_data">
+        <PORT DIR="O" LEFT="319" NAME="VERTOUT_FIFO_wr_data" RIGHT="0" SIGIS="undef" SIGNAME="ShaderCoreSystem_ShaderCore_0_VERTOUT_FIFO_wr_data">
           <CONNECTIONS>
             <CONNECTION INSTANCE="VBO_FIFO" PORT="din"/>
           </CONNECTIONS>
@@ -37692,12 +37658,12 @@
             <CONNECTION INSTANCE="MemorySystem_ddr4_0" PORT="c0_ddr4_ui_clk"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="15" NAME="IA_v0_in_x" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v0PosX">
+        <PORT DIR="I" LEFT="31" NAME="IA_v0_in_x" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v0PosX">
           <CONNECTIONS>
             <CONNECTION INSTANCE="InputAssembler2_0" PORT="TRISETUP_v0PosX"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="15" NAME="IA_v0_in_y" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v0PosY">
+        <PORT DIR="I" LEFT="31" NAME="IA_v0_in_y" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v0PosY">
           <CONNECTIONS>
             <CONNECTION INSTANCE="InputAssembler2_0" PORT="TRISETUP_v0PosY"/>
           </CONNECTIONS>
@@ -37707,12 +37673,17 @@
             <CONNECTION INSTANCE="InputAssembler2_0" PORT="TRISETUP_v0PosInvZ"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="15" NAME="IA_v1_in_x" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v1PosX">
+        <PORT DIR="I" LEFT="31" NAME="IA_v0_in_invW" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v0PosInvW">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="InputAssembler2_0" PORT="TRISETUP_v0PosInvW"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="31" NAME="IA_v1_in_x" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v1PosX">
           <CONNECTIONS>
             <CONNECTION INSTANCE="InputAssembler2_0" PORT="TRISETUP_v1PosX"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="15" NAME="IA_v1_in_y" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v1PosY">
+        <PORT DIR="I" LEFT="31" NAME="IA_v1_in_y" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v1PosY">
           <CONNECTIONS>
             <CONNECTION INSTANCE="InputAssembler2_0" PORT="TRISETUP_v1PosY"/>
           </CONNECTIONS>
@@ -37722,12 +37693,17 @@
             <CONNECTION INSTANCE="InputAssembler2_0" PORT="TRISETUP_v1PosInvZ"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="15" NAME="IA_v2_in_x" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v2PosX">
+        <PORT DIR="I" LEFT="31" NAME="IA_v1_in_invW" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v1PosInvW">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="InputAssembler2_0" PORT="TRISETUP_v1PosInvW"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="31" NAME="IA_v2_in_x" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v2PosX">
           <CONNECTIONS>
             <CONNECTION INSTANCE="InputAssembler2_0" PORT="TRISETUP_v2PosX"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="15" NAME="IA_v2_in_y" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v2PosY">
+        <PORT DIR="I" LEFT="31" NAME="IA_v2_in_y" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v2PosY">
           <CONNECTIONS>
             <CONNECTION INSTANCE="InputAssembler2_0" PORT="TRISETUP_v2PosY"/>
           </CONNECTIONS>
@@ -37737,47 +37713,52 @@
             <CONNECTION INSTANCE="InputAssembler2_0" PORT="TRISETUP_v2PosInvZ"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="15" NAME="IA_t0_in_x" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_tex0_X">
+        <PORT DIR="I" LEFT="31" NAME="IA_v2_in_invW" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_v2PosInvW">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="InputAssembler2_0" PORT="TRISETUP_v2PosInvW"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="31" NAME="IA_t0_in_x" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_tex0_X">
           <CONNECTIONS>
             <CONNECTION INSTANCE="InputAssembler2_0" PORT="TRISETUP_tex0_X"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="15" NAME="IA_t0_in_y" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_tex0_Y">
+        <PORT DIR="I" LEFT="31" NAME="IA_t0_in_y" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_tex0_Y">
           <CONNECTIONS>
             <CONNECTION INSTANCE="InputAssembler2_0" PORT="TRISETUP_tex0_Y"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="15" NAME="IA_t1_in_x" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_tex1_X">
+        <PORT DIR="I" LEFT="31" NAME="IA_t1_in_x" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_tex1_X">
           <CONNECTIONS>
             <CONNECTION INSTANCE="InputAssembler2_0" PORT="TRISETUP_tex1_X"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="15" NAME="IA_t1_in_y" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_tex1_Y">
+        <PORT DIR="I" LEFT="31" NAME="IA_t1_in_y" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_tex1_Y">
           <CONNECTIONS>
             <CONNECTION INSTANCE="InputAssembler2_0" PORT="TRISETUP_tex1_Y"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="15" NAME="IA_t2_in_x" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_tex2_X">
+        <PORT DIR="I" LEFT="31" NAME="IA_t2_in_x" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_tex2_X">
           <CONNECTIONS>
             <CONNECTION INSTANCE="InputAssembler2_0" PORT="TRISETUP_tex2_X"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="15" NAME="IA_t2_in_y" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_tex2_Y">
+        <PORT DIR="I" LEFT="31" NAME="IA_t2_in_y" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_tex2_Y">
           <CONNECTIONS>
             <CONNECTION INSTANCE="InputAssembler2_0" PORT="TRISETUP_tex2_Y"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="IA_v0_in_RGBA" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_vertColor0_RGBA">
+        <PORT DIR="I" LEFT="127" NAME="IA_v0_in_RGBA" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_vertColor0_RGBA">
           <CONNECTIONS>
             <CONNECTION INSTANCE="InputAssembler2_0" PORT="TRISETUP_vertColor0_RGBA"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="IA_v1_in_RGBA" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_vertColor1_RGBA">
+        <PORT DIR="I" LEFT="127" NAME="IA_v1_in_RGBA" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_vertColor1_RGBA">
           <CONNECTIONS>
             <CONNECTION INSTANCE="InputAssembler2_0" PORT="TRISETUP_vertColor1_RGBA"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="IA_v2_in_RGBA" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_vertColor2_RGBA">
+        <PORT DIR="I" LEFT="127" NAME="IA_v2_in_RGBA" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_TRISETUP_vertColor2_RGBA">
           <CONNECTIONS>
             <CONNECTION INSTANCE="InputAssembler2_0" PORT="TRISETUP_vertColor2_RGBA"/>
           </CONNECTIONS>
@@ -37809,70 +37790,85 @@
             <CONNECTION INSTANCE="Rasterizer_0" PORT="TRISETUP_inInvZ0"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="31" NAME="RAST_v1_out_invZ" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_v1_out_invZ">
+        <PORT DIR="O" LEFT="31" NAME="RAST_v10_out_invZ" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_v10_out_invZ">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ILA_TriSetup" PORT="probe2"/>
-            <CONNECTION INSTANCE="Rasterizer_0" PORT="TRISETUP_inInvZ1"/>
+            <CONNECTION INSTANCE="Rasterizer_0" PORT="TRISETUP_inInvZ10"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="31" NAME="RAST_v2_out_invZ" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_v2_out_invZ">
+        <PORT DIR="O" LEFT="31" NAME="RAST_v20_out_invZ" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_v20_out_invZ">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ILA_TriSetup" PORT="probe3"/>
-            <CONNECTION INSTANCE="Rasterizer_0" PORT="TRISETUP_inInvZ2"/>
+            <CONNECTION INSTANCE="Rasterizer_0" PORT="TRISETUP_inInvZ20"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="15" NAME="RAST_t0_out_x" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_t0_out_x">
+        <PORT DIR="O" LEFT="31" NAME="RAST_v0_out_invW" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_v0_out_invW">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="Rasterizer_0" PORT="TRISETUP_inInvW0"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="31" NAME="RAST_v10_out_invW" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_v10_out_invW">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="Rasterizer_0" PORT="TRISETUP_inInvW10"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="31" NAME="RAST_v20_out_invW" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_v20_out_invW">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="Rasterizer_0" PORT="TRISETUP_inInvW20"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="31" NAME="RAST_t0_out_x" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_t0_out_x">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ILA_TriSetup" PORT="probe4"/>
             <CONNECTION INSTANCE="Rasterizer_0" PORT="TRISETUP_inTX0"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="15" NAME="RAST_t0_out_y" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_t0_out_y">
+        <PORT DIR="O" LEFT="31" NAME="RAST_t0_out_y" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_t0_out_y">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ILA_TriSetup" PORT="probe5"/>
             <CONNECTION INSTANCE="Rasterizer_0" PORT="TRISETUP_inTY0"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="15" NAME="RAST_t1_out_x" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_t1_out_x">
+        <PORT DIR="O" LEFT="31" NAME="RAST_t10_out_x" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_t10_out_x">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ILA_TriSetup" PORT="probe6"/>
-            <CONNECTION INSTANCE="Rasterizer_0" PORT="TRISETUP_inTX1"/>
+            <CONNECTION INSTANCE="Rasterizer_0" PORT="TRISETUP_inTX10"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="15" NAME="RAST_t1_out_y" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_t1_out_y">
+        <PORT DIR="O" LEFT="31" NAME="RAST_t10_out_y" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_t10_out_y">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ILA_TriSetup" PORT="probe7"/>
-            <CONNECTION INSTANCE="Rasterizer_0" PORT="TRISETUP_inTY1"/>
+            <CONNECTION INSTANCE="Rasterizer_0" PORT="TRISETUP_inTY10"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="15" NAME="RAST_t2_out_x" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_t2_out_x">
+        <PORT DIR="O" LEFT="31" NAME="RAST_t20_out_x" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_t20_out_x">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ILA_TriSetup" PORT="probe8"/>
-            <CONNECTION INSTANCE="Rasterizer_0" PORT="TRISETUP_inTX2"/>
+            <CONNECTION INSTANCE="Rasterizer_0" PORT="TRISETUP_inTX20"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="15" NAME="RAST_t2_out_y" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_t2_out_y">
+        <PORT DIR="O" LEFT="31" NAME="RAST_t20_out_y" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_t20_out_y">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ILA_TriSetup" PORT="probe9"/>
-            <CONNECTION INSTANCE="Rasterizer_0" PORT="TRISETUP_inTY2"/>
+            <CONNECTION INSTANCE="Rasterizer_0" PORT="TRISETUP_inTY20"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="31" NAME="RAST_v0_out_colorRGBA" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_v0_out_colorRGBA">
+        <PORT DIR="O" LEFT="127" NAME="RAST_v0_out_colorRGBA" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_v0_out_colorRGBA">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ILA_TriSetup" PORT="probe10"/>
             <CONNECTION INSTANCE="Rasterizer_0" PORT="TRISETUP_inVertColor0"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="31" NAME="RAST_v1_out_colorRGBA" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_v1_out_colorRGBA">
+        <PORT DIR="O" LEFT="127" NAME="RAST_v10_out_colorRGBA" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_v10_out_colorRGBA">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ILA_TriSetup" PORT="probe11"/>
-            <CONNECTION INSTANCE="Rasterizer_0" PORT="TRISETUP_inVertColor1"/>
+            <CONNECTION INSTANCE="Rasterizer_0" PORT="TRISETUP_inVertColor10"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="31" NAME="RAST_v2_out_colorRGBA" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_v2_out_colorRGBA">
+        <PORT DIR="O" LEFT="127" NAME="RAST_v20_out_colorRGBA" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_v20_out_colorRGBA">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ILA_TriSetup" PORT="probe12"/>
-            <CONNECTION INSTANCE="Rasterizer_0" PORT="TRISETUP_inVertColor2"/>
+            <CONNECTION INSTANCE="Rasterizer_0" PORT="TRISETUP_inVertColor20"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="15" NAME="RAST_outMinX" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_outMinX">
@@ -38053,7 +38049,7 @@
             <CONNECTION INSTANCE="StatsCollector_0" PORT="TRISETUP_CyclesWaitingForOutput"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="4" NAME="DBG_TriSetup_State" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_DBG_TriSetup_State">
+        <PORT DIR="O" LEFT="5" NAME="DBG_TriSetup_State" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_DBG_TriSetup_State">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ila_333_250" PORT="probe5"/>
             <CONNECTION INSTANCE="ILA_TriSetup" PORT="probe30"/>
@@ -38213,62 +38209,77 @@
             <CONNECTION INSTANCE="DepthInterpolator_0" PORT="TRICACHE_inInvZ0"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="31" NAME="INTERP_outInvZ1" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outInvZ1">
+        <PORT DIR="O" LEFT="31" NAME="INTERP_outInvZ10" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outInvZ10">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="TRICACHE_inInvZ1"/>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="TRICACHE_inInvZ10"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="31" NAME="INTERP_outInvZ2" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outInvZ2">
+        <PORT DIR="O" LEFT="31" NAME="INTERP_outInvZ20" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outInvZ20">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="TRICACHE_inInvZ2"/>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="TRICACHE_inInvZ20"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="15" NAME="INTERP_outT0X" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outT0X">
+        <PORT DIR="O" LEFT="31" NAME="INTERP_outInvW0" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outInvW0">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="TRICACHE_inInvW0"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="31" NAME="INTERP_outInvW10" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outInvW10">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="TRICACHE_inInvW10"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="31" NAME="INTERP_outInvW20" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outInvW20">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="TRICACHE_inInvW20"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="31" NAME="INTERP_outT0X" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outT0X">
           <CONNECTIONS>
             <CONNECTION INSTANCE="DepthInterpolator_0" PORT="TRICACHE_inT0X"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="15" NAME="INTERP_outT0Y" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outT0Y">
+        <PORT DIR="O" LEFT="31" NAME="INTERP_outT0Y" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outT0Y">
           <CONNECTIONS>
             <CONNECTION INSTANCE="DepthInterpolator_0" PORT="TRICACHE_inT0Y"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="15" NAME="INTERP_outT1X" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outT1X">
+        <PORT DIR="O" LEFT="31" NAME="INTERP_outT10X" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outT10X">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="TRICACHE_inT1X"/>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="TRICACHE_inT10X"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="15" NAME="INTERP_outT1Y" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outT1Y">
+        <PORT DIR="O" LEFT="31" NAME="INTERP_outT10Y" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outT10Y">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="TRICACHE_inT1Y"/>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="TRICACHE_inT10Y"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="15" NAME="INTERP_outT2X" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outT2X">
+        <PORT DIR="O" LEFT="31" NAME="INTERP_outT20X" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outT20X">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="TRICACHE_inT2X"/>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="TRICACHE_inT20X"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="15" NAME="INTERP_outT2Y" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outT2Y">
+        <PORT DIR="O" LEFT="31" NAME="INTERP_outT20Y" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outT20Y">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="TRICACHE_inT2Y"/>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="TRICACHE_inT20Y"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="31" NAME="INTERP_outColorRGBA0" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outColorRGBA0">
+        <PORT DIR="O" LEFT="127" NAME="INTERP_outColorRGBA0" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outColorRGBA0">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe23"/>
             <CONNECTION INSTANCE="DepthInterpolator_0" PORT="TRICACHE_inColorRGBA0"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="31" NAME="INTERP_outColorRGBA1" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outColorRGBA1">
+        <PORT DIR="O" LEFT="127" NAME="INTERP_outColorRGBA10" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outColorRGBA10">
           <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="TRICACHE_inColorRGBA10"/>
             <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe24"/>
-            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="TRICACHE_inColorRGBA1"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="31" NAME="INTERP_outColorRGBA2" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outColorRGBA2">
+        <PORT DIR="O" LEFT="127" NAME="INTERP_outColorRGBA20" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outColorRGBA20">
           <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="TRICACHE_inColorRGBA20"/>
             <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe25"/>
-            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="TRICACHE_inColorRGBA2"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="I" LEFT="2" NAME="INTERP_CurrentSlotIndex" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_TRICACHE_CurrentSlotIndex">
@@ -38306,59 +38317,74 @@
             <CONNECTION INSTANCE="Rasterizer_0" PORT="TRICACHE_InvZ0"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="RAST_inInvZ1" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_InvZ1">
+        <PORT DIR="I" LEFT="31" NAME="RAST_inInvZ10" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_InvZ10">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="Rasterizer_0" PORT="TRICACHE_InvZ1"/>
+            <CONNECTION INSTANCE="Rasterizer_0" PORT="TRICACHE_InvZ10"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="RAST_inInvZ2" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_InvZ2">
+        <PORT DIR="I" LEFT="31" NAME="RAST_inInvZ20" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_InvZ20">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="Rasterizer_0" PORT="TRICACHE_InvZ2"/>
+            <CONNECTION INSTANCE="Rasterizer_0" PORT="TRICACHE_InvZ20"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="15" NAME="RAST_inT0X" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_TX0">
+        <PORT DIR="I" LEFT="31" NAME="RAST_inInvW0" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_InvW0">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="Rasterizer_0" PORT="TRICACHE_InvW0"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="31" NAME="RAST_inInvW10" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_InvW10">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="Rasterizer_0" PORT="TRICACHE_InvW10"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="31" NAME="RAST_inInvW20" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_InvW20">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="Rasterizer_0" PORT="TRICACHE_InvW20"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="31" NAME="RAST_inT0X" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_TX0">
           <CONNECTIONS>
             <CONNECTION INSTANCE="Rasterizer_0" PORT="TRICACHE_TX0"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="15" NAME="RAST_inT0Y" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_TY0">
+        <PORT DIR="I" LEFT="31" NAME="RAST_inT0Y" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_TY0">
           <CONNECTIONS>
             <CONNECTION INSTANCE="Rasterizer_0" PORT="TRICACHE_TY0"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="15" NAME="RAST_inT1X" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_TX1">
+        <PORT DIR="I" LEFT="31" NAME="RAST_inT10X" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_TX10">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="Rasterizer_0" PORT="TRICACHE_TX1"/>
+            <CONNECTION INSTANCE="Rasterizer_0" PORT="TRICACHE_TX10"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="15" NAME="RAST_inT1Y" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_TY1">
+        <PORT DIR="I" LEFT="31" NAME="RAST_inT10Y" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_TY10">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="Rasterizer_0" PORT="TRICACHE_TY1"/>
+            <CONNECTION INSTANCE="Rasterizer_0" PORT="TRICACHE_TY10"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="15" NAME="RAST_inT2X" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_TX2">
+        <PORT DIR="I" LEFT="31" NAME="RAST_inT20X" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_TX20">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="Rasterizer_0" PORT="TRICACHE_TX2"/>
+            <CONNECTION INSTANCE="Rasterizer_0" PORT="TRICACHE_TX20"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="15" NAME="RAST_inT2Y" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_TY2">
+        <PORT DIR="I" LEFT="31" NAME="RAST_inT20Y" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_TY20">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="Rasterizer_0" PORT="TRICACHE_TY2"/>
+            <CONNECTION INSTANCE="Rasterizer_0" PORT="TRICACHE_TY20"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="RAST_inColorRGBA0" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_VertColor0">
+        <PORT DIR="I" LEFT="127" NAME="RAST_inColorRGBA0" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_VertColor0">
           <CONNECTIONS>
             <CONNECTION INSTANCE="Rasterizer_0" PORT="TRICACHE_VertColor0"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="RAST_inColorRGBA1" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_VertColor1">
+        <PORT DIR="I" LEFT="127" NAME="RAST_inColorRGBA10" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_VertColor10">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="Rasterizer_0" PORT="TRICACHE_VertColor1"/>
+            <CONNECTION INSTANCE="Rasterizer_0" PORT="TRICACHE_VertColor10"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="RAST_inColorRGBA2" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_VertColor2">
+        <PORT DIR="I" LEFT="127" NAME="RAST_inColorRGBA20" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_VertColor20">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="Rasterizer_0" PORT="TRICACHE_VertColor2"/>
+            <CONNECTION INSTANCE="Rasterizer_0" PORT="TRICACHE_VertColor20"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="I" NAME="RAST_RequestNewTriSlot" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_RequestNewTriSlot">
@@ -38828,9 +38854,9 @@
         <PARAMETER NAME="C_COUNT_TYPE" VALUE="0"/>
         <PARAMETER NAME="C_DATA_COUNT_WIDTH" VALUE="9"/>
         <PARAMETER NAME="C_DEFAULT_VALUE" VALUE="BlankString"/>
-        <PARAMETER NAME="C_DIN_WIDTH" VALUE="128"/>
+        <PARAMETER NAME="C_DIN_WIDTH" VALUE="320"/>
         <PARAMETER NAME="C_DOUT_RST_VAL" VALUE="0"/>
-        <PARAMETER NAME="C_DOUT_WIDTH" VALUE="128"/>
+        <PARAMETER NAME="C_DOUT_WIDTH" VALUE="320"/>
         <PARAMETER NAME="C_ENABLE_RLOCS" VALUE="0"/>
         <PARAMETER NAME="C_FAMILY" VALUE="kintexuplus"/>
         <PARAMETER NAME="C_FULL_FLAGS_RST_VAL" VALUE="0"/>
@@ -39032,9 +39058,9 @@
         <PARAMETER NAME="INTERFACE_TYPE" VALUE="Native"/>
         <PARAMETER NAME="Performance_Options" VALUE="First_Word_Fall_Through"/>
         <PARAMETER NAME="asymmetric_port_width" VALUE="false"/>
-        <PARAMETER NAME="Input_Data_Width" VALUE="128"/>
+        <PARAMETER NAME="Input_Data_Width" VALUE="320"/>
         <PARAMETER NAME="Input_Depth" VALUE="512"/>
-        <PARAMETER NAME="Output_Data_Width" VALUE="128"/>
+        <PARAMETER NAME="Output_Data_Width" VALUE="320"/>
         <PARAMETER NAME="Output_Depth" VALUE="512"/>
         <PARAMETER NAME="Enable_ECC" VALUE="false"/>
         <PARAMETER NAME="Use_Embedded_Registers" VALUE="false"/>
@@ -39201,7 +39227,7 @@
           </CONNECTIONS>
         </PORT>
         <PORT DIR="I" NAME="srst" SIGIS="undef"/>
-        <PORT DIR="I" LEFT="127" NAME="din" RIGHT="0" SIGIS="undef" SIGNAME="ShaderCoreSystem_ShaderCore_0_VERTOUT_FIFO_wr_data">
+        <PORT DIR="I" LEFT="319" NAME="din" RIGHT="0" SIGIS="undef" SIGNAME="ShaderCoreSystem_ShaderCore_0_VERTOUT_FIFO_wr_data">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ShaderCoreSystem_ShaderCore_0" PORT="VERTOUT_FIFO_wr_data"/>
           </CONNECTIONS>
@@ -39216,7 +39242,7 @@
             <CONNECTION INSTANCE="InputAssembler2_0" PORT="VERTOUT_FIFO_rd_en"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="127" NAME="dout" RIGHT="0" SIGIS="undef" SIGNAME="VBO_FIFO_dout">
+        <PORT DIR="O" LEFT="319" NAME="dout" RIGHT="0" SIGIS="undef" SIGNAME="VBO_FIFO_dout">
           <CONNECTIONS>
             <CONNECTION INSTANCE="InputAssembler2_0" PORT="VERTOUT_FIFO_rd_data"/>
             <CONNECTION INSTANCE="ILA_IA" PORT="probe9"/>
@@ -39871,7 +39897,7 @@
         <PARAMETER NAME="C_RAM_STYLE" VALUE="SUBCORE"/>
         <PARAMETER NAME="C_TRIGOUT_EN" VALUE="0"/>
         <PARAMETER NAME="C_TRIGIN_EN" VALUE="0"/>
-        <PARAMETER NAME="C_SLOT_0_AXIS_TUSER_WIDTH" VALUE="5"/>
+        <PARAMETER NAME="C_SLOT_0_AXIS_TUSER_WIDTH" VALUE="6"/>
         <PARAMETER NAME="C_SLOT_0_AXIS_TDEST_WIDTH" VALUE="7"/>
         <PARAMETER NAME="C_SLOT_0_AXIS_TID_WIDTH" VALUE="6"/>
         <PARAMETER NAME="C_SLOT_0_AXI_ID_WIDTH" VALUE="1"/>
@@ -39885,7 +39911,7 @@
         <PARAMETER NAME="C_PROBE2_WIDTH" VALUE="88"/>
         <PARAMETER NAME="C_PROBE3_WIDTH" VALUE="32"/>
         <PARAMETER NAME="C_PROBE4_WIDTH" VALUE="6"/>
-        <PARAMETER NAME="C_PROBE5_WIDTH" VALUE="5"/>
+        <PARAMETER NAME="C_PROBE5_WIDTH" VALUE="6"/>
         <PARAMETER NAME="C_PROBE6_WIDTH" VALUE="4"/>
         <PARAMETER NAME="C_PROBE7_WIDTH" VALUE="7"/>
         <PARAMETER NAME="C_PROBE8_WIDTH" VALUE="6"/>
@@ -43006,7 +43032,7 @@
             <CONNECTION INSTANCE="xlconstant_0" PORT="dout"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="4" NAME="probe5" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_DBG_TriSetup_State">
+        <PORT DIR="I" LEFT="5" NAME="probe5" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_DBG_TriSetup_State">
           <CONNECTIONS>
             <CONNECTION INSTANCE="TriSetup_0" PORT="DBG_TriSetup_State"/>
           </CONNECTIONS>
@@ -43214,19 +43240,6 @@
       </PORTS>
       <BUSINTERFACES/>
     </MODULE>
-    <MODULE FULLNAME="/no_reset" HWVERSION="1.1" INSTANCE="no_reset" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="xlconstant" VLNV="xilinx.com:ip:xlconstant:1.1">
-      <DOCUMENTS/>
-      <PARAMETERS>
-        <PARAMETER NAME="CONST_WIDTH" VALUE="1"/>
-        <PARAMETER NAME="CONST_VAL" VALUE="0x0"/>
-        <PARAMETER NAME="Component_Name" VALUE="design_1_xlconstant_0_3"/>
-        <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
-      </PARAMETERS>
-      <PORTS>
-        <PORT DIR="O" LEFT="0" NAME="dout" RIGHT="0" SIGIS="undef"/>
-      </PORTS>
-      <BUSINTERFACES/>
-    </MODULE>
     <MODULE FULLNAME="/placeholder_texcfg" HWVERSION="1.1" INSTANCE="placeholder_texcfg" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="xlconstant" VLNV="xilinx.com:ip:xlconstant:1.1">
       <DOCUMENTS/>
       <PARAMETERS>
@@ -43295,9 +43308,9 @@
         <PARAMETER NAME="C_COUNT_TYPE" VALUE="0"/>
         <PARAMETER NAME="C_DATA_COUNT_WIDTH" VALUE="10"/>
         <PARAMETER NAME="C_DEFAULT_VALUE" VALUE="BlankString"/>
-        <PARAMETER NAME="C_DIN_WIDTH" VALUE="128"/>
+        <PARAMETER NAME="C_DIN_WIDTH" VALUE="96"/>
         <PARAMETER NAME="C_DOUT_RST_VAL" VALUE="0"/>
-        <PARAMETER NAME="C_DOUT_WIDTH" VALUE="128"/>
+        <PARAMETER NAME="C_DOUT_WIDTH" VALUE="96"/>
         <PARAMETER NAME="C_ENABLE_RLOCS" VALUE="0"/>
         <PARAMETER NAME="C_FAMILY" VALUE="kintexuplus"/>
         <PARAMETER NAME="C_FULL_FLAGS_RST_VAL" VALUE="0"/>
@@ -43499,9 +43512,9 @@
         <PARAMETER NAME="INTERFACE_TYPE" VALUE="Native"/>
         <PARAMETER NAME="Performance_Options" VALUE="First_Word_Fall_Through"/>
         <PARAMETER NAME="asymmetric_port_width" VALUE="false"/>
-        <PARAMETER NAME="Input_Data_Width" VALUE="128"/>
+        <PARAMETER NAME="Input_Data_Width" VALUE="96"/>
         <PARAMETER NAME="Input_Depth" VALUE="512"/>
-        <PARAMETER NAME="Output_Data_Width" VALUE="128"/>
+        <PARAMETER NAME="Output_Data_Width" VALUE="96"/>
         <PARAMETER NAME="Output_Depth" VALUE="512"/>
         <PARAMETER NAME="Enable_ECC" VALUE="false"/>
         <PARAMETER NAME="Use_Embedded_Registers" VALUE="false"/>
@@ -43667,7 +43680,7 @@
             <CONNECTION INSTANCE="MemorySystem_ddr4_0" PORT="c0_ddr4_ui_clk"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="127" NAME="din" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_RASTOUT_FIFO_wr_data">
+        <PORT DIR="I" LEFT="95" NAME="din" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_RASTOUT_FIFO_wr_data">
           <CONNECTIONS>
             <CONNECTION INSTANCE="Rasterizer_0" PORT="RASTOUT_FIFO_wr_data"/>
           </CONNECTIONS>
@@ -43682,7 +43695,7 @@
             <CONNECTION INSTANCE="DepthInterpolator_0" PORT="RASTOUT_FIFO_rd_en"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="127" NAME="dout" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_RASTOUT_FIFO_rd_data">
+        <PORT DIR="O" LEFT="95" NAME="dout" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_RASTOUT_FIFO_rd_data">
           <CONNECTIONS>
             <CONNECTION INSTANCE="DepthInterpolator_0" PORT="RASTOUT_FIFO_rd_data"/>
           </CONNECTIONS>
@@ -44600,6 +44613,23 @@
         <PORT DIR="O" LEFT="0" NAME="dout" RIGHT="0" SIGIS="undef" SIGNAME="xlconstant_3_dout">
           <CONNECTIONS>
             <CONNECTION INSTANCE="AttrInterpolator_0" PORT="CMD_UseFlatShading"/>
+          </CONNECTIONS>
+        </PORT>
+      </PORTS>
+      <BUSINTERFACES/>
+    </MODULE>
+    <MODULE FULLNAME="/xlconstant_4" HWVERSION="1.1" INSTANCE="xlconstant_4" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="xlconstant" VLNV="xilinx.com:ip:xlconstant:1.1">
+      <DOCUMENTS/>
+      <PARAMETERS>
+        <PARAMETER NAME="CONST_WIDTH" VALUE="32"/>
+        <PARAMETER NAME="CONST_VAL" VALUE="0x00000000"/>
+        <PARAMETER NAME="Component_Name" VALUE="design_1_xlconstant_4_0"/>
+        <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
+      </PARAMETERS>
+      <PORTS>
+        <PORT DIR="O" LEFT="31" NAME="dout" RIGHT="0" SIGIS="undef" SIGNAME="xlconstant_4_dout">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe7"/>
           </CONNECTIONS>
         </PORT>
       </PORTS>

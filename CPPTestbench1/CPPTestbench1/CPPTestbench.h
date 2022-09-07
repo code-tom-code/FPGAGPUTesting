@@ -90,6 +90,20 @@ void ConvertLogicArrayToBytes(const std_logic (&logicVec)[numBytes * 8], void* c
 	}
 }
 
+template <unsigned numBits>
+void ConvertLogicArrayToBits(const std_logic (&logicVec)[numBits], void* const outputData)
+{
+	unsigned char* const outputBytes = static_cast<unsigned char* const>(outputData);
+	memset(outputBytes, 0, (numBits + 7) / 8);
+	for (unsigned bitIndex = 0; bitIndex < numBits; ++bitIndex)
+	{
+		if (StdLogicToBool(logicVec[bitIndex]) == true)
+		{
+			outputBytes[bitIndex / 8] |= (1 << (bitIndex & 0x7) );
+		}
+	}
+}
+
 template <unsigned numBytes>
 void FillLogicArrayWithBits(std_logic (&outVec)[numBytes * 8], const void* const inputData)
 {
@@ -423,6 +437,50 @@ public:
 			ReverseArrayInPlace<bitLength>(logicBits);
 
 			ConvertLogicArrayToBytes<sizeof(structType)>(logicBits, &outStructVal);
+			if (bitLength <= 64)
+			{
+				vectorUnion.u64 = 0;
+				memcpy(&vectorUnion.u64, &outStructVal, sizeof(outStructVal) );
+			}
+			else
+			{
+				// We can only cache the first 64 bits of the structure. Sorry if this is inconvenient!
+				memcpy(&vectorUnion.u64, &outStructVal, sizeof(vectorUnion.u64) );
+			}
+		}
+		else
+		{
+#ifdef _DEBUG
+			__debugbreak(); // You cannot read from a write-only port!
+#endif
+		}
+	}
+
+	// This function can read a bit-vector into a struct whose bit-count doesn't match exactly (ie. reading a 60-bit logic vector into a 64 bit struct, because C++ doesn't let you make 60-bit structs)
+	template <typename structType>
+	void GetStructValPartialFit(structType& outStructVal)
+	{
+		static_assert(bitLength != (sizeof(structType) * 8), "Error: Can only use GetStructValPartialFit() with structs that don't match the std_logic_vector bit-length");
+		static_assert( (sizeof(structType) * 8) - bitLength < 8, "Error: Output struct must match same number of bytes as vector port. Check for unexpected padding and use #pragma pack(1) if necessary.");
+
+		if (portDir & PD_OUT)
+		{
+			std_logic logicBits[bitLength] = { logic_U };
+
+			memset(&outStructVal, 0, sizeof(outStructVal) );
+
+			const int status = loader.get_value(portNumber, &logicBits);
+			if (status != xsiNormal)
+			{
+#ifdef _DEBUG
+				printf("Error: Cannot retrieve value of \"%s\" (%i) as the design is in an error state!\n", portname, portNumber);
+#endif
+				return;
+			}
+
+			ReverseArrayInPlace<bitLength>(logicBits);
+
+			ConvertLogicArrayToBits<bitLength>(logicBits, &outStructVal);
 			if (bitLength <= 64)
 			{
 				vectorUnion.u64 = 0;

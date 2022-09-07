@@ -72,6 +72,9 @@
     <ClCompile Include="Testbenches\TexSamplerTestbench.cpp">
       <Filter>Source Files\Testbenches</Filter>
     </ClCompile>
+    <ClCompile Include="Testbenches\ROPTestbench.cpp">
+      <Filter>Source Files\Testbenches</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="xsi_loader.h">
@@ -135,6 +138,9 @@
       <Filter>Header Files\Testbenches</Filter>
     </ClInclude>
     <ClInclude Include="Testbenches\TexSamplerTestbench.h">
+      <Filter>Header Files\Testbenches</Filter>
+    </ClInclude>
+    <ClInclude Include="Testbenches\ROPTestbench.h">
       <Filter>Header Files\Testbenches</Filter>
     </ClInclude>
   </ItemGroup>
@@ -272,6 +278,12 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="TriWorkCache.prj">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="hdl_src\ROP.vhd">
+      <Filter>HDL</Filter>
+    </None>
+    <None Include="ROP.prj">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

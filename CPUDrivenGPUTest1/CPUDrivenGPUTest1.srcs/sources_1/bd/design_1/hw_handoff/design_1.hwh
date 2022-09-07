@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
-<EDKSYSTEM EDWVERSION="1.2" TIMESTAMP="Sun Sep 19 02:49:21 2021" VIVADOVERSION="2018.1">
+<EDKSYSTEM EDWVERSION="1.2" TIMESTAMP="Tue Sep 21 23:29:10 2021" VIVADOVERSION="2018.1">
 
   <SYSTEMINFO ARCH="kintexuplus" BOARD="xilinx.com:kcu116:part0:1.3" DEVICE="xcku5p" NAME="design_1" PACKAGE="ffvb676" SPEEDGRADE="-2"/>
 
@@ -23220,14 +23220,14 @@
             <CONNECTION INSTANCE="TriSetup_0" PORT="clk"/>
             <CONNECTION INSTANCE="Rasterizer_0" PORT="clk"/>
             <CONNECTION INSTANCE="AttrInterpolator_0" PORT="clk"/>
-            <CONNECTION INSTANCE="SerialPacketSystem_ValidIncomingPacketsFIFO" PORT="rd_clk"/>
-            <CONNECTION INSTANCE="SerialPacketSystem_ReturnOutputPacketsFIFO" PORT="wr_clk"/>
-            <CONNECTION INSTANCE="ScanoutSystem_scanout_clk_25_175_x8" PORT="clk_in1"/>
             <CONNECTION INSTANCE="StatsCollector_0" PORT="clk"/>
             <CONNECTION INSTANCE="CommandProcessor_0" PORT="clk"/>
             <CONNECTION INSTANCE="ROP_0" PORT="clk"/>
             <CONNECTION INSTANCE="TexSample_0" PORT="clk"/>
             <CONNECTION INSTANCE="InputAssembler_0" PORT="clk"/>
+            <CONNECTION INSTANCE="SerialPacketSystem_ValidIncomingPacketsFIFO" PORT="rd_clk"/>
+            <CONNECTION INSTANCE="SerialPacketSystem_ReturnOutputPacketsFIFO" PORT="wr_clk"/>
+            <CONNECTION INSTANCE="ScanoutSystem_scanout_clk_25_175_x8" PORT="clk_in1"/>
             <CONNECTION INSTANCE="MemorySystem_ScanoutReadRequestsFIFO" PORT="rd_clk"/>
             <CONNECTION INSTANCE="MemorySystem_ZStencilReadRequestsFIFO" PORT="rd_clk"/>
             <CONNECTION INSTANCE="MemorySystem_ZStencilReadRequestsFIFO" PORT="wr_clk"/>
@@ -24214,10 +24214,10 @@
         </PORT>
         <PORT DIR="O" NAME="resetn" SIGIS="rst" SIGNAME="ResetN_UntilClockLoc_0_resetn">
           <CONNECTIONS>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="resetn"/>
             <CONNECTION INSTANCE="MemorySystem_MemoryController_0" PORT="M_AXI_ARESETN"/>
             <CONNECTION INSTANCE="SerialPacketSystem_axi_uartlite_0" PORT="s_axi_aresetn"/>
             <CONNECTION INSTANCE="SerialPacketSystem_PacketProcessor_0" PORT="M_AXI_ARESETN"/>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="resetn"/>
           </CONNECTIONS>
         </PORT>
       </PORTS>

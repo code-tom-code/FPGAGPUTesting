@@ -196,6 +196,7 @@
     <ClCompile Include="Testbenches\IndexBufferCacheTestbench.cpp" />
     <ClCompile Include="Testbenches\InputAssemblerTestbench.cpp" />
     <ClCompile Include="Testbenches\RasterizerTestbench.cpp" />
+    <ClCompile Include="Testbenches\ROPTestbench.cpp" />
     <ClCompile Include="Testbenches\ShaderCoreTestbench.cpp" />
     <ClCompile Include="Testbenches\TexSamplerTestbench.cpp" />
     <ClCompile Include="Testbenches\TriSetupTestbench.cpp" />
@@ -217,6 +218,7 @@
     <ClInclude Include="Testbenches\LargeVertexBufferData.h" />
     <ClInclude Include="Testbenches\PixelPipelineShared.h" />
     <ClInclude Include="Testbenches\RasterizerTestbench.h" />
+    <ClInclude Include="Testbenches\ROPTestbench.h" />
     <ClInclude Include="Testbenches\ShaderCoreALUCommon.h" />
     <ClInclude Include="Testbenches\ShaderCoreTestbench.h" />
     <ClInclude Include="Testbenches\TexSamplerTestbench.h" />
@@ -251,6 +253,7 @@
     <None Include="hdl_src\MemoryController.vhd" />
     <None Include="hdl_src\PacketType.vhd" />
     <None Include="hdl_src\Rasterizer.vhd" />
+    <None Include="hdl_src\ROP.vhd" />
     <None Include="hdl_src\ShaderCore.vhd" />
     <None Include="hdl_src\TestShaderCoreDriver.vhd" />
     <None Include="hdl_src\TexSample.vhd" />
@@ -265,6 +268,7 @@
     <None Include="Rasterizer.prj" />
     <None Include="rebuild_xsim.bat" />
     <None Include="Reciprocal.prj" />
+    <None Include="ROP.prj" />
     <None Include="ShaderCore.prj" />
     <None Include="TexSample.prj" />
     <None Include="TriSetup.prj" />

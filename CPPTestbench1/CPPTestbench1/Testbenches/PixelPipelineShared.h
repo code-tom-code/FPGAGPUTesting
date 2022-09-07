@@ -302,6 +302,52 @@ struct attributeInterpOutputData
 	}
 };
 
+struct texSampOutput
+{
+	signed short pixelX;
+	signed short pixelY;
+	unsigned char colorR;
+	unsigned char colorG;
+	unsigned char colorB;
+	unsigned char colorA;
+
+	// Use a non-exact comparison in color channel data to account for minor discrepancies caused by the emulator using floating-point math and the
+	// simulator using fixed-point math.
+	static const bool ColorChannelCloseEnough(const unsigned char a, const unsigned char b)
+	{
+		const int delta = (const int)a - (const int)b;
+		return abs(delta) <= 2;
+	}
+
+	const bool operator==(const texSampOutput& rhs) const
+	{
+		return (pixelX == rhs.pixelX) && (pixelY == rhs.pixelY) &&
+			ColorChannelCloseEnough(colorR, rhs.colorR) && ColorChannelCloseEnough(colorG, rhs.colorG) && ColorChannelCloseEnough(colorB, rhs.colorB) && ColorChannelCloseEnough(colorA, rhs.colorA);
+	}
+
+	void Serialize(const std_logic_vector_port<16>& outPixelX, const std_logic_vector_port<16>& outPixelY,
+		const std_logic_vector_port<8>& outR, const std_logic_vector_port<8>& outG, const std_logic_vector_port<8>& outB, const std_logic_vector_port<8>& outA)
+	{
+		pixelX = outPixelX.GetInt16Val();
+		pixelY = outPixelY.GetInt16Val();
+		colorR = outR.GetUint8Val();
+		colorG = outG.GetUint8Val();
+		colorB = outB.GetUint8Val();
+		colorA = outA.GetUint8Val();
+	}
+
+	void Deserialize(std_logic_vector_port<16>& outPixelX, std_logic_vector_port<16>& outPixelY,
+		std_logic_vector_port<8>& outR, std_logic_vector_port<8>& outG, std_logic_vector_port<8>& outB, std_logic_vector_port<8>& outA) const
+	{
+		outPixelX = pixelX;
+		outPixelY = pixelY;
+		outR = colorR;
+		outG = colorG;
+		outB = colorB;
+		outA = colorA;
+	}
+};
+
 triSetupResultType EmulateCPUTriSetup(const triSetupInput& inTriData, triSetupOutput& outTriSetupOutput);
 
 // This rasterization algorithm, while it does work in most cases, is not fully correct with respect to the D3D11 rasterization rules: https://docs.microsoft.com/en-us/windows/win32/direct3d11/d3d10-graphics-programming-guide-rasterizer-stage-rules
@@ -309,3 +355,4 @@ void EmulateCPURasterizer(const triSetupOutput& triSetupData, std::vector<raster
 
 void EmulateDepthInterpCPU(const triSetupOutput& triSetupData, const std::vector<rasterizedPixelData>& rasterizedPixels, std::vector<depthInterpOutputData>& outDepthInterpData);
 void EmulateAttributeInterpCPU(const triSetupOutput& triSetupData, const std::vector<depthInterpOutputData>& depthInterpData, std::vector<attributeInterpOutputData>& outAttributeInterpData);
+void EmulateTexSamplerCPU(const std::vector<attributeInterpOutputData>& interpolatedData, std::vector<texSampOutput>& outTexSampData, const bool useBilinearInterp, const D3DSURFACE_DESC& texDesc, const D3DLOCKED_RECT& d3dlr);

@@ -1108,9 +1108,9 @@
       <spirit:adHocConnection>
         <spirit:name>ResetN_UntilClockLoc_0_resetn</spirit:name>
         <spirit:internalPortReference spirit:componentRef="ResetN_UntilClockLoc_0" spirit:portRef="resetn"/>
+        <spirit:internalPortReference spirit:componentRef="CommandProcessor_0" spirit:portRef="resetn"/>
         <spirit:internalPortReference spirit:componentRef="MemorySystem" spirit:portRef="M_AXI_ARESETN"/>
         <spirit:internalPortReference spirit:componentRef="SerialPacketSystem" spirit:portRef="s_axi_aresetn"/>
-        <spirit:internalPortReference spirit:componentRef="CommandProcessor_0" spirit:portRef="resetn"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>CommandProcessor_0_DBG_PACKETSTATE</spirit:name>
@@ -1147,13 +1147,13 @@
         <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="Rasterizer_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="AttrInterpolator_0" spirit:portRef="clk"/>
-        <spirit:internalPortReference spirit:componentRef="SerialPacketSystem" spirit:portRef="rd_clk"/>
-        <spirit:internalPortReference spirit:componentRef="ScanoutSystem" spirit:portRef="clk_in1"/>
         <spirit:internalPortReference spirit:componentRef="StatsCollector_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="CommandProcessor_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="ROP_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="TexSample_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="InputAssembler_0" spirit:portRef="clk"/>
+        <spirit:internalPortReference spirit:componentRef="SerialPacketSystem" spirit:portRef="rd_clk"/>
+        <spirit:internalPortReference spirit:componentRef="ScanoutSystem" spirit:portRef="clk_in1"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>xlconstant_0_dout</spirit:name>

@@ -393,18 +393,10 @@ HRESULT __stdcall IBaseGPUDevice::DeviceSetTextureState(const unsigned texWidth,
 	return hRet;
 }
 
-HRESULT __stdcall IBaseGPUDevice::DeviceSetBlendState(gpuvoid* const renderTargetMemory, const eBlendMode blendingMode, const eBlendMask writeMask, const bool alphaTestEnabled, const BYTE alphaTestRefVal, const eCmpFunc alphaTestCmpFunc)
+HRESULT __stdcall IBaseGPUDevice::DeviceSetRenderTargetAlphaTestState(gpuvoid* const renderTargetMemory, const eBlendMask writeMask, const bool alphaTestEnabled, const BYTE alphaTestRefVal, const eCmpFunc alphaTestCmpFunc)
 {
 	if (!ValidateAddress(renderTargetMemory) )
 		return E_INVALIDARG;
-
-	if (blendingMode >= blendModeMaxBlendModes)
-	{
-#ifdef _DEBUG
-		__debugbreak();
-#endif
-		return E_INVALIDARG;
-	}
 
 	if (writeMask > wm_writeAll)
 	{
@@ -430,17 +422,131 @@ HRESULT __stdcall IBaseGPUDevice::DeviceSetBlendState(gpuvoid* const renderTarge
 		return E_INVALIDARG;
 	}
 
-	if (DoCacheDeviceState() && currentCachedState.deviceCachedRenderTarget == renderTargetMemory && currentCachedState.deviceCachedBlendMode == blendingMode && currentCachedState.deviceCachedWriteMask == writeMask &&
+	if (DoCacheDeviceState() && currentCachedState.deviceCachedRenderTarget == renderTargetMemory && currentCachedState.deviceCachedWriteMask == writeMask &&
 		currentCachedState.deviceCachedAlphaTestEnabled == alphaTestEnabled && currentCachedState.deviceCachedAlphaTestRefVal == alphaTestRefVal && currentCachedState.deviceCachedAlphaTestCmpFunc == alphaTestCmpFunc)
 		return S_OK;
 
+	setAlphaTestAndRTAddressStateCommand setAlphaTestAndRTAddrState;
+	setAlphaTestAndRTAddrState.renderTargetBaseAddress = (const DWORD)renderTargetMemory;
+	setAlphaTestAndRTAddrState.writeMask = writeMask;
+	setAlphaTestAndRTAddrState.alphaTestEnabled = alphaTestEnabled;
+	setAlphaTestAndRTAddrState.alphaTestRefValue = alphaTestRefVal;
+	setAlphaTestAndRTAddrState.alphaTestFunc = alphaTestCmpFunc;
+	setAlphaTestAndRTAddrState.checksum = command::ComputeChecksum(&setAlphaTestAndRTAddrState, sizeof(setAlphaTestAndRTAddrState) );
+#ifdef _DEBUG
+	if (!command::IsValidPacket(&setAlphaTestAndRTAddrState, sizeof(setAlphaTestAndRTAddrState) ) )
+	{
+		__debugbreak();
+	}
+#endif
+	const HRESULT hRet = SendOrStorePacket(&setAlphaTestAndRTAddrState);
+	if (SUCCEEDED(hRet) && DoCacheDeviceState() )
+	{
+		currentCachedState.deviceCachedRenderTarget = renderTargetMemory;
+		currentCachedState.deviceCachedWriteMask = writeMask;
+		currentCachedState.deviceCachedAlphaTestEnabled = alphaTestEnabled;
+		currentCachedState.deviceCachedAlphaTestRefVal = alphaTestRefVal;
+		currentCachedState.deviceCachedAlphaTestCmpFunc = alphaTestCmpFunc;
+	}
+	if (FAILED(hRet) )
+		return hRet;
+	
+	if (DoSyncEveryCall() )
+		return DeviceWaitForIdle();
+	return hRet;
+}
+
+HRESULT __stdcall IBaseGPUDevice::DeviceSetBlendState(const bool alphaBlendingEnabled, const D3DBLEND srcColorBlend, const D3DBLEND destColorBlend, const D3DBLENDOP colorBlendOp, 
+	const D3DBLEND srcAlphaBlend, const D3DBLEND destAlphaBlend, const D3DBLENDOP alphaBlendOp, const D3DCOLOR blendFactorARGB)
+{
+	if (srcColorBlend > D3DBLEND_INVSRCCOLOR2 || srcColorBlend < D3DBLEND_ZERO)
+	{
+#ifdef _DEBUG
+		__debugbreak();
+#endif
+		return E_INVALIDARG;
+	}
+	if (destColorBlend > D3DBLEND_INVSRCCOLOR2 || destColorBlend < D3DBLEND_ZERO)
+	{
+#ifdef _DEBUG
+		__debugbreak();
+#endif
+		return E_INVALIDARG;
+	}
+	if (colorBlendOp > D3DBLENDOP_MAX || colorBlendOp < D3DBLENDOP_ADD)
+	{
+#ifdef _DEBUG
+		__debugbreak();
+#endif
+		return E_INVALIDARG;
+	}
+	if (srcAlphaBlend > D3DBLEND_INVSRCCOLOR2 || srcAlphaBlend < D3DBLEND_ZERO)
+	{
+#ifdef _DEBUG
+		__debugbreak();
+#endif
+		return E_INVALIDARG;
+	}
+	if (destAlphaBlend > D3DBLEND_INVSRCCOLOR2 || destAlphaBlend < D3DBLEND_ZERO)
+	{
+#ifdef _DEBUG
+		__debugbreak();
+#endif
+		return E_INVALIDARG;
+	}
+	if (alphaBlendOp > D3DBLENDOP_MAX || alphaBlendOp < D3DBLENDOP_ADD)
+	{
+#ifdef _DEBUG
+		__debugbreak();
+#endif
+		return E_INVALIDARG;
+	}
+	if (srcColorBlend > D3DBLEND_SRCCOLOR2) // We don't support dual source blending yet
+	{
+#ifdef _DEBUG
+		__debugbreak();
+#endif
+		return E_INVALIDARG;
+	}
+	if (destColorBlend > D3DBLEND_SRCCOLOR2) // We don't support dual source blending yet
+	{
+#ifdef _DEBUG
+		__debugbreak();
+#endif
+		return E_INVALIDARG;
+	}
+	if (srcAlphaBlend > D3DBLEND_SRCCOLOR2) // We don't support dual source blending yet
+	{
+#ifdef _DEBUG
+		__debugbreak();
+#endif
+		return E_INVALIDARG;
+	}
+	if (destAlphaBlend > D3DBLEND_SRCCOLOR2) // We don't support dual source blending yet
+	{
+#ifdef _DEBUG
+		__debugbreak();
+#endif
+		return E_INVALIDARG;
+	}
+
+	BlendStateBlock deviceBlendState;
+	deviceBlendState.ConvertFromD3DRS(alphaBlendingEnabled, srcColorBlend, destColorBlend, colorBlendOp, srcAlphaBlend, destAlphaBlend, alphaBlendOp, blendFactorARGB);
+
+	if (DoCacheDeviceState() && currentCachedState.deviceCachedBlendState == deviceBlendState)
+		return S_OK;
+
+	// Convert our D3DCOLOR ARGB color to an ABGR color for the blend factor:
+	const unsigned char blendFactorA = blendFactorARGB >> 24;
+	const unsigned char blendFactorR = (blendFactorARGB >> 16) & 0xFF;
+	const unsigned char blendFactorG = (blendFactorARGB >> 8) & 0xFF;
+	const unsigned char blendFactorB = blendFactorARGB & 0xFF;
+	const DWORD blendFactorABGR = (blendFactorA << 24) | (blendFactorB << 16) | (blendFactorG << 8) | (blendFactorR);
+
 	setBlendStateCommand setBlendState;
-	setBlendState.renderTargetBaseAddress = (const DWORD)renderTargetMemory;
-	setBlendState.newBlendType = blendingMode;
-	setBlendState.writeMask = writeMask;
-	setBlendState.alphaTestEnabled = alphaTestEnabled;
-	setBlendState.alphaTestRefValue = alphaTestRefVal;
-	setBlendState.alphaTestFunc = alphaTestCmpFunc;
+	setBlendState.blendStateBlock = deviceBlendState.dataUnion.solidDWORD;
+	setBlendState.alphaBlendingEnabled = alphaBlendingEnabled;
+	setBlendState.blendFactorABGR = blendFactorABGR;
 	setBlendState.checksum = command::ComputeChecksum(&setBlendState, sizeof(setBlendState) );
 #ifdef _DEBUG
 	if (!command::IsValidPacket(&setBlendState, sizeof(setBlendState) ) )
@@ -451,12 +557,7 @@ HRESULT __stdcall IBaseGPUDevice::DeviceSetBlendState(gpuvoid* const renderTarge
 	const HRESULT hRet = SendOrStorePacket(&setBlendState);
 	if (SUCCEEDED(hRet) && DoCacheDeviceState() )
 	{
-		currentCachedState.deviceCachedRenderTarget = renderTargetMemory;
-		currentCachedState.deviceCachedBlendMode = blendingMode;
-		currentCachedState.deviceCachedWriteMask = writeMask;
-		currentCachedState.deviceCachedAlphaTestEnabled = alphaTestEnabled;
-		currentCachedState.deviceCachedAlphaTestRefVal = alphaTestRefVal;
-		currentCachedState.deviceCachedAlphaTestCmpFunc = alphaTestCmpFunc;
+		currentCachedState.deviceCachedBlendState = deviceBlendState;
 	}
 	if (FAILED(hRet) )
 		return hRet;
@@ -1733,14 +1834,6 @@ const bool __stdcall IBaseGPUDevice::ValidateDeviceStateIsSetForDraw() const
 		return false;
 	}
 
-	if (currentCachedState.deviceCachedBlendMode >= blendModeMaxBlendModes)
-	{
-#ifdef _DEBUG
-		__debugbreak();
-#endif
-		return false;
-	}
-
 	if (currentCachedState.deviceCachedWriteMask > wm_writeAll)
 	{
 #ifdef _DEBUG
@@ -1859,7 +1952,7 @@ const bool IBaseGPUDevice::PacketIsValidForRecording(const command::ePacketType 
 	case command::PT_CLEARBACKBUFFER:
 	case command::PT_CLEARZSTENCILBUFFER:
 	case command::PT_LOADTEXCACHEDATA:
-	case command::PT_SETBLENDSTATE:
+	case command::PT_SETALPHATESTANDRTADDRESSSTATE:
 	case command::PT_SETTEXTURESTATE:
 	case command::PT_DRAWINDEXED:
 	case command::PT_SETSCANOUTPOINTER:
@@ -1872,6 +1965,7 @@ const bool IBaseGPUDevice::PacketIsValidForRecording(const command::ePacketType 
 	case command::PT_SETSHADERCONSTANTSPECIAL:
 	case command::PT_SETSHADERSTARTADDRESS:
 	case command::PT_SETDEPTHSTATE:
+	case command::PT_SETBLENDSTATE:
 		return true;
 	default:
 #ifdef _DEBUG
@@ -1890,7 +1984,7 @@ const bool IBaseGPUDevice::PacketIsValidForRecording(const command::ePacketType 
 	case command::PT_DEBUGSHADERNEXTDRAWCALL:
 		return false;
 	}
-	static_assert(command::PT_MAX_PACKET_TYPES == 28, "Reminder: Need to update this switch statement with new cases when adding new packets!");
+	static_assert(command::PT_MAX_PACKET_TYPES == 29, "Reminder: Need to update this switch statement with new cases when adding new packets!");
 }
 
 HRESULT IBaseGPUDevice::SendOrStorePacket(const command* const sendPacket)

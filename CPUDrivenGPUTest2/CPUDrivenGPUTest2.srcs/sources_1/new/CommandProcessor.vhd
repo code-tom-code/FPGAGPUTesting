@@ -128,8 +128,8 @@ entity CommandProcessor is
 	-- Texture sampler interfaces end
 
 	-- ROP interfaces begin
-		ROP_SetBlendStateBeginSignal : out STD_LOGIC := '0';
-		ROP_SetBlendStateSigAck : in STD_LOGIC;
+		ROP_SetBaseAddrAndAlphaTestSignal : out STD_LOGIC := '0';
+		ROP_SetBaseAddrAndAlphaTestSignalAck : in STD_LOGIC;
 
 		ROP_SetClearColor : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 		ROP_ClearSignal : out STD_LOGIC := '0';
@@ -139,11 +139,16 @@ entity CommandProcessor is
 		ROP_FlushCacheAck : in STD_LOGIC;
 
 		ROP_SetRenderTargetBaseAddr : out STD_LOGIC_VECTOR(29 downto 0) := (others => '0');
-		ROP_SetBlendMask : out STD_LOGIC_VECTOR(3 downto 0) := (others => '0');
-		ROP_SetBlendMode : out STD_LOGIC_VECTOR(1 downto 0) := (others => '0');
+		ROP_SetWriteMask : out STD_LOGIC_VECTOR(3 downto 0) := (others => '0');
 		ROP_SetAlphaTestEnabled : out STD_LOGIC := '0';
 		ROP_SetAlphaTestRefVal : out STD_LOGIC_VECTOR(7 downto 0) := (others => '0');
 		ROP_SetAlphaTestFunc : out STD_LOGIC_VECTOR(2 downto 0) := (others => '0');
+
+		ROP_SetBlendStateSignal : out STD_LOGIC := '0';
+		ROP_SetBlendStateSigAck : in STD_LOGIC;
+		ROP_SetAlphaBlendEnable : out STD_LOGIC := '0';
+		ROP_SetAlphaBlendFactor : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		ROP_SetAlphaBlendStateBlock : out STD_LOGIC_VECTOR(21 downto 0) := (others => '0');
 	-- ROP interfaces begin
 
 	-- Scanout interfaces begin
@@ -239,7 +244,7 @@ architecture Behavioral of CommandProcessor is
 						WAIT_FOR_IDLE_SIGNAL_BACK_DEASSERT_FIFO, -- 17
 
 						SET_TEXTURE_STATE, -- 18
-						SET_BLEND_STATE, -- 19
+						SET_ALPHATEST_AND_RENDERTARGET_STATE, -- 19
 						SET_SCANOUT_POINTER, -- 20
 						SET_IA_STATE, -- 21
 
@@ -277,7 +282,9 @@ architecture Behavioral of CommandProcessor is
 						DBG_SHADER_NEXT_DRAW_CALL, -- 46
 						DBG_DUMP_SHADER_REGISTERS, -- 47
 						DBG_DUMP_SHADER_REGISTERS_HIGH, -- 48
-						DBG_DUMP_SHADER_REGISTERS_MEMWRITE -- 49
+						DBG_DUMP_SHADER_REGISTERS_MEMWRITE, -- 49
+
+						SET_BLEND_STATE -- 50
 						);
 
 	type commandListExecState is record
@@ -320,6 +327,7 @@ architecture Behavioral of CommandProcessor is
 	signal newWriteDWORDEnable : std_logic_vector(DATA_WIDTH_BITS/32-1 downto 0) := (others => '1');
 	signal loadTexDataEnable : std_logic := '0';
 	signal setTexStateEnable : std_logic := '0';
+	signal setAlphaTestAndRenderTargetStateEnable : std_logic := '0';
 	signal setBlendStateEnable : std_logic := '0';
 	signal setIAStateEnable : std_logic := '0';
 	signal setROPClearEnable : std_logic := '0';
@@ -407,7 +415,8 @@ architecture Behavioral of CommandProcessor is
 begin
 	TEXSAMP_LoadTexCacheBeginSignal <= loadTexDataEnable;
 	TEXSAMP_SetTextureStateBeginSignal <= setTexStateEnable;
-	ROP_SetBlendStateBeginSignal <= setBlendStateEnable;
+	ROP_SetBaseAddrAndAlphaTestSignal <= setAlphaTestAndRenderTargetStateEnable;
+	ROP_SetBlendStateSignal <= setBlendStateEnable;
 	ROP_ClearSignal <= setROPClearEnable;
 	ROP_FlushCacheSignal <= flushROPCache;
 	IA_SetStateEnable <= setIAStateEnable;
@@ -560,8 +569,8 @@ begin
 							when PT_LOADTEXCACHEDATA =>
 								mst_packet_state <= LOAD_TEXTURE_DATA;
 
-							when PT_SETBLENDSTATE =>
-								mst_packet_state <= SET_BLEND_STATE;
+							when PT_SETALPHATESTANDRTADDRESSSTATE =>
+								mst_packet_state <= SET_ALPHATEST_AND_RENDERTARGET_STATE;
 
 							when PT_SETTEXTURESTATE =>
 								mst_packet_state <= SET_TEXTURE_STATE;
@@ -610,6 +619,9 @@ begin
 
 							when PT_SETDEPTHSTATE =>
 								mst_packet_state <= SET_DEPTH_STATE;
+
+							when PT_SETBLENDSTATE =>
+								mst_packet_state <= SET_BLEND_STATE;
 
 							when others => --when PT_DONOTHING =>
 								mst_packet_state <= DONOTHING_PACKET;
@@ -801,6 +813,20 @@ begin
 							mst_packet_state <= SET_TEXTURE_STATE;
 						end if;
 
+					when SET_ALPHATEST_AND_RENDERTARGET_STATE =>
+						if (setAlphaTestAndRenderTargetStateEnable = '1' and ROP_SetBaseAddrAndAlphaTestSignalAck = '1') then
+							setAlphaTestAndRenderTargetStateEnable <= '0'; -- Deassert after one clock cycle
+							mst_packet_state <= READ_NEXT_PACKET_FROM_FIFO;
+						else
+							setAlphaTestAndRenderTargetStateEnable <= '1';
+
+							ROP_SetRenderTargetBaseAddr <= std_logic_vector(localIncomingPacket.payload0(29 downto 0) );
+							ROP_SetWriteMask <= std_logic_vector(localIncomingPacket.payload1(3 downto 0) );
+							ROP_SetAlphaTestEnabled <= localIncomingPacket.payload1(10);
+							ROP_SetAlphaTestRefVal <= std_logic_vector(localIncomingPacket.payload1(23 downto 16) );
+							ROP_SetAlphaTestFunc <= std_logic_vector(localIncomingPacket.payload1(26 downto 24) );
+						end if;
+
 					when SET_BLEND_STATE =>
 						if (setBlendStateEnable = '1' and ROP_SetBlendStateSigAck = '1') then
 							setBlendStateEnable <= '0'; -- Deassert after one clock cycle
@@ -808,14 +834,9 @@ begin
 						else
 							setBlendStateEnable <= '1';
 
-							ROP_SetRenderTargetBaseAddr <= std_logic_vector(localIncomingPacket.payload0(29 downto 0) );
-							ROP_SetBlendMode <= std_logic_vector(localIncomingPacket.payload0(31 downto 30) );
-							ROP_SetBlendMask <= std_logic_vector(localIncomingPacket.payload1(3 downto 0) );
-							ROP_SetAlphaTestEnabled <= localIncomingPacket.payload1(10);
-							ROP_SetAlphaTestRefVal <= std_logic_vector(localIncomingPacket.payload1(23 downto 16) );
-							ROP_SetAlphaTestFunc <= std_logic_vector(localIncomingPacket.payload1(26 downto 24) );
-
-							mst_packet_state <= SET_BLEND_STATE;
+							ROP_SetAlphaBlendEnable <= std_logic(localIncomingPacket.payload0(31) );
+							ROP_SetAlphaBlendStateBlock <= std_logic_vector(localIncomingPacket.payload0(21 downto 0) );
+							ROP_SetAlphaBlendFactor <= std_logic_vector(localIncomingPacket.payload1);
 						end if;
 
 					when DRAW_COMMAND =>

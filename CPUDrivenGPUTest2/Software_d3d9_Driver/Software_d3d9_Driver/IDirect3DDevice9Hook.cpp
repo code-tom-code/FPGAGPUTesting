@@ -4272,8 +4272,12 @@ const bool IDirect3DDevice9Hook::TotalDrawCallSkipTest(void) const
 
 	if (currentState.currentRenderStates.renderStatesUnion.namedStates.alphaBlendEnable && !currentState.currentRenderStates.renderStatesUnion.namedStates.separateAlphaBlendEnable)
 	{
-		if (currentState.currentRenderStates.renderStatesUnion.namedStates.srcBlend == D3DBLEND_ZERO && currentState.currentRenderStates.renderStatesUnion.namedStates.destBlend == D3DBLEND_ONE)
-			return false;
+		// MIN and MAX blend-ops ignore the srcBlend and destBlend states and run purely on the input pixel and the framebuffer pixel, so we cannot skip the draw call if we have a MIN or MAX BlendOp set
+		if (currentState.currentRenderStates.renderStatesUnion.namedStates.blendOp < D3DBLENDOP_MIN)
+		{
+			if (currentState.currentRenderStates.renderStatesUnion.namedStates.srcBlend == D3DBLEND_ZERO && currentState.currentRenderStates.renderStatesUnion.namedStates.destBlend == D3DBLEND_ONE)
+				return false;
+		}
 	}
 
 	if (currentState.currentRenderStates.renderStatesUnion.namedStates.scissorTestEnable)
@@ -5176,24 +5180,6 @@ void IDirect3DDevice9Hook::DeviceSetUsedVertexShaderConstants()
 void IDirect3DDevice9Hook::DeviceSetCurrentState(const D3DPRIMITIVETYPE primType, const IDirect3DIndexBuffer9Hook* currentIB)
 {
 	gpuvoid* deviceBackbuffer = currentState.currentRenderTargets[0]->GetDeviceSurfaceBytes();
-	eBlendMode deviceBlendMode = eBlendMode::noBlending;
-	switch (currentState.currentRenderStates.simplifiedAlphaBlendMode)
-	{
-	case RenderStates::noAlphaBlending:
-		deviceBlendMode = eBlendMode::noBlending;
-		break;
-	case RenderStates::alphaBlending:
-		deviceBlendMode = eBlendMode::alphaBlend;
-		break;
-	case RenderStates::additiveBlending:
-		deviceBlendMode = eBlendMode::additiveColorBlend;
-		break;
-	case RenderStates::multiplicativeBlending: // Multiplicative blend is not yet supported
-	default:
-	case RenderStates::otherAlphaBlending:
-		deviceBlendMode = eBlendMode::noBlending;
-		break; // More complicated blend modes are not yet supported...
-	}
 	const eBlendMask eWriteMask = (const eBlendMask)(currentState.currentRenderStates.renderStatesUnion.namedStates.colorWriteEnable & 0xF);
 
 	eCullMode cullMode;
@@ -5268,15 +5254,27 @@ void IDirect3DDevice9Hook::DeviceSetCurrentState(const D3DPRIMITIVETYPE primType
 	// Set the IA state:
 	baseDevice->DeviceSetIAState(cullMode, primTopology, sct_CutDisabled, indexFormat, currentIB ? currentIB->GetGPUBytes() : NULL);
 
-	// Set the blend and depth states:
+	// Set the alpha-testing, render target, and depth states:
 	const bool zEnable = currentState.currentRenderStates.renderStatesUnion.namedStates.zEnable != D3DZB_FALSE;
 	const bool zWriteEnable = currentState.currentRenderStates.renderStatesUnion.namedStates.zWriteEnable ? true : false;
 	const bool alphaTestEnable = currentState.currentRenderStates.renderStatesUnion.namedStates.alphaTestEnable ? true : false;
 	const BYTE alphaTestRefVal = (const BYTE)(currentState.currentRenderStates.renderStatesUnion.namedStates.alphaRef & 0xFF);
 	const D3DCMPFUNC alphaTestCmpFunc = currentState.currentRenderStates.renderStatesUnion.namedStates.alphaFunc;
 	const D3DCMPFUNC zCmpFunc = currentState.currentRenderStates.renderStatesUnion.namedStates.zFunc;
-	baseDevice->DeviceSetBlendState(deviceBackbuffer, deviceBlendMode, eWriteMask, alphaTestEnable, alphaTestRefVal, ConvertToDeviceCmpFunc(alphaTestCmpFunc) );
+	baseDevice->DeviceSetRenderTargetAlphaTestState(deviceBackbuffer, eWriteMask, alphaTestEnable, alphaTestRefVal, ConvertToDeviceCmpFunc(alphaTestCmpFunc) );
 	baseDevice->DeviceSetDepthState(forceDisableDepth ? false : zEnable, zWriteEnable, ConvertToDeviceCmpFunc(zCmpFunc) );
+
+	// Set the blend states:
+	const bool alphaBlendEnable = currentState.currentRenderStates.renderStatesUnion.namedStates.alphaBlendEnable ? true : false;
+	const bool separateAlphaBlendEnable = currentState.currentRenderStates.renderStatesUnion.namedStates.separateAlphaBlendEnable ? true : false;
+	const D3DBLEND srcColorBlend = currentState.currentRenderStates.renderStatesUnion.namedStates.srcBlend;
+	const D3DBLEND destColorBlend = currentState.currentRenderStates.renderStatesUnion.namedStates.destBlend;
+	const D3DBLEND srcAlphaBlend = separateAlphaBlendEnable ? currentState.currentRenderStates.renderStatesUnion.namedStates.srcBlendAlpha : srcColorBlend;
+	const D3DBLEND destAlphaBlend = separateAlphaBlendEnable ? currentState.currentRenderStates.renderStatesUnion.namedStates.destBlendAlpha : destColorBlend;
+	const D3DBLENDOP colorBlendOp = currentState.currentRenderStates.renderStatesUnion.namedStates.blendOp;
+	const D3DBLENDOP alphaBlendOp = separateAlphaBlendEnable ? currentState.currentRenderStates.renderStatesUnion.namedStates.blendOpAlpha : colorBlendOp;
+	const D3DCOLOR blendFactorARGB = currentState.currentRenderStates.renderStatesUnion.namedStates.blendFactor;
+	baseDevice->DeviceSetBlendState(alphaBlendEnable, srcColorBlend, destColorBlend, colorBlendOp, srcAlphaBlend, destAlphaBlend, alphaBlendOp, blendFactorARGB);
 
 	// Do some soft-conversions from texture stage states to combiner modes:
 	combinerMode cbModeColor = cbm_textureModulateVertexColor;
@@ -11075,7 +11073,16 @@ void IDirect3DDevice9Hook::InitializeState(const D3DPRESENT_PARAMETERS& d3dpp, c
 	const BYTE alphaTestRefVal = 0x00;
 	const D3DCMPFUNC alphaTestCmpFunc = D3DCMP_ALWAYS;
 	const D3DCMPFUNC zCmpFunc = D3DCMP_ALWAYS;
-	baseDevice->DeviceSetBlendState(backbufferSurfaceHook->GetDeviceSurfaceBytes(), noBlending, wm_writeAll, alphaTestEnable, alphaTestRefVal, ConvertToDeviceCmpFunc(alphaTestCmpFunc) );
+	const bool alphaBlendEnable = false;
+	const D3DBLEND srcColorBlend = D3DBLEND_ONE;
+	const D3DBLEND destColorBlend = D3DBLEND_ZERO;
+	const D3DBLENDOP colorBlendOp = D3DBLENDOP_ADD;
+	const D3DBLEND srcAlphaBlend = D3DBLEND_ONE;
+	const D3DBLEND destAlphaBlend = D3DBLEND_ZERO;
+	const D3DBLENDOP alphaBlendOp = D3DBLENDOP_ADD;
+	const D3DCOLOR blendFactorARGB = D3DCOLOR_ARGB(255, 255, 255, 255);
+	baseDevice->DeviceSetRenderTargetAlphaTestState(backbufferSurfaceHook->GetDeviceSurfaceBytes(), wm_writeAll, alphaTestEnable, alphaTestRefVal, ConvertToDeviceCmpFunc(alphaTestCmpFunc) );
+	baseDevice->DeviceSetBlendState(alphaBlendEnable, srcColorBlend, destColorBlend, colorBlendOp, srcAlphaBlend, destAlphaBlend, alphaBlendOp, blendFactorARGB);
 	baseDevice->DeviceClearRendertarget(backbufferSurfaceHook->GetDeviceSurfaceBytes(), D3DCOLOR_ARGB(255, 0, 0, 0) ); // Perform initial device clear so that our backbuffer doesn't start out as garbage
 	baseDevice->DeviceSetTextureState(128, 128, TF_bilinearFilter, tcm_r, tcm_g, tcm_b, tcm_a, cbm_textureModulateVertexColor, cbm_textureModulateVertexColor);
 	baseDevice->DeviceSetDepthState(forceDisableDepth ? false : zEnable, zWriteEnable, ConvertToDeviceCmpFunc(zCmpFunc) );

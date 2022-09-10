@@ -22,7 +22,7 @@ struct command
 		PT_CLEARZSTENCILBUFFER = 6,
 		PT_REMOVED7 = 7,//PT_LOADVERTSTREAMDATA = 7, This packet has been removed, feel free to reuse it!
 		PT_LOADTEXCACHEDATA = 8,
-		PT_SETBLENDSTATE = 9,
+		PT_SETALPHATESTANDRTADDRESSSTATE = 9,
 		PT_SETTEXTURESTATE = 10,
 		PT_WAITFORDEVICEIDLE = 11,
 		PT_WAITRESPONSE = 12,
@@ -41,6 +41,7 @@ struct command
 		PT_SETSHADERSTARTADDRESS = 25,
 		PT_DEBUGSHADERNEXTDRAWCALL = 26,
 		PT_SETDEPTHSTATE = 27,
+		PT_SETBLENDSTATE = 28,
 
 		PT_MAX_PACKET_TYPES // This must always be last
 	};
@@ -265,24 +266,39 @@ struct loadTexCacheDataCommand : command
 	BYTE unused = 0; // 31 downto 24
 };
 
-struct setBlendStateCommand : command
+struct setAlphaTestAndRTAddressStateCommand : command
 {
-	setBlendStateCommand() : command(PT_SETBLENDSTATE), newBlendType(noBlending), unused0(false), unused1(false), alphaTestEnabled(false), unusedBits(0)
+	setAlphaTestAndRTAddressStateCommand() : command(PT_SETALPHATESTANDRTADDRESSSTATE), unused0(0), unused1(false), unused2(false), alphaTestEnabled(false), unusedBits(0)
 	{
 	}
 
 	// Payload 0:
 	DWORD renderTargetBaseAddress : 30; // 29 downto 0
-	eBlendMode newBlendType : 2; // 31 downto 30
+	DWORD unused0 : 2; // 31 downto 30
 
 	// Payload 1:
 	eBlendMask writeMask = wm_writeAll; // 7 downto 0
-	BYTE unused0 : 1; // Unused // 8
-	BYTE unused1 : 1; // Unused // 9
+	BYTE unused1 : 1; // Unused // 8
+	BYTE unused2 : 1; // Unused // 9
 	BYTE alphaTestEnabled : 1; // 10
 	BYTE unusedBits : 5; // 11, 12, 13, 14, 15
 	BYTE alphaTestRefValue = 0xFF; // 23 downto 16
 	eCmpFunc alphaTestFunc = cmp_greaterequal; // 31 downto 24
+};
+
+struct setBlendStateCommand : command
+{
+	setBlendStateCommand() : command(PT_SETBLENDSTATE), alphaBlendingEnabled(false), unused0(0), blendStateBlock(0x00000000), blendFactorABGR(0xFFFFFFFF)
+	{
+	}
+
+	// Payload 0:
+	DWORD blendStateBlock : 22; // 21 downto 0
+	DWORD unused0 : 9; // 30 downto 22
+	DWORD alphaBlendingEnabled : 1; // 31
+
+	// Payload 1:
+	DWORD blendFactorABGR : 32; // 31 downto 0 // BlendFactor as an ABGR format color (note that this is *not* how D3DCOLOR usually stores color, so we'll have to convert to ABGR before sending it to the GPU)
 };
 
 struct setTextureStateCommand : command
@@ -914,7 +930,7 @@ static_assert(sizeof(genericCommand) == sizeof(doNothingCommand) &&
 	sizeof(genericCommand) == sizeof(clearBackbufferCommand) &&
 	sizeof(genericCommand) == sizeof(clearZStencilCommand) &&
 	sizeof(genericCommand) == sizeof(loadTexCacheDataCommand) &&
-	sizeof(genericCommand) == sizeof(setBlendStateCommand) &&
+	sizeof(genericCommand) == sizeof(setAlphaTestAndRTAddressStateCommand) &&
 	sizeof(genericCommand) == sizeof(setTextureStateCommand) &&
 	sizeof(genericCommand) == sizeof(waitForDeviceIdleCommand) &&
 	sizeof(genericCommand) == sizeof(waitResponse) &&
@@ -933,6 +949,7 @@ static_assert(sizeof(genericCommand) == sizeof(doNothingCommand) &&
 	sizeof(genericCommand) == sizeof(setShaderStartAddressCommand) &&
 	sizeof(genericCommand) == sizeof(debugShaderNextDrawCallCommand) && 
 	sizeof(genericCommand) == sizeof(setDepthStateCommand) &&
+	sizeof(genericCommand) == sizeof(setBlendStateCommand) &&
 	sizeof(genericCommand) == 11, "Error: Unexpected struct size!");
 
 #pragma pack(pop) // End pragma pack 1 region

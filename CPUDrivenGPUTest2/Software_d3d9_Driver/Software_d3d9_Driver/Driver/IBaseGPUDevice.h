@@ -43,6 +43,65 @@ struct CachedVertexStream
 	BYTE dwordOffset = 0;
 };
 
+struct BlendStateBlock
+{
+	BlendStateBlock()
+	{
+		dataUnion.bitsStruct.blendModeSrcRGB = blendRGB_0; dataUnion.bitsStruct.blendModeSrcRGBInvert = true; // D3DRS_SRCBLEND defaults to D3DBLEND_ONE
+		dataUnion.bitsStruct.blendModeDestRGB = blendRGB_0; dataUnion.bitsStruct.blendModeDestRGBInvert = false; // D3DRS_DESTBLEND defaults to D3DBLEND_ZERO
+		dataUnion.bitsStruct.blendOpRGB = bop_add; // D3DRS_BLENDOP defaults to D3DBLENDOP_ADD
+		dataUnion.bitsStruct.blendModeSrcA = blendA_0; dataUnion.bitsStruct.blendModeSrcAInvert = true; // D3DRS_SRCBLENDALPHA defaults to D3DBLEND_ONE
+		dataUnion.bitsStruct.blendModeDestA = blendA_0; dataUnion.bitsStruct.blendModeDestAInvert = false; // D3DRS_DESTBLENDALPHA defaults to D3DBLEND_ZERO
+		dataUnion.bitsStruct.blendOpA = bop_add; // D3DRS_BLENDOPALPHA defaults to D3DBLENDOP_ADD
+		dataUnion.bitsStruct.doLoadSrcColor = true; dataUnion.bitsStruct.doLoadDestColor = false;
+		dataUnion.bitsStruct.unusedPadding = 0x000;
+	}
+
+	const bool operator==(const BlendStateBlock& rhs) const
+	{
+		return dataUnion.solidDWORD == rhs.dataUnion.solidDWORD;
+	}
+
+	// Conversion entrypoint:
+	void ConvertFromD3DRS(const bool alphaBlendEnable,
+		const D3DBLEND srcColorBlend, const D3DBLEND destColorBlend, const D3DBLENDOP colorBlendOp,
+		const D3DBLEND srcAlphaBlend, const D3DBLEND destAlphaBlend, const D3DBLENDOP alphaBlendOp,
+		const D3DCOLOR blendFactor_ARGB);
+
+	// Bitfield data members:
+	union _dataUnion
+	{
+		struct _bitsStruct
+		{
+			blendModeSourcesRGB blendModeSrcRGB : 3;
+			BOOL blendModeSrcRGBInvert : 1;
+			blendModeSourcesRGB blendModeDestRGB : 3;
+			BOOL blendModeDestRGBInvert : 1;
+			blendOp blendOpRGB : 3;
+
+			blendModeSourcesA blendModeSrcA : 2;
+			BOOL blendModeSrcAInvert : 1;
+			blendModeSourcesA blendModeDestA : 2;
+			BOOL blendModeDestAInvert : 1;
+			blendOp blendOpA : 3;
+
+			BOOL doLoadSrcColor : 1; // Should the ROP unit load the incoming pixel (src) data?
+			BOOL doLoadDestColor : 1; // Should the ROP unit load the existing framebuffer pixel (dest) data? (This one is a big bandwidth savings if it's computed as 0)
+
+			unsigned unusedPadding : 10;
+		} bitsStruct;
+
+		DWORD solidDWORD;
+	} dataUnion;
+
+private:
+	// Internal conversion helper functions:
+	void ComputeDoLoadSrcDest(const D3DCOLOR blendFactor_ARGB);
+	static void ConvertColorBlend(const D3DBLEND colorBlend, blendModeSourcesRGB& outBlendMode, bool& outBlendInvert, const bool isDestination);
+	static void ConvertAlphaBlend(const D3DBLEND alphaBlend, blendModeSourcesA& outBlendMode, bool& outBlendInvert, const bool isDestination);
+};
+static_assert(sizeof(BlendStateBlock) == sizeof(unsigned), "Error: Unexpected struct packing!");
+
 struct GPUDeviceState
 {
 	const gpuvoid* deviceCachedSetTexture = nullptr;
@@ -61,7 +120,6 @@ struct GPUDeviceState
 	eStripCutType deviceCachedStripCut = sct_NUM_STRIP_CUT_TYPES;
 	eIndexFormat deviceCachedIndexFormat = ibfmt_NUM_INDEX_FORMATS;
 	eTexFormat deviceCachedTexFormat = eTexFmtNumFormats;
-	eBlendMode deviceCachedBlendMode = blendModeMaxBlendModes;
 	eBlendMask deviceCachedWriteMask = (eBlendMask)0xFF;
 	eTexFilterMode deviceCachedTexFilter = TF_MAXFILTER;
 	eTexChannelMUX deviceCachedTexR = tcm_MAX;
@@ -83,6 +141,7 @@ struct GPUDeviceState
 	eCmpFunc deviceCachedDepthTestCmpFunc = cmp_MAX_CMP_FUNCS;
 	CachedVertexStream deviceCachedVertexStreams[GPU_MAX_NUM_VERTEX_STREAMS];
 	float4 deviceCachedConstantRegisters[GPU_SHADER_MAX_NUM_CONSTANT_FLOAT_REG];
+	BlendStateBlock deviceCachedBlendState;
 
 	void ResetFields(const GPUDeviceState& defaultRhs)
 	{
@@ -120,7 +179,9 @@ __declspec(align(16) ) struct IBaseGPUDevice
 	HRESULT __stdcall DeviceSetTextureState(const unsigned texWidth, const unsigned texHeight, const eTexFilterMode filterMode, 
 		const eTexChannelMUX rChannel, const eTexChannelMUX gChannel, const eTexChannelMUX bChannel, const eTexChannelMUX aChannel, const combinerMode cbModeColor, const combinerMode cbModeAlpha);
 
-	HRESULT __stdcall DeviceSetBlendState(gpuvoid* const renderTargetMemory, const eBlendMode blendingMode, const eBlendMask writeMask,	const bool alphaTestEnabled, const BYTE alphaTestRefVal, const eCmpFunc alphaTestCmpFunc);
+	HRESULT __stdcall DeviceSetRenderTargetAlphaTestState(gpuvoid* const renderTargetMemory, const eBlendMask writeMask, const bool alphaTestEnabled, const BYTE alphaTestRefVal, const eCmpFunc alphaTestCmpFunc);
+	HRESULT __stdcall DeviceSetBlendState(const bool alphaBlendingEnabled, const D3DBLEND srcColorBlend, const D3DBLEND destColorBlend, const D3DBLENDOP colorBlendOp, 
+	const D3DBLEND srcAlphaBlend, const D3DBLEND destAlphaBlend, const D3DBLENDOP alphaBlendOp, const D3DCOLOR blendFactorARGB);
 
 	HRESULT __stdcall DeviceSetDepthState(const bool zEnabled, const bool zWriteEnabled, const eCmpFunc zTestCmpFunc);
 

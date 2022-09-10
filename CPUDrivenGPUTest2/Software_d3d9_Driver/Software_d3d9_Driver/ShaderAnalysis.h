@@ -275,4 +275,7 @@ void __stdcall AnalyzeShader(const DWORD* shaderMemory, ShaderInfo& shaderInfoOu
 	);
 
 void __stdcall PrintShaderStatsToString(char (&outBuffer)[1024], const ShaderInfo& shaderInfoIn);
+
+// Returns -1 if the output register cannot be found, otherwise returns the index of the o# register matching the requested usage type and index
+const signed short __stdcall HelperGetOutputRegister(const ShaderInfo& shaderInfoIn, const D3DDECLUSAGE usageType, const unsigned usageIndex);
 } // extern "C"

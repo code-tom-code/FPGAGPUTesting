@@ -1424,4 +1424,30 @@ void __stdcall PrintShaderStatsToString(char (&outBuffer)[1024], const ShaderInf
 		shaderInfoIn.hasDependentTextureFetches ? "TRUE" : "FALSE");
 #pragma warning(pop)
 }
+
+// Returns -1 if the output register cannot be found, otherwise returns the index of the o# register matching the requested usage type and index
+const signed short __stdcall HelperGetOutputRegister(const ShaderInfo& shaderInfoIn, const D3DDECLUSAGE usageType, const unsigned usageIndex)
+{
+	const unsigned numDeclaredRegisters = (const unsigned)shaderInfoIn.declaredRegisters.size();
+	for (unsigned x = 0; x < numDeclaredRegisters; ++x)
+	{
+		const DeclaredRegister& thisRegister = shaderInfoIn.declaredRegisters[x];
+		if (thisRegister.isOutputRegister)
+		{
+			if (thisRegister.usageType == usageType &&
+				thisRegister.usageIndex == usageIndex)
+			{
+				return (const signed short)thisRegister.registerIndex;
+			}
+		}
+	}
+
+	// Try one last time to see if we can't find our primary position output register using the POSITIONT usageType instead:
+	if (usageType == D3DDECLUSAGE_POSITION)
+		return HelperGetOutputRegister(shaderInfoIn, D3DDECLUSAGE_POSITIONT, usageIndex);
+
+	// Oh no, we couldn't find it!
+	return -1;
+}
+
 } // extern "C"

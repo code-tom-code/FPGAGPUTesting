@@ -2383,7 +2383,7 @@ proc create_root_design { parentCell } {
    CONFIG.C_PROBE8_TYPE {0} \
    CONFIG.C_PROBE8_WIDTH {6} \
    CONFIG.C_PROBE9_TYPE {0} \
-   CONFIG.C_PROBE9_WIDTH {4} \
+   CONFIG.C_PROBE9_WIDTH {5} \
  ] $ila_333_250
 
   # Create instance: placeholder_texcfg, and set properties
@@ -2570,14 +2570,17 @@ proc create_root_design { parentCell } {
   connect_bd_net -net CommandProcessor_0_IA_StatePrimTopology [get_bd_pins CommandProcessor_0/IA_StatePrimTopology] [get_bd_pins InputAssembler2_0/CMD_StatePrimTopology]
   connect_bd_net -net CommandProcessor_0_ROP_ClearSignal [get_bd_pins CommandProcessor_0/ROP_ClearSignal] [get_bd_pins ROP_0/CMD_ClearSignal]
   connect_bd_net -net CommandProcessor_0_ROP_FlushCacheSignal [get_bd_pins CommandProcessor_0/ROP_FlushCacheSignal] [get_bd_pins ROP_0/CMD_FlushCacheSignal]
+  connect_bd_net -net CommandProcessor_0_ROP_SetAlphaBlendEnable [get_bd_pins CommandProcessor_0/ROP_SetAlphaBlendEnable] [get_bd_pins ROP_0/CMD_SetAlphaBlendEnable]
+  connect_bd_net -net CommandProcessor_0_ROP_SetAlphaBlendFactor [get_bd_pins CommandProcessor_0/ROP_SetAlphaBlendFactor] [get_bd_pins ROP_0/CMD_SetAlphaBlendFactor]
+  connect_bd_net -net CommandProcessor_0_ROP_SetAlphaBlendStateBlock [get_bd_pins CommandProcessor_0/ROP_SetAlphaBlendStateBlock] [get_bd_pins ROP_0/CMD_SetAlphaBlendStateBlock]
   connect_bd_net -net CommandProcessor_0_ROP_SetAlphaTestEnabled [get_bd_pins CommandProcessor_0/ROP_SetAlphaTestEnabled] [get_bd_pins ROP_0/CMD_SetAlphaTestEnabled]
   connect_bd_net -net CommandProcessor_0_ROP_SetAlphaTestFunc [get_bd_pins CommandProcessor_0/ROP_SetAlphaTestFunc] [get_bd_pins ROP_0/CMD_SetAlphaTestFunc]
   connect_bd_net -net CommandProcessor_0_ROP_SetAlphaTestRefVal [get_bd_pins CommandProcessor_0/ROP_SetAlphaTestRefVal] [get_bd_pins ROP_0/CMD_SetAlphaTestRefVal]
-  connect_bd_net -net CommandProcessor_0_ROP_SetBlendMask [get_bd_pins CommandProcessor_0/ROP_SetBlendMask] [get_bd_pins ROP_0/CMD_SetBlendMask]
-  connect_bd_net -net CommandProcessor_0_ROP_SetBlendMode [get_bd_pins CommandProcessor_0/ROP_SetBlendMode] [get_bd_pins ROP_0/CMD_SetBlendMode]
-  connect_bd_net -net CommandProcessor_0_ROP_SetBlendStateBeginSignal [get_bd_pins CommandProcessor_0/ROP_SetBlendStateBeginSignal] [get_bd_pins ROP_0/CMD_SetBlendStateSignal]
+  connect_bd_net -net CommandProcessor_0_ROP_SetBaseAddrAndAlphaTestSignal [get_bd_pins CommandProcessor_0/ROP_SetBaseAddrAndAlphaTestSignal] [get_bd_pins ROP_0/CMD_SetBaseAddrAndAlphaTestSignal]
+  connect_bd_net -net CommandProcessor_0_ROP_SetBlendStateSignal [get_bd_pins CommandProcessor_0/ROP_SetBlendStateSignal] [get_bd_pins ROP_0/CMD_SetBlendStateSignal]
   connect_bd_net -net CommandProcessor_0_ROP_SetClearColor [get_bd_pins CommandProcessor_0/ROP_SetClearColor] [get_bd_pins ROP_0/CMD_SetClearColor]
   connect_bd_net -net CommandProcessor_0_ROP_SetRenderTargetBaseAddr [get_bd_pins CommandProcessor_0/ROP_SetRenderTargetBaseAddr] [get_bd_pins ROP_0/CMD_SetRenderTargetBaseAddr]
+  connect_bd_net -net CommandProcessor_0_ROP_SetWriteMask [get_bd_pins CommandProcessor_0/ROP_SetWriteMask] [get_bd_pins ROP_0/CMD_SetWriteMask]
   connect_bd_net -net CommandProcessor_0_SCANOUT_InvertOutputColor [get_bd_pins CommandProcessor_0/SCANOUT_InvertOutputColor] [get_bd_pins ScanoutSystem/CMD_InvertOutputColor]
   connect_bd_net -net CommandProcessor_0_SCANOUT_OutputColorChannels [get_bd_pins CommandProcessor_0/SCANOUT_OutputColorChannels] [get_bd_pins ScanoutSystem/CMD_OutputColorChannels]
   connect_bd_net -net CommandProcessor_0_SCANOUT_RenderTargetBaseAddr [get_bd_pins CommandProcessor_0/SCANOUT_RenderTargetBaseAddr] [get_bd_pins ScanoutSystem/CMD_BaseRenderTargetAddr]
@@ -2711,6 +2714,7 @@ proc create_root_design { parentCell } {
   connect_bd_net -net ROP_0_CMD_ClearSignalAck [get_bd_pins CommandProcessor_0/ROP_ClearSignalAck] [get_bd_pins ROP_0/CMD_ClearSignalAck]
   connect_bd_net -net ROP_0_CMD_FlushCacheAck [get_bd_pins CommandProcessor_0/ROP_FlushCacheAck] [get_bd_pins ROP_0/CMD_FlushCacheAck]
   connect_bd_net -net ROP_0_CMD_ROPIsIdle [get_bd_pins CommandProcessor_0/CMD_ROP_Idle] [get_bd_pins ROP_0/CMD_ROPIsIdle]
+  connect_bd_net -net ROP_0_CMD_SetBaseAddrAndAlphaTestSignalAck [get_bd_pins CommandProcessor_0/ROP_SetBaseAddrAndAlphaTestSignalAck] [get_bd_pins ROP_0/CMD_SetBaseAddrAndAlphaTestSignalAck]
   connect_bd_net -net ROP_0_CMD_SetBlendStateSigAck [get_bd_pins CommandProcessor_0/ROP_SetBlendStateSigAck] [get_bd_pins ROP_0/CMD_SetBlendStateSigAck]
   connect_bd_net -net ROP_0_DBG_CurrentPixelAddr [get_bd_pins ROP_0/DBG_CurrentPixelAddr] [get_bd_pins ila_333_250/probe35]
   connect_bd_net -net ROP_0_DBG_ROP_State [get_bd_pins ROP_0/DBG_ROP_State] [get_bd_pins ila_333_250/probe9]

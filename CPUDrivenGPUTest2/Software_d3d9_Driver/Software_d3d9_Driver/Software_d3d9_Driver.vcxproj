@@ -181,6 +181,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Driver\BlendStateBlock.cpp" />
     <ClCompile Include="Driver\DriverSettingsDlg.cpp" />
     <ClCompile Include="Driver\GPUAllocator.cpp" />
     <ClCompile Include="Driver\GPUCommandList.cpp" />

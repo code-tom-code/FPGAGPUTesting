@@ -29,7 +29,7 @@ package PacketType is
 		PT_CLEARZSTENCILBUFFER, -- 6
 		PT_LOADVERTSTREAMDATA, -- 7 -- Note that this packet is executed with an implicit "wait for IA idle", since it cannot load new vertex data while the IA is still using it
 		PT_LOADTEXCACHEDATA, -- 8
-		PT_SETBLENDSTATE, -- 9
+		PT_SETALPHATESTANDRTADDRESSSTATE, -- 9
 		PT_SETTEXTURESTATE, -- 10
 		PT_WAITFORDEVICEIDLE, -- 11
 		PT_WAITRESPONSE, -- 12
@@ -48,6 +48,7 @@ package PacketType is
 		PT_SETSHADERSTARTADDRESS, -- 25
 		PT_DEBUGSHADERNEXTDRAWCALL, -- 26
 		PT_SETDEPTHSTATE, -- 27
+		PT_SETBLENDSTATE, -- 28
 
 		PT_MAX_PACKET_TYPES -- Must always be last!
 	);
@@ -168,13 +169,6 @@ package PacketType is
 		eTexFmtX1R5G5B5, -- 5
 
 		eTexFmtNumFormats -- This must always be last!
-	);
-
-	type eBlendMode is
-	(
-		noBlending, -- 0
-		additiveColorBlend, -- 1
-		alphaBlend -- 2
 	);
 
 	-- Computes the packet checksum byte

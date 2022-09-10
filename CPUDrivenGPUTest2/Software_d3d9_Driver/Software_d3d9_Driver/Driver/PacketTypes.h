@@ -146,13 +146,35 @@ enum eTexChannelMUX : unsigned char
 	tcm_MAX // This must always be last!
 };
 
-enum eBlendMode : DWORD
+// The various sources for color-channel blend modes (note that these may select either color channels or alpha channels)
+enum blendModeSourcesRGB : unsigned
 {
-	noBlending = 0,
-	additiveColorBlend = 1,
-	alphaBlend = 2,
+	blendRGB_0, // 0
+	blendRGB_srcColor, // 1
+	blendRGB_srcAlpha, // 2
+	blendRGB_destAlpha, // 3
+	blendRGB_destColor, // 4
+	blendRGB_srcAlphaSat, // 5
+	blendRGB_blendFactor // 6
+};
 
-	blendModeMaxBlendModes // This must always be last!
+// The various sources for alpha-channel blend modes (note that these cannot ever select the color channels)
+enum blendModeSourcesA : unsigned
+{
+	blendA_0, // 0
+	blendA_srcAlpha, // 1
+	blendA_destAlpha, // 2
+	blendA_blendFactor // 3
+};
+
+// Note that this enum matches the D3DBLENDOP enum, except all the values are one lower
+enum blendOp : unsigned
+{
+	bop_add, // 0
+	bop_subtract, // 1
+	bop_revsubtract, // 2
+	bop_min, // 3
+	bop_max // 4
 };
 
 enum eCmpFunc : unsigned char

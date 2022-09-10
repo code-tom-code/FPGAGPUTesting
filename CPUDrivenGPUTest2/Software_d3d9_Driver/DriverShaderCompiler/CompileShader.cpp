@@ -2060,7 +2060,7 @@ const signed short FindUnusedConstantRegisterIndex(const ShaderInfo& inDXShaderI
 	}
 
 	// Second pass, just try to place it after the last register range:
-	for (unsigned x = GPU_SHADER_MAX_NUM_CONSTANT_FLOAT_REG - 1; x > 1; --x)
+	for (unsigned x = GPU_SHADER_MAX_NUM_CONSTANT_FLOAT_REG - 1; x > 0; --x)
 	{
 		if (!(usedConstantsBitmap[x / 32] & (1 << (x % 32) ) ) )
 		{
@@ -2100,18 +2100,32 @@ void AppendVSViewportTransform(const unsigned cRegIndex, const unsigned oRegInde
 // Appends the vertex shader suffixes (if the compile options are specified) for appending division by W and applying the viewport transform to our output vertices
 const ShaderCompileResultCode AppendVSSuffix(const ShaderInfo& inDXShaderInfo, std::vector<instructionSlot>& inOutDeviceInstructionStream, const ShaderCompileOptions inCompileOptions, signed short& outViewportConstRegIndex)
 {
+	const signed short oPosRegIndex = HelperGetOutputRegister(inDXShaderInfo, D3DDECLUSAGE_POSITION, 0);
+	if (oPosRegIndex < 0)
+	{
+#ifdef _DEBUG
+		__debugbreak();
+#endif
+		return ShaderCompile_ERR_MissingOutputPos;
+	}
+
 	if (inDXShaderInfo.isPixelShader == false && (inCompileOptions & SCOption_VS_AppendDivideByW) )
 	{
-		const unsigned oPosRegIndex = 0;
-		AppendVSDivideByW(oPosRegIndex, inOutDeviceInstructionStream);
+		AppendVSDivideByW( (const unsigned)oPosRegIndex, inOutDeviceInstructionStream);
 
-		const unsigned oTex0RegIndex = 2;
-		const unsigned oTex0RegDimension = 2;
-		AppendVSInterpolantDivideByW(oTex0RegIndex, oTex0RegDimension, oPosRegIndex, inOutDeviceInstructionStream);
+		const signed short oTex0RegIndex = HelperGetOutputRegister(inDXShaderInfo, D3DDECLUSAGE_TEXCOORD, 0);
+		if (oTex0RegIndex >= 0)
+		{
+			const unsigned oTex0RegDimension = 2; // TODO: Don't hardcode this in the future
+			AppendVSInterpolantDivideByW( (const unsigned)oTex0RegIndex, oTex0RegDimension, (const unsigned)oPosRegIndex, inOutDeviceInstructionStream);
+		}
 
-		const unsigned oD0RegIndex = 1;
-		const unsigned oD0RegDimension = 4;
-		AppendVSInterpolantDivideByW(oD0RegIndex, oD0RegDimension, oPosRegIndex, inOutDeviceInstructionStream);
+		const signed short oD0RegIndex = HelperGetOutputRegister(inDXShaderInfo, D3DDECLUSAGE_COLOR, 0);
+		if (oD0RegIndex >= 0)
+		{
+			const unsigned oD0RegDimension = 4; // TODO: Don't hardcode this in the future
+			AppendVSInterpolantDivideByW(oD0RegIndex, oD0RegDimension, (const unsigned)oPosRegIndex, inOutDeviceInstructionStream);
+		}
 	}
 
 	if (inDXShaderInfo.isPixelShader == false && (inCompileOptions & SCOption_VS_AppendViewportTransform) )
@@ -2126,49 +2140,12 @@ const ShaderCompileResultCode AppendVSSuffix(const ShaderInfo& inDXShaderInfo, s
 			return ShaderCompile_ERR_NeededConstRegNotFound;
 		}
 
-		const unsigned oPosRegIndex = 0;
-		AppendVSViewportTransform( (const unsigned)outViewportConstRegIndex, oPosRegIndex, inOutDeviceInstructionStream);
+		AppendVSViewportTransform( (const unsigned)outViewportConstRegIndex, (const unsigned)oPosRegIndex, inOutDeviceInstructionStream);
 	}
 	return ShaderCompile_OK;
 }
 
-void AppendVSTexcoordCompression(const unsigned oRegIndex, std::vector<instructionSlot>& inOutDeviceInstructionStream, const unsigned texcoordDimension = 2)
-{
-#ifdef _DEBUG
-	if (oRegIndex >= GPU_SHADER_MAX_NUM_OUTPUT_REG)
-	{
-		__debugbreak();
-	}
-	if (texcoordDimension < 1)
-	{
-		__debugbreak();
-	}
-	if (texcoordDimension > 4)
-	{
-		__debugbreak();
-	}
-#endif
-}
-
-void AppendVSColorCompression(const unsigned oRegIndex, std::vector<instructionSlot>& inOutDeviceInstructionStream, const unsigned colorDimension = 4)
-{
-#ifdef _DEBUG
-	if (oRegIndex >= GPU_SHADER_MAX_NUM_OUTPUT_REG)
-	{
-		__debugbreak();
-	}
-	if (colorDimension < 1)
-	{
-		__debugbreak();
-	}
-	if (colorDimension > 4)
-	{
-		__debugbreak();
-	}
-#endif
-}
-
-void AppendVSPositionCompression(const unsigned oRegIndex, std::vector<instructionSlot>& inOutDeviceInstructionStream)
+void AppendVSPositionInvZ(const unsigned oRegIndex, std::vector<instructionSlot>& inOutDeviceInstructionStream)
 {
 #ifdef _DEBUG
 	if (oRegIndex >= GPU_SHADER_MAX_NUM_OUTPUT_REG)
@@ -2179,54 +2156,6 @@ void AppendVSPositionCompression(const unsigned oRegIndex, std::vector<instructi
 
 	const instructionSlot invZ = { {Op_RCP, DRMod_None, DRTyp_O, oRegIndex /*destRegIndex*/, Chan_Z, SRMod_None, SRTyp_O, oRegIndex /*src0RegIndex*/, Chan_Z, SRMod_None, SRTyp_0, 0 /*src1RegIndex*/, Chan_X} }; // rcp oPos.z, oPos.z, 0.x
 	inOutDeviceInstructionStream.push_back(invZ);
-}
-
-void AppendVSRegisterPacking(const unsigned packedORegIndex, const unsigned positionORegIndex, const unsigned texcoordORegIndex, const unsigned colorORegIndex, std::vector<instructionSlot>& inOutDeviceInstructionStream)
-{
-#ifdef _DEBUG
-	if (packedORegIndex >= GPU_SHADER_MAX_NUM_OUTPUT_REG)
-	{
-		__debugbreak();
-	}
-	if (positionORegIndex >= GPU_SHADER_MAX_NUM_OUTPUT_REG)
-	{
-		__debugbreak();
-	}
-	if (texcoordORegIndex >= GPU_SHADER_MAX_NUM_OUTPUT_REG)
-	{
-		__debugbreak();
-	}
-	if (colorORegIndex >= GPU_SHADER_MAX_NUM_OUTPUT_REG)
-	{
-		__debugbreak();
-	}
-#endif
-}
-
-// Optionally applies vertex shader output compression (ie. compress oPos.xy to SHORT, compress oDn.rgba to D3DCOLOR, and compress oTn.xy to USHORT)
-const ShaderCompileResultCode AppendVSOutputCompression(const ShaderInfo& inDXShaderInfo, const ShaderCompileOptions inCompileOptions, std::vector<instructionSlot>& inOutDeviceInstructionStream)
-{
-	if (inDXShaderInfo.isPixelShader == false && (inCompileOptions & SCOption_VS_OutputCompressionEnable) )
-	{
-		// Convert oTex.xy from float2 to uint16_2
-		const unsigned texcoordORegIndex = 2;
-		const unsigned texcoordDimension = 2;
-		AppendVSTexcoordCompression(texcoordORegIndex, inOutDeviceInstructionStream, texcoordDimension);
-
-		// Convert oD.xyzw from float4 to uint8_4
-		const unsigned colorORegIndex = 1;
-		const unsigned colorDimension = 4;
-		AppendVSColorCompression(colorORegIndex, inOutDeviceInstructionStream, colorDimension);
-
-		// Convert oPos.xy from float2 to int16_2
-		const unsigned positionORegIndex = 0;
-		AppendVSPositionCompression(positionORegIndex, inOutDeviceInstructionStream);
-
-		// Now that our registers are converted, we can pack them together into just one register such that:
-		const unsigned packedORegIndex = 0;
-		AppendVSRegisterPacking(packedORegIndex, positionORegIndex, texcoordORegIndex, colorORegIndex, inOutDeviceInstructionStream);
-	}
-	return ShaderCompile_OK;
 }
 
 void AppendVSEndInstruction(std::vector<instructionSlot>& inOutDeviceInstructionStream)
@@ -2822,10 +2751,108 @@ void PopulateRegisterMapping(const ShaderInfo& inDXShaderInfo, DeviceShaderInfo&
 		}
 	}
 
-	// The output register mapping is hardcoded for now:
-	outDeviceShaderInfo.outputRegisters.oPosRegIndex = 0;
-	outDeviceShaderInfo.outputRegisters.oDiffuseRegIndex = 1;
-	outDeviceShaderInfo.outputRegisters.oTexRegIndex[0] = 2;
+	const signed short oPosRegIndex = HelperGetOutputRegister(inDXShaderInfo, D3DDECLUSAGE_POSITION, 0);
+	if (oPosRegIndex < 0)
+	{
+#ifdef _DEBUG
+		__debugbreak();
+#endif
+	}
+	outDeviceShaderInfo.outputRegisters.oPosRegIndex = (const unsigned char)oPosRegIndex;
+	outDeviceShaderInfo.outputRegisters.oDiffuseRegIndex = (const signed char)HelperGetOutputRegister(inDXShaderInfo, D3DDECLUSAGE_COLOR, 0);
+	outDeviceShaderInfo.outputRegisters.oSpecularRegIndex = (const signed char)HelperGetOutputRegister(inDXShaderInfo, D3DDECLUSAGE_COLOR, 1);
+	for (unsigned texCoordIndex = 0; texCoordIndex < 8; ++texCoordIndex)
+	{
+		outDeviceShaderInfo.outputRegisters.oTexRegIndex[texCoordIndex] = (const signed char)HelperGetOutputRegister(inDXShaderInfo, D3DDECLUSAGE_TEXCOORD, texCoordIndex);
+	}
+}
+
+const int GetFreeBackupIndexSlot(const char (&backedUpOutputRegIndices)[GPU_SHADER_MAX_NUM_SPECIAL_REG])
+{
+	for (int x = 0; x < GPU_SHADER_MAX_NUM_SPECIAL_REG; ++x)
+	{
+		if (backedUpOutputRegIndices[x] < 0)
+			return x;
+	}
+#ifdef _DEBUG
+	__debugbreak(); // This is bad, we can't find a slot to back up our register data into!
+#endif
+	return -1;
+}
+
+const int GetAlreadyMovedBackupIndexSlot(const char (&backedUpOutputRegIndices)[GPU_SHADER_MAX_NUM_SPECIAL_REG], const unsigned char searchSlot)
+{
+	for (int x = 0; x < GPU_SHADER_MAX_NUM_SPECIAL_REG; ++x)
+	{
+		if (backedUpOutputRegIndices[x] == searchSlot)
+			return x;
+	}
+	return -1;
+}
+
+struct MandatoryRegisterOutput
+{
+	D3DDECLUSAGE usageType;
+	unsigned char usageIndex;
+	unsigned char mandatoryOutputRegisterIndex;
+	unsigned char registerDimension;
+};
+static const MandatoryRegisterOutput mandatoryRegisterOutputs[] =
+{
+	{ D3DDECLUSAGE_POSITION, 0, 0, 4 }, // oPos must be in o0
+	{ D3DDECLUSAGE_COLOR, 0, 1, 4 }, // oD0 must be in o1
+	{ D3DDECLUSAGE_TEXCOORD, 0, 2, 2 } // oT0 must be in o2
+};
+
+// Shuffle VS output registers so that they match the expected output registers (o0 = oPos, o1 = oD0, o2 = oT0):
+// TODO: Replace this with some sort of output mapping that is visible to the shader core so that it can handle this shuffling for us
+void ShuffleVSOutputRegisters(const ShaderInfo& inDXShaderInfo, std::vector<instructionSlot>& inOutDeviceInstructionStream)
+{
+	char backedUpOutputRegIndices[GPU_SHADER_MAX_NUM_SPECIAL_REG] = { -1, -1, -1, -1, -1, -1, -1, -1 };
+	for (unsigned x = 0; x < ARRAYSIZE(mandatoryRegisterOutputs); ++x)
+	{
+		const MandatoryRegisterOutput& thisMandatoryOutput = mandatoryRegisterOutputs[x];
+		const signed short currentRegisterIndex = HelperGetOutputRegister(inDXShaderInfo, thisMandatoryOutput.usageType, thisMandatoryOutput.usageIndex);
+		if (currentRegisterIndex < 0) // Skip output registers that we can't locate, it's fine if they're not present since their results presumably won't get used by the pixel shader
+			continue;
+
+		if (currentRegisterIndex == thisMandatoryOutput.mandatoryOutputRegisterIndex) // This register is already using the correct output register index, we don't have to do anything in this case
+			continue;
+
+		int moveSourceSlot = GetAlreadyMovedBackupIndexSlot(backedUpOutputRegIndices, (const unsigned char)currentRegisterIndex);
+		InstructionSrcRegType moveSourceRegType = SRTyp_X;
+		if (moveSourceSlot < 0)
+		{
+			const int backupSlot = GetFreeBackupIndexSlot(backedUpOutputRegIndices);
+			backedUpOutputRegIndices[backupSlot] = thisMandatoryOutput.mandatoryOutputRegisterIndex;
+			moveSourceSlot = currentRegisterIndex;
+			moveSourceRegType = SRTyp_O;
+
+			// Perform our backup of this slot from oN to xN:
+			const instructionSlot mov_onx_to_xn_x = { {Op_MOV, DRMod_None, DRTyp_X, (const unsigned)backupSlot /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_O, thisMandatoryOutput.mandatoryOutputRegisterIndex /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_0, 0 /*src1RegIndex*/, Chan_X} }; // mov xn.x, on.x, 0.x
+			const instructionSlot mov_onx_to_xn_y = { {Op_MOV, DRMod_None, DRTyp_X, (const unsigned)backupSlot /*destRegIndex*/, Chan_Y, SRMod_None, SRTyp_O, thisMandatoryOutput.mandatoryOutputRegisterIndex /*src0RegIndex*/, Chan_Y, SRMod_None, SRTyp_0, 0 /*src1RegIndex*/, Chan_X} }; // mov xn.y, on.y, 0.x
+			const instructionSlot mov_onx_to_xn_z = { {Op_MOV, DRMod_None, DRTyp_X, (const unsigned)backupSlot /*destRegIndex*/, Chan_Z, SRMod_None, SRTyp_O, thisMandatoryOutput.mandatoryOutputRegisterIndex /*src0RegIndex*/, Chan_Z, SRMod_None, SRTyp_0, 0 /*src1RegIndex*/, Chan_X} }; // mov xn.z, on.z, 0.x
+			const instructionSlot mov_onx_to_xn_w = { {Op_MOV, DRMod_None, DRTyp_X, (const unsigned)backupSlot /*destRegIndex*/, Chan_W, SRMod_None, SRTyp_O, thisMandatoryOutput.mandatoryOutputRegisterIndex /*src0RegIndex*/, Chan_W, SRMod_None, SRTyp_0, 0 /*src1RegIndex*/, Chan_X} }; // mov xn.w, on.w, 0.x
+			inOutDeviceInstructionStream.push_back(mov_onx_to_xn_x);
+			inOutDeviceInstructionStream.push_back(mov_onx_to_xn_y);
+			inOutDeviceInstructionStream.push_back(mov_onx_to_xn_z);
+			inOutDeviceInstructionStream.push_back(mov_onx_to_xn_w);
+		}
+
+		// Move from our backed-up temporary register into our correct output register:
+		const instructionSlot mov_xn_to_onx_x = { {Op_MOV, DRMod_None, DRTyp_O, thisMandatoryOutput.mandatoryOutputRegisterIndex /*destRegIndex*/, Chan_X, SRMod_None, moveSourceRegType, (const unsigned)moveSourceSlot /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_0, 0 /*src1RegIndex*/, Chan_X} }; // mov on.x, xn.x, 0.x
+		const instructionSlot mov_xn_to_onx_y = { {Op_MOV, DRMod_None, DRTyp_O, thisMandatoryOutput.mandatoryOutputRegisterIndex /*destRegIndex*/, Chan_Y, SRMod_None, moveSourceRegType, (const unsigned)moveSourceSlot /*src0RegIndex*/, Chan_Y, SRMod_None, SRTyp_0, 0 /*src1RegIndex*/, Chan_X} }; // mov on.y, xn.y, 0.x
+		const instructionSlot mov_xn_to_onx_z = { {Op_MOV, DRMod_None, DRTyp_O, thisMandatoryOutput.mandatoryOutputRegisterIndex /*destRegIndex*/, Chan_Z, SRMod_None, moveSourceRegType, (const unsigned)moveSourceSlot /*src0RegIndex*/, Chan_Z, SRMod_None, SRTyp_0, 0 /*src1RegIndex*/, Chan_X} }; // mov on.z, xn.z, 0.x
+		const instructionSlot mov_xn_to_onx_w = { {Op_MOV, DRMod_None, DRTyp_O, thisMandatoryOutput.mandatoryOutputRegisterIndex /*destRegIndex*/, Chan_W, SRMod_None, moveSourceRegType, (const unsigned)moveSourceSlot /*src0RegIndex*/, Chan_W, SRMod_None, SRTyp_0, 0 /*src1RegIndex*/, Chan_X} }; // mov on.w, xn.w, 0.x
+		if (thisMandatoryOutput.registerDimension > 0)
+			inOutDeviceInstructionStream.push_back(mov_xn_to_onx_x);
+		if (thisMandatoryOutput.registerDimension > 1)
+			inOutDeviceInstructionStream.push_back(mov_xn_to_onx_y);
+		if (thisMandatoryOutput.registerDimension > 2)
+			inOutDeviceInstructionStream.push_back(mov_xn_to_onx_z);
+		if (thisMandatoryOutput.registerDimension > 3)
+			inOutDeviceInstructionStream.push_back(mov_xn_to_onx_w);
+	}
 }
 
 const ShaderCompileResultCode CompileShaderInternal(const ShaderInfo& inDXShaderInfo, const ShaderCompileOptions inCompileOptions, DeviceBytecode*& outCompiledDeviceBytecode, const char* const inOptShaderBaseFilename)
@@ -2958,10 +2985,23 @@ const ShaderCompileResultCode CompileShaderInternal(const ShaderInfo& inDXShader
 		}
 	}
 
-	// (Optional) Apply vertex shader output compression (oPos -> SHORT2, oDN -> UBYTE4, oTN -> USHORT2):
-	result = AppendVSOutputCompression(inDXShaderInfo, inCompileOptions, deviceInstructionStream);
-	if (result != ShaderCompile_OK && !(inCompileOptions & SCOption_IgnoreShaderCompileErrors) )
-		return result;
+	// Calculate (1.0f / oPos.z) inside the shader so that later stages (like depth interpolation and attribute interpolation) can use the shaded Z value without having to repeatedly take its reciprocal themselves per-pixel:
+	{
+		const signed short positionORegIndex = HelperGetOutputRegister(inDXShaderInfo, D3DDECLUSAGE_POSITION, 0);
+		if (positionORegIndex < 0)
+		{
+#ifdef _DEBUG
+			__debugbreak();
+#endif
+			return ShaderCompile_ERR_MissingOutputPos;
+		}
+
+		AppendVSPositionInvZ( (const unsigned)positionORegIndex, deviceInstructionStream);
+	}
+
+	// Shuffle VS output registers so that they match the expected output registers (o0 = oPos, o1 = oD0, o2 = oT0):
+	// TODO: Replace this with some sort of output mapping that is visible to the shader core so that it can handle this shuffling for us
+	ShuffleVSOutputRegisters(inDXShaderInfo, deviceInstructionStream);
 
 	// And last but not least, append our "END" instruction to the stream as the last instruction that terminates the shader:
 	AppendVSEndInstruction(deviceInstructionStream);

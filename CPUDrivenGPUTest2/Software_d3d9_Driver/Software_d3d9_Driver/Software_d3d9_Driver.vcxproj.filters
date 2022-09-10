@@ -189,6 +189,9 @@
     <ClCompile Include="Driver\DriverSettingsDlg.cpp">
       <Filter>Source Files\Driver</Filter>
     </ClCompile>
+    <ClCompile Include="Driver\BlendStateBlock.cpp">
+      <Filter>Source Files\Driver</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Source.def">

@@ -73,6 +73,9 @@ static const unsigned oneMaskVecBytes[4] = { 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,
 static const __m128i oneMaskVec = *(const __m128i* const)oneMaskVecBytes;
 static_assert(sizeof(oneMaskVecBytes) == sizeof(oneMaskVec), "Error! Unexpected vector size");
 
+static const __m128 oneVec = { 1.0f, 1.0f, 1.0f, 1.0f };
+static const __m128 maxDepth24Bit = { 16777216.0f, 16777216.0f, 16777216.0f, 16777216.0f };
+
 #ifdef PROFILE_AVERAGE_VERTEX_SHADE_TIMES
 	static __int64 totalVertexShadeTicks = 0;
 	static __int64 numVertexShadeTasks = 0;
@@ -125,9 +128,11 @@ static volatile long __declspec(align(16) ) tlsThreadNumber = 0;
 
 static_assert(sizeof(_threadItem) > 64, "Error: False sharing may occur if thread struct is smaller than a cache line!");
 
-struct int3
+struct barycentricInt2
 {
-	int a, b, c;
+	// Note that we only need the B and C barycentric coordinates here because at any time we could
+	// recompute the A coordinate as A = (1.0f - B - C)
+	int b, c;
 };
 
 __declspec(align(16) ) struct slist_item
@@ -144,7 +149,7 @@ __declspec(align(16) ) struct slist_item
 		struct _pixelJobData
 		{
 			const primitivePixelJobData* primitiveData;
-			int3 barycentricCoords[4];
+			barycentricInt2 barycentricCoords[4];
 			unsigned x[4];
 			unsigned y[4];
 		} pixelJobData;
@@ -242,17 +247,18 @@ static inline void PixelShadeJob1(const slist_item& job, _threadItem* const myPt
 		abs( (const int)(240 - pixelJobData.y[0]) ) < 5);
 
 	const __m128 barycentricNormalizeFactor = _mm_set1_ps(primitiveData->barycentricNormalizeFactor);
-	const __m128i barycentricCoordsVector = _mm_load_si128( (const __m128i* const)&pixelJobData.barycentricCoords[0]);
+	const __m128i barycentricCoordsVector = _mm_set_epi32(0, pixelJobData.barycentricCoords[0].c, pixelJobData.barycentricCoords[0].b, 0);
 	const __m128 barycentricCoordsVectorF = _mm_mul_ps(_mm_cvtepi32_ps(barycentricCoordsVector), barycentricNormalizeFactor);
 	const __m128 invZ = _mm_load_ps( (const float* const)&(primitiveData->invZ) );
+	const __m128 invW = _mm_load_ps( (const float* const)&(primitiveData->invW) );
 
 	const primitivePixelJobData::_pixelShadeVertexData::_shadeFromAgnostic& verts = primitiveData->pixelShadeVertexData.shadeFromAgnostic;
 	if (drawCallData.useShaderVerts)
 		devHook->SetupPixel<true>(&myPtr->threadPS_2_0, drawCallData.vs_to_ps_mappings.sourceAgnosticMapping, pixelJobData.x[0], pixelJobData.y[0], 
-			barycentricCoordsVectorF, drawCallData.offsetIntoVertexForOPosition_Bytes, verts.v0, verts.v1, verts.v2, invZ);
+			barycentricCoordsVectorF, drawCallData.offsetIntoVertexForOPosition_Bytes, verts.v0, verts.v1, verts.v2, invZ, invW);
 	else
 		devHook->SetupPixel<false>(&myPtr->threadPS_2_0, drawCallData.vs_to_ps_mappings.sourceAgnosticMapping, pixelJobData.x[0], pixelJobData.y[0], 
-			barycentricCoordsVectorF, drawCallData.offsetIntoVertexForOPosition_Bytes, verts.v0, verts.v1, verts.v2, invZ);
+			barycentricCoordsVectorF, drawCallData.offsetIntoVertexForOPosition_Bytes, verts.v0, verts.v1, verts.v2, invZ, invW);
 }
 
 static inline void PixelShadeJob4(const slist_item& job, _threadItem* const myPtr)
@@ -272,10 +278,10 @@ static inline void PixelShadeJob4(const slist_item& job, _threadItem* const myPt
 	const __m128 barycentricNormalizeFactor = _mm_set1_ps(primitiveData->barycentricNormalizeFactor);
 	const __m128i barycentricCoordIntVal4[4] =
 	{
-		*(const __m128i* const)(&pixelJobData.barycentricCoords[0]),
-		*(const __m128i* const)(&pixelJobData.barycentricCoords[1]),
-		*(const __m128i* const)(&pixelJobData.barycentricCoords[2]),
-		*(const __m128i* const)(&pixelJobData.barycentricCoords[3])
+		_mm_set_epi32(0, pixelJobData.barycentricCoords[0].c, pixelJobData.barycentricCoords[0].b, 0),
+		_mm_set_epi32(0, pixelJobData.barycentricCoords[1].c, pixelJobData.barycentricCoords[1].b, 0),
+		_mm_set_epi32(0, pixelJobData.barycentricCoords[2].c, pixelJobData.barycentricCoords[2].b, 0),
+		_mm_set_epi32(0, pixelJobData.barycentricCoords[3].c, pixelJobData.barycentricCoords[3].b, 0),
 	};
 	const __m128 barycentricCoords4[4] =
 	{
@@ -286,14 +292,15 @@ static inline void PixelShadeJob4(const slist_item& job, _threadItem* const myPt
 	};
 
 	const __m128 invZ = _mm_load_ps( (const float* const)&(primitiveData->invZ) );
+	const __m128 invW = _mm_load_ps( (const float* const)&(primitiveData->invW) );
 
 	const primitivePixelJobData::_pixelShadeVertexData::_shadeFromAgnostic& verts = primitiveData->pixelShadeVertexData.shadeFromAgnostic;
 	if (drawCallData.useShaderVerts)
 		devHook->SetupPixel4<true>(&myPtr->threadPS_2_0, drawCallData.vs_to_ps_mappings.sourceAgnosticMapping, x4, y4, barycentricCoords4, 
-			drawCallData.offsetIntoVertexForOPosition_Bytes, verts.v0, verts.v1, verts.v2, invZ);
+			drawCallData.offsetIntoVertexForOPosition_Bytes, verts.v0, verts.v1, verts.v2, invZ, invW);
 	else
 		devHook->SetupPixel4<false>(&myPtr->threadPS_2_0, drawCallData.vs_to_ps_mappings.sourceAgnosticMapping, x4, y4, barycentricCoords4, 
-			drawCallData.offsetIntoVertexForOPosition_Bytes, verts.v0, verts.v1, verts.v2, invZ);
+			drawCallData.offsetIntoVertexForOPosition_Bytes, verts.v0, verts.v1, verts.v2, invZ, invW);
 }
 #endif // #if TRIANGLEJOBS_OR_PIXELJOBS == PIXELJOBS
 
@@ -2962,9 +2969,13 @@ void IDirect3DDevice9Hook::ApplyViewportTransform(D3DXVECTOR4& positionT) const
 
 	// Scale from [0, 1] space to [minZ, maxZ] space
 	positionT.z = positionT.z * reciprocalHomogenousW * currentState.cachedViewport.zScale + currentState.cachedViewport.viewport.MinZ;
+
+	// Store our reciprocal homogenous W coordinate in the W coord of our output transformed vertex for later use:
+	positionT.w = reciprocalHomogenousW;
 }
 
 #ifdef RUN_SHADERS_IN_WARPS
+// TODO: Rewrite this using SIMD operations
 void IDirect3DDevice9Hook::ApplyViewportTransform4(D3DXVECTOR4* (&positionT4)[4]) const
 {
 	// For reference, see this MSDN page that describes the D3D9 Viewport Transform: https://msdn.microsoft.com/en-us/library/windows/desktop/bb206341(v=vs.85).aspx
@@ -3029,6 +3040,12 @@ void IDirect3DDevice9Hook::ApplyViewportTransform4(D3DXVECTOR4* (&positionT4)[4]
 	positionT4[1]->z += currentState.cachedViewport.viewport.MinZ;
 	positionT4[2]->z += currentState.cachedViewport.viewport.MinZ;
 	positionT4[3]->z += currentState.cachedViewport.viewport.MinZ;
+
+	// Store our reciprocal homogenous W coordinate in the W coord of our output transformed vertex for later use:
+	positionT4[0]->w = reciprocalHomogenousW4[0];
+	positionT4[1]->w = reciprocalHomogenousW4[1];
+	positionT4[2]->w = reciprocalHomogenousW4[2];
+	positionT4[3]->w = reciprocalHomogenousW4[3];
 }
 #endif // #ifdef RUN_SHADERS_IN_WARPS
 
@@ -3466,7 +3483,6 @@ void IDirect3DDevice9Hook::CreateNewPixelShadeJob(const unsigned x, const unsign
 	pixelJobData.primitiveData = primitiveData;
 	pixelJobData.x[0] = x;
 	pixelJobData.y[0] = y;
-	pixelJobData.barycentricCoords[0].a = barycentricAdjusted.m128i_i32[0];
 	pixelJobData.barycentricCoords[0].b = barycentricAdjusted.m128i_i32[1];
 	pixelJobData.barycentricCoords[0].c = barycentricAdjusted.m128i_i32[2];
 
@@ -3520,16 +3536,12 @@ void IDirect3DDevice9Hook::CreateNewPixelShadeJob4(const __m128i x4, const __m12
 	pixelJobData.y[1] = y4.m128i_i32[0];
 	pixelJobData.y[2] = y4.m128i_i32[2];
 	pixelJobData.y[3] = y4.m128i_i32[2];
-	pixelJobData.barycentricCoords[0].a = barycentricsAdjusted4[0].m128i_i32[0];
 	pixelJobData.barycentricCoords[0].b = barycentricsAdjusted4[0].m128i_i32[1];
 	pixelJobData.barycentricCoords[0].c = barycentricsAdjusted4[0].m128i_i32[2];
-	pixelJobData.barycentricCoords[1].a = barycentricsAdjusted4[1].m128i_i32[0];
 	pixelJobData.barycentricCoords[1].b = barycentricsAdjusted4[1].m128i_i32[1];
 	pixelJobData.barycentricCoords[1].c = barycentricsAdjusted4[1].m128i_i32[2];
-	pixelJobData.barycentricCoords[2].a = barycentricsAdjusted4[2].m128i_i32[0];
 	pixelJobData.barycentricCoords[2].b = barycentricsAdjusted4[2].m128i_i32[1];
 	pixelJobData.barycentricCoords[2].c = barycentricsAdjusted4[2].m128i_i32[2];
-	pixelJobData.barycentricCoords[3].a = barycentricsAdjusted4[3].m128i_i32[0];
 	pixelJobData.barycentricCoords[3].b = barycentricsAdjusted4[3].m128i_i32[1];
 	pixelJobData.barycentricCoords[3].c = barycentricsAdjusted4[3].m128i_i32[2];
 
@@ -3576,9 +3588,15 @@ const primitivePixelJobData* const IDirect3DDevice9Hook::GetNewPrimitiveJobData(
 
 	const __m128 zeroVec = _mm_setzero_ps();
 	const __m128 localZ = _mm_div_ps(oneVec, localInvZ);
-	const __m128 selectMask = _mm_cmpeq_ps(zeroVec, localInvZ); // Members that equal zero will be set to 0xFF, members that don't will be set to 0x00
-	const __m128 localInvZSelected = _mm_blendv_ps(localZ, maxDepth24Bit, selectMask);
+	const __m128 selectMaskZ = _mm_cmpeq_ps(zeroVec, localInvZ); // Members that equal zero will be set to 0xFF, members that don't will be set to 0x00
+	const __m128 localInvZSelected = _mm_blendv_ps(localZ, maxDepth24Bit, selectMaskZ);
 	newPrimitiveData.invZ = D3DXVECTOR3(localInvZSelected.m128_f32[0], localInvZSelected.m128_f32[1], localInvZSelected.m128_f32[2]);
+
+	__m128 localInvW;
+	localInvW.m128_f32[0] = p0.m128_f32[3];
+	localInvW.m128_f32[1] = p1.m128_f32[3];
+	localInvW.m128_f32[2] = p2.m128_f32[3];
+	newPrimitiveData.invW = D3DXVECTOR3(localInvW.m128_f32[0], localInvW.m128_f32[1], localInvW.m128_f32[2]);
 
 	if (shadeFromShader)
 	{
@@ -7511,7 +7529,7 @@ void IDirect3DDevice9Hook::PreShadePixel4(const __m128i x4, const __m128i y4, PS
 // Handles pixel setup and depth and attribute interpolation before shading the pixel
 template <const bool setupFromShader>
 void IDirect3DDevice9Hook::SetupPixel(PShaderEngine* const pixelEngine, const void* const shaderOrStreamMapping, const unsigned x, const unsigned y, const __m128 barycentricInterpolants, 
-	const UINT offsetBytesToOPosition, const void* const v0, const void* const v1, const void* const v2, const __m128 invZ) const
+	const UINT offsetBytesToOPosition, const void* const v0, const void* const v1, const void* const v2, const __m128 invZ, const __m128 invW) const
 {
 	const float pixelDepth = InterpolatePixelDepth(barycentricInterpolants, invZ);
 
@@ -7540,22 +7558,23 @@ void IDirect3DDevice9Hook::SetupPixel(PShaderEngine* const pixelEngine, const vo
 		}
 	}
 
+	const float interpolatedPixelW = InterpolatePixelDepth(barycentricInterpolants, invW);
+
 	// Precompute some vectors that will be used for all of attribute interpolation
-	const __m128 floatBarycentricsInvZ = _mm_mul_ps(invZ, barycentricInterpolants);
-	const __m128 floatBarycentricsInvZ_X = _mm_permute_ps(floatBarycentricsInvZ, _MM_SHUFFLE(0, 0, 0, 0) );
-	const __m128 floatBarycentricsInvZ_Y = _mm_permute_ps(floatBarycentricsInvZ, _MM_SHUFFLE(1, 1, 1, 1) );
-	const __m128 floatBarycentricsInvZ_Z = _mm_permute_ps(floatBarycentricsInvZ, _MM_SHUFFLE(2, 2, 2, 2) );
+	const __m128 floatBarycentricsInvW_X = _mm_permute_ps(invW, _MM_SHUFFLE(0, 0, 0, 0) );
+	const __m128 floatBarycentricsInvW_Y = _mm_permute_ps(invW, _MM_SHUFFLE(1, 1, 1, 1) );
+	const __m128 floatBarycentricsInvW_Z = _mm_permute_ps(invW, _MM_SHUFFLE(2, 2, 2, 2) );
 	if (setupFromShader)
 	{
-		InterpolateShaderIntoRegisters(pixelEngine, *(const VStoPSMapping* const)shaderOrStreamMapping,  
-			*(const VS_2_0_OutputRegisters* const)v0, *(const VS_2_0_OutputRegisters* const)v1, *(const VS_2_0_OutputRegisters* const)v2, pixelDepth,
-			floatBarycentricsInvZ_X, floatBarycentricsInvZ_Y, floatBarycentricsInvZ_Z);
+		InterpolateShaderIntoRegisters(pixelEngine, *(const VStoPSMapping* const)shaderOrStreamMapping, 
+			*(const VS_2_0_OutputRegisters* const)v0, *(const VS_2_0_OutputRegisters* const)v1, *(const VS_2_0_OutputRegisters* const)v2,
+			floatBarycentricsInvW_X, floatBarycentricsInvW_Y, floatBarycentricsInvW_Z, barycentricInterpolants, interpolatedPixelW);
 	}
 	else
 	{
 		InterpolateStreamIntoRegisters(pixelEngine, *(const DeclarationSemanticMapping* const)shaderOrStreamMapping, 
-			(const BYTE* const)v0, (const BYTE* const)v1, (const BYTE* const)v2, pixelDepth,
-			floatBarycentricsInvZ_X, floatBarycentricsInvZ_Y, floatBarycentricsInvZ_Z);
+			(const BYTE* const)v0, (const BYTE* const)v1, (const BYTE* const)v2,
+			floatBarycentricsInvW_X, floatBarycentricsInvW_Y, floatBarycentricsInvW_Z, barycentricInterpolants, interpolatedPixelW);
 	}
 
 	ShadePixel_RunShader(x, y, pixelEngine);
@@ -7564,7 +7583,7 @@ void IDirect3DDevice9Hook::SetupPixel(PShaderEngine* const pixelEngine, const vo
 // Handles pixel quad setup and depth and attribute interpolation before shading the pixel quad
 template <const bool setupFromShader>
 void IDirect3DDevice9Hook::SetupPixel4(PShaderEngine* const pixelEngine, const void* const shaderOrStreamMapping, const __m128i x4, const __m128i y4, const __m128 (&barycentricInterpolants)[4], 
-	const UINT offsetBytesToOPosition, const void* const v0, const void* const v1, const void* const v2, const __m128 invZ) const
+	const UINT offsetBytesToOPosition, const void* const v0, const void* const v1, const void* const v2, const __m128 invZ, const __m128 invW) const
 {
 	__m128 pixelDepth4;
 	InterpolatePixelDepth4(barycentricInterpolants, invZ, pixelDepth4);
@@ -7615,161 +7634,139 @@ void IDirect3DDevice9Hook::SetupPixel4(PShaderEngine* const pixelEngine, const v
 	}
 
 	// Precompute some vectors that will be used for all of attribute interpolation
-	const __m128 floatBarycentricsInvZ4[4] = 
-	{
-		(pixelWriteMask & 0x1) ? _mm_mul_ps(invZ, barycentricInterpolants[0]) : _mm_setzero_ps(),
-		(pixelWriteMask & 0x2) ? _mm_mul_ps(invZ, barycentricInterpolants[1]) : _mm_setzero_ps(),
-		(pixelWriteMask & 0x4) ? _mm_mul_ps(invZ, barycentricInterpolants[2]) : _mm_setzero_ps(),
-		(pixelWriteMask & 0x8) ? _mm_mul_ps(invZ, barycentricInterpolants[3]) : _mm_setzero_ps()
-	};
-	const __m128 floatBarycentricsInvZ_X4[4] = 
-	{
-		_mm_permute_ps(floatBarycentricsInvZ4[0], _MM_SHUFFLE(0, 0, 0, 0) ),
-		_mm_permute_ps(floatBarycentricsInvZ4[1], _MM_SHUFFLE(0, 0, 0, 0) ),
-		_mm_permute_ps(floatBarycentricsInvZ4[2], _MM_SHUFFLE(0, 0, 0, 0) ),
-		_mm_permute_ps(floatBarycentricsInvZ4[3], _MM_SHUFFLE(0, 0, 0, 0) )
-	};
-	const __m128 floatBarycentricsInvZ_Y4[4] = 
-	{
-		_mm_permute_ps(floatBarycentricsInvZ4[0], _MM_SHUFFLE(1, 1, 1, 1) ),
-		_mm_permute_ps(floatBarycentricsInvZ4[1], _MM_SHUFFLE(1, 1, 1, 1) ),
-		_mm_permute_ps(floatBarycentricsInvZ4[2], _MM_SHUFFLE(1, 1, 1, 1) ),
-		_mm_permute_ps(floatBarycentricsInvZ4[3], _MM_SHUFFLE(1, 1, 1, 1) )
-	};
-	const __m128 floatBarycentricsInvZ_Z4[4] = 
-	{
-		_mm_permute_ps(floatBarycentricsInvZ4[0], _MM_SHUFFLE(2, 2, 2, 2) ),
-		_mm_permute_ps(floatBarycentricsInvZ4[1], _MM_SHUFFLE(2, 2, 2, 2) ),
-		_mm_permute_ps(floatBarycentricsInvZ4[2], _MM_SHUFFLE(2, 2, 2, 2) ),
-		_mm_permute_ps(floatBarycentricsInvZ4[3], _MM_SHUFFLE(2, 2, 2, 2) )
-	};
+	const __m128 floatBarycentricsInvW_X = _mm_permute_ps(invW, _MM_SHUFFLE(0, 0, 0, 0) );
+	const __m128 floatBarycentricsInvW_Y = _mm_permute_ps(invW, _MM_SHUFFLE(1, 1, 1, 1) );
+	const __m128 floatBarycentricsInvW_Z = _mm_permute_ps(invW, _MM_SHUFFLE(2, 2, 2, 2) );
+
+	__m128 interpolatedPixelW4;
+	InterpolatePixelDepth4(barycentricInterpolants, invW, interpolatedPixelW4);
 
 	switch (pixelWriteMask)
 	{
 	case 0x1:
 		if (setupFromShader)
 			InterpolateShaderIntoRegisters4<0x1>(pixelEngine, *(const VStoPSMapping* const)shaderOrStreamMapping, *(const VS_2_0_OutputRegisters* const)v0, *(const VS_2_0_OutputRegisters* const)v1, *(const VS_2_0_OutputRegisters* const)v2, 
-				pixelDepth4, floatBarycentricsInvZ_X4, floatBarycentricsInvZ_Y4, floatBarycentricsInvZ_Z4);
+				floatBarycentricsInvW_X, floatBarycentricsInvW_Y, floatBarycentricsInvW_Z, barycentricInterpolants, interpolatedPixelW4);
 		else
 			InterpolateStreamIntoRegisters4<0x1>(pixelEngine, *(const DeclarationSemanticMapping* const)shaderOrStreamMapping, (const BYTE* const)v0, (const BYTE* const)v1, (const BYTE* const)v2, 
-				pixelDepth4, floatBarycentricsInvZ_X4, floatBarycentricsInvZ_Y4, floatBarycentricsInvZ_Z4);
+				floatBarycentricsInvW_X, floatBarycentricsInvW_Y, floatBarycentricsInvW_Z, barycentricInterpolants, interpolatedPixelW4);
 		ShadePixel4_RunShader<0x1>(x4, y4, pixelEngine);
 		break;
 	case 0x2:
 		if (setupFromShader)
 			InterpolateShaderIntoRegisters4<0x2>(pixelEngine, *(const VStoPSMapping* const)shaderOrStreamMapping, *(const VS_2_0_OutputRegisters* const)v0, *(const VS_2_0_OutputRegisters* const)v1, *(const VS_2_0_OutputRegisters* const)v2, 
-				pixelDepth4, floatBarycentricsInvZ_X4, floatBarycentricsInvZ_Y4, floatBarycentricsInvZ_Z4);
+				floatBarycentricsInvW_X, floatBarycentricsInvW_Y, floatBarycentricsInvW_Z, barycentricInterpolants, interpolatedPixelW4);
 		else
 			InterpolateStreamIntoRegisters4<0x2>(pixelEngine, *(const DeclarationSemanticMapping* const)shaderOrStreamMapping, (const BYTE* const)v0, (const BYTE* const)v1, (const BYTE* const)v2, 
-				pixelDepth4, floatBarycentricsInvZ_X4, floatBarycentricsInvZ_Y4, floatBarycentricsInvZ_Z4);
+				floatBarycentricsInvW_X, floatBarycentricsInvW_Y, floatBarycentricsInvW_Z, barycentricInterpolants, interpolatedPixelW4);
 		ShadePixel4_RunShader<0x2>(x4, y4, pixelEngine);
 		break;
 	case 0x3:
 		if (setupFromShader)
 			InterpolateShaderIntoRegisters4<0x3>(pixelEngine, *(const VStoPSMapping* const)shaderOrStreamMapping, *(const VS_2_0_OutputRegisters* const)v0, *(const VS_2_0_OutputRegisters* const)v1, *(const VS_2_0_OutputRegisters* const)v2, 
-				pixelDepth4, floatBarycentricsInvZ_X4, floatBarycentricsInvZ_Y4, floatBarycentricsInvZ_Z4);
+				floatBarycentricsInvW_X, floatBarycentricsInvW_Y, floatBarycentricsInvW_Z, barycentricInterpolants, interpolatedPixelW4);
 		else
 			InterpolateStreamIntoRegisters4<0x3>(pixelEngine, *(const DeclarationSemanticMapping* const)shaderOrStreamMapping, (const BYTE* const)v0, (const BYTE* const)v1, (const BYTE* const)v2, 
-				pixelDepth4, floatBarycentricsInvZ_X4, floatBarycentricsInvZ_Y4, floatBarycentricsInvZ_Z4);
+				floatBarycentricsInvW_X, floatBarycentricsInvW_Y, floatBarycentricsInvW_Z, barycentricInterpolants, interpolatedPixelW4);
 		ShadePixel4_RunShader<0x3>(x4, y4, pixelEngine);
 		break;
 	case 0x4:
 		if (setupFromShader)
 			InterpolateShaderIntoRegisters4<0x4>(pixelEngine, *(const VStoPSMapping* const)shaderOrStreamMapping, *(const VS_2_0_OutputRegisters* const)v0, *(const VS_2_0_OutputRegisters* const)v1, *(const VS_2_0_OutputRegisters* const)v2, 
-				pixelDepth4, floatBarycentricsInvZ_X4, floatBarycentricsInvZ_Y4, floatBarycentricsInvZ_Z4);
+				floatBarycentricsInvW_X, floatBarycentricsInvW_Y, floatBarycentricsInvW_Z, barycentricInterpolants, interpolatedPixelW4);
 		else
 			InterpolateStreamIntoRegisters4<0x4>(pixelEngine, *(const DeclarationSemanticMapping* const)shaderOrStreamMapping, (const BYTE* const)v0, (const BYTE* const)v1, (const BYTE* const)v2, 
-				pixelDepth4, floatBarycentricsInvZ_X4, floatBarycentricsInvZ_Y4, floatBarycentricsInvZ_Z4);
+				floatBarycentricsInvW_X, floatBarycentricsInvW_Y, floatBarycentricsInvW_Z, barycentricInterpolants, interpolatedPixelW4);
 		ShadePixel4_RunShader<0x4>(x4, y4, pixelEngine);
 		break;
 	case 0x5:
 		if (setupFromShader)
 			InterpolateShaderIntoRegisters4<0x5>(pixelEngine, *(const VStoPSMapping* const)shaderOrStreamMapping, *(const VS_2_0_OutputRegisters* const)v0, *(const VS_2_0_OutputRegisters* const)v1, *(const VS_2_0_OutputRegisters* const)v2, 
-				pixelDepth4, floatBarycentricsInvZ_X4, floatBarycentricsInvZ_Y4, floatBarycentricsInvZ_Z4);
+				floatBarycentricsInvW_X, floatBarycentricsInvW_Y, floatBarycentricsInvW_Z, barycentricInterpolants, interpolatedPixelW4);
 		else
 			InterpolateStreamIntoRegisters4<0x5>(pixelEngine, *(const DeclarationSemanticMapping* const)shaderOrStreamMapping, (const BYTE* const)v0, (const BYTE* const)v1, (const BYTE* const)v2, 
-				pixelDepth4, floatBarycentricsInvZ_X4, floatBarycentricsInvZ_Y4, floatBarycentricsInvZ_Z4);
+				floatBarycentricsInvW_X, floatBarycentricsInvW_Y, floatBarycentricsInvW_Z, barycentricInterpolants, interpolatedPixelW4);
 		ShadePixel4_RunShader<0x5>(x4, y4, pixelEngine);
 		break;
 	case 0x6:
 		if (setupFromShader)
 			InterpolateShaderIntoRegisters4<0x6>(pixelEngine, *(const VStoPSMapping* const)shaderOrStreamMapping, *(const VS_2_0_OutputRegisters* const)v0, *(const VS_2_0_OutputRegisters* const)v1, *(const VS_2_0_OutputRegisters* const)v2, 
-				pixelDepth4, floatBarycentricsInvZ_X4, floatBarycentricsInvZ_Y4, floatBarycentricsInvZ_Z4);
+				floatBarycentricsInvW_X, floatBarycentricsInvW_Y, floatBarycentricsInvW_Z, barycentricInterpolants, interpolatedPixelW4);
 		else
 			InterpolateStreamIntoRegisters4<0x6>(pixelEngine, *(const DeclarationSemanticMapping* const)shaderOrStreamMapping, (const BYTE* const)v0, (const BYTE* const)v1, (const BYTE* const)v2, 
-				pixelDepth4, floatBarycentricsInvZ_X4, floatBarycentricsInvZ_Y4, floatBarycentricsInvZ_Z4);
+				floatBarycentricsInvW_X, floatBarycentricsInvW_Y, floatBarycentricsInvW_Z, barycentricInterpolants, interpolatedPixelW4);
 		ShadePixel4_RunShader<0x6>(x4, y4, pixelEngine);
 		break;
 	case 0x7:
 		if (setupFromShader)
 			InterpolateShaderIntoRegisters4<0x7>(pixelEngine, *(const VStoPSMapping* const)shaderOrStreamMapping, *(const VS_2_0_OutputRegisters* const)v0, *(const VS_2_0_OutputRegisters* const)v1, *(const VS_2_0_OutputRegisters* const)v2, 
-				pixelDepth4, floatBarycentricsInvZ_X4, floatBarycentricsInvZ_Y4, floatBarycentricsInvZ_Z4);
+				floatBarycentricsInvW_X, floatBarycentricsInvW_Y, floatBarycentricsInvW_Z, barycentricInterpolants, interpolatedPixelW4);
 		else
 			InterpolateStreamIntoRegisters4<0x7>(pixelEngine, *(const DeclarationSemanticMapping* const)shaderOrStreamMapping, (const BYTE* const)v0, (const BYTE* const)v1, (const BYTE* const)v2, 
-				pixelDepth4, floatBarycentricsInvZ_X4, floatBarycentricsInvZ_Y4, floatBarycentricsInvZ_Z4);
+				floatBarycentricsInvW_X, floatBarycentricsInvW_Y, floatBarycentricsInvW_Z, barycentricInterpolants, interpolatedPixelW4);
 		ShadePixel4_RunShader<0x7>(x4, y4, pixelEngine);
 		break;
 	case 0x8:
 		if (setupFromShader)
 			InterpolateShaderIntoRegisters4<0x8>(pixelEngine, *(const VStoPSMapping* const)shaderOrStreamMapping, *(const VS_2_0_OutputRegisters* const)v0, *(const VS_2_0_OutputRegisters* const)v1, *(const VS_2_0_OutputRegisters* const)v2, 
-				pixelDepth4, floatBarycentricsInvZ_X4, floatBarycentricsInvZ_Y4, floatBarycentricsInvZ_Z4);
+				floatBarycentricsInvW_X, floatBarycentricsInvW_Y, floatBarycentricsInvW_Z, barycentricInterpolants, interpolatedPixelW4);
 		else
 			InterpolateStreamIntoRegisters4<0x8>(pixelEngine, *(const DeclarationSemanticMapping* const)shaderOrStreamMapping, (const BYTE* const)v0, (const BYTE* const)v1, (const BYTE* const)v2, 
-				pixelDepth4, floatBarycentricsInvZ_X4, floatBarycentricsInvZ_Y4, floatBarycentricsInvZ_Z4);
+				floatBarycentricsInvW_X, floatBarycentricsInvW_Y, floatBarycentricsInvW_Z, barycentricInterpolants, interpolatedPixelW4);
 		ShadePixel4_RunShader<0x8>(x4, y4, pixelEngine);
 		break;
 	case 0x9:
 		if (setupFromShader)
 			InterpolateShaderIntoRegisters4<0x9>(pixelEngine, *(const VStoPSMapping* const)shaderOrStreamMapping, *(const VS_2_0_OutputRegisters* const)v0, *(const VS_2_0_OutputRegisters* const)v1, *(const VS_2_0_OutputRegisters* const)v2, 
-				pixelDepth4, floatBarycentricsInvZ_X4, floatBarycentricsInvZ_Y4, floatBarycentricsInvZ_Z4);
+				floatBarycentricsInvW_X, floatBarycentricsInvW_Y, floatBarycentricsInvW_Z, barycentricInterpolants, interpolatedPixelW4);
 		else
 			InterpolateStreamIntoRegisters4<0x9>(pixelEngine, *(const DeclarationSemanticMapping* const)shaderOrStreamMapping, (const BYTE* const)v0, (const BYTE* const)v1, (const BYTE* const)v2, 
-				pixelDepth4, floatBarycentricsInvZ_X4, floatBarycentricsInvZ_Y4, floatBarycentricsInvZ_Z4);
+				floatBarycentricsInvW_X, floatBarycentricsInvW_Y, floatBarycentricsInvW_Z, barycentricInterpolants, interpolatedPixelW4);
 		ShadePixel4_RunShader<0x9>(x4, y4, pixelEngine);
 		break;
 	case 0xA:
 		if (setupFromShader)
 			InterpolateShaderIntoRegisters4<0xA>(pixelEngine, *(const VStoPSMapping* const)shaderOrStreamMapping, *(const VS_2_0_OutputRegisters* const)v0, *(const VS_2_0_OutputRegisters* const)v1, *(const VS_2_0_OutputRegisters* const)v2, 
-				pixelDepth4, floatBarycentricsInvZ_X4, floatBarycentricsInvZ_Y4, floatBarycentricsInvZ_Z4);
+				floatBarycentricsInvW_X, floatBarycentricsInvW_Y, floatBarycentricsInvW_Z, barycentricInterpolants, interpolatedPixelW4);
 		else
 			InterpolateStreamIntoRegisters4<0xA>(pixelEngine, *(const DeclarationSemanticMapping* const)shaderOrStreamMapping, (const BYTE* const)v0, (const BYTE* const)v1, (const BYTE* const)v2, 
-				pixelDepth4, floatBarycentricsInvZ_X4, floatBarycentricsInvZ_Y4, floatBarycentricsInvZ_Z4);
+				floatBarycentricsInvW_X, floatBarycentricsInvW_Y, floatBarycentricsInvW_Z, barycentricInterpolants, interpolatedPixelW4);
 		ShadePixel4_RunShader<0xA>(x4, y4, pixelEngine);
 		break;
 	case 0xB:
 		if (setupFromShader)
 			InterpolateShaderIntoRegisters4<0xB>(pixelEngine, *(const VStoPSMapping* const)shaderOrStreamMapping, *(const VS_2_0_OutputRegisters* const)v0, *(const VS_2_0_OutputRegisters* const)v1, *(const VS_2_0_OutputRegisters* const)v2, 
-				pixelDepth4, floatBarycentricsInvZ_X4, floatBarycentricsInvZ_Y4, floatBarycentricsInvZ_Z4);
+				floatBarycentricsInvW_X, floatBarycentricsInvW_Y, floatBarycentricsInvW_Z, barycentricInterpolants, interpolatedPixelW4);
 		else
 			InterpolateStreamIntoRegisters4<0xB>(pixelEngine, *(const DeclarationSemanticMapping* const)shaderOrStreamMapping, (const BYTE* const)v0, (const BYTE* const)v1, (const BYTE* const)v2, 
-				pixelDepth4, floatBarycentricsInvZ_X4, floatBarycentricsInvZ_Y4, floatBarycentricsInvZ_Z4);
+				floatBarycentricsInvW_X, floatBarycentricsInvW_Y, floatBarycentricsInvW_Z, barycentricInterpolants, interpolatedPixelW4);
 		ShadePixel4_RunShader<0xB>(x4, y4, pixelEngine);
 		break;
 	case 0xC:
 		if (setupFromShader)
 			InterpolateShaderIntoRegisters4<0xC>(pixelEngine, *(const VStoPSMapping* const)shaderOrStreamMapping, *(const VS_2_0_OutputRegisters* const)v0, *(const VS_2_0_OutputRegisters* const)v1, *(const VS_2_0_OutputRegisters* const)v2, 
-				pixelDepth4, floatBarycentricsInvZ_X4, floatBarycentricsInvZ_Y4, floatBarycentricsInvZ_Z4);
+				floatBarycentricsInvW_X, floatBarycentricsInvW_Y, floatBarycentricsInvW_Z, barycentricInterpolants, interpolatedPixelW4);
 		else
 			InterpolateStreamIntoRegisters4<0xC>(pixelEngine, *(const DeclarationSemanticMapping* const)shaderOrStreamMapping, (const BYTE* const)v0, (const BYTE* const)v1, (const BYTE* const)v2, 
-				pixelDepth4, floatBarycentricsInvZ_X4, floatBarycentricsInvZ_Y4, floatBarycentricsInvZ_Z4);
+				floatBarycentricsInvW_X, floatBarycentricsInvW_Y, floatBarycentricsInvW_Z, barycentricInterpolants, interpolatedPixelW4);
 		ShadePixel4_RunShader<0xC>(x4, y4, pixelEngine);
 		break;
 	case 0xD:
 		if (setupFromShader)
 			InterpolateShaderIntoRegisters4<0xD>(pixelEngine, *(const VStoPSMapping* const)shaderOrStreamMapping, *(const VS_2_0_OutputRegisters* const)v0, *(const VS_2_0_OutputRegisters* const)v1, *(const VS_2_0_OutputRegisters* const)v2, 
-				pixelDepth4, floatBarycentricsInvZ_X4, floatBarycentricsInvZ_Y4, floatBarycentricsInvZ_Z4);
+				floatBarycentricsInvW_X, floatBarycentricsInvW_Y, floatBarycentricsInvW_Z, barycentricInterpolants, interpolatedPixelW4);
 		else
 			InterpolateStreamIntoRegisters4<0xD>(pixelEngine, *(const DeclarationSemanticMapping* const)shaderOrStreamMapping, (const BYTE* const)v0, (const BYTE* const)v1, (const BYTE* const)v2, 
-				pixelDepth4, floatBarycentricsInvZ_X4, floatBarycentricsInvZ_Y4, floatBarycentricsInvZ_Z4);
+				floatBarycentricsInvW_X, floatBarycentricsInvW_Y, floatBarycentricsInvW_Z, barycentricInterpolants, interpolatedPixelW4);
 		ShadePixel4_RunShader<0xD>(x4, y4, pixelEngine);
 		break;
 	case 0xE:
 		if (setupFromShader)
 			InterpolateShaderIntoRegisters4<0xE>(pixelEngine, *(const VStoPSMapping* const)shaderOrStreamMapping, *(const VS_2_0_OutputRegisters* const)v0, *(const VS_2_0_OutputRegisters* const)v1, *(const VS_2_0_OutputRegisters* const)v2, 
-				pixelDepth4, floatBarycentricsInvZ_X4, floatBarycentricsInvZ_Y4, floatBarycentricsInvZ_Z4);
+				floatBarycentricsInvW_X, floatBarycentricsInvW_Y, floatBarycentricsInvW_Z, barycentricInterpolants, interpolatedPixelW4);
 		else
 			InterpolateStreamIntoRegisters4<0xE>(pixelEngine, *(const DeclarationSemanticMapping* const)shaderOrStreamMapping, (const BYTE* const)v0, (const BYTE* const)v1, (const BYTE* const)v2, 
-				pixelDepth4, floatBarycentricsInvZ_X4, floatBarycentricsInvZ_Y4, floatBarycentricsInvZ_Z4);
+				floatBarycentricsInvW_X, floatBarycentricsInvW_Y, floatBarycentricsInvW_Z, barycentricInterpolants, interpolatedPixelW4);
 		ShadePixel4_RunShader<0xE>(x4, y4, pixelEngine);
 		break;
 	default:
@@ -7781,16 +7778,16 @@ void IDirect3DDevice9Hook::SetupPixel4(PShaderEngine* const pixelEngine, const v
 	case 0xF:
 		if (setupFromShader)
 			InterpolateShaderIntoRegisters4<0xF>(pixelEngine, *(const VStoPSMapping* const)shaderOrStreamMapping, *(const VS_2_0_OutputRegisters* const)v0, *(const VS_2_0_OutputRegisters* const)v1, *(const VS_2_0_OutputRegisters* const)v2, 
-				pixelDepth4, floatBarycentricsInvZ_X4, floatBarycentricsInvZ_Y4, floatBarycentricsInvZ_Z4);
+				floatBarycentricsInvW_X, floatBarycentricsInvW_Y, floatBarycentricsInvW_Z, barycentricInterpolants, interpolatedPixelW4);
 		else
 			InterpolateStreamIntoRegisters4<0xF>(pixelEngine, *(const DeclarationSemanticMapping* const)shaderOrStreamMapping, (const BYTE* const)v0, (const BYTE* const)v1, (const BYTE* const)v2, 
-				pixelDepth4, floatBarycentricsInvZ_X4, floatBarycentricsInvZ_Y4, floatBarycentricsInvZ_Z4);
+				floatBarycentricsInvW_X, floatBarycentricsInvW_Y, floatBarycentricsInvW_Z, barycentricInterpolants, interpolatedPixelW4);
 		ShadePixel4_RunShader<0xF>(x4, y4, pixelEngine);
 		break;
 	}
 }
 
-// This is a non-perspective-correct attribute interpolation:
+// This is a non-perspective-correct attribute interpolation ("affine interpolation"):
 static inline void InterpolateVertexAttribute(const D3DXVECTOR3& floatBarycentrics, const D3DXVECTOR4& attr0, const D3DXVECTOR4& attr1, const D3DXVECTOR4& attr2, D3DXVECTOR4& outAttr)
 {
 	outAttr.x = attr0.x * floatBarycentrics.x + attr1.x * floatBarycentrics.y + attr2.x * floatBarycentrics.z;
@@ -7800,79 +7797,85 @@ static inline void InterpolateVertexAttribute(const D3DXVECTOR3& floatBarycentri
 }
 
 // This is a perspective-correct attribute interpolation:
-static inline void InterpolateVertexAttribute_PerspectiveCorrect(const D3DXVECTOR4& attr0, const D3DXVECTOR4& attr1, const D3DXVECTOR4& attr2, const __m128 floatBarycentricsInvZ_X, const __m128 floatBarycentricsInvZ_Y, const __m128 floatBarycentricsInvZ_Z, const float pixelZ, D3DXVECTOR4& outAttr)
+static inline void InterpolateVertexAttribute_PerspectiveCorrect(const D3DXVECTOR4& attr0, const D3DXVECTOR4& attr1, const D3DXVECTOR4& attr2, const __m128 floatBarycentricsInvW_X, const __m128 floatBarycentricsInvW_Y, const __m128 floatBarycentricsInvW_Z, D3DXVECTOR4& outAttr, const __m128 barycentricInterpolants, const float interpolatedPixelW)
 {
 	const __m128* const attr0ptr = (const __m128* const)&attr0;
 	const __m128* const attr1ptr = (const __m128* const)&attr1;
 	const __m128* const attr2ptr = (const __m128* const)&attr2;
 
-	// I think that mul, mul, mul, add, add is the best we can do here since the attribute data comes in and needs a transpose, which prevents us from using dotproduct3
-	const __m128 mulResultA = _mm_mul_ps(floatBarycentricsInvZ_X, *attr0ptr);
-	const __m128 mulResultB = _mm_mul_ps(floatBarycentricsInvZ_Y, *attr1ptr);
-	const __m128 mulResultC = _mm_mul_ps(floatBarycentricsInvZ_Z, *attr2ptr);
+	// Computing p0, p1, p2, and p10, and p20 could all be done in the vertex shader if we know that the attribute will be perspective-corrected (or skipped if the attribute will be LINEAR or CONSTANT interpolated instead)
+	const __m128 p0 = _mm_mul_ps(floatBarycentricsInvW_X, *attr0ptr);
+	const __m128 p1 = _mm_mul_ps(floatBarycentricsInvW_Y, *attr1ptr);
+	const __m128 p2 = _mm_mul_ps(floatBarycentricsInvW_Z, *attr2ptr);
+	const __m128 p10 = _mm_sub_ps(p1, p0);
+	const __m128 p20 = _mm_sub_ps(p2, p0);
 
-	const __m128 result = _mm_add_ps(_mm_add_ps(mulResultA, mulResultB), mulResultC);
+	// Note that barycentricA is not needed. If it were needed, we could always recover it using the equation: A + B + C = 1 (or for this purpose, A = 1 - B - C)
+	const __m128 barycentricB = _mm_permute_ps(barycentricInterpolants, _MM_SHUFFLE(1, 1, 1, 1) );
+	const __m128 barycentricC = _mm_permute_ps(barycentricInterpolants, _MM_SHUFFLE(2, 2, 2, 2) );
+
+	const __m128 barycentricDotProduct = _mm_add_ps(_mm_add_ps(_mm_mul_ps(p10, barycentricB), _mm_mul_ps(p20, barycentricC) ), p0);
+
+	const __m128 pixelW_float4 = _mm_load1_ps(&interpolatedPixelW);
 
 	__m128* const outAttrPtr = (__m128* const)&outAttr;
-
-	const __m128 pixelZ_float4 = _mm_load1_ps(&pixelZ);
-	*outAttrPtr = _mm_mul_ps(pixelZ_float4, result);
+	*outAttrPtr = _mm_mul_ps(pixelW_float4, barycentricDotProduct);
 }
 
 // This is a perspective-correct attribute interpolation:
 static inline void InterpolateVertexAttribute_PerspectiveCorrect4(const D3DXVECTOR4& attr0, const D3DXVECTOR4& attr1, const D3DXVECTOR4& attr2, 
-	const __m128 (&invZSplatted_X4)[4], const __m128 (&invZSplatted_Y4)[4], const __m128 (&invZSplatted_Z4)[4], const __m128 pixelZ4, D3DXVECTOR4 (&outAttr4)[4])
+	const __m128 invWSplatted_X, const __m128 invWSplatted_Y, const __m128 invWSplatted_Z, D3DXVECTOR4 (&outAttr4)[4], const __m128 (&barycentricInterpolants)[4], const __m128 interpolatedPixelW4)
 {
 	const __m128 attr0vec = *(const __m128* const)&attr0;
 	const __m128 attr1vec = *(const __m128* const)&attr1;
 	const __m128 attr2vec = *(const __m128* const)&attr2;
 
-	// I think that mul, mul, mul, add, add is the best we can do here since the attribute data comes in and needs a transpose, which prevents us from using dotproduct3
-	const __m128 mulResultA[4] = 
+	// Computing p0, p1, p2, and p10, and p20 could all be done in the vertex shader if we know that the attribute will be perspective-corrected (or skipped if the attribute will be LINEAR or CONSTANT interpolated instead)
+	const __m128 p0 = _mm_mul_ps(invWSplatted_X, attr0vec);
+	const __m128 p1 = _mm_mul_ps(invWSplatted_Y, attr1vec);
+	const __m128 p2 = _mm_mul_ps(invWSplatted_Z, attr2vec);
+	const __m128 p10 = _mm_sub_ps(p1, p0);
+	const __m128 p20 = _mm_sub_ps(p2, p0);
+
+	const __m128 barycentricB[4] =
 	{
-		_mm_mul_ps(invZSplatted_X4[0], attr0vec),
-		_mm_mul_ps(invZSplatted_X4[1], attr0vec),
-		_mm_mul_ps(invZSplatted_X4[2], attr0vec),
-		_mm_mul_ps(invZSplatted_X4[3], attr0vec),
+		_mm_permute_ps(barycentricInterpolants[0], _MM_SHUFFLE(1, 1, 1, 1) ),
+		_mm_permute_ps(barycentricInterpolants[1], _MM_SHUFFLE(1, 1, 1, 1) ),
+		_mm_permute_ps(barycentricInterpolants[2], _MM_SHUFFLE(1, 1, 1, 1) ),
+		_mm_permute_ps(barycentricInterpolants[3], _MM_SHUFFLE(1, 1, 1, 1) )
 	};
-	const __m128 mulResultB[4] = 
+	const __m128 barycentricC[4] =
 	{
-		_mm_mul_ps(invZSplatted_Y4[0], attr1vec),
-		_mm_mul_ps(invZSplatted_Y4[1], attr1vec),
-		_mm_mul_ps(invZSplatted_Y4[2], attr1vec),
-		_mm_mul_ps(invZSplatted_Y4[3], attr1vec)
-	};
-	const __m128 mulResultC[4] = 
-	{
-		_mm_mul_ps(invZSplatted_Z4[0], attr2vec),
-		_mm_mul_ps(invZSplatted_Z4[1], attr2vec),
-		_mm_mul_ps(invZSplatted_Z4[2], attr2vec),
-		_mm_mul_ps(invZSplatted_Z4[3], attr2vec)
-	};
-	const __m128 result[4] = 
-	{
-		_mm_add_ps(_mm_add_ps(mulResultA[0], mulResultB[0]), mulResultC[0]),
-		_mm_add_ps(_mm_add_ps(mulResultA[1], mulResultB[1]), mulResultC[1]),
-		_mm_add_ps(_mm_add_ps(mulResultA[2], mulResultB[2]), mulResultC[2]),
-		_mm_add_ps(_mm_add_ps(mulResultA[3], mulResultB[3]), mulResultC[3])
+		_mm_permute_ps(barycentricInterpolants[0], _MM_SHUFFLE(2, 2, 2, 2) ),
+		_mm_permute_ps(barycentricInterpolants[1], _MM_SHUFFLE(2, 2, 2, 2) ),
+		_mm_permute_ps(barycentricInterpolants[2], _MM_SHUFFLE(2, 2, 2, 2) ),
+		_mm_permute_ps(barycentricInterpolants[3], _MM_SHUFFLE(2, 2, 2, 2) )
 	};
 
-	const __m128 pixelZ_float4[4] = 
+	const __m128 dotProductResult[4] =
 	{
-		_mm_permute_ps(pixelZ4, _MM_SHUFFLE(0, 0, 0, 0) ),
-		_mm_permute_ps(pixelZ4, _MM_SHUFFLE(1, 1, 1, 1) ),
-		_mm_permute_ps(pixelZ4, _MM_SHUFFLE(2, 2, 2, 2) ),
-		_mm_permute_ps(pixelZ4, _MM_SHUFFLE(3, 3, 3, 3) )
+		_mm_add_ps(_mm_add_ps(_mm_mul_ps(p10, barycentricB[0]), _mm_mul_ps(p20, barycentricC[0]) ), p0),
+		_mm_add_ps(_mm_add_ps(_mm_mul_ps(p10, barycentricB[1]), _mm_mul_ps(p20, barycentricC[1]) ), p0),
+		_mm_add_ps(_mm_add_ps(_mm_mul_ps(p10, barycentricB[2]), _mm_mul_ps(p20, barycentricC[2]) ), p0),
+		_mm_add_ps(_mm_add_ps(_mm_mul_ps(p10, barycentricB[3]), _mm_mul_ps(p20, barycentricC[3]) ), p0)
 	};
-	*(__m128* const)&(outAttr4[0]) = _mm_mul_ps(pixelZ_float4[0], result[0]);
-	*(__m128* const)&(outAttr4[1]) = _mm_mul_ps(pixelZ_float4[1], result[1]);
-	*(__m128* const)&(outAttr4[2]) = _mm_mul_ps(pixelZ_float4[2], result[2]);
-	*(__m128* const)&(outAttr4[3]) = _mm_mul_ps(pixelZ_float4[3], result[3]);
+
+	const __m128 pixelW_float4[4] = 
+	{
+		_mm_permute_ps(interpolatedPixelW4, _MM_SHUFFLE(0, 0, 0, 0) ),
+		_mm_permute_ps(interpolatedPixelW4, _MM_SHUFFLE(1, 1, 1, 1) ),
+		_mm_permute_ps(interpolatedPixelW4, _MM_SHUFFLE(2, 2, 2, 2) ),
+		_mm_permute_ps(interpolatedPixelW4, _MM_SHUFFLE(3, 3, 3, 3) )
+	};
+	*(__m128* const)&(outAttr4[0]) = _mm_mul_ps(pixelW_float4[0], dotProductResult[0]);
+	*(__m128* const)&(outAttr4[1]) = _mm_mul_ps(pixelW_float4[1], dotProductResult[1]);
+	*(__m128* const)&(outAttr4[2]) = _mm_mul_ps(pixelW_float4[2], dotProductResult[2]);
+	*(__m128* const)&(outAttr4[3]) = _mm_mul_ps(pixelW_float4[3], dotProductResult[3]);
 }
 
 // Handles interpolating pixel shader input registers from a vertex declaration + raw vertex stream
 void IDirect3DDevice9Hook::InterpolateStreamIntoRegisters(PShaderEngine* const pixelShader, const DeclarationSemanticMapping& vertexDeclMapping, CONST BYTE* const v0, CONST BYTE* const v1, CONST BYTE* const v2, 
-	const float pixelZ, const __m128 floatBarycentricsInvZ_X, const __m128 floatBarycentricsInvZ_Y, const __m128 floatBarycentricsInvZ_Z) const
+	const __m128 floatBarycentricsInvW_X, const __m128 floatBarycentricsInvW_Y, const __m128 floatBarycentricsInvW_Z, const __m128 barycentricInterpolants, const float interpolatedPixelW) const
 {
 	const ShaderInfo& pixelShaderInfo = currentState.currentPixelShader->GetShaderInfo();
 	if (pixelShaderInfo.shaderMajorVersion == 1)
@@ -7898,7 +7901,7 @@ void IDirect3DDevice9Hook::InterpolateStreamIntoRegisters(PShaderEngine* const p
 						LoadElementToRegister(cf1, registerLoadType, (v1 + foundColorValue->Offset) );
 						LoadElementToRegister(cf2, registerLoadType, (v2 + foundColorValue->Offset) );
 
-						InterpolateVertexAttribute_PerspectiveCorrect(cf0, cf1, cf2, floatBarycentricsInvZ_X, floatBarycentricsInvZ_Y, floatBarycentricsInvZ_Z, pixelZ, interpolatedFloatValue);
+						InterpolateVertexAttribute_PerspectiveCorrect(cf0, cf1, cf2, floatBarycentricsInvW_X, floatBarycentricsInvW_Y, floatBarycentricsInvW_Z, interpolatedFloatValue, barycentricInterpolants, interpolatedPixelW);
 					}
 					else
 					{
@@ -7933,7 +7936,7 @@ void IDirect3DDevice9Hook::InterpolateStreamIntoRegisters(PShaderEngine* const p
 						LoadElementToRegister(cf1, registerLoadType, (v1 + foundTexcoordValue->Offset) );
 						LoadElementToRegister(cf2, registerLoadType, (v2 + foundTexcoordValue->Offset) );
 
-						InterpolateVertexAttribute_PerspectiveCorrect(cf0, cf1, cf2, floatBarycentricsInvZ_X, floatBarycentricsInvZ_Y, floatBarycentricsInvZ_Z, pixelZ, interpolatedFloatValue);
+						InterpolateVertexAttribute_PerspectiveCorrect(cf0, cf1, cf2, floatBarycentricsInvW_X, floatBarycentricsInvW_Y, floatBarycentricsInvW_Z, interpolatedFloatValue, barycentricInterpolants, interpolatedPixelW);
 					}
 					else
 					{
@@ -7985,7 +7988,7 @@ void IDirect3DDevice9Hook::InterpolateStreamIntoRegisters(PShaderEngine* const p
 						LoadElementToRegister(cf1, registerLoadType, (v1 + element->Offset) );
 						LoadElementToRegister(cf2, registerLoadType, (v2 + element->Offset) );
 
-						InterpolateVertexAttribute_PerspectiveCorrect(cf0, cf1, cf2, floatBarycentricsInvZ_X, floatBarycentricsInvZ_Y, floatBarycentricsInvZ_Z, pixelZ, interpolatedFloatValue);
+						InterpolateVertexAttribute_PerspectiveCorrect(cf0, cf1, cf2, floatBarycentricsInvW_X, floatBarycentricsInvW_Y, floatBarycentricsInvW_Z, interpolatedFloatValue, barycentricInterpolants, interpolatedPixelW);
 					}
 					else
 					{
@@ -8025,7 +8028,7 @@ void IDirect3DDevice9Hook::InterpolateStreamIntoRegisters(PShaderEngine* const p
 						LoadElementToRegister(cf1, registerLoadType, (v1 + element->Offset) );
 						LoadElementToRegister(cf2, registerLoadType, (v2 + element->Offset) );
 
-						InterpolateVertexAttribute_PerspectiveCorrect(cf0, cf1, cf2, floatBarycentricsInvZ_X, floatBarycentricsInvZ_Y, floatBarycentricsInvZ_Z, pixelZ, interpolatedFloatValue);
+						InterpolateVertexAttribute_PerspectiveCorrect(cf0, cf1, cf2, floatBarycentricsInvW_X, floatBarycentricsInvW_Y, floatBarycentricsInvW_Z, interpolatedFloatValue, barycentricInterpolants, interpolatedPixelW);
 					}
 					else
 					{
@@ -8075,7 +8078,7 @@ void IDirect3DDevice9Hook::InterpolateStreamIntoRegisters(PShaderEngine* const p
 						LoadElementToRegister(cf2, registerLoadType, (v2 + element->Offset) );
 
 						// TODO: Implement PS_3_0 interpreters too
-						InterpolateVertexAttribute_PerspectiveCorrect(cf0, cf1, cf2, floatBarycentricsInvZ_X, floatBarycentricsInvZ_Y, floatBarycentricsInvZ_Z, pixelZ, interpolatedFloatValue);
+						InterpolateVertexAttribute_PerspectiveCorrect(cf0, cf1, cf2, floatBarycentricsInvW_X, floatBarycentricsInvW_Y, floatBarycentricsInvW_Z, interpolatedFloatValue, barycentricInterpolants, interpolatedPixelW);
 					}
 					else
 					{
@@ -8096,7 +8099,7 @@ void IDirect3DDevice9Hook::InterpolateStreamIntoRegisters(PShaderEngine* const p
 // Handles interpolating pixel shader input registers from a vertex declaration + raw vertex stream
 template <const unsigned char pixelWriteMask>
 void IDirect3DDevice9Hook::InterpolateStreamIntoRegisters4(PShaderEngine* const pixelShader, const DeclarationSemanticMapping& vertexDeclMapping, CONST BYTE* const v0, CONST BYTE* const v1, CONST BYTE* const v2, 
-	const __m128 pixelZ4, const __m128 (&floatBarycentricsInvZ_X4)[4], const __m128 (&floatBarycentricsInvZ_Y4)[4], const __m128 (&floatBarycentricsInvZ_Z4)[4]) const
+	const __m128 floatBarycentricsInvW_X, const __m128 floatBarycentricsInvW_Y, const __m128 floatBarycentricsInvW_Z, const __m128 (&barycentricInterpolants)[4], const __m128 interpolatedPixelW4) const
 {
 	const ShaderInfo& pixelShaderInfo = currentState.currentPixelShader->GetShaderInfo();
 	if (pixelShaderInfo.shaderMajorVersion == 1)
@@ -8129,7 +8132,7 @@ void IDirect3DDevice9Hook::InterpolateStreamIntoRegisters4(PShaderEngine* const 
 						LoadElementToRegister(cf2, registerLoadType, (v2 + foundColorValue->Offset) );
 
 						D3DXVECTOR4 interpolatedValues4[4];
-						InterpolateVertexAttribute_PerspectiveCorrect4(cf0, cf1, cf2, floatBarycentricsInvZ_X4, floatBarycentricsInvZ_Y4, floatBarycentricsInvZ_Z4, pixelZ4, interpolatedValues4);
+						InterpolateVertexAttribute_PerspectiveCorrect4(cf0, cf1, cf2, floatBarycentricsInvW_X, floatBarycentricsInvW_Y, floatBarycentricsInvW_Z, interpolatedValues4, barycentricInterpolants, interpolatedPixelW4);
 						if (pixelWriteMask & 0x1) *interpolatedOutRegisterValues[0] = interpolatedValues4[0];
 						if (pixelWriteMask & 0x2) *interpolatedOutRegisterValues[1] = interpolatedValues4[1];
 						if (pixelWriteMask & 0x4) *interpolatedOutRegisterValues[2] = interpolatedValues4[2];
@@ -8181,7 +8184,7 @@ void IDirect3DDevice9Hook::InterpolateStreamIntoRegisters4(PShaderEngine* const 
 						LoadElementToRegister(cf2, registerLoadType, (v2 + foundTexcoordValue->Offset) );
 
 						D3DXVECTOR4 interpolatedValues4[4];
-						InterpolateVertexAttribute_PerspectiveCorrect4(cf0, cf1, cf2, floatBarycentricsInvZ_X4, floatBarycentricsInvZ_Y4, floatBarycentricsInvZ_Z4, pixelZ4, interpolatedValues4);
+						InterpolateVertexAttribute_PerspectiveCorrect4(cf0, cf1, cf2, floatBarycentricsInvW_X, floatBarycentricsInvW_Y, floatBarycentricsInvW_Z, interpolatedValues4, barycentricInterpolants, interpolatedPixelW4);
 						if (pixelWriteMask & 0x1) *interpolatedOutRegisterValues[0] = interpolatedValues4[0];
 						if (pixelWriteMask & 0x2) *interpolatedOutRegisterValues[1] = interpolatedValues4[1];
 						if (pixelWriteMask & 0x4) *interpolatedOutRegisterValues[2] = interpolatedValues4[2];
@@ -8256,7 +8259,7 @@ void IDirect3DDevice9Hook::InterpolateStreamIntoRegisters4(PShaderEngine* const 
 						LoadElementToRegister(cf2, registerLoadType, (v2 + element->Offset) );
 
 						D3DXVECTOR4 interpolatedValues4[4];
-						InterpolateVertexAttribute_PerspectiveCorrect4(cf0, cf1, cf2, floatBarycentricsInvZ_X4, floatBarycentricsInvZ_Y4, floatBarycentricsInvZ_Z4, pixelZ4, interpolatedValues4);
+						InterpolateVertexAttribute_PerspectiveCorrect4(cf0, cf1, cf2, floatBarycentricsInvW_X, floatBarycentricsInvW_Y, floatBarycentricsInvW_Z, interpolatedValues4, barycentricInterpolants, interpolatedPixelW4);
 						if (pixelWriteMask & 0x1) *interpolatedOutRegisterValues[0] = interpolatedValues4[0];
 						if (pixelWriteMask & 0x2) *interpolatedOutRegisterValues[1] = interpolatedValues4[1];
 						if (pixelWriteMask & 0x4) *interpolatedOutRegisterValues[2] = interpolatedValues4[2];
@@ -8316,7 +8319,7 @@ void IDirect3DDevice9Hook::InterpolateStreamIntoRegisters4(PShaderEngine* const 
 						LoadElementToRegister(cf2, registerLoadType, (v2 + element->Offset) );
 
 						D3DXVECTOR4 interpolatedValues4[4];
-						InterpolateVertexAttribute_PerspectiveCorrect4(cf0, cf1, cf2, floatBarycentricsInvZ_X4, floatBarycentricsInvZ_Y4, floatBarycentricsInvZ_Z4, pixelZ4, interpolatedValues4);
+						InterpolateVertexAttribute_PerspectiveCorrect4(cf0, cf1, cf2, floatBarycentricsInvW_X, floatBarycentricsInvW_Y, floatBarycentricsInvW_Z, interpolatedValues4, barycentricInterpolants, interpolatedPixelW4);
 						if (pixelWriteMask & 0x1) *interpolatedOutRegisterValues[0] = interpolatedValues4[0];
 						if (pixelWriteMask & 0x2) *interpolatedOutRegisterValues[1] = interpolatedValues4[1];
 						if (pixelWriteMask & 0x4) *interpolatedOutRegisterValues[2] = interpolatedValues4[2];
@@ -8386,7 +8389,7 @@ void IDirect3DDevice9Hook::InterpolateStreamIntoRegisters4(PShaderEngine* const 
 
 						// TODO: Implement PS_3_0 interpreters too
 						D3DXVECTOR4 interpolatedValues4[4];
-						InterpolateVertexAttribute_PerspectiveCorrect4(cf0, cf1, cf2, floatBarycentricsInvZ_X4, floatBarycentricsInvZ_Y4, floatBarycentricsInvZ_Z4, pixelZ4, interpolatedValues4);
+						InterpolateVertexAttribute_PerspectiveCorrect4(cf0, cf1, cf2, floatBarycentricsInvW_X, floatBarycentricsInvW_Y, floatBarycentricsInvW_Z, interpolatedValues4, barycentricInterpolants, interpolatedPixelW4);
 						if (pixelWriteMask & 0x1) *interpolatedOutRegisterValues[0] = interpolatedValues4[0];
 						if (pixelWriteMask & 0x2) *interpolatedOutRegisterValues[1] = interpolatedValues4[1];
 						if (pixelWriteMask & 0x4) *interpolatedOutRegisterValues[2] = interpolatedValues4[2];
@@ -8411,22 +8414,41 @@ void IDirect3DDevice9Hook::InterpolateStreamIntoRegisters4(PShaderEngine* const 
 #endif
 }
 
-static const __m128 oneVec = { 1.0f, 1.0f, 1.0f, 1.0f };
-static const __m128 maxDepth24Bit = { 16777216.0f, 16777216.0f, 16777216.0f, 16777216.0f };
-
-const float IDirect3DDevice9Hook::InterpolatePixelDepth(const __m128 barycentricInterpolants, const __m128 invZ) const
+const float IDirect3DDevice9Hook::InterpolatePixelDepth(__m128 barycentricInterpolants, const __m128 invZ) const
 {
-	const __m128 invInterpolatedDepth = _mm_dp_ps(invZ, barycentricInterpolants, 0x7F);
+	__m128 deltaInvZ = _mm_sub_ps(invZ, _mm_shuffle_ps(invZ, invZ, _MM_SHUFFLE(0, 0, 0, 0) ) );
+	deltaInvZ.m128_f32[0] = invZ.m128_f32[0];
 
+	barycentricInterpolants.m128_f32[0] = 1.0f;
+	const __m128 invInterpolatedDepth = _mm_dp_ps(deltaInvZ, barycentricInterpolants, 0x77);
+
+	// Re-inverting the Z depth is technically not necessary as a [0, 1] depth buffer will functionally work the same
+	// even with reciprocal depth values so long as the depth comparisons are flipped too.
+	// But for the purposes of this software rasterizer and since we're sharing this function between both the per-pixel Z
+	// and W calculations, we'll do this inversion to get the correct values out.
 	return _mm_div_ps(oneVec, invInterpolatedDepth).m128_f32[0];
 }
 
 void IDirect3DDevice9Hook::InterpolatePixelDepth4(const __m128 (&barycentricInterpolants4)[4], const __m128 invZ, __m128& outPixelDepth4) const
 {
-	const __m128 dotProdResult0 = _mm_dp_ps(invZ, barycentricInterpolants4[0], 0x7F);
-	const __m128 dotProdResult1 = _mm_dp_ps(invZ, barycentricInterpolants4[1], 0x7F);
-	const __m128 dotProdResult2 = _mm_dp_ps(invZ, barycentricInterpolants4[2], 0x7F);
-	const __m128 dotProdResult3 = _mm_dp_ps(invZ, barycentricInterpolants4[3], 0x7F);
+	__m128 deltaInvZ = _mm_sub_ps(invZ, _mm_shuffle_ps(invZ, invZ, _MM_SHUFFLE(0, 0, 0, 0) ) );
+	deltaInvZ.m128_f32[0] = invZ.m128_f32[0];
+
+	__m128 barycentricInterpolantsCopy[4] =
+	{
+		barycentricInterpolants4[0],
+		barycentricInterpolants4[1],
+		barycentricInterpolants4[2],
+		barycentricInterpolants4[3]
+	};
+	barycentricInterpolantsCopy[0].m128_f32[0] = 1.0f;
+	barycentricInterpolantsCopy[1].m128_f32[0] = 1.0f;
+	barycentricInterpolantsCopy[2].m128_f32[0] = 1.0f;
+	barycentricInterpolantsCopy[3].m128_f32[0] = 1.0f;
+	const __m128 dotProdResult0 = _mm_dp_ps(deltaInvZ, barycentricInterpolantsCopy[0], 0x77);
+	const __m128 dotProdResult1 = _mm_dp_ps(deltaInvZ, barycentricInterpolantsCopy[1], 0x77);
+	const __m128 dotProdResult2 = _mm_dp_ps(deltaInvZ, barycentricInterpolantsCopy[2], 0x77);
+	const __m128 dotProdResult3 = _mm_dp_ps(deltaInvZ, barycentricInterpolantsCopy[3], 0x77);
 
 	const __m128 invInterpolatedDepth4 = 
 	{
@@ -8436,6 +8458,11 @@ void IDirect3DDevice9Hook::InterpolatePixelDepth4(const __m128 (&barycentricInte
 		dotProdResult3.m128_f32[0]
 	};
 
+	// Re-inverting the Z depth is technically not necessary as a [0, 1] depth buffer will functionally work the same
+	// even with reciprocal depth values so long as the depth comparisons are flipped too.
+	// But for the purposes of this software rasterizer and since we're sharing this function between both the per-pixel Z
+	// and W calculations, we'll do this inversion to get the correct values out.
+
 	const __m128 pixelDepth4 = _mm_div_ps(oneVec, invInterpolatedDepth4);
 	outPixelDepth4 = pixelDepth4;
 }
@@ -8443,7 +8470,7 @@ void IDirect3DDevice9Hook::InterpolatePixelDepth4(const __m128 (&barycentricInte
 // Handles interpolating pixel shader input registers from vertex shader output registers
 // TODO: Like InterpolateStreamIntoRegisters, have this function fill with (1,1,1,1) for input color usage registers or (0,0,0,0) for other usages if the vertex shader doesn't write to the corresponding output registers
 void IDirect3DDevice9Hook::InterpolateShaderIntoRegisters(PShaderEngine* const pixelShader, const VStoPSMapping& vs_psMapping, const VS_2_0_OutputRegisters& v0, const VS_2_0_OutputRegisters& v1, const VS_2_0_OutputRegisters& v2, 
-	const float pixelZ, const __m128 floatBarycentricsInvZ_X, const __m128 floatBarycentricsInvZ_Y, const __m128 floatBarycentricsInvZ_Z) const
+	const __m128 floatBarycentricsInvW_X, const __m128 floatBarycentricsInvW_Y, const __m128 floatBarycentricsInvW_Z, const __m128 barycentricInterpolants, const float interpolatedPixelW) const
 {
 	const ShaderInfo& pixelShaderInfo = currentState.currentPixelShader->GetShaderInfo();
 	if (pixelShaderInfo.shaderMajorVersion == 1)
@@ -8460,7 +8487,7 @@ void IDirect3DDevice9Hook::InterpolateShaderIntoRegisters(PShaderEngine* const p
 				{
 					const D3DXVECTOR4& cf1 = *(const D3DXVECTOR4* const)&(v1.vs_interpolated_outputs.vs_2_0_outputs.oD[vsRegisterIndex]);
 					const D3DXVECTOR4& cf2 = *(const D3DXVECTOR4* const)&(v2.vs_interpolated_outputs.vs_2_0_outputs.oD[vsRegisterIndex]);
-					InterpolateVertexAttribute_PerspectiveCorrect(cf0, cf1, cf2, floatBarycentricsInvZ_X, floatBarycentricsInvZ_Y, floatBarycentricsInvZ_Z, pixelZ, interpolatedFloatValue);
+					InterpolateVertexAttribute_PerspectiveCorrect(cf0, cf1, cf2, floatBarycentricsInvW_X, floatBarycentricsInvW_Y, floatBarycentricsInvW_Z, interpolatedFloatValue, barycentricInterpolants, interpolatedPixelW);
 				}
 				else
 				{
@@ -8479,7 +8506,7 @@ void IDirect3DDevice9Hook::InterpolateShaderIntoRegisters(PShaderEngine* const p
 				{
 					const D3DXVECTOR4& cf1 = *(const D3DXVECTOR4* const)&(v1.vs_interpolated_outputs.vs_2_0_outputs.oT[vsRegisterIndex]);
 					const D3DXVECTOR4& cf2 = *(const D3DXVECTOR4* const)&(v2.vs_interpolated_outputs.vs_2_0_outputs.oT[vsRegisterIndex]);
-					InterpolateVertexAttribute_PerspectiveCorrect(cf0, cf1, cf2, floatBarycentricsInvZ_X, floatBarycentricsInvZ_Y, floatBarycentricsInvZ_Z, pixelZ, interpolatedFloatValue);
+					InterpolateVertexAttribute_PerspectiveCorrect(cf0, cf1, cf2, floatBarycentricsInvW_X, floatBarycentricsInvW_Y, floatBarycentricsInvW_Z, interpolatedFloatValue, barycentricInterpolants, interpolatedPixelW);
 				}
 				else
 				{
@@ -8508,7 +8535,7 @@ void IDirect3DDevice9Hook::InterpolateShaderIntoRegisters(PShaderEngine* const p
 					// Color interpolator registers:
 					const D3DXVECTOR4& cf1 = *(const D3DXVECTOR4* const)&(v1.vs_interpolated_outputs.vs_3_0_outputs.oT[vsRegisterIndex]);
 					const D3DXVECTOR4& cf2 = *(const D3DXVECTOR4* const)&(v2.vs_interpolated_outputs.vs_3_0_outputs.oT[vsRegisterIndex]);
-					InterpolateVertexAttribute_PerspectiveCorrect(cf0, cf1, cf2, floatBarycentricsInvZ_X, floatBarycentricsInvZ_Y, floatBarycentricsInvZ_Z, pixelZ, interpolatedFloatValue);
+					InterpolateVertexAttribute_PerspectiveCorrect(cf0, cf1, cf2, floatBarycentricsInvW_X, floatBarycentricsInvW_Y, floatBarycentricsInvW_Z, interpolatedFloatValue, barycentricInterpolants, interpolatedPixelW);
 				}
 				else
 				{
@@ -8528,7 +8555,7 @@ void IDirect3DDevice9Hook::InterpolateShaderIntoRegisters(PShaderEngine* const p
 					// Texcoord interpolator registers:
 					const D3DXVECTOR4& cf1 = *(const D3DXVECTOR4* const)&(v1.vs_interpolated_outputs.vs_3_0_outputs.oT[vsRegisterIndex]);
 					const D3DXVECTOR4& cf2 = *(const D3DXVECTOR4* const)&(v2.vs_interpolated_outputs.vs_3_0_outputs.oT[vsRegisterIndex]);
-					InterpolateVertexAttribute_PerspectiveCorrect(cf0, cf1, cf2, floatBarycentricsInvZ_X, floatBarycentricsInvZ_Y, floatBarycentricsInvZ_Z, pixelZ, interpolatedFloatValue);
+					InterpolateVertexAttribute_PerspectiveCorrect(cf0, cf1, cf2, floatBarycentricsInvW_X, floatBarycentricsInvW_Y, floatBarycentricsInvW_Z, interpolatedFloatValue, barycentricInterpolants, interpolatedPixelW);
 				}
 				else
 				{
@@ -8558,7 +8585,7 @@ void IDirect3DDevice9Hook::InterpolateShaderIntoRegisters(PShaderEngine* const p
 					const D3DXVECTOR4& cf2 = *(const D3DXVECTOR4* const)&(v2.vs_interpolated_outputs.vs_3_0_outputs.oT[vsRegisterIndex]);
 
 					// TODO: Implement PS_3_0 interpreters too
-					InterpolateVertexAttribute_PerspectiveCorrect(cf0, cf1, cf2, floatBarycentricsInvZ_X, floatBarycentricsInvZ_Y, floatBarycentricsInvZ_Z, pixelZ, interpolatedFloatValue);
+					InterpolateVertexAttribute_PerspectiveCorrect(cf0, cf1, cf2, floatBarycentricsInvW_X, floatBarycentricsInvW_Y, floatBarycentricsInvW_Z, interpolatedFloatValue, barycentricInterpolants, interpolatedPixelW);
 				}
 				else
 				{
@@ -8579,7 +8606,7 @@ void IDirect3DDevice9Hook::InterpolateShaderIntoRegisters(PShaderEngine* const p
 // TODO: Like InterpolateStreamIntoRegisters, have this function fill with (1,1,1,1) for input color usage registers or (0,0,0,0) for other usages if the vertex shader doesn't write to the corresponding output registers
 template <const unsigned char pixelWriteMask>
 void IDirect3DDevice9Hook::InterpolateShaderIntoRegisters4(PShaderEngine* const pixelShader, const VStoPSMapping& vs_psMapping, const VS_2_0_OutputRegisters& v0, const VS_2_0_OutputRegisters& v1, const VS_2_0_OutputRegisters& v2, 
-	const __m128 pixelZ4, const __m128 (&floatBarycentricsInvZ_X4)[4], const __m128 (&floatBarycentricsInvZ_Y4)[4], const __m128 (&floatBarycentricsInvZ_Z4)[4]) const
+	const __m128 floatBarycentricsInvW_X, const __m128 floatBarycentricsInvW_Y, const __m128 floatBarycentricsInvW_Z, const __m128 (&barycentricInterpolants)[4], const __m128 interpolatedPixelW4) const
 {
 	const ShaderInfo& pixelShaderInfo = currentState.currentPixelShader->GetShaderInfo();
 	if (pixelShaderInfo.shaderMajorVersion == 1)
@@ -8604,7 +8631,7 @@ void IDirect3DDevice9Hook::InterpolateShaderIntoRegisters4(PShaderEngine* const 
 					const D3DXVECTOR4& cf2 = *(const D3DXVECTOR4* const)&(v2.vs_interpolated_outputs.vs_2_0_outputs.oD[vsRegisterIndex]);
 					
 					D3DXVECTOR4 interpolatedValues4[4];
-					InterpolateVertexAttribute_PerspectiveCorrect4(cf0, cf1, cf2, floatBarycentricsInvZ_X4, floatBarycentricsInvZ_Y4, floatBarycentricsInvZ_Z4, pixelZ4, interpolatedValues4);
+					InterpolateVertexAttribute_PerspectiveCorrect4(cf0, cf1, cf2, floatBarycentricsInvW_X, floatBarycentricsInvW_Y, floatBarycentricsInvW_Z, interpolatedValues4, barycentricInterpolants, interpolatedPixelW4);
 					if (pixelWriteMask & 0x1) *interpolatedOutRegisterValues[0] = interpolatedValues4[0];
 					if (pixelWriteMask & 0x2) *interpolatedOutRegisterValues[1] = interpolatedValues4[1];
 					if (pixelWriteMask & 0x4) *interpolatedOutRegisterValues[2] = interpolatedValues4[2];
@@ -8638,7 +8665,7 @@ void IDirect3DDevice9Hook::InterpolateShaderIntoRegisters4(PShaderEngine* const 
 					const D3DXVECTOR4& cf2 = *(const D3DXVECTOR4* const)&(v2.vs_interpolated_outputs.vs_2_0_outputs.oT[vsRegisterIndex]);
 					
 					D3DXVECTOR4 interpolatedValues4[4];
-					InterpolateVertexAttribute_PerspectiveCorrect4(cf0, cf1, cf2, floatBarycentricsInvZ_X4, floatBarycentricsInvZ_Y4, floatBarycentricsInvZ_Z4, pixelZ4, interpolatedValues4);
+					InterpolateVertexAttribute_PerspectiveCorrect4(cf0, cf1, cf2, floatBarycentricsInvW_X, floatBarycentricsInvW_Y, floatBarycentricsInvW_Z, interpolatedValues4, barycentricInterpolants, interpolatedPixelW4);
 					if (pixelWriteMask & 0x1) *interpolatedOutRegisterValues[0] = interpolatedValues4[0];
 					if (pixelWriteMask & 0x2) *interpolatedOutRegisterValues[1] = interpolatedValues4[1];
 					if (pixelWriteMask & 0x4) *interpolatedOutRegisterValues[2] = interpolatedValues4[2];
@@ -8682,7 +8709,7 @@ void IDirect3DDevice9Hook::InterpolateShaderIntoRegisters4(PShaderEngine* const 
 					const D3DXVECTOR4& cf2 = *(const D3DXVECTOR4* const)&(v2.vs_interpolated_outputs.vs_3_0_outputs.oT[vsRegisterIndex]);
 					
 					D3DXVECTOR4 interpolatedValues4[4];
-					InterpolateVertexAttribute_PerspectiveCorrect4(cf0, cf1, cf2, floatBarycentricsInvZ_X4, floatBarycentricsInvZ_Y4, floatBarycentricsInvZ_Z4, pixelZ4, interpolatedValues4);
+					InterpolateVertexAttribute_PerspectiveCorrect4(cf0, cf1, cf2, floatBarycentricsInvW_X, floatBarycentricsInvW_Y, floatBarycentricsInvW_Z, interpolatedValues4, barycentricInterpolants, interpolatedPixelW4);
 					if (pixelWriteMask & 0x1) *interpolatedOutRegisterValues[0] = interpolatedValues4[0];
 					if (pixelWriteMask & 0x2) *interpolatedOutRegisterValues[1] = interpolatedValues4[1];
 					if (pixelWriteMask & 0x4) *interpolatedOutRegisterValues[2] = interpolatedValues4[2];
@@ -8717,7 +8744,7 @@ void IDirect3DDevice9Hook::InterpolateShaderIntoRegisters4(PShaderEngine* const 
 					const D3DXVECTOR4& cf2 = *(const D3DXVECTOR4* const)&(v2.vs_interpolated_outputs.vs_3_0_outputs.oT[vsRegisterIndex]);
 					
 					D3DXVECTOR4 interpolatedValues4[4];
-					InterpolateVertexAttribute_PerspectiveCorrect4(cf0, cf1, cf2, floatBarycentricsInvZ_X4, floatBarycentricsInvZ_Y4, floatBarycentricsInvZ_Z4, pixelZ4, interpolatedValues4);
+					InterpolateVertexAttribute_PerspectiveCorrect4(cf0, cf1, cf2, floatBarycentricsInvW_X, floatBarycentricsInvW_Y, floatBarycentricsInvW_Z, interpolatedValues4, barycentricInterpolants, interpolatedPixelW4);
 					if (pixelWriteMask & 0x1) *interpolatedOutRegisterValues[0] = interpolatedValues4[0];
 					if (pixelWriteMask & 0x2) *interpolatedOutRegisterValues[1] = interpolatedValues4[1];
 					if (pixelWriteMask & 0x4) *interpolatedOutRegisterValues[2] = interpolatedValues4[2];
@@ -8762,7 +8789,7 @@ void IDirect3DDevice9Hook::InterpolateShaderIntoRegisters4(PShaderEngine* const 
 					// TODO: Implement PS_3_0 interpreters too
 					
 					D3DXVECTOR4 interpolatedValues4[4];
-					InterpolateVertexAttribute_PerspectiveCorrect4(cf0, cf1, cf2, floatBarycentricsInvZ_X4, floatBarycentricsInvZ_Y4, floatBarycentricsInvZ_Z4, pixelZ4, interpolatedValues4);
+					InterpolateVertexAttribute_PerspectiveCorrect4(cf0, cf1, cf2, floatBarycentricsInvW_X, floatBarycentricsInvW_Y, floatBarycentricsInvW_Z, interpolatedValues4, barycentricInterpolants, interpolatedPixelW4);
 					if (pixelWriteMask & 0x1) *interpolatedOutRegisterValues[0] = interpolatedValues4[0];
 					if (pixelWriteMask & 0x2) *interpolatedOutRegisterValues[1] = interpolatedValues4[1];
 					if (pixelWriteMask & 0x4) *interpolatedOutRegisterValues[2] = interpolatedValues4[2];
@@ -9914,6 +9941,18 @@ void IDirect3DDevice9Hook::RasterizeTriangle(PShaderEngine* const pShaderEngine,
 	const __m128 pos0vec = *(const __m128* const)&pos0;
 	const __m128 pos1vec = *(const __m128* const)&pos1;
 	const __m128 pos2vec = *(const __m128* const)&pos2;
+
+	// If any of the coords of our triangle's output vertex positions are NaN, then we *must* discard the entire triangle as per the D3D spec:
+	if (isnan(pos0vec.m128_f32[0]) || isnan(pos0vec.m128_f32[1]) || isnan(pos0vec.m128_f32[2]) || isnan(pos0vec.m128_f32[3]) ||
+		isnan(pos1vec.m128_f32[0]) || isnan(pos1vec.m128_f32[1]) || isnan(pos1vec.m128_f32[2]) || isnan(pos1vec.m128_f32[3]) ||
+		isnan(pos2vec.m128_f32[0]) || isnan(pos2vec.m128_f32[1]) || isnan(pos2vec.m128_f32[2]) || isnan(pos2vec.m128_f32[3]) )
+		return;
+
+	// If any of the coords of our triangle's output vertex positions are INF, then we *may* optionally discard the entire triangle as per the D3D spec:
+	if (isinf(pos0vec.m128_f32[0]) || isinf(pos0vec.m128_f32[1]) || isinf(pos0vec.m128_f32[2]) || isinf(pos0vec.m128_f32[3]) ||
+		isinf(pos1vec.m128_f32[0]) || isinf(pos1vec.m128_f32[1]) || isinf(pos1vec.m128_f32[2]) || isinf(pos1vec.m128_f32[3]) ||
+		isinf(pos2vec.m128_f32[0]) || isinf(pos2vec.m128_f32[1]) || isinf(pos2vec.m128_f32[2]) || isinf(pos2vec.m128_f32[3]) )
+		return;
 
 	// Near plane culling:
 	// TODO: Replace with real triangle clipping!

@@ -153,6 +153,15 @@ void GPUStats::UpdateDialogStats()
 	if (!GPUStatsDialog)
 		return;
 
+	const float VShaderIdlePercent = uStats.typedFrameStats.VShaderTimerStats.cyclesIdle / (const float)uStats.typedFrameStats.VShaderTimerStats.GetTotalCycleCount();
+	const float VShaderOutWaitPercent = uStats.typedFrameStats.VShaderTimerStats.cyclesWaitingForOutput / (const float)uStats.typedFrameStats.VShaderTimerStats.GetTotalCycleCount();
+	const float VShaderExecShaderCode = uStats.typedFrameStats.VShaderTimerStats.cyclesExecShaderCode / (const float)uStats.typedFrameStats.VShaderTimerStats.GetTotalCycleCount();
+	const float VShaderWorkingPercent = uStats.typedFrameStats.IATimerStats.cyclesWorking / (const float)uStats.typedFrameStats.VShaderTimerStats.GetTotalCycleCount();
+	PrintTimeStat(IDC_VS_STAT1, VShaderIdlePercent, uStats.typedFrameStats.VShaderTimerStats.cyclesIdle);
+	PrintTimeStat(IDC_VS_STAT2, VShaderOutWaitPercent, uStats.typedFrameStats.VShaderTimerStats.cyclesWaitingForOutput);
+	PrintTimeStat(IDC_VS_STAT3, VShaderExecShaderCode, uStats.typedFrameStats.VShaderTimerStats.cyclesExecShaderCode);
+	PrintTimeStat(IDC_VS_STAT4, VShaderWorkingPercent, uStats.typedFrameStats.VShaderTimerStats.cyclesWorking);
+
 	const float IAIdlePercent = uStats.typedFrameStats.IATimerStats.cyclesIdle / (const float)uStats.typedFrameStats.IATimerStats.GetTotalCycleCount();
 	const float IAOutWaitPercent = uStats.typedFrameStats.IATimerStats.cyclesWaitingForOutput / (const float)uStats.typedFrameStats.IATimerStats.GetTotalCycleCount();
 	const float IAWaitCachePercent = uStats.typedFrameStats.IATimerStats.cyclesLoadingDataToCache / (const float)uStats.typedFrameStats.IATimerStats.GetTotalCycleCount();
@@ -178,12 +187,19 @@ void GPUStats::UpdateDialogStats()
 	PrintTimeStat(IDC_RAST_STAT3, RastWaitTriWorkCachePercent, uStats.typedFrameStats.RasterizerTimerStats.cyclesWaitingForTriWorkCache);
 	PrintTimeStat(IDC_RAST_STAT4, RastWorkingPercent, uStats.typedFrameStats.RasterizerTimerStats.cyclesWorking);
 
-	const float InterpIdlePercent = uStats.typedFrameStats.AttrInterpolatorTimerStats.cyclesIdle / (const float)uStats.typedFrameStats.AttrInterpolatorTimerStats.GetTotalCycleCount();
-	const float InterpOutWaitPercent = uStats.typedFrameStats.AttrInterpolatorTimerStats.cyclesWaitingForOutput / (const float)uStats.typedFrameStats.AttrInterpolatorTimerStats.GetTotalCycleCount();
-	const float InterpWorkingPercent = uStats.typedFrameStats.AttrInterpolatorTimerStats.cyclesWorking / (const float)uStats.typedFrameStats.AttrInterpolatorTimerStats.GetTotalCycleCount();
-	PrintTimeStat(IDC_INTERP_STAT1, InterpIdlePercent, uStats.typedFrameStats.AttrInterpolatorTimerStats.cyclesIdle);
-	PrintTimeStat(IDC_INTERP_STAT2, InterpOutWaitPercent, uStats.typedFrameStats.AttrInterpolatorTimerStats.cyclesWaitingForOutput);
-	PrintTimeStat(IDC_INTERP_STAT3, InterpWorkingPercent, uStats.typedFrameStats.AttrInterpolatorTimerStats.cyclesWorking);
+	const float DepthInterpIdlePercent = uStats.typedFrameStats.DepthInterpolatorTimerStats.cyclesIdle / (const float)uStats.typedFrameStats.DepthInterpolatorTimerStats.GetTotalCycleCount();
+	const float DepthInterpOutWaitPercent = uStats.typedFrameStats.DepthInterpolatorTimerStats.cyclesWaitingForOutput / (const float)uStats.typedFrameStats.DepthInterpolatorTimerStats.GetTotalCycleCount();
+	const float DepthInterpWorkingPercent = uStats.typedFrameStats.DepthInterpolatorTimerStats.cyclesWorking / (const float)uStats.typedFrameStats.DepthInterpolatorTimerStats.GetTotalCycleCount();
+	PrintTimeStat(IDC_DINTERP_STAT1, DepthInterpIdlePercent, uStats.typedFrameStats.DepthInterpolatorTimerStats.cyclesIdle);
+	PrintTimeStat(IDC_DINTERP_STAT2, DepthInterpOutWaitPercent, uStats.typedFrameStats.DepthInterpolatorTimerStats.cyclesWaitingForOutput);
+	PrintTimeStat(IDC_DINTERP_STAT3, DepthInterpWorkingPercent, uStats.typedFrameStats.DepthInterpolatorTimerStats.cyclesWorking);
+
+	const float AttrInterpIdlePercent = uStats.typedFrameStats.AttrInterpolatorTimerStats.cyclesIdle / (const float)uStats.typedFrameStats.AttrInterpolatorTimerStats.GetTotalCycleCount();
+	const float AttrInterpOutWaitPercent = uStats.typedFrameStats.AttrInterpolatorTimerStats.cyclesWaitingForOutput / (const float)uStats.typedFrameStats.AttrInterpolatorTimerStats.GetTotalCycleCount();
+	const float AttrInterpWorkingPercent = uStats.typedFrameStats.AttrInterpolatorTimerStats.cyclesWorking / (const float)uStats.typedFrameStats.AttrInterpolatorTimerStats.GetTotalCycleCount();
+	PrintTimeStat(IDC_INTERP_STAT1, AttrInterpIdlePercent, uStats.typedFrameStats.AttrInterpolatorTimerStats.cyclesIdle);
+	PrintTimeStat(IDC_INTERP_STAT2, AttrInterpOutWaitPercent, uStats.typedFrameStats.AttrInterpolatorTimerStats.cyclesWaitingForOutput);
+	PrintTimeStat(IDC_INTERP_STAT3, AttrInterpWorkingPercent, uStats.typedFrameStats.AttrInterpolatorTimerStats.cyclesWorking);
 
 	const float TexSampIdlePercent = uStats.typedFrameStats.TexSamplerTimerStats.cyclesIdle / (const float)uStats.typedFrameStats.TexSamplerTimerStats.GetTotalCycleCount();
 	const float TexSampOutWaitPercent = uStats.typedFrameStats.TexSamplerTimerStats.cyclesWaitingForOutput / (const float)uStats.typedFrameStats.TexSamplerTimerStats.GetTotalCycleCount();

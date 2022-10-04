@@ -33,6 +33,7 @@
 #define IDC_IA_STAT4                    1018
 #define IDC_TRISETUP_STAT1              1019
 #define IDC_TRISETUP_STAT2              1020
+#define IDC_VS_STAT1                    1021
 #define IDC_TRISETUP_STAT3              1022
 #define IDC_RAST_STAT1                  1023
 #define IDC_CMB_SCANOUTSWIZZLER         1023
@@ -42,7 +43,6 @@
 #define IDC_CMB_SCANOUTSWIZZLEG2        1025
 #define IDC_CMB_SCANOUTSWIZZLEB         1025
 #define IDC_RAST_STAT4                  1026
-#define IDC_EDIT1                       1026
 #define IDC_EDIT_DRAWSLEEPMICROS        1026
 #define IDC_INTERP_STAT1                1027
 #define IDC_INTERP_STAT2                1028
@@ -67,8 +67,15 @@
 #define IDC_MEMREAD_COUNT2              1047
 #define IDC_MEMWRITE_COUNT1             1048
 #define IDC_MEMWRITE_COUNT2             1049
+#define IDC_VS_STAT2                    1050
+#define IDC_VS_STAT3                    1051
 #define IDC_MEMREAD_COUNT3              1052
 #define IDC_MEMREAD_COUNT4              1053
+#define IDC_VS_STAT4                    1054
+#define IDC_DINTERP_STAT1               1055
+#define IDC_DINTERP_STAT2               1056
+#define IDC_IA_STAT12                   1058
+#define IDC_DINTERP_STAT3               1058
 
 // Next default values for new objects
 // 

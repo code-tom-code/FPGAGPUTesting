@@ -75,6 +75,9 @@
     <ClCompile Include="Testbenches\ROPTestbench.cpp">
       <Filter>Source Files\Testbenches</Filter>
     </ClCompile>
+    <ClCompile Include="Testbenches\EthernetTestbench.cpp">
+      <Filter>Source Files\Testbenches</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="xsi_loader.h">
@@ -141,6 +144,9 @@
       <Filter>Header Files\Testbenches</Filter>
     </ClInclude>
     <ClInclude Include="Testbenches\ROPTestbench.h">
+      <Filter>Header Files\Testbenches</Filter>
+    </ClInclude>
+    <ClInclude Include="Testbenches\EthernetTestbench.h">
       <Filter>Header Files\Testbenches</Filter>
     </ClInclude>
   </ItemGroup>
@@ -284,6 +290,18 @@
       <Filter>HDL</Filter>
     </None>
     <None Include="ROP.prj">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="hdl_src\EthernetController2.vhd">
+      <Filter>HDL</Filter>
+    </None>
+    <None Include="hdl_src\EthernetController3.vhd">
+      <Filter>HDL</Filter>
+    </None>
+    <None Include="EthernetController3.prj">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="StatsCollector.prj">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

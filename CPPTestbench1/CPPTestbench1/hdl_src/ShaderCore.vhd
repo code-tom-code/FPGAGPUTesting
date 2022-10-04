@@ -131,6 +131,12 @@ entity ShaderCore is
 		UNORM8ToFloat_ConvertedZ : in STD_LOGIC_VECTOR(31 downto 0);
 		UNORM8ToFloat_ConvertedW : in STD_LOGIC_VECTOR(31 downto 0);
 
+		-- Stats signals:
+		STAT_CyclesIdle : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		STAT_CyclesSpentWorking : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		STAT_CyclesExecShaderCode : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		STAT_CyclesWaitingForOutput : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+
 		-- Debugging signals:
 		DBG_CurrentState : out STD_LOGIC_VECTOR(5 downto 0) := (others => '0');
 		DBG_CurrentFetchWave : out STD_LOGIC_VECTOR(3 downto 0) := (others => '0');
@@ -1119,17 +1125,29 @@ signal numIndicesInBatch : unsigned(6 downto 0) := (others => '0');
 signal isIndexedDrawCall : std_logic := '0';
 signal hasSentIndicesForBatch : std_logic := '0';
 
+-- Stats signals:
+signal statCyclesIdle : unsigned(31 downto 0) := (others => '0');
+signal statCyclesSpentWorking : unsigned(31 downto 0) := (others => '0');
+signal statCyclesExecShaderCode : unsigned(31 downto 0) := (others => '0');
+signal statCyclesWaitingForOutput : unsigned(31 downto 0) := (others => '0');
+
 begin
 
 ICache_Clk <= clk;
 
 CMD_IsReadyForCommand <= '1' when (currentState = readyState) else '0';
+ICache_Address <= std_logic_vector(instructionPointer);
+
+STAT_CyclesIdle <= std_logic_vector(statCyclesIdle);
+STAT_CyclesSpentWorking <= std_logic_vector(statCyclesSpentWorking);
+STAT_CyclesExecShaderCode <= std_logic_vector(statCyclesExecShaderCode);
+STAT_CyclesWaitingForOutput <= std_logic_vector(statCyclesWaitingForOutput);
+
 DBG_CurrentState <= std_logic_vector(to_unsigned(eShaderCoreState'pos(currentState), 6) );
 DBG_CurrentFetchWave <= std_logic_vector(currentFetchWave(3 downto 0) );
 DBG_CurrentDWORD <= std_logic_vector(currentDWORDID);
 DBG_CurrentStreamID <= std_logic_vector(currentStreamID);
 DBG_ActiveLanesBitmask <= std_logic_vector(activeWaveLanesBitmask);
-ICache_Address <= std_logic_vector(instructionPointer);
 DBG_InstructionPointer <= std_logic_vector(instructionPointer);
 DBG_CurrentlyExecutingInstruction <= std_logic_vector(currentInstruction);
 DBG_CyclesRemainingCurrentInstruction <= std_logic_vector(cyclesRemainingCurrentInstruction);
@@ -1173,7 +1191,26 @@ FPU3_IN_B <= std_logic_vector(GetFPUInputMUX(PortB_MUX, PortB_SrcMod, unsigned(G
 -- Lane 3 GPR Port W MUX
 GPR0_PortW_writeInData(127 downto 96) <= std_logic_vector(GetStoreOutputValue(PortW_MUX, PortW_DestMod, unsigned(FPU3_OUT_RESULT), currentFetchRegisters(127 downto 96) ) );
 
-process(clk)
+StatsProcess : process(clk)
+begin
+	if (rising_edge(clk) ) then
+		case currentState is
+			when readyState =>
+				statCyclesIdle <= statCyclesIdle + 1;
+
+			when submitShaderResults =>
+				statCyclesWaitingForOutput <= statCyclesWaitingForOutput + 1;
+
+			when runShader =>
+				statCyclesExecShaderCode <= statCyclesExecShaderCode + 1;
+			
+			when others =>
+				statCyclesSpentWorking <= statCyclesSpentWorking + 1;
+		end case;
+	end if;
+end process StatsProcess;
+
+MainProcess : process(clk)
 begin
 	if (rising_edge(clk) ) then
 		case currentState is
@@ -1926,6 +1963,6 @@ begin
 			when others =>
 		end case;
 	end if;
-end process;
+end process MainProcess;
 
 end Behavioral;

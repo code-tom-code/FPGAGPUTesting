@@ -192,6 +192,7 @@
     <ClCompile Include="RenderWindow.cpp" />
     <ClCompile Include="Testbenches\AttributeInterpTestbench.cpp" />
     <ClCompile Include="Testbenches\DepthInterpTestbench.cpp" />
+    <ClCompile Include="Testbenches\EthernetTestbench.cpp" />
     <ClCompile Include="Testbenches\FloatALUTestbench.cpp" />
     <ClCompile Include="Testbenches\IndexBufferCacheTestbench.cpp" />
     <ClCompile Include="Testbenches\InputAssemblerTestbench.cpp" />
@@ -211,6 +212,7 @@
     <ClInclude Include="RenderWindow.h" />
     <ClInclude Include="Testbenches\AttributeInterpTestbench.h" />
     <ClInclude Include="Testbenches\DepthInterpTestbench.h" />
+    <ClInclude Include="Testbenches\EthernetTestbench.h" />
     <ClInclude Include="Testbenches\FloatALUTestbench.h" />
     <ClInclude Include="Testbenches\IndexBufferCacheTestbench.h" />
     <ClInclude Include="Testbenches\InputAssemblerTestbench.h" />
@@ -235,6 +237,7 @@
     <None Include="ConstantBuffer.prj" />
     <None Include="DepthBuffer.prj" />
     <None Include="DepthInterpolator.prj" />
+    <None Include="EthernetController3.prj" />
     <None Include="FloatALU.prj" />
     <None Include="GPRQuad.prj" />
     <None Include="hdl_src\AttrInterpolator.vhd" />
@@ -243,6 +246,8 @@
     <None Include="hdl_src\ConstantBuffer.vhd" />
     <None Include="hdl_src\DepthBuffer.vhd" />
     <None Include="hdl_src\DepthInterpolator.vhd" />
+    <None Include="hdl_src\EthernetController2.vhd" />
+    <None Include="hdl_src\EthernetController3.vhd" />
     <None Include="hdl_src\FloatALU.vhd" />
     <None Include="hdl_src\FloatALU_Types.vhd" />
     <None Include="hdl_src\GPRQuad.vhd" />
@@ -270,6 +275,7 @@
     <None Include="Reciprocal.prj" />
     <None Include="ROP.prj" />
     <None Include="ShaderCore.prj" />
+    <None Include="StatsCollector.prj" />
     <None Include="TexSample.prj" />
     <None Include="TriSetup.prj" />
     <None Include="TriWorkCache.prj" />

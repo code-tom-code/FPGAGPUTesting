@@ -566,6 +566,20 @@ struct endFrameStatsResponse : command
 		MS_MAX_NUM_METRIC_SPACES // This must always be last!
 	};
 
+	enum eVShaderTimerStats : unsigned char
+	{
+		VShaderCyclesIdle = 0,
+		VShaderCyclesSpentWorking = 1,
+		VShaderCyclesExecShaderCode = 2,
+		VShaderCyclesWaitingForIA = 3,
+
+		MAX_VSHADER_TIMER_STATS, // This must always be last
+
+		VShaderIdleCycles = VShaderCyclesIdle,
+		VShaderWaitForInputCycles = VShaderIdleCycles,
+		VShaderWaitForOutputCycles = VShaderCyclesWaitingForIA
+	};
+
 	enum eIATimerStats : unsigned char
 	{
 		IACyclesWaitingForDrawCommand = 0,
@@ -607,16 +621,29 @@ struct endFrameStatsResponse : command
 		RasterizerWaitForOutputCycles = RasterizerCyclesWaitingForRastOutputFIFO
 	};
 
+	enum eDepthInterpolatorTimerStats : unsigned char
+	{
+		DepthInterpCyclesWaitingForRasterizer = 0,
+		DepthInterpCyclesSpentWorking = 1,
+		DepthInterpCyclesWaitingForAttrInterpolator = 2,
+
+		MAX_DEPTHINTERP_TIMER_STATS, // This must always be last
+
+		DepthInterpIdleCycles = DepthInterpCyclesWaitingForRasterizer,
+		DepthInterpWaitForInputCycles = DepthInterpCyclesWaitingForRasterizer,
+		DepthInterpWaitForOutputCycles = DepthInterpCyclesWaitingForAttrInterpolator
+	};
+
 	enum eAttrInterpolatorTimerStats : unsigned char
 	{
-		AttrInterpCyclesWaitingForRasterizer = 0,
+		AttrInterpCyclesWaitingForDepthInterpolator = 0,
 		AttrInterpCyclesSpentWorking = 1,
 		AttrInterpCyclesWaitingForTexSampler = 2,
 
 		MAX_ATTRINTERP_TIMER_STATS, // This must always be last
 
-		AttrInterpIdleCycles = AttrInterpCyclesWaitingForRasterizer,
-		AttrInterpWaitForInputCycles = AttrInterpCyclesWaitingForRasterizer,
+		AttrInterpIdleCycles = AttrInterpCyclesWaitingForDepthInterpolator,
+		AttrInterpWaitForInputCycles = AttrInterpCyclesWaitingForDepthInterpolator,
 		AttrInterpWaitForOutputCycles = AttrInterpCyclesWaitingForTexSampler
 	};
 
@@ -707,18 +734,23 @@ struct endFrameStatsResponse : command
 
 		MAX_MEMWRITE_COUNTER_STATS // This must always be last
 	};
+
+	enum eExtraPaddingZeroes : unsigned char
+	{
+		MAX_PADDING_ZEROES = 1
+	};
 	
 	enum eTotalCounterStats : unsigned char
 	{
-		TotalTimerStatsCount = MAX_IA_TIMER_STATS + MAX_TRISETUP_TIMER_STATS + MAX_RASTERIZER_TIMER_STATS + MAX_ATTRINTERP_TIMER_STATS + MAX_TEXSAMPLER_TIMER_STATS + MAX_ROP_TIMER_STATS + 
-			MAX_COMMANDPROC_TIMER_STATS + MAX_MEMCONTROLLER_READ_TIMER_STATS + MAX_MEMCONTROLLER_WRITE_TIMER_STATS,
+		TotalTimerStatsCount = MAX_VSHADER_TIMER_STATS + MAX_IA_TIMER_STATS + MAX_TRISETUP_TIMER_STATS + MAX_RASTERIZER_TIMER_STATS + MAX_ATTRINTERP_TIMER_STATS + MAX_DEPTHINTERP_TIMER_STATS + MAX_TEXSAMPLER_TIMER_STATS + MAX_ROP_TIMER_STATS + 
+			MAX_COMMANDPROC_TIMER_STATS + MAX_MEMCONTROLLER_READ_TIMER_STATS + MAX_MEMCONTROLLER_WRITE_TIMER_STATS + MAX_PADDING_ZEROES,
 
 		TotalCounterStatsCount = MAX_ROP_COUNTER_STATS + MAX_MEMREAD_COUNTER_STATS + MAX_MEMWRITE_COUNTER_STATS,
 
 		// TotalAllStatsCount is the size (in DWORD's) of the DWORD array that backs our stats memory
 		TotalAllStatsCount = TotalTimerStatsCount + TotalCounterStatsCount
 	};
-	static_assert(eTotalCounterStats::TotalAllStatsCount == 36u, "Error: Need to update stats header files to match HDL PER_FRAME_STATS_COUNT value!");
+	static_assert(eTotalCounterStats::TotalAllStatsCount == 44u, "Error: Need to update stats header files to match HDL PER_FRAME_STATS_COUNT value!");
 
 	// Payload 0:
 	eSystemType system : 4; // 3 downto 0

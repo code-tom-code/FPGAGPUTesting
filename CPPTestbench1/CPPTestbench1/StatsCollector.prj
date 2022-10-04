@@ -1,0 +1,4 @@
+# vhdl work CommandProcessor.vhd
+# List other files here
+vhdl xil_defaultlib  \
+"hdl_src/StatsCollector.vhd" \

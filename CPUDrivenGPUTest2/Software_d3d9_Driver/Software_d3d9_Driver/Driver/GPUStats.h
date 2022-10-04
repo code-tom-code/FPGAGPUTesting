@@ -90,6 +90,22 @@ struct GPUFrameStats
 	{
 	} MemControllerWriteTimerStats;
 
+	struct _VShaderTimerStats : StreamThroughTimerStats
+	{
+		DWORD cyclesExecShaderCode;
+
+		const DWORD GetTotalCycleCount() const
+		{
+			return StreamThroughTimerStats::GetTotalCycleCount() + cyclesExecShaderCode;
+		}
+	} VShaderTimerStats;
+
+	struct _DepthInterpolatorTimerStats : StreamThroughTimerStats
+	{
+	} DepthInterpolatorTimerStats;
+
+	DWORD zeroPadding;
+
 	struct _ROPCacheStats
 	{
 		DWORD ROPCounterCacheHits;
@@ -120,6 +136,8 @@ struct GPUFrameStats
 	MemWriteCounterStats WriteMemCounterStats;
 };
 static_assert(sizeof(GPUFrameStats) == sizeof(DWORD) * endFrameStatsResponse::TotalAllStatsCount, "Error: Unexpected struct padding!");
+
+constexpr const unsigned cVal = sizeof(GPUFrameStats);
 
 struct GPUStats
 {

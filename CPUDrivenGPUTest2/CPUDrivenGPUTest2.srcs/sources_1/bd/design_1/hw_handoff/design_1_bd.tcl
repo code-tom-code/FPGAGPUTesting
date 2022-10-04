@@ -497,6 +497,10 @@ proc create_hier_cell_ShaderCoreSystem { parentCell nameHier } {
   create_bd_pin -dir O -from 31 -to 0 OUT_RESULT
   create_bd_pin -dir O -from 31 -to 0 OUT_RESULT1
   create_bd_pin -dir O -from 31 -to 0 OUT_RESULT2
+  create_bd_pin -dir O -from 31 -to 0 STAT_CyclesExecShaderCode
+  create_bd_pin -dir O -from 31 -to 0 STAT_CyclesIdle
+  create_bd_pin -dir O -from 31 -to 0 STAT_CyclesSpentWorking
+  create_bd_pin -dir O -from 31 -to 0 STAT_CyclesWaitingForOutput
   create_bd_pin -dir I VBB_Done_0
   create_bd_pin -dir O VBO_IsIndexedDrawCall
   create_bd_pin -dir O -from 6 -to 0 VBO_NumIndices
@@ -719,6 +723,10 @@ proc create_hier_cell_ShaderCoreSystem { parentCell nameHier } {
   connect_bd_net -net ShaderCore_0_ICache_Enable [get_bd_pins InstructionCache/ena] [get_bd_pins ShaderCore_0/ICache_Enable]
   connect_bd_net -net ShaderCore_0_ICache_WriteData [get_bd_pins InstructionCache/dina] [get_bd_pins ShaderCore_0/ICache_WriteData]
   connect_bd_net -net ShaderCore_0_ICache_WriteMode [get_bd_pins InstructionCache/wea] [get_bd_pins ShaderCore_0/ICache_WriteMode]
+  connect_bd_net -net ShaderCore_0_STAT_CyclesExecShaderCode [get_bd_pins STAT_CyclesExecShaderCode] [get_bd_pins ShaderCore_0/STAT_CyclesExecShaderCode]
+  connect_bd_net -net ShaderCore_0_STAT_CyclesIdle [get_bd_pins STAT_CyclesIdle] [get_bd_pins ShaderCore_0/STAT_CyclesIdle]
+  connect_bd_net -net ShaderCore_0_STAT_CyclesSpentWorking [get_bd_pins STAT_CyclesSpentWorking] [get_bd_pins ShaderCore_0/STAT_CyclesSpentWorking]
+  connect_bd_net -net ShaderCore_0_STAT_CyclesWaitingForOutput [get_bd_pins STAT_CyclesWaitingForOutput] [get_bd_pins ShaderCore_0/STAT_CyclesWaitingForOutput]
   connect_bd_net -net ShaderCore_0_UNORM8ToFloat_ColorIn [get_bd_pins ShaderCore_0/UNORM8ToFloat_ColorIn] [get_bd_pins UNORM8ToFloat_0/D3DColorIn]
   connect_bd_net -net ShaderCore_0_UNORM8ToFloat_Enable [get_bd_pins ShaderCore_0/UNORM8ToFloat_Enable] [get_bd_pins UNORM8ToFloat_0/Enable]
   connect_bd_net -net ShaderCore_0_VBO_IsIndexedDrawCall [get_bd_pins VBO_IsIndexedDrawCall] [get_bd_pins ShaderCore_0/VBO_IsIndexedDrawCall]
@@ -2644,6 +2652,9 @@ proc create_root_design { parentCell } {
   connect_bd_net -net DepthInterpolator_0_FPU_ISHFT_GO [get_bd_pins DepthInterp_FPU/ISHFT_GO] [get_bd_pins DepthInterpolator_0/FPU_ISHFT_GO]
   connect_bd_net -net DepthInterpolator_0_FPU_ISPEC_GO [get_bd_pins DepthInterp_FPU/ISPEC_GO] [get_bd_pins DepthInterpolator_0/FPU_ISPEC_GO]
   connect_bd_net -net DepthInterpolator_0_FPU_Mode [get_bd_pins DepthInterp_FPU/IN_MODE] [get_bd_pins DepthInterpolator_0/FPU_Mode]
+  connect_bd_net -net DepthInterpolator_0_STAT_CyclesIdle [get_bd_pins DepthInterpolator_0/STAT_CyclesIdle] [get_bd_pins StatsCollector_0/DINTERP_CyclesIdle]
+  connect_bd_net -net DepthInterpolator_0_STAT_CyclesSpentWorking [get_bd_pins DepthInterpolator_0/STAT_CyclesSpentWorking] [get_bd_pins StatsCollector_0/DINTERP_CyclesSpentWorking]
+  connect_bd_net -net DepthInterpolator_0_STAT_CyclesWaitingForOutput [get_bd_pins DepthInterpolator_0/STAT_CyclesWaitingForOutput] [get_bd_pins StatsCollector_0/DINTERP_CyclesWaitingForOutput]
   connect_bd_net -net DepthInterpolator_0_TRICACHE_CurrentSlotIndex [get_bd_pins DepthInterpolator_0/TRICACHE_CurrentSlotIndex] [get_bd_pins TriWorkCache_0/INTERP_CurrentSlotIndex]
   connect_bd_net -net DepthInterpolator_0_TRICACHE_SignalSlotComplete [get_bd_pins DepthInterpolator_0/TRICACHE_SignalSlotComplete] [get_bd_pins TriWorkCache_0/INTERP_SignalSlotComplete]
   connect_bd_net -net IndexBufferCache_0_VBB_ReadData [get_bd_pins ILA_IA/probe17] [get_bd_pins IndexBufferCache_0/VBB_ReadData] [get_bd_pins VertexBatchBuilder_0/IBC_ReadData]
@@ -2809,6 +2820,10 @@ proc create_root_design { parentCell } {
   connect_bd_net -net ShaderCoreSystem_OUT_RESULT [get_bd_pins ILA_IA/probe44] [get_bd_pins ShaderCoreSystem/OUT_RESULT]
   connect_bd_net -net ShaderCoreSystem_OUT_RESULT1 [get_bd_pins ILA_IA/probe30] [get_bd_pins ShaderCoreSystem/OUT_RESULT1]
   connect_bd_net -net ShaderCoreSystem_OUT_RESULT2 [get_bd_pins ILA_IA/probe10] [get_bd_pins ShaderCoreSystem/OUT_RESULT2]
+  connect_bd_net -net ShaderCoreSystem_STAT_CyclesExecShaderCode [get_bd_pins ShaderCoreSystem/STAT_CyclesExecShaderCode] [get_bd_pins StatsCollector_0/VSHADER_CyclesExecShaderCode]
+  connect_bd_net -net ShaderCoreSystem_STAT_CyclesIdle [get_bd_pins ShaderCoreSystem/STAT_CyclesIdle] [get_bd_pins StatsCollector_0/VSHADER_CyclesIdle]
+  connect_bd_net -net ShaderCoreSystem_STAT_CyclesSpentWorking [get_bd_pins ShaderCoreSystem/STAT_CyclesSpentWorking] [get_bd_pins StatsCollector_0/VSHADER_CyclesSpentWorking]
+  connect_bd_net -net ShaderCoreSystem_STAT_CyclesWaitingForOutput [get_bd_pins ShaderCoreSystem/STAT_CyclesWaitingForOutput] [get_bd_pins StatsCollector_0/VSHADER_CyclesWaitingForOutput]
   connect_bd_net -net ShaderCoreSystem_VBO_IsIndexedDrawCall [get_bd_pins InputAssembler2_0/VBO_IsIndexedDrawCall] [get_bd_pins ShaderCoreSystem/VBO_IsIndexedDrawCall]
   connect_bd_net -net ShaderCoreSystem_VBO_NumIndices [get_bd_pins ILA_IA/probe32] [get_bd_pins InputAssembler2_0/VBO_NumIndices] [get_bd_pins ShaderCoreSystem/VBO_NumIndices]
   connect_bd_net -net ShaderCoreSystem_VBO_NumVertices [get_bd_pins ILA_IA/probe27] [get_bd_pins InputAssembler2_0/VBO_NumVertices] [get_bd_pins ShaderCoreSystem/VBO_NumVertices]

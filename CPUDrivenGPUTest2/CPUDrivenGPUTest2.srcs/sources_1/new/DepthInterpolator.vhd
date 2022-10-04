@@ -273,7 +273,7 @@ DBG_DepthInterpolator_State <= std_logic_vector(to_unsigned(depthInterpStateType
 DBG_RastBarycentricB <= std_logic_vector(storedDbgBarycentricB);
 DBG_RastBarycentricC <= std_logic_vector(storedDbgBarycentricC);
 
-	process(clk)
+	StatsProcess : process(clk)
 	begin
 		if (rising_edge(clk) ) then
 			case currentState is
@@ -287,9 +287,9 @@ DBG_RastBarycentricC <= std_logic_vector(storedDbgBarycentricC);
 					statCyclesWorking <= statCyclesWorking + 1;
 			end case;
 		end if;
-	end process;
+	end process StatsProcess;
 
-	process(clk)
+	MainProcess : process(clk)
 	begin
 		if (rising_edge(clk) ) then
 			case currentState is
@@ -631,6 +631,6 @@ DBG_RastBarycentricC <= std_logic_vector(storedDbgBarycentricC);
 
 			end case;
 		end if;
-	end process;
+	end process MainProcess;
 
 end Behavioral;

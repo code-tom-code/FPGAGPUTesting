@@ -54,17 +54,11 @@ entity ROP is
 		CMD_SetAlphaBlendStateBlock : in STD_LOGIC_VECTOR(21 downto 0);
 	-- Command Processor block interface end
 
-	-- Texture Sampler interface begin
-		TEXSAMP_outPixelX : in STD_LOGIC_VECTOR(15 downto 0);
-		TEXSAMP_outPixelY : in STD_LOGIC_VECTOR(15 downto 0);
-		TEXSAMP_outR : in STD_LOGIC_VECTOR(7 downto 0);
-		TEXSAMP_outG : in STD_LOGIC_VECTOR(7 downto 0);
-		TEXSAMP_outB : in STD_LOGIC_VECTOR(7 downto 0);
-		TEXSAMP_outA : in STD_LOGIC_VECTOR(7 downto 0);
-
-		TEXSAMP_writeIsValid : in STD_LOGIC;
-		TEXSAMP_writeAck : out STD_LOGIC := '0';
-	-- Texture Sampler interface end
+	-- Texture Sampler FIFO interface begin
+		TEXSAMP_InFIFO_rd_data : in STD_LOGIC_VECTOR(63 downto 0); -- 8 bytes of input data per pixel to the ROP unit
+        TEXSAMP_InFIFO_empty : in STD_LOGIC;
+        TEXSAMP_InFIFO_rd_en : out STD_LOGIC := '0';
+	-- Texture Sampler FIFO interface end
 
 	-- Stats interface begin
 		STAT_CyclesIdle : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
@@ -108,6 +102,10 @@ ATTRIBUTE X_INTERFACE_INFO of MEM_ROPReadResponsesFIFO_empty: SIGNAL is "xilinx.
 ATTRIBUTE X_INTERFACE_INFO of MEM_ROPWriteRequestsFIFO_wr_data: SIGNAL is "xilinx.com:interface:fifo_write:1.0 ROPWriteRequestsFIFO WR_DATA";
 ATTRIBUTE X_INTERFACE_INFO of MEM_ROPWriteRequestsFIFO_wr_en: SIGNAL is "xilinx.com:interface:fifo_write:1.0 ROPWriteRequestsFIFO WR_EN";
 ATTRIBUTE X_INTERFACE_INFO of MEM_ROPWriteRequestsFIFO_full: SIGNAL is "xilinx.com:interface:fifo_write:1.0 ROPWriteRequestsFIFO FULL";
+
+ATTRIBUTE X_INTERFACE_INFO of TEXSAMP_InFIFO_rd_data: SIGNAL is "xilinx.com:interface:fifo_read:1.0 TEXSAMP_IN_FIFO RD_DATA";
+ATTRIBUTE X_INTERFACE_INFO of TEXSAMP_InFIFO_rd_en: SIGNAL is "xilinx.com:interface:fifo_read:1.0 TEXSAMP_IN_FIFO RD_EN";
+ATTRIBUTE X_INTERFACE_INFO of TEXSAMP_InFIFO_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 TEXSAMP_IN_FIFO EMPTY";
 
 type ROPStateType is 
 (
@@ -223,7 +221,6 @@ constant DefaultROPCacheEntry : ROPCacheEntryType := (cacheAddrBase => (others =
 type ROPCacheEntries is array(3 downto 0) of ROPCacheEntryType;
 
 signal currentState : ROPStateType := init;
-signal newPixelAck : std_logic := '0';
 signal setAlphaTestAndRenderTargetStateAck : std_logic := '0';
 signal setBlendStateAck : std_logic := '0';
 signal clearSignalAck : std_logic := '0';
@@ -862,12 +859,11 @@ end procedure;
 
 begin
 
-TEXSAMP_writeAck <= newPixelAck;
 CMD_SetBaseAddrAndAlphaTestSignalAck <= setAlphaTestAndRenderTargetStateAck;
 CMD_SetBlendStateSigAck <= setBlendStateAck;
 CMD_ClearSignalAck <= clearSignalAck;
 CMD_FlushCacheAck <= flushCacheCommandAck;
-CMD_ROPIsIdle <= isIdleSig;
+CMD_ROPIsIdle <= '1' when (isIdleSig = '1' and TEXSAMP_InFIFO_empty = '1') else '0';
 MEM_ROPWriteRequestsFIFO_wr_data <= std_logic_vector(outputDRAMWrite);
 
 STAT_CyclesIdle <= std_logic_vector(statCyclesIdle);
@@ -927,6 +923,7 @@ DBG_CurrentCacheLineDirtyFlags <= std_logic_vector(ROPCache(to_integer(currently
 					setBlendStateAck <= '0'; -- Deassert after one clock cycle
 					clearSignalAck <= '0'; -- Deassert after one clock cycle
 					flushCacheCommandAck <= '0'; -- Deassert after one clock cycle
+					TEXSAMP_InFIFO_rd_en <= '0';
 					if (CMD_FlushCacheSignal = '1') then
 						isIdleSig <= '0';
 						flushCachesLineIndex <= (others => '0');
@@ -940,11 +937,11 @@ DBG_CurrentCacheLineDirtyFlags <= std_logic_vector(ROPCache(to_integer(currently
 					elsif (CMD_ClearSignal = '1') then
 						isIdleSig <= '0';
 						currentState <= setNewClear;
-					elsif (TEXSAMP_writeIsValid = '1') then
-						newPixelAck <= '1';
-						currentPixelX <= unsigned(TEXSAMP_outPixelX);
-						currentPixelY <= unsigned(TEXSAMP_outPixelY);
-						incomingPixelRGBA <= unsigned(TEXSAMP_outA) & unsigned(TEXSAMP_outB) & unsigned(TEXSAMP_outG) & unsigned(TEXSAMP_outR);
+					elsif (TEXSAMP_InFIFO_empty = '0') then
+						TEXSAMP_InFIFO_rd_en <= '1';
+						currentPixelX <= unsigned(TEXSAMP_InFIFO_rd_data(15 downto 0) );
+						currentPixelY <= unsigned(TEXSAMP_InFIFO_rd_data(31 downto 16) );
+						incomingPixelRGBA <= unsigned(TEXSAMP_InFIFO_rd_data(63 downto 56) ) & unsigned(TEXSAMP_InFIFO_rd_data(55 downto 48) ) & unsigned(TEXSAMP_InFIFO_rd_data(47 downto 40) ) & unsigned(TEXSAMP_InFIFO_rd_data(39 downto 32) );
 						isIdleSig <= '0';
 						if (currentAlphaTestState.alphaTestEnable = '1') then
 							currentState <= doAlphaTest;
@@ -952,11 +949,11 @@ DBG_CurrentCacheLineDirtyFlags <= std_logic_vector(ROPCache(to_integer(currently
 							currentState <= calcPixelAddress; -- Skip the alpha test if it's not enabled
 						end if;
 					else
-						newPixelAck <= '0';
 						isIdleSig <= '1';
 					end if;
 
 				when doAlphaTest =>
+					TEXSAMP_InFIFO_rd_en <= '0'; -- Deassert after one clock cycle
 					if (AlphaTest(incomingPixelRGBA(31 downto 24), currentAlphaTestState.alphaTestRefVal, currentAlphaTestState.alphaTestFunc) = '1') then
 						currentState <= calcPixelAddress; -- We passed the alpha test, continue drawing this pixel!
 					else
@@ -964,7 +961,7 @@ DBG_CurrentCacheLineDirtyFlags <= std_logic_vector(ROPCache(to_integer(currently
 					end if;
 
 				when calcPixelAddress =>
-					newPixelAck <= '0'; -- Deassert after one clock cycle
+					TEXSAMP_InFIFO_rd_en <= '0'; -- Deassert after one clock cycle
 					currentPixelAddress <= ( (MultBy640(currentPixelY) + resize(currentPixelX, currentPixelAddress'length) ) sll 2) + baseRenderTargetAddress; -- sll 2 because sizeof(RGBAPixel) == 4
 					currentState <= checkCache;
 

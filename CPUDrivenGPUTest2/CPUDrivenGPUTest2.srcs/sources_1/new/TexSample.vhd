@@ -12,16 +12,11 @@ use work.PacketType.all;
 entity TexSample is
 	Port ( clk : in STD_LOGIC;
 
-	-- Attribute Interpolator interface begin
-		INTERP_writeStrobe : in STD_LOGIC; -- Strobed high for one cycle, then back to low after that
-		INTERP_readyForNewWrite : out STD_LOGIC := '0';
-
-		INTERP_pixelX : in STD_LOGIC_VECTOR(15 downto 0);
-		INTERP_pixelY : in STD_LOGIC_VECTOR(15 downto 0);
-		INTERP_inInterpolatedTexcoordX : in STD_LOGIC_VECTOR(15 downto 0);
-		INTERP_inInterpolatedTexcoordY : in STD_LOGIC_VECTOR(15 downto 0);
-		INTERP_inInterpolatedVertColorRGBA : in STD_LOGIC_VECTOR(31 downto 0);
-	-- Attribute Interpolator interface end
+	-- Attribute Interpolator FIFO interface begin
+		INTERP_InFIFO_rd_data : in STD_LOGIC_VECTOR(95 downto 0); -- 12 bytes per pixel of input data to the texture sampler
+        INTERP_InFIFO_empty : in STD_LOGIC;
+        INTERP_InFIFO_rd_en : out STD_LOGIC := '0';
+	-- Attribute Interpolator FIFO interface end
 
 	-- Memory Controller FIFO interface begin
 		-- DRAM read requests FIFO:
@@ -61,17 +56,11 @@ entity TexSample is
 		CMD_SetTextureStateCombinerModeAlpha : in STD_LOGIC_VECTOR(2 downto 0);
 	-- Command Processor block interface end
 
-	-- ROP interface begin
-		ROP_outPixelX : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
-		ROP_outPixelY : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
-		ROP_outR : out STD_LOGIC_VECTOR(7 downto 0) := (others => '0');
-		ROP_outG : out STD_LOGIC_VECTOR(7 downto 0) := (others => '0');
-		ROP_outB : out STD_LOGIC_VECTOR(7 downto 0) := (others => '0');
-		ROP_outA : out STD_LOGIC_VECTOR(7 downto 0) := (others => '1');
-
-		ROP_writeIsValid : out STD_LOGIC := '0';
-		ROP_writeAck : in STD_LOGIC;
-	-- ROP interface end
+	-- ROP FIFO begin
+		ROP_OutFIFO_wr_data : out STD_LOGIC_VECTOR(63 downto 0) := (others => '0'); -- 8 bytes per pixel of output data to the ROP unit
+        ROP_OutFIFO_full : in STD_LOGIC;
+        ROP_OutFIFO_wr_en : out STD_LOGIC := '0';
+	-- ROP FIFO end
 
 	-- Stats interface begin
 		STAT_CyclesIdle : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
@@ -103,6 +92,14 @@ ATTRIBUTE X_INTERFACE_INFO of MEM_TexSampReadRequestsFIFO_full: SIGNAL is "xilin
 ATTRIBUTE X_INTERFACE_INFO of MEM_TexSampReadResponsesFIFO_rd_data: SIGNAL is "xilinx.com:interface:fifo_read:1.0 TexSampReadResponses RD_DATA";
 ATTRIBUTE X_INTERFACE_INFO of MEM_TexSampReadResponsesFIFO_rd_en: SIGNAL is "xilinx.com:interface:fifo_read:1.0 TexSampReadResponses RD_EN";
 ATTRIBUTE X_INTERFACE_INFO of MEM_TexSampReadResponsesFIFO_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 TexSampReadResponses EMPTY";
+
+ATTRIBUTE X_INTERFACE_INFO of INTERP_InFIFO_rd_data: SIGNAL is "xilinx.com:interface:fifo_read:1.0 INTERP_IN_FIFO RD_DATA";
+ATTRIBUTE X_INTERFACE_INFO of INTERP_InFIFO_rd_en: SIGNAL is "xilinx.com:interface:fifo_read:1.0 INTERP_IN_FIFO RD_EN";
+ATTRIBUTE X_INTERFACE_INFO of INTERP_InFIFO_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 INTERP_IN_FIFO EMPTY";
+
+ATTRIBUTE X_INTERFACE_INFO of ROP_OutFIFO_wr_data: SIGNAL is "xilinx.com:interface:fifo_write:1.0 ROP_OUT_FIFO WR_DATA";
+ATTRIBUTE X_INTERFACE_INFO of ROP_OutFIFO_wr_en: SIGNAL is "xilinx.com:interface:fifo_write:1.0 ROP_OUT_FIFO WR_EN";
+ATTRIBUTE X_INTERFACE_INFO of ROP_OutFIFO_full: SIGNAL is "xilinx.com:interface:fifo_write:1.0 ROP_OUT_FIFO FULL";
 
 -- Texture cache is ideally 64x128 R8G8B8A8 texel pairs (two 32-bit texels in a single transaction because URAM reads/writes 64 bits at a time)
 ATTRIBUTE X_INTERFACE_INFO of TexCache_ena: SIGNAL is "xilinx.com:interface:bram:1.0 TexCache EN";
@@ -193,6 +190,11 @@ signal modulatedTexVertexColorProductG : unsigned(15 downto 0) := (others => '0'
 signal modulatedTexVertexColorProductB : unsigned(15 downto 0) := (others => '0');
 signal modulatedTexVertexColorProductA : unsigned(15 downto 0) := (others => '0');
 
+signal ROP_outR : STD_LOGIC_VECTOR(7 downto 0) := (others => '0');
+signal ROP_outG : STD_LOGIC_VECTOR(7 downto 0) := (others => '0');
+signal ROP_outB : STD_LOGIC_VECTOR(7 downto 0) := (others => '0');
+signal ROP_outA : STD_LOGIC_VECTOR(7 downto 0) := (others => '1');
+
 type RGBVec4 is record
 	R : unsigned(7 downto 0);
 	G : unsigned(7 downto 0);
@@ -233,6 +235,8 @@ signal lerpDirectionY : STD_LOGIC_VECTOR(3 downto 0); -- Bool-vector of a.RGBA <
 signal mulTemporaryT : mulTemporary4;
 signal mulTemporaryB : mulTemporary4;
 signal mulTemporaryY : mulTemporary4;
+
+signal cmdTexSampleIsIdle : std_logic := '0';
 
 signal statCyclesIdle : unsigned(31 downto 0) := (others => '0');
 signal statCyclesWorking : unsigned(31 downto 0) := (others => '0');
@@ -484,12 +488,19 @@ signal statCyclesWaitingForCacheLoad : unsigned(31 downto 0) := (others => '0');
 		end case;
 	end function;
 
+	pure function PackOutputData(pixelX : unsigned(15 downto 0); pixelY : unsigned(15 downto 0); pixelR : unsigned(7 downto 0); pixelG : unsigned(7 downto 0); pixelB : unsigned(7 downto 0); pixelA : unsigned(7 downto 0) ) return unsigned is
+	begin
+		return pixelA & pixelB & pixelG & pixelR & pixelY & pixelX;
+	end function;
+
 begin
 
 TexCache_addra <= texCacheAddress;
 TexCache_ena <= texCacheEnable;
 TexCache_wea <= texCacheWriteEnable;
 TexCache_dina <= texCacheWriteData;
+
+CMD_TexSampleIsIdle <= '1' when (cmdTexSampleIsIdle = '1' and INTERP_InFIFO_empty = '1') else '0';
 
 STAT_CyclesIdle <= std_logic_vector(statCyclesIdle);
 STAT_CyclesSpentWorking <= std_logic_vector(statCyclesWorking);
@@ -535,46 +546,30 @@ DBG_TexCache_addra <= texCacheAddress;
 		if (rising_edge(clk) ) then
 			case currentState is
 				when init =>
-					ROP_writeIsValid <= '0';
-					ROP_outPixelX <= (others => '0');
-					ROP_outPixelY <= (others => '0');
-					ROP_outR <= (others => '0');
-					ROP_outG <= (others => '0');
-					ROP_outB <= (others => '0');
-					ROP_outA <= (others => '1');
-					CMD_SetTextureStateAckSignal <= '0';
-					CMD_LoadTexCacheAckSignal <= '0';
-					texCacheEnable <= '0';
-					texCacheWriteEnable <= (others => '0');
-					texCacheAddress <= (others => '0');
-					bilinearModeEnabled <= '0';
-					INTERP_readyForNewWrite <= '1';
 					currentState <= waitingForRead;
 
 				when waitingForRead =>
+					ROP_OutFIFO_wr_en <= '0'; -- Deassert after one cycle
+					INTERP_InFIFO_rd_en <= '0';
+					cmdTexSampleIsIdle <= '0';
 					if (CMD_SetTextureStateBeginSignal = '1') then
-						CMD_TexSampleIsIdle <= '0';
 						CMD_SetTextureStateAckSignal <= '1';
-						INTERP_readyForNewWrite <= '0';
 						currentState <= setTextureState;
 					elsif (CMD_LoadTexCacheBeginSignal = '1') then
-						CMD_TexSampleIsIdle <= '0';
 						CMD_LoadTexCacheAckSignal <= '1';
-						INTERP_readyForNewWrite <= '0';
 						currentState <= loadTextureState;
-					elsif (INTERP_writeStrobe = '1') then
-						CMD_TexSampleIsIdle <= '0';
-						INTERP_readyForNewWrite <= '0';
+					elsif (INTERP_InFIFO_empty = '0') then
+						INTERP_InFIFO_rd_en <= '1';
 
-						storedVertColorRGBA <= INTERP_inInterpolatedVertColorRGBA;
-						tempShiftTexcoord := resize(unsigned(INTERP_inInterpolatedTexcoordX), tempShiftTexcoord'length) srl GetTexDimensionShift(texWidth);
+						storedVertColorRGBA <= INTERP_InFIFO_rd_data(95 downto 64);
+						tempShiftTexcoord := resize(unsigned(INTERP_InFIFO_rd_data(47 downto 32) ), tempShiftTexcoord'length) srl GetTexDimensionShift(texWidth);
 						texX <= tempShiftTexcoord(15 downto 8);
 						interpBitsX <= std_logic_vector(tempShiftTexcoord(7 downto 0) );
-						tempShiftTexcoord := resize(unsigned(INTERP_inInterpolatedTexcoordY), tempShiftTexcoord'length) srl GetTexDimensionShift(texHeight);
+						tempShiftTexcoord := resize(unsigned(INTERP_InFIFO_rd_data(63 downto 48) ), tempShiftTexcoord'length) srl GetTexDimensionShift(texHeight);
 						texY <= tempShiftTexcoord(15 downto 8);
 						interpBitsY <= std_logic_vector(tempShiftTexcoord(7 downto 0) );
-						storedPixelX <= INTERP_pixelX;
-						storedPixelY <= INTERP_pixelY;
+						storedPixelX <= INTERP_InFIFO_rd_data(15 downto 0);
+						storedPixelY <= INTERP_InFIFO_rd_data(31 downto 16);
 
 						if (bilinearModeEnabled = '0') then
 							currentState <= texSample_point_address;
@@ -582,12 +577,12 @@ DBG_TexCache_addra <= texCacheAddress;
 							currentState <= texSample_bilinear_readTL;
 						end if;
 					else
-						CMD_TexSampleIsIdle <= '1';
-						INTERP_readyForNewWrite <= '1';
+						cmdTexSampleIsIdle <= '1';
 						currentState <= waitingForRead;
 					end if;
 
 				when texSample_point_address =>
+					INTERP_InFIFO_rd_en <= '0'; -- Deassert after one clock cycle
 					texCacheEnable <= '1';
 					texCacheWriteEnable <= (others => '0');
 					texCacheAddress <= STD_LOGIC_VECTOR( (resize(texY, texCacheAddress'length) sll GetTexDimensionMultiplier(texWidth) ) + texX);
@@ -611,6 +606,8 @@ DBG_TexCache_addra <= texCacheAddress;
 					-- TOMTODO: We don't need to spend 12 cycles doing bilinear taps from the texture cache, we can
 					-- use pipelining to do the same sampling with 6 or 7 cycles instead!
 				when texSample_bilinear_readTL =>
+					INTERP_InFIFO_rd_en <= '0'; -- Deassert after one clock cycle
+
 					-- Bilinear interpolation needs to do more than just one sample
 					texCacheAddress <= STD_LOGIC_VECTOR( (resize(texY, texCacheAddress'length) sll GetTexDimensionMultiplier(texWidth) ) + texX);
 					texCacheEnable <= '1';
@@ -766,9 +763,6 @@ DBG_TexCache_addra <= texCacheAddress;
 
 				-- These latter stages are once again shared by both point and bilinear sampling:
 				when setupOutput =>
-					ROP_outPixelX <= storedPixelX;
-					ROP_outPixelY <= storedPixelY;
-
 					-- Color output:
 					case colorCombinerMode is
 						when cbm_allBlack => -- All black
@@ -818,14 +812,16 @@ DBG_TexCache_addra <= texCacheAddress;
 							ROP_outA <= std_logic_vector(modulatedTexVertexColorProductA(15 downto 8) );
 					end case;
 
-					ROP_writeIsValid <= '1'; -- Signal the write request
+					--ROP_writeIsValid <= '1'; -- Signal the write request
 					currentState <= waitingForWrite;
 
 				when waitingForWrite =>
-					if (ROP_writeAck = '1') then
-						ROP_writeIsValid <= '0';
-						INTERP_readyForNewWrite <= '1';
+					if (ROP_OutFIFO_full = '0') then
+						ROP_OutFIFO_wr_en <= '1';
+						ROP_OutFIFO_wr_data <= std_logic_vector(PackOutputData(unsigned(storedPixelX), unsigned(storedPixelY), unsigned(ROP_outR), unsigned(ROP_outG), unsigned(ROP_outB), unsigned(ROP_outA) ) );
 						currentState <= waitingForRead;
+					else
+						ROP_OutFIFO_wr_en <= '0';
 					end if;
 
 				when setTextureState =>
@@ -870,7 +866,6 @@ DBG_TexCache_addra <= texCacheAddress;
 						texCacheAddress <= STD_LOGIC_VECTOR(unsigned(texCacheAddress) );
 						texCacheWriteData <= std_logic_vector(UnpackCacheBytesForFormat(TexFormat, unsigned(MEM_TexSampReadResponsesFIFO_rd_data(31 downto 0) ) ) );
 						cacheLineReadIters <= GetFormatTexelsPerDRAMLine(TexFormat);
-						--texCacheReadTexelsCount <= texCacheReadTexelsCount - 1;
 
 						currentState <= loadTextureState_cacheLine;
 					else

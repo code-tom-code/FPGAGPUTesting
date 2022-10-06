@@ -23,11 +23,12 @@
 #include "Testbenches/AttributeInterpTestbench.h"
 #include "Testbenches/TexSamplerTestbench.h"
 #include "Testbenches/ROPTestbench.h"
+#include "Testbenches/EthernetTestbench.h"
 
 static const WCHAR* const simengine_libpath = L"D:\\Xilinx\\Vivado\\2018.1\\lib\\win64.o";
 static const WCHAR* const simengine_imageformats_libpath = L"D:\\Xilinx\\Vivado\\2018.1\\lib\\win64.o\\imageformats";
 static const char* const simengine_libname = "librdi_simulator_kernel.dll";
-static const char* const design_name = "ROP";
+static const char* const design_name = "EthernetController3";
 static char wdbName[] = "xsim.wdb";
 static D3DCOLOR colorsArray[640 * 480] = {0};
 static RenderWindow* renderWindow = NULL;
@@ -77,7 +78,8 @@ int main(const unsigned argc, const char* const argv[])
 		//status = RunTestsDepthInterp(loader);
 		//status = RunTestsAttributeInterp(loader);
 		//status = RunTestsTexSampler(loader, renderWindow);
-		status = RunTestsROP(loader, renderWindow);
+		//status = RunTestsROP(loader, renderWindow);
+		status = RunTestsEthernet(loader);
 	}
 	catch (std::exception& except)
 	{

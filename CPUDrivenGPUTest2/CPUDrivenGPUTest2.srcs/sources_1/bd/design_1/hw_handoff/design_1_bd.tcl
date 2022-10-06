@@ -1895,18 +1895,18 @@ proc create_root_design { parentCell } {
    CONFIG.C_ENABLE_ILA_AXI_MON {false} \
    CONFIG.C_MONITOR_TYPE {Native} \
    CONFIG.C_NUM_OF_PROBES {32} \
-   CONFIG.C_PROBE0_WIDTH {16} \
+   CONFIG.C_PROBE0_WIDTH {96} \
    CONFIG.C_PROBE10_WIDTH {4} \
    CONFIG.C_PROBE11_WIDTH {32} \
    CONFIG.C_PROBE12_WIDTH {32} \
-   CONFIG.C_PROBE13_WIDTH {32} \
+   CONFIG.C_PROBE13_WIDTH {1} \
    CONFIG.C_PROBE14_WIDTH {32} \
    CONFIG.C_PROBE15_WIDTH {32} \
    CONFIG.C_PROBE16_WIDTH {32} \
    CONFIG.C_PROBE17_WIDTH {64} \
    CONFIG.C_PROBE18_WIDTH {64} \
    CONFIG.C_PROBE19_WIDTH {8} \
-   CONFIG.C_PROBE1_WIDTH {16} \
+   CONFIG.C_PROBE1_WIDTH {1} \
    CONFIG.C_PROBE20_WIDTH {128} \
    CONFIG.C_PROBE21_WIDTH {128} \
    CONFIG.C_PROBE22_WIDTH {128} \
@@ -1917,12 +1917,12 @@ proc create_root_design { parentCell } {
    CONFIG.C_PROBE27_WIDTH {18} \
    CONFIG.C_PROBE28_WIDTH {18} \
    CONFIG.C_PROBE29_WIDTH {7} \
-   CONFIG.C_PROBE2_WIDTH {32} \
-   CONFIG.C_PROBE3_WIDTH {16} \
-   CONFIG.C_PROBE4_WIDTH {16} \
+   CONFIG.C_PROBE2_WIDTH {1} \
+   CONFIG.C_PROBE3_WIDTH {1} \
+   CONFIG.C_PROBE4_WIDTH {1} \
    CONFIG.C_PROBE5_WIDTH {24} \
    CONFIG.C_PROBE6_WIDTH {7} \
-   CONFIG.C_PROBE7_WIDTH {32} \
+   CONFIG.C_PROBE7_WIDTH {1} \
    CONFIG.C_PROBE8_WIDTH {32} \
    CONFIG.C_PROBE9_WIDTH {32} \
  ] $ILA_AttrInterpolator
@@ -2002,18 +2002,18 @@ proc create_root_design { parentCell } {
   set_property -dict [ list \
    CONFIG.C_ENABLE_ILA_AXI_MON {false} \
    CONFIG.C_MONITOR_TYPE {Native} \
-   CONFIG.C_NUM_OF_PROBES {11} \
+   CONFIG.C_NUM_OF_PROBES {7} \
    CONFIG.C_PROBE0_WIDTH {6} \
-   CONFIG.C_PROBE10_WIDTH {3} \
-   CONFIG.C_PROBE1_WIDTH {8} \
-   CONFIG.C_PROBE2_WIDTH {8} \
-   CONFIG.C_PROBE3_WIDTH {8} \
-   CONFIG.C_PROBE4_WIDTH {8} \
-   CONFIG.C_PROBE5_WIDTH {32} \
-   CONFIG.C_PROBE6_WIDTH {32} \
-   CONFIG.C_PROBE7_WIDTH {14} \
-   CONFIG.C_PROBE8_WIDTH {3} \
-   CONFIG.C_PROBE9_WIDTH {3} \
+   CONFIG.C_PROBE10_WIDTH {1} \
+   CONFIG.C_PROBE1_WIDTH {64} \
+   CONFIG.C_PROBE2_WIDTH {32} \
+   CONFIG.C_PROBE3_WIDTH {14} \
+   CONFIG.C_PROBE4_WIDTH {3} \
+   CONFIG.C_PROBE5_WIDTH {3} \
+   CONFIG.C_PROBE6_WIDTH {3} \
+   CONFIG.C_PROBE7_WIDTH {1} \
+   CONFIG.C_PROBE8_WIDTH {1} \
+   CONFIG.C_PROBE9_WIDTH {1} \
  ] $ILA_TexSampler
 
   # Create instance: ILA_TriSetup, and set properties
@@ -2114,6 +2114,43 @@ proc create_root_design { parentCell } {
      return 1
    }
   
+  # Create instance: ROP_FIFO, and set properties
+  set ROP_FIFO [ create_bd_cell -type ip -vlnv xilinx.com:ip:fifo_generator:13.2 ROP_FIFO ]
+  set_property -dict [ list \
+   CONFIG.Data_Count_Width {10} \
+   CONFIG.Empty_Threshold_Assert_Value {4} \
+   CONFIG.Empty_Threshold_Assert_Value_rach {1022} \
+   CONFIG.Empty_Threshold_Assert_Value_wach {1022} \
+   CONFIG.Empty_Threshold_Assert_Value_wrch {1022} \
+   CONFIG.Empty_Threshold_Negate_Value {5} \
+   CONFIG.Enable_ECC {false} \
+   CONFIG.FIFO_Implementation_axis {Common_Clock_Block_RAM} \
+   CONFIG.FIFO_Implementation_rach {Common_Clock_Distributed_RAM} \
+   CONFIG.FIFO_Implementation_rdch {Common_Clock_Block_RAM} \
+   CONFIG.FIFO_Implementation_wach {Common_Clock_Distributed_RAM} \
+   CONFIG.FIFO_Implementation_wdch {Common_Clock_Block_RAM} \
+   CONFIG.FIFO_Implementation_wrch {Common_Clock_Distributed_RAM} \
+   CONFIG.Fifo_Implementation {Common_Clock_Block_RAM} \
+   CONFIG.Full_Threshold_Assert_Value {511} \
+   CONFIG.Full_Threshold_Assert_Value_rach {1023} \
+   CONFIG.Full_Threshold_Assert_Value_wach {1023} \
+   CONFIG.Full_Threshold_Assert_Value_wrch {1023} \
+   CONFIG.Full_Threshold_Negate_Value {510} \
+   CONFIG.INTERFACE_TYPE {Native} \
+   CONFIG.Input_Data_Width {64} \
+   CONFIG.Input_Depth {512} \
+   CONFIG.Output_Data_Width {64} \
+   CONFIG.Output_Depth {512} \
+   CONFIG.Performance_Options {First_Word_Fall_Through} \
+   CONFIG.Read_Data_Count_Width {10} \
+   CONFIG.Reset_Pin {false} \
+   CONFIG.Reset_Type {Asynchronous_Reset} \
+   CONFIG.Use_Dout_Reset {false} \
+   CONFIG.Use_Embedded_Registers {false} \
+   CONFIG.Use_Extra_Logic {true} \
+   CONFIG.Write_Data_Count_Width {10} \
+ ] $ROP_FIFO
+
   # Create instance: Rasterizer_0, and set properties
   set block_name Rasterizer
   set block_cell_name Rasterizer_0
@@ -2156,6 +2193,29 @@ proc create_root_design { parentCell } {
      return 1
    }
   
+  # Create instance: TEXSAMP_FIFO, and set properties
+  set TEXSAMP_FIFO [ create_bd_cell -type ip -vlnv xilinx.com:ip:fifo_generator:13.2 TEXSAMP_FIFO ]
+  set_property -dict [ list \
+   CONFIG.Data_Count_Width {10} \
+   CONFIG.Empty_Threshold_Assert_Value {4} \
+   CONFIG.Empty_Threshold_Negate_Value {5} \
+   CONFIG.Fifo_Implementation {Common_Clock_Block_RAM} \
+   CONFIG.Full_Threshold_Assert_Value {511} \
+   CONFIG.Full_Threshold_Negate_Value {510} \
+   CONFIG.Input_Data_Width {96} \
+   CONFIG.Input_Depth {512} \
+   CONFIG.Output_Data_Width {96} \
+   CONFIG.Output_Depth {512} \
+   CONFIG.Performance_Options {First_Word_Fall_Through} \
+   CONFIG.Read_Data_Count_Width {10} \
+   CONFIG.Reset_Pin {false} \
+   CONFIG.Reset_Type {Asynchronous_Reset} \
+   CONFIG.Use_Dout_Reset {false} \
+   CONFIG.Use_Embedded_Registers {false} \
+   CONFIG.Use_Extra_Logic {true} \
+   CONFIG.Write_Data_Count_Width {10} \
+ ] $TEXSAMP_FIFO
+
   # Create instance: TexSample_0, and set properties
   set block_name TexSample
   set block_cell_name TexSample_0
@@ -2369,7 +2429,7 @@ proc create_root_design { parentCell } {
    CONFIG.C_PROBE34_TYPE {0} \
    CONFIG.C_PROBE34_WIDTH {16} \
    CONFIG.C_PROBE35_WIDTH {30} \
-   CONFIG.C_PROBE37_WIDTH {32} \
+   CONFIG.C_PROBE37_WIDTH {1} \
    CONFIG.C_PROBE38_WIDTH {4} \
    CONFIG.C_PROBE39_WIDTH {8} \
    CONFIG.C_PROBE3_TYPE {0} \
@@ -2459,7 +2519,6 @@ proc create_root_design { parentCell } {
   set xlconstant_1 [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant:1.1 xlconstant_1 ]
   set_property -dict [ list \
    CONFIG.CONST_VAL {0} \
-   CONFIG.CONST_WIDTH {32} \
  ] $xlconstant_1
 
   # Create instance: xlconstant_2, and set properties
@@ -2479,13 +2538,14 @@ proc create_root_design { parentCell } {
   set xlconstant_4 [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant:1.1 xlconstant_4 ]
   set_property -dict [ list \
    CONFIG.CONST_VAL {0} \
-   CONFIG.CONST_WIDTH {32} \
+   CONFIG.CONST_WIDTH {1} \
  ] $xlconstant_4
 
   # Create instance: xlconstant_7, and set properties
   set xlconstant_7 [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant:1.1 xlconstant_7 ]
 
   # Create interface connections
+  connect_bd_intf_net -intf_net AttrInterpolator_0_TEXSAMP_OUT_FIFO [get_bd_intf_pins AttrInterpolator_0/TEXSAMP_OUT_FIFO] [get_bd_intf_pins TEXSAMP_FIFO/FIFO_WRITE]
   connect_bd_intf_net -intf_net ClearBlock_0_ClearBlockWriteRequestsFIFO [get_bd_intf_pins ClearBlock_0/ClearBlockWriteRequestsFIFO] [get_bd_intf_pins MemorySystem/ClearBlockWriteRequestsFIFO]
   connect_bd_intf_net -intf_net CommandProcessor_0_CommandProcReadRequestsFIFO [get_bd_intf_pins CommandProcessor_0/CommandProcReadRequestsFIFO] [get_bd_intf_pins MemorySystem/CommandProcReadRequestsFIFO]
   connect_bd_intf_net -intf_net CommandProcessor_0_CommandProcReadResponses [get_bd_intf_pins CommandProcessor_0/CommandProcReadResponses] [get_bd_intf_pins MemorySystem/CommandProcReadResponsesFIFO]
@@ -2502,6 +2562,7 @@ proc create_root_design { parentCell } {
   connect_bd_intf_net -intf_net ROP_0_ROPReadRequestsFIFO [get_bd_intf_pins MemorySystem/ROPReadRequestsFIFO] [get_bd_intf_pins ROP_0/ROPReadRequestsFIFO]
   connect_bd_intf_net -intf_net ROP_0_ROPReadResponses [get_bd_intf_pins MemorySystem/ROPReadResponsesFIFO] [get_bd_intf_pins ROP_0/ROPReadResponses]
   connect_bd_intf_net -intf_net ROP_0_ROPWriteRequestsFIFO [get_bd_intf_pins MemorySystem/ROPWriteRequestsFIFO] [get_bd_intf_pins ROP_0/ROPWriteRequestsFIFO]
+  connect_bd_intf_net -intf_net ROP_0_TEXSAMP_IN_FIFO [get_bd_intf_pins ROP_0/TEXSAMP_IN_FIFO] [get_bd_intf_pins ROP_FIFO/FIFO_READ]
   connect_bd_intf_net -intf_net Rasterizer_0_RASTOUT_FIFO [get_bd_intf_pins Rasterizer_0/RASTOUT_FIFO] [get_bd_intf_pins rast_out_fifo/FIFO_WRITE]
   connect_bd_intf_net -intf_net ScanOut_0_ScanoutReadRequestsFIFO [get_bd_intf_pins MemorySystem/ScanoutReadRequestsFIFO] [get_bd_intf_pins ScanoutSystem/ScanoutReadRequestsFIFO]
   connect_bd_intf_net -intf_net ScanOut_0_ScanoutReadResponses [get_bd_intf_pins MemorySystem/ScanoutReadResponsesFIFO] [get_bd_intf_pins ScanoutSystem/ScanoutReadResponses]
@@ -2512,6 +2573,8 @@ proc create_root_design { parentCell } {
   connect_bd_intf_net -intf_net ShaderCoreSystem_VERTBATCH_FIFO_0 [get_bd_intf_pins ShaderCoreSystem/VERTBATCH_FIFO_0] [get_bd_intf_pins VBB_FIFO/FIFO_READ]
   connect_bd_intf_net -intf_net ShaderCoreSystem_VERTOUT_FIFO_0 [get_bd_intf_pins ShaderCoreSystem/VERTOUT_FIFO_0] [get_bd_intf_pins VBO_FIFO/FIFO_WRITE]
   connect_bd_intf_net -intf_net StatsCollector_0_StatsWriteRequestsFIFO [get_bd_intf_pins MemorySystem/StatsWriteRequestsFIFO] [get_bd_intf_pins StatsCollector_0/StatsWriteRequestsFIFO]
+  connect_bd_intf_net -intf_net TexSample_0_INTERP_IN_FIFO [get_bd_intf_pins TEXSAMP_FIFO/FIFO_READ] [get_bd_intf_pins TexSample_0/INTERP_IN_FIFO]
+  connect_bd_intf_net -intf_net TexSample_0_ROP_OUT_FIFO [get_bd_intf_pins ROP_FIFO/FIFO_WRITE] [get_bd_intf_pins TexSample_0/ROP_OUT_FIFO]
   connect_bd_intf_net -intf_net TexSample_0_TexCache [get_bd_intf_pins TexSample_0/TexCache] [get_bd_intf_pins TextureCache_128x128x32bits/BRAM_PORTA]
   connect_bd_intf_net -intf_net TexSample_0_TexSampReadRequestsFIFO [get_bd_intf_pins MemorySystem/TexFetchReadRequestsFIFO] [get_bd_intf_pins TexSample_0/TexSampReadRequestsFIFO]
   connect_bd_intf_net -intf_net TexSample_0_TexSampReadResponses [get_bd_intf_pins MemorySystem/TexFetchReadResponsesFIFO] [get_bd_intf_pins TexSample_0/TexSampReadResponses]
@@ -2538,12 +2601,7 @@ proc create_root_design { parentCell } {
   connect_bd_net -net AttrInterpolator_0_STAT_CyclesIdle [get_bd_pins AttrInterpolator_0/STAT_CyclesIdle] [get_bd_pins StatsCollector_0/INTERP_CyclesIdle]
   connect_bd_net -net AttrInterpolator_0_STAT_CyclesSpentWorking [get_bd_pins AttrInterpolator_0/STAT_CyclesSpentWorking] [get_bd_pins StatsCollector_0/INTERP_CyclesSpentWorking]
   connect_bd_net -net AttrInterpolator_0_STAT_CyclesWaitingForOutput [get_bd_pins AttrInterpolator_0/STAT_CyclesWaitingForOutput] [get_bd_pins StatsCollector_0/INTERP_CyclesWaitingForOutput]
-  connect_bd_net -net AttrInterpolator_0_TEXSAMP_outInterpolatedColorRGBA [get_bd_pins AttrInterpolator_0/TEXSAMP_outInterpolatedColorRGBA] [get_bd_pins ILA_AttrInterpolator/probe2] [get_bd_pins ILA_AttrInterpolator/probe13] [get_bd_pins TexSample_0/INTERP_inInterpolatedVertColorRGBA] [get_bd_pins ila_333_250/probe37]
-  connect_bd_net -net AttrInterpolator_0_TEXSAMP_outInterpolatedTexcoordX [get_bd_pins AttrInterpolator_0/TEXSAMP_outInterpolatedTexcoordX] [get_bd_pins ILA_AttrInterpolator/probe0] [get_bd_pins TexSample_0/INTERP_inInterpolatedTexcoordX]
-  connect_bd_net -net AttrInterpolator_0_TEXSAMP_outInterpolatedTexcoordY [get_bd_pins AttrInterpolator_0/TEXSAMP_outInterpolatedTexcoordY] [get_bd_pins ILA_AttrInterpolator/probe1] [get_bd_pins TexSample_0/INTERP_inInterpolatedTexcoordY]
-  connect_bd_net -net AttrInterpolator_0_TEXSAMP_outPixelX [get_bd_pins AttrInterpolator_0/TEXSAMP_outPixelX] [get_bd_pins ILA_AttrInterpolator/probe3] [get_bd_pins TexSample_0/INTERP_pixelX]
-  connect_bd_net -net AttrInterpolator_0_TEXSAMP_outPixelY [get_bd_pins AttrInterpolator_0/TEXSAMP_outPixelY] [get_bd_pins ILA_AttrInterpolator/probe4] [get_bd_pins TexSample_0/INTERP_pixelY]
-  connect_bd_net -net AttrInterpolator_0_TEXSAMP_writeIsValid [get_bd_pins AttrInterpolator_0/TEXSAMP_writeIsValid] [get_bd_pins TexSample_0/INTERP_writeStrobe]
+  connect_bd_net -net AttrInterpolator_0_TEXSAMP_OutFIFO_wr_data [get_bd_pins AttrInterpolator_0/TEXSAMP_OutFIFO_wr_data] [get_bd_pins ILA_AttrInterpolator/probe0] [get_bd_pins TEXSAMP_FIFO/din]
   connect_bd_net -net CMD_InCommand_0_1 [get_bd_pins CommandProcessor_0/SHADER_InCommand] [get_bd_pins ShaderCoreSystem/CMD_InCommand_0]
   connect_bd_net -net CMD_LoadProgramAddr_0_1 [get_bd_pins CommandProcessor_0/SHADER_LoadProgramAddr] [get_bd_pins ShaderCoreSystem/CMD_LoadProgramAddr_0]
   connect_bd_net -net CMD_LoadProgramLen_0_1 [get_bd_pins CommandProcessor_0/SHADER_LoadProgramLen] [get_bd_pins ShaderCoreSystem/CMD_LoadProgramLen_0]
@@ -2600,10 +2658,10 @@ proc create_root_design { parentCell } {
   connect_bd_net -net CommandProcessor_0_STAT_WriteFrameStatsAddress [get_bd_pins CommandProcessor_0/STAT_WriteFrameStatsAddress] [get_bd_pins StatsCollector_0/CMD_WriteFrameStatsAddress]
   connect_bd_net -net CommandProcessor_0_TEXSAMP_LoadTexCacheAddr [get_bd_pins CommandProcessor_0/TEXSAMP_LoadTexCacheAddr] [get_bd_pins TexSample_0/CMD_LoadTexCacheAddr]
   connect_bd_net -net CommandProcessor_0_TEXSAMP_LoadTexCacheBeginSignal [get_bd_pins CommandProcessor_0/TEXSAMP_LoadTexCacheBeginSignal] [get_bd_pins TexSample_0/CMD_LoadTexCacheBeginSignal]
-  connect_bd_net -net CommandProcessor_0_TEXSAMP_LoadTexCacheFormat [get_bd_pins CommandProcessor_0/TEXSAMP_LoadTexCacheFormat] [get_bd_pins ILA_TexSampler/probe10] [get_bd_pins TexSample_0/CMD_LoadTexCacheFormat]
+  connect_bd_net -net CommandProcessor_0_TEXSAMP_LoadTexCacheFormat [get_bd_pins CommandProcessor_0/TEXSAMP_LoadTexCacheFormat] [get_bd_pins ILA_TexSampler/probe6] [get_bd_pins TexSample_0/CMD_LoadTexCacheFormat]
   connect_bd_net -net CommandProcessor_0_TEXSAMP_LoadTexCacheTexelCount [get_bd_pins CommandProcessor_0/TEXSAMP_LoadTexCacheTexelCount] [get_bd_pins TexSample_0/CMD_LoadTexCacheTexelCount]
-  connect_bd_net -net CommandProcessor_0_TEXSAMP_LoadTexCacheTexelHeight [get_bd_pins CommandProcessor_0/TEXSAMP_LoadTexCacheTexelHeight] [get_bd_pins ILA_TexSampler/probe9] [get_bd_pins TexSample_0/CMD_LoadTexCacheTexelHeight]
-  connect_bd_net -net CommandProcessor_0_TEXSAMP_LoadTexCacheTexelWidth [get_bd_pins CommandProcessor_0/TEXSAMP_LoadTexCacheTexelWidth] [get_bd_pins ILA_TexSampler/probe8] [get_bd_pins TexSample_0/CMD_LoadTexCacheTexelWidth]
+  connect_bd_net -net CommandProcessor_0_TEXSAMP_LoadTexCacheTexelHeight [get_bd_pins CommandProcessor_0/TEXSAMP_LoadTexCacheTexelHeight] [get_bd_pins ILA_TexSampler/probe5] [get_bd_pins TexSample_0/CMD_LoadTexCacheTexelHeight]
+  connect_bd_net -net CommandProcessor_0_TEXSAMP_LoadTexCacheTexelWidth [get_bd_pins CommandProcessor_0/TEXSAMP_LoadTexCacheTexelWidth] [get_bd_pins ILA_TexSampler/probe4] [get_bd_pins TexSample_0/CMD_LoadTexCacheTexelWidth]
   connect_bd_net -net CommandProcessor_0_TEXSAMP_SetTextureStateBeginSignal [get_bd_pins CommandProcessor_0/TEXSAMP_SetTextureStateBeginSignal] [get_bd_pins TexSample_0/CMD_SetTextureStateBeginSignal]
   connect_bd_net -net CommandProcessor_0_TEXSAMP_SetTextureStateCombinerModeAlpha [get_bd_pins CommandProcessor_0/TEXSAMP_SetTextureStateCombinerModeAlpha] [get_bd_pins TexSample_0/CMD_SetTextureStateCombinerModeAlpha]
   connect_bd_net -net CommandProcessor_0_TEXSAMP_SetTextureStateCombinerModeColor [get_bd_pins CommandProcessor_0/TEXSAMP_SetTextureStateCombinerModeColor] [get_bd_pins TexSample_0/CMD_SetTextureStateCombinerModeColor]
@@ -2736,7 +2794,6 @@ proc create_root_design { parentCell } {
   connect_bd_net -net ROP_0_STAT_CyclesSpentWorking [get_bd_pins ROP_0/STAT_CyclesSpentWorking] [get_bd_pins StatsCollector_0/ROP_CyclesSpentWorking]
   connect_bd_net -net ROP_0_STAT_CyclesWaitingForMemoryRead [get_bd_pins ROP_0/STAT_CyclesWaitingForMemoryRead] [get_bd_pins StatsCollector_0/ROP_CyclesWaitingForMemoryRead]
   connect_bd_net -net ROP_0_STAT_CyclesWaitingForOutput [get_bd_pins ROP_0/STAT_CyclesWaitingForOutput] [get_bd_pins StatsCollector_0/ROP_CyclesWaitingForOutput]
-  connect_bd_net -net ROP_0_TEXSAMP_writeAck [get_bd_pins ROP_0/TEXSAMP_writeAck] [get_bd_pins TexSample_0/ROP_writeAck]
   connect_bd_net -net Rasterizer_0_CMD_Rasterizer_Idle [get_bd_pins CommandProcessor_0/CMD_Rasterizer_Idle] [get_bd_pins Rasterizer_0/CMD_Rasterizer_Idle]
   connect_bd_net -net Rasterizer_0_DBG_MaxX [get_bd_pins Rasterizer_0/DBG_MaxX] [get_bd_pins ila_333_250/probe32]
   connect_bd_net -net Rasterizer_0_DBG_MaxY [get_bd_pins Rasterizer_0/DBG_MaxY] [get_bd_pins ila_333_250/probe34]
@@ -2843,17 +2900,10 @@ proc create_root_design { parentCell } {
   connect_bd_net -net TexSample_0_CMD_LoadTexCacheAckSignal [get_bd_pins CommandProcessor_0/TEXSAMP_LoadTexCacheAckSignal] [get_bd_pins TexSample_0/CMD_LoadTexCacheAckSignal]
   connect_bd_net -net TexSample_0_CMD_SetTextureStateAckSignal [get_bd_pins CommandProcessor_0/TEXSAMP_SetTextureStateAckSignal] [get_bd_pins TexSample_0/CMD_SetTextureStateAckSignal]
   connect_bd_net -net TexSample_0_CMD_TexSampleIsIdle [get_bd_pins CommandProcessor_0/CMD_TexSampler_Idle] [get_bd_pins TexSample_0/CMD_TexSampleIsIdle]
-  connect_bd_net -net TexSample_0_DBG_TexCache_addra [get_bd_pins ILA_TexSampler/probe7] [get_bd_pins TexSample_0/DBG_TexCache_addra]
-  connect_bd_net -net TexSample_0_DBG_TexCache_dina [get_bd_pins ILA_TexSampler/probe5] [get_bd_pins TexSample_0/DBG_TexCache_dina]
+  connect_bd_net -net TexSample_0_DBG_TexCache_addra [get_bd_pins ILA_TexSampler/probe3] [get_bd_pins TexSample_0/DBG_TexCache_addra]
+  connect_bd_net -net TexSample_0_DBG_TexCache_dina [get_bd_pins ILA_TexSampler/probe2] [get_bd_pins TexSample_0/DBG_TexCache_dina]
   connect_bd_net -net TexSample_0_DBG_TexSample_State [get_bd_pins ILA_TexSampler/probe0] [get_bd_pins TexSample_0/DBG_TexSample_State] [get_bd_pins ila_333_250/probe8]
-  connect_bd_net -net TexSample_0_INTERP_readyForNewWrite [get_bd_pins AttrInterpolator_0/TEXSAMP_readyForWrite] [get_bd_pins TexSample_0/INTERP_readyForNewWrite]
-  connect_bd_net -net TexSample_0_ROP_outA [get_bd_pins ILA_TexSampler/probe4] [get_bd_pins ROP_0/TEXSAMP_outA] [get_bd_pins TexSample_0/ROP_outA]
-  connect_bd_net -net TexSample_0_ROP_outB [get_bd_pins ILA_TexSampler/probe3] [get_bd_pins ROP_0/TEXSAMP_outB] [get_bd_pins TexSample_0/ROP_outB]
-  connect_bd_net -net TexSample_0_ROP_outG [get_bd_pins ILA_TexSampler/probe2] [get_bd_pins ROP_0/TEXSAMP_outG] [get_bd_pins TexSample_0/ROP_outG]
-  connect_bd_net -net TexSample_0_ROP_outPixelX [get_bd_pins ROP_0/TEXSAMP_outPixelX] [get_bd_pins TexSample_0/ROP_outPixelX]
-  connect_bd_net -net TexSample_0_ROP_outPixelY [get_bd_pins ROP_0/TEXSAMP_outPixelY] [get_bd_pins TexSample_0/ROP_outPixelY]
-  connect_bd_net -net TexSample_0_ROP_outR [get_bd_pins ILA_TexSampler/probe1] [get_bd_pins ROP_0/TEXSAMP_outR] [get_bd_pins TexSample_0/ROP_outR]
-  connect_bd_net -net TexSample_0_ROP_writeIsValid [get_bd_pins ROP_0/TEXSAMP_writeIsValid] [get_bd_pins TexSample_0/ROP_writeIsValid]
+  connect_bd_net -net TexSample_0_ROP_OutFIFO_wr_data [get_bd_pins ILA_TexSampler/probe1] [get_bd_pins ROP_FIFO/din] [get_bd_pins TexSample_0/ROP_OutFIFO_wr_data]
   connect_bd_net -net TexSample_0_STAT_CyclesIdle [get_bd_pins StatsCollector_0/TEXSAMP_CyclesIdle] [get_bd_pins TexSample_0/STAT_CyclesIdle]
   connect_bd_net -net TexSample_0_STAT_CyclesSpentWorking [get_bd_pins StatsCollector_0/TEXSAMP_CyclesSpentWorking] [get_bd_pins TexSample_0/STAT_CyclesSpentWorking]
   connect_bd_net -net TexSample_0_STAT_CyclesWaitingCacheLoad [get_bd_pins StatsCollector_0/TEXSAMP_CyclesWaitingCacheLoad] [get_bd_pins TexSample_0/STAT_CyclesWaitingCacheLoad]
@@ -2950,7 +3000,7 @@ proc create_root_design { parentCell } {
   connect_bd_net -net VertexBatchBuilder_0_IBC_ReadEnable [get_bd_pins IndexBufferCache_0/VBB_ReadEnable] [get_bd_pins VertexBatchBuilder_0/IBC_ReadEnable]
   connect_bd_net -net VertexBatchBuilder_0_SHADER_Done [get_bd_pins ShaderCoreSystem/VBB_Done_0] [get_bd_pins VertexBatchBuilder_0/SHADER_Done]
   connect_bd_net -net ddr4_0_addn_ui_clkout1 [get_bd_pins MemorySystem/addn_ui_clkout1] [get_bd_pins ScanoutSystem/clk_in1] [get_bd_pins SerialPacketSystem/s_axi_aclk] [get_bd_pins proc_sys_reset_0/slowest_sync_clk]
-  connect_bd_net -net ddr4_0_c0_ddr4_ui_clk [get_bd_pins AttrInterp_FPU/clk] [get_bd_pins AttrInterpolator_0/clk] [get_bd_pins ClearBlock_0/clk] [get_bd_pins CommandProcessor_0/clk] [get_bd_pins DepthBuffer_0/clk] [get_bd_pins DepthInterp_FPU/clk] [get_bd_pins DepthInterpolator_0/clk] [get_bd_pins ILA_AttrInterpolator/clk] [get_bd_pins ILA_IA/clk] [get_bd_pins ILA_TexSampler/clk] [get_bd_pins ILA_TriSetup/clk] [get_bd_pins IndexBufferCache_0/clk] [get_bd_pins InputAssembler2_0/clk] [get_bd_pins MemorySystem/c0_ddr4_ui_clk] [get_bd_pins ROP_0/clk] [get_bd_pins Rasterizer_0/clk] [get_bd_pins ScanoutSystem/cmd_clk] [get_bd_pins SerialPacketSystem/rd_clk] [get_bd_pins ShaderCoreSystem/clk_0] [get_bd_pins StatsCollector_0/clk] [get_bd_pins TexSample_0/clk] [get_bd_pins TextureCache_128x128x32bits/clka] [get_bd_pins TriSetup_0/clk] [get_bd_pins TriSetup_FPU/clk] [get_bd_pins TriWorkCache_0/clk] [get_bd_pins VBB_FIFO/clk] [get_bd_pins VBO_FIFO/clk] [get_bd_pins VBO_INDEX_FIFO/clk] [get_bd_pins VertexBatchBuilder_0/clk] [get_bd_pins ila_333_250/clk] [get_bd_pins rast_out_fifo/clk] [get_bd_pins vio_0/clk]
+  connect_bd_net -net ddr4_0_c0_ddr4_ui_clk [get_bd_pins AttrInterp_FPU/clk] [get_bd_pins AttrInterpolator_0/clk] [get_bd_pins ClearBlock_0/clk] [get_bd_pins CommandProcessor_0/clk] [get_bd_pins DepthBuffer_0/clk] [get_bd_pins DepthInterp_FPU/clk] [get_bd_pins DepthInterpolator_0/clk] [get_bd_pins ILA_AttrInterpolator/clk] [get_bd_pins ILA_IA/clk] [get_bd_pins ILA_TexSampler/clk] [get_bd_pins ILA_TriSetup/clk] [get_bd_pins IndexBufferCache_0/clk] [get_bd_pins InputAssembler2_0/clk] [get_bd_pins MemorySystem/c0_ddr4_ui_clk] [get_bd_pins ROP_0/clk] [get_bd_pins ROP_FIFO/clk] [get_bd_pins Rasterizer_0/clk] [get_bd_pins ScanoutSystem/cmd_clk] [get_bd_pins SerialPacketSystem/rd_clk] [get_bd_pins ShaderCoreSystem/clk_0] [get_bd_pins StatsCollector_0/clk] [get_bd_pins TEXSAMP_FIFO/clk] [get_bd_pins TexSample_0/clk] [get_bd_pins TextureCache_128x128x32bits/clka] [get_bd_pins TriSetup_0/clk] [get_bd_pins TriSetup_FPU/clk] [get_bd_pins TriWorkCache_0/clk] [get_bd_pins VBB_FIFO/clk] [get_bd_pins VBO_FIFO/clk] [get_bd_pins VBO_INDEX_FIFO/clk] [get_bd_pins VertexBatchBuilder_0/clk] [get_bd_pins ila_333_250/clk] [get_bd_pins rast_out_fifo/clk] [get_bd_pins vio_0/clk]
   connect_bd_net -net fifo_generator_0_dout [get_bd_pins ILA_IA/probe14] [get_bd_pins ShaderCoreSystem/VERTBATCH_FIFO_0_rd_data] [get_bd_pins VBB_FIFO/dout]
   connect_bd_net -net placeholder_texcfg_dout [get_bd_pins TriSetup_0/TEXCFG_nointerpolation] [get_bd_pins placeholder_texcfg/dout]
   connect_bd_net -net rd_clk_1 [get_bd_pins MemorySystem/rd_clk] [get_bd_pins ScanoutSystem/clk_out1]
@@ -2958,11 +3008,11 @@ proc create_root_design { parentCell } {
   connect_bd_net -net vio_0_probe_out0 [get_bd_pins VertexBatchBuilder_0/DBG_UseConstantOutput] [get_bd_pins vio_0/probe_out0]
   connect_bd_net -net xlconstant_0_dout [get_bd_pins ResetN_UntilClockLoc_0/locked] [get_bd_pins constant_always_locked/dout]
   connect_bd_net -net xlconstant_0_dout1 [get_bd_pins ila_333_250/probe4] [get_bd_pins xlconstant_0/dout]
-  connect_bd_net -net xlconstant_1_dout [get_bd_pins ILA_TexSampler/probe6] [get_bd_pins xlconstant_1/dout]
+  connect_bd_net -net xlconstant_1_dout [get_bd_pins ila_333_250/probe37] [get_bd_pins xlconstant_1/dout]
   connect_bd_net -net xlconstant_2_dout [get_bd_pins ILA_IA/probe0] [get_bd_pins ILA_IA/probe1] [get_bd_pins ILA_IA/probe6] [get_bd_pins ILA_IA/probe7] [get_bd_pins ILA_IA/probe8] [get_bd_pins xlconstant_2/dout]
   connect_bd_net -net xlconstant_3_dout [get_bd_pins DepthBuffer_AlwaysEnable/dout] [get_bd_pins DepthBuffer_URAM/regceb]
   connect_bd_net -net xlconstant_3_dout1 [get_bd_pins AttrInterpolator_0/CMD_UseFlatShading] [get_bd_pins xlconstant_3/dout]
-  connect_bd_net -net xlconstant_4_dout [get_bd_pins ILA_AttrInterpolator/probe7] [get_bd_pins xlconstant_4/dout]
+  connect_bd_net -net xlconstant_4_dout [get_bd_pins ILA_AttrInterpolator/probe1] [get_bd_pins ILA_AttrInterpolator/probe2] [get_bd_pins ILA_AttrInterpolator/probe3] [get_bd_pins ILA_AttrInterpolator/probe4] [get_bd_pins ILA_AttrInterpolator/probe7] [get_bd_pins ILA_AttrInterpolator/probe13] [get_bd_pins xlconstant_4/dout]
   connect_bd_net -net xlconstant_7_dout [get_bd_pins TextureCache_128x128x32bits/regcea] [get_bd_pins xlconstant_7/dout]
 
   # Create address segments

@@ -47,16 +47,11 @@ entity AttrInterpolator is
 		FPU_OUT : in STD_LOGIC_VECTOR(31 downto 0);
 	-- FPU interfaces end
 
-	-- Texture Sampler interface begin
-		TEXSAMP_outInterpolatedTexcoordX : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
-		TEXSAMP_outInterpolatedTexcoordY : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
-		TEXSAMP_outInterpolatedColorRGBA : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-		TEXSAMP_outPixelX : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
-		TEXSAMP_outPixelY : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
-
-		TEXSAMP_writeIsValid : out STD_LOGIC := '0';
-		TEXSAMP_readyForWrite : in STD_LOGIC;
-	-- Texture Sampler interface end
+	-- Texture Sampler FIFO interface begin
+		TEXSAMP_OutFIFO_wr_data : out STD_LOGIC_VECTOR(95 downto 0) := (others => '0'); -- 12 bytes per pixel of output data to the texture sampler
+        TEXSAMP_OutFIFO_full : in STD_LOGIC;
+        TEXSAMP_OutFIFO_wr_en : out STD_LOGIC := '0';
+	-- Texture Sampler FIFO interface end
 
 	-- Stats interface begin
 		STAT_CyclesIdle : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
@@ -78,6 +73,10 @@ ATTRIBUTE X_INTERFACE_PARAMETER : STRING;
 
 ATTRIBUTE X_INTERFACE_INFO of clk: SIGNAL is "xilinx.com:signal:clock:1.0 clk CLK";
 ATTRIBUTE X_INTERFACE_PARAMETER of clk: SIGNAL is "FREQ_HZ 333250000";
+
+ATTRIBUTE X_INTERFACE_INFO of TEXSAMP_OutFIFO_wr_data: SIGNAL is "xilinx.com:interface:fifo_write:1.0 TEXSAMP_OUT_FIFO WR_DATA";
+ATTRIBUTE X_INTERFACE_INFO of TEXSAMP_OutFIFO_wr_en: SIGNAL is "xilinx.com:interface:fifo_write:1.0 TEXSAMP_OUT_FIFO WR_EN";
+ATTRIBUTE X_INTERFACE_INFO of TEXSAMP_OutFIFO_full: SIGNAL is "xilinx.com:interface:fifo_write:1.0 TEXSAMP_OUT_FIFO FULL";
 
 constant flatshading : STD_LOGIC := '0';
 
@@ -209,6 +208,11 @@ begin
 	end if;
 end function;
 
+pure function PackOutputData(pixelX : unsigned(15 downto 0); pixelY : unsigned(15 downto 0); texcoordX : unsigned(15 downto 0); texcoordY : unsigned(15 downto 0); colorR : unsigned(7 downto 0); colorG : unsigned(7 downto 0); colorB : unsigned(7 downto 0); colorA : unsigned(7 downto 0) ) return unsigned is
+begin
+	return colorA & colorB & colorG & colorR & texcoordY & texcoordX & pixelY & pixelX;
+end function;
+
 begin
 
 STAT_CyclesIdle <= std_logic_vector(statCyclesIdle);
@@ -240,11 +244,10 @@ DBG_RastBarycentricC <= std_logic_vector(normalizedBarycentricC);
 		if (rising_edge(clk) ) then
 			case currentState is
 				when init =>
-					TEXSAMP_writeIsValid <= '0';
 					currentState <= waitingForRead;
 
 				when waitingForRead =>
-					TEXSAMP_writeIsValid <= '0';
+					TEXSAMP_OutFIFO_wr_en <= '0'; -- Deassert after one clock cycle
 					if (DINTERP_NewPixelValid = '1') then
 						DINTERP_ReadyForNewPixel <= '0';
 
@@ -628,17 +631,15 @@ DBG_RastBarycentricC <= std_logic_vector(normalizedBarycentricC);
 					currentState <= waitingForWrite;
 
 				when waitingForWrite =>
-					if (TEXSAMP_readyForWrite = '1') then
-						TEXSAMP_writeIsValid <= '1'; -- Strobe the write request
+					if (TEXSAMP_OutFIFO_full = '0') then
+						TEXSAMP_OutFIFO_wr_data <= std_logic_vector(PackOutputData(storedPixelX, storedPixelY, compressedOutPixelDataTX, compressedOutPixelDataTY, 
+							compressedOutPixelDataColorR, compressedOutPixelDataColorG, compressedOutPixelDataColorB, compressedOutPixelDataColorA) );
 
-						TEXSAMP_outInterpolatedTexcoordX <= std_logic_vector(compressedOutPixelDataTX);
-						TEXSAMP_outInterpolatedTexcoordY <= std_logic_vector(compressedOutPixelDataTY);
+						TEXSAMP_OutFIFO_wr_en <= '1'; -- Strobe the write request
 
-						TEXSAMP_outInterpolatedColorRGBA <= std_logic_vector(compressedOutPixelDataColorA & compressedOutPixelDataColorB & compressedOutPixelDataColorG & compressedOutPixelDataColorR);
-
-						TEXSAMP_outPixelX <= std_logic_vector(storedPixelX);
-						TEXSAMP_outPixelY <= std_logic_vector(storedPixelY);
 						currentState <= waitingForRead;
+					else
+						TEXSAMP_OutFIFO_wr_en <= '0';
 					end if;
 
 			end case;

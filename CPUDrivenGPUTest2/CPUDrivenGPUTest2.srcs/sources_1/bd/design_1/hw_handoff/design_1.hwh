@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
-<EDKSYSTEM EDWVERSION="1.2" TIMESTAMP="Mon Oct  3 22:17:41 2022" VIVADOVERSION="2018.1_AR73068">
+<EDKSYSTEM EDWVERSION="1.2" TIMESTAMP="Wed Oct  5 19:54:05 2022" VIVADOVERSION="2018.1_AR73068">
 
   <SYSTEMINFO ARCH="kintexuplus" BOARD="xilinx.com:kcu116:part0:1.3" DEVICE="xcku5p" NAME="design_1" PACKAGE="ffvb676" SPEEDGRADE="-2"/>
 
@@ -349,46 +349,23 @@
             <CONNECTION INSTANCE="AttrInterp_FPU" PORT="OUT_RESULT"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="15" NAME="TEXSAMP_outInterpolatedTexcoordX" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_TEXSAMP_outInterpolatedTexcoordX">
+        <PORT DIR="O" LEFT="95" NAME="TEXSAMP_OutFIFO_wr_data" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_TEXSAMP_OutFIFO_wr_data">
           <CONNECTIONS>
+            <CONNECTION INSTANCE="TEXSAMP_FIFO" PORT="din"/>
             <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe0"/>
-            <CONNECTION INSTANCE="TexSample_0" PORT="INTERP_inInterpolatedTexcoordX"/>
+          </CONNECTIONS>
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TEXSAMP_FIFO" PORT="din"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="15" NAME="TEXSAMP_outInterpolatedTexcoordY" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_TEXSAMP_outInterpolatedTexcoordY">
+        <PORT DIR="I" NAME="TEXSAMP_OutFIFO_full" SIGIS="undef" SIGNAME="AttrInterpolator_0_TEXSAMP_OutFIFO_full">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe1"/>
-            <CONNECTION INSTANCE="TexSample_0" PORT="INTERP_inInterpolatedTexcoordY"/>
+            <CONNECTION INSTANCE="TEXSAMP_FIFO" PORT="full"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="31" NAME="TEXSAMP_outInterpolatedColorRGBA" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_TEXSAMP_outInterpolatedColorRGBA">
+        <PORT DIR="O" NAME="TEXSAMP_OutFIFO_wr_en" SIGIS="undef" SIGNAME="AttrInterpolator_0_TEXSAMP_OutFIFO_wr_en">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="ila_333_250" PORT="probe37"/>
-            <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe2"/>
-            <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe13"/>
-            <CONNECTION INSTANCE="TexSample_0" PORT="INTERP_inInterpolatedVertColorRGBA"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="O" LEFT="15" NAME="TEXSAMP_outPixelX" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_TEXSAMP_outPixelX">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe3"/>
-            <CONNECTION INSTANCE="TexSample_0" PORT="INTERP_pixelX"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="O" LEFT="15" NAME="TEXSAMP_outPixelY" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_TEXSAMP_outPixelY">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe4"/>
-            <CONNECTION INSTANCE="TexSample_0" PORT="INTERP_pixelY"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="O" NAME="TEXSAMP_writeIsValid" SIGIS="undef" SIGNAME="AttrInterpolator_0_TEXSAMP_writeIsValid">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="TexSample_0" PORT="INTERP_writeStrobe"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" NAME="TEXSAMP_readyForWrite" SIGIS="undef" SIGNAME="TexSample_0_INTERP_readyForNewWrite">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="TexSample_0" PORT="INTERP_readyForNewWrite"/>
+            <CONNECTION INSTANCE="TEXSAMP_FIFO" PORT="wr_en"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="31" NAME="STAT_CyclesIdle" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_STAT_CyclesIdle">
@@ -423,7 +400,15 @@
           </CONNECTIONS>
         </PORT>
       </PORTS>
-      <BUSINTERFACES/>
+      <BUSINTERFACES>
+        <BUSINTERFACE BUSNAME="AttrInterpolator_0_TEXSAMP_OUT_FIFO" NAME="TEXSAMP_OUT_FIFO" TYPE="INITIATOR" VLNV="xilinx.com:interface:fifo_write:1.0">
+          <PORTMAPS>
+            <PORTMAP LOGICAL="WR_DATA" PHYSICAL="TEXSAMP_OutFIFO_wr_data"/>
+            <PORTMAP LOGICAL="WR_EN" PHYSICAL="TEXSAMP_OutFIFO_wr_en"/>
+            <PORTMAP LOGICAL="FULL" PHYSICAL="TEXSAMP_OutFIFO_full"/>
+          </PORTMAPS>
+        </BUSINTERFACE>
+      </BUSINTERFACES>
     </MODULE>
     <MODULE FULLNAME="/ClearBlock_0" HWVERSION="1.0" INSTANCE="ClearBlock_0" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="ClearBlock" VLNV="xilinx.com:module_ref:ClearBlock:1.0">
       <DOCUMENTS/>
@@ -817,7 +802,7 @@
         </PORT>
         <PORT DIR="O" LEFT="2" NAME="TEXSAMP_LoadTexCacheFormat" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_TEXSAMP_LoadTexCacheFormat">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="ILA_TexSampler" PORT="probe10"/>
+            <CONNECTION INSTANCE="ILA_TexSampler" PORT="probe6"/>
             <CONNECTION INSTANCE="TexSample_0" PORT="CMD_LoadTexCacheFormat"/>
           </CONNECTIONS>
         </PORT>
@@ -828,13 +813,13 @@
         </PORT>
         <PORT DIR="O" LEFT="2" NAME="TEXSAMP_LoadTexCacheTexelWidth" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_TEXSAMP_LoadTexCacheTexelWidth">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="ILA_TexSampler" PORT="probe8"/>
+            <CONNECTION INSTANCE="ILA_TexSampler" PORT="probe4"/>
             <CONNECTION INSTANCE="TexSample_0" PORT="CMD_LoadTexCacheTexelWidth"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="2" NAME="TEXSAMP_LoadTexCacheTexelHeight" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_TEXSAMP_LoadTexCacheTexelHeight">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="ILA_TexSampler" PORT="probe9"/>
+            <CONNECTION INSTANCE="ILA_TexSampler" PORT="probe5"/>
             <CONNECTION INSTANCE="TexSample_0" PORT="CMD_LoadTexCacheTexelHeight"/>
           </CONNECTIONS>
         </PORT>
@@ -1857,14 +1842,14 @@
         </PORT>
         <PORT DIR="O" LEFT="127" NAME="ATTR_VC10" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_VC10">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="DINTERP_VC10"/>
             <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe21"/>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="DINTERP_VC10"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="127" NAME="ATTR_VC20" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_VC20">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="DINTERP_VC20"/>
             <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe22"/>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="DINTERP_VC20"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="31" NAME="ATTR_NormalizedBarycentricB" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_NormalizedBarycentricB">
@@ -1952,7 +1937,7 @@
         <PARAMETER NAME="C_TRIGOUT_EN" VALUE="0"/>
         <PARAMETER NAME="C_TRIGIN_EN" VALUE="0"/>
         <PARAMETER NAME="C_SLOT_0_AXIS_TUSER_WIDTH" VALUE="24"/>
-        <PARAMETER NAME="C_SLOT_0_AXIS_TDEST_WIDTH" VALUE="32"/>
+        <PARAMETER NAME="C_SLOT_0_AXIS_TDEST_WIDTH" VALUE="1"/>
         <PARAMETER NAME="C_SLOT_0_AXIS_TID_WIDTH" VALUE="32"/>
         <PARAMETER NAME="C_SLOT_0_AXI_ID_WIDTH" VALUE="8"/>
         <PARAMETER NAME="C_SLOT_0_AXI_ARUSER_WIDTH" VALUE="1"/>
@@ -1960,20 +1945,20 @@
         <PARAMETER NAME="C_SLOT_0_AXI_AWUSER_WIDTH" VALUE="1"/>
         <PARAMETER NAME="C_SLOT_0_AXI_WUSER_WIDTH" VALUE="1"/>
         <PARAMETER NAME="C_SLOT_0_AXI_BUSER_WIDTH" VALUE="128"/>
-        <PARAMETER NAME="C_PROBE0_WIDTH" VALUE="16"/>
-        <PARAMETER NAME="C_PROBE1_WIDTH" VALUE="16"/>
-        <PARAMETER NAME="C_PROBE2_WIDTH" VALUE="32"/>
-        <PARAMETER NAME="C_PROBE3_WIDTH" VALUE="16"/>
-        <PARAMETER NAME="C_PROBE4_WIDTH" VALUE="16"/>
+        <PARAMETER NAME="C_PROBE0_WIDTH" VALUE="96"/>
+        <PARAMETER NAME="C_PROBE1_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_PROBE2_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_PROBE3_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_PROBE4_WIDTH" VALUE="1"/>
         <PARAMETER NAME="C_PROBE5_WIDTH" VALUE="24"/>
         <PARAMETER NAME="C_PROBE6_WIDTH" VALUE="7"/>
-        <PARAMETER NAME="C_PROBE7_WIDTH" VALUE="32"/>
+        <PARAMETER NAME="C_PROBE7_WIDTH" VALUE="1"/>
         <PARAMETER NAME="C_PROBE8_WIDTH" VALUE="32"/>
         <PARAMETER NAME="C_PROBE9_WIDTH" VALUE="32"/>
         <PARAMETER NAME="C_PROBE10_WIDTH" VALUE="4"/>
         <PARAMETER NAME="C_PROBE11_WIDTH" VALUE="32"/>
         <PARAMETER NAME="C_PROBE12_WIDTH" VALUE="32"/>
-        <PARAMETER NAME="C_PROBE13_WIDTH" VALUE="32"/>
+        <PARAMETER NAME="C_PROBE13_WIDTH" VALUE="1"/>
         <PARAMETER NAME="C_PROBE14_WIDTH" VALUE="32"/>
         <PARAMETER NAME="C_PROBE15_WIDTH" VALUE="32"/>
         <PARAMETER NAME="C_PROBE16_WIDTH" VALUE="32"/>
@@ -5061,29 +5046,29 @@
             <CONNECTION INSTANCE="MemorySystem_ddr4_0" PORT="c0_ddr4_ui_clk"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="15" NAME="probe0" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_TEXSAMP_outInterpolatedTexcoordX">
+        <PORT DIR="I" LEFT="95" NAME="probe0" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_TEXSAMP_OutFIFO_wr_data">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="TEXSAMP_outInterpolatedTexcoordX"/>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="TEXSAMP_OutFIFO_wr_data"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="15" NAME="probe1" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_TEXSAMP_outInterpolatedTexcoordY">
+        <PORT DIR="I" LEFT="0" NAME="probe1" RIGHT="0" SIGIS="undef" SIGNAME="xlconstant_4_dout">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="TEXSAMP_outInterpolatedTexcoordY"/>
+            <CONNECTION INSTANCE="xlconstant_4" PORT="dout"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="probe2" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_TEXSAMP_outInterpolatedColorRGBA">
+        <PORT DIR="I" LEFT="0" NAME="probe2" RIGHT="0" SIGIS="undef" SIGNAME="xlconstant_4_dout">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="TEXSAMP_outInterpolatedColorRGBA"/>
+            <CONNECTION INSTANCE="xlconstant_4" PORT="dout"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="15" NAME="probe3" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_TEXSAMP_outPixelX">
+        <PORT DIR="I" LEFT="0" NAME="probe3" RIGHT="0" SIGIS="undef" SIGNAME="xlconstant_4_dout">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="TEXSAMP_outPixelX"/>
+            <CONNECTION INSTANCE="xlconstant_4" PORT="dout"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="15" NAME="probe4" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_TEXSAMP_outPixelY">
+        <PORT DIR="I" LEFT="0" NAME="probe4" RIGHT="0" SIGIS="undef" SIGNAME="xlconstant_4_dout">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="TEXSAMP_outPixelY"/>
+            <CONNECTION INSTANCE="xlconstant_4" PORT="dout"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="I" LEFT="23" NAME="probe5" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_DEPTH_OutPixelDepth">
@@ -5096,7 +5081,7 @@
             <CONNECTION INSTANCE="AttrInterpolator_0" PORT="DBG_AttrInterpolator_State"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="probe7" RIGHT="0" SIGIS="undef" SIGNAME="xlconstant_4_dout">
+        <PORT DIR="I" LEFT="0" NAME="probe7" RIGHT="0" SIGIS="undef" SIGNAME="xlconstant_4_dout">
           <CONNECTIONS>
             <CONNECTION INSTANCE="xlconstant_4" PORT="dout"/>
           </CONNECTIONS>
@@ -5126,9 +5111,9 @@
             <CONNECTION INSTANCE="DepthInterpolator_0" PORT="ATTR_TY0"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="probe13" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_TEXSAMP_outInterpolatedColorRGBA">
+        <PORT DIR="I" LEFT="0" NAME="probe13" RIGHT="0" SIGIS="undef" SIGNAME="xlconstant_4_dout">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="TEXSAMP_outInterpolatedColorRGBA"/>
+            <CONNECTION INSTANCE="xlconstant_4" PORT="dout"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="I" LEFT="31" NAME="probe14" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_OutPixelW">
@@ -8712,7 +8697,7 @@
         <PARAMETER NAME="C_SLOT_0_AXI_PROTOCOL" VALUE="AXI4"/>
         <PARAMETER NAME="C_NUM_MONITOR_SLOTS" VALUE="1"/>
         <PARAMETER NAME="C_ENABLE_ILA_AXI_MON" VALUE="0"/>
-        <PARAMETER NAME="C_NUM_OF_PROBES" VALUE="11"/>
+        <PARAMETER NAME="C_NUM_OF_PROBES" VALUE="7"/>
         <PARAMETER NAME="C_DATA_DEPTH" VALUE="1024"/>
         <PARAMETER NAME="C_MAJOR_VERSION" VALUE="2018"/>
         <PARAMETER NAME="C_MINOR_VERSION" VALUE="1"/>
@@ -8727,9 +8712,9 @@
         <PARAMETER NAME="C_RAM_STYLE" VALUE="SUBCORE"/>
         <PARAMETER NAME="C_TRIGOUT_EN" VALUE="0"/>
         <PARAMETER NAME="C_TRIGIN_EN" VALUE="0"/>
-        <PARAMETER NAME="C_SLOT_0_AXIS_TUSER_WIDTH" VALUE="32"/>
-        <PARAMETER NAME="C_SLOT_0_AXIS_TDEST_WIDTH" VALUE="14"/>
-        <PARAMETER NAME="C_SLOT_0_AXIS_TID_WIDTH" VALUE="3"/>
+        <PARAMETER NAME="C_SLOT_0_AXIS_TUSER_WIDTH" VALUE="3"/>
+        <PARAMETER NAME="C_SLOT_0_AXIS_TDEST_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_SLOT_0_AXIS_TID_WIDTH" VALUE="1"/>
         <PARAMETER NAME="C_SLOT_0_AXI_ID_WIDTH" VALUE="1"/>
         <PARAMETER NAME="C_SLOT_0_AXI_ARUSER_WIDTH" VALUE="1"/>
         <PARAMETER NAME="C_SLOT_0_AXI_RUSER_WIDTH" VALUE="1"/>
@@ -8737,16 +8722,16 @@
         <PARAMETER NAME="C_SLOT_0_AXI_WUSER_WIDTH" VALUE="1"/>
         <PARAMETER NAME="C_SLOT_0_AXI_BUSER_WIDTH" VALUE="1"/>
         <PARAMETER NAME="C_PROBE0_WIDTH" VALUE="6"/>
-        <PARAMETER NAME="C_PROBE1_WIDTH" VALUE="8"/>
-        <PARAMETER NAME="C_PROBE2_WIDTH" VALUE="8"/>
-        <PARAMETER NAME="C_PROBE3_WIDTH" VALUE="8"/>
-        <PARAMETER NAME="C_PROBE4_WIDTH" VALUE="8"/>
-        <PARAMETER NAME="C_PROBE5_WIDTH" VALUE="32"/>
-        <PARAMETER NAME="C_PROBE6_WIDTH" VALUE="32"/>
-        <PARAMETER NAME="C_PROBE7_WIDTH" VALUE="14"/>
-        <PARAMETER NAME="C_PROBE8_WIDTH" VALUE="3"/>
-        <PARAMETER NAME="C_PROBE9_WIDTH" VALUE="3"/>
-        <PARAMETER NAME="C_PROBE10_WIDTH" VALUE="3"/>
+        <PARAMETER NAME="C_PROBE1_WIDTH" VALUE="64"/>
+        <PARAMETER NAME="C_PROBE2_WIDTH" VALUE="32"/>
+        <PARAMETER NAME="C_PROBE3_WIDTH" VALUE="14"/>
+        <PARAMETER NAME="C_PROBE4_WIDTH" VALUE="3"/>
+        <PARAMETER NAME="C_PROBE5_WIDTH" VALUE="3"/>
+        <PARAMETER NAME="C_PROBE6_WIDTH" VALUE="3"/>
+        <PARAMETER NAME="C_PROBE7_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_PROBE8_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_PROBE9_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_PROBE10_WIDTH" VALUE="1"/>
         <PARAMETER NAME="C_PROBE11_WIDTH" VALUE="1"/>
         <PARAMETER NAME="C_PROBE12_WIDTH" VALUE="1"/>
         <PARAMETER NAME="C_PROBE13_WIDTH" VALUE="1"/>
@@ -11842,52 +11827,32 @@
             <CONNECTION INSTANCE="TexSample_0" PORT="DBG_TexSample_State"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="7" NAME="probe1" RIGHT="0" SIGIS="undef" SIGNAME="TexSample_0_ROP_outR">
+        <PORT DIR="I" LEFT="63" NAME="probe1" RIGHT="0" SIGIS="undef" SIGNAME="TexSample_0_ROP_OutFIFO_wr_data">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TexSample_0" PORT="ROP_outR"/>
+            <CONNECTION INSTANCE="TexSample_0" PORT="ROP_OutFIFO_wr_data"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="7" NAME="probe2" RIGHT="0" SIGIS="undef" SIGNAME="TexSample_0_ROP_outG">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="TexSample_0" PORT="ROP_outG"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" LEFT="7" NAME="probe3" RIGHT="0" SIGIS="undef" SIGNAME="TexSample_0_ROP_outB">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="TexSample_0" PORT="ROP_outB"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" LEFT="7" NAME="probe4" RIGHT="0" SIGIS="undef" SIGNAME="TexSample_0_ROP_outA">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="TexSample_0" PORT="ROP_outA"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" LEFT="31" NAME="probe5" RIGHT="0" SIGIS="undef" SIGNAME="TexSample_0_DBG_TexCache_dina">
+        <PORT DIR="I" LEFT="31" NAME="probe2" RIGHT="0" SIGIS="undef" SIGNAME="TexSample_0_DBG_TexCache_dina">
           <CONNECTIONS>
             <CONNECTION INSTANCE="TexSample_0" PORT="DBG_TexCache_dina"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="probe6" RIGHT="0" SIGIS="undef" SIGNAME="xlconstant_1_dout">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="xlconstant_1" PORT="dout"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" LEFT="13" NAME="probe7" RIGHT="0" SIGIS="undef" SIGNAME="TexSample_0_DBG_TexCache_addra">
+        <PORT DIR="I" LEFT="13" NAME="probe3" RIGHT="0" SIGIS="undef" SIGNAME="TexSample_0_DBG_TexCache_addra">
           <CONNECTIONS>
             <CONNECTION INSTANCE="TexSample_0" PORT="DBG_TexCache_addra"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="2" NAME="probe8" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_TEXSAMP_LoadTexCacheTexelWidth">
+        <PORT DIR="I" LEFT="2" NAME="probe4" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_TEXSAMP_LoadTexCacheTexelWidth">
           <CONNECTIONS>
             <CONNECTION INSTANCE="CommandProcessor_0" PORT="TEXSAMP_LoadTexCacheTexelWidth"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="2" NAME="probe9" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_TEXSAMP_LoadTexCacheTexelHeight">
+        <PORT DIR="I" LEFT="2" NAME="probe5" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_TEXSAMP_LoadTexCacheTexelHeight">
           <CONNECTIONS>
             <CONNECTION INSTANCE="CommandProcessor_0" PORT="TEXSAMP_LoadTexCacheTexelHeight"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="2" NAME="probe10" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_TEXSAMP_LoadTexCacheFormat">
+        <PORT DIR="I" LEFT="2" NAME="probe6" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_TEXSAMP_LoadTexCacheFormat">
           <CONNECTIONS>
             <CONNECTION INSTANCE="CommandProcessor_0" PORT="TEXSAMP_LoadTexCacheFormat"/>
           </CONNECTIONS>
@@ -26028,14 +25993,14 @@
             <CONNECTION INSTANCE="AttrInterp_FPU" PORT="clk"/>
             <CONNECTION INSTANCE="TriSetup_0" PORT="clk"/>
             <CONNECTION INSTANCE="Rasterizer_0" PORT="clk"/>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="clk"/>
             <CONNECTION INSTANCE="TriWorkCache_0" PORT="clk"/>
             <CONNECTION INSTANCE="CommandProcessor_0" PORT="clk"/>
             <CONNECTION INSTANCE="DepthBuffer_0" PORT="clk"/>
             <CONNECTION INSTANCE="InputAssembler2_0" PORT="clk"/>
-            <CONNECTION INSTANCE="TexSample_0" PORT="clk"/>
             <CONNECTION INSTANCE="VertexBatchBuilder_0" PORT="clk"/>
-            <CONNECTION INSTANCE="ROP_0" PORT="clk"/>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="clk"/>
+            <CONNECTION INSTANCE="StatsCollector_0" PORT="clk"/>
+            <CONNECTION INSTANCE="ROP_FIFO" PORT="clk"/>
             <CONNECTION INSTANCE="SerialPacketSystem_ValidIncomingPacketsFIFO" PORT="rd_clk"/>
             <CONNECTION INSTANCE="SerialPacketSystem_ReturnOutputPacketsFIFO" PORT="wr_clk"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_InstructionCache" PORT="clka"/>
@@ -26046,11 +26011,13 @@
             <CONNECTION INSTANCE="ShaderCoreSystem_FloatALU_1" PORT="clk"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_FloatALU_2" PORT="clk"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_FloatALU_3" PORT="clk"/>
-            <CONNECTION INSTANCE="ShaderCoreSystem_GPRQuadSystem_GPRQuad2_0" PORT="clk"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_ShaderCore_0" PORT="clk"/>
+            <CONNECTION INSTANCE="ShaderCoreSystem_GPRQuadSystem_GPRQuad2_0" PORT="clk"/>
             <CONNECTION INSTANCE="ScanoutSystem_CDC_Command_Scanout_0" PORT="cmd_clk"/>
-            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="clk"/>
-            <CONNECTION INSTANCE="StatsCollector_0" PORT="clk"/>
+            <CONNECTION INSTANCE="TEXSAMP_FIFO" PORT="clk"/>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="clk"/>
+            <CONNECTION INSTANCE="TexSample_0" PORT="clk"/>
+            <CONNECTION INSTANCE="ROP_0" PORT="clk"/>
             <CONNECTION INSTANCE="MemorySystem_ScanoutReadRequestsFIFO" PORT="rd_clk"/>
             <CONNECTION INSTANCE="MemorySystem_ZStencilReadRequestsFIFO" PORT="rd_clk"/>
             <CONNECTION INSTANCE="MemorySystem_ZStencilReadRequestsFIFO" PORT="wr_clk"/>
@@ -26589,44 +26556,19 @@
             <CONNECTION INSTANCE="CommandProcessor_0" PORT="ROP_SetAlphaBlendStateBlock"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="15" NAME="TEXSAMP_outPixelX" RIGHT="0" SIGIS="undef" SIGNAME="TexSample_0_ROP_outPixelX">
+        <PORT DIR="I" LEFT="63" NAME="TEXSAMP_InFIFO_rd_data" RIGHT="0" SIGIS="undef" SIGNAME="ROP_0_TEXSAMP_InFIFO_rd_data">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TexSample_0" PORT="ROP_outPixelX"/>
+            <CONNECTION INSTANCE="ROP_FIFO" PORT="dout"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="15" NAME="TEXSAMP_outPixelY" RIGHT="0" SIGIS="undef" SIGNAME="TexSample_0_ROP_outPixelY">
+        <PORT DIR="I" NAME="TEXSAMP_InFIFO_empty" SIGIS="undef" SIGNAME="ROP_0_TEXSAMP_InFIFO_empty">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TexSample_0" PORT="ROP_outPixelY"/>
+            <CONNECTION INSTANCE="ROP_FIFO" PORT="empty"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="7" NAME="TEXSAMP_outR" RIGHT="0" SIGIS="undef" SIGNAME="TexSample_0_ROP_outR">
+        <PORT DIR="O" NAME="TEXSAMP_InFIFO_rd_en" SIGIS="undef" SIGNAME="ROP_0_TEXSAMP_InFIFO_rd_en">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TexSample_0" PORT="ROP_outR"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" LEFT="7" NAME="TEXSAMP_outG" RIGHT="0" SIGIS="undef" SIGNAME="TexSample_0_ROP_outG">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="TexSample_0" PORT="ROP_outG"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" LEFT="7" NAME="TEXSAMP_outB" RIGHT="0" SIGIS="undef" SIGNAME="TexSample_0_ROP_outB">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="TexSample_0" PORT="ROP_outB"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" LEFT="7" NAME="TEXSAMP_outA" RIGHT="0" SIGIS="undef" SIGNAME="TexSample_0_ROP_outA">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="TexSample_0" PORT="ROP_outA"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" NAME="TEXSAMP_writeIsValid" SIGIS="undef" SIGNAME="TexSample_0_ROP_writeIsValid">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="TexSample_0" PORT="ROP_writeIsValid"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="O" NAME="TEXSAMP_writeAck" SIGIS="undef" SIGNAME="ROP_0_TEXSAMP_writeAck">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="TexSample_0" PORT="ROP_writeAck"/>
+            <CONNECTION INSTANCE="ROP_FIFO" PORT="rd_en"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="31" NAME="STAT_CyclesIdle" RIGHT="0" SIGIS="undef" SIGNAME="ROP_0_STAT_CyclesIdle">
@@ -26702,6 +26644,444 @@
             <PORTMAP LOGICAL="WR_DATA" PHYSICAL="MEM_ROPWriteRequestsFIFO_wr_data"/>
             <PORTMAP LOGICAL="WR_EN" PHYSICAL="MEM_ROPWriteRequestsFIFO_wr_en"/>
             <PORTMAP LOGICAL="FULL" PHYSICAL="MEM_ROPWriteRequestsFIFO_full"/>
+          </PORTMAPS>
+        </BUSINTERFACE>
+        <BUSINTERFACE BUSNAME="ROP_0_TEXSAMP_IN_FIFO" NAME="TEXSAMP_IN_FIFO" TYPE="INITIATOR" VLNV="xilinx.com:interface:fifo_read:1.0">
+          <PORTMAPS>
+            <PORTMAP LOGICAL="RD_DATA" PHYSICAL="TEXSAMP_InFIFO_rd_data"/>
+            <PORTMAP LOGICAL="RD_EN" PHYSICAL="TEXSAMP_InFIFO_rd_en"/>
+            <PORTMAP LOGICAL="EMPTY" PHYSICAL="TEXSAMP_InFIFO_empty"/>
+          </PORTMAPS>
+        </BUSINTERFACE>
+      </BUSINTERFACES>
+    </MODULE>
+    <MODULE FULLNAME="/ROP_FIFO" HWVERSION="13.2" INSTANCE="ROP_FIFO" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="fifo_generator" VLNV="xilinx.com:ip:fifo_generator:13.2">
+      <DOCUMENTS>
+        <DOCUMENT SOURCE="http://www.xilinx.com/cgi-bin/docs/ipdoc?c=fifo_generator;v=v13_2;d=pg057-fifo-generator.pdf"/>
+      </DOCUMENTS>
+      <PARAMETERS>
+        <PARAMETER NAME="C_COMMON_CLOCK" VALUE="1"/>
+        <PARAMETER NAME="C_SELECT_XPM" VALUE="0"/>
+        <PARAMETER NAME="C_COUNT_TYPE" VALUE="0"/>
+        <PARAMETER NAME="C_DATA_COUNT_WIDTH" VALUE="10"/>
+        <PARAMETER NAME="C_DEFAULT_VALUE" VALUE="BlankString"/>
+        <PARAMETER NAME="C_DIN_WIDTH" VALUE="64"/>
+        <PARAMETER NAME="C_DOUT_RST_VAL" VALUE="0"/>
+        <PARAMETER NAME="C_DOUT_WIDTH" VALUE="64"/>
+        <PARAMETER NAME="C_ENABLE_RLOCS" VALUE="0"/>
+        <PARAMETER NAME="C_FAMILY" VALUE="kintexuplus"/>
+        <PARAMETER NAME="C_FULL_FLAGS_RST_VAL" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_ALMOST_EMPTY" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_ALMOST_FULL" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_BACKUP" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_DATA_COUNT" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_INT_CLK" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_MEMINIT_FILE" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_OVERFLOW" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_RD_DATA_COUNT" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_RD_RST" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_RST" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_SRST" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_UNDERFLOW" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_VALID" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_WR_ACK" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_WR_DATA_COUNT" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_WR_RST" VALUE="0"/>
+        <PARAMETER NAME="C_IMPLEMENTATION_TYPE" VALUE="0"/>
+        <PARAMETER NAME="C_INIT_WR_PNTR_VAL" VALUE="0"/>
+        <PARAMETER NAME="C_MEMORY_TYPE" VALUE="1"/>
+        <PARAMETER NAME="C_MIF_FILE_NAME" VALUE="BlankString"/>
+        <PARAMETER NAME="C_OPTIMIZATION_MODE" VALUE="0"/>
+        <PARAMETER NAME="C_OVERFLOW_LOW" VALUE="0"/>
+        <PARAMETER NAME="C_PRELOAD_LATENCY" VALUE="0"/>
+        <PARAMETER NAME="C_PRELOAD_REGS" VALUE="1"/>
+        <PARAMETER NAME="C_PRIM_FIFO_TYPE" VALUE="512x72"/>
+        <PARAMETER NAME="C_PROG_EMPTY_THRESH_ASSERT_VAL" VALUE="4"/>
+        <PARAMETER NAME="C_PROG_EMPTY_THRESH_NEGATE_VAL" VALUE="5"/>
+        <PARAMETER NAME="C_PROG_EMPTY_TYPE" VALUE="0"/>
+        <PARAMETER NAME="C_PROG_FULL_THRESH_ASSERT_VAL" VALUE="511"/>
+        <PARAMETER NAME="C_PROG_FULL_THRESH_NEGATE_VAL" VALUE="510"/>
+        <PARAMETER NAME="C_PROG_FULL_TYPE" VALUE="0"/>
+        <PARAMETER NAME="C_RD_DATA_COUNT_WIDTH" VALUE="10"/>
+        <PARAMETER NAME="C_RD_DEPTH" VALUE="512"/>
+        <PARAMETER NAME="C_RD_FREQ" VALUE="1"/>
+        <PARAMETER NAME="C_RD_PNTR_WIDTH" VALUE="9"/>
+        <PARAMETER NAME="C_UNDERFLOW_LOW" VALUE="0"/>
+        <PARAMETER NAME="C_USE_DOUT_RST" VALUE="0"/>
+        <PARAMETER NAME="C_USE_ECC" VALUE="0"/>
+        <PARAMETER NAME="C_USE_EMBEDDED_REG" VALUE="0"/>
+        <PARAMETER NAME="C_USE_PIPELINE_REG" VALUE="0"/>
+        <PARAMETER NAME="C_POWER_SAVING_MODE" VALUE="0"/>
+        <PARAMETER NAME="C_USE_FIFO16_FLAGS" VALUE="0"/>
+        <PARAMETER NAME="C_USE_FWFT_DATA_COUNT" VALUE="1"/>
+        <PARAMETER NAME="C_VALID_LOW" VALUE="0"/>
+        <PARAMETER NAME="C_WR_ACK_LOW" VALUE="0"/>
+        <PARAMETER NAME="C_WR_DATA_COUNT_WIDTH" VALUE="10"/>
+        <PARAMETER NAME="C_WR_DEPTH" VALUE="512"/>
+        <PARAMETER NAME="C_WR_FREQ" VALUE="1"/>
+        <PARAMETER NAME="C_WR_PNTR_WIDTH" VALUE="9"/>
+        <PARAMETER NAME="C_WR_RESPONSE_LATENCY" VALUE="1"/>
+        <PARAMETER NAME="C_MSGON_VAL" VALUE="1"/>
+        <PARAMETER NAME="C_ENABLE_RST_SYNC" VALUE="1"/>
+        <PARAMETER NAME="C_EN_SAFETY_CKT" VALUE="0"/>
+        <PARAMETER NAME="C_ERROR_INJECTION_TYPE" VALUE="0"/>
+        <PARAMETER NAME="C_SYNCHRONIZER_STAGE" VALUE="2"/>
+        <PARAMETER NAME="C_INTERFACE_TYPE" VALUE="0"/>
+        <PARAMETER NAME="C_AXI_TYPE" VALUE="1"/>
+        <PARAMETER NAME="C_HAS_AXI_WR_CHANNEL" VALUE="1"/>
+        <PARAMETER NAME="C_HAS_AXI_RD_CHANNEL" VALUE="1"/>
+        <PARAMETER NAME="C_HAS_SLAVE_CE" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_MASTER_CE" VALUE="0"/>
+        <PARAMETER NAME="C_ADD_NGC_CONSTRAINT" VALUE="0"/>
+        <PARAMETER NAME="C_USE_COMMON_OVERFLOW" VALUE="0"/>
+        <PARAMETER NAME="C_USE_COMMON_UNDERFLOW" VALUE="0"/>
+        <PARAMETER NAME="C_USE_DEFAULT_SETTINGS" VALUE="0"/>
+        <PARAMETER NAME="C_AXI_ID_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_AXI_ADDR_WIDTH" VALUE="32"/>
+        <PARAMETER NAME="C_AXI_DATA_WIDTH" VALUE="64"/>
+        <PARAMETER NAME="C_AXI_LEN_WIDTH" VALUE="8"/>
+        <PARAMETER NAME="C_AXI_LOCK_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_HAS_AXI_ID" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_AXI_AWUSER" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_AXI_WUSER" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_AXI_BUSER" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_AXI_ARUSER" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_AXI_RUSER" VALUE="0"/>
+        <PARAMETER NAME="C_AXI_ARUSER_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_AXI_AWUSER_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_AXI_WUSER_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_AXI_BUSER_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_AXI_RUSER_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_HAS_AXIS_TDATA" VALUE="1"/>
+        <PARAMETER NAME="C_HAS_AXIS_TID" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_AXIS_TDEST" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_AXIS_TUSER" VALUE="1"/>
+        <PARAMETER NAME="C_HAS_AXIS_TREADY" VALUE="1"/>
+        <PARAMETER NAME="C_HAS_AXIS_TLAST" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_AXIS_TSTRB" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_AXIS_TKEEP" VALUE="0"/>
+        <PARAMETER NAME="C_AXIS_TDATA_WIDTH" VALUE="8"/>
+        <PARAMETER NAME="C_AXIS_TID_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_AXIS_TDEST_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_AXIS_TUSER_WIDTH" VALUE="4"/>
+        <PARAMETER NAME="C_AXIS_TSTRB_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_AXIS_TKEEP_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_WACH_TYPE" VALUE="0"/>
+        <PARAMETER NAME="C_WDCH_TYPE" VALUE="0"/>
+        <PARAMETER NAME="C_WRCH_TYPE" VALUE="0"/>
+        <PARAMETER NAME="C_RACH_TYPE" VALUE="0"/>
+        <PARAMETER NAME="C_RDCH_TYPE" VALUE="0"/>
+        <PARAMETER NAME="C_AXIS_TYPE" VALUE="0"/>
+        <PARAMETER NAME="C_IMPLEMENTATION_TYPE_WACH" VALUE="2"/>
+        <PARAMETER NAME="C_IMPLEMENTATION_TYPE_WDCH" VALUE="1"/>
+        <PARAMETER NAME="C_IMPLEMENTATION_TYPE_WRCH" VALUE="2"/>
+        <PARAMETER NAME="C_IMPLEMENTATION_TYPE_RACH" VALUE="2"/>
+        <PARAMETER NAME="C_IMPLEMENTATION_TYPE_RDCH" VALUE="1"/>
+        <PARAMETER NAME="C_IMPLEMENTATION_TYPE_AXIS" VALUE="1"/>
+        <PARAMETER NAME="C_APPLICATION_TYPE_WACH" VALUE="0"/>
+        <PARAMETER NAME="C_APPLICATION_TYPE_WDCH" VALUE="0"/>
+        <PARAMETER NAME="C_APPLICATION_TYPE_WRCH" VALUE="0"/>
+        <PARAMETER NAME="C_APPLICATION_TYPE_RACH" VALUE="0"/>
+        <PARAMETER NAME="C_APPLICATION_TYPE_RDCH" VALUE="0"/>
+        <PARAMETER NAME="C_APPLICATION_TYPE_AXIS" VALUE="0"/>
+        <PARAMETER NAME="C_PRIM_FIFO_TYPE_WACH" VALUE="512x36"/>
+        <PARAMETER NAME="C_PRIM_FIFO_TYPE_WDCH" VALUE="512x72"/>
+        <PARAMETER NAME="C_PRIM_FIFO_TYPE_WRCH" VALUE="512x36"/>
+        <PARAMETER NAME="C_PRIM_FIFO_TYPE_RACH" VALUE="512x36"/>
+        <PARAMETER NAME="C_PRIM_FIFO_TYPE_RDCH" VALUE="512x72"/>
+        <PARAMETER NAME="C_PRIM_FIFO_TYPE_AXIS" VALUE="1kx18"/>
+        <PARAMETER NAME="C_USE_ECC_WACH" VALUE="0"/>
+        <PARAMETER NAME="C_USE_ECC_WDCH" VALUE="0"/>
+        <PARAMETER NAME="C_USE_ECC_WRCH" VALUE="0"/>
+        <PARAMETER NAME="C_USE_ECC_RACH" VALUE="0"/>
+        <PARAMETER NAME="C_USE_ECC_RDCH" VALUE="0"/>
+        <PARAMETER NAME="C_USE_ECC_AXIS" VALUE="0"/>
+        <PARAMETER NAME="C_ERROR_INJECTION_TYPE_WACH" VALUE="0"/>
+        <PARAMETER NAME="C_ERROR_INJECTION_TYPE_WDCH" VALUE="0"/>
+        <PARAMETER NAME="C_ERROR_INJECTION_TYPE_WRCH" VALUE="0"/>
+        <PARAMETER NAME="C_ERROR_INJECTION_TYPE_RACH" VALUE="0"/>
+        <PARAMETER NAME="C_ERROR_INJECTION_TYPE_RDCH" VALUE="0"/>
+        <PARAMETER NAME="C_ERROR_INJECTION_TYPE_AXIS" VALUE="0"/>
+        <PARAMETER NAME="C_DIN_WIDTH_WACH" VALUE="1"/>
+        <PARAMETER NAME="C_DIN_WIDTH_WDCH" VALUE="64"/>
+        <PARAMETER NAME="C_DIN_WIDTH_WRCH" VALUE="2"/>
+        <PARAMETER NAME="C_DIN_WIDTH_RACH" VALUE="32"/>
+        <PARAMETER NAME="C_DIN_WIDTH_RDCH" VALUE="64"/>
+        <PARAMETER NAME="C_DIN_WIDTH_AXIS" VALUE="1"/>
+        <PARAMETER NAME="C_WR_DEPTH_WACH" VALUE="16"/>
+        <PARAMETER NAME="C_WR_DEPTH_WDCH" VALUE="1024"/>
+        <PARAMETER NAME="C_WR_DEPTH_WRCH" VALUE="16"/>
+        <PARAMETER NAME="C_WR_DEPTH_RACH" VALUE="16"/>
+        <PARAMETER NAME="C_WR_DEPTH_RDCH" VALUE="1024"/>
+        <PARAMETER NAME="C_WR_DEPTH_AXIS" VALUE="1024"/>
+        <PARAMETER NAME="C_WR_PNTR_WIDTH_WACH" VALUE="4"/>
+        <PARAMETER NAME="C_WR_PNTR_WIDTH_WDCH" VALUE="10"/>
+        <PARAMETER NAME="C_WR_PNTR_WIDTH_WRCH" VALUE="4"/>
+        <PARAMETER NAME="C_WR_PNTR_WIDTH_RACH" VALUE="4"/>
+        <PARAMETER NAME="C_WR_PNTR_WIDTH_RDCH" VALUE="10"/>
+        <PARAMETER NAME="C_WR_PNTR_WIDTH_AXIS" VALUE="10"/>
+        <PARAMETER NAME="C_HAS_DATA_COUNTS_WACH" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_DATA_COUNTS_WDCH" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_DATA_COUNTS_WRCH" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_DATA_COUNTS_RACH" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_DATA_COUNTS_RDCH" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_DATA_COUNTS_AXIS" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_PROG_FLAGS_WACH" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_PROG_FLAGS_WDCH" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_PROG_FLAGS_WRCH" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_PROG_FLAGS_RACH" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_PROG_FLAGS_RDCH" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_PROG_FLAGS_AXIS" VALUE="0"/>
+        <PARAMETER NAME="C_PROG_FULL_TYPE_WACH" VALUE="0"/>
+        <PARAMETER NAME="C_PROG_FULL_TYPE_WDCH" VALUE="0"/>
+        <PARAMETER NAME="C_PROG_FULL_TYPE_WRCH" VALUE="0"/>
+        <PARAMETER NAME="C_PROG_FULL_TYPE_RACH" VALUE="0"/>
+        <PARAMETER NAME="C_PROG_FULL_TYPE_RDCH" VALUE="0"/>
+        <PARAMETER NAME="C_PROG_FULL_TYPE_AXIS" VALUE="0"/>
+        <PARAMETER NAME="C_PROG_FULL_THRESH_ASSERT_VAL_WACH" VALUE="1023"/>
+        <PARAMETER NAME="C_PROG_FULL_THRESH_ASSERT_VAL_WDCH" VALUE="1023"/>
+        <PARAMETER NAME="C_PROG_FULL_THRESH_ASSERT_VAL_WRCH" VALUE="1023"/>
+        <PARAMETER NAME="C_PROG_FULL_THRESH_ASSERT_VAL_RACH" VALUE="1023"/>
+        <PARAMETER NAME="C_PROG_FULL_THRESH_ASSERT_VAL_RDCH" VALUE="1023"/>
+        <PARAMETER NAME="C_PROG_FULL_THRESH_ASSERT_VAL_AXIS" VALUE="1023"/>
+        <PARAMETER NAME="C_PROG_EMPTY_TYPE_WACH" VALUE="0"/>
+        <PARAMETER NAME="C_PROG_EMPTY_TYPE_WDCH" VALUE="0"/>
+        <PARAMETER NAME="C_PROG_EMPTY_TYPE_WRCH" VALUE="0"/>
+        <PARAMETER NAME="C_PROG_EMPTY_TYPE_RACH" VALUE="0"/>
+        <PARAMETER NAME="C_PROG_EMPTY_TYPE_RDCH" VALUE="0"/>
+        <PARAMETER NAME="C_PROG_EMPTY_TYPE_AXIS" VALUE="0"/>
+        <PARAMETER NAME="C_PROG_EMPTY_THRESH_ASSERT_VAL_WACH" VALUE="1022"/>
+        <PARAMETER NAME="C_PROG_EMPTY_THRESH_ASSERT_VAL_WDCH" VALUE="1022"/>
+        <PARAMETER NAME="C_PROG_EMPTY_THRESH_ASSERT_VAL_WRCH" VALUE="1022"/>
+        <PARAMETER NAME="C_PROG_EMPTY_THRESH_ASSERT_VAL_RACH" VALUE="1022"/>
+        <PARAMETER NAME="C_PROG_EMPTY_THRESH_ASSERT_VAL_RDCH" VALUE="1022"/>
+        <PARAMETER NAME="C_PROG_EMPTY_THRESH_ASSERT_VAL_AXIS" VALUE="1022"/>
+        <PARAMETER NAME="C_REG_SLICE_MODE_WACH" VALUE="0"/>
+        <PARAMETER NAME="C_REG_SLICE_MODE_WDCH" VALUE="0"/>
+        <PARAMETER NAME="C_REG_SLICE_MODE_WRCH" VALUE="0"/>
+        <PARAMETER NAME="C_REG_SLICE_MODE_RACH" VALUE="0"/>
+        <PARAMETER NAME="C_REG_SLICE_MODE_RDCH" VALUE="0"/>
+        <PARAMETER NAME="C_REG_SLICE_MODE_AXIS" VALUE="0"/>
+        <PARAMETER NAME="Component_Name" VALUE="design_1_fifo_generator_0_20"/>
+        <PARAMETER NAME="Fifo_Implementation" VALUE="Common_Clock_Block_RAM"/>
+        <PARAMETER NAME="synchronization_stages" VALUE="2"/>
+        <PARAMETER NAME="synchronization_stages_axi" VALUE="2"/>
+        <PARAMETER NAME="INTERFACE_TYPE" VALUE="Native"/>
+        <PARAMETER NAME="Performance_Options" VALUE="First_Word_Fall_Through"/>
+        <PARAMETER NAME="asymmetric_port_width" VALUE="false"/>
+        <PARAMETER NAME="Input_Data_Width" VALUE="64"/>
+        <PARAMETER NAME="Input_Depth" VALUE="512"/>
+        <PARAMETER NAME="Output_Data_Width" VALUE="64"/>
+        <PARAMETER NAME="Output_Depth" VALUE="512"/>
+        <PARAMETER NAME="Enable_ECC" VALUE="false"/>
+        <PARAMETER NAME="Use_Embedded_Registers" VALUE="false"/>
+        <PARAMETER NAME="Reset_Pin" VALUE="false"/>
+        <PARAMETER NAME="Enable_Reset_Synchronization" VALUE="true"/>
+        <PARAMETER NAME="Reset_Type" VALUE="Asynchronous_Reset"/>
+        <PARAMETER NAME="Full_Flags_Reset_Value" VALUE="0"/>
+        <PARAMETER NAME="Use_Dout_Reset" VALUE="false"/>
+        <PARAMETER NAME="Dout_Reset_Value" VALUE="0"/>
+        <PARAMETER NAME="dynamic_power_saving" VALUE="false"/>
+        <PARAMETER NAME="Almost_Full_Flag" VALUE="false"/>
+        <PARAMETER NAME="Almost_Empty_Flag" VALUE="false"/>
+        <PARAMETER NAME="Valid_Flag" VALUE="false"/>
+        <PARAMETER NAME="Valid_Sense" VALUE="Active_High"/>
+        <PARAMETER NAME="Underflow_Flag" VALUE="false"/>
+        <PARAMETER NAME="Underflow_Sense" VALUE="Active_High"/>
+        <PARAMETER NAME="Write_Acknowledge_Flag" VALUE="false"/>
+        <PARAMETER NAME="Write_Acknowledge_Sense" VALUE="Active_High"/>
+        <PARAMETER NAME="Overflow_Flag" VALUE="false"/>
+        <PARAMETER NAME="Overflow_Sense" VALUE="Active_High"/>
+        <PARAMETER NAME="Inject_Sbit_Error" VALUE="false"/>
+        <PARAMETER NAME="Inject_Dbit_Error" VALUE="false"/>
+        <PARAMETER NAME="ecc_pipeline_reg" VALUE="false"/>
+        <PARAMETER NAME="Use_Extra_Logic" VALUE="true"/>
+        <PARAMETER NAME="Data_Count" VALUE="false"/>
+        <PARAMETER NAME="Data_Count_Width" VALUE="10"/>
+        <PARAMETER NAME="Write_Data_Count" VALUE="false"/>
+        <PARAMETER NAME="Write_Data_Count_Width" VALUE="10"/>
+        <PARAMETER NAME="Read_Data_Count" VALUE="false"/>
+        <PARAMETER NAME="Read_Data_Count_Width" VALUE="10"/>
+        <PARAMETER NAME="Disable_Timing_Violations" VALUE="false"/>
+        <PARAMETER NAME="Read_Clock_Frequency" VALUE="1"/>
+        <PARAMETER NAME="Write_Clock_Frequency" VALUE="1"/>
+        <PARAMETER NAME="Programmable_Full_Type" VALUE="No_Programmable_Full_Threshold"/>
+        <PARAMETER NAME="Full_Threshold_Assert_Value" VALUE="511"/>
+        <PARAMETER NAME="Full_Threshold_Negate_Value" VALUE="510"/>
+        <PARAMETER NAME="Programmable_Empty_Type" VALUE="No_Programmable_Empty_Threshold"/>
+        <PARAMETER NAME="Empty_Threshold_Assert_Value" VALUE="4"/>
+        <PARAMETER NAME="Empty_Threshold_Negate_Value" VALUE="5"/>
+        <PARAMETER NAME="PROTOCOL" VALUE="AXI4"/>
+        <PARAMETER NAME="Clock_Type_AXI" VALUE="Common_Clock"/>
+        <PARAMETER NAME="HAS_ACLKEN" VALUE="false"/>
+        <PARAMETER NAME="Clock_Enable_Type" VALUE="Slave_Interface_Clock_Enable"/>
+        <PARAMETER NAME="READ_WRITE_MODE" VALUE="READ_WRITE"/>
+        <PARAMETER NAME="ID_WIDTH" VALUE="0"/>
+        <PARAMETER NAME="ADDRESS_WIDTH" VALUE="32"/>
+        <PARAMETER NAME="DATA_WIDTH" VALUE="64"/>
+        <PARAMETER NAME="AWUSER_Width" VALUE="0"/>
+        <PARAMETER NAME="WUSER_Width" VALUE="0"/>
+        <PARAMETER NAME="BUSER_Width" VALUE="0"/>
+        <PARAMETER NAME="ARUSER_Width" VALUE="0"/>
+        <PARAMETER NAME="RUSER_Width" VALUE="0"/>
+        <PARAMETER NAME="TDATA_NUM_BYTES" VALUE="1"/>
+        <PARAMETER NAME="TID_WIDTH" VALUE="0"/>
+        <PARAMETER NAME="TDEST_WIDTH" VALUE="0"/>
+        <PARAMETER NAME="TUSER_WIDTH" VALUE="4"/>
+        <PARAMETER NAME="Enable_TREADY" VALUE="true"/>
+        <PARAMETER NAME="Enable_TLAST" VALUE="false"/>
+        <PARAMETER NAME="HAS_TSTRB" VALUE="false"/>
+        <PARAMETER NAME="TSTRB_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="HAS_TKEEP" VALUE="false"/>
+        <PARAMETER NAME="TKEEP_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="wach_type" VALUE="FIFO"/>
+        <PARAMETER NAME="FIFO_Implementation_wach" VALUE="Common_Clock_Distributed_RAM"/>
+        <PARAMETER NAME="FIFO_Application_Type_wach" VALUE="Data_FIFO"/>
+        <PARAMETER NAME="Enable_ECC_wach" VALUE="false"/>
+        <PARAMETER NAME="Inject_Sbit_Error_wach" VALUE="false"/>
+        <PARAMETER NAME="Inject_Dbit_Error_wach" VALUE="false"/>
+        <PARAMETER NAME="Input_Depth_wach" VALUE="16"/>
+        <PARAMETER NAME="Enable_Data_Counts_wach" VALUE="false"/>
+        <PARAMETER NAME="Programmable_Full_Type_wach" VALUE="No_Programmable_Full_Threshold"/>
+        <PARAMETER NAME="Full_Threshold_Assert_Value_wach" VALUE="1023"/>
+        <PARAMETER NAME="Programmable_Empty_Type_wach" VALUE="No_Programmable_Empty_Threshold"/>
+        <PARAMETER NAME="Empty_Threshold_Assert_Value_wach" VALUE="1022"/>
+        <PARAMETER NAME="wdch_type" VALUE="FIFO"/>
+        <PARAMETER NAME="FIFO_Implementation_wdch" VALUE="Common_Clock_Block_RAM"/>
+        <PARAMETER NAME="FIFO_Application_Type_wdch" VALUE="Data_FIFO"/>
+        <PARAMETER NAME="Enable_ECC_wdch" VALUE="false"/>
+        <PARAMETER NAME="Inject_Sbit_Error_wdch" VALUE="false"/>
+        <PARAMETER NAME="Inject_Dbit_Error_wdch" VALUE="false"/>
+        <PARAMETER NAME="Input_Depth_wdch" VALUE="1024"/>
+        <PARAMETER NAME="Enable_Data_Counts_wdch" VALUE="false"/>
+        <PARAMETER NAME="Programmable_Full_Type_wdch" VALUE="No_Programmable_Full_Threshold"/>
+        <PARAMETER NAME="Full_Threshold_Assert_Value_wdch" VALUE="1023"/>
+        <PARAMETER NAME="Programmable_Empty_Type_wdch" VALUE="No_Programmable_Empty_Threshold"/>
+        <PARAMETER NAME="Empty_Threshold_Assert_Value_wdch" VALUE="1022"/>
+        <PARAMETER NAME="wrch_type" VALUE="FIFO"/>
+        <PARAMETER NAME="FIFO_Implementation_wrch" VALUE="Common_Clock_Distributed_RAM"/>
+        <PARAMETER NAME="FIFO_Application_Type_wrch" VALUE="Data_FIFO"/>
+        <PARAMETER NAME="Enable_ECC_wrch" VALUE="false"/>
+        <PARAMETER NAME="Inject_Sbit_Error_wrch" VALUE="false"/>
+        <PARAMETER NAME="Inject_Dbit_Error_wrch" VALUE="false"/>
+        <PARAMETER NAME="Input_Depth_wrch" VALUE="16"/>
+        <PARAMETER NAME="Enable_Data_Counts_wrch" VALUE="false"/>
+        <PARAMETER NAME="Programmable_Full_Type_wrch" VALUE="No_Programmable_Full_Threshold"/>
+        <PARAMETER NAME="Full_Threshold_Assert_Value_wrch" VALUE="1023"/>
+        <PARAMETER NAME="Programmable_Empty_Type_wrch" VALUE="No_Programmable_Empty_Threshold"/>
+        <PARAMETER NAME="Empty_Threshold_Assert_Value_wrch" VALUE="1022"/>
+        <PARAMETER NAME="rach_type" VALUE="FIFO"/>
+        <PARAMETER NAME="FIFO_Implementation_rach" VALUE="Common_Clock_Distributed_RAM"/>
+        <PARAMETER NAME="FIFO_Application_Type_rach" VALUE="Data_FIFO"/>
+        <PARAMETER NAME="Enable_ECC_rach" VALUE="false"/>
+        <PARAMETER NAME="Inject_Sbit_Error_rach" VALUE="false"/>
+        <PARAMETER NAME="Inject_Dbit_Error_rach" VALUE="false"/>
+        <PARAMETER NAME="Input_Depth_rach" VALUE="16"/>
+        <PARAMETER NAME="Enable_Data_Counts_rach" VALUE="false"/>
+        <PARAMETER NAME="Programmable_Full_Type_rach" VALUE="No_Programmable_Full_Threshold"/>
+        <PARAMETER NAME="Full_Threshold_Assert_Value_rach" VALUE="1023"/>
+        <PARAMETER NAME="Programmable_Empty_Type_rach" VALUE="No_Programmable_Empty_Threshold"/>
+        <PARAMETER NAME="Empty_Threshold_Assert_Value_rach" VALUE="1022"/>
+        <PARAMETER NAME="rdch_type" VALUE="FIFO"/>
+        <PARAMETER NAME="FIFO_Implementation_rdch" VALUE="Common_Clock_Block_RAM"/>
+        <PARAMETER NAME="FIFO_Application_Type_rdch" VALUE="Data_FIFO"/>
+        <PARAMETER NAME="Enable_ECC_rdch" VALUE="false"/>
+        <PARAMETER NAME="Inject_Sbit_Error_rdch" VALUE="false"/>
+        <PARAMETER NAME="Inject_Dbit_Error_rdch" VALUE="false"/>
+        <PARAMETER NAME="Input_Depth_rdch" VALUE="1024"/>
+        <PARAMETER NAME="Enable_Data_Counts_rdch" VALUE="false"/>
+        <PARAMETER NAME="Programmable_Full_Type_rdch" VALUE="No_Programmable_Full_Threshold"/>
+        <PARAMETER NAME="Full_Threshold_Assert_Value_rdch" VALUE="1023"/>
+        <PARAMETER NAME="Programmable_Empty_Type_rdch" VALUE="No_Programmable_Empty_Threshold"/>
+        <PARAMETER NAME="Empty_Threshold_Assert_Value_rdch" VALUE="1022"/>
+        <PARAMETER NAME="axis_type" VALUE="FIFO"/>
+        <PARAMETER NAME="FIFO_Implementation_axis" VALUE="Common_Clock_Block_RAM"/>
+        <PARAMETER NAME="FIFO_Application_Type_axis" VALUE="Data_FIFO"/>
+        <PARAMETER NAME="Enable_ECC_axis" VALUE="false"/>
+        <PARAMETER NAME="Inject_Sbit_Error_axis" VALUE="false"/>
+        <PARAMETER NAME="Inject_Dbit_Error_axis" VALUE="false"/>
+        <PARAMETER NAME="Input_Depth_axis" VALUE="1024"/>
+        <PARAMETER NAME="Enable_Data_Counts_axis" VALUE="false"/>
+        <PARAMETER NAME="Programmable_Full_Type_axis" VALUE="No_Programmable_Full_Threshold"/>
+        <PARAMETER NAME="Full_Threshold_Assert_Value_axis" VALUE="1023"/>
+        <PARAMETER NAME="Programmable_Empty_Type_axis" VALUE="No_Programmable_Empty_Threshold"/>
+        <PARAMETER NAME="Empty_Threshold_Assert_Value_axis" VALUE="1022"/>
+        <PARAMETER NAME="Register_Slice_Mode_wach" VALUE="Fully_Registered"/>
+        <PARAMETER NAME="Register_Slice_Mode_wdch" VALUE="Fully_Registered"/>
+        <PARAMETER NAME="Register_Slice_Mode_wrch" VALUE="Fully_Registered"/>
+        <PARAMETER NAME="Register_Slice_Mode_rach" VALUE="Fully_Registered"/>
+        <PARAMETER NAME="Register_Slice_Mode_rdch" VALUE="Fully_Registered"/>
+        <PARAMETER NAME="Register_Slice_Mode_axis" VALUE="Fully_Registered"/>
+        <PARAMETER NAME="Underflow_Flag_AXI" VALUE="false"/>
+        <PARAMETER NAME="Underflow_Sense_AXI" VALUE="Active_High"/>
+        <PARAMETER NAME="Overflow_Flag_AXI" VALUE="false"/>
+        <PARAMETER NAME="Overflow_Sense_AXI" VALUE="Active_High"/>
+        <PARAMETER NAME="Disable_Timing_Violations_AXI" VALUE="false"/>
+        <PARAMETER NAME="Add_NGC_Constraint_AXI" VALUE="false"/>
+        <PARAMETER NAME="Enable_Common_Underflow" VALUE="false"/>
+        <PARAMETER NAME="Enable_Common_Overflow" VALUE="false"/>
+        <PARAMETER NAME="enable_read_pointer_increment_by2" VALUE="false"/>
+        <PARAMETER NAME="Use_Embedded_Registers_axis" VALUE="false"/>
+        <PARAMETER NAME="enable_low_latency" VALUE="false"/>
+        <PARAMETER NAME="use_dout_register" VALUE="false"/>
+        <PARAMETER NAME="Master_interface_Clock_enable_memory_mapped" VALUE="false"/>
+        <PARAMETER NAME="Slave_interface_Clock_enable_memory_mapped" VALUE="false"/>
+        <PARAMETER NAME="Output_Register_Type" VALUE="Embedded_Reg"/>
+        <PARAMETER NAME="Enable_Safety_Circuit" VALUE="false"/>
+        <PARAMETER NAME="Enable_ECC_Type" VALUE="Hard_ECC"/>
+        <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
+      </PARAMETERS>
+      <PORTS>
+        <PORT CLKFREQUENCY="333250000" DIR="I" NAME="clk" SIGIS="clk" SIGNAME="MemorySystem_ddr4_0_c0_ddr4_ui_clk">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="MemorySystem_ddr4_0" PORT="c0_ddr4_ui_clk"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="63" NAME="din" RIGHT="0" SIGIS="undef" SIGNAME="TexSample_0_ROP_OutFIFO_wr_data">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TexSample_0" PORT="ROP_OutFIFO_wr_data"/>
+            <CONNECTION INSTANCE="TexSample_0" PORT="ROP_OutFIFO_wr_data"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="wr_en" SIGIS="undef" SIGNAME="ROP_FIFO_wr_en">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TexSample_0" PORT="ROP_OutFIFO_wr_en"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="rd_en" SIGIS="undef" SIGNAME="ROP_0_TEXSAMP_InFIFO_rd_en">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ROP_0" PORT="TEXSAMP_InFIFO_rd_en"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="63" NAME="dout" RIGHT="0" SIGIS="undef" SIGNAME="ROP_0_TEXSAMP_InFIFO_rd_data">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ROP_0" PORT="TEXSAMP_InFIFO_rd_data"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="full" SIGIS="undef" SIGNAME="ROP_FIFO_full">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TexSample_0" PORT="ROP_OutFIFO_full"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="empty" SIGIS="undef" SIGNAME="ROP_0_TEXSAMP_InFIFO_empty">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ROP_0" PORT="TEXSAMP_InFIFO_empty"/>
+          </CONNECTIONS>
+        </PORT>
+      </PORTS>
+      <BUSINTERFACES>
+        <BUSINTERFACE BUSNAME="TexSample_0_ROP_OUT_FIFO" NAME="FIFO_WRITE" TYPE="TARGET" VLNV="xilinx.com:interface:fifo_write:1.0">
+          <PORTMAPS>
+            <PORTMAP LOGICAL="FULL" PHYSICAL="full"/>
+            <PORTMAP LOGICAL="WR_DATA" PHYSICAL="din"/>
+            <PORTMAP LOGICAL="WR_EN" PHYSICAL="wr_en"/>
+          </PORTMAPS>
+        </BUSINTERFACE>
+        <BUSINTERFACE BUSNAME="ROP_0_TEXSAMP_IN_FIFO" NAME="FIFO_READ" TYPE="TARGET" VLNV="xilinx.com:interface:fifo_read:1.0">
+          <PORTMAPS>
+            <PORTMAP LOGICAL="EMPTY" PHYSICAL="empty"/>
+            <PORTMAP LOGICAL="RD_DATA" PHYSICAL="dout"/>
+            <PORTMAP LOGICAL="RD_EN" PHYSICAL="rd_en"/>
           </PORTMAPS>
         </BUSINTERFACE>
       </BUSINTERFACES>
@@ -37275,6 +37655,439 @@
         </BUSINTERFACE>
       </BUSINTERFACES>
     </MODULE>
+    <MODULE FULLNAME="/TEXSAMP_FIFO" HWVERSION="13.2" INSTANCE="TEXSAMP_FIFO" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="fifo_generator" VLNV="xilinx.com:ip:fifo_generator:13.2">
+      <DOCUMENTS>
+        <DOCUMENT SOURCE="http://www.xilinx.com/cgi-bin/docs/ipdoc?c=fifo_generator;v=v13_2;d=pg057-fifo-generator.pdf"/>
+      </DOCUMENTS>
+      <PARAMETERS>
+        <PARAMETER NAME="C_COMMON_CLOCK" VALUE="1"/>
+        <PARAMETER NAME="C_SELECT_XPM" VALUE="0"/>
+        <PARAMETER NAME="C_COUNT_TYPE" VALUE="0"/>
+        <PARAMETER NAME="C_DATA_COUNT_WIDTH" VALUE="10"/>
+        <PARAMETER NAME="C_DEFAULT_VALUE" VALUE="BlankString"/>
+        <PARAMETER NAME="C_DIN_WIDTH" VALUE="96"/>
+        <PARAMETER NAME="C_DOUT_RST_VAL" VALUE="0"/>
+        <PARAMETER NAME="C_DOUT_WIDTH" VALUE="96"/>
+        <PARAMETER NAME="C_ENABLE_RLOCS" VALUE="0"/>
+        <PARAMETER NAME="C_FAMILY" VALUE="kintexuplus"/>
+        <PARAMETER NAME="C_FULL_FLAGS_RST_VAL" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_ALMOST_EMPTY" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_ALMOST_FULL" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_BACKUP" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_DATA_COUNT" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_INT_CLK" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_MEMINIT_FILE" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_OVERFLOW" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_RD_DATA_COUNT" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_RD_RST" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_RST" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_SRST" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_UNDERFLOW" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_VALID" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_WR_ACK" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_WR_DATA_COUNT" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_WR_RST" VALUE="0"/>
+        <PARAMETER NAME="C_IMPLEMENTATION_TYPE" VALUE="0"/>
+        <PARAMETER NAME="C_INIT_WR_PNTR_VAL" VALUE="0"/>
+        <PARAMETER NAME="C_MEMORY_TYPE" VALUE="1"/>
+        <PARAMETER NAME="C_MIF_FILE_NAME" VALUE="BlankString"/>
+        <PARAMETER NAME="C_OPTIMIZATION_MODE" VALUE="0"/>
+        <PARAMETER NAME="C_OVERFLOW_LOW" VALUE="0"/>
+        <PARAMETER NAME="C_PRELOAD_LATENCY" VALUE="0"/>
+        <PARAMETER NAME="C_PRELOAD_REGS" VALUE="1"/>
+        <PARAMETER NAME="C_PRIM_FIFO_TYPE" VALUE="512x72"/>
+        <PARAMETER NAME="C_PROG_EMPTY_THRESH_ASSERT_VAL" VALUE="4"/>
+        <PARAMETER NAME="C_PROG_EMPTY_THRESH_NEGATE_VAL" VALUE="5"/>
+        <PARAMETER NAME="C_PROG_EMPTY_TYPE" VALUE="0"/>
+        <PARAMETER NAME="C_PROG_FULL_THRESH_ASSERT_VAL" VALUE="511"/>
+        <PARAMETER NAME="C_PROG_FULL_THRESH_NEGATE_VAL" VALUE="510"/>
+        <PARAMETER NAME="C_PROG_FULL_TYPE" VALUE="0"/>
+        <PARAMETER NAME="C_RD_DATA_COUNT_WIDTH" VALUE="10"/>
+        <PARAMETER NAME="C_RD_DEPTH" VALUE="512"/>
+        <PARAMETER NAME="C_RD_FREQ" VALUE="1"/>
+        <PARAMETER NAME="C_RD_PNTR_WIDTH" VALUE="9"/>
+        <PARAMETER NAME="C_UNDERFLOW_LOW" VALUE="0"/>
+        <PARAMETER NAME="C_USE_DOUT_RST" VALUE="0"/>
+        <PARAMETER NAME="C_USE_ECC" VALUE="0"/>
+        <PARAMETER NAME="C_USE_EMBEDDED_REG" VALUE="0"/>
+        <PARAMETER NAME="C_USE_PIPELINE_REG" VALUE="0"/>
+        <PARAMETER NAME="C_POWER_SAVING_MODE" VALUE="0"/>
+        <PARAMETER NAME="C_USE_FIFO16_FLAGS" VALUE="0"/>
+        <PARAMETER NAME="C_USE_FWFT_DATA_COUNT" VALUE="1"/>
+        <PARAMETER NAME="C_VALID_LOW" VALUE="0"/>
+        <PARAMETER NAME="C_WR_ACK_LOW" VALUE="0"/>
+        <PARAMETER NAME="C_WR_DATA_COUNT_WIDTH" VALUE="10"/>
+        <PARAMETER NAME="C_WR_DEPTH" VALUE="512"/>
+        <PARAMETER NAME="C_WR_FREQ" VALUE="1"/>
+        <PARAMETER NAME="C_WR_PNTR_WIDTH" VALUE="9"/>
+        <PARAMETER NAME="C_WR_RESPONSE_LATENCY" VALUE="1"/>
+        <PARAMETER NAME="C_MSGON_VAL" VALUE="1"/>
+        <PARAMETER NAME="C_ENABLE_RST_SYNC" VALUE="1"/>
+        <PARAMETER NAME="C_EN_SAFETY_CKT" VALUE="0"/>
+        <PARAMETER NAME="C_ERROR_INJECTION_TYPE" VALUE="0"/>
+        <PARAMETER NAME="C_SYNCHRONIZER_STAGE" VALUE="2"/>
+        <PARAMETER NAME="C_INTERFACE_TYPE" VALUE="0"/>
+        <PARAMETER NAME="C_AXI_TYPE" VALUE="1"/>
+        <PARAMETER NAME="C_HAS_AXI_WR_CHANNEL" VALUE="1"/>
+        <PARAMETER NAME="C_HAS_AXI_RD_CHANNEL" VALUE="1"/>
+        <PARAMETER NAME="C_HAS_SLAVE_CE" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_MASTER_CE" VALUE="0"/>
+        <PARAMETER NAME="C_ADD_NGC_CONSTRAINT" VALUE="0"/>
+        <PARAMETER NAME="C_USE_COMMON_OVERFLOW" VALUE="0"/>
+        <PARAMETER NAME="C_USE_COMMON_UNDERFLOW" VALUE="0"/>
+        <PARAMETER NAME="C_USE_DEFAULT_SETTINGS" VALUE="0"/>
+        <PARAMETER NAME="C_AXI_ID_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_AXI_ADDR_WIDTH" VALUE="32"/>
+        <PARAMETER NAME="C_AXI_DATA_WIDTH" VALUE="64"/>
+        <PARAMETER NAME="C_AXI_LEN_WIDTH" VALUE="8"/>
+        <PARAMETER NAME="C_AXI_LOCK_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_HAS_AXI_ID" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_AXI_AWUSER" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_AXI_WUSER" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_AXI_BUSER" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_AXI_ARUSER" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_AXI_RUSER" VALUE="0"/>
+        <PARAMETER NAME="C_AXI_ARUSER_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_AXI_AWUSER_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_AXI_WUSER_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_AXI_BUSER_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_AXI_RUSER_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_HAS_AXIS_TDATA" VALUE="1"/>
+        <PARAMETER NAME="C_HAS_AXIS_TID" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_AXIS_TDEST" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_AXIS_TUSER" VALUE="1"/>
+        <PARAMETER NAME="C_HAS_AXIS_TREADY" VALUE="1"/>
+        <PARAMETER NAME="C_HAS_AXIS_TLAST" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_AXIS_TSTRB" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_AXIS_TKEEP" VALUE="0"/>
+        <PARAMETER NAME="C_AXIS_TDATA_WIDTH" VALUE="8"/>
+        <PARAMETER NAME="C_AXIS_TID_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_AXIS_TDEST_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_AXIS_TUSER_WIDTH" VALUE="4"/>
+        <PARAMETER NAME="C_AXIS_TSTRB_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_AXIS_TKEEP_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_WACH_TYPE" VALUE="0"/>
+        <PARAMETER NAME="C_WDCH_TYPE" VALUE="0"/>
+        <PARAMETER NAME="C_WRCH_TYPE" VALUE="0"/>
+        <PARAMETER NAME="C_RACH_TYPE" VALUE="0"/>
+        <PARAMETER NAME="C_RDCH_TYPE" VALUE="0"/>
+        <PARAMETER NAME="C_AXIS_TYPE" VALUE="0"/>
+        <PARAMETER NAME="C_IMPLEMENTATION_TYPE_WACH" VALUE="1"/>
+        <PARAMETER NAME="C_IMPLEMENTATION_TYPE_WDCH" VALUE="1"/>
+        <PARAMETER NAME="C_IMPLEMENTATION_TYPE_WRCH" VALUE="1"/>
+        <PARAMETER NAME="C_IMPLEMENTATION_TYPE_RACH" VALUE="1"/>
+        <PARAMETER NAME="C_IMPLEMENTATION_TYPE_RDCH" VALUE="1"/>
+        <PARAMETER NAME="C_IMPLEMENTATION_TYPE_AXIS" VALUE="1"/>
+        <PARAMETER NAME="C_APPLICATION_TYPE_WACH" VALUE="0"/>
+        <PARAMETER NAME="C_APPLICATION_TYPE_WDCH" VALUE="0"/>
+        <PARAMETER NAME="C_APPLICATION_TYPE_WRCH" VALUE="0"/>
+        <PARAMETER NAME="C_APPLICATION_TYPE_RACH" VALUE="0"/>
+        <PARAMETER NAME="C_APPLICATION_TYPE_RDCH" VALUE="0"/>
+        <PARAMETER NAME="C_APPLICATION_TYPE_AXIS" VALUE="0"/>
+        <PARAMETER NAME="C_PRIM_FIFO_TYPE_WACH" VALUE="512x36"/>
+        <PARAMETER NAME="C_PRIM_FIFO_TYPE_WDCH" VALUE="512x72"/>
+        <PARAMETER NAME="C_PRIM_FIFO_TYPE_WRCH" VALUE="512x36"/>
+        <PARAMETER NAME="C_PRIM_FIFO_TYPE_RACH" VALUE="512x36"/>
+        <PARAMETER NAME="C_PRIM_FIFO_TYPE_RDCH" VALUE="512x72"/>
+        <PARAMETER NAME="C_PRIM_FIFO_TYPE_AXIS" VALUE="1kx18"/>
+        <PARAMETER NAME="C_USE_ECC_WACH" VALUE="0"/>
+        <PARAMETER NAME="C_USE_ECC_WDCH" VALUE="0"/>
+        <PARAMETER NAME="C_USE_ECC_WRCH" VALUE="0"/>
+        <PARAMETER NAME="C_USE_ECC_RACH" VALUE="0"/>
+        <PARAMETER NAME="C_USE_ECC_RDCH" VALUE="0"/>
+        <PARAMETER NAME="C_USE_ECC_AXIS" VALUE="0"/>
+        <PARAMETER NAME="C_ERROR_INJECTION_TYPE_WACH" VALUE="0"/>
+        <PARAMETER NAME="C_ERROR_INJECTION_TYPE_WDCH" VALUE="0"/>
+        <PARAMETER NAME="C_ERROR_INJECTION_TYPE_WRCH" VALUE="0"/>
+        <PARAMETER NAME="C_ERROR_INJECTION_TYPE_RACH" VALUE="0"/>
+        <PARAMETER NAME="C_ERROR_INJECTION_TYPE_RDCH" VALUE="0"/>
+        <PARAMETER NAME="C_ERROR_INJECTION_TYPE_AXIS" VALUE="0"/>
+        <PARAMETER NAME="C_DIN_WIDTH_WACH" VALUE="1"/>
+        <PARAMETER NAME="C_DIN_WIDTH_WDCH" VALUE="64"/>
+        <PARAMETER NAME="C_DIN_WIDTH_WRCH" VALUE="2"/>
+        <PARAMETER NAME="C_DIN_WIDTH_RACH" VALUE="32"/>
+        <PARAMETER NAME="C_DIN_WIDTH_RDCH" VALUE="64"/>
+        <PARAMETER NAME="C_DIN_WIDTH_AXIS" VALUE="1"/>
+        <PARAMETER NAME="C_WR_DEPTH_WACH" VALUE="16"/>
+        <PARAMETER NAME="C_WR_DEPTH_WDCH" VALUE="1024"/>
+        <PARAMETER NAME="C_WR_DEPTH_WRCH" VALUE="16"/>
+        <PARAMETER NAME="C_WR_DEPTH_RACH" VALUE="16"/>
+        <PARAMETER NAME="C_WR_DEPTH_RDCH" VALUE="1024"/>
+        <PARAMETER NAME="C_WR_DEPTH_AXIS" VALUE="1024"/>
+        <PARAMETER NAME="C_WR_PNTR_WIDTH_WACH" VALUE="4"/>
+        <PARAMETER NAME="C_WR_PNTR_WIDTH_WDCH" VALUE="10"/>
+        <PARAMETER NAME="C_WR_PNTR_WIDTH_WRCH" VALUE="4"/>
+        <PARAMETER NAME="C_WR_PNTR_WIDTH_RACH" VALUE="4"/>
+        <PARAMETER NAME="C_WR_PNTR_WIDTH_RDCH" VALUE="10"/>
+        <PARAMETER NAME="C_WR_PNTR_WIDTH_AXIS" VALUE="10"/>
+        <PARAMETER NAME="C_HAS_DATA_COUNTS_WACH" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_DATA_COUNTS_WDCH" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_DATA_COUNTS_WRCH" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_DATA_COUNTS_RACH" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_DATA_COUNTS_RDCH" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_DATA_COUNTS_AXIS" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_PROG_FLAGS_WACH" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_PROG_FLAGS_WDCH" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_PROG_FLAGS_WRCH" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_PROG_FLAGS_RACH" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_PROG_FLAGS_RDCH" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_PROG_FLAGS_AXIS" VALUE="0"/>
+        <PARAMETER NAME="C_PROG_FULL_TYPE_WACH" VALUE="0"/>
+        <PARAMETER NAME="C_PROG_FULL_TYPE_WDCH" VALUE="0"/>
+        <PARAMETER NAME="C_PROG_FULL_TYPE_WRCH" VALUE="0"/>
+        <PARAMETER NAME="C_PROG_FULL_TYPE_RACH" VALUE="0"/>
+        <PARAMETER NAME="C_PROG_FULL_TYPE_RDCH" VALUE="0"/>
+        <PARAMETER NAME="C_PROG_FULL_TYPE_AXIS" VALUE="0"/>
+        <PARAMETER NAME="C_PROG_FULL_THRESH_ASSERT_VAL_WACH" VALUE="1023"/>
+        <PARAMETER NAME="C_PROG_FULL_THRESH_ASSERT_VAL_WDCH" VALUE="1023"/>
+        <PARAMETER NAME="C_PROG_FULL_THRESH_ASSERT_VAL_WRCH" VALUE="1023"/>
+        <PARAMETER NAME="C_PROG_FULL_THRESH_ASSERT_VAL_RACH" VALUE="1023"/>
+        <PARAMETER NAME="C_PROG_FULL_THRESH_ASSERT_VAL_RDCH" VALUE="1023"/>
+        <PARAMETER NAME="C_PROG_FULL_THRESH_ASSERT_VAL_AXIS" VALUE="1023"/>
+        <PARAMETER NAME="C_PROG_EMPTY_TYPE_WACH" VALUE="0"/>
+        <PARAMETER NAME="C_PROG_EMPTY_TYPE_WDCH" VALUE="0"/>
+        <PARAMETER NAME="C_PROG_EMPTY_TYPE_WRCH" VALUE="0"/>
+        <PARAMETER NAME="C_PROG_EMPTY_TYPE_RACH" VALUE="0"/>
+        <PARAMETER NAME="C_PROG_EMPTY_TYPE_RDCH" VALUE="0"/>
+        <PARAMETER NAME="C_PROG_EMPTY_TYPE_AXIS" VALUE="0"/>
+        <PARAMETER NAME="C_PROG_EMPTY_THRESH_ASSERT_VAL_WACH" VALUE="1022"/>
+        <PARAMETER NAME="C_PROG_EMPTY_THRESH_ASSERT_VAL_WDCH" VALUE="1022"/>
+        <PARAMETER NAME="C_PROG_EMPTY_THRESH_ASSERT_VAL_WRCH" VALUE="1022"/>
+        <PARAMETER NAME="C_PROG_EMPTY_THRESH_ASSERT_VAL_RACH" VALUE="1022"/>
+        <PARAMETER NAME="C_PROG_EMPTY_THRESH_ASSERT_VAL_RDCH" VALUE="1022"/>
+        <PARAMETER NAME="C_PROG_EMPTY_THRESH_ASSERT_VAL_AXIS" VALUE="1022"/>
+        <PARAMETER NAME="C_REG_SLICE_MODE_WACH" VALUE="0"/>
+        <PARAMETER NAME="C_REG_SLICE_MODE_WDCH" VALUE="0"/>
+        <PARAMETER NAME="C_REG_SLICE_MODE_WRCH" VALUE="0"/>
+        <PARAMETER NAME="C_REG_SLICE_MODE_RACH" VALUE="0"/>
+        <PARAMETER NAME="C_REG_SLICE_MODE_RDCH" VALUE="0"/>
+        <PARAMETER NAME="C_REG_SLICE_MODE_AXIS" VALUE="0"/>
+        <PARAMETER NAME="Component_Name" VALUE="design_1_fifo_generator_0_21"/>
+        <PARAMETER NAME="Fifo_Implementation" VALUE="Common_Clock_Block_RAM"/>
+        <PARAMETER NAME="synchronization_stages" VALUE="2"/>
+        <PARAMETER NAME="synchronization_stages_axi" VALUE="2"/>
+        <PARAMETER NAME="INTERFACE_TYPE" VALUE="Native"/>
+        <PARAMETER NAME="Performance_Options" VALUE="First_Word_Fall_Through"/>
+        <PARAMETER NAME="asymmetric_port_width" VALUE="false"/>
+        <PARAMETER NAME="Input_Data_Width" VALUE="96"/>
+        <PARAMETER NAME="Input_Depth" VALUE="512"/>
+        <PARAMETER NAME="Output_Data_Width" VALUE="96"/>
+        <PARAMETER NAME="Output_Depth" VALUE="512"/>
+        <PARAMETER NAME="Enable_ECC" VALUE="false"/>
+        <PARAMETER NAME="Use_Embedded_Registers" VALUE="false"/>
+        <PARAMETER NAME="Reset_Pin" VALUE="false"/>
+        <PARAMETER NAME="Enable_Reset_Synchronization" VALUE="true"/>
+        <PARAMETER NAME="Reset_Type" VALUE="Asynchronous_Reset"/>
+        <PARAMETER NAME="Full_Flags_Reset_Value" VALUE="0"/>
+        <PARAMETER NAME="Use_Dout_Reset" VALUE="false"/>
+        <PARAMETER NAME="Dout_Reset_Value" VALUE="0"/>
+        <PARAMETER NAME="dynamic_power_saving" VALUE="false"/>
+        <PARAMETER NAME="Almost_Full_Flag" VALUE="false"/>
+        <PARAMETER NAME="Almost_Empty_Flag" VALUE="false"/>
+        <PARAMETER NAME="Valid_Flag" VALUE="false"/>
+        <PARAMETER NAME="Valid_Sense" VALUE="Active_High"/>
+        <PARAMETER NAME="Underflow_Flag" VALUE="false"/>
+        <PARAMETER NAME="Underflow_Sense" VALUE="Active_High"/>
+        <PARAMETER NAME="Write_Acknowledge_Flag" VALUE="false"/>
+        <PARAMETER NAME="Write_Acknowledge_Sense" VALUE="Active_High"/>
+        <PARAMETER NAME="Overflow_Flag" VALUE="false"/>
+        <PARAMETER NAME="Overflow_Sense" VALUE="Active_High"/>
+        <PARAMETER NAME="Inject_Sbit_Error" VALUE="false"/>
+        <PARAMETER NAME="Inject_Dbit_Error" VALUE="false"/>
+        <PARAMETER NAME="ecc_pipeline_reg" VALUE="false"/>
+        <PARAMETER NAME="Use_Extra_Logic" VALUE="true"/>
+        <PARAMETER NAME="Data_Count" VALUE="false"/>
+        <PARAMETER NAME="Data_Count_Width" VALUE="10"/>
+        <PARAMETER NAME="Write_Data_Count" VALUE="false"/>
+        <PARAMETER NAME="Write_Data_Count_Width" VALUE="10"/>
+        <PARAMETER NAME="Read_Data_Count" VALUE="false"/>
+        <PARAMETER NAME="Read_Data_Count_Width" VALUE="10"/>
+        <PARAMETER NAME="Disable_Timing_Violations" VALUE="false"/>
+        <PARAMETER NAME="Read_Clock_Frequency" VALUE="1"/>
+        <PARAMETER NAME="Write_Clock_Frequency" VALUE="1"/>
+        <PARAMETER NAME="Programmable_Full_Type" VALUE="No_Programmable_Full_Threshold"/>
+        <PARAMETER NAME="Full_Threshold_Assert_Value" VALUE="511"/>
+        <PARAMETER NAME="Full_Threshold_Negate_Value" VALUE="510"/>
+        <PARAMETER NAME="Programmable_Empty_Type" VALUE="No_Programmable_Empty_Threshold"/>
+        <PARAMETER NAME="Empty_Threshold_Assert_Value" VALUE="4"/>
+        <PARAMETER NAME="Empty_Threshold_Negate_Value" VALUE="5"/>
+        <PARAMETER NAME="PROTOCOL" VALUE="AXI4"/>
+        <PARAMETER NAME="Clock_Type_AXI" VALUE="Common_Clock"/>
+        <PARAMETER NAME="HAS_ACLKEN" VALUE="false"/>
+        <PARAMETER NAME="Clock_Enable_Type" VALUE="Slave_Interface_Clock_Enable"/>
+        <PARAMETER NAME="READ_WRITE_MODE" VALUE="READ_WRITE"/>
+        <PARAMETER NAME="ID_WIDTH" VALUE="0"/>
+        <PARAMETER NAME="ADDRESS_WIDTH" VALUE="32"/>
+        <PARAMETER NAME="DATA_WIDTH" VALUE="64"/>
+        <PARAMETER NAME="AWUSER_Width" VALUE="0"/>
+        <PARAMETER NAME="WUSER_Width" VALUE="0"/>
+        <PARAMETER NAME="BUSER_Width" VALUE="0"/>
+        <PARAMETER NAME="ARUSER_Width" VALUE="0"/>
+        <PARAMETER NAME="RUSER_Width" VALUE="0"/>
+        <PARAMETER NAME="TDATA_NUM_BYTES" VALUE="1"/>
+        <PARAMETER NAME="TID_WIDTH" VALUE="0"/>
+        <PARAMETER NAME="TDEST_WIDTH" VALUE="0"/>
+        <PARAMETER NAME="TUSER_WIDTH" VALUE="4"/>
+        <PARAMETER NAME="Enable_TREADY" VALUE="true"/>
+        <PARAMETER NAME="Enable_TLAST" VALUE="false"/>
+        <PARAMETER NAME="HAS_TSTRB" VALUE="false"/>
+        <PARAMETER NAME="TSTRB_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="HAS_TKEEP" VALUE="false"/>
+        <PARAMETER NAME="TKEEP_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="wach_type" VALUE="FIFO"/>
+        <PARAMETER NAME="FIFO_Implementation_wach" VALUE="Common_Clock_Block_RAM"/>
+        <PARAMETER NAME="FIFO_Application_Type_wach" VALUE="Data_FIFO"/>
+        <PARAMETER NAME="Enable_ECC_wach" VALUE="false"/>
+        <PARAMETER NAME="Inject_Sbit_Error_wach" VALUE="false"/>
+        <PARAMETER NAME="Inject_Dbit_Error_wach" VALUE="false"/>
+        <PARAMETER NAME="Input_Depth_wach" VALUE="16"/>
+        <PARAMETER NAME="Enable_Data_Counts_wach" VALUE="false"/>
+        <PARAMETER NAME="Programmable_Full_Type_wach" VALUE="No_Programmable_Full_Threshold"/>
+        <PARAMETER NAME="Full_Threshold_Assert_Value_wach" VALUE="1023"/>
+        <PARAMETER NAME="Programmable_Empty_Type_wach" VALUE="No_Programmable_Empty_Threshold"/>
+        <PARAMETER NAME="Empty_Threshold_Assert_Value_wach" VALUE="1022"/>
+        <PARAMETER NAME="wdch_type" VALUE="FIFO"/>
+        <PARAMETER NAME="FIFO_Implementation_wdch" VALUE="Common_Clock_Block_RAM"/>
+        <PARAMETER NAME="FIFO_Application_Type_wdch" VALUE="Data_FIFO"/>
+        <PARAMETER NAME="Enable_ECC_wdch" VALUE="false"/>
+        <PARAMETER NAME="Inject_Sbit_Error_wdch" VALUE="false"/>
+        <PARAMETER NAME="Inject_Dbit_Error_wdch" VALUE="false"/>
+        <PARAMETER NAME="Input_Depth_wdch" VALUE="1024"/>
+        <PARAMETER NAME="Enable_Data_Counts_wdch" VALUE="false"/>
+        <PARAMETER NAME="Programmable_Full_Type_wdch" VALUE="No_Programmable_Full_Threshold"/>
+        <PARAMETER NAME="Full_Threshold_Assert_Value_wdch" VALUE="1023"/>
+        <PARAMETER NAME="Programmable_Empty_Type_wdch" VALUE="No_Programmable_Empty_Threshold"/>
+        <PARAMETER NAME="Empty_Threshold_Assert_Value_wdch" VALUE="1022"/>
+        <PARAMETER NAME="wrch_type" VALUE="FIFO"/>
+        <PARAMETER NAME="FIFO_Implementation_wrch" VALUE="Common_Clock_Block_RAM"/>
+        <PARAMETER NAME="FIFO_Application_Type_wrch" VALUE="Data_FIFO"/>
+        <PARAMETER NAME="Enable_ECC_wrch" VALUE="false"/>
+        <PARAMETER NAME="Inject_Sbit_Error_wrch" VALUE="false"/>
+        <PARAMETER NAME="Inject_Dbit_Error_wrch" VALUE="false"/>
+        <PARAMETER NAME="Input_Depth_wrch" VALUE="16"/>
+        <PARAMETER NAME="Enable_Data_Counts_wrch" VALUE="false"/>
+        <PARAMETER NAME="Programmable_Full_Type_wrch" VALUE="No_Programmable_Full_Threshold"/>
+        <PARAMETER NAME="Full_Threshold_Assert_Value_wrch" VALUE="1023"/>
+        <PARAMETER NAME="Programmable_Empty_Type_wrch" VALUE="No_Programmable_Empty_Threshold"/>
+        <PARAMETER NAME="Empty_Threshold_Assert_Value_wrch" VALUE="1022"/>
+        <PARAMETER NAME="rach_type" VALUE="FIFO"/>
+        <PARAMETER NAME="FIFO_Implementation_rach" VALUE="Common_Clock_Block_RAM"/>
+        <PARAMETER NAME="FIFO_Application_Type_rach" VALUE="Data_FIFO"/>
+        <PARAMETER NAME="Enable_ECC_rach" VALUE="false"/>
+        <PARAMETER NAME="Inject_Sbit_Error_rach" VALUE="false"/>
+        <PARAMETER NAME="Inject_Dbit_Error_rach" VALUE="false"/>
+        <PARAMETER NAME="Input_Depth_rach" VALUE="16"/>
+        <PARAMETER NAME="Enable_Data_Counts_rach" VALUE="false"/>
+        <PARAMETER NAME="Programmable_Full_Type_rach" VALUE="No_Programmable_Full_Threshold"/>
+        <PARAMETER NAME="Full_Threshold_Assert_Value_rach" VALUE="1023"/>
+        <PARAMETER NAME="Programmable_Empty_Type_rach" VALUE="No_Programmable_Empty_Threshold"/>
+        <PARAMETER NAME="Empty_Threshold_Assert_Value_rach" VALUE="1022"/>
+        <PARAMETER NAME="rdch_type" VALUE="FIFO"/>
+        <PARAMETER NAME="FIFO_Implementation_rdch" VALUE="Common_Clock_Block_RAM"/>
+        <PARAMETER NAME="FIFO_Application_Type_rdch" VALUE="Data_FIFO"/>
+        <PARAMETER NAME="Enable_ECC_rdch" VALUE="false"/>
+        <PARAMETER NAME="Inject_Sbit_Error_rdch" VALUE="false"/>
+        <PARAMETER NAME="Inject_Dbit_Error_rdch" VALUE="false"/>
+        <PARAMETER NAME="Input_Depth_rdch" VALUE="1024"/>
+        <PARAMETER NAME="Enable_Data_Counts_rdch" VALUE="false"/>
+        <PARAMETER NAME="Programmable_Full_Type_rdch" VALUE="No_Programmable_Full_Threshold"/>
+        <PARAMETER NAME="Full_Threshold_Assert_Value_rdch" VALUE="1023"/>
+        <PARAMETER NAME="Programmable_Empty_Type_rdch" VALUE="No_Programmable_Empty_Threshold"/>
+        <PARAMETER NAME="Empty_Threshold_Assert_Value_rdch" VALUE="1022"/>
+        <PARAMETER NAME="axis_type" VALUE="FIFO"/>
+        <PARAMETER NAME="FIFO_Implementation_axis" VALUE="Common_Clock_Block_RAM"/>
+        <PARAMETER NAME="FIFO_Application_Type_axis" VALUE="Data_FIFO"/>
+        <PARAMETER NAME="Enable_ECC_axis" VALUE="false"/>
+        <PARAMETER NAME="Inject_Sbit_Error_axis" VALUE="false"/>
+        <PARAMETER NAME="Inject_Dbit_Error_axis" VALUE="false"/>
+        <PARAMETER NAME="Input_Depth_axis" VALUE="1024"/>
+        <PARAMETER NAME="Enable_Data_Counts_axis" VALUE="false"/>
+        <PARAMETER NAME="Programmable_Full_Type_axis" VALUE="No_Programmable_Full_Threshold"/>
+        <PARAMETER NAME="Full_Threshold_Assert_Value_axis" VALUE="1023"/>
+        <PARAMETER NAME="Programmable_Empty_Type_axis" VALUE="No_Programmable_Empty_Threshold"/>
+        <PARAMETER NAME="Empty_Threshold_Assert_Value_axis" VALUE="1022"/>
+        <PARAMETER NAME="Register_Slice_Mode_wach" VALUE="Fully_Registered"/>
+        <PARAMETER NAME="Register_Slice_Mode_wdch" VALUE="Fully_Registered"/>
+        <PARAMETER NAME="Register_Slice_Mode_wrch" VALUE="Fully_Registered"/>
+        <PARAMETER NAME="Register_Slice_Mode_rach" VALUE="Fully_Registered"/>
+        <PARAMETER NAME="Register_Slice_Mode_rdch" VALUE="Fully_Registered"/>
+        <PARAMETER NAME="Register_Slice_Mode_axis" VALUE="Fully_Registered"/>
+        <PARAMETER NAME="Underflow_Flag_AXI" VALUE="false"/>
+        <PARAMETER NAME="Underflow_Sense_AXI" VALUE="Active_High"/>
+        <PARAMETER NAME="Overflow_Flag_AXI" VALUE="false"/>
+        <PARAMETER NAME="Overflow_Sense_AXI" VALUE="Active_High"/>
+        <PARAMETER NAME="Disable_Timing_Violations_AXI" VALUE="false"/>
+        <PARAMETER NAME="Add_NGC_Constraint_AXI" VALUE="false"/>
+        <PARAMETER NAME="Enable_Common_Underflow" VALUE="false"/>
+        <PARAMETER NAME="Enable_Common_Overflow" VALUE="false"/>
+        <PARAMETER NAME="enable_read_pointer_increment_by2" VALUE="false"/>
+        <PARAMETER NAME="Use_Embedded_Registers_axis" VALUE="false"/>
+        <PARAMETER NAME="enable_low_latency" VALUE="false"/>
+        <PARAMETER NAME="use_dout_register" VALUE="false"/>
+        <PARAMETER NAME="Master_interface_Clock_enable_memory_mapped" VALUE="false"/>
+        <PARAMETER NAME="Slave_interface_Clock_enable_memory_mapped" VALUE="false"/>
+        <PARAMETER NAME="Output_Register_Type" VALUE="Embedded_Reg"/>
+        <PARAMETER NAME="Enable_Safety_Circuit" VALUE="false"/>
+        <PARAMETER NAME="Enable_ECC_Type" VALUE="Hard_ECC"/>
+        <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
+      </PARAMETERS>
+      <PORTS>
+        <PORT CLKFREQUENCY="333250000" DIR="I" NAME="clk" SIGIS="clk" SIGNAME="MemorySystem_ddr4_0_c0_ddr4_ui_clk">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="MemorySystem_ddr4_0" PORT="c0_ddr4_ui_clk"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="95" NAME="din" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_TEXSAMP_OutFIFO_wr_data">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="TEXSAMP_OutFIFO_wr_data"/>
+          </CONNECTIONS>
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="TEXSAMP_OutFIFO_wr_data"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="wr_en" SIGIS="undef" SIGNAME="AttrInterpolator_0_TEXSAMP_OutFIFO_wr_en">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="TEXSAMP_OutFIFO_wr_en"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="rd_en" SIGIS="undef" SIGNAME="TEXSAMP_FIFO_rd_en">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TexSample_0" PORT="INTERP_InFIFO_rd_en"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="95" NAME="dout" RIGHT="0" SIGIS="undef" SIGNAME="TEXSAMP_FIFO_dout">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TexSample_0" PORT="INTERP_InFIFO_rd_data"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="full" SIGIS="undef" SIGNAME="AttrInterpolator_0_TEXSAMP_OutFIFO_full">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="TEXSAMP_OutFIFO_full"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="empty" SIGIS="undef" SIGNAME="TEXSAMP_FIFO_empty">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TexSample_0" PORT="INTERP_InFIFO_empty"/>
+          </CONNECTIONS>
+        </PORT>
+      </PORTS>
+      <BUSINTERFACES>
+        <BUSINTERFACE BUSNAME="AttrInterpolator_0_TEXSAMP_OUT_FIFO" NAME="FIFO_WRITE" TYPE="TARGET" VLNV="xilinx.com:interface:fifo_write:1.0">
+          <PORTMAPS>
+            <PORTMAP LOGICAL="FULL" PHYSICAL="full"/>
+            <PORTMAP LOGICAL="WR_DATA" PHYSICAL="din"/>
+            <PORTMAP LOGICAL="WR_EN" PHYSICAL="wr_en"/>
+          </PORTMAPS>
+        </BUSINTERFACE>
+        <BUSINTERFACE BUSNAME="TexSample_0_INTERP_IN_FIFO" NAME="FIFO_READ" TYPE="TARGET" VLNV="xilinx.com:interface:fifo_read:1.0">
+          <PORTMAPS>
+            <PORTMAP LOGICAL="EMPTY" PHYSICAL="empty"/>
+            <PORTMAP LOGICAL="RD_DATA" PHYSICAL="dout"/>
+            <PORTMAP LOGICAL="RD_EN" PHYSICAL="rd_en"/>
+          </PORTMAPS>
+        </BUSINTERFACE>
+      </BUSINTERFACES>
+    </MODULE>
     <MODULE FULLNAME="/TexSample_0" HWVERSION="1.0" INSTANCE="TexSample_0" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="TexSample" VLNV="xilinx.com:module_ref:TexSample:1.0">
       <DOCUMENTS/>
       <PARAMETERS>
@@ -37287,39 +38100,19 @@
             <CONNECTION INSTANCE="MemorySystem_ddr4_0" PORT="c0_ddr4_ui_clk"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" NAME="INTERP_writeStrobe" SIGIS="undef" SIGNAME="AttrInterpolator_0_TEXSAMP_writeIsValid">
+        <PORT DIR="I" LEFT="95" NAME="INTERP_InFIFO_rd_data" RIGHT="0" SIGIS="undef" SIGNAME="TEXSAMP_FIFO_dout">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="TEXSAMP_writeIsValid"/>
+            <CONNECTION INSTANCE="TEXSAMP_FIFO" PORT="dout"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" NAME="INTERP_readyForNewWrite" SIGIS="undef" SIGNAME="TexSample_0_INTERP_readyForNewWrite">
+        <PORT DIR="I" NAME="INTERP_InFIFO_empty" SIGIS="undef" SIGNAME="TEXSAMP_FIFO_empty">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="TEXSAMP_readyForWrite"/>
+            <CONNECTION INSTANCE="TEXSAMP_FIFO" PORT="empty"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="15" NAME="INTERP_pixelX" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_TEXSAMP_outPixelX">
+        <PORT DIR="O" NAME="INTERP_InFIFO_rd_en" SIGIS="undef" SIGNAME="TEXSAMP_FIFO_rd_en">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="TEXSAMP_outPixelX"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" LEFT="15" NAME="INTERP_pixelY" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_TEXSAMP_outPixelY">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="TEXSAMP_outPixelY"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" LEFT="15" NAME="INTERP_inInterpolatedTexcoordX" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_TEXSAMP_outInterpolatedTexcoordX">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="TEXSAMP_outInterpolatedTexcoordX"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" LEFT="15" NAME="INTERP_inInterpolatedTexcoordY" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_TEXSAMP_outInterpolatedTexcoordY">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="TEXSAMP_outInterpolatedTexcoordY"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" LEFT="31" NAME="INTERP_inInterpolatedVertColorRGBA" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_TEXSAMP_outInterpolatedColorRGBA">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="TEXSAMP_outInterpolatedColorRGBA"/>
+            <CONNECTION INSTANCE="TEXSAMP_FIFO" PORT="rd_en"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="29" NAME="MEM_TexSampReadRequestsFIFO_wr_data" RIGHT="0" SIGIS="undef" SIGNAME="MemorySystem_TexFetchReadRequestsFIFO_din">
@@ -37442,48 +38235,21 @@
             <CONNECTION INSTANCE="CommandProcessor_0" PORT="TEXSAMP_SetTextureStateCombinerModeAlpha"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="15" NAME="ROP_outPixelX" RIGHT="0" SIGIS="undef" SIGNAME="TexSample_0_ROP_outPixelX">
+        <PORT DIR="O" LEFT="63" NAME="ROP_OutFIFO_wr_data" RIGHT="0" SIGIS="undef" SIGNAME="TexSample_0_ROP_OutFIFO_wr_data">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="ROP_0" PORT="TEXSAMP_outPixelX"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="O" LEFT="15" NAME="ROP_outPixelY" RIGHT="0" SIGIS="undef" SIGNAME="TexSample_0_ROP_outPixelY">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="ROP_0" PORT="TEXSAMP_outPixelY"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="O" LEFT="7" NAME="ROP_outR" RIGHT="0" SIGIS="undef" SIGNAME="TexSample_0_ROP_outR">
-          <CONNECTIONS>
+            <CONNECTION INSTANCE="ROP_FIFO" PORT="din"/>
+            <CONNECTION INSTANCE="ROP_FIFO" PORT="din"/>
             <CONNECTION INSTANCE="ILA_TexSampler" PORT="probe1"/>
-            <CONNECTION INSTANCE="ROP_0" PORT="TEXSAMP_outR"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="7" NAME="ROP_outG" RIGHT="0" SIGIS="undef" SIGNAME="TexSample_0_ROP_outG">
+        <PORT DIR="I" NAME="ROP_OutFIFO_full" SIGIS="undef" SIGNAME="ROP_FIFO_full">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="ILA_TexSampler" PORT="probe2"/>
-            <CONNECTION INSTANCE="ROP_0" PORT="TEXSAMP_outG"/>
+            <CONNECTION INSTANCE="ROP_FIFO" PORT="full"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="7" NAME="ROP_outB" RIGHT="0" SIGIS="undef" SIGNAME="TexSample_0_ROP_outB">
+        <PORT DIR="O" NAME="ROP_OutFIFO_wr_en" SIGIS="undef" SIGNAME="ROP_FIFO_wr_en">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="ILA_TexSampler" PORT="probe3"/>
-            <CONNECTION INSTANCE="ROP_0" PORT="TEXSAMP_outB"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="O" LEFT="7" NAME="ROP_outA" RIGHT="0" SIGIS="undef" SIGNAME="TexSample_0_ROP_outA">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="ILA_TexSampler" PORT="probe4"/>
-            <CONNECTION INSTANCE="ROP_0" PORT="TEXSAMP_outA"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="O" NAME="ROP_writeIsValid" SIGIS="undef" SIGNAME="TexSample_0_ROP_writeIsValid">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="ROP_0" PORT="TEXSAMP_writeIsValid"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" NAME="ROP_writeAck" SIGIS="undef" SIGNAME="ROP_0_TEXSAMP_writeAck">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="ROP_0" PORT="TEXSAMP_writeAck"/>
+            <CONNECTION INSTANCE="ROP_FIFO" PORT="wr_en"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="31" NAME="STAT_CyclesIdle" RIGHT="0" SIGIS="undef" SIGNAME="TexSample_0_STAT_CyclesIdle">
@@ -37515,16 +38281,23 @@
         <PORT DIR="O" LEFT="31" NAME="DBG_TexCache_douta" RIGHT="0" SIGIS="undef"/>
         <PORT DIR="O" LEFT="31" NAME="DBG_TexCache_dina" RIGHT="0" SIGIS="undef" SIGNAME="TexSample_0_DBG_TexCache_dina">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="ILA_TexSampler" PORT="probe5"/>
+            <CONNECTION INSTANCE="ILA_TexSampler" PORT="probe2"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="13" NAME="DBG_TexCache_addra" RIGHT="0" SIGIS="undef" SIGNAME="TexSample_0_DBG_TexCache_addra">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="ILA_TexSampler" PORT="probe7"/>
+            <CONNECTION INSTANCE="ILA_TexSampler" PORT="probe3"/>
           </CONNECTIONS>
         </PORT>
       </PORTS>
       <BUSINTERFACES>
+        <BUSINTERFACE BUSNAME="TexSample_0_INTERP_IN_FIFO" NAME="INTERP_IN_FIFO" TYPE="INITIATOR" VLNV="xilinx.com:interface:fifo_read:1.0">
+          <PORTMAPS>
+            <PORTMAP LOGICAL="RD_DATA" PHYSICAL="INTERP_InFIFO_rd_data"/>
+            <PORTMAP LOGICAL="RD_EN" PHYSICAL="INTERP_InFIFO_rd_en"/>
+            <PORTMAP LOGICAL="EMPTY" PHYSICAL="INTERP_InFIFO_empty"/>
+          </PORTMAPS>
+        </BUSINTERFACE>
         <BUSINTERFACE BUSNAME="TexSample_0_TexSampReadRequestsFIFO" NAME="TexSampReadRequestsFIFO" TYPE="INITIATOR" VLNV="xilinx.com:interface:fifo_write:1.0">
           <PORTMAPS>
             <PORTMAP LOGICAL="WR_DATA" PHYSICAL="MEM_TexSampReadRequestsFIFO_wr_data"/>
@@ -37551,6 +38324,13 @@
             <PORTMAP LOGICAL="DIN" PHYSICAL="TexCache_dina"/>
             <PORTMAP LOGICAL="WE" PHYSICAL="TexCache_wea"/>
             <PORTMAP LOGICAL="ADDR" PHYSICAL="TexCache_addra"/>
+          </PORTMAPS>
+        </BUSINTERFACE>
+        <BUSINTERFACE BUSNAME="TexSample_0_ROP_OUT_FIFO" NAME="ROP_OUT_FIFO" TYPE="INITIATOR" VLNV="xilinx.com:interface:fifo_write:1.0">
+          <PORTMAPS>
+            <PORTMAP LOGICAL="WR_DATA" PHYSICAL="ROP_OutFIFO_wr_data"/>
+            <PORTMAP LOGICAL="WR_EN" PHYSICAL="ROP_OutFIFO_wr_en"/>
+            <PORTMAP LOGICAL="FULL" PHYSICAL="ROP_OutFIFO_full"/>
           </PORTMAPS>
         </BUSINTERFACE>
       </BUSINTERFACES>
@@ -40057,7 +40837,7 @@
         <PARAMETER NAME="C_PROBE34_WIDTH" VALUE="16"/>
         <PARAMETER NAME="C_PROBE35_WIDTH" VALUE="30"/>
         <PARAMETER NAME="C_PROBE36_WIDTH" VALUE="1"/>
-        <PARAMETER NAME="C_PROBE37_WIDTH" VALUE="32"/>
+        <PARAMETER NAME="C_PROBE37_WIDTH" VALUE="1"/>
         <PARAMETER NAME="C_PROBE38_WIDTH" VALUE="4"/>
         <PARAMETER NAME="C_PROBE39_WIDTH" VALUE="8"/>
         <PARAMETER NAME="C_PROBE40_WIDTH" VALUE="5"/>
@@ -43306,9 +44086,9 @@
             <CONNECTION INSTANCE="ROP_0" PORT="DBG_ReadRequestFIFOFull"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="probe37" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_TEXSAMP_outInterpolatedColorRGBA">
+        <PORT DIR="I" LEFT="0" NAME="probe37" RIGHT="0" SIGIS="undef" SIGNAME="xlconstant_1_dout">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="TEXSAMP_outInterpolatedColorRGBA"/>
+            <CONNECTION INSTANCE="xlconstant_1" PORT="dout"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="I" LEFT="3" NAME="probe38" RIGHT="0" SIGIS="undef" SIGNAME="StatsCollector_0_DBG_CurrentState">
@@ -44680,15 +45460,15 @@
     <MODULE FULLNAME="/xlconstant_1" HWVERSION="1.1" INSTANCE="xlconstant_1" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="xlconstant" VLNV="xilinx.com:ip:xlconstant:1.1">
       <DOCUMENTS/>
       <PARAMETERS>
-        <PARAMETER NAME="CONST_WIDTH" VALUE="32"/>
-        <PARAMETER NAME="CONST_VAL" VALUE="0x00000000"/>
+        <PARAMETER NAME="CONST_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="CONST_VAL" VALUE="0x0"/>
         <PARAMETER NAME="Component_Name" VALUE="design_1_xlconstant_1_0"/>
         <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
       </PARAMETERS>
       <PORTS>
-        <PORT DIR="O" LEFT="31" NAME="dout" RIGHT="0" SIGIS="undef" SIGNAME="xlconstant_1_dout">
+        <PORT DIR="O" LEFT="0" NAME="dout" RIGHT="0" SIGIS="undef" SIGNAME="xlconstant_1_dout">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="ILA_TexSampler" PORT="probe6"/>
+            <CONNECTION INSTANCE="ila_333_250" PORT="probe37"/>
           </CONNECTIONS>
         </PORT>
       </PORTS>
@@ -44735,15 +45515,20 @@
     <MODULE FULLNAME="/xlconstant_4" HWVERSION="1.1" INSTANCE="xlconstant_4" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="xlconstant" VLNV="xilinx.com:ip:xlconstant:1.1">
       <DOCUMENTS/>
       <PARAMETERS>
-        <PARAMETER NAME="CONST_WIDTH" VALUE="32"/>
-        <PARAMETER NAME="CONST_VAL" VALUE="0x00000000"/>
+        <PARAMETER NAME="CONST_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="CONST_VAL" VALUE="0x0"/>
         <PARAMETER NAME="Component_Name" VALUE="design_1_xlconstant_4_0"/>
         <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
       </PARAMETERS>
       <PORTS>
-        <PORT DIR="O" LEFT="31" NAME="dout" RIGHT="0" SIGIS="undef" SIGNAME="xlconstant_4_dout">
+        <PORT DIR="O" LEFT="0" NAME="dout" RIGHT="0" SIGIS="undef" SIGNAME="xlconstant_4_dout">
           <CONNECTIONS>
+            <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe1"/>
+            <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe3"/>
+            <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe4"/>
             <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe7"/>
+            <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe2"/>
+            <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe13"/>
           </CONNECTIONS>
         </PORT>
       </PORTS>

@@ -468,6 +468,7 @@ DBG_RastBarycentricC <= std_logic_vector(storedDbgBarycentricC);
 					currentState <= barycentricDotProductSums2;
 
 				when barycentricDotProductSums2 =>
+					FPU_IADD_GO <= '0';
 					currentState <= barycentricDotProductSums3;
 
 				when barycentricDotProductSums3 =>

@@ -18,7 +18,7 @@ The Vertex Batch Builder reads in indices from the index buffer and constructs b
 
 ### Shader Core (SHADER)
 
-The Shader Core takes (up to 16) index batches from the Vertex Batch Builder and loads input vertex data based on the indices through a pretransformed vertex cache (using multiple vertex streams) from GPU DRAM and uses a loaded shader program to execute shader instructions to produce output processed vertices, which are then sent to the [Input Assembler](#Input-Assembler-IA) for primitive assembly. In the course of shading, the Shader Core uses four floating-point ALU ("FPU") units in a SIMD-fashion as well as a register file, constant buffer cache, and instruction cache. Currently the Shader Core only handles vertex shading - pixel processing is still the domain of the Texture Sampler, Attribute Interpolator, and ROP units all in fixed-function.
+The Shader Core takes (up to 16) index batches from the Vertex Batch Builder and loads input vertex data based on the indices through a pretransformed vertex cache (using multiple vertex streams) from GPU DRAM and uses a loaded shader program to execute shader instructions to produce output processed vertices, which are then sent to the [Input Assembler](#Input-Assembler-IA) for primitive assembly. In the course of shading, the Shader Core uses four floating-point ALU ("FPU") units in a SIMD-fashion as well as a register file, constant buffer cache, and instruction cache. Currently the Shader Core only handles vertex shading - pixel processing is still the domain of the Texture Sampler, Attribute Interpolator, and ROP units all in fixed-function. More info on the custom shader instruction set can be found [here](ShaderISA).
 
 ### Input Assembler (IA)
 
@@ -30,11 +30,19 @@ Triangle Setup pre-computes per-triangle data given to it by the [Input Assemble
 
 ### Rasterizer (RAST)
 
-The Rasterizer rasterizes triangles into pixels. It also calculates per-pixel triangle barycentric coordinates to be sent to the [Attribute Interpolator](#Attribute-Interpolator-INTERP) that are needed for texture coordinate, vertex color, and pixel Z depth interpolation.
+The Rasterizer rasterizes triangles into pixels. It also calculates per-pixel triangle barycentric coordinates to be sent to the [Depth Interpolator](#Depth-Interpolator-DINTERP) and [Attribute Interpolator](#Attribute-Interpolator-INTERP) that are needed for texture coordinate, vertex color, pixel Z depth, and pixel W-value interpolation.
+
+### Depth Interpolator (DINTERP)
+
+The Depth Interpolator computes pixel Z depth and also pixel W values interpolated across the triangle using barycentric coordinates from the [Rasterizer](#Rasterizer-RAST). If depth-stencil testing is enabled, then the interpolated pixel depth values are passed to the Depth Tester for depth testing. Otherwise, the depth test is assumed to pass, and the pixel W value is passed on to the [Attribute Interpolator](#Attribute-Interpolator-INTERP) unit.
+
+### Depth Tester (DEPTH)
+
+The Depth Tester unit owns and manages the depth buffer SRAM memory (currently hardcoded to 640x480 @ D24S8) and the depth buffer compression metadata. This unit also performs per-pixel depth testing (if depth testing is enabled) and also handles depth writing into the depth buffer. If the pixel fails the depth test, then it is discarded and its data is not passed on to the next stage.
 
 ### Attribute Interpolator (INTERP)
 
-The Attribute Interpolator computes texture coordinate, vertex color, and pixel Z depth values interpolated across the triangle using barycentric coordinates from the [Rasterizer](#Rasterizer-RAST). It also performs perspective-correction on the interpolated values. The interpolated texture coordinates are passed along to the [Texture Sampler](#Texture-Sampler-TEXSAMP) unit.
+The Attribute Interpolator computes texture coordinate and vertex color values interpolated across the triangle using barycentric coordinates from the [Rasterizer](#Rasterizer-RAST). It also performs perspective-correction on the interpolated values using the given per-pixel W values. The interpolated texture coordinates are passed along to the [Texture Sampler](#Texture-Sampler-TEXSAMP) unit.
 
 ### Texture Sampler (TEXSAMP)
 
@@ -42,11 +50,11 @@ The Texture Sampler is in charge of reading texel data into the texture cache, a
 
 ### ROP (ROP)
 
-The ROP is responsible for combining the incoming shaded pixel data from the [Texture Sampler](#Texture-Sampler-TEXSAMP) with the framebuffer color. It can perform additive or alpha blending, as well as a simple "overwrite" mode that ignores the framebuffer color and just uses the incoming pixel color. The ROP caches recently-written pixels and makes sure to read and write them to memory in whole DRAM-lines (256 bits/32 bytes) in order to maximize DRAM bandwidth.
+The ROP is responsible for combining the incoming shaded pixel data from the [Texture Sampler](#Texture-Sampler-TEXSAMP) with the framebuffer color. It can perform any of the blend ops (ADD/SUB/RSUB/MIN/MAX) and any of the blend source modes supported by D3D9 (including SEPARATE_ALPHA_BLEND). Dual source color blending is not yet supported as we don't yet support MRT. The ROP unit caches recently-written pixels and makes sure to read and write them to memory in whole DRAM-lines (256 bits/32 bytes) in order to maximize DRAM bandwidth.
 
 ### Scanout (SCANOUT)
 
-Scanout is meant to read pixel data from the framebuffer and send it out over VGA to the attached monitor. It also generates the VSYNC and HSYNC signals and controls timing. Currently only 640x480@60Hz@32bpp is supported. Due to interfacing with the external VGA hardware, the Scanout unit needs to run on its own clock domain (100.5MHz) that is separate from the main GPU core.
+Scanout is meant to read pixel data from the framebuffer and send it out over VGA/DVI/HDMI to the attached monitor. It also generates the VSYNC and HSYNC signals and controls timing and HDMI framing. Currently only 640x480@60Hz@32bpp is supported. Due to interfacing with the external monitor hardware, the Scanout unit needs to run on its own clock domain (251.25MHz) that is separate from the main GPU core.
 
 ### Clear Block (CLEAR)
 

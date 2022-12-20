@@ -1,0 +1,4 @@
+# vhdl work EthernetMdioController.vhd
+# List other files here
+vhdl xil_defaultlib  \
+"hdl_src/EthernetMDIOController.vhd" \

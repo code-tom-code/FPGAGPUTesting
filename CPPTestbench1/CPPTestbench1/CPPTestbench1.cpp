@@ -28,7 +28,7 @@
 static const WCHAR* const simengine_libpath = L"D:\\Xilinx\\Vivado\\2018.1\\lib\\win64.o";
 static const WCHAR* const simengine_imageformats_libpath = L"D:\\Xilinx\\Vivado\\2018.1\\lib\\win64.o\\imageformats";
 static const char* const simengine_libname = "librdi_simulator_kernel.dll";
-static const char* const design_name = "EthernetController3";
+static const char* const design_name = "EthernetCRC32";
 static char wdbName[] = "xsim.wdb";
 static D3DCOLOR colorsArray[640 * 480] = {0};
 static RenderWindow* renderWindow = NULL;

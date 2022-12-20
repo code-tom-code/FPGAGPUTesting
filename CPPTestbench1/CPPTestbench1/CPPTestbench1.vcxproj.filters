@@ -304,5 +304,20 @@
     <None Include="StatsCollector.prj">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="hdl_src\EthernetMDIOController.vhd">
+      <Filter>HDL</Filter>
+    </None>
+    <None Include="hdl_src\EthernetCRC32.vhd">
+      <Filter>HDL</Filter>
+    </None>
+    <None Include="EthernetCRC32.prj">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="hdl_src\NetProtoPacketProcessor.vhd">
+      <Filter>HDL</Filter>
+    </None>
+    <None Include="NetProtoPacketProcessor.prj">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

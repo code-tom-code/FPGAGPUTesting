@@ -1,0 +1,10 @@
+# vhdl work EthernetController3.vhd
+# List other files here
+vhdl xil_defaultlib  \
+"hdl_src/PacketType.vhd" \
+"hdl_src/Network/NetProtoHelpers_Core.vhd" \
+"hdl_src/Network/NetProtoHelpers_MAC.vhd" \
+"hdl_src/Network/NetProtoHelpers_IPv4.vhd" \
+"hdl_src/Network/NetProtoHelpers_UDP.vhd" \
+"hdl_src/Network/NetProtoHelpers_ARP.vhd" \
+"hdl_src/EthernetController3.vhd" \

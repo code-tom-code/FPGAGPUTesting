@@ -238,6 +238,7 @@
     <None Include="DepthBuffer.prj" />
     <None Include="DepthInterpolator.prj" />
     <None Include="EthernetController3.prj" />
+    <None Include="EthernetCRC32.prj" />
     <None Include="FloatALU.prj" />
     <None Include="GPRQuad.prj" />
     <None Include="hdl_src\AttrInterpolator.vhd" />
@@ -248,6 +249,8 @@
     <None Include="hdl_src\DepthInterpolator.vhd" />
     <None Include="hdl_src\EthernetController2.vhd" />
     <None Include="hdl_src\EthernetController3.vhd" />
+    <None Include="hdl_src\EthernetCRC32.vhd" />
+    <None Include="hdl_src\EthernetMDIOController.vhd" />
     <None Include="hdl_src\FloatALU.vhd" />
     <None Include="hdl_src\FloatALU_Types.vhd" />
     <None Include="hdl_src\GPRQuad.vhd" />
@@ -256,6 +259,7 @@
     <None Include="hdl_src\IndexBufferCacheTestbench.vhd" />
     <None Include="hdl_src\InputAssembler2.vhd" />
     <None Include="hdl_src\MemoryController.vhd" />
+    <None Include="hdl_src\NetProtoPacketProcessor.vhd" />
     <None Include="hdl_src\PacketType.vhd" />
     <None Include="hdl_src\Rasterizer.vhd" />
     <None Include="hdl_src\ROP.vhd" />
@@ -270,6 +274,7 @@
     <None Include="IndexBufferCache.prj" />
     <None Include="InputAssembler2.prj" />
     <None Include="MemoryController.prj" />
+    <None Include="NetProtoPacketProcessor.prj" />
     <None Include="Rasterizer.prj" />
     <None Include="rebuild_xsim.bat" />
     <None Include="Reciprocal.prj" />

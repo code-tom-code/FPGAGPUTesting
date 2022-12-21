@@ -1404,6 +1404,12 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::Present(THI
 
 	SIMPLE_FRAME_END_MARKER();
 
+	if (queueSingleStepDrawCallModeNextFrame)
+	{
+		singleStepDrawCallMode = true;
+		queueSingleStepDrawCallModeNextFrame = false;
+	}
+
 	return ret;
 }
 
@@ -1786,6 +1792,9 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::Clear(THIS_
 		DbgBreakPrint("Error: Clear call requires at least one of the Target, Stencil, or ZBuffer flags");
 		return D3DERR_INVALIDCALL;
 	}
+
+	// I know it isn't strictly a "draw call", but having the clear also be able to use the single-step capabilities is very useful for debugging
+	HandleDrawCallSingleStepMode();
 
 #ifdef _DEBUG
 	HRESULT ret = d3d9dev->Clear(Count, pRects, Flags, Color, Z, Stencil);
@@ -4378,6 +4387,8 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawPrimiti
 	if (!TotalDrawCallSkipTest() )
 		return ret;
 
+	HandleDrawCallSingleStepMode();
+
 	if (drawCallSleepMicros > 0)
 		SpinLoopForMicros(drawCallSleepMicros);
 
@@ -5463,6 +5474,23 @@ void IDirect3DDevice9Hook::DeviceSetCurrentState(const D3DPRIMITIVETYPE primType
 	}
 }
 
+void IDirect3DDevice9Hook::HandleDrawCallSingleStepMode() const
+{
+	if (GetSingleStepDrawCallMode() )
+	{
+		while (true)
+		{
+			// Wait for the correct input to advance to the next draw call:
+			const SHORT rightStatus = GetAsyncKeyState(VK_RIGHT);
+			if ( (rightStatus & 0x8001) == 0x8001)
+			{
+				return;
+			}
+			Sleep(1);
+		}
+	}
+}
+
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawIndexedPrimitive(THIS_ D3DPRIMITIVETYPE PrimitiveType, INT BaseVertexIndex, UINT MinVertexIndex, UINT NumVertices, UINT startIndex, UINT primCount)
 {
 	SIMPLE_FUNC_SCOPE();
@@ -5495,6 +5523,8 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawIndexed
 
 	if (!TotalDrawCallSkipTest() )
 		return S_OK;
+
+	HandleDrawCallSingleStepMode();
 
 	if (drawCallSleepMicros > 0)
 		SpinLoopForMicros(drawCallSleepMicros);
@@ -11154,7 +11184,7 @@ void IDirect3DDevice9Hook::InitializeState(const D3DPRESENT_PARAMETERS& d3dpp, c
 IDirect3DDevice9Hook::IDirect3DDevice9Hook(LPDIRECT3DDEVICE9 _d3d9dev, IDirect3D9Hook* _parentHook) : d3d9dev(_d3d9dev), parentHook(_parentHook), refCount(1), initialDevType(D3DDEVTYPE_HAL), initialCreateFlags(D3DCREATE_HARDWARE_VERTEXPROCESSING),
 	enableDialogs(FALSE), sceneBegun(FALSE), implicitSwapChain(NULL), hConsoleHandle(INVALID_HANDLE_VALUE), numPixelsPassedZTest(0), initialCreateFocusWindow(NULL), initialCreateDeviceWindow(NULL),
 	processedVertexBuffer(NULL), processedVertsUsed(0), processVertsAllocated(0), currentlyRecordingStateBlock(NULL), currentSwvpEnabled(FALSE), deviceComms(NULL), baseDevice(NULL), overrideTexCombinerMode(-1), allocatedDebugShaderRegisterFile(NULL),
-	invertScanoutColors(false), forceDisableDepth(false), drawCallSleepMicros(0), scanoutRedSwizzle(setScanoutPointerCommand::dcs_red), scanoutGreenSwizzle(setScanoutPointerCommand::dcs_green), scanoutBlueSwizzle(setScanoutPointerCommand::dcs_blue)
+	invertScanoutColors(false), forceDisableDepth(false), drawCallSleepMicros(0), singleStepDrawCallMode(false), queueSingleStepDrawCallModeNextFrame(false), scanoutRedSwizzle(setScanoutPointerCommand::dcs_red), scanoutGreenSwizzle(setScanoutPointerCommand::dcs_green), scanoutBlueSwizzle(setScanoutPointerCommand::dcs_blue)
 {
 #ifdef _DEBUG
 	m_FirstMember = false;

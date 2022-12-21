@@ -45,6 +45,7 @@ static INT_PTR CALLBACK DriverSettingsDialogProc(_In_ HWND hWnd, _In_ UINT MSG, 
 			CheckDlgButton(hWnd, IDC_CHK_INVERTSCANOUTCOLORS, d3d9devhook->GetInvertScanoutColors() ? BST_CHECKED : BST_UNCHECKED);
 			CheckDlgButton(hWnd, IDC_CHK_WAITFORVSYNC, d3d9devhook->GetEnableVSyncWait() ? BST_CHECKED : BST_UNCHECKED);
 			CheckDlgButton(hWnd, IDC_CHK_FORCEDISABLEDEPTH, d3d9devhook->GetForceDisableDepth() ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hWnd, IDC_CHK_SINGLESTEPDRAWCALLS, d3d9devhook->GetSingleStepDrawCallMode() ? BST_CHECKED : BST_UNCHECKED);
 			PopulateScanoutSwizzleDropdownList(hWnd, IDC_CMB_SCANOUTSWIZZLER);
 			PopulateScanoutSwizzleDropdownList(hWnd, IDC_CMB_SCANOUTSWIZZLEG);
 			PopulateScanoutSwizzleDropdownList(hWnd, IDC_CMB_SCANOUTSWIZZLEB);
@@ -116,6 +117,9 @@ static INT_PTR CALLBACK DriverSettingsDialogProc(_In_ HWND hWnd, _In_ UINT MSG, 
 				return TRUE;
 			case IDC_CHK_FORCEDISABLEDEPTH:
 				d3d9devhook->SetForceDisableDepth(IsDlgButtonChecked(hWnd, IDC_CHK_FORCEDISABLEDEPTH) ? true : false);
+				return TRUE;
+			case IDC_CHK_SINGLESTEPDRAWCALLS:
+				d3d9devhook->SetSingleStepDrawCallMode(IsDlgButtonChecked(hWnd, IDC_CHK_SINGLESTEPDRAWCALLS) ? true : false);
 				return TRUE;
 			case IDC_CMB_SCANOUTSWIZZLER:
 			{

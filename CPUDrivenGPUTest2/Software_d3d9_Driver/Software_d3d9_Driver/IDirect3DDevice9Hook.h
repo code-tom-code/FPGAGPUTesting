@@ -1088,6 +1088,8 @@ public:
 	template <const bool rasterizerUsesEarlyZTest>
 	void DrawPrimitiveUB(const D3DPRIMITIVETYPE PrimitiveType, const UINT PrimitiveCount) const;
 
+	void HandleDrawCallSingleStepMode() const;
+
 	// Returns true for "should draw", or false for "should skip"
 	const bool TotalDrawCallSkipTest(void) const;
 
@@ -1454,6 +1456,23 @@ public:
 		drawCallSleepMicros = newDrawCallSleepMicros;
 	}
 
+	const bool GetSingleStepDrawCallMode() const
+	{
+		return singleStepDrawCallMode;
+	}
+
+	void SetSingleStepDrawCallMode(const bool newSingleStepDrawCallMode)
+	{
+		if (singleStepDrawCallMode)
+		{
+			singleStepDrawCallMode = newSingleStepDrawCallMode;
+		}
+		else
+		{
+			queueSingleStepDrawCallModeNextFrame = newSingleStepDrawCallMode;
+		}
+	}
+
 	const bool DoOverrideTexCombinerMode() const
 	{
 		return overrideTexCombinerMode >= 0;
@@ -1609,6 +1628,8 @@ protected:
 	bool invertScanoutColors;
 	bool forceDisableDepth;
 	unsigned drawCallSleepMicros;
+	bool singleStepDrawCallMode;
+	bool queueSingleStepDrawCallModeNextFrame;
 	setScanoutPointerCommand::eDisplayChannelSwizzle scanoutRedSwizzle;
 	setScanoutPointerCommand::eDisplayChannelSwizzle scanoutGreenSwizzle;
 	setScanoutPointerCommand::eDisplayChannelSwizzle scanoutBlueSwizzle;

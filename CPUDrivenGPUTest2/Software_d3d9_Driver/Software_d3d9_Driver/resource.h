@@ -27,6 +27,8 @@
 #define IDC_CHK_WAITFORVSYNC            1012
 #define IDC_CHK_FORCEDISABLEDEPTH       1013
 #define IDC_STATIC2                     1014
+#define IDC_CHK_OVERRIDETEXMODE2        1014
+#define IDC_CHK_SINGLESTEPDRAWCALLS     1014
 #define IDC_IA_STAT1                    1015
 #define IDC_IA_STAT2                    1016
 #define IDC_IA_STAT3                    1017
@@ -74,7 +76,6 @@
 #define IDC_VS_STAT4                    1054
 #define IDC_DINTERP_STAT1               1055
 #define IDC_DINTERP_STAT2               1056
-#define IDC_IA_STAT12                   1058
 #define IDC_DINTERP_STAT3               1058
 
 // Next default values for new objects

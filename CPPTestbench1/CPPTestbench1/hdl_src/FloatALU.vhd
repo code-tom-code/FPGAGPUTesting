@@ -7,6 +7,10 @@ use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
 
 use work.FloatALU_Types.all;
+use work.FloatCommon.all;
+use work.FloatALU_CMP.all;
+use work.FloatALU_SHFT.all;
+use work.FloatALU_CNV.all;
 
 entity FloatALU is
     Port (clk : in STD_LOGIC;
@@ -48,30 +52,6 @@ ATTRIBUTE X_INTERFACE_PARAMETER : STRING;
 ATTRIBUTE X_INTERFACE_INFO of clk: SIGNAL is "xilinx.com:signal:clock:1.0 clk CLK";
 ATTRIBUTE X_INTERFACE_PARAMETER of clk: SIGNAL is "FREQ_HZ 333250000";
 
--- Globally useful float constants:
-constant zeroF : unsigned(31 downto 0) := X"00000000"; -- Constant for 0.0f
-constant oneF : unsigned(31 downto 0) := X"3F800000"; -- Constant for 1.0f
-constant halfF : unsigned(31 downto 0) := X"3F000000"; -- Constant for 0.5f
-constant negOneF : unsigned(31 downto 0) := X"BF800000"; -- Constant for -1.0f
-
-constant maxRepresentableHalfF : unsigned(31 downto 0) := X"477FE000"; -- Constant for 65504.0f which is the largest float that can be represented as a half
-constant minReprensetableHalfF : unsigned(31 downto 0) := X"33800000"; -- Constant for 5.9604644775390625e-8f which is the smallest float that can be represented as a half (besides zero)
-
--- VHDL doesn't support the MAXIMUM() or MINIMUM() functions as built-ins until VHDL2008, so we have to
--- define our own, sadly.
-pure function maxVal(a : integer; b : integer) return integer is
-begin
-	if (a > b) then
-		return a;
-	else
-		return b;
-	end if;
-end function;
-
--- Maximum number of cycles that a single operation can take
-constant maxCycleCount : integer := maxVal(BIT_CYCLES, maxVal(SHFT_CYCLES, maxVal(MUL_CYCLES, maxVal(ADD_CYCLES, maxVal(CMP_CYCLES, maxVal(CNV_CYCLES, SPEC_CYCLES) ) ) ) ) );
-constant numMUXSources : integer := 7; -- Number of different pipes that our MUX can source from
-
 -- attribute KEEP : string;
 
 type RcpLookupArrayType is array(0 to 15) of unsigned(15 downto 0);
@@ -88,14 +68,6 @@ constant RcpLookupTable_Slopes : RcpLookupArrayType :=
 
 type MUXArrayType is array(0 to maxCycleCount) of unsigned(numMUXSources-1 downto 0);
 
-type eCnvEarlyOutType is
-(
-	CnvNoEarlyOut, -- 0
-	CnvNaNEarlyOut, -- 1
-	CnvBelowMinEarlyOut, -- 2
-	CnvAboveMaxEarlyOut -- 3
-);
-
 type rcpPipelineStage is record
 	pipeStageIsValid : std_logic;
 	useEarlyOutBypass : std_logic;
@@ -105,707 +77,6 @@ type rcpPipelineStage is record
 end record rcpPipelineStage;
 
 type rcpPipelineArray is array(SPEC_CYCLES-1 downto 0) of rcpPipelineStage;
-
--- Assumes value is nonzero
-pure function bitScan(value : signed(25 downto 0) ) return natural is
-begin
-	assert value > 0;
-	-- Not sure why, but manually unrolling this loop seems to improve resource usage (by half)
---	for bitIndex in 0 to 23 loop
---		if (value(23 - bitIndex) = '1') then
---			return 23 - bitIndex;
---		end if;
---	end loop;
---	return 0;
-
-	-- Manually unrolled version:
-	if (value(23) = '1') then
-		return 0;
-	elsif (value(22) = '1') then
-		return 1;
-	elsif (value(21) = '1') then
-		return 2;
-	elsif (value(20) = '1') then
-		return 3;
-	elsif (value(19) = '1') then
-		return 4;
-	elsif (value(18) = '1') then
-		return 5;
-	elsif (value(17) = '1') then
-		return 6;
-	elsif (value(16) = '1') then
-		return 7;
-	elsif (value(15) = '1') then
-		return 8;
-	elsif (value(14) = '1') then
-		return 9;
-	elsif (value(13) = '1') then
-		return 10;
-	elsif (value(12) = '1') then
-		return 11;
-	elsif (value(11) = '1') then
-		return 12;
-	elsif (value(10) = '1') then
-		return 13;
-	elsif (value(9) = '1') then
-		return 14;
-	elsif (value(8) = '1') then
-		return 15;
-	elsif (value(7) = '1') then
-		return 16;
-	elsif (value(6) = '1') then
-		return 17;
-	elsif (value(5) = '1') then
-		return 18;
-	elsif (value(4) = '1') then
-		return 19;
-	elsif (value(3) = '1') then
-		return 20;
-	elsif (value(2) = '1') then
-		return 21;
-	elsif (value(1) = '1') then
-		return 22;
-	else
-		return 23;
-	end if;
-end function;
-
--- Returns '1' if the value is negative, or '0' if the value is positive.
-pure function GetFloatIsNegative(value : unsigned(31 downto 0) ) return std_logic is
-begin
-	return value(31);
-end function;
-
--- Returns the raw 8-bit exponent of the float (without accounting for the -127 bias).
-pure function GetRawExponent(value : unsigned(31 downto 0) ) return unsigned is
-begin
-	return value(30 downto 23);
-end function;
-
--- Returns the signed 8-bit exponent [-127 to +127] after the bias is applied.
-pure function GetSignedExponent(value : unsigned(31 downto 0) ) return signed is
-begin
-	return signed(value(30 downto 23) ) - to_signed(127, 8);
-end function;
-
--- Returns the biased exponent bits from a signed exponent value
-pure function MakeExponentFromSigned(signedExp : signed(7 downto 0) ) return std_logic_vector is
-	variable temp : signed(7 downto 0);
-begin
-	temp := signedExp + to_signed(127, 8); -- Convert from [-127, 127] to [0, 254]
-	return std_logic_vector(temp(7 downto 0) );
-end function;
-
--- Returns '1' if the value is a real number, or '0' if the value is INF or NAN. For the purposes of this function, denormal values are considered real values.
-pure function GetFloatIsReal(value : unsigned(31 downto 0) ) return std_logic is
-begin
-	if (GetRawExponent(value) = X"FF") then
-		return '0';
-	else
-		return '1';
-	end if;
-end function;
-
--- Returns the 23-bit mantissa value for the float.
-pure function GetMantissa(value : unsigned(31 downto 0) ) return unsigned is
-begin
-	return value(22 downto 0);
-end function;
-
--- Returns '1' if the float is +INF or -INF, or returns '0' otherwise.
-pure function GetFloatIsINF(value : unsigned(31 downto 0) ) return std_logic is
-begin
-	if (GetRawExponent(value) = X"FF" and GetMantissa(value) = "00000000000000000000000") then
-		return '1';
-	else
-		return '0';
-	end if;
-end function;
-
--- Returns '1' if the float is a NaN value, or returns '0' otherwise.
-pure function GetFloatIsNAN(value : unsigned(31 downto 0) ) return std_logic is
-begin
-	if (GetRawExponent(value) = X"FF" and GetMantissa(value) /= "00000000000000000000000") then
-		return '1';
-	else
-		return '0';
-	end if;
-end function;
-
--- Returns either the original float value, or the flushed-to-zero value if the original was a denormal number.
-pure function FlushDenormsToZero(value : unsigned(31 downto 0) ) return unsigned is
-begin
-	if (GetRawExponent(value) = X"00") then
-		return value(31) & "0000000000000000000000000000000"; -- D3D spec says that denorms get flushed to sign-preserved zero, so here we are preserving the sign bit
-	else
-		return value;
-	end if;
-end function;
-
--- Function implements min(float a, float b) to the HLSL/D3D11 spec:
-pure function CmpMinFunc(a : unsigned(31 downto 0); b : unsigned(31 downto 0); aIsNan : std_logic; bIsNan : std_logic; aIsNegative : std_logic; bIsNegative : std_logic; aLessThanB : std_logic) return unsigned is
-begin
-	-- If either argument is NaN, then return the other (non-NaN) argument
-	if (aIsNaN = '1' and bIsNaN = '0') then
-		return b;
-	elsif (aIsNaN = '0' and bIsNaN = '1') then
-		return a;
-	elsif (aIsNaN = '1' and bIsNaN = '1') then
-		return a; -- When both are NaN, we don't try to perform a comparison, we just return any NaN value
-	end if;
-
-	if (aIsNegative = '1' and bIsNegative = '0') then
-		return a;
-	elsif (aIsNegative = '0' and bIsNegative = '1') then
-		return b;
-	else -- Same sign comparison
-		if (aIsNegative = '0') then -- min(positive, positive)
-			if (aLessThanB = '1') then
-				return a;
-			else
-				return b;
-			end if;
-		else -- min(negative, negative)
-			if (aLessThanB = '1') then
-				return b;
-			else
-				return a;
-			end if;
-		end if;
-	end if;
-end function;
-
--- Function implements max(float a, float b) to the HLSL/D3D11 spec:
-pure function CmpMaxFunc(a : unsigned(31 downto 0); b : unsigned(31 downto 0); aIsNaN : std_logic; bIsNaN : std_logic; aIsNegative : std_logic; bIsNegative : std_logic; aLessThanB : std_logic) return unsigned is
-begin
-	-- If either argument is NaN, then return the other (non-NaN) argument
-	if (aIsNaN = '1' and bIsNaN = '0') then
-		return b;
-	elsif (aIsNaN = '0' and bIsNaN = '1') then
-		return a;
-	elsif (aIsNaN = '1' and bIsNaN = '1') then
-		return a; -- When both are NaN, we don't try to perform a comparison, we just return any NaN value
-	end if;
-
-	if (aIsNegative = '1' and bIsNegative = '0') then
-		return b;
-	elsif (aIsNegative = '0' and bIsNegative = '1') then
-		return a;
-	else -- Same sign comparison
-		if (aIsNegative = '0') then -- max(positive, positive)
-			if (aLessThanB = '0') then
-				return a;
-			else
-				return b;
-			end if;
-		else -- max(negative, negative)
-			if (aLessThanB = '0') then
-				return b;
-			else
-				return a;
-			end if;
-		end if;
-
-	end if;
-end function;
-
--- This core function is shared by the implementations for both SGE(a, b) and SLT(a, b). It returns (a < b) ? 1 : 0.
-pure function CoreSLTNonNAN(aEqualsB : std_logic; aLessThanB : std_logic; aIsNegative : std_logic; bIsNegative : std_logic; aIsDenorm : std_logic; bIsDenorm : std_logic) return std_logic is
-begin
-	if ( (aIsDenorm = '1') and (bIsDenorm = '1') ) then -- Special case handling of +/- 0.0f compared to +/- 0.0f
-		return '0';
-	end if;
-
-	-- Early out and see if we can just compare the sign bits without having to look at the rest of the float:
-	if (aIsNegative = '1' and bIsNegative = '0') then
-		return '1';
-	elsif (aIsNegative = '0' and bIsNegative = '1') then
-		return '0';
-	else -- Same sign comparison
-		if (aEqualsB = '1') then -- Special case handling of A == B (since this is a less-than test and not a less-equals test, we always return false in this case)
-			return '0';
-		end if;
-
-		if (aIsNegative = '0') then -- min(positive, positive)
-			if (aLessThanB = '1') then
-				return '1';
-			else
-				return '0';
-			end if;
-		else -- min(negative, negative)
-			if (aLessThanB = '0') then
-				return '1';
-			else
-				return '0';
-			end if;
-		end if;
-	end if;
-end function;
-
--- Returns the function Slt(a, b) is (a < b) ? 1.0f : 0.0f
-pure function CmpSltFunc(aEqualsB : std_logic; aLessThanB : std_logic; aIsNaN : std_logic; bIsNaN : std_logic; aDenormFlushed : unsigned(31 downto 0); bDenormFlushed : unsigned(31 downto 0); aIsNegative : std_logic; bIsNegative : std_logic; aIsDenorm : std_logic; bIsDenorm : std_logic) return unsigned is
-begin
-	if (aIsNaN = '1' or bIsNaN = '1') then
-		return zeroF; -- The comparisons EQ, GT, GE, LT, and LE, when either or both operands is NaN returns FALSE.
-	end if;
-
-	if (CoreSLTNonNAN(aEqualsB, aLessThanB, aIsNegative, bIsNegative, aIsDenorm, bIsDenorm) = '0') then
-		return zeroF;
-	else
-		return oneF;
-	end if;
-end function;
-
--- Returns the function Sge(a, b) is (a >= b) ? 1.0f : 0.0f
-pure function CmpSgeFunc(aEqualsB : std_logic; aLessThanB : std_logic; aIsNaN : std_logic; bIsNaN : std_logic; aDenormFlushed : unsigned(31 downto 0); bDenormFlushed : unsigned(31 downto 0); aIsNegative : std_logic; bIsNegative : std_logic; aIsDenorm : std_logic; bIsDenorm : std_logic) return unsigned is
-begin
-	if (aIsNaN = '1' or bIsNaN = '1') then
-		return zeroF; -- The comparisons EQ, GT, GE, LT, and LE, when either or both operands is NaN returns FALSE.
-	end if;
-
-	if (CoreSLTNonNAN(aEqualsB, aLessThanB, aIsNegative, bIsNegative, aIsDenorm, bIsDenorm) = '0') then -- This function just returns the opposite of SLT(a, b)
-		return oneF;
-	else
-		return zeroF;
-	end if;
-end function;
-
--- Returns the function Sgn(x) is (x < 0.0f) ? -1.0f : ( (x == 0.0f) ? 0.0f : 1.0f)
-pure function CmpSgnFunc(value : unsigned(31 downto 0); valIsNaN : std_logic; valIsDenorm : std_logic; valIsNeg : std_logic) return unsigned is
-begin
-	if (valIsNaN = '1') then
-		return oneF; -- The comparisons EQ, GT, GE, LT, and LE, when either or both operands is NaN returns FALSE.
-	end if;
-
-	if (valIsDenorm = '1') then
-		return zeroF;
-	else
-		if (valIsNeg = '0') then
-			return oneF;
-		else
-			return negOneF;
-		end if;
-	end if;
-end function;
-
--- Returns the function Cmp(a, b, c) is (a >= 0.0f) ? b : c
-pure function CmpCmpFunc(a : unsigned(31 downto 0); b : unsigned(31 downto 0); c : unsigned(31 downto 0) ) return unsigned is
-	variable aIsNaN : std_logic;
-	variable denormFlushedA : unsigned(31 downto 0);
-begin
-	aIsNaN := GetFloatIsNAN(a);
-	if (aIsNaN = '1') then
-		return c; -- The comparisons EQ, GT, GE, LT, and LE, when either or both operands is NaN returns FALSE.
-	end if;
-
-	denormFlushedA := FlushDenormsToZero(a);
-	if (GetRawExponent(denormFlushedA) = X"00") then
-		return b;
-	end if;
-
-	if (GetFloatIsNegative(a) = '0') then
-		return b;
-	else
-		return c;
-	end if;
-end function;
-
--- Returns the function Cnd(a, b, c) is (a > 0.5f) ? b : c
-pure function CmpCndFunc(a : unsigned(31 downto 0); b : unsigned(31 downto 0); c : unsigned(31 downto 0) ) return unsigned is
-	variable aIsNaN : std_logic;
-	variable denormFlushedA : unsigned(31 downto 0);
-begin
-	aIsNaN := GetFloatIsNAN(a);
-	if (aIsNaN = '1') then
-		return c; -- The comparisons EQ, GT, GE, LT, and LE, when either or both operands is NaN returns FALSE.
-	end if;
-
-	if (GetFloatIsNegative(a) = '1') then
-		return c;
-	end if;
-
-	denormFlushedA := FlushDenormsToZero(a);
-	if (denormFlushedA > halfF) then
-		return b;
-	else
-		return c;
-	end if;
-end function;
-
--- Converts a float32 input to signed int23 using round to nearest even mode
-pure function CnvFloatToInt23_RoundNE_GetEarlyOutType(a : unsigned(31 downto 0); aIsNaN : std_logic; aIsNegative : std_logic) return eCnvEarlyOutType is
-	constant minNegativeVal : unsigned(30 downto 0) := "1001011000000000000000000000000"; -- This is -8388608.0f
-	constant maxPositiveVal : unsigned(30 downto 0) := "1001010111111111111111111111110"; -- This is 8388607.0f
-begin
-	if (aIsNaN = '1') then
-		return CnvNaNEarlyOut;
-	elsif (aIsNegative = '1' and a(30 downto 0) >= minNegativeVal) then
-		return CnvBelowMinEarlyOut; -- This is -8388608
-	elsif (a(30 downto 0) >= maxPositiveVal) then
-		return CnvAboveMaxEarlyOut; -- This is 8388607
-	else
-		return CnvNoEarlyOut;
-	end if;
-end function;
-
--- Converts a float32 input to signed int23 using round to nearest even mode
-pure function CnvFloatToInt23_RoundNE_Cycle0(aSignedExp : signed(7 downto 0) ) return signed is
-begin
-	return 22 - aSignedExp;
-end function;
-
--- Converts a float32 input to signed int23 using round to nearest even mode
-pure function CnvFloatToInt23_RoundNE_Cycle2(tempBuffer : signed(31 downto 0); isNegative : std_logic) return unsigned is
-	variable newTempBuffer : signed(31 downto 0);
-begin
-	newTempBuffer := tempBuffer + 1;
-	newTempBuffer := newTempBuffer srl 1;
-	if (isNegative = '1') then
-		newTempBuffer := -newTempBuffer; -- Two's compliment the buffer bits if float is negative
-	end if;
-	return unsigned(newTempBuffer);
-end function;
-
--- Converts a float32 input to signed int16 using round to nearest even mode
-pure function CnvFloatToInt16_RoundNE_GetEarlyOutType(a : unsigned(31 downto 0); aIsNaN : std_logic; aIsNegative : std_logic ) return eCnvEarlyOutType is
-	constant minNegativeVal : unsigned(30 downto 0) := "1000111000000000000000000000000"; -- This is -32768.0f
-	constant maxPositiveVal : unsigned(30 downto 0) := "1000110111111111111111000000000"; -- This is 32767.0f
-begin
-	if (aIsNaN = '1') then
-		return CnvNaNEarlyOut;
-	elsif (aIsNegative = '1' and a(30 downto 0) >= minNegativeVal) then
-		return CnvBelowMinEarlyOut; -- This is -32768
-	elsif (a(30 downto 0) >= maxPositiveVal) then
-		return CnvAboveMaxEarlyOut; -- This is 32767
-	else
-		return CnvNoEarlyOut;
-	end if;
-end function;
-
--- Converts a float32 input to signed int16 using round to nearest even mode
-pure function CnvFloatToInt16_RoundNE_Cycle0(aSignedExp : signed(7 downto 0) ) return signed is
-begin
-	return 22 - aSignedExp;
-end function;
-
--- Converts a float32 input to signed int16 using round to nearest even mode
-pure function CnvFloatToInt16_RoundNE_Cycle2(tempBuffer : signed(31 downto 0); isNegative : std_logic) return unsigned is
-	variable newTempBuffer : signed(31 downto 0);
-begin
-	newTempBuffer := tempBuffer + 1;
-	newTempBuffer := newTempBuffer srl 1;
-	if (isNegative = '1') then
-		newTempBuffer := -newTempBuffer; -- Two's compliment the buffer bits if float is negative
-	end if;
-	return unsigned(newTempBuffer(15 downto 0) );
-end function;
-
-pure function CnvFrc_GetEarlyOutType(a : unsigned(31 downto 0) ) return eCnvEarlyOutType is
-begin
-	if (GetRawExponent(a) = X"FF") then -- +INF, -INF, +NAN, and -NAN all get treated the same for the frc() instruction
-		return CnvNaNEarlyOut;
-	else
-		return CnvNoEarlyOut;
-	end if;
-end function;
-
--- Returns 23 minus the index of the highest bit set. Assumes that the input value is non-zero (at least one bit is set to locate).
-pure function BitScan23(mantissa : unsigned(22 downto 0) ) return unsigned is
-begin
-	assert mantissa > 0; -- This function assumes that at least one bit is set. An input of zero would return the incorrect value 1!
-
-	if (mantissa(22) = '1') then
-		return to_unsigned(1, 5);
-	elsif (mantissa(21) = '1') then
-		return to_unsigned(2, 5);
-	elsif (mantissa(20) = '1') then
-		return to_unsigned(3, 5);
-	elsif (mantissa(19) = '1') then
-		return to_unsigned(4, 5);
-	elsif (mantissa(18) = '1') then
-		return to_unsigned(5, 5);
-	elsif (mantissa(17) = '1') then
-		return to_unsigned(6, 5);
-	elsif (mantissa(16) = '1') then
-		return to_unsigned(7, 5);
-	elsif (mantissa(15) = '1') then
-		return to_unsigned(8, 5);
-	elsif (mantissa(14) = '1') then
-		return to_unsigned(9, 5);
-	elsif (mantissa(13) = '1') then
-		return to_unsigned(10, 5);
-	elsif (mantissa(12) = '1') then
-		return to_unsigned(11, 5);
-	elsif (mantissa(11) = '1') then
-		return to_unsigned(12, 5);
-	elsif (mantissa(10) = '1') then
-		return to_unsigned(13, 5);
-	elsif (mantissa(9) = '1') then
-		return to_unsigned(14, 5);
-	elsif (mantissa(8) = '1') then
-		return to_unsigned(15, 5);
-	elsif (mantissa(7) = '1') then
-		return to_unsigned(16, 5);
-	elsif (mantissa(6) = '1') then
-		return to_unsigned(17, 5);
-	elsif (mantissa(5) = '1') then
-		return to_unsigned(18, 5);
-	elsif (mantissa(4) = '1') then
-		return to_unsigned(19, 5);
-	elsif (mantissa(3) = '1') then
-		return to_unsigned(20, 5);
-	elsif (mantissa(2) = '1') then
-		return to_unsigned(21, 5);
-	elsif (mantissa(1) = '1') then
-		return to_unsigned(22, 5);
-	else -- if (mantissa(0) = '1') then
-		return to_unsigned(23, 5);
-	end if;
-end function;
-
-pure function CnvFrc_Cycle0(a : unsigned(31 downto 0) ) return unsigned is
-	variable tempMantissa : unsigned(23 downto 0);
-begin
-	if (GetRawExponent(a) >= 127) then -- Positive exponent, shift to the left
-		tempMantissa(23) := '0'; -- We don't care about the implicit one bit in the case of a left-shift since we're overwriting it
-		tempMantissa(22 downto 0) := GetMantissa(a) sll to_integer(GetRawExponent(a) - 127);
-	else -- Negative exponent, shift to the right
-		tempMantissa(23) := '1'; -- We don't care about the implicit one bit in the case of a left-shift since we're overwriting it
-		tempMantissa(22 downto 0) := GetMantissa(a);
-		tempMantissa := tempMantissa srl to_integer(127 - GetRawExponent(a) );
-	end if;
-	return tempMantissa(22 downto 0);
-end function;
-
-pure function CnvFrc_Cycle1(normalizedMantissa : unsigned(22 downto 0) ) return unsigned is
-begin
-	return BitScan23(normalizedMantissa);
-end function;
-
-pure function CnvFrc_Cycle2(cnvU32ShiftAmount1 : unsigned(4 downto 0); normalizedMantissa : unsigned(22 downto 0) ) return unsigned is
-begin
-	return
-	(to_unsigned(127, 8) - cnvU32ShiftAmount1) & -- Exponent with bias
-	(normalizedMantissa sll to_integer(cnvU32ShiftAmount1) ); -- Mantissa
-end function;
-
--- Converts a float32 input to UNORM16
-pure function CnvFloatToUNORM16_GetEarlyOutType(a : unsigned(31 downto 0); aIsNaN : std_logic; aIsNegative : std_logic ) return eCnvEarlyOutType is
-begin
-	if (aIsNaN = '1') then
-		return CnvNaNEarlyOut;
-	elsif (aIsNegative = '1') then
-		return CnvBelowMinEarlyOut;
-	elsif (a(30 downto 0) >= oneF(30 downto 0) ) then
-		return CnvAboveMaxEarlyOut;
-	else
-		return CnvNoEarlyOut;
-	end if;
-end function;
-
--- Converts a float32 input to UNORM16 (first cycle)
-pure function CnvFloatToUNORM16_Cycle0(aSignedExp : signed(7 downto 0) ) return signed is
-begin
-	return 7 - aSignedExp;
-end function;
-
--- Converts a float32 input to UNORM16 (second cycle)
-pure function CnvFloatToUNORM16_Cycle2(tempBuffer : unsigned(31 downto 0) ) return unsigned is
-begin
-	return tempBuffer(15 downto 0);
-end function;
-
--- Converts a float32 input to UNORM8
-pure function CnvFloatToUNORM8_GetEarlyOutType(a : unsigned(31 downto 0); aIsNaN : std_logic; aIsNegative : std_logic ) return eCnvEarlyOutType is
-begin
-	if (aIsNaN = '1') then
-		return CnvNaNEarlyOut;
-	elsif (aIsNegative = '1') then
-		return CnvBelowMinEarlyOut;
-	elsif (a(30 downto 0) >= oneF(30 downto 0) ) then
-		return CnvAboveMaxEarlyOut;
-	else
-		return CnvNoEarlyOut;
-	end if;
-end function;
-
--- Converts a float32 input to UNORM8
-pure function CnvFloatToUNORM8_Cycle0(aSignedExp : signed(7 downto 0) ) return signed is
-begin
-	return 15 - aSignedExp;
-end function;
-
--- Converts a float32 input to UNORM8
-pure function CnvFloatToUNORM8_Cycle2(tempBuffer : unsigned(31 downto 0) ) return unsigned is
-begin
-	return tempBuffer(7 downto 0);
-end function;
-
-pure function CnvFloatToHalf_GetEarlyOutType(a : unsigned(31 downto 0); aIsNan : std_logic) return eCnvEarlyOutType is
-begin
-	if (aIsNan = '1') then
-		return CnvNaNEarlyOut;
-	elsif (a(30 downto 0) > maxRepresentableHalfF(30 downto 0) ) then
-		return CnvAboveMaxEarlyOut;
-	elsif (a(30 downto 0) < minReprensetableHalfF(30 downto 0) ) then
-		return CnvBelowMinEarlyOut;
-	else
-		return CnvNoEarlyOut;
-	end if;
-end function;
-
--- Converts a float32 input to a half (float16) output
-pure function CnvFloatToHalf_Cycle2(inputNormalFloat : unsigned(31 downto 0) ) return unsigned is
-	variable tempExponent : signed(7 downto 0);
-begin
-	-- TODO: Proper handling of denorm half values
-	tempExponent := GetSignedExponent(inputNormalFloat) + to_signed(15, 8);
-	return unsigned(tempExponent(4 downto 0) ) & inputNormalFloat(22 downto 13);
-end function;
-
-pure function CnvHalfToFloat_GetEarlyOutType(a : unsigned(14 downto 0) ) return eCnvEarlyOutType is
-begin
-	if (a(14 downto 10) = "11111" and a(9 downto 0) /= "0000000000") then
-		return CnvNaNEarlyOut;
-	elsif (a(14 downto 0) >= "111110000000000") then
-		return CnvAboveMaxEarlyOut;
-	elsif (a(14 downto 0) = "000000000000000") then
-		return CnvBelowMinEarlyOut;
-	else
-		return CnvNoEarlyOut;
-	end if;
-end function;
-
--- Converts a half (float16) input to a float32 output
-pure function CnvHalfToFloat_Cycle2(a : unsigned(14 downto 0) ) return unsigned is
-	variable tempExponent : signed(7 downto 0);
-begin
-	-- TODO: Proper handling of denorm half values
-	tempExponent := signed("000" & std_logic_vector(a(14 downto 10) ) ) - to_signed(15, 8);
-	tempExponent := tempExponent + to_signed(127, 8);
-	return unsigned(tempExponent) & a(9 downto 0) & "0000000000000";
-end function;
-
--- Finds the first set bit (starting at the MSB) of the uint32
-pure function CnvU32ToFloat_GetFirstHighBitSet(a : unsigned(31 downto 0) ) return unsigned is
-begin
-	for i in 31 downto 1 loop
-		if (a(i) = '1') then
-			return to_unsigned(i, 5);
-		end if;
-	end loop;
-	return to_unsigned(0, 5);
-end function;
-
-pure function CnvU32ToFloat_GetEarlyOutType(a : unsigned(31 downto 0) ) return eCnvEarlyOutType is
-begin
-	if (a = X"00000000") then
-		return CnvBelowMinEarlyOut;
-	else
-		return CnvNoEarlyOut;
-	end if;
-end function;
-
-pure function CnvU32ToFloat_Cycle2(exponent : unsigned(4 downto 0); shiftedMantissa : unsigned(31 downto 0) ) return unsigned is
-begin
-	return (to_unsigned(127, 8) + exponent) & shiftedMantissa(22 downto 0);
-end function;
-
-pure function IsShiftUp(shftMode : eShftMode) return std_logic is
-begin
-	case shftMode is
-		when ShftX2 | ShftX4 | ShftX8 | ShftX16 =>
-			return '1';
-		when others =>
-			return '0';
-	end case;
-end function;
-
-pure function GetShiftAmount(shftMode : eShftMode) return unsigned is
-begin
-	case shftMode is
-		when ShftX2 | ShftD2 =>
-			return to_unsigned(1, 8);
-		when ShftX4 | ShftD4 =>
-			return to_unsigned(2, 8);
-		when ShftX8 | ShftD8 =>
-			return to_unsigned(3, 8);
-		when ShftX16 | ShftD16 =>
-			return to_unsigned(4, 8);
-		when others =>
-			return to_unsigned(0, 8);
-	end case;
-end function;
-
-pure function CastShiftModeBitsToEnum(shftMode : unsigned(2 downto 0) ) return eShftMode is
-begin
-	return eShftMode'val(to_integer(shftMode) );
-end function;
-
-pure function DoesShiftToINFOrDEN(a : unsigned(31 downto 0); shftMode : eShftMode) return std_logic is
-begin
-	case shftMode is
-		when ShftX2 =>
-			if (GetRawExponent(a) > 253) then
-				return '1';
-			else
-				return '0';
-			end if;
-		when ShftX4 =>
-			if (GetRawExponent(a) > 252) then
-				return '1';
-			else
-				return '0';
-			end if;
-		when ShftX8 =>
-			if (GetRawExponent(a) > 251) then
-				return '1';
-			else
-				return '0';
-			end if;
-		when ShftX16 =>
-			if (GetRawExponent(a) > 250) then
-				return '1';
-			else
-				return '0';
-			end if;
-		when ShftD2 =>
-			if (GetRawExponent(a) < 2) then
-				return '1';
-			else
-				return '0';
-			end if;
-		when ShftD4 =>
-			if (GetRawExponent(a) < 3) then
-				return '1';
-			else
-				return '0';
-			end if;
-		when ShftD8 =>
-			if (GetRawExponent(a) < 4) then
-				return '1';
-			else
-				return '0';
-			end if;
-		when ShftD16 =>
-			if (GetRawExponent(a) < 5) then
-				return '1';
-			else
-				return '0';
-			end if;
-		when others =>
-			return '0';
-	end case;
-end function;
-
-pure function PerformCoreShift(value : unsigned(31 downto 0); shiftMode : unsigned(2 downto 0) ) return unsigned is
-begin
-	if (IsShiftUp(CastShiftModeBitsToEnum(shiftMode) ) = '1') then
-		return value(31) & (GetRawExponent(value) + GetShiftAmount(CastShiftModeBitsToEnum(shiftMode) ) ) & GetMantissa(value);
-	else
-		return value(31) & (GetRawExponent(value) - GetShiftAmount(CastShiftModeBitsToEnum(shiftMode) ) ) & GetMantissa(value);
-	end if;
-end function;
 
 -- Signals common to all pipes:
 signal comAIsNeg : std_logic := '0';
@@ -818,8 +89,8 @@ signal comAIsReal : std_logic := '0';
 signal comBIsReal : std_logic := '0';
 signal comAIsDenormal : std_logic := '0';
 signal comBIsDenormal : std_logic := '0';
-signal comDenormalFlushedA : unsigned(31 downto 0) := (others => '0');
-signal comDenormalFlushedB : unsigned(31 downto 0) := (others => '0');
+signal comDenormalFlushedA : f32 := (others => '0');
+signal comDenormalFlushedB : f32 := (others => '0');
 signal comRawExponentA : unsigned(7 downto 0) := (others => '0');
 signal comRawExponentB : unsigned(7 downto 0) := (others => '0');
 signal comASign : std_logic := '0';
@@ -840,11 +111,11 @@ signal addEarlyOutBypassEnable0 : std_logic := '0';
 signal addEarlyOutBypassEnable1 : std_logic := '0';
 signal addEarlyOutBypassEnable2 : std_logic := '0';
 
-signal addEarlyOutBypass0 : unsigned(31 downto 0) := (others => '0');
-signal addEarlyOutBypass1 : unsigned(31 downto 0) := (others => '0');
+signal addEarlyOutBypass0 : f32 := (others => '0');
+signal addEarlyOutBypass1 : f32 := (others => '0');
 
-signal addDenormFlushedValA : unsigned(31 downto 0) := (others => '0');
-signal addDenormFlushedValB : unsigned(31 downto 0) := (others => '0');
+signal addDenormFlushedValA : f32 := (others => '0');
+signal addDenormFlushedValB : f32 := (others => '0');
 signal addALessThanB : std_logic := '0';
 signal addExponentDeltaAMinusB : signed(7 downto 0) := (others => '0');
 signal addExponentDeltaBMinusA : signed(7 downto 0) := (others => '0');
@@ -859,7 +130,7 @@ signal addFinalSignIsNeg : std_logic := '0';
 
 
 -- "min" and "max" here indicate magnitude away from zero, not signedness. "min" is closer to zero, and "max" is further away from zero.
-signal addMaxVal1 : unsigned(31 downto 0) := (others => '0');
+signal addMaxVal1 : f32 := (others => '0');
 signal addPostAddMantissa1 : signed(25 downto 0) := (others => '0');
 
 signal OADD_Temp : std_logic_vector(31 downto 0) := (others => '0');
@@ -878,10 +149,10 @@ signal mulEarlyOutBypassEnable3 : std_logic := '0';
 signal mulAssembledMantissaA : unsigned(23 downto 0) := (others => '0');
 signal mulAssembledMantissaB : unsigned(23 downto 0) := (others => '0');
 
-signal mulEarlyOutBypass0 : unsigned(31 downto 0) := (others => '0');
-signal mulEarlyOutBypass1 : unsigned(31 downto 0) := (others => '0');
-signal mulEarlyOutBypass2 : unsigned(31 downto 0) := (others => '0');
-signal mulEarlyOutBypass3 : unsigned(31 downto 0) := (others => '0');
+signal mulEarlyOutBypass0 : f32 := (others => '0');
+signal mulEarlyOutBypass1 : f32 := (others => '0');
+signal mulEarlyOutBypass2 : f32 := (others => '0');
+signal mulEarlyOutBypass3 : f32 := (others => '0');
 
 signal mulResultMantissa1 : unsigned(47 downto 0) := (others => '0');
 signal mulResultMantissa2 : unsigned(47 downto 0) := (others => '0');
@@ -935,8 +206,8 @@ signal cnvU32ShiftAmount1 : unsigned(4 downto 0) := (others => '0');
 signal cnvU32ShiftRight : std_logic := '0';
 signal frcNormalizedMantissa0 : unsigned(22 downto 0) := (others => '0');
 signal frcNormalizedMantissa1 : unsigned(22 downto 0) := (others => '0');
-signal cnvInput : unsigned(31 downto 0) := (others => '0');
-signal cnvInput1 : unsigned(31 downto 0) := (others => '0');
+signal cnvInput : f32 := (others => '0');
+signal cnvInput1 : f32 := (others => '0');
 signal cnvShiftedTemporary : unsigned(31 downto 0) := (others => '0');
 signal cnvIsValid : std_logic := '0';
 signal cnvIsValid1 : std_logic := '0';
@@ -957,24 +228,24 @@ begin
 
 comAIsNeg <= IN_A(31);
 comBIsNeg <= IN_B(31);
-comAIsINF <= GetFloatIsINF(unsigned(IN_A) );
-comBIsINF <= GetFloatIsINF(unsigned(IN_B) );
-comAIsNaN <= GetFloatIsNAN(unsigned(IN_A) );
-comBIsNaN <= GetFloatIsNAN(unsigned(IN_B) );
-comAIsReal <= GetFloatIsReal(unsigned(IN_A) );
-comBIsReal <= GetFloatIsReal(unsigned(IN_B) );
-comAIsDenormal <= '1' when (GetRawExponent(unsigned(IN_A) ) = X"00") else '0';
-comBIsDenormal <= '1' when (GetRawExponent(unsigned(IN_B) ) = X"00") else '0';
-comDenormalFlushedA <= FlushDenormsToZero(unsigned(IN_A) );
-comDenormalFlushedB <= FlushDenormsToZero(unsigned(IN_B) );
-comRawExponentA <= GetRawExponent(unsigned(IN_A) );
-comRawExponentB <= GetRawExponent(unsigned(IN_B) );
-comASign <= GetFloatIsNegative(unsigned(IN_A) );
-comBSign <= GetFloatIsNegative(unsigned(IN_B) );
-comSignedExponentA <= GetSignedExponent(unsigned(IN_A) );
-comSignedExponentB <= GetSignedExponent(unsigned(IN_B) );
-comRawMantissaA <= GetMantissa(unsigned(IN_A) );
-comRawMantissaB <= GetMantissa(unsigned(IN_B) );
+comAIsINF <= GetFloatIsINF(f32(IN_A) );
+comBIsINF <= GetFloatIsINF(f32(IN_B) );
+comAIsNaN <= GetFloatIsNAN(f32(IN_A) );
+comBIsNaN <= GetFloatIsNAN(f32(IN_B) );
+comAIsReal <= GetFloatIsReal(f32(IN_A) );
+comBIsReal <= GetFloatIsReal(f32(IN_B) );
+comAIsDenormal <= '1' when (GetRawExponent(f32(IN_A) ) = X"00") else '0';
+comBIsDenormal <= '1' when (GetRawExponent(f32(IN_B) ) = X"00") else '0';
+comDenormalFlushedA <= FlushDenormsToZero(f32(IN_A) );
+comDenormalFlushedB <= FlushDenormsToZero(f32(IN_B) );
+comRawExponentA <= GetRawExponent(f32(IN_A) );
+comRawExponentB <= GetRawExponent(f32(IN_B) );
+comASign <= GetFloatIsNegative(f32(IN_A) );
+comBSign <= GetFloatIsNegative(f32(IN_B) );
+comSignedExponentA <= GetSignedExponent(f32(IN_A) );
+comSignedExponentB <= GetSignedExponent(f32(IN_B) );
+comRawMantissaA <= GetMantissa(f32(IN_A) );
+comRawMantissaB <= GetMantissa(f32(IN_B) );
 comALessThanB <= '1' when (unsigned(IN_A(30 downto 0) ) < unsigned(IN_B(30 downto 0) ) ) else '0';
 comAEqualsB <= '1' when (unsigned(IN_A(30 downto 0) ) = unsigned(IN_B(30 downto 0) ) ) else '0';
 
@@ -1023,7 +294,7 @@ begin
 			if (comAIsReal = '0') then
 				OSHFT <= IN_A;
 			else
-				if (DoesShiftToINFOrDEN(unsigned(IN_A), CastShiftModeBitsToEnum(unsigned(IN_MODE) ) ) = '1') then
+				if (DoesShiftToINFOrDEN(f32(IN_A), CastShiftModeBitsToEnum(unsigned(IN_MODE) ) ) = '1') then
 					if (IsShiftUp(CastShiftModeBitsToEnum(unsigned(IN_MODE) ) ) = '1') then
 						OSHFT <= IN_A(31) & X"FF" & "00000000000000000000000";
 					else
@@ -1033,7 +304,7 @@ begin
 					if (comAIsDenormal = '1') then -- Make sure that zero stays zero. Don't let the shifts turn our zeroes into nonzero values.
 						OSHFT <= std_logic_vector(comDenormalFlushedA);
 					else
-						OSHFT <= std_logic_vector(PerformCoreShift(unsigned(IN_A), unsigned(IN_MODE) ) );
+						OSHFT <= std_logic_vector(PerformCoreShift(f32(IN_A), unsigned(IN_MODE) ) );
 					end if;
 				end if;
 			end if;
@@ -1050,10 +321,10 @@ begin
 		if (ICMP_GO = '1') then
 			case eCmpType'val(to_integer(unsigned(IN_MODE) ) ) is
 				when CmpMin =>
-					OCMP <= std_logic_vector(CmpMinFunc(unsigned(IN_A), unsigned(IN_B), comAIsNaN, comBIsNaN, comAIsNeg, comBIsNeg, comALessThanB) );
+					OCMP <= std_logic_vector(CmpMinFunc(f32(IN_A), f32(IN_B), comAIsNaN, comBIsNaN, comAIsNeg, comBIsNeg, comALessThanB) );
 
 				when CmpMax =>
-					OCMP <= std_logic_vector(CmpMaxFunc(unsigned(IN_A), unsigned(IN_B), comAIsNaN, comBIsNaN, comAIsNeg, comBIsNeg, comALessThanB) );
+					OCMP <= std_logic_vector(CmpMaxFunc(f32(IN_A), f32(IN_B), comAIsNaN, comBIsNaN, comAIsNeg, comBIsNeg, comALessThanB) );
 
 				when CmpSlt =>
 					OCMP <= std_logic_vector(CmpSltFunc(comAEqualsB, comALessThanB, comAIsNaN, comBIsNaN, comDenormalFlushedA, comDenormalFlushedB, comAIsNeg, comBIsNeg, comAIsDenormal, comBIsDenormal) );
@@ -1062,16 +333,16 @@ begin
 					OCMP <= std_logic_vector(CmpSgeFunc(comAEqualsB, comALessThanB, comAIsNaN, comBIsNaN, comDenormalFlushedA, comDenormalFlushedB, comAIsNeg, comBIsNeg, comAIsDenormal, comBIsDenormal) );
 
 				when CmpSgn =>
-					OCMP <= std_logic_vector(CmpSgnFunc(unsigned(IN_A), comAIsNaN, comAIsDenormal, comAIsNeg) );
+					OCMP <= std_logic_vector(CmpSgnFunc(f32(IN_A), comAIsNaN, comAIsDenormal, comAIsNeg) );
 				
 				when others =>
 					OCMP <= IN_A;
 
 				--when CmpCmp =>
-					--OCMP <= std_logic_vector(CmpCmpFunc(unsigned(IN_A), unsigned(IN_B), unsigned(ICMP_C) ) );
+					--OCMP <= std_logic_vector(CmpCmpFunc(f32(IN_A), f32(IN_B), f32(ICMP_C) ) );
 
 				--when CmpCnd =>
-					--OCMP <= std_logic_vector(CmpCndFunc(unsigned(IN_A), unsigned(IN_B), unsigned(ICMP_C) ) );
+					--OCMP <= std_logic_vector(CmpCndFunc(f32(IN_A), f32(IN_B), f32(ICMP_C) ) );
 			end case;
 		else
 			OCMP <= (others => '0');
@@ -1320,14 +591,14 @@ begin
 			addDenormFlushedValA <= comDenormalFlushedA;
 			addDenormFlushedValB <= comDenormalFlushedB;
 			addALessThanB <= comALessThanB;
-			addExponentDeltaAMinusB <= GetSignedExponent(unsigned(IN_A) ) - GetSignedExponent(unsigned(IN_B) );
-			addExponentDeltaBMinusA <= GetSignedExponent(unsigned(IN_B) ) - GetSignedExponent(unsigned(IN_A) );
-			if (unsigned(GetSignedExponent(unsigned(IN_A) ) - GetSignedExponent(unsigned(IN_B) ) ) > 24) then
+			addExponentDeltaAMinusB <= GetSignedExponent(f32(IN_A) ) - GetSignedExponent(f32(IN_B) );
+			addExponentDeltaBMinusA <= GetSignedExponent(f32(IN_B) ) - GetSignedExponent(f32(IN_A) );
+			if (unsigned(GetSignedExponent(f32(IN_A) ) - GetSignedExponent(f32(IN_B) ) ) > 24) then
 				addExponentDeltaAMinusBShiftTooFar <= '1';
 			else
 				addExponentDeltaAMinusBShiftTooFar <= '0';
 			end if;
-			if (unsigned(GetSignedExponent(unsigned(IN_B) ) - GetSignedExponent(unsigned(IN_A) ) ) > 24) then
+			if (unsigned(GetSignedExponent(f32(IN_B) ) - GetSignedExponent(f32(IN_A) ) ) > 24) then
 				addExponentDeltaBMinusAShiftTooFar <= '1';
 			else
 				addExponentDeltaBMinusAShiftTooFar <= '0';
@@ -1377,24 +648,24 @@ begin
 			if ( (aIsReal = '1' and bIsInf = '1') or (aIsInf = '1' and bIsReal = '1') ) then -- Normal + INF or INF + Normal case (or subtraction, or negative INF or negative normal)
 				addEarlyOutBypassEnable0 <= '1';
 				if (aIsReal = '1') then
-					addEarlyOutBypass0 <= unsigned(IN_B);
+					addEarlyOutBypass0 <= f32(IN_B);
 				else
-					addEarlyOutBypass0 <= unsigned(IN_A);
+					addEarlyOutBypass0 <= f32(IN_A);
 				end if;
 			elsif ( (aIsReal = '1' and bIsNaN = '1') or (aIsNaN = '1' and bIsReal = '1') ) then -- Normal + NaN or NaN + Normal case (or subtraction, or negative NaN or negative normal)
 				addEarlyOutBypassEnable0 <= '1';
 				if (aIsReal = '1') then
-					addEarlyOutBypass0 <= unsigned(IN_B);
+					addEarlyOutBypass0 <= f32(IN_B);
 				else
-					addEarlyOutBypass0 <= unsigned(IN_A);
+					addEarlyOutBypass0 <= f32(IN_A);
 				end if;
 			elsif (aIsNaN = '1' and bIsNaN = '1') then -- NaN + NaN
 				addEarlyOutBypassEnable0 <= '1';
-				addEarlyOutBypass0 <= unsigned(IN_A);
+				addEarlyOutBypass0 <= f32(IN_A);
 			elsif (aIsInf = '1' and bIsInf = '1') then -- INF + INF
 				addEarlyOutBypassEnable0 <= '1';
 				if (comAIsNeg = comBIsNeg) then
-					addEarlyOutBypass0 <= unsigned(IN_A); -- INF + INF or -INF - INF doesn't change
+					addEarlyOutBypass0 <= f32(IN_A); -- INF + INF or -INF - INF doesn't change
 				else
 					addEarlyOutBypass0 <= '0' & X"FF" & "11111111111111111111111"; -- INF - INF = NaN
 				end if;
@@ -1428,8 +699,8 @@ end process ADDStage0;
 
 -- Addition (ADD) pipe process (cycle 2 of 4):
 ADDStage1 : process(clk)
-	variable addMinVal0 : unsigned(31 downto 0);
-	variable addMaxVal0 : unsigned(31 downto 0);
+	variable addMinVal0 : f32;
+	variable addMaxVal0 : f32;
 	variable shiftAmount : unsigned(7 downto 0);
 	variable shiftTooFar : std_logic;
 	variable mantissaMax : signed(25 downto 0);
@@ -1697,39 +968,39 @@ begin
 		if (ICNV_GO = '1') then
 			cnvIsValid <= '1';
 			cnvMode0 <= eConvertMode'val(to_integer(unsigned(IN_MODE) ) );
-			cnvInput <= unsigned(IN_A);
+			cnvInput <= f32(IN_A);
 			cnvIsNegative0 <= comAIsNeg;
 			case eConvertMode'val(to_integer(unsigned(IN_MODE) ) ) is
 				when F_Frc =>
-					earlyOutType := CnvFrc_GetEarlyOutType(unsigned(IN_A) );
+					earlyOutType := CnvFrc_GetEarlyOutType(f32(IN_A) );
 					cnvEarlyOutType0 <= earlyOutType;
-					frcNormalizedMantissa0 <= CnvFrc_Cycle0(unsigned(IN_A) );
+					frcNormalizedMantissa0 <= CnvFrc_Cycle0(f32(IN_A) );
 				when F_to_I23_RoundNearestEven =>
-					earlyOutType := CnvFloatToInt23_RoundNE_GetEarlyOutType(unsigned(IN_A), comAIsNaN, comAIsNeg );
+					earlyOutType := CnvFloatToInt23_RoundNE_GetEarlyOutType(f32(IN_A), comAIsNaN, comAIsNeg );
 					cnvEarlyOutType0 <= earlyOutType;
 					if (earlyOutType = CnvNoEarlyOut) then
 						cnvShiftAmount <= CnvFloatToInt23_RoundNE_Cycle0(comSignedExponentA);
 					end if;
 				when F_to_I16_RoundNearestEven =>
-					earlyOutType := CnvFloatToInt16_RoundNE_GetEarlyOutType(unsigned(IN_A), comAIsNaN, comAIsNeg );
+					earlyOutType := CnvFloatToInt16_RoundNE_GetEarlyOutType(f32(IN_A), comAIsNaN, comAIsNeg );
 					cnvEarlyOutType0 <= earlyOutType;
 					if (earlyOutType = CnvNoEarlyOut) then
 						cnvShiftAmount <= CnvFloatToInt16_RoundNE_Cycle0(comSignedExponentA);
 					end if;
 				when F_to_UNORM16 =>
-					earlyOutType := CnvFloatToUNORM16_GetEarlyOutType(unsigned(IN_A), comAIsNaN, comAIsNeg );
+					earlyOutType := CnvFloatToUNORM16_GetEarlyOutType(f32(IN_A), comAIsNaN, comAIsNeg );
 					cnvEarlyOutType0 <= earlyOutType;
 					if (earlyOutType = CnvNoEarlyOut) then
 						cnvShiftAmount <= CnvFloatToUNORM16_Cycle0(comSignedExponentA);						
 					end if;
 				when F_to_UNORM8 =>
-					earlyOutType := CnvFloatToUNORM8_GetEarlyOutType(unsigned(IN_A), comAIsNaN, comAIsNeg );
+					earlyOutType := CnvFloatToUNORM8_GetEarlyOutType(f32(IN_A), comAIsNaN, comAIsNeg );
 					cnvEarlyOutType0 <= earlyOutType;
 					if (earlyOutType = CnvNoEarlyOut) then
 						cnvShiftAmount <= CnvFloatToUNORM8_Cycle0(comSignedExponentA);
 					end if;
 				when F_to_Half =>
-					earlyOutType := CnvFloatToHalf_GetEarlyOutType(unsigned(IN_A), comAIsNaN);
+					earlyOutType := CnvFloatToHalf_GetEarlyOutType(f32(IN_A), comAIsNaN);
 					cnvEarlyOutType0 <= earlyOutType;
 					cnvShiftAmount <= (others => '0');
 				when Half_to_F =>

@@ -1933,7 +1933,11 @@ const int RunTestsFloatALU(Xsi::Loader& loader)
 	const bool bitTestsSuccessful = RunTestsFloatBIT(loader, clk, IN_A, IN_B, IBIT_GO, IN_MODE, OUT_RESULT) == S_OK;
 
 	if (cmpTestsSuccessful && addTestsSuccessful && mulTestsSuccessful && shftTestsSuccessful && rcpTestsSuccessful && cnvTestsSuccessful && bitTestsSuccessful)
+	{
 		return S_OK;
+	}
 	else
+	{
 		return 1;
+	}
 }

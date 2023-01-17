@@ -317,7 +317,7 @@ architecture Behavioral of CommandProcessor is
 	signal readyForNewWrite : std_logic := '0'; -- Written to by the AXI write process when it's ready for another new write, read from by the packet processor process
 
 	signal newReadEnable : std_logic := '0'; -- Written to by the packet processor process, read from by the AXI read process
-	signal newReadAddr : unsigned(31 downto 0) := to_unsigned(0, 32); -- Written to by the packet processor process, read from by the AXI read process
+	signal newReadAddr : unsigned(29 downto 0) := to_unsigned(0, 30); -- Written to by the packet processor process, read from by the AXI read process
 	signal newReadDWORDSelect : unsigned(2 downto 0) := to_unsigned(0, 3); -- Written to by the packet processor process, read from by the AXI read process
 	signal newReadData : std_logic_vector(31 downto 0) := (others => '0'); -- Written to by the AXI read process, read from by the packet processor process
 	signal newReadDataReady : std_logic := '0'; -- Written to by the AXI read process, read from by the packet processor process
@@ -716,6 +716,7 @@ begin
 							newReadDWORDSelect <= localIncomingPacket.payload1(2 downto 0);
 							-- For read packets, the first payload val is the address
 							CommandProcReadRequestsFIFO_wr_data <= std_logic_vector(localIncomingPacket.payload0(29 downto 0) );
+							newReadAddr <= localIncomingPacket.payload0(29 downto 0);
 							CommandProcReadRequestsFIFO_wr_en <= '1';
 							mst_packet_state <= READMEM_WAIT_FOR_READ_DATA;
 						end if;
@@ -728,7 +729,7 @@ begin
 
 							localOutgoingPacket.magicByte <= to_unsigned(MAGIC_PACKET_BYTE_VALUE, 8);
 							localOutgoingPacket.packetTypeByte <= to_unsigned(ePacketType'pos(PT_READMEMRESPONSE), 8);
-							localOutgoingPacket.payload0 <= "00" & unsigned(CommandProcReadResponsesFIFO_rd_data(ADDR_WIDTH_BITS+DATA_WIDTH_BITS-1 downto DATA_WIDTH_BITS) );
+							localOutgoingPacket.payload0 <= "00" & newReadAddr;
 
 							case newReadDWORDSelect is
 								when "111" => localOutgoingPacket.payload1 <= unsigned(CommandProcReadResponsesFIFO_rd_data(32*8-1 downto 32*7) );

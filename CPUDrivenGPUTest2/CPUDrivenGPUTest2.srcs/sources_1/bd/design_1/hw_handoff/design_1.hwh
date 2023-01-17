@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
-<EDKSYSTEM EDWVERSION="1.2" TIMESTAMP="Mon Oct 10 12:57:31 2022" VIVADOVERSION="2018.1_AR73068">
+<EDKSYSTEM EDWVERSION="1.2" TIMESTAMP="Mon Jan 16 23:14:16 2023" VIVADOVERSION="2018.1_AR73068">
 
   <SYSTEMINFO ARCH="kintexuplus" BOARD="xilinx.com:kcu116:part0:1.3" DEVICE="xcku5p" NAME="design_1" PACKAGE="ffvb676" SPEEDGRADE="-2"/>
 
@@ -124,10 +124,10 @@
   </EXTERNALINTERFACES>
 
   <MODULES>
-    <MODULE FULLNAME="/AttrInterp_FPU" HWVERSION="1.0" INSTANCE="AttrInterp_FPU" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="FloatALU" VLNV="xilinx.com:module_ref:FloatALU:1.0">
+    <MODULE FULLNAME="/AttrInterpFloatALU_0" HWVERSION="1.0" INSTANCE="AttrInterpFloatALU_0" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="AttrInterpFloatALU" VLNV="xilinx.com:module_ref:AttrInterpFloatALU:1.0">
       <DOCUMENTS/>
       <PARAMETERS>
-        <PARAMETER NAME="Component_Name" VALUE="design_1_FloatALU_2_1"/>
+        <PARAMETER NAME="Component_Name" VALUE="design_1_AttrInterpFloatALU_0_0"/>
         <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
       </PARAMETERS>
       <PORTS>
@@ -151,15 +151,10 @@
             <CONNECTION INSTANCE="AttrInterpolator_0" PORT="FPU_Mode"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="31" NAME="OUT_RESULT" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterp_FPU_OUT_RESULT">
+        <PORT DIR="O" LEFT="31" NAME="OUT_RESULT" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpFloatALU_0_OUT_RESULT">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe16"/>
             <CONNECTION INSTANCE="AttrInterpolator_0" PORT="FPU_OUT"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" NAME="ISHFT_GO" SIGIS="undef" SIGNAME="AttrInterpolator_0_FPU_ISHFT_GO">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="FPU_ISHFT_GO"/>
+            <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe16"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="I" NAME="IMUL_GO" SIGIS="undef" SIGNAME="AttrInterpolator_0_FPU_IMUL_GO">
@@ -172,24 +167,9 @@
             <CONNECTION INSTANCE="AttrInterpolator_0" PORT="FPU_IADD_GO"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" NAME="ICMP_GO" SIGIS="undef" SIGNAME="AttrInterpolator_0_FPU_ICMP_GO">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="FPU_ICMP_GO"/>
-          </CONNECTIONS>
-        </PORT>
         <PORT DIR="I" NAME="ICNV_GO" SIGIS="undef" SIGNAME="AttrInterpolator_0_FPU_ICNV_GO">
           <CONNECTIONS>
             <CONNECTION INSTANCE="AttrInterpolator_0" PORT="FPU_ICNV_GO"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" NAME="ISPEC_GO" SIGIS="undef" SIGNAME="AttrInterpolator_0_FPU_ISPEC_GO">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="FPU_ISPEC_GO"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" NAME="IBIT_GO" SIGIS="undef" SIGNAME="AttrInterpolator_0_FPU_IBIT_GO">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="FPU_IBIT_GO"/>
           </CONNECTIONS>
         </PORT>
       </PORTS>
@@ -295,58 +275,42 @@
         <PORT DIR="O" LEFT="31" NAME="FPU_A" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_FPU_A">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe15"/>
-            <CONNECTION INSTANCE="AttrInterp_FPU" PORT="IN_A"/>
+            <CONNECTION INSTANCE="AttrInterpFloatALU_0" PORT="IN_A"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="31" NAME="FPU_B" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_FPU_B">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe26"/>
-            <CONNECTION INSTANCE="AttrInterp_FPU" PORT="IN_B"/>
+            <CONNECTION INSTANCE="AttrInterpFloatALU_0" PORT="IN_B"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="2" NAME="FPU_Mode" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_FPU_Mode">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterp_FPU" PORT="IN_MODE"/>
+            <CONNECTION INSTANCE="AttrInterpFloatALU_0" PORT="IN_MODE"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" NAME="FPU_ISHFT_GO" SIGIS="undef" SIGNAME="AttrInterpolator_0_FPU_ISHFT_GO">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterp_FPU" PORT="ISHFT_GO"/>
-          </CONNECTIONS>
-        </PORT>
+        <PORT DIR="O" NAME="FPU_ISHFT_GO" SIGIS="undef"/>
         <PORT DIR="O" NAME="FPU_IMUL_GO" SIGIS="undef" SIGNAME="AttrInterpolator_0_FPU_IMUL_GO">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterp_FPU" PORT="IMUL_GO"/>
+            <CONNECTION INSTANCE="AttrInterpFloatALU_0" PORT="IMUL_GO"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" NAME="FPU_IADD_GO" SIGIS="undef" SIGNAME="AttrInterpolator_0_FPU_IADD_GO">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterp_FPU" PORT="IADD_GO"/>
+            <CONNECTION INSTANCE="AttrInterpFloatALU_0" PORT="IADD_GO"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" NAME="FPU_ICMP_GO" SIGIS="undef" SIGNAME="AttrInterpolator_0_FPU_ICMP_GO">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterp_FPU" PORT="ICMP_GO"/>
-          </CONNECTIONS>
-        </PORT>
+        <PORT DIR="O" NAME="FPU_ICMP_GO" SIGIS="undef"/>
         <PORT DIR="O" NAME="FPU_ICNV_GO" SIGIS="undef" SIGNAME="AttrInterpolator_0_FPU_ICNV_GO">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterp_FPU" PORT="ICNV_GO"/>
+            <CONNECTION INSTANCE="AttrInterpFloatALU_0" PORT="ICNV_GO"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" NAME="FPU_ISPEC_GO" SIGIS="undef" SIGNAME="AttrInterpolator_0_FPU_ISPEC_GO">
+        <PORT DIR="O" NAME="FPU_ISPEC_GO" SIGIS="undef"/>
+        <PORT DIR="O" NAME="FPU_IBIT_GO" SIGIS="undef"/>
+        <PORT DIR="I" LEFT="31" NAME="FPU_OUT" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpFloatALU_0_OUT_RESULT">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterp_FPU" PORT="ISPEC_GO"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="O" NAME="FPU_IBIT_GO" SIGIS="undef" SIGNAME="AttrInterpolator_0_FPU_IBIT_GO">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterp_FPU" PORT="IBIT_GO"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" LEFT="31" NAME="FPU_OUT" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterp_FPU_OUT_RESULT">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterp_FPU" PORT="OUT_RESULT"/>
+            <CONNECTION INSTANCE="AttrInterpFloatALU_0" PORT="OUT_RESULT"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="95" NAME="TEXSAMP_OutFIFO_wr_data" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_TEXSAMP_OutFIFO_wr_data">
@@ -1503,10 +1467,10 @@
         </BUSINTERFACE>
       </BUSINTERFACES>
     </MODULE>
-    <MODULE FULLNAME="/DepthInterp_FPU" HWVERSION="1.0" INSTANCE="DepthInterp_FPU" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="FloatALU" VLNV="xilinx.com:module_ref:FloatALU:1.0">
+    <MODULE FULLNAME="/DepthInterpFloatALU_0" HWVERSION="1.0" INSTANCE="DepthInterpFloatALU_0" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="DepthInterpFloatALU" VLNV="xilinx.com:module_ref:DepthInterpFloatALU:1.0">
       <DOCUMENTS/>
       <PARAMETERS>
-        <PARAMETER NAME="Component_Name" VALUE="design_1_FloatALU_1_1"/>
+        <PARAMETER NAME="Component_Name" VALUE="design_1_DepthInterpFloatALU_0_0"/>
         <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
       </PARAMETERS>
       <PORTS>
@@ -1530,14 +1494,9 @@
             <CONNECTION INSTANCE="DepthInterpolator_0" PORT="FPU_Mode"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="31" NAME="OUT_RESULT" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterp_FPU_OUT_RESULT">
+        <PORT DIR="O" LEFT="31" NAME="OUT_RESULT" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpFloatALU_0_OUT_RESULT">
           <CONNECTIONS>
             <CONNECTION INSTANCE="DepthInterpolator_0" PORT="FPU_OUT"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" NAME="ISHFT_GO" SIGIS="undef" SIGNAME="DepthInterpolator_0_FPU_ISHFT_GO">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="FPU_ISHFT_GO"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="I" NAME="IMUL_GO" SIGIS="undef" SIGNAME="DepthInterpolator_0_FPU_IMUL_GO">
@@ -1550,11 +1509,6 @@
             <CONNECTION INSTANCE="DepthInterpolator_0" PORT="FPU_IADD_GO"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" NAME="ICMP_GO" SIGIS="undef" SIGNAME="DepthInterpolator_0_FPU_ICMP_GO">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="FPU_ICMP_GO"/>
-          </CONNECTIONS>
-        </PORT>
         <PORT DIR="I" NAME="ICNV_GO" SIGIS="undef" SIGNAME="DepthInterpolator_0_FPU_ICNV_GO">
           <CONNECTIONS>
             <CONNECTION INSTANCE="DepthInterpolator_0" PORT="FPU_ICNV_GO"/>
@@ -1563,11 +1517,6 @@
         <PORT DIR="I" NAME="ISPEC_GO" SIGIS="undef" SIGNAME="DepthInterpolator_0_FPU_ISPEC_GO">
           <CONNECTIONS>
             <CONNECTION INSTANCE="DepthInterpolator_0" PORT="FPU_ISPEC_GO"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" NAME="IBIT_GO" SIGIS="undef" SIGNAME="DepthInterpolator_0_FPU_IBIT_GO">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="FPU_IBIT_GO"/>
           </CONNECTIONS>
         </PORT>
       </PORTS>
@@ -1692,57 +1641,45 @@
         </PORT>
         <PORT DIR="O" LEFT="31" NAME="FPU_A" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_FPU_A">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="DepthInterp_FPU" PORT="IN_A"/>
+            <CONNECTION INSTANCE="DepthInterpFloatALU_0" PORT="IN_A"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="31" NAME="FPU_B" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_FPU_B">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="DepthInterp_FPU" PORT="IN_B"/>
+            <CONNECTION INSTANCE="DepthInterpFloatALU_0" PORT="IN_B"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="2" NAME="FPU_Mode" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_FPU_Mode">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="DepthInterp_FPU" PORT="IN_MODE"/>
+            <CONNECTION INSTANCE="DepthInterpFloatALU_0" PORT="IN_MODE"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" NAME="FPU_ISHFT_GO" SIGIS="undef" SIGNAME="DepthInterpolator_0_FPU_ISHFT_GO">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="DepthInterp_FPU" PORT="ISHFT_GO"/>
-          </CONNECTIONS>
-        </PORT>
+        <PORT DIR="O" NAME="FPU_ISHFT_GO" SIGIS="undef"/>
         <PORT DIR="O" NAME="FPU_IMUL_GO" SIGIS="undef" SIGNAME="DepthInterpolator_0_FPU_IMUL_GO">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="DepthInterp_FPU" PORT="IMUL_GO"/>
+            <CONNECTION INSTANCE="DepthInterpFloatALU_0" PORT="IMUL_GO"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" NAME="FPU_IADD_GO" SIGIS="undef" SIGNAME="DepthInterpolator_0_FPU_IADD_GO">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="DepthInterp_FPU" PORT="IADD_GO"/>
+            <CONNECTION INSTANCE="DepthInterpFloatALU_0" PORT="IADD_GO"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" NAME="FPU_ICMP_GO" SIGIS="undef" SIGNAME="DepthInterpolator_0_FPU_ICMP_GO">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="DepthInterp_FPU" PORT="ICMP_GO"/>
-          </CONNECTIONS>
-        </PORT>
+        <PORT DIR="O" NAME="FPU_ICMP_GO" SIGIS="undef"/>
         <PORT DIR="O" NAME="FPU_ICNV_GO" SIGIS="undef" SIGNAME="DepthInterpolator_0_FPU_ICNV_GO">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="DepthInterp_FPU" PORT="ICNV_GO"/>
+            <CONNECTION INSTANCE="DepthInterpFloatALU_0" PORT="ICNV_GO"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" NAME="FPU_ISPEC_GO" SIGIS="undef" SIGNAME="DepthInterpolator_0_FPU_ISPEC_GO">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="DepthInterp_FPU" PORT="ISPEC_GO"/>
+            <CONNECTION INSTANCE="DepthInterpFloatALU_0" PORT="ISPEC_GO"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" NAME="FPU_IBIT_GO" SIGIS="undef" SIGNAME="DepthInterpolator_0_FPU_IBIT_GO">
+        <PORT DIR="O" NAME="FPU_IBIT_GO" SIGIS="undef"/>
+        <PORT DIR="I" LEFT="31" NAME="FPU_OUT" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpFloatALU_0_OUT_RESULT">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="DepthInterp_FPU" PORT="IBIT_GO"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" LEFT="31" NAME="FPU_OUT" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterp_FPU_OUT_RESULT">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="DepthInterp_FPU" PORT="OUT_RESULT"/>
+            <CONNECTION INSTANCE="DepthInterpFloatALU_0" PORT="OUT_RESULT"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" NAME="DEPTH_PixelReady" SIGIS="undef" SIGNAME="DepthInterpolator_0_DEPTH_PixelReady">
@@ -5126,9 +5063,9 @@
             <CONNECTION INSTANCE="AttrInterpolator_0" PORT="FPU_A"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="probe16" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterp_FPU_OUT_RESULT">
+        <PORT DIR="I" LEFT="31" NAME="probe16" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpFloatALU_0_OUT_RESULT">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterp_FPU" PORT="OUT_RESULT"/>
+            <CONNECTION INSTANCE="AttrInterpFloatALU_0" PORT="OUT_RESULT"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="I" LEFT="63" NAME="probe17" RIGHT="0" SIGIS="undef" SIGNAME="DepthBuffer_URAM_doutb">
@@ -15290,9 +15227,9 @@
             <CONNECTION INSTANCE="TriSetup_0" PORT="FPU_A"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="probe57" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_FPU_OUT_RESULT">
+        <PORT DIR="I" LEFT="31" NAME="probe57" RIGHT="0" SIGIS="undef" SIGNAME="TriSetupFloatALU_0_OUT_RESULT">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriSetup_FPU" PORT="OUT_RESULT"/>
+            <CONNECTION INSTANCE="TriSetupFloatALU_0" PORT="OUT_RESULT"/>
           </CONNECTIONS>
         </PORT>
       </PORTS>
@@ -20185,6 +20122,21 @@
             <CONNECTION INSTANCE="MemorySystem_ddr4_0" PORT="c0_ddr4_s_axi_awsize"/>
           </CONNECTIONS>
         </PORT>
+        <PORT DIR="O" LEFT="3" NAME="M_AXI_ARID" RIGHT="0" SIGIS="undef" SIGNAME="MemorySystem_MemoryController_0_M_AXI_ARID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="MemorySystem_ddr4_0" PORT="c0_ddr4_s_axi_arid"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="3" NAME="M_AXI_AWID" RIGHT="0" SIGIS="undef" SIGNAME="MemorySystem_MemoryController_0_M_AXI_AWID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="MemorySystem_ddr4_0" PORT="c0_ddr4_s_axi_awid"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="3" NAME="M_AXI_RID" RIGHT="0" SIGIS="undef" SIGNAME="MemorySystem_MemoryController_0_M_AXI_RID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="MemorySystem_ddr4_0" PORT="c0_ddr4_s_axi_rid"/>
+          </CONNECTIONS>
+        </PORT>
         <PORT DIR="I" NAME="M_AXI_RLAST" SIGIS="undef" SIGNAME="MemorySystem_MemoryController_0_M_AXI_RLAST">
           <CONNECTIONS>
             <CONNECTION INSTANCE="MemorySystem_ddr4_0" PORT="c0_ddr4_s_axi_rlast"/>
@@ -20668,9 +20620,9 @@
       </PORTS>
       <BUSINTERFACES>
         <BUSINTERFACE BUSNAME="MemorySystem_MemoryController_0_M_AXI" DATAWIDTH="256" NAME="M_AXI" TYPE="MASTER" VLNV="xilinx.com:interface:aximm:1.0">
-          <PARAMETER NAME="MAX_BURST_LENGTH" VALUE="1"/>
-          <PARAMETER NAME="NUM_WRITE_OUTSTANDING" VALUE="0"/>
-          <PARAMETER NAME="NUM_READ_OUTSTANDING" VALUE="0"/>
+          <PARAMETER NAME="MAX_BURST_LENGTH" VALUE="16"/>
+          <PARAMETER NAME="NUM_WRITE_OUTSTANDING" VALUE="32"/>
+          <PARAMETER NAME="NUM_READ_OUTSTANDING" VALUE="32"/>
           <PARAMETER NAME="SUPPORTS_NARROW_BURST" VALUE="0"/>
           <PARAMETER NAME="READ_WRITE_MODE" VALUE="READ_WRITE"/>
           <PARAMETER NAME="BUSER_WIDTH" VALUE="0"/>
@@ -20679,7 +20631,7 @@
           <PARAMETER NAME="ARUSER_WIDTH" VALUE="0"/>
           <PARAMETER NAME="AWUSER_WIDTH" VALUE="0"/>
           <PARAMETER NAME="ADDR_WIDTH" VALUE="30"/>
-          <PARAMETER NAME="ID_WIDTH" VALUE="0"/>
+          <PARAMETER NAME="ID_WIDTH" VALUE="4"/>
           <PARAMETER NAME="FREQ_HZ" VALUE="333250000"/>
           <PARAMETER NAME="PROTOCOL" VALUE="AXI4"/>
           <PARAMETER NAME="DATA_WIDTH" VALUE="256"/>
@@ -20699,6 +20651,7 @@
           <PARAMETER NAME="RUSER_BITS_PER_BYTE" VALUE="0"/>
           <PARAMETER NAME="WUSER_BITS_PER_BYTE" VALUE="0"/>
           <PORTMAPS>
+            <PORTMAP LOGICAL="AWID" PHYSICAL="M_AXI_AWID"/>
             <PORTMAP LOGICAL="AWADDR" PHYSICAL="M_AXI_AWADDR"/>
             <PORTMAP LOGICAL="AWLEN" PHYSICAL="M_AXI_AWLEN"/>
             <PORTMAP LOGICAL="AWSIZE" PHYSICAL="M_AXI_AWSIZE"/>
@@ -20716,6 +20669,7 @@
             <PORTMAP LOGICAL="BRESP" PHYSICAL="M_AXI_BRESP"/>
             <PORTMAP LOGICAL="BVALID" PHYSICAL="M_AXI_BVALID"/>
             <PORTMAP LOGICAL="BREADY" PHYSICAL="M_AXI_BREADY"/>
+            <PORTMAP LOGICAL="ARID" PHYSICAL="M_AXI_ARID"/>
             <PORTMAP LOGICAL="ARADDR" PHYSICAL="M_AXI_ARADDR"/>
             <PORTMAP LOGICAL="ARLEN" PHYSICAL="M_AXI_ARLEN"/>
             <PORTMAP LOGICAL="ARSIZE" PHYSICAL="M_AXI_ARSIZE"/>
@@ -20725,6 +20679,7 @@
             <PORTMAP LOGICAL="ARPROT" PHYSICAL="M_AXI_ARPROT"/>
             <PORTMAP LOGICAL="ARVALID" PHYSICAL="M_AXI_ARVALID"/>
             <PORTMAP LOGICAL="ARREADY" PHYSICAL="M_AXI_ARREADY"/>
+            <PORTMAP LOGICAL="RID" PHYSICAL="M_AXI_RID"/>
             <PORTMAP LOGICAL="RDATA" PHYSICAL="M_AXI_RDATA"/>
             <PORTMAP LOGICAL="RRESP" PHYSICAL="M_AXI_RRESP"/>
             <PORTMAP LOGICAL="RLAST" PHYSICAL="M_AXI_RLAST"/>
@@ -25800,7 +25755,7 @@
         <PARAMETER NAME="C0.DDR4_HR_MIN_FREQ" VALUE="0"/>
         <PARAMETER NAME="C0.DDR4_DCI_CASCADE_CUTOFF" VALUE="938"/>
         <PARAMETER NAME="C0.DDR4_IS_FASTER_SPEED_RAM" VALUE="No"/>
-        <PARAMETER NAME="C0.DDR4_AXI_ID_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C0.DDR4_AXI_ID_WIDTH" VALUE="4"/>
         <PARAMETER NAME="C0.DDR4_AXI_ADDR_WIDTH" VALUE="30"/>
         <PARAMETER NAME="C0.DDR4_AXI_DATA_WIDTH" VALUE="256"/>
         <PARAMETER NAME="C0.DDR4_MEM_SIZE" VALUE="1073741824"/>
@@ -25871,7 +25826,7 @@
         <PARAMETER NAME="C0.DDR4_AxiArbitrationScheme" VALUE="RD_PRI_REG"/>
         <PARAMETER NAME="C0.DDR4_AxiNarrowBurst" VALUE="false"/>
         <PARAMETER NAME="C0.DDR4_AxiAddressWidth" VALUE="30"/>
-        <PARAMETER NAME="C0.DDR4_AxiIDWidth" VALUE="1"/>
+        <PARAMETER NAME="C0.DDR4_AxiIDWidth" VALUE="4"/>
         <PARAMETER NAME="C0.DDR4_Capacity" VALUE="512"/>
         <PARAMETER NAME="C0.DDR4_Mem_Add_Map" VALUE="ROW_COLUMN_BANK"/>
         <PARAMETER NAME="C0.DDR4_MemoryName" VALUE="MainMemory"/>
@@ -25988,36 +25943,36 @@
             <CONNECTION INSTANCE="vio_0" PORT="clk"/>
             <CONNECTION INSTANCE="VBO_INDEX_FIFO" PORT="clk"/>
             <CONNECTION INSTANCE="IndexBufferCache_0" PORT="clk"/>
-            <CONNECTION INSTANCE="TriSetup_FPU" PORT="clk"/>
-            <CONNECTION INSTANCE="DepthInterp_FPU" PORT="clk"/>
-            <CONNECTION INSTANCE="AttrInterp_FPU" PORT="clk"/>
-            <CONNECTION INSTANCE="TriSetup_0" PORT="clk"/>
             <CONNECTION INSTANCE="Rasterizer_0" PORT="clk"/>
             <CONNECTION INSTANCE="TriWorkCache_0" PORT="clk"/>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="clk"/>
             <CONNECTION INSTANCE="DepthBuffer_0" PORT="clk"/>
             <CONNECTION INSTANCE="InputAssembler2_0" PORT="clk"/>
             <CONNECTION INSTANCE="VertexBatchBuilder_0" PORT="clk"/>
             <CONNECTION INSTANCE="StatsCollector_0" PORT="clk"/>
             <CONNECTION INSTANCE="ROP_FIFO" PORT="clk"/>
             <CONNECTION INSTANCE="TEXSAMP_FIFO" PORT="clk"/>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="clk"/>
             <CONNECTION INSTANCE="TexSample_0" PORT="clk"/>
             <CONNECTION INSTANCE="ROP_0" PORT="clk"/>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="clk"/>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="clk"/>
+            <CONNECTION INSTANCE="TriSetup_0" PORT="clk"/>
+            <CONNECTION INSTANCE="AttrInterpFloatALU_0" PORT="clk"/>
+            <CONNECTION INSTANCE="DepthInterpFloatALU_0" PORT="clk"/>
+            <CONNECTION INSTANCE="TriSetupFloatALU_0" PORT="clk"/>
             <CONNECTION INSTANCE="SerialPacketSystem_ValidIncomingPacketsFIFO" PORT="rd_clk"/>
             <CONNECTION INSTANCE="SerialPacketSystem_ReturnOutputPacketsFIFO" PORT="wr_clk"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_InstructionCache" PORT="clka"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_ConstantBuffer_0" PORT="clk"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_VertexStreamCache_0" PORT="clk"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_UNORM8ToFloat_0" PORT="clk"/>
+            <CONNECTION INSTANCE="ShaderCoreSystem_ShaderCore_0" PORT="clk"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_FloatALU_0" PORT="clk"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_FloatALU_1" PORT="clk"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_FloatALU_2" PORT="clk"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_FloatALU_3" PORT="clk"/>
-            <CONNECTION INSTANCE="ShaderCoreSystem_ShaderCore_0" PORT="clk"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_GPRQuadSystem_GPRQuad2_0" PORT="clk"/>
             <CONNECTION INSTANCE="ScanoutSystem_CDC_Command_Scanout_0" PORT="cmd_clk"/>
-            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="clk"/>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="clk"/>
             <CONNECTION INSTANCE="MemorySystem_ScanoutReadRequestsFIFO" PORT="rd_clk"/>
             <CONNECTION INSTANCE="MemorySystem_ZStencilReadRequestsFIFO" PORT="rd_clk"/>
             <CONNECTION INSTANCE="MemorySystem_ZStencilReadRequestsFIFO" PORT="wr_clk"/>
@@ -26072,7 +26027,11 @@
             <CONNECTION INSTANCE="MemorySystem_rst_ddr4_0_333M" PORT="peripheral_aresetn"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="0" NAME="c0_ddr4_s_axi_awid" RIGHT="0" SIGIS="undef"/>
+        <PORT DIR="I" LEFT="3" NAME="c0_ddr4_s_axi_awid" RIGHT="0" SIGIS="undef" SIGNAME="MemorySystem_MemoryController_0_M_AXI_AWID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="MemorySystem_MemoryController_0" PORT="M_AXI_AWID"/>
+          </CONNECTIONS>
+        </PORT>
         <PORT DIR="I" LEFT="29" NAME="c0_ddr4_s_axi_awaddr" RIGHT="0" SIGIS="undef" SIGNAME="MemorySystem_MemoryController_0_M_AXI_AWADDR">
           <CONNECTIONS>
             <CONNECTION INSTANCE="MemorySystem_MemoryController_0" PORT="M_AXI_AWADDR"/>
@@ -26149,7 +26108,7 @@
             <CONNECTION INSTANCE="MemorySystem_MemoryController_0" PORT="M_AXI_BREADY"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="0" NAME="c0_ddr4_s_axi_bid" RIGHT="0" SIGIS="undef"/>
+        <PORT DIR="O" LEFT="3" NAME="c0_ddr4_s_axi_bid" RIGHT="0" SIGIS="undef"/>
         <PORT DIR="O" LEFT="1" NAME="c0_ddr4_s_axi_bresp" RIGHT="0" SIGIS="undef" SIGNAME="MemorySystem_MemoryController_0_M_AXI_BRESP">
           <CONNECTIONS>
             <CONNECTION INSTANCE="MemorySystem_MemoryController_0" PORT="M_AXI_BRESP"/>
@@ -26160,7 +26119,11 @@
             <CONNECTION INSTANCE="MemorySystem_MemoryController_0" PORT="M_AXI_BVALID"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="0" NAME="c0_ddr4_s_axi_arid" RIGHT="0" SIGIS="undef"/>
+        <PORT DIR="I" LEFT="3" NAME="c0_ddr4_s_axi_arid" RIGHT="0" SIGIS="undef" SIGNAME="MemorySystem_MemoryController_0_M_AXI_ARID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="MemorySystem_MemoryController_0" PORT="M_AXI_ARID"/>
+          </CONNECTIONS>
+        </PORT>
         <PORT DIR="I" LEFT="29" NAME="c0_ddr4_s_axi_araddr" RIGHT="0" SIGIS="undef" SIGNAME="MemorySystem_MemoryController_0_M_AXI_ARADDR">
           <CONNECTIONS>
             <CONNECTION INSTANCE="MemorySystem_MemoryController_0" PORT="M_AXI_ARADDR"/>
@@ -26227,7 +26190,11 @@
             <CONNECTION INSTANCE="MemorySystem_MemoryController_0" PORT="M_AXI_RRESP"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="0" NAME="c0_ddr4_s_axi_rid" RIGHT="0" SIGIS="undef"/>
+        <PORT DIR="O" LEFT="3" NAME="c0_ddr4_s_axi_rid" RIGHT="0" SIGIS="undef" SIGNAME="MemorySystem_MemoryController_0_M_AXI_RID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="MemorySystem_MemoryController_0" PORT="M_AXI_RID"/>
+          </CONNECTIONS>
+        </PORT>
         <PORT DIR="O" LEFT="255" NAME="c0_ddr4_s_axi_rdata" RIGHT="0" SIGIS="undef" SIGNAME="MemorySystem_MemoryController_0_M_AXI_RDATA">
           <CONNECTIONS>
             <CONNECTION INSTANCE="MemorySystem_MemoryController_0" PORT="M_AXI_RDATA"/>
@@ -26295,7 +26262,7 @@
           <PARAMETER NAME="FREQ_HZ" VALUE="333250000"/>
           <PARAMETER NAME="DATA_WIDTH" VALUE="256"/>
           <PARAMETER NAME="PROTOCOL" VALUE="AXI4"/>
-          <PARAMETER NAME="ID_WIDTH" VALUE="1"/>
+          <PARAMETER NAME="ID_WIDTH" VALUE="4"/>
           <PARAMETER NAME="ADDR_WIDTH" VALUE="30"/>
           <PARAMETER NAME="AWUSER_WIDTH" VALUE="0"/>
           <PARAMETER NAME="ARUSER_WIDTH" VALUE="0"/>
@@ -26313,9 +26280,9 @@
           <PARAMETER NAME="HAS_BRESP" VALUE="1"/>
           <PARAMETER NAME="HAS_RRESP" VALUE="1"/>
           <PARAMETER NAME="SUPPORTS_NARROW_BURST" VALUE="0"/>
-          <PARAMETER NAME="NUM_READ_OUTSTANDING" VALUE="0"/>
-          <PARAMETER NAME="NUM_WRITE_OUTSTANDING" VALUE="0"/>
-          <PARAMETER NAME="MAX_BURST_LENGTH" VALUE="1"/>
+          <PARAMETER NAME="NUM_READ_OUTSTANDING" VALUE="32"/>
+          <PARAMETER NAME="NUM_WRITE_OUTSTANDING" VALUE="32"/>
+          <PARAMETER NAME="MAX_BURST_LENGTH" VALUE="16"/>
           <PARAMETER NAME="PHASE" VALUE="0.00"/>
           <PARAMETER NAME="CLK_DOMAIN" VALUE="design_1_ddr4_0_1_c0_ddr4_ui_clk"/>
           <PARAMETER NAME="NUM_READ_THREADS" VALUE="1"/>
@@ -27492,10 +27459,10 @@
         </PORT>
         <PORT DIR="O" NAME="resetn" SIGIS="rst" SIGNAME="ResetN_UntilClockLoc_0_resetn">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="resetn"/>
             <CONNECTION INSTANCE="MemorySystem_MemoryController_0" PORT="M_AXI_ARESETN"/>
             <CONNECTION INSTANCE="SerialPacketSystem_axi_uartlite_0" PORT="s_axi_aresetn"/>
             <CONNECTION INSTANCE="SerialPacketSystem_PacketProcessor_0" PORT="M_AXI_ARESETN"/>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="resetn"/>
           </CONNECTIONS>
         </PORT>
       </PORTS>
@@ -38540,6 +38507,57 @@
         </BUSINTERFACE>
       </BUSINTERFACES>
     </MODULE>
+    <MODULE FULLNAME="/TriSetupFloatALU_0" HWVERSION="1.0" INSTANCE="TriSetupFloatALU_0" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="TriSetupFloatALU" VLNV="xilinx.com:module_ref:TriSetupFloatALU:1.0">
+      <DOCUMENTS/>
+      <PARAMETERS>
+        <PARAMETER NAME="Component_Name" VALUE="design_1_TriSetupFloatALU_0_0"/>
+        <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
+      </PARAMETERS>
+      <PORTS>
+        <PORT CLKFREQUENCY="333250000" DIR="I" NAME="clk" SIGIS="clk" SIGNAME="MemorySystem_ddr4_0_c0_ddr4_ui_clk">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="MemorySystem_ddr4_0" PORT="c0_ddr4_ui_clk"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="31" NAME="IN_A" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_FPU_A">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriSetup_0" PORT="FPU_A"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="31" NAME="IN_B" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_FPU_B">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriSetup_0" PORT="FPU_B"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="2" NAME="IN_MODE" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_FPU_Mode">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriSetup_0" PORT="FPU_Mode"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="31" NAME="OUT_RESULT" RIGHT="0" SIGIS="undef" SIGNAME="TriSetupFloatALU_0_OUT_RESULT">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriSetup_0" PORT="FPU_OUT"/>
+            <CONNECTION INSTANCE="ILA_TriSetup" PORT="probe57"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="IADD_GO" SIGIS="undef" SIGNAME="TriSetup_0_FPU_IADD_GO">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriSetup_0" PORT="FPU_IADD_GO"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="ICNV_GO" SIGIS="undef" SIGNAME="TriSetup_0_FPU_ICNV_GO">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriSetup_0" PORT="FPU_ICNV_GO"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="ISPEC_GO" SIGIS="undef" SIGNAME="TriSetup_0_FPU_ISPEC_GO">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriSetup_0" PORT="FPU_ISPEC_GO"/>
+          </CONNECTIONS>
+        </PORT>
+      </PORTS>
+      <BUSINTERFACES/>
+    </MODULE>
     <MODULE FULLNAME="/TriSetup_0" HWVERSION="1.0" INSTANCE="TriSetup_0" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="TriSetup" VLNV="xilinx.com:module_ref:TriSetup:1.0">
       <DOCUMENTS/>
       <PARAMETERS>
@@ -38875,57 +38893,41 @@
         <PORT DIR="O" LEFT="31" NAME="FPU_A" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_FPU_A">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ILA_TriSetup" PORT="probe56"/>
-            <CONNECTION INSTANCE="TriSetup_FPU" PORT="IN_A"/>
+            <CONNECTION INSTANCE="TriSetupFloatALU_0" PORT="IN_A"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="31" NAME="FPU_B" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_FPU_B">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriSetup_FPU" PORT="IN_B"/>
+            <CONNECTION INSTANCE="TriSetupFloatALU_0" PORT="IN_B"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="2" NAME="FPU_Mode" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_FPU_Mode">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriSetup_FPU" PORT="IN_MODE"/>
+            <CONNECTION INSTANCE="TriSetupFloatALU_0" PORT="IN_MODE"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" NAME="FPU_ISHFT_GO" SIGIS="undef" SIGNAME="TriSetup_0_FPU_ISHFT_GO">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="TriSetup_FPU" PORT="ISHFT_GO"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="O" NAME="FPU_IMUL_GO" SIGIS="undef" SIGNAME="TriSetup_0_FPU_IMUL_GO">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="TriSetup_FPU" PORT="IMUL_GO"/>
-          </CONNECTIONS>
-        </PORT>
+        <PORT DIR="O" NAME="FPU_ISHFT_GO" SIGIS="undef"/>
+        <PORT DIR="O" NAME="FPU_IMUL_GO" SIGIS="undef"/>
         <PORT DIR="O" NAME="FPU_IADD_GO" SIGIS="undef" SIGNAME="TriSetup_0_FPU_IADD_GO">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriSetup_FPU" PORT="IADD_GO"/>
+            <CONNECTION INSTANCE="TriSetupFloatALU_0" PORT="IADD_GO"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" NAME="FPU_ICMP_GO" SIGIS="undef" SIGNAME="TriSetup_0_FPU_ICMP_GO">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="TriSetup_FPU" PORT="ICMP_GO"/>
-          </CONNECTIONS>
-        </PORT>
+        <PORT DIR="O" NAME="FPU_ICMP_GO" SIGIS="undef"/>
         <PORT DIR="O" NAME="FPU_ICNV_GO" SIGIS="undef" SIGNAME="TriSetup_0_FPU_ICNV_GO">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriSetup_FPU" PORT="ICNV_GO"/>
+            <CONNECTION INSTANCE="TriSetupFloatALU_0" PORT="ICNV_GO"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" NAME="FPU_ISPEC_GO" SIGIS="undef" SIGNAME="TriSetup_0_FPU_ISPEC_GO">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriSetup_FPU" PORT="ISPEC_GO"/>
+            <CONNECTION INSTANCE="TriSetupFloatALU_0" PORT="ISPEC_GO"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" NAME="FPU_IBIT_GO" SIGIS="undef" SIGNAME="TriSetup_0_FPU_IBIT_GO">
+        <PORT DIR="O" NAME="FPU_IBIT_GO" SIGIS="undef"/>
+        <PORT DIR="I" LEFT="31" NAME="FPU_OUT" RIGHT="0" SIGIS="undef" SIGNAME="TriSetupFloatALU_0_OUT_RESULT">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriSetup_FPU" PORT="IBIT_GO"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" LEFT="31" NAME="FPU_OUT" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_FPU_OUT_RESULT">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="TriSetup_FPU" PORT="OUT_RESULT"/>
+            <CONNECTION INSTANCE="TriSetupFloatALU_0" PORT="OUT_RESULT"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="31" NAME="STAT_CyclesIdle" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_STAT_CyclesIdle">
@@ -39002,77 +39004,6 @@
         <PORT DIR="O" LEFT="31" NAME="DBG_TwiceTriArea" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_DBG_TwiceTriArea">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ILA_TriSetup" PORT="probe41"/>
-          </CONNECTIONS>
-        </PORT>
-      </PORTS>
-      <BUSINTERFACES/>
-    </MODULE>
-    <MODULE FULLNAME="/TriSetup_FPU" HWVERSION="1.0" INSTANCE="TriSetup_FPU" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="FloatALU" VLNV="xilinx.com:module_ref:FloatALU:1.0">
-      <DOCUMENTS/>
-      <PARAMETERS>
-        <PARAMETER NAME="Component_Name" VALUE="design_1_FloatALU_0_1"/>
-        <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
-      </PARAMETERS>
-      <PORTS>
-        <PORT CLKFREQUENCY="333250000" DIR="I" NAME="clk" SIGIS="clk" SIGNAME="MemorySystem_ddr4_0_c0_ddr4_ui_clk">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="MemorySystem_ddr4_0" PORT="c0_ddr4_ui_clk"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" LEFT="31" NAME="IN_A" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_FPU_A">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="TriSetup_0" PORT="FPU_A"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" LEFT="31" NAME="IN_B" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_FPU_B">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="TriSetup_0" PORT="FPU_B"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" LEFT="2" NAME="IN_MODE" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_FPU_Mode">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="TriSetup_0" PORT="FPU_Mode"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="O" LEFT="31" NAME="OUT_RESULT" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_FPU_OUT_RESULT">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="ILA_TriSetup" PORT="probe57"/>
-            <CONNECTION INSTANCE="TriSetup_0" PORT="FPU_OUT"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" NAME="ISHFT_GO" SIGIS="undef" SIGNAME="TriSetup_0_FPU_ISHFT_GO">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="TriSetup_0" PORT="FPU_ISHFT_GO"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" NAME="IMUL_GO" SIGIS="undef" SIGNAME="TriSetup_0_FPU_IMUL_GO">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="TriSetup_0" PORT="FPU_IMUL_GO"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" NAME="IADD_GO" SIGIS="undef" SIGNAME="TriSetup_0_FPU_IADD_GO">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="TriSetup_0" PORT="FPU_IADD_GO"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" NAME="ICMP_GO" SIGIS="undef" SIGNAME="TriSetup_0_FPU_ICMP_GO">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="TriSetup_0" PORT="FPU_ICMP_GO"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" NAME="ICNV_GO" SIGIS="undef" SIGNAME="TriSetup_0_FPU_ICNV_GO">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="TriSetup_0" PORT="FPU_ICNV_GO"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" NAME="ISPEC_GO" SIGIS="undef" SIGNAME="TriSetup_0_FPU_ISPEC_GO">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="TriSetup_0" PORT="FPU_ISPEC_GO"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" NAME="IBIT_GO" SIGIS="undef" SIGNAME="TriSetup_0_FPU_IBIT_GO">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="TriSetup_0" PORT="FPU_IBIT_GO"/>
           </CONNECTIONS>
         </PORT>
       </PORTS>

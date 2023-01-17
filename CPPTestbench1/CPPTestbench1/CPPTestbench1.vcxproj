@@ -252,6 +252,10 @@
     <None Include="hdl_src\EthernetCRC32.vhd" />
     <None Include="hdl_src\EthernetMDIOController.vhd" />
     <None Include="hdl_src\FloatALU.vhd" />
+    <None Include="hdl_src\FloatALU\FloatALU_CMP.vhd" />
+    <None Include="hdl_src\FloatALU\FloatALU_CNV.vhd" />
+    <None Include="hdl_src\FloatALU\FloatALU_SHFT.vhd" />
+    <None Include="hdl_src\FloatALU\FloatCommon.vhd" />
     <None Include="hdl_src\FloatALU_Types.vhd" />
     <None Include="hdl_src\GPRQuad.vhd" />
     <None Include="hdl_src\GPRQuad2.vhd" />
@@ -260,6 +264,11 @@
     <None Include="hdl_src\InputAssembler2.vhd" />
     <None Include="hdl_src\MemoryController.vhd" />
     <None Include="hdl_src\NetProtoPacketProcessor.vhd" />
+    <None Include="hdl_src\Network\NetProtoHelpers_ARP.vhd" />
+    <None Include="hdl_src\Network\NetProtoHelpers_Core.vhd" />
+    <None Include="hdl_src\Network\NetProtoHelpers_IPv4.vhd" />
+    <None Include="hdl_src\Network\NetProtoHelpers_MAC.vhd" />
+    <None Include="hdl_src\Network\NetProtoHelpers_UDP.vhd" />
     <None Include="hdl_src\PacketType.vhd" />
     <None Include="hdl_src\Rasterizer.vhd" />
     <None Include="hdl_src\ROP.vhd" />

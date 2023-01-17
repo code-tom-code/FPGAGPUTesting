@@ -10,6 +10,14 @@ library work;
 
 package FloatALU_Types is
 
+	-- Define our float types. Note that we can't use either "float" or "float32" because they are already types with other definitions in a VHDL2008 library:
+
+	-- Full 32-bit float type:
+	subtype f32 is unsigned(31 downto 0);
+
+	-- 16-bit half type:
+	subtype f16 is unsigned(15 downto 0);
+
 	-- These constants determine the number of cycles that each of the various pipes runs for:
 	constant SHFT_CYCLES : natural := 1;
 	constant MUL_CYCLES : natural := 5;
@@ -18,6 +26,13 @@ package FloatALU_Types is
 	constant CNV_CYCLES : natural := 3;
 	constant SPEC_CYCLES : natural := 14;
 	constant BIT_CYCLES : natural := 1;
+
+	-- VHDL doesn't support the MAXIMUM() or MINIMUM() functions as built-ins until VHDL2008, so we have to define our own, sadly.
+	pure function maxVal(a : integer; b : integer) return integer;
+
+	-- Maximum number of cycles that a single operation can take
+	constant maxCycleCount : integer := maxVal(BIT_CYCLES, maxVal(SHFT_CYCLES, maxVal(MUL_CYCLES, maxVal(ADD_CYCLES, maxVal(CMP_CYCLES, maxVal(CNV_CYCLES, SPEC_CYCLES) ) ) ) ) );
+	constant numMUXSources : integer := 7; -- Number of different pipes that our MUX can source from
 
 	type eCmpType is
 	(
@@ -78,3 +93,17 @@ package FloatALU_Types is
 	);
 	
 end package FloatALU_Types;
+
+package body FloatALU_Types is
+
+	-- VHDL doesn't support the MAXIMUM() or MINIMUM() functions as built-ins until VHDL2008, so we have to define our own, sadly.
+	pure function maxVal(a : integer; b : integer) return integer is
+	begin
+		if (a > b) then
+			return a;
+		else
+			return b;
+		end if;
+	end function;
+
+end package body FloatALU_Types;

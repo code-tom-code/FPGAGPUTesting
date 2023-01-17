@@ -22,6 +22,12 @@
     <Filter Include="HDL">
       <UniqueIdentifier>{702fbd0c-4a96-42b9-86dd-0cd65993620c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="HDL\Network">
+      <UniqueIdentifier>{870931e2-479c-4d35-9da0-c8bbe90a5ae8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="HDL\FloatALU">
+      <UniqueIdentifier>{b111aa79-20e1-4599-a05a-5ca479025ff5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CPPTestbench1.cpp">
@@ -318,6 +324,33 @@
     </None>
     <None Include="NetProtoPacketProcessor.prj">
       <Filter>Resource Files</Filter>
+    </None>
+    <None Include="hdl_src\Network\NetProtoHelpers_ARP.vhd">
+      <Filter>HDL\Network</Filter>
+    </None>
+    <None Include="hdl_src\Network\NetProtoHelpers_Core.vhd">
+      <Filter>HDL\Network</Filter>
+    </None>
+    <None Include="hdl_src\Network\NetProtoHelpers_IPv4.vhd">
+      <Filter>HDL\Network</Filter>
+    </None>
+    <None Include="hdl_src\Network\NetProtoHelpers_MAC.vhd">
+      <Filter>HDL\Network</Filter>
+    </None>
+    <None Include="hdl_src\Network\NetProtoHelpers_UDP.vhd">
+      <Filter>HDL\Network</Filter>
+    </None>
+    <None Include="hdl_src\FloatALU\FloatALU_CMP.vhd">
+      <Filter>HDL\FloatALU</Filter>
+    </None>
+    <None Include="hdl_src\FloatALU\FloatALU_CNV.vhd">
+      <Filter>HDL\FloatALU</Filter>
+    </None>
+    <None Include="hdl_src\FloatALU\FloatALU_SHFT.vhd">
+      <Filter>HDL\FloatALU</Filter>
+    </None>
+    <None Include="hdl_src\FloatALU\FloatCommon.vhd">
+      <Filter>HDL\FloatALU</Filter>
     </None>
   </ItemGroup>
 </Project>

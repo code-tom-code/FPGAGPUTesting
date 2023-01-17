@@ -8,11 +8,9 @@ use IEEE.NUMERIC_STD.ALL;
 
 use work.FloatALU_Types.all;
 use work.FloatCommon.all;
-use work.FloatALU_CMP.all;
-use work.FloatALU_SHFT.all;
 use work.FloatALU_CNV.all;
 
-entity FloatALU is
+entity DepthInterpFloatALU is
     Port (clk : in STD_LOGIC;
 
 		-- Common ports shared across multiple stages:
@@ -21,30 +19,21 @@ entity FloatALU is
 		IN_MODE : in STD_LOGIC_VECTOR(2 downto 0); -- Generic "mode" that can be interpreted by different stages differently
 		OUT_RESULT : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 
-		-- SHFT pipe operates in 1 clock cycle. IN_MODE corresponds to the eShftMode type.
-		ISHFT_GO : in STD_LOGIC;
-
 		-- MUL pipe operates in 5 clock cycles
 		IMUL_GO : in STD_LOGIC;
 
 		-- ADD pipe operates in 4 clock cycles
 		IADD_GO : in STD_LOGIC;
 
-		-- CMP pipe operates in 1 clock cycle. IN_MODE corresponds to the eCmpType type.
-		ICMP_GO : in STD_LOGIC;
-
 		-- CNV pipe operates in 3 clock cycles. IN_MODE corresponds to the eConvertMode type.
 		ICNV_GO : in STD_LOGIC;
 
 		-- SPEC pipe operates in 14 clock cycles for RCP.
-		ISPEC_GO : in STD_LOGIC;
-
-		-- BIT pipe operates in 1 clock cycle. IN_MODE corresponds to the eBitType type.
-		IBIT_GO : in STD_LOGIC
+		ISPEC_GO : in STD_LOGIC
 		);
-end FloatALU;
+end DepthInterpFloatALU;
 
-architecture Behavioral of FloatALU is
+architecture Behavioral of DepthInterpFloatALU is
 
 ATTRIBUTE X_INTERFACE_INFO : STRING;
 ATTRIBUTE X_INTERFACE_PARAMETER : STRING;
@@ -215,13 +204,10 @@ signal cnvMode0 : eConvertMode := F_to_UNORM16;
 signal cnvMode1 : eConvertMode := F_to_UNORM16;
 
 -- Output signals:
-signal OSHFT : std_logic_vector(31 downto 0) := (others => '0');
 signal OADD : std_logic_vector(31 downto 0) := (others => '0');
 signal OMUL : std_logic_vector(31 downto 0) := (others => '0');
-signal OCMP : std_logic_vector(31 downto 0) := (others => '0');
 signal ORCP : std_logic_vector(31 downto 0) := (others => '0');
 signal OCNV : std_logic_vector(31 downto 0) := (others => '0');
-signal OBIT : std_logic_vector(31 downto 0) := (others => '0');
 signal OMUX : MUXArrayType := (others => (others => '0') );
 
 begin
@@ -251,13 +237,10 @@ comAEqualsB <= '1' when (unsigned(IN_A(30 downto 0) ) = unsigned(IN_B(30 downto 
 
 -- Output MUX handling:
 with OMUX(0) select
-	OUT_RESULT <= OCMP when "0000001",
-					OADD when "0000010",
+	OUT_RESULT <= 	OADD when "0000010",
 					OMUL when "0000100",
-					OSHFT when "0001000",
 					ORCP when "0010000",
 					OCNV when "0100000",
-					OBIT when "1000000",
 					(others => '0') when others;
 
 -- Output MUX process:
@@ -268,123 +251,17 @@ begin
 		for i in OMUX'length-2 downto 0 loop
 			OMUX(i) <= OMUX(i + 1); -- Shift the whole vector down by one entry per clock cycle (shifting in zeroed bits at the top each time)
 		end loop;
-		if (ICMP_GO = '1') then
-			OMUX(CMP_CYCLES - 1) <= "0000001";
-		elsif (IADD_GO = '1') then
+		if (IADD_GO = '1') then
 			OMUX(ADD_CYCLES - 1) <= "0000010";
 		elsif (IMUL_GO = '1') then
 			OMUX(MUL_CYCLES - 1) <= "0000100";
-		elsif (ISHFT_GO = '1') then
-			OMUX(SHFT_CYCLES - 1) <= "0001000";
 		elsif (ISPEC_GO = '1') then
 			OMUX(SPEC_CYCLES - 1) <= "0010000";
 		elsif (ICNV_GO = '1') then
 			OMUX(CNV_CYCLES - 1) <= "0100000";
-		elsif (IBIT_GO = '1') then
-			OMUX(BIT_CYCLES - 1) <= "1000000";
 		end if;
 	end if;
 end process OMUXProcess;
-
--- Shift (SHFT) pipe process:
-SHFTStage0 : process(clk)
-begin
-	if (rising_edge(clk) ) then
-		if (ISHFT_GO = '1') then
-			if (comAIsReal = '0') then
-				OSHFT <= IN_A;
-			else
-				if (DoesShiftToINFOrDEN(f32(IN_A), CastShiftModeBitsToEnum(unsigned(IN_MODE) ) ) = '1') then
-					if (IsShiftUp(CastShiftModeBitsToEnum(unsigned(IN_MODE) ) ) = '1') then
-						OSHFT <= IN_A(31) & X"FF" & "00000000000000000000000";
-					else
-						OSHFT <= IN_A(31) & X"00" & "00000000000000000000000";
-					end if;
-				else
-					if (comAIsDenormal = '1') then -- Make sure that zero stays zero. Don't let the shifts turn our zeroes into nonzero values.
-						OSHFT <= std_logic_vector(comDenormalFlushedA);
-					else
-						OSHFT <= std_logic_vector(PerformCoreShift(f32(IN_A), unsigned(IN_MODE) ) );
-					end if;
-				end if;
-			end if;
-		else
-			OSHFT <= (others => '0');
-		end if;
-	end if;
-end process SHFTStage0;
-
--- Compare (CMP) pipe process:
-CMPStage0 : process(clk)
-begin
-	if (rising_edge(clk) ) then
-		if (ICMP_GO = '1') then
-			case eCmpType'val(to_integer(unsigned(IN_MODE) ) ) is
-				when CmpMin =>
-					OCMP <= std_logic_vector(CmpMinFunc(f32(IN_A), f32(IN_B), comAIsNaN, comBIsNaN, comAIsNeg, comBIsNeg, comALessThanB) );
-
-				when CmpMax =>
-					OCMP <= std_logic_vector(CmpMaxFunc(f32(IN_A), f32(IN_B), comAIsNaN, comBIsNaN, comAIsNeg, comBIsNeg, comALessThanB) );
-
-				when CmpSlt =>
-					OCMP <= std_logic_vector(CmpSltFunc(comAEqualsB, comALessThanB, comAIsNaN, comBIsNaN, comDenormalFlushedA, comDenormalFlushedB, comAIsNeg, comBIsNeg, comAIsDenormal, comBIsDenormal) );
-
-				when CmpSge =>
-					OCMP <= std_logic_vector(CmpSgeFunc(comAEqualsB, comALessThanB, comAIsNaN, comBIsNaN, comDenormalFlushedA, comDenormalFlushedB, comAIsNeg, comBIsNeg, comAIsDenormal, comBIsDenormal) );
-
-				when CmpSgn =>
-					OCMP <= std_logic_vector(CmpSgnFunc(f32(IN_A), comAIsNaN, comAIsDenormal, comAIsNeg) );
-				
-				when others =>
-					OCMP <= IN_A;
-
-				--when CmpCmp =>
-					--OCMP <= std_logic_vector(CmpCmpFunc(f32(IN_A), f32(IN_B), f32(ICMP_C) ) );
-
-				--when CmpCnd =>
-					--OCMP <= std_logic_vector(CmpCndFunc(f32(IN_A), f32(IN_B), f32(ICMP_C) ) );
-			end case;
-		else
-			OCMP <= (others => '0');
-		end if;
-	end if;
-end process CMPStage0;
-
--- Bitwise (BIT) pipe process:
-BITStage0 : process(clk)
-begin
-	if (rising_edge(clk) ) then
-		if (IBIT_GO = '1') then
-			case eBitMode'val(to_integer(unsigned(IN_MODE) ) ) is
-				when BShftL8 =>
-					OBIT <= IN_A(23 downto 0) & X"00";
-
-				when BShftL16 =>
-					OBIT <= IN_A(15 downto 0) & X"0000";
-
-				when BShftL24 =>
-					OBIT <= IN_A(7 downto 0) & X"000000";
-
-				when BShftR8 =>
-					OBIT <= X"00" & IN_A(31 downto 8);
-
-				when BShftR16 =>
-					OBIT <= X"0000" & IN_A(31 downto 16);
-
-				when BShftR24 =>
-					OBIT <= X"000000" & IN_A(31 downto 24);
-				
-				when BOr =>
-					OBIT <= IN_A or IN_B;
-
-				when others => -- when BAnd =>
-					OBIT <= IN_A and IN_B;
-			end case;
-		else
-			OBIT <= (others => '0');
-		end if;
-	end if;
-end process BITStage0;
 
 -- Reciprocal (RCP) pipe process (cycle 1 of 14):
 RCPStage0 : process(clk)

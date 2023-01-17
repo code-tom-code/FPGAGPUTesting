@@ -40,7 +40,7 @@ if { [string first $scripts_vivado_version $current_vivado_version] == -1 } {
 
 # The design that will be created by this Tcl script contains the following 
 # module references:
-# FloatALU, AttrInterpolator, ClearBlock, CommandProcessor, DepthBuffer, FloatALU, DepthInterpolator, IndexBufferCache, InputAssembler2, ROP, Rasterizer, ResetN_UntilClockLocked, StatsCollector, TexSample, TriSetup, FloatALU, TriWorkCache, VertexBatchBuilder, MemoryController, CDC_Command_Scanout, ScanOut, dvid, obuf_outputs, PacketProcessor, ConstantBuffer, FloatALU, FloatALU, FloatALU, FloatALU, ShaderCore, UNORM8ToFloat, VertexStreamCache, GPRQuad2
+# AttrInterpFloatALU, AttrInterpolator, ClearBlock, CommandProcessor, DepthBuffer, DepthInterpFloatALU, DepthInterpolator, IndexBufferCache, InputAssembler2, ROP, Rasterizer, ResetN_UntilClockLocked, StatsCollector, TexSample, TriSetupFloatALU, TriSetup, TriWorkCache, VertexBatchBuilder, MemoryController, CDC_Command_Scanout, ScanOut, dvid, obuf_outputs, PacketProcessor, ConstantBuffer, FloatALU, FloatALU, FloatALU, FloatALU, ShaderCore, UNORM8ToFloat, VertexStreamCache, GPRQuad2
 
 # Please add the sources of those modules before sourcing this Tcl script.
 
@@ -1624,6 +1624,7 @@ proc create_hier_cell_MemorySystem { parentCell nameHier } {
    CONFIG.C0.BANK_GROUP_WIDTH {1} \
    CONFIG.C0.DDR4_AxiAddressWidth {30} \
    CONFIG.C0.DDR4_AxiDataWidth {256} \
+   CONFIG.C0.DDR4_AxiIDWidth {4} \
    CONFIG.C0.DDR4_CLKOUT0_DIVIDE {3} \
    CONFIG.C0.DDR4_DataWidth {32} \
    CONFIG.C0.DDR4_InputClockPeriod {3334} \
@@ -1779,13 +1780,13 @@ proc create_root_design { parentCell } {
   set tmds_red_n [ create_bd_port -dir O tmds_red_n ]
   set tmds_red_p [ create_bd_port -dir O tmds_red_p ]
 
-  # Create instance: AttrInterp_FPU, and set properties
-  set block_name FloatALU
-  set block_cell_name AttrInterp_FPU
-  if { [catch {set AttrInterp_FPU [create_bd_cell -type module -reference $block_name $block_cell_name] } errmsg] } {
+  # Create instance: AttrInterpFloatALU_0, and set properties
+  set block_name AttrInterpFloatALU
+  set block_cell_name AttrInterpFloatALU_0
+  if { [catch {set AttrInterpFloatALU_0 [create_bd_cell -type module -reference $block_name $block_cell_name] } errmsg] } {
      catch {common::send_msg_id "BD_TCL-105" "ERROR" "Unable to add referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
      return 1
-   } elseif { $AttrInterp_FPU eq "" } {
+   } elseif { $AttrInterpFloatALU_0 eq "" } {
      catch {common::send_msg_id "BD_TCL-106" "ERROR" "Unable to referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
      return 1
    }
@@ -1867,13 +1868,13 @@ proc create_root_design { parentCell } {
    CONFIG.use_bram_block {Stand_Alone} \
  ] $DepthBuffer_URAM
 
-  # Create instance: DepthInterp_FPU, and set properties
-  set block_name FloatALU
-  set block_cell_name DepthInterp_FPU
-  if { [catch {set DepthInterp_FPU [create_bd_cell -type module -reference $block_name $block_cell_name] } errmsg] } {
+  # Create instance: DepthInterpFloatALU_0, and set properties
+  set block_name DepthInterpFloatALU
+  set block_cell_name DepthInterpFloatALU_0
+  if { [catch {set DepthInterpFloatALU_0 [create_bd_cell -type module -reference $block_name $block_cell_name] } errmsg] } {
      catch {common::send_msg_id "BD_TCL-105" "ERROR" "Unable to add referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
      return 1
-   } elseif { $DepthInterp_FPU eq "" } {
+   } elseif { $DepthInterpFloatALU_0 eq "" } {
      catch {common::send_msg_id "BD_TCL-106" "ERROR" "Unable to referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
      return 1
    }
@@ -2256,6 +2257,17 @@ proc create_root_design { parentCell } {
    CONFIG.use_bram_block {Stand_Alone} \
  ] $TextureCache_128x128x32bits
 
+  # Create instance: TriSetupFloatALU_0, and set properties
+  set block_name TriSetupFloatALU
+  set block_cell_name TriSetupFloatALU_0
+  if { [catch {set TriSetupFloatALU_0 [create_bd_cell -type module -reference $block_name $block_cell_name] } errmsg] } {
+     catch {common::send_msg_id "BD_TCL-105" "ERROR" "Unable to add referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
+     return 1
+   } elseif { $TriSetupFloatALU_0 eq "" } {
+     catch {common::send_msg_id "BD_TCL-106" "ERROR" "Unable to referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
+     return 1
+   }
+  
   # Create instance: TriSetup_0, and set properties
   set block_name TriSetup
   set block_cell_name TriSetup_0
@@ -2263,17 +2275,6 @@ proc create_root_design { parentCell } {
      catch {common::send_msg_id "BD_TCL-105" "ERROR" "Unable to add referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
      return 1
    } elseif { $TriSetup_0 eq "" } {
-     catch {common::send_msg_id "BD_TCL-106" "ERROR" "Unable to referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
-     return 1
-   }
-  
-  # Create instance: TriSetup_FPU, and set properties
-  set block_name FloatALU
-  set block_cell_name TriSetup_FPU
-  if { [catch {set TriSetup_FPU [create_bd_cell -type module -reference $block_name $block_cell_name] } errmsg] } {
-     catch {common::send_msg_id "BD_TCL-105" "ERROR" "Unable to add referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
-     return 1
-   } elseif { $TriSetup_FPU eq "" } {
      catch {common::send_msg_id "BD_TCL-106" "ERROR" "Unable to referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
      return 1
    }
@@ -2583,21 +2584,17 @@ proc create_root_design { parentCell } {
   connect_bd_intf_net -intf_net default_sysclk1_300_1 [get_bd_intf_ports default_sysclk1_300] [get_bd_intf_pins MemorySystem/default_sysclk1_300]
 
   # Create port connections
-  connect_bd_net -net AttrInterp_FPU_OUT_RESULT [get_bd_pins AttrInterp_FPU/OUT_RESULT] [get_bd_pins AttrInterpolator_0/FPU_OUT] [get_bd_pins ILA_AttrInterpolator/probe16]
+  connect_bd_net -net AttrInterpFloatALU_0_OUT_RESULT [get_bd_pins AttrInterpFloatALU_0/OUT_RESULT] [get_bd_pins AttrInterpolator_0/FPU_OUT] [get_bd_pins ILA_AttrInterpolator/probe16]
   connect_bd_net -net AttrInterpolator_0_DBG_AttrInterpolator_State [get_bd_pins AttrInterpolator_0/DBG_AttrInterpolator_State] [get_bd_pins ILA_AttrInterpolator/probe6] [get_bd_pins ila_333_250/probe7]
   connect_bd_net -net AttrInterpolator_0_DBG_RastBarycentricB [get_bd_pins AttrInterpolator_0/DBG_RastBarycentricB] [get_bd_pins ILA_AttrInterpolator/probe8]
   connect_bd_net -net AttrInterpolator_0_DBG_RastBarycentricC [get_bd_pins AttrInterpolator_0/DBG_RastBarycentricC] [get_bd_pins ILA_AttrInterpolator/probe9]
   connect_bd_net -net AttrInterpolator_0_DINTERP_ReadyForNewPixel [get_bd_pins AttrInterpolator_0/DINTERP_ReadyForNewPixel] [get_bd_pins DepthInterpolator_0/ATTR_ReadyForNewPixel]
-  connect_bd_net -net AttrInterpolator_0_FPU_A [get_bd_pins AttrInterp_FPU/IN_A] [get_bd_pins AttrInterpolator_0/FPU_A] [get_bd_pins ILA_AttrInterpolator/probe15]
-  connect_bd_net -net AttrInterpolator_0_FPU_B [get_bd_pins AttrInterp_FPU/IN_B] [get_bd_pins AttrInterpolator_0/FPU_B] [get_bd_pins ILA_AttrInterpolator/probe26]
-  connect_bd_net -net AttrInterpolator_0_FPU_IADD_GO [get_bd_pins AttrInterp_FPU/IADD_GO] [get_bd_pins AttrInterpolator_0/FPU_IADD_GO]
-  connect_bd_net -net AttrInterpolator_0_FPU_IBIT_GO [get_bd_pins AttrInterp_FPU/IBIT_GO] [get_bd_pins AttrInterpolator_0/FPU_IBIT_GO]
-  connect_bd_net -net AttrInterpolator_0_FPU_ICMP_GO [get_bd_pins AttrInterp_FPU/ICMP_GO] [get_bd_pins AttrInterpolator_0/FPU_ICMP_GO]
-  connect_bd_net -net AttrInterpolator_0_FPU_ICNV_GO [get_bd_pins AttrInterp_FPU/ICNV_GO] [get_bd_pins AttrInterpolator_0/FPU_ICNV_GO]
-  connect_bd_net -net AttrInterpolator_0_FPU_IMUL_GO [get_bd_pins AttrInterp_FPU/IMUL_GO] [get_bd_pins AttrInterpolator_0/FPU_IMUL_GO]
-  connect_bd_net -net AttrInterpolator_0_FPU_ISHFT_GO [get_bd_pins AttrInterp_FPU/ISHFT_GO] [get_bd_pins AttrInterpolator_0/FPU_ISHFT_GO]
-  connect_bd_net -net AttrInterpolator_0_FPU_ISPEC_GO [get_bd_pins AttrInterp_FPU/ISPEC_GO] [get_bd_pins AttrInterpolator_0/FPU_ISPEC_GO]
-  connect_bd_net -net AttrInterpolator_0_FPU_Mode [get_bd_pins AttrInterp_FPU/IN_MODE] [get_bd_pins AttrInterpolator_0/FPU_Mode]
+  connect_bd_net -net AttrInterpolator_0_FPU_A [get_bd_pins AttrInterpFloatALU_0/IN_A] [get_bd_pins AttrInterpolator_0/FPU_A] [get_bd_pins ILA_AttrInterpolator/probe15]
+  connect_bd_net -net AttrInterpolator_0_FPU_B [get_bd_pins AttrInterpFloatALU_0/IN_B] [get_bd_pins AttrInterpolator_0/FPU_B] [get_bd_pins ILA_AttrInterpolator/probe26]
+  connect_bd_net -net AttrInterpolator_0_FPU_IADD_GO [get_bd_pins AttrInterpFloatALU_0/IADD_GO] [get_bd_pins AttrInterpolator_0/FPU_IADD_GO]
+  connect_bd_net -net AttrInterpolator_0_FPU_ICNV_GO [get_bd_pins AttrInterpFloatALU_0/ICNV_GO] [get_bd_pins AttrInterpolator_0/FPU_ICNV_GO]
+  connect_bd_net -net AttrInterpolator_0_FPU_IMUL_GO [get_bd_pins AttrInterpFloatALU_0/IMUL_GO] [get_bd_pins AttrInterpolator_0/FPU_IMUL_GO]
+  connect_bd_net -net AttrInterpolator_0_FPU_Mode [get_bd_pins AttrInterpFloatALU_0/IN_MODE] [get_bd_pins AttrInterpolator_0/FPU_Mode]
   connect_bd_net -net AttrInterpolator_0_STAT_CyclesIdle [get_bd_pins AttrInterpolator_0/STAT_CyclesIdle] [get_bd_pins StatsCollector_0/INTERP_CyclesIdle]
   connect_bd_net -net AttrInterpolator_0_STAT_CyclesSpentWorking [get_bd_pins AttrInterpolator_0/STAT_CyclesSpentWorking] [get_bd_pins StatsCollector_0/INTERP_CyclesSpentWorking]
   connect_bd_net -net AttrInterpolator_0_STAT_CyclesWaitingForOutput [get_bd_pins AttrInterpolator_0/STAT_CyclesWaitingForOutput] [get_bd_pins StatsCollector_0/INTERP_CyclesWaitingForOutput]
@@ -2679,7 +2676,7 @@ proc create_root_design { parentCell } {
   connect_bd_net -net DepthBuffer_0_URAM_addrb [get_bd_pins DepthBuffer_0/URAM_addrb] [get_bd_pins DepthBuffer_URAM/addrb] [get_bd_pins ILA_AttrInterpolator/probe27]
   connect_bd_net -net DepthBuffer_0_URAM_dina [get_bd_pins DepthBuffer_0/URAM_dina] [get_bd_pins DepthBuffer_URAM/dina] [get_bd_pins ILA_AttrInterpolator/probe18]
   connect_bd_net -net DepthBuffer_0_URAM_wea [get_bd_pins DepthBuffer_0/URAM_wea] [get_bd_pins DepthBuffer_URAM/wea] [get_bd_pins ILA_AttrInterpolator/probe19]
-  connect_bd_net -net DepthInterp_FPU_OUT_RESULT [get_bd_pins DepthInterp_FPU/OUT_RESULT] [get_bd_pins DepthInterpolator_0/FPU_OUT]
+  connect_bd_net -net DepthInterpFloatALU_0_OUT_RESULT [get_bd_pins DepthInterpFloatALU_0/OUT_RESULT] [get_bd_pins DepthInterpolator_0/FPU_OUT]
   connect_bd_net -net DepthInterpolator_0_ATTR_NewPixelValid [get_bd_pins AttrInterpolator_0/DINTERP_NewPixelValid] [get_bd_pins DepthInterpolator_0/ATTR_NewPixelValid]
   connect_bd_net -net DepthInterpolator_0_ATTR_NormalizedBarycentricB [get_bd_pins AttrInterpolator_0/DINTERP_NormalizedBarycentricB] [get_bd_pins DepthInterpolator_0/ATTR_NormalizedBarycentricB]
   connect_bd_net -net DepthInterpolator_0_ATTR_NormalizedBarycentricC [get_bd_pins AttrInterpolator_0/DINTERP_NormalizedBarycentricC] [get_bd_pins DepthInterpolator_0/ATTR_NormalizedBarycentricC]
@@ -2700,16 +2697,13 @@ proc create_root_design { parentCell } {
   connect_bd_net -net DepthInterpolator_0_DEPTH_PixelReady [get_bd_pins DepthBuffer_0/RAST_PixelReady] [get_bd_pins DepthInterpolator_0/DEPTH_PixelReady] [get_bd_pins ILA_AttrInterpolator/probe31]
   connect_bd_net -net DepthInterpolator_0_DEPTH_PosX [get_bd_pins DepthBuffer_0/RAST_PosX] [get_bd_pins DepthInterpolator_0/DEPTH_PosX]
   connect_bd_net -net DepthInterpolator_0_DEPTH_PosY [get_bd_pins DepthBuffer_0/RAST_PosY] [get_bd_pins DepthInterpolator_0/DEPTH_PosY]
-  connect_bd_net -net DepthInterpolator_0_FPU_A [get_bd_pins DepthInterp_FPU/IN_A] [get_bd_pins DepthInterpolator_0/FPU_A]
-  connect_bd_net -net DepthInterpolator_0_FPU_B [get_bd_pins DepthInterp_FPU/IN_B] [get_bd_pins DepthInterpolator_0/FPU_B]
-  connect_bd_net -net DepthInterpolator_0_FPU_IADD_GO [get_bd_pins DepthInterp_FPU/IADD_GO] [get_bd_pins DepthInterpolator_0/FPU_IADD_GO]
-  connect_bd_net -net DepthInterpolator_0_FPU_IBIT_GO [get_bd_pins DepthInterp_FPU/IBIT_GO] [get_bd_pins DepthInterpolator_0/FPU_IBIT_GO]
-  connect_bd_net -net DepthInterpolator_0_FPU_ICMP_GO [get_bd_pins DepthInterp_FPU/ICMP_GO] [get_bd_pins DepthInterpolator_0/FPU_ICMP_GO]
-  connect_bd_net -net DepthInterpolator_0_FPU_ICNV_GO [get_bd_pins DepthInterp_FPU/ICNV_GO] [get_bd_pins DepthInterpolator_0/FPU_ICNV_GO]
-  connect_bd_net -net DepthInterpolator_0_FPU_IMUL_GO [get_bd_pins DepthInterp_FPU/IMUL_GO] [get_bd_pins DepthInterpolator_0/FPU_IMUL_GO]
-  connect_bd_net -net DepthInterpolator_0_FPU_ISHFT_GO [get_bd_pins DepthInterp_FPU/ISHFT_GO] [get_bd_pins DepthInterpolator_0/FPU_ISHFT_GO]
-  connect_bd_net -net DepthInterpolator_0_FPU_ISPEC_GO [get_bd_pins DepthInterp_FPU/ISPEC_GO] [get_bd_pins DepthInterpolator_0/FPU_ISPEC_GO]
-  connect_bd_net -net DepthInterpolator_0_FPU_Mode [get_bd_pins DepthInterp_FPU/IN_MODE] [get_bd_pins DepthInterpolator_0/FPU_Mode]
+  connect_bd_net -net DepthInterpolator_0_FPU_A [get_bd_pins DepthInterpFloatALU_0/IN_A] [get_bd_pins DepthInterpolator_0/FPU_A]
+  connect_bd_net -net DepthInterpolator_0_FPU_B [get_bd_pins DepthInterpFloatALU_0/IN_B] [get_bd_pins DepthInterpolator_0/FPU_B]
+  connect_bd_net -net DepthInterpolator_0_FPU_IADD_GO [get_bd_pins DepthInterpFloatALU_0/IADD_GO] [get_bd_pins DepthInterpolator_0/FPU_IADD_GO]
+  connect_bd_net -net DepthInterpolator_0_FPU_ICNV_GO [get_bd_pins DepthInterpFloatALU_0/ICNV_GO] [get_bd_pins DepthInterpolator_0/FPU_ICNV_GO]
+  connect_bd_net -net DepthInterpolator_0_FPU_IMUL_GO [get_bd_pins DepthInterpFloatALU_0/IMUL_GO] [get_bd_pins DepthInterpolator_0/FPU_IMUL_GO]
+  connect_bd_net -net DepthInterpolator_0_FPU_ISPEC_GO [get_bd_pins DepthInterpFloatALU_0/ISPEC_GO] [get_bd_pins DepthInterpolator_0/FPU_ISPEC_GO]
+  connect_bd_net -net DepthInterpolator_0_FPU_Mode [get_bd_pins DepthInterpFloatALU_0/IN_MODE] [get_bd_pins DepthInterpolator_0/FPU_Mode]
   connect_bd_net -net DepthInterpolator_0_STAT_CyclesIdle [get_bd_pins DepthInterpolator_0/STAT_CyclesIdle] [get_bd_pins StatsCollector_0/DINTERP_CyclesIdle]
   connect_bd_net -net DepthInterpolator_0_STAT_CyclesSpentWorking [get_bd_pins DepthInterpolator_0/STAT_CyclesSpentWorking] [get_bd_pins StatsCollector_0/DINTERP_CyclesSpentWorking]
   connect_bd_net -net DepthInterpolator_0_STAT_CyclesWaitingForOutput [get_bd_pins DepthInterpolator_0/STAT_CyclesWaitingForOutput] [get_bd_pins StatsCollector_0/DINTERP_CyclesWaitingForOutput]
@@ -2908,6 +2902,7 @@ proc create_root_design { parentCell } {
   connect_bd_net -net TexSample_0_STAT_CyclesSpentWorking [get_bd_pins StatsCollector_0/TEXSAMP_CyclesSpentWorking] [get_bd_pins TexSample_0/STAT_CyclesSpentWorking]
   connect_bd_net -net TexSample_0_STAT_CyclesWaitingCacheLoad [get_bd_pins StatsCollector_0/TEXSAMP_CyclesWaitingCacheLoad] [get_bd_pins TexSample_0/STAT_CyclesWaitingCacheLoad]
   connect_bd_net -net TexSample_0_STAT_CyclesWaitingForOutput [get_bd_pins StatsCollector_0/TEXSAMP_CyclesWaitingForOutput] [get_bd_pins TexSample_0/STAT_CyclesWaitingForOutput]
+  connect_bd_net -net TriSetupFloatALU_0_OUT_RESULT [get_bd_pins ILA_TriSetup/probe57] [get_bd_pins TriSetupFloatALU_0/OUT_RESULT] [get_bd_pins TriSetup_0/FPU_OUT]
   connect_bd_net -net TriSetup_0_DBG_MaxX [get_bd_pins ILA_TriSetup/probe32] [get_bd_pins TriSetup_0/DBG_MaxX]
   connect_bd_net -net TriSetup_0_DBG_MaxY [get_bd_pins ILA_TriSetup/probe34] [get_bd_pins TriSetup_0/DBG_MaxY]
   connect_bd_net -net TriSetup_0_DBG_MinX [get_bd_pins ILA_TriSetup/probe31] [get_bd_pins TriSetup_0/DBG_MinX]
@@ -2920,16 +2915,12 @@ proc create_root_design { parentCell } {
   connect_bd_net -net TriSetup_0_DBG_XProdSub1 [get_bd_pins ILA_TriSetup/probe36] [get_bd_pins TriSetup_0/DBG_XProdSub1]
   connect_bd_net -net TriSetup_0_DBG_XProdSub2 [get_bd_pins ILA_TriSetup/probe37] [get_bd_pins TriSetup_0/DBG_XProdSub2]
   connect_bd_net -net TriSetup_0_DBG_XProdSub3 [get_bd_pins ILA_TriSetup/probe38] [get_bd_pins TriSetup_0/DBG_XProdSub3]
-  connect_bd_net -net TriSetup_0_FPU_A [get_bd_pins ILA_TriSetup/probe56] [get_bd_pins TriSetup_0/FPU_A] [get_bd_pins TriSetup_FPU/IN_A]
-  connect_bd_net -net TriSetup_0_FPU_B [get_bd_pins TriSetup_0/FPU_B] [get_bd_pins TriSetup_FPU/IN_B]
-  connect_bd_net -net TriSetup_0_FPU_IADD_GO [get_bd_pins TriSetup_0/FPU_IADD_GO] [get_bd_pins TriSetup_FPU/IADD_GO]
-  connect_bd_net -net TriSetup_0_FPU_IBIT_GO [get_bd_pins TriSetup_0/FPU_IBIT_GO] [get_bd_pins TriSetup_FPU/IBIT_GO]
-  connect_bd_net -net TriSetup_0_FPU_ICMP_GO [get_bd_pins TriSetup_0/FPU_ICMP_GO] [get_bd_pins TriSetup_FPU/ICMP_GO]
-  connect_bd_net -net TriSetup_0_FPU_ICNV_GO [get_bd_pins TriSetup_0/FPU_ICNV_GO] [get_bd_pins TriSetup_FPU/ICNV_GO]
-  connect_bd_net -net TriSetup_0_FPU_IMUL_GO [get_bd_pins TriSetup_0/FPU_IMUL_GO] [get_bd_pins TriSetup_FPU/IMUL_GO]
-  connect_bd_net -net TriSetup_0_FPU_ISHFT_GO [get_bd_pins TriSetup_0/FPU_ISHFT_GO] [get_bd_pins TriSetup_FPU/ISHFT_GO]
-  connect_bd_net -net TriSetup_0_FPU_ISPEC_GO [get_bd_pins TriSetup_0/FPU_ISPEC_GO] [get_bd_pins TriSetup_FPU/ISPEC_GO]
-  connect_bd_net -net TriSetup_0_FPU_Mode [get_bd_pins TriSetup_0/FPU_Mode] [get_bd_pins TriSetup_FPU/IN_MODE]
+  connect_bd_net -net TriSetup_0_FPU_A [get_bd_pins ILA_TriSetup/probe56] [get_bd_pins TriSetupFloatALU_0/IN_A] [get_bd_pins TriSetup_0/FPU_A]
+  connect_bd_net -net TriSetup_0_FPU_B [get_bd_pins TriSetupFloatALU_0/IN_B] [get_bd_pins TriSetup_0/FPU_B]
+  connect_bd_net -net TriSetup_0_FPU_IADD_GO [get_bd_pins TriSetupFloatALU_0/IADD_GO] [get_bd_pins TriSetup_0/FPU_IADD_GO]
+  connect_bd_net -net TriSetup_0_FPU_ICNV_GO [get_bd_pins TriSetupFloatALU_0/ICNV_GO] [get_bd_pins TriSetup_0/FPU_ICNV_GO]
+  connect_bd_net -net TriSetup_0_FPU_ISPEC_GO [get_bd_pins TriSetupFloatALU_0/ISPEC_GO] [get_bd_pins TriSetup_0/FPU_ISPEC_GO]
+  connect_bd_net -net TriSetup_0_FPU_Mode [get_bd_pins TriSetupFloatALU_0/IN_MODE] [get_bd_pins TriSetup_0/FPU_Mode]
   connect_bd_net -net TriSetup_0_IA_readyForNewTri [get_bd_pins InputAssembler2_0/TRISETUP_readyForNewTri] [get_bd_pins TriSetup_0/IA_readyForNewTri]
   connect_bd_net -net TriSetup_0_RAST_outBarycentricInverse [get_bd_pins ILA_TriSetup/probe0] [get_bd_pins Rasterizer_0/TRISETUP_inBarycentricInverse] [get_bd_pins TriSetup_0/RAST_outBarycentricInverse]
   connect_bd_net -net TriSetup_0_RAST_outBarycentricXDeltaA [get_bd_pins ILA_TriSetup/probe23] [get_bd_pins Rasterizer_0/TRISETUP_inBarycentricXDeltaA] [get_bd_pins TriSetup_0/RAST_outBarycentricXDeltaA]
@@ -2967,7 +2958,6 @@ proc create_root_design { parentCell } {
   connect_bd_net -net TriSetup_0_STAT_CyclesIdle [get_bd_pins StatsCollector_0/TRISETUP_CyclesIdle] [get_bd_pins TriSetup_0/STAT_CyclesIdle]
   connect_bd_net -net TriSetup_0_STAT_CyclesSpentWorking [get_bd_pins StatsCollector_0/TRISETUP_CyclesSpentWorking] [get_bd_pins TriSetup_0/STAT_CyclesSpentWorking]
   connect_bd_net -net TriSetup_0_STAT_CyclesWaitingForOutput [get_bd_pins StatsCollector_0/TRISETUP_CyclesWaitingForOutput] [get_bd_pins TriSetup_0/STAT_CyclesWaitingForOutput]
-  connect_bd_net -net TriSetup_FPU_OUT_RESULT [get_bd_pins ILA_TriSetup/probe57] [get_bd_pins TriSetup_0/FPU_OUT] [get_bd_pins TriSetup_FPU/OUT_RESULT]
   connect_bd_net -net TriWorkCache_0_DBG_NumActiveTriangles [get_bd_pins ILA_AttrInterpolator/probe10] [get_bd_pins TriWorkCache_0/DBG_NumActiveTriangles]
   connect_bd_net -net TriWorkCache_0_INTERP_outBarycentricInverse [get_bd_pins DepthInterpolator_0/TRICACHE_inBarycentricInverse] [get_bd_pins TriWorkCache_0/INTERP_outBarycentricInverse]
   connect_bd_net -net TriWorkCache_0_INTERP_outColorRGBA0 [get_bd_pins DepthInterpolator_0/TRICACHE_inColorRGBA0] [get_bd_pins ILA_AttrInterpolator/probe23] [get_bd_pins TriWorkCache_0/INTERP_outColorRGBA0]
@@ -3000,7 +2990,7 @@ proc create_root_design { parentCell } {
   connect_bd_net -net VertexBatchBuilder_0_IBC_ReadEnable [get_bd_pins IndexBufferCache_0/VBB_ReadEnable] [get_bd_pins VertexBatchBuilder_0/IBC_ReadEnable]
   connect_bd_net -net VertexBatchBuilder_0_SHADER_Done [get_bd_pins ShaderCoreSystem/VBB_Done_0] [get_bd_pins VertexBatchBuilder_0/SHADER_Done]
   connect_bd_net -net ddr4_0_addn_ui_clkout1 [get_bd_pins MemorySystem/addn_ui_clkout1] [get_bd_pins ScanoutSystem/clk_in1] [get_bd_pins SerialPacketSystem/s_axi_aclk] [get_bd_pins proc_sys_reset_0/slowest_sync_clk]
-  connect_bd_net -net ddr4_0_c0_ddr4_ui_clk [get_bd_pins AttrInterp_FPU/clk] [get_bd_pins AttrInterpolator_0/clk] [get_bd_pins ClearBlock_0/clk] [get_bd_pins CommandProcessor_0/clk] [get_bd_pins DepthBuffer_0/clk] [get_bd_pins DepthInterp_FPU/clk] [get_bd_pins DepthInterpolator_0/clk] [get_bd_pins ILA_AttrInterpolator/clk] [get_bd_pins ILA_IA/clk] [get_bd_pins ILA_TexSampler/clk] [get_bd_pins ILA_TriSetup/clk] [get_bd_pins IndexBufferCache_0/clk] [get_bd_pins InputAssembler2_0/clk] [get_bd_pins MemorySystem/c0_ddr4_ui_clk] [get_bd_pins ROP_0/clk] [get_bd_pins ROP_FIFO/clk] [get_bd_pins Rasterizer_0/clk] [get_bd_pins ScanoutSystem/cmd_clk] [get_bd_pins SerialPacketSystem/rd_clk] [get_bd_pins ShaderCoreSystem/clk_0] [get_bd_pins StatsCollector_0/clk] [get_bd_pins TEXSAMP_FIFO/clk] [get_bd_pins TexSample_0/clk] [get_bd_pins TextureCache_128x128x32bits/clka] [get_bd_pins TriSetup_0/clk] [get_bd_pins TriSetup_FPU/clk] [get_bd_pins TriWorkCache_0/clk] [get_bd_pins VBB_FIFO/clk] [get_bd_pins VBO_FIFO/clk] [get_bd_pins VBO_INDEX_FIFO/clk] [get_bd_pins VertexBatchBuilder_0/clk] [get_bd_pins ila_333_250/clk] [get_bd_pins rast_out_fifo/clk] [get_bd_pins vio_0/clk]
+  connect_bd_net -net ddr4_0_c0_ddr4_ui_clk [get_bd_pins AttrInterpFloatALU_0/clk] [get_bd_pins AttrInterpolator_0/clk] [get_bd_pins ClearBlock_0/clk] [get_bd_pins CommandProcessor_0/clk] [get_bd_pins DepthBuffer_0/clk] [get_bd_pins DepthInterpFloatALU_0/clk] [get_bd_pins DepthInterpolator_0/clk] [get_bd_pins ILA_AttrInterpolator/clk] [get_bd_pins ILA_IA/clk] [get_bd_pins ILA_TexSampler/clk] [get_bd_pins ILA_TriSetup/clk] [get_bd_pins IndexBufferCache_0/clk] [get_bd_pins InputAssembler2_0/clk] [get_bd_pins MemorySystem/c0_ddr4_ui_clk] [get_bd_pins ROP_0/clk] [get_bd_pins ROP_FIFO/clk] [get_bd_pins Rasterizer_0/clk] [get_bd_pins ScanoutSystem/cmd_clk] [get_bd_pins SerialPacketSystem/rd_clk] [get_bd_pins ShaderCoreSystem/clk_0] [get_bd_pins StatsCollector_0/clk] [get_bd_pins TEXSAMP_FIFO/clk] [get_bd_pins TexSample_0/clk] [get_bd_pins TextureCache_128x128x32bits/clka] [get_bd_pins TriSetupFloatALU_0/clk] [get_bd_pins TriSetup_0/clk] [get_bd_pins TriWorkCache_0/clk] [get_bd_pins VBB_FIFO/clk] [get_bd_pins VBO_FIFO/clk] [get_bd_pins VBO_INDEX_FIFO/clk] [get_bd_pins VertexBatchBuilder_0/clk] [get_bd_pins ila_333_250/clk] [get_bd_pins rast_out_fifo/clk] [get_bd_pins vio_0/clk]
   connect_bd_net -net fifo_generator_0_dout [get_bd_pins ILA_IA/probe14] [get_bd_pins ShaderCoreSystem/VERTBATCH_FIFO_0_rd_data] [get_bd_pins VBB_FIFO/dout]
   connect_bd_net -net placeholder_texcfg_dout [get_bd_pins TriSetup_0/TEXCFG_nointerpolation] [get_bd_pins placeholder_texcfg/dout]
   connect_bd_net -net rd_clk_1 [get_bd_pins MemorySystem/rd_clk] [get_bd_pins ScanoutSystem/clk_out1]

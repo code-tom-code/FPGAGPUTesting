@@ -8,11 +8,9 @@ use IEEE.NUMERIC_STD.ALL;
 
 use work.FloatALU_Types.all;
 use work.FloatCommon.all;
-use work.FloatALU_CMP.all;
-use work.FloatALU_SHFT.all;
 use work.FloatALU_CNV.all;
 
-entity FloatALU is
+entity TriSetupFloatALU is
     Port (clk : in STD_LOGIC;
 
 		-- Common ports shared across multiple stages:
@@ -21,30 +19,18 @@ entity FloatALU is
 		IN_MODE : in STD_LOGIC_VECTOR(2 downto 0); -- Generic "mode" that can be interpreted by different stages differently
 		OUT_RESULT : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 
-		-- SHFT pipe operates in 1 clock cycle. IN_MODE corresponds to the eShftMode type.
-		ISHFT_GO : in STD_LOGIC;
-
-		-- MUL pipe operates in 5 clock cycles
-		IMUL_GO : in STD_LOGIC;
-
 		-- ADD pipe operates in 4 clock cycles
 		IADD_GO : in STD_LOGIC;
-
-		-- CMP pipe operates in 1 clock cycle. IN_MODE corresponds to the eCmpType type.
-		ICMP_GO : in STD_LOGIC;
 
 		-- CNV pipe operates in 3 clock cycles. IN_MODE corresponds to the eConvertMode type.
 		ICNV_GO : in STD_LOGIC;
 
 		-- SPEC pipe operates in 14 clock cycles for RCP.
-		ISPEC_GO : in STD_LOGIC;
-
-		-- BIT pipe operates in 1 clock cycle. IN_MODE corresponds to the eBitType type.
-		IBIT_GO : in STD_LOGIC
+		ISPEC_GO : in STD_LOGIC
 		);
-end FloatALU;
+end TriSetupFloatALU;
 
-architecture Behavioral of FloatALU is
+architecture Behavioral of TriSetupFloatALU is
 
 ATTRIBUTE X_INTERFACE_INFO : STRING;
 ATTRIBUTE X_INTERFACE_PARAMETER : STRING;
@@ -135,39 +121,6 @@ signal addPostAddMantissa1 : signed(25 downto 0) := (others => '0');
 
 signal OADD_Temp : std_logic_vector(31 downto 0) := (others => '0');
 
--- Multiplication (MUL) pipe signals:
-signal mulPipelineValidStage0 : std_logic := '0';
-signal mulPipelineValidStage1 : std_logic := '0';
-signal mulPipelineValidStage2 : std_logic := '0';
-signal mulPipelineValidStage3 : std_logic := '0';
-
-signal mulEarlyOutBypassEnable0 : std_logic := '0';
-signal mulEarlyOutBypassEnable1 : std_logic := '0';
-signal mulEarlyOutBypassEnable2 : std_logic := '0';
-signal mulEarlyOutBypassEnable3 : std_logic := '0';
-
-signal mulAssembledMantissaA : unsigned(23 downto 0) := (others => '0');
-signal mulAssembledMantissaB : unsigned(23 downto 0) := (others => '0');
-
-signal mulEarlyOutBypass0 : f32 := (others => '0');
-signal mulEarlyOutBypass1 : f32 := (others => '0');
-signal mulEarlyOutBypass2 : f32 := (others => '0');
-signal mulEarlyOutBypass3 : f32 := (others => '0');
-
-signal mulResultMantissa1 : unsigned(47 downto 0) := (others => '0');
-signal mulResultMantissa2 : unsigned(47 downto 0) := (others => '0');
-signal mulResultMantissa3 : unsigned(47 downto 0) := (others => '0');
-
-signal mulResultExp0 : signed(8 downto 0) := (others => '0');
-signal mulResultExp1 : signed(8 downto 0) := (others => '0');
-signal mulResultExp2 : signed(8 downto 0) := (others => '0');
-signal mulResultExp3 : signed(8 downto 0) := (others => '0');
-
-signal mulResultSign0 : std_logic := '0';
-signal mulResultSign1 : std_logic := '0';
-signal mulResultSign2 : std_logic := '0';
-signal mulResultSign3 : std_logic := '0';
-
 -- Reciprocal (RCP) pipe signals:
 signal rcpPipeline : rcpPipelineArray;
 signal rcpLookupSlope : unsigned(15 downto 0) := (others => '0');
@@ -215,13 +168,9 @@ signal cnvMode0 : eConvertMode := F_to_UNORM16;
 signal cnvMode1 : eConvertMode := F_to_UNORM16;
 
 -- Output signals:
-signal OSHFT : std_logic_vector(31 downto 0) := (others => '0');
 signal OADD : std_logic_vector(31 downto 0) := (others => '0');
-signal OMUL : std_logic_vector(31 downto 0) := (others => '0');
-signal OCMP : std_logic_vector(31 downto 0) := (others => '0');
 signal ORCP : std_logic_vector(31 downto 0) := (others => '0');
 signal OCNV : std_logic_vector(31 downto 0) := (others => '0');
-signal OBIT : std_logic_vector(31 downto 0) := (others => '0');
 signal OMUX : MUXArrayType := (others => (others => '0') );
 
 begin
@@ -251,13 +200,9 @@ comAEqualsB <= '1' when (unsigned(IN_A(30 downto 0) ) = unsigned(IN_B(30 downto 
 
 -- Output MUX handling:
 with OMUX(0) select
-	OUT_RESULT <= OCMP when "0000001",
-					OADD when "0000010",
-					OMUL when "0000100",
-					OSHFT when "0001000",
+	OUT_RESULT <= 	OADD when "0000010",
 					ORCP when "0010000",
 					OCNV when "0100000",
-					OBIT when "1000000",
 					(others => '0') when others;
 
 -- Output MUX process:
@@ -268,123 +213,15 @@ begin
 		for i in OMUX'length-2 downto 0 loop
 			OMUX(i) <= OMUX(i + 1); -- Shift the whole vector down by one entry per clock cycle (shifting in zeroed bits at the top each time)
 		end loop;
-		if (ICMP_GO = '1') then
-			OMUX(CMP_CYCLES - 1) <= "0000001";
-		elsif (IADD_GO = '1') then
+		if (IADD_GO = '1') then
 			OMUX(ADD_CYCLES - 1) <= "0000010";
-		elsif (IMUL_GO = '1') then
-			OMUX(MUL_CYCLES - 1) <= "0000100";
-		elsif (ISHFT_GO = '1') then
-			OMUX(SHFT_CYCLES - 1) <= "0001000";
 		elsif (ISPEC_GO = '1') then
 			OMUX(SPEC_CYCLES - 1) <= "0010000";
 		elsif (ICNV_GO = '1') then
 			OMUX(CNV_CYCLES - 1) <= "0100000";
-		elsif (IBIT_GO = '1') then
-			OMUX(BIT_CYCLES - 1) <= "1000000";
 		end if;
 	end if;
 end process OMUXProcess;
-
--- Shift (SHFT) pipe process:
-SHFTStage0 : process(clk)
-begin
-	if (rising_edge(clk) ) then
-		if (ISHFT_GO = '1') then
-			if (comAIsReal = '0') then
-				OSHFT <= IN_A;
-			else
-				if (DoesShiftToINFOrDEN(f32(IN_A), CastShiftModeBitsToEnum(unsigned(IN_MODE) ) ) = '1') then
-					if (IsShiftUp(CastShiftModeBitsToEnum(unsigned(IN_MODE) ) ) = '1') then
-						OSHFT <= IN_A(31) & X"FF" & "00000000000000000000000";
-					else
-						OSHFT <= IN_A(31) & X"00" & "00000000000000000000000";
-					end if;
-				else
-					if (comAIsDenormal = '1') then -- Make sure that zero stays zero. Don't let the shifts turn our zeroes into nonzero values.
-						OSHFT <= std_logic_vector(comDenormalFlushedA);
-					else
-						OSHFT <= std_logic_vector(PerformCoreShift(f32(IN_A), unsigned(IN_MODE) ) );
-					end if;
-				end if;
-			end if;
-		else
-			OSHFT <= (others => '0');
-		end if;
-	end if;
-end process SHFTStage0;
-
--- Compare (CMP) pipe process:
-CMPStage0 : process(clk)
-begin
-	if (rising_edge(clk) ) then
-		if (ICMP_GO = '1') then
-			case eCmpType'val(to_integer(unsigned(IN_MODE) ) ) is
-				when CmpMin =>
-					OCMP <= std_logic_vector(CmpMinFunc(f32(IN_A), f32(IN_B), comAIsNaN, comBIsNaN, comAIsNeg, comBIsNeg, comALessThanB) );
-
-				when CmpMax =>
-					OCMP <= std_logic_vector(CmpMaxFunc(f32(IN_A), f32(IN_B), comAIsNaN, comBIsNaN, comAIsNeg, comBIsNeg, comALessThanB) );
-
-				when CmpSlt =>
-					OCMP <= std_logic_vector(CmpSltFunc(comAEqualsB, comALessThanB, comAIsNaN, comBIsNaN, comDenormalFlushedA, comDenormalFlushedB, comAIsNeg, comBIsNeg, comAIsDenormal, comBIsDenormal) );
-
-				when CmpSge =>
-					OCMP <= std_logic_vector(CmpSgeFunc(comAEqualsB, comALessThanB, comAIsNaN, comBIsNaN, comDenormalFlushedA, comDenormalFlushedB, comAIsNeg, comBIsNeg, comAIsDenormal, comBIsDenormal) );
-
-				when CmpSgn =>
-					OCMP <= std_logic_vector(CmpSgnFunc(f32(IN_A), comAIsNaN, comAIsDenormal, comAIsNeg) );
-				
-				when others =>
-					OCMP <= IN_A;
-
-				--when CmpCmp =>
-					--OCMP <= std_logic_vector(CmpCmpFunc(f32(IN_A), f32(IN_B), f32(ICMP_C) ) );
-
-				--when CmpCnd =>
-					--OCMP <= std_logic_vector(CmpCndFunc(f32(IN_A), f32(IN_B), f32(ICMP_C) ) );
-			end case;
-		else
-			OCMP <= (others => '0');
-		end if;
-	end if;
-end process CMPStage0;
-
--- Bitwise (BIT) pipe process:
-BITStage0 : process(clk)
-begin
-	if (rising_edge(clk) ) then
-		if (IBIT_GO = '1') then
-			case eBitMode'val(to_integer(unsigned(IN_MODE) ) ) is
-				when BShftL8 =>
-					OBIT <= IN_A(23 downto 0) & X"00";
-
-				when BShftL16 =>
-					OBIT <= IN_A(15 downto 0) & X"0000";
-
-				when BShftL24 =>
-					OBIT <= IN_A(7 downto 0) & X"000000";
-
-				when BShftR8 =>
-					OBIT <= X"00" & IN_A(31 downto 8);
-
-				when BShftR16 =>
-					OBIT <= X"0000" & IN_A(31 downto 16);
-
-				when BShftR24 =>
-					OBIT <= X"000000" & IN_A(31 downto 24);
-				
-				when BOr =>
-					OBIT <= IN_A or IN_B;
-
-				when others => -- when BAnd =>
-					OBIT <= IN_A and IN_B;
-			end case;
-		else
-			OBIT <= (others => '0');
-		end if;
-	end if;
-end process BITStage0;
 
 -- Reciprocal (RCP) pipe process (cycle 1 of 14):
 RCPStage0 : process(clk)
@@ -826,138 +663,6 @@ begin
 		end if;
 	end if;
 end process ADDStage3;
-
--- Multiplication (MUL) pipe process (cycle 1 of 5):
-MULStage0 : process(clk)
-	variable resultSign : std_logic;
-begin
-	if (rising_edge(clk) ) then
-		mulPipelineValidStage0 <= IMUL_GO;
-		if (IMUL_GO = '1') then
-			-- Calculate the result sign:
-			resultSign := comASign xor comBSign;
-			mulResultSign0 <= resultSign;
-
-			if (comAIsReal = '0') then -- Handle INF and NaN inputs as special-case early outs:
-				mulEarlyOutBypassEnable0 <= '1';
-
-				if (comRawMantissaA = "00000000000000000000000") then -- INF * b
-					if (comBIsDenormal = '1') then -- INF * 0 = NaN
-						mulEarlyOutBypass0 <= resultSign & X"FF" & "11111111111111111111111";
-					elsif (comBIsNaN = '1') then -- INF * NaN = NaN
-						mulEarlyOutBypass0 <= resultSign & X"FF" & "11111111111111111111111";
-					else -- INF * b = INF
-						mulEarlyOutBypass0 <= resultSign & X"FF" & "00000000000000000000000";
-					end if;
-				else -- NaN * b = NaN
-					mulEarlyOutBypass0 <= resultSign & X"FF" & "11111111111111111111111";
-				end if;
-			elsif (comBIsReal = '0') then
-				mulEarlyOutBypassEnable0 <= '1';
-
-				if (comRawMantissaB = "00000000000000000000000") then -- a * INF
-					if (comAIsDenormal = '1') then -- 0 * INF = NaN
-						mulEarlyOutBypass0 <= resultSign & X"FF" & "11111111111111111111111";
-					elsif (comAIsNaN = '1') then -- NaN * INF = NaN
-						mulEarlyOutBypass0 <= resultSign & X"FF" & "11111111111111111111111";
-					else -- a * INF = INF
-						mulEarlyOutBypass0 <= resultSign & X"FF" & "00000000000000000000000";
-					end if;
-				else -- a * NaN = NaN
-					mulEarlyOutBypass0 <= resultSign & X"FF" & "11111111111111111111111";
-				end if;
-			elsif ( (comAIsDenormal = '1') or (comBIsDenormal = '1') ) then -- Handle multiplication by zero (or denormals, which get flushed to zero) as a special-case early out:
-				mulEarlyOutBypassEnable0 <= '1';
-				mulEarlyOutBypass0 <= resultSign & X"00" & "00000000000000000000000";
-			else -- Primary multiplication case:
-				mulEarlyOutBypassEnable0 <= '0';
-				mulResultExp0 <= resize(comSignedExponentA, 9) + resize(comSignedExponentB, 9);
-				mulAssembledMantissaA <= '1' & comRawMantissaA;
-				mulAssembledMantissaB <= '1' & comRawMantissaB;
-			end if;
-		end if;
-	end if;
-end process MULStage0;
-
--- Multiplication (MUL) pipe process (cycle 2 of 5):
-MULStage1 : process(clk)
-begin
-	if (rising_edge(clk) ) then
-		mulPipelineValidStage1 <= mulPipelineValidStage0;
-		if (mulPipelineValidStage0 = '1') then
-			mulEarlyOutBypassEnable1 <= mulEarlyOutBypassEnable0;
-			mulEarlyOutBypass1 <= mulEarlyOutBypass0;
-			mulResultExp1 <= mulResultExp0;
-			mulResultSign1 <= mulResultSign0;
-			if (mulEarlyOutBypassEnable0 = '0') then
-				-- TODO: See if this can be broken up into just one DSP usage with an 18x17 multiply and then some smaller 6x18 multiplies added together rather than the current two DSP multiplies
-				mulResultMantissa1 <= mulAssembledMantissaA * mulAssembledMantissaB;
-			end if;
-		end if;
-	end if;
-end process MULStage1;
-
--- Multiplication (MUL) pipe process (cycle 3 of 5):
-MULStage2 : process(clk)
-begin
-	if (rising_edge(clk) ) then
-		mulPipelineValidStage2 <= mulPipelineValidStage1;
-		if (mulPipelineValidStage1 = '1') then
-			mulEarlyOutBypassEnable2 <= mulEarlyOutBypassEnable1;
-			mulEarlyOutBypass2 <= mulEarlyOutBypass1;
-			mulResultExp2 <= mulResultExp1;
-			mulResultMantissa2 <= mulResultMantissa1;
-			mulResultSign2 <= mulResultSign1;
-		end if;
-	end if;
-end process MULStage2;
-
--- Multiplication (MUL) pipe process (cycle 4 of 5):
-MULStage3 : process(clk)
-begin
-	if (rising_edge(clk) ) then
-		mulPipelineValidStage3 <= mulPipelineValidStage2;
-		if (mulPipelineValidStage2 = '1') then
-			mulEarlyOutBypassEnable3 <= mulEarlyOutBypassEnable2;
-			mulEarlyOutBypass3 <= mulEarlyOutBypass2;
-			mulResultExp3 <= mulResultExp2;
-			mulResultMantissa3 <= mulResultMantissa2;
-			mulResultSign3 <= mulResultSign2;
-		end if;
-	end if;
-end process MULStage3;
-
--- Multiplication (MUL) pipe process (cycle 5 of 5):
--- TODO: Handle proper rounding. About half of all of the output values aren't rounded as they should be!
-MULStage4 : process(clk)
-	variable finalMantissa : unsigned(47 downto 0);
-begin
-	if (rising_edge(clk) ) then
-		if (mulPipelineValidStage3 = '1') then
-			if (mulEarlyOutBypassEnable3 = '1') then -- Mul bypass case
-				OMUL <= std_logic_vector(mulEarlyOutBypass3);
-			else -- Non-bypass standard case
-				if (mulResultExp3 > to_signed(127, 9) ) then -- Saturate to INF if we end up overflowing to +/- INF
-					OMUL <= mulResultSign3 & X"FF" & "00000000000000000000000";
-				elsif (mulResultExp3 < to_signed(-126, 9) ) then -- Saturate to 0 if we end up underflowing into 0 or denormals
-					OMUL <= mulResultSign3 & X"00" & "00000000000000000000000";
-				else -- Standard case
-					finalMantissa := mulResultMantissa3 srl 23;
-					if (finalMantissa(24) = '1') then -- If the mantissa overflows into the exponent, we need to renormalize
-						if (mulResultExp3 = to_signed(127, 9) ) then -- Our overflow could cause us to overflow into INF
-							OMUL <= mulResultSign3 & X"FF" & "00000000000000000000000";
-						else
-							finalMantissa := finalMantissa srl 1; -- Handle renormalize by adding 1 to the exponent and shifting the mantissa to the right by 1
-							OMUL <= mulResultSign3 & MakeExponentFromSigned(mulResultExp3(7 downto 0) + to_signed(1, 8) ) & std_logic_vector(finalMantissa(22 downto 0) );
-						end if;
-					else -- No mantissa overflow case
-						OMUL <= mulResultSign3 & MakeExponentFromSigned(mulResultExp3(7 downto 0) ) & std_logic_vector(finalMantissa(22 downto 0) );
-					end if;
-				end if;
-			end if;
-		end if;
-	end if;
-end process MULStage4;
 
 -- Conversion (CNV) pipe process:
 CNVStage0 : process(clk)

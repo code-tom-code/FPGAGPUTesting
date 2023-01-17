@@ -90,6 +90,10 @@ entity MemoryController is
 		M_AXI_AWLOCK : out std_logic := '0';
 		M_AXI_AWSIZE : out std_logic_vector(2 downto 0) := "101";
 
+		M_AXI_ARID : out std_logic_vector(3 downto 0) := (others => '0');
+		M_AXI_AWID : out std_logic_vector(3 downto 0) := (others => '0');
+		M_AXI_RID : in std_logic_vector(3 downto 0);
+
 		M_AXI_RLAST : in std_logic;
 		M_AXI_WLAST : out std_logic := '1';
 
@@ -274,9 +278,12 @@ architecture Behavioral of MemoryController is
 	ATTRIBUTE X_INTERFACE_INFO of M_AXI_RLAST: SIGNAL is "xilinx.com:interface:aximm:1.0 M_AXI RLAST";
 	ATTRIBUTE X_INTERFACE_INFO of M_AXI_RVALID: SIGNAL is "xilinx.com:interface:aximm:1.0 M_AXI RVALID";
 	ATTRIBUTE X_INTERFACE_INFO of M_AXI_RREADY: SIGNAL is "xilinx.com:interface:aximm:1.0 M_AXI RREADY";
+	ATTRIBUTE X_INTERFACE_INFO of M_AXI_ARID: SIGNAL is "xilinx.com:interface:aximm:1.0 M_AXI ARID";
+	ATTRIBUTE X_INTERFACE_INFO of M_AXI_AWID: SIGNAL is "xilinx.com:interface:aximm:1.0 M_AXI AWID";
+	ATTRIBUTE X_INTERFACE_INFO of M_AXI_RID: SIGNAL is "xilinx.com:interface:aximm:1.0 M_AXI RID";
 
 	ATTRIBUTE X_INTERFACE_PARAMETER : STRING;
-	ATTRIBUTE X_INTERFACE_PARAMETER of M_AXI_AWADDR: SIGNAL is "CLK_DOMAIN M_AXI_ACLK,MAX_BURST_LENGTH 1,NUM_WRITE_OUTSTANDING 0,NUM_READ_OUTSTANDING 0,SUPPORTS_NARROW_BURST 0,READ_WRITE_MODE READ_WRITE,BUSER_WIDTH 0,RUSER_WIDTH 0,WUSER_WIDTH 0,ARUSER_WIDTH 0,AWUSER_WIDTH 0,ADDR_WIDTH 30,ID_WIDTH 0,FREQ_HZ 333250000,PROTOCOL AXI4,DATA_WIDTH 256,HAS_BURST 1,HAS_CACHE 1,HAS_LOCK 1,HAS_PROT 1,HAS_QOS 0,HAS_REGION 0,HAS_WSTRB 1,HAS_BRESP 1,HAS_RRESP 1";
+	ATTRIBUTE X_INTERFACE_PARAMETER of M_AXI_AWADDR: SIGNAL is "CLK_DOMAIN M_AXI_ACLK,MAX_BURST_LENGTH 16,NUM_WRITE_OUTSTANDING 32,NUM_READ_OUTSTANDING 32,SUPPORTS_NARROW_BURST 0,READ_WRITE_MODE READ_WRITE,BUSER_WIDTH 0,RUSER_WIDTH 0,WUSER_WIDTH 0,ARUSER_WIDTH 0,AWUSER_WIDTH 0,ADDR_WIDTH 30,ID_WIDTH 4,FREQ_HZ 333250000,PROTOCOL AXI4,DATA_WIDTH 256,HAS_BURST 1,HAS_CACHE 1,HAS_LOCK 1,HAS_PROT 1,HAS_QOS 0,HAS_REGION 0,HAS_WSTRB 1,HAS_BRESP 1,HAS_RRESP 1";
 	
 	ATTRIBUTE X_INTERFACE_INFO of ScanoutReadRequestsFIFO_rd_data: SIGNAL is "xilinx.com:interface:fifo_read:1.0 ScanoutReadRequests RD_DATA";
 	ATTRIBUTE X_INTERFACE_INFO of ScanoutReadRequestsFIFO_rd_en: SIGNAL is "xilinx.com:interface:fifo_read:1.0 ScanoutReadRequests RD_EN";
@@ -723,49 +730,49 @@ begin
 							-- These memory clients are ordered in order of most important (first) to least important (last)
 							-- For example, SCANOUT always gets served first because if SCANOUT were to miss a memory read, it could cause screen glitches
 							if (ScanoutReadRequestsFIFO_empty = '0' and ScanoutReadResponsesFIFO_full = '0') then
-								newReadRequest.readAddress <= ScanoutReadRequestsFIFO_rd_data;
+								newReadRequest.readAddress <= ScanoutReadRequestsFIFO_rd_data(C_M_AXI_ADDR_WIDTH-1 downto 5) & "00000";
 								scanoutRequests_rd_en <= '1';
 								newReadRequest.memoryClientIndex <= to_unsigned(memoryClient'pos(SCANOUT), 4);
 								newReadEnable <= '1';
 								currentReadControlState <= READCTRL_ROUTE_MEMRESPONSE;
 							elsif (ZStencilReadRequestsFIFO_empty = '0' and ZStencilReadResponsesFIFO_full = '0') then
-								newReadRequest.readAddress <= ZStencilReadRequestsFIFO_rd_data;
+								newReadRequest.readAddress <= ZStencilReadRequestsFIFO_rd_data(C_M_AXI_ADDR_WIDTH-1 downto 5) & "00000";
 								ZStencilReadRequestsFIFO_rd_en <= '1';
 								newReadRequest.memoryClientIndex <= to_unsigned(memoryClient'pos(ZSTENCIL), 4);
 								newReadEnable <= '1';
 								currentReadControlState <= READCTRL_ROUTE_MEMRESPONSE;
 							elsif (CommandProcReadRequestsFIFO_empty = '0' and CommandProcReadResponsesFIFO_full = '0') then
-								newReadRequest.readAddress <= CommandProcReadRequestsFIFO_rd_data;
+								newReadRequest.readAddress <= CommandProcReadRequestsFIFO_rd_data(C_M_AXI_ADDR_WIDTH-1 downto 5) & "00000";
 								CommandProcReadRequestsFIFO_rd_en <= '1';
 								newReadRequest.memoryClientIndex <= to_unsigned(memoryClient'pos(COMMANDPROCESSOR), 4);
 								newReadEnable <= '1';
 								currentReadControlState <= READCTRL_ROUTE_MEMRESPONSE;
 							elsif (IBCPreReadRequestsFIFO_empty = '0' and IBCPreReadResponsesFIFO_full = '0') then
-								newReadRequest.readAddress <= IBCPreReadRequestsFIFO_rd_data;
+								newReadRequest.readAddress <= IBCPreReadRequestsFIFO_rd_data(C_M_AXI_ADDR_WIDTH-1 downto 5) & "00000";
 								IBCPreReadRequestsFIFO_rd_en <= '1';
 								newReadRequest.memoryClientIndex <= to_unsigned(memoryClient'pos(IBCPRE), 4);
 								newReadEnable <= '1';
 								currentReadControlState <= READCTRL_ROUTE_MEMRESPONSE;
 							elsif (IAReadRequestsFIFO_empty = '0' and IAReadResponsesFIFO_full = '0') then
-								newReadRequest.readAddress <= IAReadRequestsFIFO_rd_data;
+								newReadRequest.readAddress <= IAReadRequestsFIFO_rd_data(C_M_AXI_ADDR_WIDTH-1 downto 5) & "00000";
 								IAReadRequestsFIFO_rd_en <= '1';
 								newReadRequest.memoryClientIndex <= to_unsigned(memoryClient'pos(IA), 4);
 								newReadEnable <= '1';
 								currentReadControlState <= READCTRL_ROUTE_MEMRESPONSE;
 							elsif (IBCPostReadRequestsFIFO_empty = '0' and IBCPostReadResponsesFIFO_full = '0') then
-								newReadRequest.readAddress <= IBCPostReadRequestsFIFO_rd_data;
+								newReadRequest.readAddress <= IBCPostReadRequestsFIFO_rd_data(C_M_AXI_ADDR_WIDTH-1 downto 5) & "00000";
 								IBCPostReadRequestsFIFO_rd_en <= '1';
 								newReadRequest.memoryClientIndex <= to_unsigned(memoryClient'pos(IBCPOST), 4);
 								newReadEnable <= '1';
 								currentReadControlState <= READCTRL_ROUTE_MEMRESPONSE;
 							elsif (TexFetchReadRequestsFIFO_empty = '0' and TexFetchReadResponsesFIFO_full = '0') then
-								newReadRequest.readAddress <= TexFetchReadRequestsFIFO_rd_data;
+								newReadRequest.readAddress <= TexFetchReadRequestsFIFO_rd_data(C_M_AXI_ADDR_WIDTH-1 downto 5) & "00000";
 								TexFetchReadRequestsFIFO_rd_en <= '1';
 								newReadRequest.memoryClientIndex <= to_unsigned(memoryClient'pos(TEXTUREFETCH), 4);
 								newReadEnable <= '1';
 								currentReadControlState <= READCTRL_ROUTE_MEMRESPONSE;
 							elsif (ROPReadRequestsFIFO_empty = '0' and ROPReadResponsesFIFO_full = '0') then
-								newReadRequest.readAddress <= ROPReadRequestsFIFO_rd_data;
+								newReadRequest.readAddress <= ROPReadRequestsFIFO_rd_data(C_M_AXI_ADDR_WIDTH-1 downto 5) & "00000";
 								ROPReadRequestsFIFO_rd_en <= '1';
 								newReadRequest.memoryClientIndex <= to_unsigned(memoryClient'pos(ROP), 4);
 								newReadEnable <= '1';
@@ -808,28 +815,28 @@ begin
 						if (newReadDataReady = '1') then
 							case (memoryClient'val(to_integer(newReadResponse.memoryClientIndex) ) ) is
 								when SCANOUT =>
-									ScanoutReadResponsesFIFO_wr_data <= newReadResponse.readAddress & newReadResponse.readData;
+									ScanoutReadResponsesFIFO_wr_data <= X"0000000" & "00" & newReadResponse.readData;
 									ScanoutReadResponsesFIFO_wr_en <= '1';
 								when ZSTENCIL =>
-									ZStencilReadResponsesFIFO_wr_data <= newReadResponse.readAddress & newReadResponse.readData;
+									ZStencilReadResponsesFIFO_wr_data <= X"0000000" & "00" & newReadResponse.readData;
 									ZStencilReadResponsesFIFO_wr_en <= '1';
 								when COMMANDPROCESSOR =>
-									CommandProcReadResponsesFIFO_wr_data <= newReadResponse.readAddress & newReadResponse.readData;
+									CommandProcReadResponsesFIFO_wr_data <= X"0000000" & "00" & newReadResponse.readData;
 									CommandProcReadResponsesFIFO_wr_en <= '1';
 								when IBCPRE =>
-									IBCPreReadResponsesFIFO_wr_data <= newReadResponse.readAddress & newReadResponse.readData;
+									IBCPreReadResponsesFIFO_wr_data <= X"0000000" & "00" & newReadResponse.readData;
 									IBCPreReadResponsesFIFO_wr_en <= '1';
 								when IA =>
-									IAReadResponsesFIFO_wr_data <= newReadResponse.readAddress & newReadResponse.readData;
+									IAReadResponsesFIFO_wr_data <= X"0000000" & "00" & newReadResponse.readData;
 									IAReadResponsesFIFO_wr_en <= '1';
 								when IBCPOST =>
-									IBCPostReadResponsesFIFO_wr_data <= newReadResponse.readAddress & newReadResponse.readData;
+									IBCPostReadResponsesFIFO_wr_data <= X"0000000" & "00" & newReadResponse.readData;
 									IBCPostReadResponsesFIFO_wr_en <= '1';
 								when TEXTUREFETCH =>
-									TexFetchReadResponsesFIFO_wr_data <= newReadResponse.readAddress & newReadResponse.readData;
+									TexFetchReadResponsesFIFO_wr_data <= X"0000000" & "00" & newReadResponse.readData;
 									TexFetchReadResponsesFIFO_wr_en <= '1';
 								when ROP =>
-									ROPReadResponsesFIFO_wr_data <= newReadResponse.readAddress & newReadResponse.readData;
+									ROPReadResponsesFIFO_wr_data <= X"0000000" & "00" & newReadResponse.readData;
 									ROPReadResponsesFIFO_wr_en <= '1';
 								when others =>
 									-- Should never be here, just fall through and do nothing
@@ -890,7 +897,7 @@ begin
 
 							-- These memory clients are ordered in order of most important (first) to least important (last)
 							if (ZStencilWriteRequestsFIFO_empty = '0') then
-								newWriteRequest.writeAddress <= ZStencilWriteRequestsFIFO_rd_data(C_M_AXI_ADDR_WIDTH+C_M_AXI_DATA_WIDTH+C_M_AXI_DATA_WIDTH/32-1 downto C_M_AXI_DATA_WIDTH+C_M_AXI_DATA_WIDTH/32);
+								newWriteRequest.writeAddress <= ZStencilWriteRequestsFIFO_rd_data(C_M_AXI_ADDR_WIDTH+C_M_AXI_DATA_WIDTH+C_M_AXI_DATA_WIDTH/32-1 downto C_M_AXI_DATA_WIDTH+C_M_AXI_DATA_WIDTH/32+5) & "00000";
 								newWriteRequest.writeData <= ZStencilWriteRequestsFIFO_rd_data(C_M_AXI_DATA_WIDTH+C_M_AXI_DATA_WIDTH/32-1 downto C_M_AXI_DATA_WIDTH/32);
 								newWriteRequest.writeDataDWORDEnables <= ZStencilWriteRequestsFIFO_rd_data(C_M_AXI_DATA_WIDTH/32-1 downto 0);
 								ZStencilWriteRequestsFIFO_rd_en <= '1';
@@ -898,7 +905,7 @@ begin
 								newWriteEnable <= '1';
 								currentWriteControlState <= WRITECTRL_DEASSERT;
 							elsif (CommandProcWriteRequestsFIFO_empty = '0') then
-								newWriteRequest.writeAddress <= CommandProcWriteRequestsFIFO_rd_data(C_M_AXI_ADDR_WIDTH+C_M_AXI_DATA_WIDTH+C_M_AXI_DATA_WIDTH/32-1 downto C_M_AXI_DATA_WIDTH+C_M_AXI_DATA_WIDTH/32);
+								newWriteRequest.writeAddress <= CommandProcWriteRequestsFIFO_rd_data(C_M_AXI_ADDR_WIDTH+C_M_AXI_DATA_WIDTH+C_M_AXI_DATA_WIDTH/32-1 downto C_M_AXI_DATA_WIDTH+C_M_AXI_DATA_WIDTH/32+5) & "00000";
 								newWriteRequest.writeData <= CommandProcWriteRequestsFIFO_rd_data(C_M_AXI_DATA_WIDTH+C_M_AXI_DATA_WIDTH/32-1 downto C_M_AXI_DATA_WIDTH/32);
 								newWriteRequest.writeDataDWORDEnables <= CommandProcWriteRequestsFIFO_rd_data(C_M_AXI_DATA_WIDTH/32-1 downto 0);
 								CommandProcWriteRequestsFIFO_rd_en <= '1';
@@ -906,7 +913,7 @@ begin
 								newWriteEnable <= '1';
 								currentWriteControlState <= WRITECTRL_DEASSERT;
 							elsif (ROPWriteRequestsFIFO_empty = '0') then
-								newWriteRequest.writeAddress <= ROPWriteRequestsFIFO_rd_data(C_M_AXI_ADDR_WIDTH+C_M_AXI_DATA_WIDTH+C_M_AXI_DATA_WIDTH/32-1 downto C_M_AXI_DATA_WIDTH+C_M_AXI_DATA_WIDTH/32);
+								newWriteRequest.writeAddress <= ROPWriteRequestsFIFO_rd_data(C_M_AXI_ADDR_WIDTH+C_M_AXI_DATA_WIDTH+C_M_AXI_DATA_WIDTH/32-1 downto C_M_AXI_DATA_WIDTH+C_M_AXI_DATA_WIDTH/32+5) & "00000";
 								newWriteRequest.writeData <= ROPWriteRequestsFIFO_rd_data(C_M_AXI_DATA_WIDTH+C_M_AXI_DATA_WIDTH/32-1 downto C_M_AXI_DATA_WIDTH/32);
 								newWriteRequest.writeDataDWORDEnables <= ROPWriteRequestsFIFO_rd_data(C_M_AXI_DATA_WIDTH/32-1 downto 0);
 								ROPWriteRequestsFIFO_rd_en <= '1';
@@ -914,7 +921,7 @@ begin
 								newWriteEnable <= '1';
 								currentWriteControlState <= WRITECTRL_DEASSERT;
 							elsif (ClearBlockWriteRequestsFIFO_empty = '0') then
-								newWriteRequest.writeAddress <= ClearBlockWriteRequestsFIFO_rd_data(C_M_AXI_ADDR_WIDTH+C_M_AXI_DATA_WIDTH+C_M_AXI_DATA_WIDTH/32-1 downto C_M_AXI_DATA_WIDTH+C_M_AXI_DATA_WIDTH/32);
+								newWriteRequest.writeAddress <= ClearBlockWriteRequestsFIFO_rd_data(C_M_AXI_ADDR_WIDTH+C_M_AXI_DATA_WIDTH+C_M_AXI_DATA_WIDTH/32-1 downto C_M_AXI_DATA_WIDTH+C_M_AXI_DATA_WIDTH/32+5) & "00000";
 								newWriteRequest.writeData <= ClearBlockWriteRequestsFIFO_rd_data(C_M_AXI_DATA_WIDTH+C_M_AXI_DATA_WIDTH/32-1 downto C_M_AXI_DATA_WIDTH/32);
 								newWriteRequest.writeDataDWORDEnables <= ClearBlockWriteRequestsFIFO_rd_data(C_M_AXI_DATA_WIDTH/32-1 downto 0);
 								ClearBlockWriteRequestsFIFO_rd_en <= '1';
@@ -922,7 +929,7 @@ begin
 								newWriteEnable <= '1';
 								currentWriteControlState <= WRITECTRL_DEASSERT;
 							elsif (StatsWriteRequestsFIFO_empty = '0') then
-								newWriteRequest.writeAddress <= StatsWriteRequestsFIFO_rd_data(C_M_AXI_ADDR_WIDTH+C_M_AXI_DATA_WIDTH+C_M_AXI_DATA_WIDTH/32-1 downto C_M_AXI_DATA_WIDTH+C_M_AXI_DATA_WIDTH/32);
+								newWriteRequest.writeAddress <= StatsWriteRequestsFIFO_rd_data(C_M_AXI_ADDR_WIDTH+C_M_AXI_DATA_WIDTH+C_M_AXI_DATA_WIDTH/32-1 downto C_M_AXI_DATA_WIDTH+C_M_AXI_DATA_WIDTH/32+5) & "00000";
 								newWriteRequest.writeData <= StatsWriteRequestsFIFO_rd_data(C_M_AXI_DATA_WIDTH+C_M_AXI_DATA_WIDTH/32-1 downto C_M_AXI_DATA_WIDTH/32);
 								newWriteRequest.writeDataDWORDEnables <= StatsWriteRequestsFIFO_rd_data(C_M_AXI_DATA_WIDTH/32-1 downto 0);
 								StatsWriteRequestsFIFO_rd_en <= '1';

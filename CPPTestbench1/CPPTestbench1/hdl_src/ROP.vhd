@@ -19,7 +19,7 @@ entity ROP is
         MEM_ROPReadRequestsFIFO_wr_en : out STD_LOGIC := '0';
 
 		-- DRAM read responses FIFO:
-		MEM_ROPReadResponsesFIFO_rd_data : in STD_LOGIC_VECTOR(256+30-1 downto 0);
+		MEM_ROPReadResponsesFIFO_rd_data : in STD_LOGIC_VECTOR(256-1 downto 0);
         MEM_ROPReadResponsesFIFO_empty : in STD_LOGIC;
         MEM_ROPReadResponsesFIFO_rd_en : out STD_LOGIC := '0';
 
@@ -1035,7 +1035,7 @@ DBG_CurrentCacheLineDirtyFlags <= std_logic_vector(ROPCache(to_integer(currently
 				when waitForReadPixel =>
 					MEM_ROPReadRequestsFIFO_wr_en <= '0'; -- Deassert after one clock cycle
 					if (MEM_ROPReadResponsesFIFO_empty = '0') then
-						ROPCache(to_integer(currentlyUsingCacheEntry) ).cacheData <= unsigned(MEM_ROPReadResponsesFIFO_rd_data(255 downto 0) );
+						ROPCache(to_integer(currentlyUsingCacheEntry) ).cacheData <= unsigned(MEM_ROPReadResponsesFIFO_rd_data);
 						MEM_ROPReadResponsesFIFO_rd_en <= '1';
 						UpdateCacheLineAges(currentlyUsingCacheEntry, ROPCache); -- Update the cache ages for all of our cache lines (youngest becomes 0, oldest to 3)
 						currentState <= checkCache;

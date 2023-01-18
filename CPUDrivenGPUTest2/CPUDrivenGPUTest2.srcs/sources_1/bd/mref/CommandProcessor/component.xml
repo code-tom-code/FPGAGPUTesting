@@ -225,7 +225,7 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>viewChecksum</spirit:name>
-            <spirit:value>8efbba4b</spirit:value>
+            <spirit:value>e6ab8038</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -238,7 +238,7 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>viewChecksum</spirit:name>
-            <spirit:value>8efbba4b</spirit:value>
+            <spirit:value>e6ab8038</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -439,7 +439,7 @@
         <spirit:wire>
           <spirit:direction>in</spirit:direction>
           <spirit:vector>
-            <spirit:left spirit:format="long" spirit:resolve="dependent" spirit:dependency="((spirit:decode(id(&apos;MODELPARAM_VALUE.ADDR_WIDTH_BITS&apos;)) + spirit:decode(id(&apos;MODELPARAM_VALUE.DATA_WIDTH_BITS&apos;))) - 1)">285</spirit:left>
+            <spirit:left spirit:format="long" spirit:resolve="dependent" spirit:dependency="(spirit:decode(id(&apos;MODELPARAM_VALUE.DATA_WIDTH_BITS&apos;)) - 1)">255</spirit:left>
             <spirit:right spirit:format="long">0</spirit:right>
           </spirit:vector>
           <spirit:wireTypeDefs>
@@ -2223,7 +2223,7 @@
         <xilinx:designToolContext>IPI</xilinx:designToolContext>
       </xilinx:designToolContexts>
       <xilinx:coreRevision>1</xilinx:coreRevision>
-      <xilinx:coreCreationDateTime>2023-01-17T00:59:05Z</xilinx:coreCreationDateTime>
+      <xilinx:coreCreationDateTime>2023-01-17T19:35:34Z</xilinx:coreCreationDateTime>
     </xilinx:coreExtensions>
     <xilinx:packagingInfo>
       <xilinx:xilinxVersion>2018.1_AR73068</xilinx:xilinxVersion>

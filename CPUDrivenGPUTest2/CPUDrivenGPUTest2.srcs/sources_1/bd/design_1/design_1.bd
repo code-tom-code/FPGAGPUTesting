@@ -728,17 +728,6 @@
         </spirit:configurableElementValues>
       </spirit:componentInstance>
       <spirit:componentInstance>
-        <spirit:instanceName>IndexBufferCache_0</spirit:instanceName>
-        <spirit:componentRef spirit:library="module_ref" spirit:name="IndexBufferCache" spirit:vendor="xilinx.com" spirit:version="1.0"/>
-        <spirit:configurableElementValues>
-          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_IndexBufferCache_0_0</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">IndexBufferCache</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
-        </spirit:configurableElementValues>
-      </spirit:componentInstance>
-      <spirit:componentInstance>
         <spirit:instanceName>xlconstant_2</spirit:instanceName>
         <spirit:componentRef spirit:library="ip" spirit:name="xlconstant" spirit:vendor="xilinx.com" spirit:version="1.1"/>
         <spirit:configurableElementValues>
@@ -900,28 +889,6 @@
         </spirit:configurableElementValues>
       </spirit:componentInstance>
       <spirit:componentInstance>
-        <spirit:instanceName>TexSample_0</spirit:instanceName>
-        <spirit:componentRef spirit:library="module_ref" spirit:name="TexSample" spirit:vendor="xilinx.com" spirit:version="1.0"/>
-        <spirit:configurableElementValues>
-          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_TexSample_0_0</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">TexSample</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
-        </spirit:configurableElementValues>
-      </spirit:componentInstance>
-      <spirit:componentInstance>
-        <spirit:instanceName>ROP_0</spirit:instanceName>
-        <spirit:componentRef spirit:library="module_ref" spirit:name="ROP" spirit:vendor="xilinx.com" spirit:version="1.0"/>
-        <spirit:configurableElementValues>
-          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_ROP_0_0</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">ROP</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
-        </spirit:configurableElementValues>
-      </spirit:componentInstance>
-      <spirit:componentInstance>
         <spirit:instanceName>xlconstant_1</spirit:instanceName>
         <spirit:componentRef spirit:library="ip" spirit:name="xlconstant" spirit:vendor="xilinx.com" spirit:version="1.1"/>
         <spirit:configurableElementValues>
@@ -1001,6 +968,39 @@
         <spirit:configurableElementValues>
           <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_CommandProcessor_0_0</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="bd:referenceName">CommandProcessor</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
+        </spirit:configurableElementValues>
+      </spirit:componentInstance>
+      <spirit:componentInstance>
+        <spirit:instanceName>TexSample_0</spirit:instanceName>
+        <spirit:componentRef spirit:library="module_ref" spirit:name="TexSample" spirit:vendor="xilinx.com" spirit:version="1.0"/>
+        <spirit:configurableElementValues>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_TexSample_0_0</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">TexSample</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
+        </spirit:configurableElementValues>
+      </spirit:componentInstance>
+      <spirit:componentInstance>
+        <spirit:instanceName>ROP_0</spirit:instanceName>
+        <spirit:componentRef spirit:library="module_ref" spirit:name="ROP" spirit:vendor="xilinx.com" spirit:version="1.0"/>
+        <spirit:configurableElementValues>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_ROP_0_0</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">ROP</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
+        </spirit:configurableElementValues>
+      </spirit:componentInstance>
+      <spirit:componentInstance>
+        <spirit:instanceName>IndexBufferCache_0</spirit:instanceName>
+        <spirit:componentRef spirit:library="module_ref" spirit:name="IndexBufferCache" spirit:vendor="xilinx.com" spirit:version="1.0"/>
+        <spirit:configurableElementValues>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_IndexBufferCache_0_0</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">IndexBufferCache</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
@@ -1218,7 +1218,6 @@
         <spirit:internalPortReference spirit:componentRef="ClearBlock_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="vio_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="VBO_INDEX_FIFO" spirit:portRef="clk"/>
-        <spirit:internalPortReference spirit:componentRef="IndexBufferCache_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="Rasterizer_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="TriWorkCache_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="DepthBuffer_0" spirit:portRef="clk"/>
@@ -1227,8 +1226,6 @@
         <spirit:internalPortReference spirit:componentRef="StatsCollector_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="ROP_FIFO" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="TEXSAMP_FIFO" spirit:portRef="clk"/>
-        <spirit:internalPortReference spirit:componentRef="TexSample_0" spirit:portRef="clk"/>
-        <spirit:internalPortReference spirit:componentRef="ROP_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="AttrInterpolator_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="DepthInterpolator_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="clk"/>
@@ -1239,6 +1236,9 @@
         <spirit:internalPortReference spirit:componentRef="ShaderCoreSystem" spirit:portRef="clk_0"/>
         <spirit:internalPortReference spirit:componentRef="ScanoutSystem" spirit:portRef="cmd_clk"/>
         <spirit:internalPortReference spirit:componentRef="CommandProcessor_0" spirit:portRef="clk"/>
+        <spirit:internalPortReference spirit:componentRef="TexSample_0" spirit:portRef="clk"/>
+        <spirit:internalPortReference spirit:componentRef="ROP_0" spirit:portRef="clk"/>
+        <spirit:internalPortReference spirit:componentRef="IndexBufferCache_0" spirit:portRef="clk"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>xlconstant_0_dout</spirit:name>
@@ -4253,17 +4253,6 @@
         </spirit:configurableElementValues>
       </spirit:componentInstance>
       <spirit:componentInstance>
-        <spirit:instanceName>VertexStreamCache_0</spirit:instanceName>
-        <spirit:componentRef spirit:library="module_ref" spirit:name="VertexStreamCache" spirit:vendor="xilinx.com" spirit:version="1.0"/>
-        <spirit:configurableElementValues>
-          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_VertexStreamCache_0_0</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">VertexStreamCache</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
-        </spirit:configurableElementValues>
-      </spirit:componentInstance>
-      <spirit:componentInstance>
         <spirit:instanceName>UNORM8ToFloat_0</spirit:instanceName>
         <spirit:componentRef spirit:library="module_ref" spirit:name="UNORM8ToFloat" spirit:vendor="xilinx.com" spirit:version="1.0"/>
         <spirit:configurableElementValues>
@@ -4329,6 +4318,17 @@
           <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
         </spirit:configurableElementValues>
       </spirit:componentInstance>
+      <spirit:componentInstance>
+        <spirit:instanceName>VertexStreamCache_0</spirit:instanceName>
+        <spirit:componentRef spirit:library="module_ref" spirit:name="VertexStreamCache" spirit:vendor="xilinx.com" spirit:version="1.0"/>
+        <spirit:configurableElementValues>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_VertexStreamCache_0_0</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">VertexStreamCache</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
+        </spirit:configurableElementValues>
+      </spirit:componentInstance>
     </spirit:componentInstances>
     <spirit:interconnections>
       <spirit:interconnection>
@@ -4348,7 +4348,6 @@
         <spirit:externalPortReference spirit:portRef="clk_0"/>
         <spirit:internalPortReference spirit:componentRef="InstructionCache" spirit:portRef="clka"/>
         <spirit:internalPortReference spirit:componentRef="ConstantBuffer_0" spirit:portRef="clk"/>
-        <spirit:internalPortReference spirit:componentRef="VertexStreamCache_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="UNORM8ToFloat_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="ShaderCore_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="FloatALU_0" spirit:portRef="clk"/>
@@ -4356,6 +4355,7 @@
         <spirit:internalPortReference spirit:componentRef="FloatALU_2" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="FloatALU_3" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="GPRQuadSystem" spirit:portRef="clk_0"/>
+        <spirit:internalPortReference spirit:componentRef="VertexStreamCache_0" spirit:portRef="clk"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>ConstantBuffer_0_readOutData</spirit:name>
@@ -5743,17 +5743,6 @@
         </spirit:configurableElementValues>
       </spirit:componentInstance>
       <spirit:componentInstance>
-        <spirit:instanceName>ScanOut_0</spirit:instanceName>
-        <spirit:componentRef spirit:library="module_ref" spirit:name="ScanOut" spirit:vendor="xilinx.com" spirit:version="1.0"/>
-        <spirit:configurableElementValues>
-          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_ScanOut_0_0</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">ScanOut</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
-        </spirit:configurableElementValues>
-      </spirit:componentInstance>
-      <spirit:componentInstance>
         <spirit:instanceName>dvid_0</spirit:instanceName>
         <spirit:componentRef spirit:library="module_ref" spirit:name="dvid" spirit:vendor="xilinx.com" spirit:version="1.0"/>
         <spirit:configurableElementValues>
@@ -5775,6 +5764,17 @@
           <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
         </spirit:configurableElementValues>
       </spirit:componentInstance>
+      <spirit:componentInstance>
+        <spirit:instanceName>ScanOut_0</spirit:instanceName>
+        <spirit:componentRef spirit:library="module_ref" spirit:name="ScanOut" spirit:vendor="xilinx.com" spirit:version="1.0"/>
+        <spirit:configurableElementValues>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_ScanOut_0_0</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">ScanOut</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
+        </spirit:configurableElementValues>
+      </spirit:componentInstance>
     </spirit:componentInstances>
     <spirit:interconnections/>
     <spirit:adHocConnections>
@@ -5782,9 +5782,9 @@
         <spirit:name>clk_wiz_0_clk_out1</spirit:name>
         <spirit:internalPortReference spirit:componentRef="scanout_clk_25_175_x10" spirit:portRef="clk_x10"/>
         <spirit:externalPortReference spirit:portRef="clk_out1"/>
-        <spirit:internalPortReference spirit:componentRef="ScanOut_0" spirit:portRef="clk_x10"/>
         <spirit:internalPortReference spirit:componentRef="dvid_0" spirit:portRef="clk_x10"/>
         <spirit:internalPortReference spirit:componentRef="CDC_Command_Scanout_0" spirit:portRef="scanout_clk"/>
+        <spirit:internalPortReference spirit:componentRef="ScanOut_0" spirit:portRef="clk_x10"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>CommandProcessor_0_SCANOUT_RenderTargetBaseAddr</spirit:name>
@@ -6762,7 +6762,7 @@
           <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_fifo_generator_3_0</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="Fifo_Implementation">Independent_Clocks_Builtin_FIFO</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="Performance_Options">First_Word_Fall_Through</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="Input_Data_Width">286</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="Input_Data_Width">256</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="Input_Depth">512</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="Read_Clock_Frequency">333</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="Write_Clock_Frequency">333</spirit:configurableElementValue>
@@ -6866,7 +6866,7 @@
           <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_fifo_generator_0_4</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="Fifo_Implementation">Independent_Clocks_Builtin_FIFO</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="Performance_Options">First_Word_Fall_Through</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="Input_Data_Width">286</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="Input_Data_Width">256</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="Input_Depth">512</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="Read_Clock_Frequency">333</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="Write_Clock_Frequency">333</spirit:configurableElementValue>
@@ -6892,7 +6892,7 @@
           <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_fifo_generator_0_10</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="Fifo_Implementation">Independent_Clocks_Builtin_FIFO</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="Performance_Options">First_Word_Fall_Through</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="Input_Data_Width">286</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="Input_Data_Width">256</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="Input_Depth">512</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="Read_Clock_Frequency">333</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="Write_Clock_Frequency">333</spirit:configurableElementValue>
@@ -6931,7 +6931,7 @@
           <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_fifo_generator_0_7</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="Fifo_Implementation">Independent_Clocks_Builtin_FIFO</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="Performance_Options">First_Word_Fall_Through</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="Input_Data_Width">286</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="Input_Data_Width">256</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="Input_Depth">512</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="Read_Clock_Frequency">333</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="Write_Clock_Frequency">333</spirit:configurableElementValue>
@@ -6944,7 +6944,7 @@
           <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_fifo_generator_1_0</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="Fifo_Implementation">Independent_Clocks_Builtin_FIFO</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="Performance_Options">First_Word_Fall_Through</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="Input_Data_Width">286</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="Input_Data_Width">256</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="Input_Depth">512</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="Read_Clock_Frequency">252</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="Write_Clock_Frequency">333</spirit:configurableElementValue>
@@ -6957,7 +6957,7 @@
           <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_fifo_generator_1_1</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="Fifo_Implementation">Independent_Clocks_Builtin_FIFO</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="Performance_Options">First_Word_Fall_Through</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="Input_Data_Width">286</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="Input_Data_Width">256</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="Input_Depth">512</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="Read_Clock_Frequency">333</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="Write_Clock_Frequency">333</spirit:configurableElementValue>
@@ -7004,7 +7004,7 @@
           <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_fifo_generator_0_16</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="Fifo_Implementation">Independent_Clocks_Builtin_FIFO</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="Performance_Options">First_Word_Fall_Through</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="Input_Data_Width">286</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="Input_Data_Width">256</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="Input_Depth">512</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="Read_Clock_Frequency">333</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="Write_Clock_Frequency">333</spirit:configurableElementValue>
@@ -7030,7 +7030,7 @@
           <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_fifo_generator_0_18</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="Fifo_Implementation">Independent_Clocks_Builtin_FIFO</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="Performance_Options">First_Word_Fall_Through</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="Input_Data_Width">286</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="Input_Data_Width">256</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="Input_Depth">512</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="Read_Clock_Frequency">333</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="Write_Clock_Frequency">333</spirit:configurableElementValue>

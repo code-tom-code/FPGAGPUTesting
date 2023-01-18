@@ -27,7 +27,7 @@ entity ScanOut is
         MEM_ScanoutReadRequestsFIFO_wr_en : out STD_LOGIC := '0';
 
 		-- DRAM read responses FIFO:
-		MEM_ScanoutReadResponsesFIFO_rd_data : in STD_LOGIC_VECTOR(256+30-1 downto 0);
+		MEM_ScanoutReadResponsesFIFO_rd_data : in STD_LOGIC_VECTOR(256-1 downto 0);
         MEM_ScanoutReadResponsesFIFO_empty : in STD_LOGIC;
         MEM_ScanoutReadResponsesFIFO_rd_en : out STD_LOGIC := '0';
 	-- Memory Controller FIFO interface end
@@ -302,7 +302,7 @@ hsync <= '1' when (pixelNumber < 704) else '0'; -- For 640x480@60Hz mode, hsync 
 				when waitForMemRead =>
 					MEM_ScanoutReadRequestsFIFO_wr_en <= '0'; -- Deassert after one clock cycle
 					if (MEM_ScanoutReadResponsesFIFO_empty = '0') then
-						loadingCachedLine(255 downto 0) <= unsigned(MEM_ScanoutReadResponsesFIFO_rd_data(255 downto 0) );
+						loadingCachedLine(255 downto 0) <= unsigned(MEM_ScanoutReadResponsesFIFO_rd_data);
 						MEM_ScanoutReadResponsesFIFO_rd_en <= '1';
 						loadState <= waitForMemRead2;
 					else
@@ -316,7 +316,7 @@ hsync <= '1' when (pixelNumber < 704) else '0'; -- For 640x480@60Hz mode, hsync 
 				when waitForMemRead3 =>
 					if (MEM_ScanoutReadResponsesFIFO_empty = '0') then
 						MEM_ScanoutReadResponsesFIFO_rd_en <= '1';
-						loadingCachedLine(511 downto 256) <= unsigned(MEM_ScanoutReadResponsesFIFO_rd_data(255 downto 0) );
+						loadingCachedLine(511 downto 256) <= unsigned(MEM_ScanoutReadResponsesFIFO_rd_data);
 						loadState <= waitForCacheLineFill;
 					else
 						MEM_ScanoutReadResponsesFIFO_rd_en <= '0';

@@ -25,7 +25,7 @@ entity TexSample is
         MEM_TexSampReadRequestsFIFO_wr_en : out STD_LOGIC := '0';
 
 		-- DRAM read responses FIFO:
-		MEM_TexSampReadResponsesFIFO_rd_data : in STD_LOGIC_VECTOR(256+30-1 downto 0);
+		MEM_TexSampReadResponsesFIFO_rd_data : in STD_LOGIC_VECTOR(256-1 downto 0);
         MEM_TexSampReadResponsesFIFO_empty : in STD_LOGIC;
         MEM_TexSampReadResponsesFIFO_rd_en : out STD_LOGIC := '0';
 	-- Memory Controller FIFO interface end
@@ -859,7 +859,7 @@ DBG_TexCache_addra <= texCacheAddress;
 					MEM_TexSampReadRequestsFIFO_wr_en <= '0'; -- Deassert after one clock cycle
 					if (MEM_TexSampReadResponsesFIFO_empty = '0') then
 						MEM_TexSampReadResponsesFIFO_rd_en <= '1';
-						loadTexCacheLine <= std_logic_vector(unsigned(MEM_TexSampReadResponsesFIFO_rd_data(255 downto 0) ) srl GetFormatTexelSizeBits(TexFormat) );
+						loadTexCacheLine <= std_logic_vector(unsigned(MEM_TexSampReadResponsesFIFO_rd_data) srl GetFormatTexelSizeBits(TexFormat) );
 
 						texCacheWriteEnable <= (others => '1');
 						texCacheEnable <= '1';

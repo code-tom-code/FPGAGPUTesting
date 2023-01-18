@@ -22,7 +22,7 @@ entity IndexBufferCache is
 		IBCReadRequestsFIFO_wr_data : out STD_LOGIC_VECTOR(30-1 downto 0) := (others => '0');
 		IBCReadRequestsFIFO_wr_en : out STD_LOGIC := '0';
 
-		IBCReadResponsesFIFO_rd_data : in STD_LOGIC_VECTOR(30+256-1 downto 0);
+		IBCReadResponsesFIFO_rd_data : in STD_LOGIC_VECTOR(256-1 downto 0);
         IBCReadResponsesFIFO_empty : in STD_LOGIC;
         IBCReadResponsesFIFO_rd_en : out STD_LOGIC := '0';
 	-- Memory controller interfaces end
@@ -185,16 +185,16 @@ begin
 					IBCReadResponsesFIFO_rd_en <= '1';
 					case nextCacheLineWrite is
 						when "00" =>
-							currentCache0Data <= unsigned(IBCReadResponsesFIFO_rd_data(255 downto 0) );
+							currentCache0Data <= unsigned(IBCReadResponsesFIFO_rd_data);
 							currentCache0BaseAddr <= unsigned(VBB_ReadAddr(29 downto 5) );
 						when "01" =>
-							currentCache1Data <= unsigned(IBCReadResponsesFIFO_rd_data(255 downto 0) );
+							currentCache1Data <= unsigned(IBCReadResponsesFIFO_rd_data);
 							currentCache1BaseAddr <= unsigned(VBB_ReadAddr(29 downto 5) );
 						when "10" =>
-							currentCache2Data <= unsigned(IBCReadResponsesFIFO_rd_data(255 downto 0) );
+							currentCache2Data <= unsigned(IBCReadResponsesFIFO_rd_data);
 							currentCache2BaseAddr <= unsigned(VBB_ReadAddr(29 downto 5) );
 						when "11" =>
-							currentCache3Data <= unsigned(IBCReadResponsesFIFO_rd_data(255 downto 0) );
+							currentCache3Data <= unsigned(IBCReadResponsesFIFO_rd_data);
 							currentCache3BaseAddr <= unsigned(VBB_ReadAddr(29 downto 5) );
 						when others =>
 					end case;

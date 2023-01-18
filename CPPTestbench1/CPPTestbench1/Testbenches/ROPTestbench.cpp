@@ -394,9 +394,8 @@ enum ROPStateType : unsigned char
 struct memResponse
 {
 	BYTE data[32];
-	uint32_t requestAddr;
 };
-static_assert(sizeof(memResponse) == 32 + 4, "Error: Unexpected struct size!");
+static_assert(sizeof(memResponse) == 32, "Error: Unexpected struct size!");
 
 static const float frand()
 {
@@ -823,6 +822,23 @@ void EmulateROPCPU(const std::vector<texSampOutput>& inputPixelColorData, std::v
 	}
 }
 
+static void UpdateInputFIFO(std::vector<texSampOutput>& fifoDataVec, std_logic_vector_port<64>& TEXSAMP_InFIFO_rd_data, std_logic_port& TEXSAMP_InFIFO_empty, std_logic_port& TEXSAMP_InFIFO_rd_en)
+{
+	TEXSAMP_InFIFO_empty = fifoDataVec.empty();
+	if (TEXSAMP_InFIFO_rd_en.GetBoolVal() )
+	{
+		fifoDataVec.erase(fifoDataVec.begin() );
+	}
+	if (!fifoDataVec.empty() )
+	{
+		TEXSAMP_InFIFO_rd_data.SetStructVal(fifoDataVec.front() );
+	}
+	else
+	{
+		TEXSAMP_InFIFO_rd_data.SetToZero();
+	}
+}
+
 const int RunTestsROP(Xsi::Loader& loader, RenderWindow* renderWindow)
 {
 	// Start everything off at the beginning:
@@ -837,7 +853,7 @@ const int RunTestsROP(Xsi::Loader& loader, RenderWindow* renderWindow)
 	std_logic_port MEM_ROPReadRequestsFIFO_wr_en(PD_OUT, loader, "MEM_ROPReadRequestsFIFO_wr_en");
 
 	// DRAM read responses FIFO:
-	std_logic_vector_port<256+30> MEM_ROPReadResponsesFIFO_rd_data(PD_IN, loader, "MEM_ROPReadResponsesFIFO_rd_data");
+	std_logic_vector_port<256> MEM_ROPReadResponsesFIFO_rd_data(PD_IN, loader, "MEM_ROPReadResponsesFIFO_rd_data");
 	std_logic_port MEM_ROPReadResponsesFIFO_empty(PD_IN, loader, "MEM_ROPReadResponsesFIFO_empty");
 	std_logic_port MEM_ROPReadResponsesFIFO_rd_en(PD_OUT, loader, "MEM_ROPReadResponsesFIFO_rd_en");
 
@@ -873,15 +889,9 @@ const int RunTestsROP(Xsi::Loader& loader, RenderWindow* renderWindow)
 // Command Processor block interface end
 
 // Texture Sampler interface begin
-	std_logic_vector_port<16> TEXSAMP_outPixelX(PD_IN, loader, "TEXSAMP_outPixelX");
-	std_logic_vector_port<16> TEXSAMP_outPixelY(PD_IN, loader, "TEXSAMP_outPixelY");
-	std_logic_vector_port<8> TEXSAMP_outR(PD_IN, loader, "TEXSAMP_outR");
-	std_logic_vector_port<8> TEXSAMP_outG(PD_IN, loader, "TEXSAMP_outG");
-	std_logic_vector_port<8> TEXSAMP_outB(PD_IN, loader, "TEXSAMP_outB");
-	std_logic_vector_port<8> TEXSAMP_outA(PD_IN, loader, "TEXSAMP_outA");
-
-	std_logic_port TEXSAMP_writeIsValid(PD_IN, loader, "TEXSAMP_writeIsValid");
-	std_logic_port TEXSAMP_writeAck(PD_OUT, loader, "TEXSAMP_writeAck");
+	std_logic_vector_port<64> TEXSAMP_InFIFO_rd_data(PD_IN, loader, "TEXSAMP_InFIFO_rd_data");
+	std_logic_port TEXSAMP_InFIFO_empty(PD_IN, loader, "TEXSAMP_InFIFO_empty");
+	std_logic_port TEXSAMP_InFIFO_rd_en(PD_OUT, loader, "TEXSAMP_InFIFO_rd_en");
 // Texture Sampler interface end
 
 // Debug signals
@@ -937,13 +947,8 @@ const int RunTestsROP(Xsi::Loader& loader, RenderWindow* renderWindow)
 		CMD_SetAlphaBlendEnable = false;
 		CMD_SetAlphaBlendFactor = 0xFFFFFFFF;
 		CMD_SetAlphaBlendStateBlock = 0x00000000;
-		TEXSAMP_outPixelX = 0x0000;
-		TEXSAMP_outPixelY = 0x0000;
-		TEXSAMP_outR = 0x00;
-		TEXSAMP_outG = 0x00;
-		TEXSAMP_outB = 0x00;
-		TEXSAMP_outA = 0xFF;
-		TEXSAMP_writeIsValid = false;
+		TEXSAMP_InFIFO_empty = true;
+		TEXSAMP_InFIFO_rd_data.SetToZero();
 	}
 
 	const char* framebufferMemoryUpperBits = NULL;
@@ -972,7 +977,6 @@ const int RunTestsROP(Xsi::Loader& loader, RenderWindow* renderWindow)
 
 			memResponse newMemRead;
 			memcpy(newMemRead.data, readStartAddress, 32);
-			newMemRead.requestAddr = readBaseAddress;
 			memResponses.push_back(newMemRead);
 		}
 
@@ -1062,11 +1066,21 @@ const int RunTestsROP(Xsi::Loader& loader, RenderWindow* renderWindow)
 		const D3DBLEND srcColorBlend, const D3DBLEND destColorBlend, const D3DBLENDOP colorBlendOp,
 		const D3DBLEND srcAlphaBlend, const D3DBLEND destAlphaBlend, const D3DBLENDOP alphaBlendOp, const D3DCOLOR blendFactorARGB)
 	{
+		if (inputPixelColorData.empty() )
+		{
+			return;
+		}
+
+		// Duplicate our array so that the same array can be passed to both the simulator and to the emulation code
+		std::vector<texSampOutput> inputTexSampData = inputPixelColorData;
+		std::vector<texSampOutput> emptyVector;
+
 		// Wait for idle first:
 		while (CMD_ROPIsIdle.GetBoolVal() == false)
 		{
 			scoped_timestep time(loader, clk, 100);
 			updateMemoryController();
+			UpdateInputFIFO(emptyVector, TEXSAMP_InFIFO_rd_data, TEXSAMP_InFIFO_empty, TEXSAMP_InFIFO_rd_en);
 		}
 
 		// Configure render target and alpha-testing state using the CMD signals:
@@ -1081,6 +1095,7 @@ const int RunTestsROP(Xsi::Loader& loader, RenderWindow* renderWindow)
 		{
 			scoped_timestep time(loader, clk, 100);
 			updateMemoryController();
+			UpdateInputFIFO(emptyVector, TEXSAMP_InFIFO_rd_data, TEXSAMP_InFIFO_empty, TEXSAMP_InFIFO_rd_en);
 		}
 		CMD_SetBaseAddrAndAlphaTestSignal = false;
 
@@ -1096,6 +1111,7 @@ const int RunTestsROP(Xsi::Loader& loader, RenderWindow* renderWindow)
 		{
 			scoped_timestep time(loader, clk, 100);
 			updateMemoryController();
+			UpdateInputFIFO(emptyVector, TEXSAMP_InFIFO_rd_data, TEXSAMP_InFIFO_empty, TEXSAMP_InFIFO_rd_en);
 		}
 		CMD_SetBlendStateSignal = false;
 
@@ -1107,91 +1123,34 @@ const int RunTestsROP(Xsi::Loader& loader, RenderWindow* renderWindow)
 		{
 			scoped_timestep time(loader, clk, 100);
 			updateMemoryController();
+			UpdateInputFIFO(emptyVector, TEXSAMP_InFIFO_rd_data, TEXSAMP_InFIFO_empty, TEXSAMP_InFIFO_rd_en);
 		}
 
-		const unsigned numPixels = (const unsigned)inputPixelColorData.size();
-		for (unsigned x = 0; x < numPixels; ++x)
+		// Now provide real work to do:
+		while (CMD_ROPIsIdle.GetBoolVal() == true)
 		{
-			const texSampOutput& incomingPixel = inputPixelColorData[x];
-
+			scoped_timestep time(loader, clk, 100);
 #ifdef DEBUG_PORTS_DEBUG
-			ROPStateType currentState = init;
 			currentState = (const ROPStateType)DBG_ROP_State.GetUint8Val();
-			D3DCOLOR currentBlendResult = DBG_CurrentBlendedColor.GetUint32Val();
-			D3DCOLOR previousFramebufferColor = DBG_PreviousFramebufferColor.GetUint32Val();
-			unsigned char currentCacheLineDirtyFlags = DBG_CurrentCacheLineDirtyFlags.GetUint8Val();
-			dbgTempOutputRGB tempBlendedOutputRGB;
+#endif // #ifdef DEBUG_PORTS_DEBUG
+			updateMemoryController();
+			UpdateInputFIFO(inputTexSampData, TEXSAMP_InFIFO_rd_data, TEXSAMP_InFIFO_empty, TEXSAMP_InFIFO_rd_en);
+		}
+
+		// Wait until the ROP unit is done processing all of its work:
+		while (CMD_ROPIsIdle.GetBoolVal() == false)
+		{
+			scoped_timestep time(loader, clk, 100);
+			updateMemoryController();
+			UpdateInputFIFO(inputTexSampData, TEXSAMP_InFIFO_rd_data, TEXSAMP_InFIFO_empty, TEXSAMP_InFIFO_rd_en);
+#ifdef DEBUG_PORTS_DEBUG
+			currentState = (const ROPStateType)DBG_ROP_State.GetUint8Val();
+			currentBlendResult = DBG_CurrentBlendedColor.GetUint32Val();
+			previousFramebufferColor = DBG_PreviousFramebufferColor.GetUint32Val();
+			currentCacheLineDirtyFlags = DBG_CurrentCacheLineDirtyFlags.GetUint8Val();
 			DBG_TempBlendedOutputRGB.GetStructVal(tempBlendedOutputRGB);
-			dbgTempOutputA tempBlendedOutputA;
 			DBG_TempBlendedOutputA.GetStructVal(tempBlendedOutputA);
 #endif // #ifdef DEBUG_PORTS_DEBUG
-
-			// Wait for idle before sending the next pixel:
-			while (CMD_ROPIsIdle.GetBoolVal() == false)
-			{
-				scoped_timestep time(loader, clk, 100);
-#ifdef DEBUG_PORTS_DEBUG
-				currentState = (const ROPStateType)DBG_ROP_State.GetUint8Val();
-#endif // #ifdef DEBUG_PORTS_DEBUG
-				updateMemoryController();
-			}
-#ifdef DEBUG_PORTS_DEBUG
-			currentState = (const ROPStateType)DBG_ROP_State.GetUint8Val();
-#endif // #ifdef DEBUG_PORTS_DEBUG
-
-			// Set up our new pixel data:
-			TEXSAMP_outPixelX = incomingPixel.pixelX;
-			TEXSAMP_outPixelY = incomingPixel.pixelY;
-			TEXSAMP_outR = incomingPixel.colorR;
-			TEXSAMP_outG = incomingPixel.colorG;
-			TEXSAMP_outB = incomingPixel.colorB;
-			TEXSAMP_outA = incomingPixel.colorA;
-
-			// Wait for the ack signal:
-			while (TEXSAMP_writeAck.GetBoolVal() == false)
-			{
-				scoped_timestep time(loader, clk, 100);
-				TEXSAMP_writeIsValid = true;
-				updateMemoryController();
-#ifdef DEBUG_PORTS_DEBUG
-				currentState = (const ROPStateType)DBG_ROP_State.GetUint8Val();
-				currentBlendResult = DBG_CurrentBlendedColor.GetUint32Val();
-				previousFramebufferColor = DBG_PreviousFramebufferColor.GetUint32Val();
-				currentCacheLineDirtyFlags = DBG_CurrentCacheLineDirtyFlags.GetUint8Val();
-				DBG_TempBlendedOutputRGB.GetStructVal(tempBlendedOutputRGB);
-				DBG_TempBlendedOutputA.GetStructVal(tempBlendedOutputA);
-#endif // #ifdef DEBUG_PORTS_DEBUG
-			}
-#ifdef DEBUG_PORTS_DEBUG
-			currentState = (const ROPStateType)DBG_ROP_State.GetUint8Val();
-#endif // #ifdef DEBUG_PORTS_DEBUG
-
-			{
-				scoped_timestep time(loader, clk, 100);
-				TEXSAMP_writeIsValid = false;
-				updateMemoryController();
-#ifdef DEBUG_PORTS_DEBUG
-				currentState = (const ROPStateType)DBG_ROP_State.GetUint8Val();
-				currentBlendResult = DBG_CurrentBlendedColor.GetUint32Val();
-				previousFramebufferColor = DBG_PreviousFramebufferColor.GetUint32Val();
-				currentCacheLineDirtyFlags = DBG_CurrentCacheLineDirtyFlags.GetUint8Val();
-				DBG_TempBlendedOutputRGB.GetStructVal(tempBlendedOutputRGB);
-				DBG_TempBlendedOutputA.GetStructVal(tempBlendedOutputA);
-#endif // #ifdef DEBUG_PORTS_DEBUG
-			}
-			while (CMD_ROPIsIdle.GetBoolVal() == false)
-			{
-				scoped_timestep time(loader, clk, 100);
-				updateMemoryController();
-#ifdef DEBUG_PORTS_DEBUG
-				currentState = (const ROPStateType)DBG_ROP_State.GetUint8Val();
-				currentBlendResult = DBG_CurrentBlendedColor.GetUint32Val();
-				previousFramebufferColor = DBG_PreviousFramebufferColor.GetUint32Val();
-				currentCacheLineDirtyFlags = DBG_CurrentCacheLineDirtyFlags.GetUint8Val();
-				DBG_TempBlendedOutputRGB.GetStructVal(tempBlendedOutputRGB);
-				DBG_TempBlendedOutputA.GetStructVal(tempBlendedOutputA);
-#endif // #ifdef DEBUG_PORTS_DEBUG
-			}
 		}
 
 		// We need to flush the ROP cache when we're done writing all of our pixel data in order to force our writes to complete

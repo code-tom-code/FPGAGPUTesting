@@ -1234,9 +1234,9 @@ proc create_hier_cell_MemorySystem { parentCell nameHier } {
    CONFIG.Fifo_Implementation {Independent_Clocks_Builtin_FIFO} \
    CONFIG.Full_Threshold_Assert_Value {511} \
    CONFIG.Full_Threshold_Negate_Value {510} \
-   CONFIG.Input_Data_Width {286} \
+   CONFIG.Input_Data_Width {256} \
    CONFIG.Input_Depth {512} \
-   CONFIG.Output_Data_Width {286} \
+   CONFIG.Output_Data_Width {256} \
    CONFIG.Output_Depth {512} \
    CONFIG.Performance_Options {First_Word_Fall_Through} \
    CONFIG.Read_Clock_Frequency {333} \
@@ -1294,9 +1294,9 @@ proc create_hier_cell_MemorySystem { parentCell nameHier } {
    CONFIG.Fifo_Implementation {Independent_Clocks_Builtin_FIFO} \
    CONFIG.Full_Threshold_Assert_Value {511} \
    CONFIG.Full_Threshold_Negate_Value {510} \
-   CONFIG.Input_Data_Width {286} \
+   CONFIG.Input_Data_Width {256} \
    CONFIG.Input_Depth {512} \
-   CONFIG.Output_Data_Width {286} \
+   CONFIG.Output_Data_Width {256} \
    CONFIG.Output_Depth {512} \
    CONFIG.Performance_Options {First_Word_Fall_Through} \
    CONFIG.Read_Clock_Frequency {333} \
@@ -1334,9 +1334,9 @@ proc create_hier_cell_MemorySystem { parentCell nameHier } {
    CONFIG.Fifo_Implementation {Independent_Clocks_Builtin_FIFO} \
    CONFIG.Full_Threshold_Assert_Value {511} \
    CONFIG.Full_Threshold_Negate_Value {510} \
-   CONFIG.Input_Data_Width {286} \
+   CONFIG.Input_Data_Width {256} \
    CONFIG.Input_Depth {512} \
-   CONFIG.Output_Data_Width {286} \
+   CONFIG.Output_Data_Width {256} \
    CONFIG.Output_Depth {512} \
    CONFIG.Performance_Options {First_Word_Fall_Through} \
    CONFIG.Read_Clock_Frequency {333} \
@@ -1374,9 +1374,9 @@ proc create_hier_cell_MemorySystem { parentCell nameHier } {
    CONFIG.Fifo_Implementation {Independent_Clocks_Builtin_FIFO} \
    CONFIG.Full_Threshold_Assert_Value {511} \
    CONFIG.Full_Threshold_Negate_Value {510} \
-   CONFIG.Input_Data_Width {286} \
+   CONFIG.Input_Data_Width {256} \
    CONFIG.Input_Depth {512} \
-   CONFIG.Output_Data_Width {286} \
+   CONFIG.Output_Data_Width {256} \
    CONFIG.Output_Depth {512} \
    CONFIG.Performance_Options {First_Word_Fall_Through} \
    CONFIG.Read_Clock_Frequency {333} \
@@ -1425,9 +1425,9 @@ proc create_hier_cell_MemorySystem { parentCell nameHier } {
    CONFIG.Fifo_Implementation {Independent_Clocks_Builtin_FIFO} \
    CONFIG.Full_Threshold_Assert_Value {511} \
    CONFIG.Full_Threshold_Negate_Value {510} \
-   CONFIG.Input_Data_Width {286} \
+   CONFIG.Input_Data_Width {256} \
    CONFIG.Input_Depth {512} \
-   CONFIG.Output_Data_Width {286} \
+   CONFIG.Output_Data_Width {256} \
    CONFIG.Output_Depth {512} \
    CONFIG.Performance_Options {First_Word_Fall_Through} \
    CONFIG.Read_Clock_Frequency {333} \
@@ -1485,9 +1485,9 @@ proc create_hier_cell_MemorySystem { parentCell nameHier } {
    CONFIG.Fifo_Implementation {Independent_Clocks_Builtin_FIFO} \
    CONFIG.Full_Threshold_Assert_Value {511} \
    CONFIG.Full_Threshold_Negate_Value {510} \
-   CONFIG.Input_Data_Width {286} \
+   CONFIG.Input_Data_Width {256} \
    CONFIG.Input_Depth {512} \
-   CONFIG.Output_Data_Width {286} \
+   CONFIG.Output_Data_Width {256} \
    CONFIG.Output_Depth {512} \
    CONFIG.Performance_Options {First_Word_Fall_Through} \
    CONFIG.Read_Clock_Frequency {252} \
@@ -1546,9 +1546,9 @@ proc create_hier_cell_MemorySystem { parentCell nameHier } {
    CONFIG.Fifo_Implementation {Independent_Clocks_Builtin_FIFO} \
    CONFIG.Full_Threshold_Assert_Value {511} \
    CONFIG.Full_Threshold_Negate_Value {510} \
-   CONFIG.Input_Data_Width {286} \
+   CONFIG.Input_Data_Width {256} \
    CONFIG.Input_Depth {512} \
-   CONFIG.Output_Data_Width {286} \
+   CONFIG.Output_Data_Width {256} \
    CONFIG.Output_Depth {512} \
    CONFIG.Performance_Options {First_Word_Fall_Through} \
    CONFIG.Read_Clock_Frequency {333} \
@@ -1586,9 +1586,9 @@ proc create_hier_cell_MemorySystem { parentCell nameHier } {
    CONFIG.Fifo_Implementation {Independent_Clocks_Builtin_FIFO} \
    CONFIG.Full_Threshold_Assert_Value {511} \
    CONFIG.Full_Threshold_Negate_Value {510} \
-   CONFIG.Input_Data_Width {286} \
+   CONFIG.Input_Data_Width {256} \
    CONFIG.Input_Depth {512} \
-   CONFIG.Output_Data_Width {286} \
+   CONFIG.Output_Data_Width {256} \
    CONFIG.Output_Depth {512} \
    CONFIG.Performance_Options {First_Word_Fall_Through} \
    CONFIG.Read_Clock_Frequency {333} \

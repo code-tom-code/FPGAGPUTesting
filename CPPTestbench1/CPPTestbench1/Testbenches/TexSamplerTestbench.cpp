@@ -14,9 +14,8 @@ static unsigned currentTriCacheIndex = 0;
 struct memResponse
 {
 	BYTE data[32];
-	uint32_t requestAddr;
 };
-static_assert(sizeof(memResponse) == 32 + 4, "Error: Unexpected struct size!");
+static_assert(sizeof(memResponse) == 32, "Error: Unexpected struct size!");
 
 #define COLOR4_ARGB(a,r,g,b) \
     ((D3DCOLOR)((((a)&0xff)<<24)|(((b)&0xff)<<16)|(((g)&0xff)<<8)|((r)&0xff)))
@@ -220,6 +219,34 @@ void ReadTexelWithFormat(const unsigned char* const texelPtr, const D3DFORMAT fo
 	outVec.w = aVal;
 }
 
+static void UpdateInputFIFO(std::vector<attributeInterpOutputData>& inFIFO, std_logic_vector_port<96>& INTERP_InFIFO_rd_data, std_logic_port& INTERP_InFIFO_empty, std_logic_port& INTERP_InFIFO_rd_en)
+{
+	INTERP_InFIFO_empty = inFIFO.empty();
+	if (INTERP_InFIFO_rd_en.GetBoolVal() )
+	{
+		inFIFO.erase(inFIFO.begin() );
+	}
+	if (!inFIFO.empty() )
+	{
+		INTERP_InFIFO_rd_data.SetStructVal(inFIFO.front() );
+	}
+	else
+	{
+		INTERP_InFIFO_rd_data.SetToZero();
+	}
+}
+
+static void UpdateOutputFIFO(std::vector<texSampOutput>& outFIFO, std_logic_vector_port<64>& ROP_OutFIFO_wr_data, std_logic_port& ROP_OutFIFO_full, std_logic_port& ROP_OutFIFO_wr_en)
+{
+	ROP_OutFIFO_full = false;
+	if (ROP_OutFIFO_wr_en.GetBoolVal() )
+	{
+		texSampOutput newOutput;
+		ROP_OutFIFO_wr_data.GetStructVal(newOutput);
+		outFIFO.push_back(newOutput);
+	}
+}
+
 void EmulateTexSamplerCPU(const std::vector<attributeInterpOutputData>& interpolatedData, std::vector<texSampOutput>& outTexSampData, const bool useBilinearInterp, const D3DSURFACE_DESC& texDesc, const D3DLOCKED_RECT& d3dlr)
 {
 	static const float invUNORM16 = 1.0f / 65535.0f;
@@ -367,14 +394,9 @@ const int RunTestsTexSampler(Xsi::Loader& loader, RenderWindow* renderWindow)
 	std_logic_port clk(PD_IN, loader, "clk");
 
 // Attribute Interpolator interface begin
-	std_logic_port INTERP_writeStrobe(PD_IN, loader, "INTERP_writeStrobe"); // Strobed high for one cycle, then back to low after that
-	std_logic_port INTERP_readyForNewWrite(PD_OUT, loader, "INTERP_readyForNewWrite");
-
-	std_logic_vector_port<16> INTERP_pixelX(PD_IN, loader, "INTERP_pixelX");
-	std_logic_vector_port<16> INTERP_pixelY(PD_IN, loader, "INTERP_pixelY");
-	std_logic_vector_port<16> INTERP_inInterpolatedTexcoordX(PD_IN, loader, "INTERP_inInterpolatedTexcoordX");
-	std_logic_vector_port<16> INTERP_inInterpolatedTexcoordY(PD_IN, loader, "INTERP_inInterpolatedTexcoordY");
-	std_logic_vector_port<32> INTERP_inInterpolatedVertColorRGBA(PD_IN, loader, "INTERP_inInterpolatedVertColorRGBA");
+	std_logic_vector_port<96> INTERP_InFIFO_rd_data(PD_IN, loader, "INTERP_InFIFO_rd_data");
+	std_logic_port INTERP_InFIFO_empty(PD_IN, loader, "INTERP_InFIFO_empty");
+	std_logic_port INTERP_InFIFO_rd_en(PD_OUT, loader, "INTERP_InFIFO_rd_en");
 // Attribute Interpolator interface end
 
 // Memory Controller FIFO interface begin
@@ -384,7 +406,7 @@ const int RunTestsTexSampler(Xsi::Loader& loader, RenderWindow* renderWindow)
 	std_logic_port MEM_TexSampReadRequestsFIFO_wr_en(PD_OUT, loader, "MEM_TexSampReadRequestsFIFO_wr_en");
 
 	// DRAM read responses FIFO:
-	std_logic_vector_port<256+30> MEM_TexSampReadResponsesFIFO_rd_data(PD_IN, loader, "MEM_TexSampReadResponsesFIFO_rd_data");
+	std_logic_vector_port<256> MEM_TexSampReadResponsesFIFO_rd_data(PD_IN, loader, "MEM_TexSampReadResponsesFIFO_rd_data");
 	std_logic_port MEM_TexSampReadResponsesFIFO_empty(PD_IN, loader, "MEM_TexSampReadResponsesFIFO_empty");
 	std_logic_port MEM_TexSampReadResponsesFIFO_rd_en(PD_OUT, loader, "MEM_TexSampReadResponsesFIFO_rd_en");
 // Memory Controller FIFO interface end
@@ -416,15 +438,9 @@ const int RunTestsTexSampler(Xsi::Loader& loader, RenderWindow* renderWindow)
 // Command Processor block interface end
 
 // ROP interface begin
-	std_logic_vector_port<16> ROP_outPixelX(PD_OUT, loader, "ROP_outPixelX");
-	std_logic_vector_port<16> ROP_outPixelY(PD_OUT, loader, "ROP_outPixelY");
-	std_logic_vector_port<8> ROP_outR(PD_OUT, loader, "ROP_outR");
-	std_logic_vector_port<8> ROP_outG(PD_OUT, loader, "ROP_outG");
-	std_logic_vector_port<8> ROP_outB(PD_OUT, loader, "ROP_outB");
-	std_logic_vector_port<8> ROP_outA(PD_OUT, loader, "ROP_outA");
-
-	std_logic_port ROP_writeIsValid(PD_OUT, loader, "ROP_writeIsValid");
-	std_logic_port ROP_writeAck(PD_IN, loader, "ROP_writeAck");
+	std_logic_vector_port<64> ROP_OutFIFO_wr_data(PD_OUT, loader, "ROP_OutFIFO_wr_data");
+	std_logic_port ROP_OutFIFO_full(PD_IN, loader, "ROP_OutFIFO_full");
+	std_logic_port ROP_OutFIFO_wr_en(PD_OUT, loader, "ROP_OutFIFO_wr_en");
 // ROP interface end
 
 // Debug signals
@@ -448,8 +464,9 @@ const int RunTestsTexSampler(Xsi::Loader& loader, RenderWindow* renderWindow)
 	for (unsigned startupCycle = 0; startupCycle < 100; ++startupCycle)
 	{
 		scoped_timestep time(loader, clk, 100);
-		ROP_writeAck = false;
-		INTERP_writeStrobe = false;
+		ROP_OutFIFO_full = false;
+		INTERP_InFIFO_rd_data.SetToZero();
+		INTERP_InFIFO_empty = true;
 		MEM_TexSampReadRequestsFIFO_full = false;
 		MEM_TexSampReadResponsesFIFO_empty = true;
 		TexCache_douta = 0x00000000;
@@ -502,7 +519,6 @@ const int RunTestsTexSampler(Xsi::Loader& loader, RenderWindow* renderWindow)
 
 			memResponse newMemRead;
 			memcpy(newMemRead.data, readStartAddress, 32);
-			newMemRead.requestAddr = readBaseAddress;
 			memResponses.push_back(newMemRead);
 		}
 
@@ -567,6 +583,15 @@ const int RunTestsTexSampler(Xsi::Loader& loader, RenderWindow* renderWindow)
 
 	auto simulateRTLTexSampler = [&](const std::vector<attributeInterpOutputData>& attrInterpData, std::vector<texSampOutput>& outTexSampData, const bool useBilinearInterp, const D3DSURFACE_DESC& texDesc, const D3DLOCKED_RECT& d3dlr)
 	{
+		if (attrInterpData.empty() )
+		{
+			return;
+		}
+
+		// Make a copy of the array so that we can reuse the same data for the simulation as for the emulation
+		std::vector<attributeInterpOutputData> localInterpData = attrInterpData;
+		std::vector<attributeInterpOutputData> emptyVector;
+
 		// Wait for CMD Idle first:
 		while (CMD_TexSampleIsIdle.GetBoolVal() == false)
 		{
@@ -607,66 +632,32 @@ const int RunTestsTexSampler(Xsi::Loader& loader, RenderWindow* renderWindow)
 			scoped_timestep time(loader, clk, 100);
 			updateMemoryController();
 			updateTextureCache();
+			UpdateInputFIFO(emptyVector, INTERP_InFIFO_rd_data, INTERP_InFIFO_empty, INTERP_InFIFO_rd_en);
+			UpdateOutputFIFO(outTexSampData, ROP_OutFIFO_wr_data, ROP_OutFIFO_full, ROP_OutFIFO_wr_en);
 		}
 
-		const unsigned numPixels = (const unsigned)attrInterpData.size();
-		for (unsigned x = 0; x < numPixels; ++x)
-		{
-			const attributeInterpOutputData& thisPixelData = attrInterpData[x];
-			//printf("Simulator pixel %u:\n", x);
+		bool hasValidatedTextureCache = false;
 
-			if (x == 1)
+		while (!localInterpData.empty() || CMD_TexSampleIsIdle.GetBoolVal() == false)
+		{
+			const attributeInterpOutputData& thisPixelData = localInterpData.empty() ? attributeInterpOutputData() : localInterpData.front();
+
+			scoped_timestep time(loader, clk, 100);
+			updateMemoryController();
+			updateTextureCache();
+			UpdateInputFIFO(localInterpData, INTERP_InFIFO_rd_data, INTERP_InFIFO_empty, INTERP_InFIFO_rd_en);
+			UpdateOutputFIFO(outTexSampData, ROP_OutFIFO_wr_data, ROP_OutFIFO_full, ROP_OutFIFO_wr_en);
+
+			if (!hasValidatedTextureCache && ROP_OutFIFO_wr_en.GetBoolVal() == true)
 			{
 				ValidateTextureCache();
-			}
-
-			// Wait for the tex sampler core to be ready for a new pixel:
-			while (!INTERP_readyForNewWrite.GetBoolVal() )
-			{
-				scoped_timestep time(loader, clk, 100);
-			}
-
-			thisPixelData.Deserialize(INTERP_pixelX, INTERP_pixelY, INTERP_inInterpolatedTexcoordX, INTERP_inInterpolatedTexcoordY, INTERP_inInterpolatedVertColorRGBA);
-
-			// Just pulse this "go signal" for one clock cycle:
-			{
-				scoped_timestep time(loader, clk, 100);
-				INTERP_writeStrobe = true;
-			}
-			{
-				scoped_timestep time(loader, clk, 100);
-				INTERP_writeStrobe = false;
-			}
-
-			// Buffer these to simulate a one cycle latency on the D3DCOLOR to Float4 conversion:
-			float convertedColorsLastCycle[4] = {0};
-
-			while (!ROP_writeIsValid.GetBoolVal() )
-			{
-				scoped_timestep time(loader, clk, 100);
-
-				updateMemoryController();
-				updateTextureCache();
-			}
-
-			texSampOutput newOutData;
-			newOutData.Serialize(ROP_outPixelX, ROP_outPixelY, ROP_outR, ROP_outG, ROP_outB, ROP_outA);
-			outTexSampData.push_back(newOutData);
-
-			// Pulse the write ack for just one clock cycle:
-			{
-				scoped_timestep time(loader, clk, 100);
-				ROP_writeAck = true;
-			}
-			{
-				scoped_timestep time(loader, clk, 100);
-				ROP_writeAck = false;
+				hasValidatedTextureCache = true;
 			}
 		}
 
 		if (!memResponses.empty() )
 		{
-			__debugbreak(); // This means that we have an unused memory request
+			__debugbreak(); // This means that we have an unconsumed memory request
 		}
 	};
 

@@ -62,10 +62,8 @@ struct DRAMResponse
 		DWORD memory32[8];
 		uint8_t memory8[32];
 	} DRAMLine;
-
-	DWORD address;
 };
-static_assert(sizeof(DRAMResponse) == 36, "Error: Unexpected struct size!");
+static_assert(sizeof(DRAMResponse) == 32, "Error: Unexpected struct size!");
 
 struct DRAMPendingRequest
 {
@@ -152,11 +150,11 @@ const int RunTestsVertexStreamCache(Xsi::Loader& loader)
 
 	std_logic_port VSCReadResponsesFIFO_empty(PD_IN, loader, "VSCReadResponsesFIFO_empty");
 	std_logic_port VSCReadResponsesFIFO_rd_en(PD_OUT, loader, "VSCReadResponsesFIFO_rd_en");
-	std_logic_vector_port<30+256> VSCReadResponsesFIFO_rd_data(PD_IN, loader, "VSCReadResponsesFIFO_rd_data");
+	std_logic_vector_port<256> VSCReadResponsesFIFO_rd_data(PD_IN, loader, "VSCReadResponsesFIFO_rd_data");
 	// Memory controller interfaces end
 
 	// Debug interfaces begin
-	std_logic_vector_port<3> DBG_State(PD_OUT, loader, "DBG_State");
+	std_logic_vector_port<4> DBG_State(PD_OUT, loader, "DBG_State");
 	// Debug interfaces end
 
 	// Start up idling with default values for a hundred cycles:
@@ -258,7 +256,6 @@ const int RunTestsVertexStreamCache(Xsi::Loader& loader)
 			if (iter->pendingCycles > DRAMCyclesForRead)
 			{
 				DRAMResponse readResponse;
-				readResponse.address = iter->address;
 				memcpy(&readResponse.DRAMLine, (const void* const)(iter->address), sizeof(readResponse.DRAMLine) );
 				DRAMReadResponsesFIFO.push_back(readResponse);
 

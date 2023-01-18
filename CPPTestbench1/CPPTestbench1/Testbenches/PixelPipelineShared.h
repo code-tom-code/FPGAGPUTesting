@@ -268,7 +268,7 @@ struct attributeInterpOutputData
 {
 	signed short pixelX;
 	signed short pixelY;
-	unsigned short texcoordX;
+	unsigned short texcoordX; // Stored in fixed-point unsigned 8.8 format
 	unsigned short texcoordY;
 	uint32_t vertexColorRGBA;
 
@@ -301,6 +301,7 @@ struct attributeInterpOutputData
 			(vertexColorRGBA == rhs.vertexColorRGBA);
 	}
 };
+static_assert(sizeof(attributeInterpOutputData) == 12, "Error: Unexpected struct padding!");
 
 struct texSampOutput
 {
@@ -347,6 +348,7 @@ struct texSampOutput
 		outA = colorA;
 	}
 };
+static_assert(sizeof(texSampOutput) == 8, "Error: Unexpected struct padding!");
 
 triSetupResultType EmulateCPUTriSetup(const triSetupInput& inTriData, triSetupOutput& outTriSetupOutput);
 

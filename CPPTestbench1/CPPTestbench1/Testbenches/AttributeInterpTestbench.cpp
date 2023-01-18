@@ -168,6 +168,17 @@ void EmulateAttributeInterpCPU(const triSetupOutput& triSetupData, const std::ve
 	}
 }
 
+static void UpdateOutputFIFO(std::vector<attributeInterpOutputData>& outAttributeInterpData, std_logic_vector_port<96>& TEXSAMP_OutFIFO_wr_data, std_logic_port& TEXSAMP_OutFIFO_full, std_logic_port& TEXSAMP_OutFIFO_wr_en)
+{
+	TEXSAMP_OutFIFO_full = false;
+	if (TEXSAMP_OutFIFO_wr_en.GetBoolVal() )
+	{
+		attributeInterpOutputData newOutput;
+		TEXSAMP_OutFIFO_wr_data.GetStructVal(newOutput);
+		outAttributeInterpData.push_back(newOutput);
+	}
+}
+
 const int RunTestsAttributeInterp(Xsi::Loader& loader)
 {
 	// Start everything off at the beginning:
@@ -213,14 +224,9 @@ const int RunTestsAttributeInterp(Xsi::Loader& loader)
 // FPU interfaces end
 
 // Texture Sampler interface begin
-	std_logic_vector_port<16> TEXSAMP_outInterpolatedTexcoordX(PD_OUT, loader, "TEXSAMP_outInterpolatedTexcoordX");
-	std_logic_vector_port<16> TEXSAMP_outInterpolatedTexcoordY(PD_OUT, loader, "TEXSAMP_outInterpolatedTexcoordY");
-	std_logic_vector_port<32> TEXSAMP_outInterpolatedColorRGBA(PD_OUT, loader, "TEXSAMP_outInterpolatedColorRGBA");
-	std_logic_vector_port<16> TEXSAMP_outPixelX(PD_OUT, loader, "TEXSAMP_outPixelX");
-	std_logic_vector_port<16> TEXSAMP_outPixelY(PD_OUT, loader, "TEXSAMP_outPixelY");
-
-	std_logic_port TEXSAMP_writeIsValid(PD_OUT, loader, "TEXSAMP_writeIsValid");
-	std_logic_port TEXSAMP_readyForWrite(PD_IN, loader, "TEXSAMP_readyForWrite");
+	std_logic_vector_port<96> TEXSAMP_OutFIFO_wr_data(PD_OUT, loader, "TEXSAMP_OutFIFO_wr_data");
+	std_logic_port TEXSAMP_OutFIFO_full(PD_IN, loader, "TEXSAMP_OutFIFO_full");
+	std_logic_port TEXSAMP_OutFIFO_wr_en(PD_OUT, loader, "TEXSAMP_OutFIFO_wr_en");
 // Texture Sampler interface end
 
 // Debug signals
@@ -241,7 +247,7 @@ const int RunTestsAttributeInterp(Xsi::Loader& loader)
 		CMD_UseFlatShading = false;
 		FPU_OUT = 0.0f;
 		DINTERP_NewPixelValid = false;
-		TEXSAMP_readyForWrite = true;
+		TEXSAMP_OutFIFO_full = false;
 	}
 
 	auto simulateRTLAttributeInterp = [&](const triSetupOutput& triSetupData, const std::vector<depthInterpOutputData>& depthInterpData, std::vector<attributeInterpOutputData>& outAttributeInterpData)
@@ -271,16 +277,20 @@ const int RunTestsAttributeInterp(Xsi::Loader& loader)
 				DINTERP_NewPixelValid = false;
 			}
 
-			while (!TEXSAMP_writeIsValid.GetBoolVal() )
+			while (!TEXSAMP_OutFIFO_wr_en.GetBoolVal() )
 			{
 				scoped_timestep time(loader, clk, 100);
 
 				attrInterpFPU.Update(FPU_ISHFT_GO, FPU_IMUL_GO, FPU_IADD_GO, FPU_ICMP_GO, FPU_ISPEC_GO, FPU_ICNV_GO, FPU_IBIT_GO, FPU_A, FPU_B, FPU_Mode, FPU_OUT);
+				UpdateOutputFIFO(outAttributeInterpData, TEXSAMP_OutFIFO_wr_data, TEXSAMP_OutFIFO_full, TEXSAMP_OutFIFO_wr_en);
 			}
 
-			attributeInterpOutputData newOutData;
-			newOutData.Serialize(TEXSAMP_outPixelX, TEXSAMP_outPixelY, TEXSAMP_outInterpolatedTexcoordX, TEXSAMP_outInterpolatedTexcoordY, TEXSAMP_outInterpolatedColorRGBA);
-			outAttributeInterpData.push_back(newOutData);
+			while (TEXSAMP_OutFIFO_wr_en.GetBoolVal() )
+			{
+				scoped_timestep time(loader, clk, 100);
+				attrInterpFPU.Update(FPU_ISHFT_GO, FPU_IMUL_GO, FPU_IADD_GO, FPU_ICMP_GO, FPU_ISPEC_GO, FPU_ICNV_GO, FPU_IBIT_GO, FPU_A, FPU_B, FPU_Mode, FPU_OUT);
+				UpdateOutputFIFO(outAttributeInterpData, TEXSAMP_OutFIFO_wr_data, TEXSAMP_OutFIFO_full, TEXSAMP_OutFIFO_wr_en);
+			}
 		}
 	};
 

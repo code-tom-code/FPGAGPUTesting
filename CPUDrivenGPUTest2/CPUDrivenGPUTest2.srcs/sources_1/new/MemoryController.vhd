@@ -106,7 +106,7 @@ entity MemoryController is
 
 	-- Scanout system returned read responses FIFO:
 		ScanoutReadResponsesFIFO_full : in STD_LOGIC;
-		ScanoutReadResponsesFIFO_wr_data : out STD_LOGIC_VECTOR(C_M_AXI_ADDR_WIDTH+C_M_AXI_DATA_WIDTH-1 downto 0) := (others => '0');
+		ScanoutReadResponsesFIFO_wr_data : out STD_LOGIC_VECTOR(C_M_AXI_DATA_WIDTH-1 downto 0) := (others => '0');
 		ScanoutReadResponsesFIFO_wr_en : out STD_LOGIC := '0';
 
 	-- ZStencil system incoming read requests FIFO:
@@ -116,7 +116,7 @@ entity MemoryController is
 
 	-- ZStencil system returned read responses FIFO:
 		ZStencilReadResponsesFIFO_full : in STD_LOGIC;
-		ZStencilReadResponsesFIFO_wr_data : out STD_LOGIC_VECTOR(C_M_AXI_ADDR_WIDTH+C_M_AXI_DATA_WIDTH-1 downto 0) := (others => '0');
+		ZStencilReadResponsesFIFO_wr_data : out STD_LOGIC_VECTOR(C_M_AXI_DATA_WIDTH-1 downto 0) := (others => '0');
 		ZStencilReadResponsesFIFO_wr_en : out STD_LOGIC := '0';
 
 	-- ZStencil system incoming write requests FIFO:
@@ -131,7 +131,7 @@ entity MemoryController is
 
 	-- Command Processor system returned read responses FIFO:
 		CommandProcReadResponsesFIFO_full : in STD_LOGIC;
-		CommandProcReadResponsesFIFO_wr_data : out STD_LOGIC_VECTOR(C_M_AXI_ADDR_WIDTH+C_M_AXI_DATA_WIDTH-1 downto 0) := (others => '0');
+		CommandProcReadResponsesFIFO_wr_data : out STD_LOGIC_VECTOR(C_M_AXI_DATA_WIDTH-1 downto 0) := (others => '0');
 		CommandProcReadResponsesFIFO_wr_en : out STD_LOGIC := '0';
 
 	-- Command Processor system incoming write requests FIFO:
@@ -146,7 +146,7 @@ entity MemoryController is
 
 	-- Input Assembler (IA) system returned read responses FIFO:
 		IAReadResponsesFIFO_full : in STD_LOGIC;
-		IAReadResponsesFIFO_wr_data : out STD_LOGIC_VECTOR(C_M_AXI_ADDR_WIDTH+C_M_AXI_DATA_WIDTH-1 downto 0) := (others => '0');
+		IAReadResponsesFIFO_wr_data : out STD_LOGIC_VECTOR(C_M_AXI_DATA_WIDTH-1 downto 0) := (others => '0');
 		IAReadResponsesFIFO_wr_en : out STD_LOGIC := '0';
 
 	-- Index Buffer Pretransform Cache (IBC) system incoming read requests FIFO:
@@ -156,7 +156,7 @@ entity MemoryController is
 
 	-- Index Buffer Pretransform Cache (IBC) system returned read responses FIFO:
 		IBCPreReadResponsesFIFO_full : in STD_LOGIC;
-		IBCPreReadResponsesFIFO_wr_data : out STD_LOGIC_VECTOR(C_M_AXI_ADDR_WIDTH+C_M_AXI_DATA_WIDTH-1 downto 0) := (others => '0');
+		IBCPreReadResponsesFIFO_wr_data : out STD_LOGIC_VECTOR(C_M_AXI_DATA_WIDTH-1 downto 0) := (others => '0');
 		IBCPreReadResponsesFIFO_wr_en : out STD_LOGIC := '0';
 
 	-- Index Buffer Posttransform Cache (IBC) system incoming read requests FIFO:
@@ -166,7 +166,7 @@ entity MemoryController is
 
 	-- Index Buffer Posttransform Cache (IBC) system returned read responses FIFO:
 		IBCPostReadResponsesFIFO_full : in STD_LOGIC;
-		IBCPostReadResponsesFIFO_wr_data : out STD_LOGIC_VECTOR(C_M_AXI_ADDR_WIDTH+C_M_AXI_DATA_WIDTH-1 downto 0) := (others => '0');
+		IBCPostReadResponsesFIFO_wr_data : out STD_LOGIC_VECTOR(C_M_AXI_DATA_WIDTH-1 downto 0) := (others => '0');
 		IBCPostReadResponsesFIFO_wr_en : out STD_LOGIC := '0';
 
 	-- Texture fetch incoming read requests FIFO:
@@ -176,7 +176,7 @@ entity MemoryController is
 
 	-- Texture fetch returned read responses FIFO:
 		TexFetchReadResponsesFIFO_full : in STD_LOGIC;
-		TexFetchReadResponsesFIFO_wr_data : out STD_LOGIC_VECTOR(C_M_AXI_ADDR_WIDTH+C_M_AXI_DATA_WIDTH-1 downto 0) := (others => '0');
+		TexFetchReadResponsesFIFO_wr_data : out STD_LOGIC_VECTOR(C_M_AXI_DATA_WIDTH-1 downto 0) := (others => '0');
 		TexFetchReadResponsesFIFO_wr_en : out STD_LOGIC := '0';
 
 	-- ROP system incoming read requests FIFO:
@@ -186,7 +186,7 @@ entity MemoryController is
 
 	-- ROP system returned read responses FIFO:
 		ROPReadResponsesFIFO_full : in STD_LOGIC;
-		ROPReadResponsesFIFO_wr_data : out STD_LOGIC_VECTOR(C_M_AXI_ADDR_WIDTH+C_M_AXI_DATA_WIDTH-1 downto 0) := (others => '0');
+		ROPReadResponsesFIFO_wr_data : out STD_LOGIC_VECTOR(C_M_AXI_DATA_WIDTH-1 downto 0) := (others => '0');
 		ROPReadResponsesFIFO_wr_en : out STD_LOGIC := '0';
 
 	-- ROP system incoming write requests FIFO:
@@ -815,28 +815,28 @@ begin
 						if (newReadDataReady = '1') then
 							case (memoryClient'val(to_integer(newReadResponse.memoryClientIndex) ) ) is
 								when SCANOUT =>
-									ScanoutReadResponsesFIFO_wr_data <= X"0000000" & "00" & newReadResponse.readData;
+									ScanoutReadResponsesFIFO_wr_data <= newReadResponse.readData;
 									ScanoutReadResponsesFIFO_wr_en <= '1';
 								when ZSTENCIL =>
-									ZStencilReadResponsesFIFO_wr_data <= X"0000000" & "00" & newReadResponse.readData;
+									ZStencilReadResponsesFIFO_wr_data <= newReadResponse.readData;
 									ZStencilReadResponsesFIFO_wr_en <= '1';
 								when COMMANDPROCESSOR =>
-									CommandProcReadResponsesFIFO_wr_data <= X"0000000" & "00" & newReadResponse.readData;
+									CommandProcReadResponsesFIFO_wr_data <= newReadResponse.readData;
 									CommandProcReadResponsesFIFO_wr_en <= '1';
 								when IBCPRE =>
-									IBCPreReadResponsesFIFO_wr_data <= X"0000000" & "00" & newReadResponse.readData;
+									IBCPreReadResponsesFIFO_wr_data <= newReadResponse.readData;
 									IBCPreReadResponsesFIFO_wr_en <= '1';
 								when IA =>
-									IAReadResponsesFIFO_wr_data <= X"0000000" & "00" & newReadResponse.readData;
+									IAReadResponsesFIFO_wr_data <= newReadResponse.readData;
 									IAReadResponsesFIFO_wr_en <= '1';
 								when IBCPOST =>
-									IBCPostReadResponsesFIFO_wr_data <= X"0000000" & "00" & newReadResponse.readData;
+									IBCPostReadResponsesFIFO_wr_data <= newReadResponse.readData;
 									IBCPostReadResponsesFIFO_wr_en <= '1';
 								when TEXTUREFETCH =>
-									TexFetchReadResponsesFIFO_wr_data <= X"0000000" & "00" & newReadResponse.readData;
+									TexFetchReadResponsesFIFO_wr_data <= newReadResponse.readData;
 									TexFetchReadResponsesFIFO_wr_en <= '1';
 								when ROP =>
-									ROPReadResponsesFIFO_wr_data <= X"0000000" & "00" & newReadResponse.readData;
+									ROPReadResponsesFIFO_wr_data <= newReadResponse.readData;
 									ROPReadResponsesFIFO_wr_en <= '1';
 								when others =>
 									-- Should never be here, just fall through and do nothing

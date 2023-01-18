@@ -1124,7 +1124,7 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>viewChecksum</spirit:name>
-            <spirit:value>25f81150</spirit:value>
+            <spirit:value>b424b79f</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -1137,7 +1137,7 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>viewChecksum</spirit:name>
-            <spirit:value>25f81150</spirit:value>
+            <spirit:value>b424b79f</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -1887,7 +1887,7 @@
         <spirit:wire>
           <spirit:direction>out</spirit:direction>
           <spirit:vector>
-            <spirit:left spirit:format="long" spirit:resolve="dependent" spirit:dependency="((spirit:decode(id(&apos;MODELPARAM_VALUE.C_M_AXI_ADDR_WIDTH&apos;)) + spirit:decode(id(&apos;MODELPARAM_VALUE.C_M_AXI_DATA_WIDTH&apos;))) - 1)">285</spirit:left>
+            <spirit:left spirit:format="long" spirit:resolve="dependent" spirit:dependency="(spirit:decode(id(&apos;MODELPARAM_VALUE.C_M_AXI_DATA_WIDTH&apos;)) - 1)">255</spirit:left>
             <spirit:right spirit:format="long">0</spirit:right>
           </spirit:vector>
           <spirit:wireTypeDefs>
@@ -1991,7 +1991,7 @@
         <spirit:wire>
           <spirit:direction>out</spirit:direction>
           <spirit:vector>
-            <spirit:left spirit:format="long" spirit:resolve="dependent" spirit:dependency="((spirit:decode(id(&apos;MODELPARAM_VALUE.C_M_AXI_ADDR_WIDTH&apos;)) + spirit:decode(id(&apos;MODELPARAM_VALUE.C_M_AXI_DATA_WIDTH&apos;))) - 1)">285</spirit:left>
+            <spirit:left spirit:format="long" spirit:resolve="dependent" spirit:dependency="(spirit:decode(id(&apos;MODELPARAM_VALUE.C_M_AXI_DATA_WIDTH&apos;)) - 1)">255</spirit:left>
             <spirit:right spirit:format="long">0</spirit:right>
           </spirit:vector>
           <spirit:wireTypeDefs>
@@ -2147,7 +2147,7 @@
         <spirit:wire>
           <spirit:direction>out</spirit:direction>
           <spirit:vector>
-            <spirit:left spirit:format="long" spirit:resolve="dependent" spirit:dependency="((spirit:decode(id(&apos;MODELPARAM_VALUE.C_M_AXI_ADDR_WIDTH&apos;)) + spirit:decode(id(&apos;MODELPARAM_VALUE.C_M_AXI_DATA_WIDTH&apos;))) - 1)">285</spirit:left>
+            <spirit:left spirit:format="long" spirit:resolve="dependent" spirit:dependency="(spirit:decode(id(&apos;MODELPARAM_VALUE.C_M_AXI_DATA_WIDTH&apos;)) - 1)">255</spirit:left>
             <spirit:right spirit:format="long">0</spirit:right>
           </spirit:vector>
           <spirit:wireTypeDefs>
@@ -2303,7 +2303,7 @@
         <spirit:wire>
           <spirit:direction>out</spirit:direction>
           <spirit:vector>
-            <spirit:left spirit:format="long" spirit:resolve="dependent" spirit:dependency="((spirit:decode(id(&apos;MODELPARAM_VALUE.C_M_AXI_ADDR_WIDTH&apos;)) + spirit:decode(id(&apos;MODELPARAM_VALUE.C_M_AXI_DATA_WIDTH&apos;))) - 1)">285</spirit:left>
+            <spirit:left spirit:format="long" spirit:resolve="dependent" spirit:dependency="(spirit:decode(id(&apos;MODELPARAM_VALUE.C_M_AXI_DATA_WIDTH&apos;)) - 1)">255</spirit:left>
             <spirit:right spirit:format="long">0</spirit:right>
           </spirit:vector>
           <spirit:wireTypeDefs>
@@ -2407,7 +2407,7 @@
         <spirit:wire>
           <spirit:direction>out</spirit:direction>
           <spirit:vector>
-            <spirit:left spirit:format="long" spirit:resolve="dependent" spirit:dependency="((spirit:decode(id(&apos;MODELPARAM_VALUE.C_M_AXI_ADDR_WIDTH&apos;)) + spirit:decode(id(&apos;MODELPARAM_VALUE.C_M_AXI_DATA_WIDTH&apos;))) - 1)">285</spirit:left>
+            <spirit:left spirit:format="long" spirit:resolve="dependent" spirit:dependency="(spirit:decode(id(&apos;MODELPARAM_VALUE.C_M_AXI_DATA_WIDTH&apos;)) - 1)">255</spirit:left>
             <spirit:right spirit:format="long">0</spirit:right>
           </spirit:vector>
           <spirit:wireTypeDefs>
@@ -2511,7 +2511,7 @@
         <spirit:wire>
           <spirit:direction>out</spirit:direction>
           <spirit:vector>
-            <spirit:left spirit:format="long" spirit:resolve="dependent" spirit:dependency="((spirit:decode(id(&apos;MODELPARAM_VALUE.C_M_AXI_ADDR_WIDTH&apos;)) + spirit:decode(id(&apos;MODELPARAM_VALUE.C_M_AXI_DATA_WIDTH&apos;))) - 1)">285</spirit:left>
+            <spirit:left spirit:format="long" spirit:resolve="dependent" spirit:dependency="(spirit:decode(id(&apos;MODELPARAM_VALUE.C_M_AXI_DATA_WIDTH&apos;)) - 1)">255</spirit:left>
             <spirit:right spirit:format="long">0</spirit:right>
           </spirit:vector>
           <spirit:wireTypeDefs>
@@ -2615,7 +2615,7 @@
         <spirit:wire>
           <spirit:direction>out</spirit:direction>
           <spirit:vector>
-            <spirit:left spirit:format="long" spirit:resolve="dependent" spirit:dependency="((spirit:decode(id(&apos;MODELPARAM_VALUE.C_M_AXI_ADDR_WIDTH&apos;)) + spirit:decode(id(&apos;MODELPARAM_VALUE.C_M_AXI_DATA_WIDTH&apos;))) - 1)">285</spirit:left>
+            <spirit:left spirit:format="long" spirit:resolve="dependent" spirit:dependency="(spirit:decode(id(&apos;MODELPARAM_VALUE.C_M_AXI_DATA_WIDTH&apos;)) - 1)">255</spirit:left>
             <spirit:right spirit:format="long">0</spirit:right>
           </spirit:vector>
           <spirit:wireTypeDefs>
@@ -2719,7 +2719,7 @@
         <spirit:wire>
           <spirit:direction>out</spirit:direction>
           <spirit:vector>
-            <spirit:left spirit:format="long" spirit:resolve="dependent" spirit:dependency="((spirit:decode(id(&apos;MODELPARAM_VALUE.C_M_AXI_ADDR_WIDTH&apos;)) + spirit:decode(id(&apos;MODELPARAM_VALUE.C_M_AXI_DATA_WIDTH&apos;))) - 1)">285</spirit:left>
+            <spirit:left spirit:format="long" spirit:resolve="dependent" spirit:dependency="(spirit:decode(id(&apos;MODELPARAM_VALUE.C_M_AXI_DATA_WIDTH&apos;)) - 1)">255</spirit:left>
             <spirit:right spirit:format="long">0</spirit:right>
           </spirit:vector>
           <spirit:wireTypeDefs>
@@ -3562,7 +3562,7 @@
         <xilinx:designToolContext>IPI</xilinx:designToolContext>
       </xilinx:designToolContexts>
       <xilinx:coreRevision>1</xilinx:coreRevision>
-      <xilinx:coreCreationDateTime>2023-01-17T04:13:45Z</xilinx:coreCreationDateTime>
+      <xilinx:coreCreationDateTime>2023-01-17T19:35:39Z</xilinx:coreCreationDateTime>
     </xilinx:coreExtensions>
     <xilinx:packagingInfo>
       <xilinx:xilinxVersion>2018.1_AR73068</xilinx:xilinxVersion>

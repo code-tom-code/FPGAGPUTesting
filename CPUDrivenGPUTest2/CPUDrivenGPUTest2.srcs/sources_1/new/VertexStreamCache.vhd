@@ -46,7 +46,7 @@ entity VertexStreamCache is
 		VSCReadRequestsFIFO_wr_data : out STD_LOGIC_VECTOR(30-1 downto 0) := (others => '0');
 		VSCReadRequestsFIFO_wr_en : out STD_LOGIC := '0';
 
-		VSCReadResponsesFIFO_rd_data : in STD_LOGIC_VECTOR(30+256-1 downto 0);
+		VSCReadResponsesFIFO_rd_data : in STD_LOGIC_VECTOR(256-1 downto 0);
         VSCReadResponsesFIFO_empty : in STD_LOGIC;
         VSCReadResponsesFIFO_rd_en : out STD_LOGIC := '0';
 	-- Memory controller interfaces end

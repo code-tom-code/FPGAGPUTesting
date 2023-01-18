@@ -7,9 +7,8 @@
 struct memResponse
 {
 	BYTE data[32];
-	uint32_t requestAddr;
 };
-static_assert(sizeof(memResponse) == 32 + 4, "Error: Unexpected struct size!");
+static_assert(sizeof(memResponse) == 32, "Error: Unexpected struct size!");
 
 const int RunTestsIndexBufferCache(Xsi::Loader& loader)
 {
@@ -29,7 +28,7 @@ const int RunTestsIndexBufferCache(Xsi::Loader& loader)
 	std_logic_port IBCReadRequestsFIFO_wr_en(PD_OUT, loader, "IBCReadRequestsFIFO_wr_en");
 
 	std_logic_port IBCReadResponsesFIFO_empty(PD_IN, loader, "IBCReadResponsesFIFO_empty");
-	std_logic_vector_port<256+30> IBCReadResponsesFIFO_rd_data(PD_IN, loader, "IBCReadResponsesFIFO_rd_data");
+	std_logic_vector_port<256> IBCReadResponsesFIFO_rd_data(PD_IN, loader, "IBCReadResponsesFIFO_rd_data");
 	std_logic_port IBCReadResponsesFIFO_rd_en(PD_OUT, loader, "IBCReadResponsesFIFO_rd_en");
 
 	std::vector<uint32_t> memReadRequests;
@@ -78,7 +77,6 @@ const int RunTestsIndexBufferCache(Xsi::Loader& loader)
 
 					memResponse response;
 					memcpy(response.data, reinterpret_cast<const void* const>(memRequest), 32);
-					response.requestAddr = memRequest;
 
 					memReadResponses.push_back(response);
 					IBCReadResponsesFIFO_rd_data.SetToByteMemory(&response);

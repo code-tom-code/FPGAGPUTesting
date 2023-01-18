@@ -40,7 +40,7 @@ entity CommandProcessor is
         CommandProcReadRequestsFIFO_wr_en : out STD_LOGIC := '0';
 
 		-- DRAM read responses FIFO:
-		CommandProcReadResponsesFIFO_rd_data : in STD_LOGIC_VECTOR(ADDR_WIDTH_BITS+DATA_WIDTH_BITS-1 downto 0);
+		CommandProcReadResponsesFIFO_rd_data : in STD_LOGIC_VECTOR(DATA_WIDTH_BITS-1 downto 0);
         CommandProcReadResponsesFIFO_empty : in STD_LOGIC;
         CommandProcReadResponsesFIFO_rd_en : out STD_LOGIC := '0';
 

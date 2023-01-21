@@ -78,6 +78,10 @@ static INT_PTR CALLBACK GPUStatsDialogProc(_In_ HWND hWnd, _In_ UINT MSG, _In_ W
 		return TRUE;
 	case WM_CLOSE:
 		DestroyWindow(hWnd);
+		if (gpuStats != NULL)
+		{
+			gpuStats->GPUStatsDialog = NULL;
+		}
 		return TRUE;
 	case WM_COMMAND:
 		if (gpuStats != NULL)

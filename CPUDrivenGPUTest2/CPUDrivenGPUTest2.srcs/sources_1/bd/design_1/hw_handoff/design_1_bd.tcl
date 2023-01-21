@@ -1156,19 +1156,14 @@ proc create_hier_cell_MemorySystem { parentCell nameHier } {
   create_bd_pin -dir O -from 255 -to 0 DBG_LastWriteData
   create_bd_pin -dir O -from 7 -to 0 DBG_LastWriteDataDWORDEnables
   create_bd_pin -dir O -from 3 -to 0 DBG_LastWriteMemoryClientIndex
-  create_bd_pin -dir O DBG_NewReadDataReady
-  create_bd_pin -dir O DBG_NewReadEnable
   create_bd_pin -dir O -from 3 -to 0 DBG_ReadControlState
   create_bd_pin -dir O -from 7 -to 0 DBG_ReadRequestsEmptyBitmask
   create_bd_pin -dir O -from 7 -to 0 DBG_ReadResponsesFullBitmask
-  create_bd_pin -dir O -from 3 -to 0 DBG_ReadState
-  create_bd_pin -dir O DBG_ReadyForNewRead
   create_bd_pin -dir O DBG_ScanoutReadRequests_Empty
   create_bd_pin -dir O DBG_ScanoutReadRequests_rd_en
   create_bd_pin -dir O DBG_ScanoutReadResponses_Full
   create_bd_pin -dir O -from 3 -to 0 DBG_WriteControlState
   create_bd_pin -dir O -from 4 -to 0 DBG_WriteRequestsEmptyBitmask
-  create_bd_pin -dir O -from 3 -to 0 DBG_WriteState
   create_bd_pin -dir I -type rst M_AXI_ARESETN
   create_bd_pin -dir O -from 31 -to 0 STAT_MemReadCountBytesTransferred
   create_bd_pin -dir O -from 31 -to 0 STAT_MemReadCountNonScanoutBytesTransferred
@@ -1689,19 +1684,14 @@ proc create_hier_cell_MemorySystem { parentCell nameHier } {
   connect_bd_net -net MemoryController_0_DBG_LastWriteData [get_bd_pins DBG_LastWriteData] [get_bd_pins MemoryController_0/DBG_LastWriteData]
   connect_bd_net -net MemoryController_0_DBG_LastWriteDataDWORDEnables [get_bd_pins DBG_LastWriteDataDWORDEnables] [get_bd_pins MemoryController_0/DBG_LastWriteDataDWORDEnables]
   connect_bd_net -net MemoryController_0_DBG_LastWriteMemoryClientIndex [get_bd_pins DBG_LastWriteMemoryClientIndex] [get_bd_pins MemoryController_0/DBG_LastWriteMemoryClientIndex]
-  connect_bd_net -net MemoryController_0_DBG_NewReadDataReady [get_bd_pins DBG_NewReadDataReady] [get_bd_pins MemoryController_0/DBG_NewReadDataReady]
-  connect_bd_net -net MemoryController_0_DBG_NewReadEnable [get_bd_pins DBG_NewReadEnable] [get_bd_pins MemoryController_0/DBG_NewReadEnable]
   connect_bd_net -net MemoryController_0_DBG_ReadControlState [get_bd_pins DBG_ReadControlState] [get_bd_pins MemoryController_0/DBG_ReadControlState]
   connect_bd_net -net MemoryController_0_DBG_ReadRequestsEmptyBitmask [get_bd_pins DBG_ReadRequestsEmptyBitmask] [get_bd_pins MemoryController_0/DBG_ReadRequestsEmptyBitmask]
   connect_bd_net -net MemoryController_0_DBG_ReadResponsesFullBitmask [get_bd_pins DBG_ReadResponsesFullBitmask] [get_bd_pins MemoryController_0/DBG_ReadResponsesFullBitmask]
-  connect_bd_net -net MemoryController_0_DBG_ReadState [get_bd_pins DBG_ReadState] [get_bd_pins MemoryController_0/DBG_ReadState]
-  connect_bd_net -net MemoryController_0_DBG_ReadyForNewRead [get_bd_pins DBG_ReadyForNewRead] [get_bd_pins MemoryController_0/DBG_ReadyForNewRead]
   connect_bd_net -net MemoryController_0_DBG_ScanoutReadRequests_Empty [get_bd_pins DBG_ScanoutReadRequests_Empty] [get_bd_pins MemoryController_0/DBG_ScanoutReadRequests_Empty]
   connect_bd_net -net MemoryController_0_DBG_ScanoutReadRequests_rd_en [get_bd_pins DBG_ScanoutReadRequests_rd_en] [get_bd_pins MemoryController_0/DBG_ScanoutReadRequests_rd_en]
   connect_bd_net -net MemoryController_0_DBG_ScanoutReadResponses_Full [get_bd_pins DBG_ScanoutReadResponses_Full] [get_bd_pins MemoryController_0/DBG_ScanoutReadResponses_Full]
   connect_bd_net -net MemoryController_0_DBG_WriteControlState [get_bd_pins DBG_WriteControlState] [get_bd_pins MemoryController_0/DBG_WriteControlState]
   connect_bd_net -net MemoryController_0_DBG_WriteRequestsEmptyBitmask [get_bd_pins DBG_WriteRequestsEmptyBitmask] [get_bd_pins MemoryController_0/DBG_WriteRequestsEmptyBitmask]
-  connect_bd_net -net MemoryController_0_DBG_WriteState [get_bd_pins DBG_WriteState] [get_bd_pins MemoryController_0/DBG_WriteState]
   connect_bd_net -net MemoryController_0_STAT_MemReadCountBytesTransferred [get_bd_pins STAT_MemReadCountBytesTransferred] [get_bd_pins MemoryController_0/STAT_MemReadCountBytesTransferred]
   connect_bd_net -net MemoryController_0_STAT_MemReadCountNonScanoutBytesTransferred [get_bd_pins STAT_MemReadCountNonScanoutBytesTransferred] [get_bd_pins MemoryController_0/STAT_MemReadCountNonScanoutBytesTransferred]
   connect_bd_net -net MemoryController_0_STAT_MemReadCountNonScanoutTransactions [get_bd_pins STAT_MemReadCountNonScanoutTransactions] [get_bd_pins MemoryController_0/STAT_MemReadCountNonScanoutTransactions]
@@ -2384,9 +2374,9 @@ proc create_root_design { parentCell } {
    CONFIG.C_PROBE10_TYPE {0} \
    CONFIG.C_PROBE10_WIDTH {4} \
    CONFIG.C_PROBE11_TYPE {0} \
-   CONFIG.C_PROBE11_WIDTH {4} \
+   CONFIG.C_PROBE11_WIDTH {1} \
    CONFIG.C_PROBE12_TYPE {0} \
-   CONFIG.C_PROBE12_WIDTH {4} \
+   CONFIG.C_PROBE12_WIDTH {1} \
    CONFIG.C_PROBE13_TYPE {0} \
    CONFIG.C_PROBE13_WIDTH {4} \
    CONFIG.C_PROBE14_TYPE {0} \
@@ -2500,15 +2490,6 @@ proc create_root_design { parentCell } {
    CONFIG.asymmetric_port_width {false} \
  ] $rast_out_fifo
 
-  # Create instance: vio_0, and set properties
-  set vio_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:vio:3.0 vio_0 ]
-  set_property -dict [ list \
-   CONFIG.C_EN_PROBE_IN_ACTIVITY {0} \
-   CONFIG.C_NUM_PROBE_IN {0} \
-   CONFIG.C_NUM_PROBE_OUT {1} \
-   CONFIG.C_PROBE_OUT0_INIT_VAL {0x0} \
- ] $vio_0
-
   # Create instance: xlconstant_0, and set properties
   set xlconstant_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant:1.1 xlconstant_0 ]
   set_property -dict [ list \
@@ -2541,6 +2522,18 @@ proc create_root_design { parentCell } {
    CONFIG.CONST_VAL {0} \
    CONFIG.CONST_WIDTH {1} \
  ] $xlconstant_4
+
+  # Create instance: xlconstant_5, and set properties
+  set xlconstant_5 [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant:1.1 xlconstant_5 ]
+  set_property -dict [ list \
+   CONFIG.CONST_VAL {0} \
+ ] $xlconstant_5
+
+  # Create instance: xlconstant_6, and set properties
+  set xlconstant_6 [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant:1.1 xlconstant_6 ]
+  set_property -dict [ list \
+   CONFIG.CONST_VAL {0} \
+ ] $xlconstant_6
 
   # Create instance: xlconstant_7, and set properties
   set xlconstant_7 [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant:1.1 xlconstant_7 ]
@@ -2750,19 +2743,14 @@ proc create_root_design { parentCell } {
   connect_bd_net -net MemorySystem_DBG_LastWriteData [get_bd_pins MemorySystem/DBG_LastWriteData] [get_bd_pins ila_333_250/probe23]
   connect_bd_net -net MemorySystem_DBG_LastWriteDataDWORDEnables [get_bd_pins MemorySystem/DBG_LastWriteDataDWORDEnables] [get_bd_pins ila_333_250/probe24]
   connect_bd_net -net MemorySystem_DBG_LastWriteMemoryClientIndex [get_bd_pins MemorySystem/DBG_LastWriteMemoryClientIndex] [get_bd_pins ila_333_250/probe25]
-  connect_bd_net -net MemorySystem_DBG_NewReadDataReady [get_bd_pins MemorySystem/DBG_NewReadDataReady] [get_bd_pins ila_333_250/probe16]
-  connect_bd_net -net MemorySystem_DBG_NewReadEnable [get_bd_pins MemorySystem/DBG_NewReadEnable] [get_bd_pins ila_333_250/probe15]
   connect_bd_net -net MemorySystem_DBG_ReadControlState [get_bd_pins MemorySystem/DBG_ReadControlState] [get_bd_pins ila_333_250/probe13]
   connect_bd_net -net MemorySystem_DBG_ReadRequestsEmptyBitmask [get_bd_pins MemorySystem/DBG_ReadRequestsEmptyBitmask] [get_bd_pins ila_333_250/probe39]
   connect_bd_net -net MemorySystem_DBG_ReadResponsesFullBitmask [get_bd_pins MemorySystem/DBG_ReadResponsesFullBitmask] [get_bd_pins ila_333_250/probe41]
-  connect_bd_net -net MemorySystem_DBG_ReadState [get_bd_pins MemorySystem/DBG_ReadState] [get_bd_pins ila_333_250/probe11]
-  connect_bd_net -net MemorySystem_DBG_ReadyForNewRead [get_bd_pins MemorySystem/DBG_ReadyForNewRead] [get_bd_pins ila_333_250/probe17]
   connect_bd_net -net MemorySystem_DBG_ScanoutReadRequests_Empty [get_bd_pins MemorySystem/DBG_ScanoutReadRequests_Empty] [get_bd_pins ila_333_250/probe18]
   connect_bd_net -net MemorySystem_DBG_ScanoutReadRequests_rd_en [get_bd_pins MemorySystem/DBG_ScanoutReadRequests_rd_en] [get_bd_pins ila_333_250/probe20]
   connect_bd_net -net MemorySystem_DBG_ScanoutReadResponses_Full [get_bd_pins MemorySystem/DBG_ScanoutReadResponses_Full] [get_bd_pins ila_333_250/probe19]
   connect_bd_net -net MemorySystem_DBG_WriteControlState [get_bd_pins MemorySystem/DBG_WriteControlState] [get_bd_pins ila_333_250/probe14]
   connect_bd_net -net MemorySystem_DBG_WriteRequestsEmptyBitmask [get_bd_pins MemorySystem/DBG_WriteRequestsEmptyBitmask] [get_bd_pins ila_333_250/probe40]
-  connect_bd_net -net MemorySystem_DBG_WriteState [get_bd_pins MemorySystem/DBG_WriteState] [get_bd_pins ila_333_250/probe12]
   connect_bd_net -net MemorySystem_STAT_MemReadCountBytesTransferred [get_bd_pins MemorySystem/STAT_MemReadCountBytesTransferred] [get_bd_pins StatsCollector_0/MEM_MemReadCountBytesTransferred]
   connect_bd_net -net MemorySystem_STAT_MemReadCountNonScanoutBytesTransferred [get_bd_pins MemorySystem/STAT_MemReadCountNonScanoutBytesTransferred] [get_bd_pins StatsCollector_0/MEM_MemReadCountNonScanoutBytesTransferred]
   connect_bd_net -net MemorySystem_STAT_MemReadCountNonScanoutTransactions [get_bd_pins MemorySystem/STAT_MemReadCountNonScanoutTransactions] [get_bd_pins StatsCollector_0/MEM_MemReadCountNonScanoutTransactions]
@@ -2990,12 +2978,11 @@ proc create_root_design { parentCell } {
   connect_bd_net -net VertexBatchBuilder_0_IBC_ReadEnable [get_bd_pins IndexBufferCache_0/VBB_ReadEnable] [get_bd_pins VertexBatchBuilder_0/IBC_ReadEnable]
   connect_bd_net -net VertexBatchBuilder_0_SHADER_Done [get_bd_pins ShaderCoreSystem/VBB_Done_0] [get_bd_pins VertexBatchBuilder_0/SHADER_Done]
   connect_bd_net -net ddr4_0_addn_ui_clkout1 [get_bd_pins MemorySystem/addn_ui_clkout1] [get_bd_pins ScanoutSystem/clk_in1] [get_bd_pins SerialPacketSystem/s_axi_aclk] [get_bd_pins proc_sys_reset_0/slowest_sync_clk]
-  connect_bd_net -net ddr4_0_c0_ddr4_ui_clk [get_bd_pins AttrInterpFloatALU_0/clk] [get_bd_pins AttrInterpolator_0/clk] [get_bd_pins ClearBlock_0/clk] [get_bd_pins CommandProcessor_0/clk] [get_bd_pins DepthBuffer_0/clk] [get_bd_pins DepthInterpFloatALU_0/clk] [get_bd_pins DepthInterpolator_0/clk] [get_bd_pins ILA_AttrInterpolator/clk] [get_bd_pins ILA_IA/clk] [get_bd_pins ILA_TexSampler/clk] [get_bd_pins ILA_TriSetup/clk] [get_bd_pins IndexBufferCache_0/clk] [get_bd_pins InputAssembler2_0/clk] [get_bd_pins MemorySystem/c0_ddr4_ui_clk] [get_bd_pins ROP_0/clk] [get_bd_pins ROP_FIFO/clk] [get_bd_pins Rasterizer_0/clk] [get_bd_pins ScanoutSystem/cmd_clk] [get_bd_pins SerialPacketSystem/rd_clk] [get_bd_pins ShaderCoreSystem/clk_0] [get_bd_pins StatsCollector_0/clk] [get_bd_pins TEXSAMP_FIFO/clk] [get_bd_pins TexSample_0/clk] [get_bd_pins TextureCache_128x128x32bits/clka] [get_bd_pins TriSetupFloatALU_0/clk] [get_bd_pins TriSetup_0/clk] [get_bd_pins TriWorkCache_0/clk] [get_bd_pins VBB_FIFO/clk] [get_bd_pins VBO_FIFO/clk] [get_bd_pins VBO_INDEX_FIFO/clk] [get_bd_pins VertexBatchBuilder_0/clk] [get_bd_pins ila_333_250/clk] [get_bd_pins rast_out_fifo/clk] [get_bd_pins vio_0/clk]
+  connect_bd_net -net ddr4_0_c0_ddr4_ui_clk [get_bd_pins AttrInterpFloatALU_0/clk] [get_bd_pins AttrInterpolator_0/clk] [get_bd_pins ClearBlock_0/clk] [get_bd_pins CommandProcessor_0/clk] [get_bd_pins DepthBuffer_0/clk] [get_bd_pins DepthInterpFloatALU_0/clk] [get_bd_pins DepthInterpolator_0/clk] [get_bd_pins ILA_AttrInterpolator/clk] [get_bd_pins ILA_IA/clk] [get_bd_pins ILA_TexSampler/clk] [get_bd_pins ILA_TriSetup/clk] [get_bd_pins IndexBufferCache_0/clk] [get_bd_pins InputAssembler2_0/clk] [get_bd_pins MemorySystem/c0_ddr4_ui_clk] [get_bd_pins ROP_0/clk] [get_bd_pins ROP_FIFO/clk] [get_bd_pins Rasterizer_0/clk] [get_bd_pins ScanoutSystem/cmd_clk] [get_bd_pins SerialPacketSystem/rd_clk] [get_bd_pins ShaderCoreSystem/clk_0] [get_bd_pins StatsCollector_0/clk] [get_bd_pins TEXSAMP_FIFO/clk] [get_bd_pins TexSample_0/clk] [get_bd_pins TextureCache_128x128x32bits/clka] [get_bd_pins TriSetupFloatALU_0/clk] [get_bd_pins TriSetup_0/clk] [get_bd_pins TriWorkCache_0/clk] [get_bd_pins VBB_FIFO/clk] [get_bd_pins VBO_FIFO/clk] [get_bd_pins VBO_INDEX_FIFO/clk] [get_bd_pins VertexBatchBuilder_0/clk] [get_bd_pins ila_333_250/clk] [get_bd_pins rast_out_fifo/clk]
   connect_bd_net -net fifo_generator_0_dout [get_bd_pins ILA_IA/probe14] [get_bd_pins ShaderCoreSystem/VERTBATCH_FIFO_0_rd_data] [get_bd_pins VBB_FIFO/dout]
   connect_bd_net -net placeholder_texcfg_dout [get_bd_pins TriSetup_0/TEXCFG_nointerpolation] [get_bd_pins placeholder_texcfg/dout]
   connect_bd_net -net rd_clk_1 [get_bd_pins MemorySystem/rd_clk] [get_bd_pins ScanoutSystem/clk_out1]
   connect_bd_net -net reset_1 [get_bd_ports reset] [get_bd_pins MemorySystem/reset] [get_bd_pins ResetN_UntilClockLoc_0/reset] [get_bd_pins ScanoutSystem/reset] [get_bd_pins SerialPacketSystem/reset] [get_bd_pins proc_sys_reset_0/ext_reset_in]
-  connect_bd_net -net vio_0_probe_out0 [get_bd_pins VertexBatchBuilder_0/DBG_UseConstantOutput] [get_bd_pins vio_0/probe_out0]
   connect_bd_net -net xlconstant_0_dout [get_bd_pins ResetN_UntilClockLoc_0/locked] [get_bd_pins constant_always_locked/dout]
   connect_bd_net -net xlconstant_0_dout1 [get_bd_pins ila_333_250/probe4] [get_bd_pins xlconstant_0/dout]
   connect_bd_net -net xlconstant_1_dout [get_bd_pins ila_333_250/probe37] [get_bd_pins xlconstant_1/dout]
@@ -3003,6 +2990,8 @@ proc create_root_design { parentCell } {
   connect_bd_net -net xlconstant_3_dout [get_bd_pins DepthBuffer_AlwaysEnable/dout] [get_bd_pins DepthBuffer_URAM/regceb]
   connect_bd_net -net xlconstant_3_dout1 [get_bd_pins AttrInterpolator_0/CMD_UseFlatShading] [get_bd_pins xlconstant_3/dout]
   connect_bd_net -net xlconstant_4_dout [get_bd_pins ILA_AttrInterpolator/probe1] [get_bd_pins ILA_AttrInterpolator/probe2] [get_bd_pins ILA_AttrInterpolator/probe3] [get_bd_pins ILA_AttrInterpolator/probe4] [get_bd_pins ILA_AttrInterpolator/probe7] [get_bd_pins ILA_AttrInterpolator/probe13] [get_bd_pins xlconstant_4/dout]
+  connect_bd_net -net xlconstant_5_dout [get_bd_pins ila_333_250/probe11] [get_bd_pins ila_333_250/probe12] [get_bd_pins ila_333_250/probe15] [get_bd_pins ila_333_250/probe16] [get_bd_pins ila_333_250/probe17] [get_bd_pins xlconstant_5/dout]
+  connect_bd_net -net xlconstant_6_dout [get_bd_pins VertexBatchBuilder_0/DBG_UseConstantOutput] [get_bd_pins xlconstant_6/dout]
   connect_bd_net -net xlconstant_7_dout [get_bd_pins TextureCache_128x128x32bits/regcea] [get_bd_pins xlconstant_7/dout]
 
   # Create address segments

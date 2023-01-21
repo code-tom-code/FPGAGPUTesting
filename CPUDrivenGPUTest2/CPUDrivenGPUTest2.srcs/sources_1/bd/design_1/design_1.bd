@@ -348,8 +348,8 @@
           <spirit:configurableElementValue spirit:referenceId="C_PROBE21_WIDTH">294</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="C_PROBE14_WIDTH">4</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="C_PROBE13_WIDTH">4</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="C_PROBE12_WIDTH">4</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="C_PROBE11_WIDTH">4</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="C_PROBE12_WIDTH">1</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="C_PROBE11_WIDTH">1</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="C_PROBE10_WIDTH">4</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="C_PROBE9_WIDTH">5</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="C_PROBE8_WIDTH">6</spirit:configurableElementValue>
@@ -707,16 +707,6 @@
         </spirit:configurableElementValues>
       </spirit:componentInstance>
       <spirit:componentInstance>
-        <spirit:instanceName>vio_0</spirit:instanceName>
-        <spirit:componentRef spirit:library="ip" spirit:name="vio" spirit:vendor="xilinx.com" spirit:version="3.0"/>
-        <spirit:configurableElementValues>
-          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_vio_0_0</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="C_PROBE_OUT0_INIT_VAL">0x0</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="C_NUM_PROBE_OUT">1</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="C_NUM_PROBE_IN">0</spirit:configurableElementValue>
-        </spirit:configurableElementValues>
-      </spirit:componentInstance>
-      <spirit:componentInstance>
         <spirit:instanceName>VBO_INDEX_FIFO</spirit:instanceName>
         <spirit:componentRef spirit:library="ip" spirit:name="fifo_generator" spirit:vendor="xilinx.com" spirit:version="13.2"/>
         <spirit:configurableElementValues>
@@ -1006,6 +996,22 @@
           <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
         </spirit:configurableElementValues>
       </spirit:componentInstance>
+      <spirit:componentInstance>
+        <spirit:instanceName>xlconstant_5</spirit:instanceName>
+        <spirit:componentRef spirit:library="ip" spirit:name="xlconstant" spirit:vendor="xilinx.com" spirit:version="1.1"/>
+        <spirit:configurableElementValues>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_xlconstant_5_0</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="CONST_VAL">0</spirit:configurableElementValue>
+        </spirit:configurableElementValues>
+      </spirit:componentInstance>
+      <spirit:componentInstance>
+        <spirit:instanceName>xlconstant_6</spirit:instanceName>
+        <spirit:componentRef spirit:library="ip" spirit:name="xlconstant" spirit:vendor="xilinx.com" spirit:version="1.1"/>
+        <spirit:configurableElementValues>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_xlconstant_6_0</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="CONST_VAL">0</spirit:configurableElementValue>
+        </spirit:configurableElementValues>
+      </spirit:componentInstance>
     </spirit:componentInstances>
     <spirit:interconnections>
       <spirit:interconnection>
@@ -1187,9 +1193,9 @@
       <spirit:adHocConnection>
         <spirit:name>ResetN_UntilClockLoc_0_resetn</spirit:name>
         <spirit:internalPortReference spirit:componentRef="ResetN_UntilClockLoc_0" spirit:portRef="resetn"/>
+        <spirit:internalPortReference spirit:componentRef="CommandProcessor_0" spirit:portRef="resetn"/>
         <spirit:internalPortReference spirit:componentRef="MemorySystem" spirit:portRef="M_AXI_ARESETN"/>
         <spirit:internalPortReference spirit:componentRef="SerialPacketSystem" spirit:portRef="s_axi_aresetn"/>
-        <spirit:internalPortReference spirit:componentRef="CommandProcessor_0" spirit:portRef="resetn"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>CommandProcessor_0_DBG_PACKETSTATE</spirit:name>
@@ -1216,7 +1222,6 @@
         <spirit:internalPortReference spirit:componentRef="VBB_FIFO" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="VBO_FIFO" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="ClearBlock_0" spirit:portRef="clk"/>
-        <spirit:internalPortReference spirit:componentRef="vio_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="VBO_INDEX_FIFO" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="Rasterizer_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="TriWorkCache_0" spirit:portRef="clk"/>
@@ -1232,13 +1237,13 @@
         <spirit:internalPortReference spirit:componentRef="AttrInterpFloatALU_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="DepthInterpFloatALU_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="TriSetupFloatALU_0" spirit:portRef="clk"/>
-        <spirit:internalPortReference spirit:componentRef="SerialPacketSystem" spirit:portRef="rd_clk"/>
-        <spirit:internalPortReference spirit:componentRef="ShaderCoreSystem" spirit:portRef="clk_0"/>
-        <spirit:internalPortReference spirit:componentRef="ScanoutSystem" spirit:portRef="cmd_clk"/>
         <spirit:internalPortReference spirit:componentRef="CommandProcessor_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="TexSample_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="ROP_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="IndexBufferCache_0" spirit:portRef="clk"/>
+        <spirit:internalPortReference spirit:componentRef="SerialPacketSystem" spirit:portRef="rd_clk"/>
+        <spirit:internalPortReference spirit:componentRef="ShaderCoreSystem" spirit:portRef="clk_0"/>
+        <spirit:internalPortReference spirit:componentRef="ScanoutSystem" spirit:portRef="cmd_clk"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>xlconstant_0_dout</spirit:name>
@@ -1606,16 +1611,6 @@
         <spirit:internalPortReference spirit:componentRef="ila_333_250" spirit:portRef="probe10"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
-        <spirit:name>MemorySystem_DBG_ReadState</spirit:name>
-        <spirit:internalPortReference spirit:componentRef="MemorySystem" spirit:portRef="DBG_ReadState"/>
-        <spirit:internalPortReference spirit:componentRef="ila_333_250" spirit:portRef="probe11"/>
-      </spirit:adHocConnection>
-      <spirit:adHocConnection>
-        <spirit:name>MemorySystem_DBG_WriteState</spirit:name>
-        <spirit:internalPortReference spirit:componentRef="MemorySystem" spirit:portRef="DBG_WriteState"/>
-        <spirit:internalPortReference spirit:componentRef="ila_333_250" spirit:portRef="probe12"/>
-      </spirit:adHocConnection>
-      <spirit:adHocConnection>
         <spirit:name>MemorySystem_DBG_ReadControlState</spirit:name>
         <spirit:internalPortReference spirit:componentRef="MemorySystem" spirit:portRef="DBG_ReadControlState"/>
         <spirit:internalPortReference spirit:componentRef="ila_333_250" spirit:portRef="probe13"/>
@@ -1624,21 +1619,6 @@
         <spirit:name>MemorySystem_DBG_WriteControlState</spirit:name>
         <spirit:internalPortReference spirit:componentRef="MemorySystem" spirit:portRef="DBG_WriteControlState"/>
         <spirit:internalPortReference spirit:componentRef="ila_333_250" spirit:portRef="probe14"/>
-      </spirit:adHocConnection>
-      <spirit:adHocConnection>
-        <spirit:name>MemorySystem_DBG_NewReadDataReady</spirit:name>
-        <spirit:internalPortReference spirit:componentRef="MemorySystem" spirit:portRef="DBG_NewReadDataReady"/>
-        <spirit:internalPortReference spirit:componentRef="ila_333_250" spirit:portRef="probe16"/>
-      </spirit:adHocConnection>
-      <spirit:adHocConnection>
-        <spirit:name>MemorySystem_DBG_NewReadEnable</spirit:name>
-        <spirit:internalPortReference spirit:componentRef="MemorySystem" spirit:portRef="DBG_NewReadEnable"/>
-        <spirit:internalPortReference spirit:componentRef="ila_333_250" spirit:portRef="probe15"/>
-      </spirit:adHocConnection>
-      <spirit:adHocConnection>
-        <spirit:name>MemorySystem_DBG_ReadyForNewRead</spirit:name>
-        <spirit:internalPortReference spirit:componentRef="MemorySystem" spirit:portRef="DBG_ReadyForNewRead"/>
-        <spirit:internalPortReference spirit:componentRef="ila_333_250" spirit:portRef="probe17"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>MemorySystem_DBG_ScanoutReadRequests_Empty</spirit:name>
@@ -2996,11 +2976,6 @@
         <spirit:internalPortReference spirit:componentRef="AttrInterpolator_0" spirit:portRef="CMD_UseFlatShading"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
-        <spirit:name>vio_0_probe_out0</spirit:name>
-        <spirit:internalPortReference spirit:componentRef="vio_0" spirit:portRef="probe_out0"/>
-        <spirit:internalPortReference spirit:componentRef="VertexBatchBuilder_0" spirit:portRef="DBG_UseConstantOutput"/>
-      </spirit:adHocConnection>
-      <spirit:adHocConnection>
         <spirit:name>Net</spirit:name>
         <spirit:internalPortReference spirit:componentRef="DepthBuffer_URAM" spirit:portRef="doutb"/>
         <spirit:internalPortReference spirit:componentRef="ILA_AttrInterpolator" spirit:portRef="probe17"/>
@@ -3406,6 +3381,20 @@
         <spirit:internalPortReference spirit:componentRef="TriSetupFloatALU_0" spirit:portRef="OUT_RESULT"/>
         <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="FPU_OUT"/>
         <spirit:internalPortReference spirit:componentRef="ILA_TriSetup" spirit:portRef="probe57"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>xlconstant_5_dout</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="xlconstant_5" spirit:portRef="dout"/>
+        <spirit:internalPortReference spirit:componentRef="ila_333_250" spirit:portRef="probe16"/>
+        <spirit:internalPortReference spirit:componentRef="ila_333_250" spirit:portRef="probe15"/>
+        <spirit:internalPortReference spirit:componentRef="ila_333_250" spirit:portRef="probe17"/>
+        <spirit:internalPortReference spirit:componentRef="ila_333_250" spirit:portRef="probe12"/>
+        <spirit:internalPortReference spirit:componentRef="ila_333_250" spirit:portRef="probe11"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>xlconstant_6_dout</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="xlconstant_6" spirit:portRef="dout"/>
+        <spirit:internalPortReference spirit:componentRef="VertexBatchBuilder_0" spirit:portRef="DBG_UseConstantOutput"/>
       </spirit:adHocConnection>
     </spirit:adHocConnections>
     <spirit:hierConnections>
@@ -4354,8 +4343,8 @@
         <spirit:internalPortReference spirit:componentRef="FloatALU_1" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="FloatALU_2" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="FloatALU_3" spirit:portRef="clk"/>
-        <spirit:internalPortReference spirit:componentRef="GPRQuadSystem" spirit:portRef="clk_0"/>
         <spirit:internalPortReference spirit:componentRef="VertexStreamCache_0" spirit:portRef="clk"/>
+        <spirit:internalPortReference spirit:componentRef="GPRQuadSystem" spirit:portRef="clk_0"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>ConstantBuffer_0_readOutData</spirit:name>
@@ -6480,26 +6469,6 @@
           </spirit:wire>
         </spirit:port>
         <spirit:port>
-          <spirit:name>DBG_ReadState</spirit:name>
-          <spirit:wire>
-            <spirit:direction>out</spirit:direction>
-            <spirit:vector>
-              <spirit:left>3</spirit:left>
-              <spirit:right>0</spirit:right>
-            </spirit:vector>
-          </spirit:wire>
-        </spirit:port>
-        <spirit:port>
-          <spirit:name>DBG_WriteState</spirit:name>
-          <spirit:wire>
-            <spirit:direction>out</spirit:direction>
-            <spirit:vector>
-              <spirit:left>3</spirit:left>
-              <spirit:right>0</spirit:right>
-            </spirit:vector>
-          </spirit:wire>
-        </spirit:port>
-        <spirit:port>
           <spirit:name>DBG_ReadControlState</spirit:name>
           <spirit:wire>
             <spirit:direction>out</spirit:direction>
@@ -6517,24 +6486,6 @@
               <spirit:left>3</spirit:left>
               <spirit:right>0</spirit:right>
             </spirit:vector>
-          </spirit:wire>
-        </spirit:port>
-        <spirit:port>
-          <spirit:name>DBG_NewReadEnable</spirit:name>
-          <spirit:wire>
-            <spirit:direction>out</spirit:direction>
-          </spirit:wire>
-        </spirit:port>
-        <spirit:port>
-          <spirit:name>DBG_NewReadDataReady</spirit:name>
-          <spirit:wire>
-            <spirit:direction>out</spirit:direction>
-          </spirit:wire>
-        </spirit:port>
-        <spirit:port>
-          <spirit:name>DBG_ReadyForNewRead</spirit:name>
-          <spirit:wire>
-            <spirit:direction>out</spirit:direction>
           </spirit:wire>
         </spirit:port>
         <spirit:port>
@@ -7239,16 +7190,6 @@
         <spirit:internalPortReference spirit:componentRef="ScanoutReadRequestsFIFO" spirit:portRef="wr_clk"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
-        <spirit:name>MemoryController_0_DBG_ReadState</spirit:name>
-        <spirit:internalPortReference spirit:componentRef="MemoryController_0" spirit:portRef="DBG_ReadState"/>
-        <spirit:externalPortReference spirit:portRef="DBG_ReadState"/>
-      </spirit:adHocConnection>
-      <spirit:adHocConnection>
-        <spirit:name>MemoryController_0_DBG_WriteState</spirit:name>
-        <spirit:internalPortReference spirit:componentRef="MemoryController_0" spirit:portRef="DBG_WriteState"/>
-        <spirit:externalPortReference spirit:portRef="DBG_WriteState"/>
-      </spirit:adHocConnection>
-      <spirit:adHocConnection>
         <spirit:name>MemoryController_0_DBG_ReadControlState</spirit:name>
         <spirit:internalPortReference spirit:componentRef="MemoryController_0" spirit:portRef="DBG_ReadControlState"/>
         <spirit:externalPortReference spirit:portRef="DBG_ReadControlState"/>
@@ -7257,21 +7198,6 @@
         <spirit:name>MemoryController_0_DBG_WriteControlState</spirit:name>
         <spirit:internalPortReference spirit:componentRef="MemoryController_0" spirit:portRef="DBG_WriteControlState"/>
         <spirit:externalPortReference spirit:portRef="DBG_WriteControlState"/>
-      </spirit:adHocConnection>
-      <spirit:adHocConnection>
-        <spirit:name>MemoryController_0_DBG_NewReadEnable</spirit:name>
-        <spirit:internalPortReference spirit:componentRef="MemoryController_0" spirit:portRef="DBG_NewReadEnable"/>
-        <spirit:externalPortReference spirit:portRef="DBG_NewReadEnable"/>
-      </spirit:adHocConnection>
-      <spirit:adHocConnection>
-        <spirit:name>MemoryController_0_DBG_NewReadDataReady</spirit:name>
-        <spirit:internalPortReference spirit:componentRef="MemoryController_0" spirit:portRef="DBG_NewReadDataReady"/>
-        <spirit:externalPortReference spirit:portRef="DBG_NewReadDataReady"/>
-      </spirit:adHocConnection>
-      <spirit:adHocConnection>
-        <spirit:name>MemoryController_0_DBG_ReadyForNewRead</spirit:name>
-        <spirit:internalPortReference spirit:componentRef="MemoryController_0" spirit:portRef="DBG_ReadyForNewRead"/>
-        <spirit:externalPortReference spirit:portRef="DBG_ReadyForNewRead"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>MemoryController_0_DBG_ScanoutReadRequests_Empty</spirit:name>

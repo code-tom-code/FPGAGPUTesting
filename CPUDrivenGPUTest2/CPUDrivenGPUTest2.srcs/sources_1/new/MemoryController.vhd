@@ -222,13 +222,8 @@ entity MemoryController is
 	-- Stats interface end
 
 	-- Debug signals
-		DBG_ReadState : out STD_LOGIC_VECTOR(3 downto 0) := (others => '0');
-		DBG_WriteState : out STD_LOGIC_VECTOR(3 downto 0) := (others => '0');
 		DBG_ReadControlState : out STD_LOGIC_VECTOR(3 downto 0) := (others => '0');
 		DBG_WriteControlState : out STD_LOGIC_VECTOR(3 downto 0) := (others => '0');
-		DBG_NewReadEnable : out STD_LOGIC := '0';
-		DBG_NewReadDataReady : out STD_LOGIC := '0';
-		DBG_ReadyForNewRead : out STD_LOGIC := '0';
 		DBG_ScanoutReadRequests_Empty : out STD_LOGIC := '0';
 		DBG_ScanoutReadResponses_Full : out STD_LOGIC := '0';
 		DBG_ScanoutReadRequests_rd_en : out STD_LOGIC := '0';
@@ -380,21 +375,12 @@ architecture Behavioral of MemoryController is
 						STATS, -- 7
 						IBCPRE, -- 8
 						IBCPOST -- 9
-						);
-
-	type readState is ( READ_INIT, -- 0
-						READ_WAIT_FOR_MEM_READY, -- 1
-						READ_WRITE_AND_CHECK_STATUS -- 2
-						);
-
-	type writeState is ( WRITE_INIT, -- 0
-						WRITE_WAIT_FOR_WRITE, -- 1
-						WRITE_CHECK_STATUS -- 2
+						-- PACKETDMA -- 10 -- Coming soon!
 						);
 
 	type readControlState is ( READCTRL_INIT, -- 0
 						READCTRL_HANDLE_INCOMING_MEMREQUEST, -- 1
-						READCTRL_ROUTE_MEMRESPONSE -- 2
+						READCTRL_MEM_COOLDOWN -- 2
 						);
 
 	type writeControlState is ( WRITECTRL_INIT, -- 0
@@ -469,8 +455,6 @@ architecture Behavioral of MemoryController is
 	signal newReadResponse : ReturningReadResponse;
 	signal newWriteRequest : IncomingWriteRequest;
 
-	signal currentReadState : readState := READ_INIT;
-	signal currentWriteState : writeState := WRITE_INIT;
 	signal currentReadControlState : readControlState := READCTRL_INIT;
 	signal currentWriteControlState : writeControlState := WRITECTRL_INIT;
 
@@ -517,32 +501,62 @@ architecture Behavioral of MemoryController is
 	signal writeSystem_idle : std_logic := '0';
 
 	-- Read system signals
-	signal newReadEnable : std_logic := '0'; -- Written to by the packet processor process, read from by the AXI read process
-	signal newReadDataReady : std_logic := '0'; -- Written to by the AXI read process, read from by the packet processor process
-	signal readyForNewRead : std_logic := '0'; -- Written to by the AXI read process, read from by the packet processor process
-
 	signal LastReadAddress : STD_LOGIC_VECTOR(C_M_AXI_ADDR_WIDTH-1 downto 0) := (others => '0');
 	signal LastReadMemoryClientIndex : unsigned(3 downto 0) := (others => '0');
 
 	-- Write system signals
-	signal newWriteEnable : std_logic := '0';
-	signal readyForNewWrite : std_logic := '0';
-
 	signal LastWriteAddress : STD_LOGIC_VECTOR(C_M_AXI_ADDR_WIDTH-1 downto 0) := (others => '0');
 	signal LastWriteData : STD_LOGIC_VECTOR(C_M_AXI_DATA_WIDTH-1 downto 0) := (others => '0');
 	signal LastWriteDataDWORDEnables : STD_LOGIC_VECTOR(7 downto 0) := (others => '0');
 	signal LastWriteMemoryClientIndex : unsigned(3 downto 0) := (others => '0');
+	signal NextWriteTransactionID : unsigned(3 downto 0) := (others => '0');
 
 	signal statMemReadCyclesIdle : unsigned(31 downto 0) := (others => '0');
 	signal statMemReadCyclesWorking : unsigned(31 downto 0) := (others => '0');
 	signal statMemWriteCyclesIdle : unsigned(31 downto 0) := (others => '0');
 	signal statMemWriteCyclesWorking : unsigned(31 downto 0) := (others => '0');
 	signal statMemReadCountBytesTransferred : unsigned(31 downto 0) := (others => '0');
-	signal statMemReadCountTransactions : unsigned(31 downto 0) := (others => '0');
+	signal statMemReadCountTransactions : unsigned(31 downto 0) := (others => '0'); -- Note that this counts completed transactions, not initiated transactions that have yet to complete
 	signal statMemReadCountNonScanoutBytesTransferred : unsigned(31 downto 0) := (others => '0');
 	signal statMemReadCountNonScanoutTransactions : unsigned(31 downto 0) := (others => '0');
 	signal statMemWriteCountBytesTransferred : unsigned(31 downto 0) := (others => '0');
 	signal statMemWriteCountTransactions : unsigned(31 downto 0) := (others => '0');
+
+	procedure QueueReadTransaction(signal argNewReadRequest : out IncomingReadRequest;
+									signal argAxi_araddr : out std_logic_vector(C_M_AXI_ADDR_WIDTH-1 downto 0);
+									signal argAxi_arvalid : out std_logic;
+									signal argAxi_arid : out std_logic_vector(3 downto 0);
+									constant readClient : in memoryClient;
+									signal readAddr : in std_logic_vector(C_M_AXI_ADDR_WIDTH-1 downto 5) ) is
+	begin
+		argNewReadRequest.readAddress <= readAddr & "00000";
+		argNewReadRequest.memoryClientIndex <= to_unsigned(memoryClient'pos(readClient), 4);
+		argAxi_araddr <= readAddr & "00000";
+		argAxi_arid <= std_logic_vector(to_unsigned(memoryClient'pos(readClient), 4) );
+		argAxi_arvalid <= '1';
+	end procedure;
+
+	procedure QueueWriteTransaction(signal argNewWriteRequest : out IncomingWriteRequest;
+									signal argAxi_awaddr : out std_logic_vector(C_M_AXI_ADDR_WIDTH-1 downto 0);
+									signal argAxi_wdata : out std_logic_vector(C_M_AXI_DATA_WIDTH-1 downto 0);
+									signal argAxi_wstrb : out std_logic_vector(C_M_AXI_DATA_WIDTH/8-1 downto 0);
+									signal argAxi_awvalid : out std_logic;
+									signal ArgNextWriteTransactionID : inout unsigned(3 downto 0);
+									constant writeClient : in memoryClient;
+									signal writeAddr : in std_logic_vector(C_M_AXI_ADDR_WIDTH-1 downto 5);
+									signal writeData : in std_logic_vector(C_M_AXI_DATA_WIDTH-1 downto 0);
+									signal writeDWORDStrobe : in std_logic_vector(C_M_AXI_DATA_WIDTH/32-1 downto 0) ) is
+	begin
+		argNewWriteRequest.writeAddress <= writeAddr & "00000";
+		argNewWriteRequest.writeData <= writeData;
+		argNewWriteRequest.writeDataDWORDEnables <= writeDWORDStrobe;
+		argNewWriteRequest.memoryClientIndex <= to_unsigned(memoryClient'pos(writeClient), 4);
+		argAxi_awaddr <= writeAddr & "00000";
+		argAxi_wdata <= writeData;
+		argAxi_wstrb <= ExpandDWORDMaskToByteMask(writeDWORDStrobe);
+		argAxi_awvalid <= '1';
+		ArgNextWriteTransactionID <= ArgNextWriteTransactionID + 1;
+	end procedure;
 
 begin
 
@@ -582,6 +596,10 @@ begin
 
 	M_AXI_WLAST <= '1'; -- Since we have a burst length of 1, we are always finishing a burst
 
+	-- Each write transaction can be done using a different write transaction ID to tell the AXI slave
+	-- that it's acceptable for the writes to complete in any order.
+	M_AXI_AWID <= std_logic_vector(NextWriteTransactionID);
+
 	--Flag write errors                                                    
 	write_resp_error <= (axi_bready and M_AXI_BVALID and M_AXI_BRESP(1));
                                                                                                                             
@@ -603,13 +621,8 @@ begin
 	STAT_MemWriteCountBytesTransferred <= std_logic_vector(statMemWriteCountBytesTransferred);
 	STAT_MemWriteCountTransactions <= std_logic_vector(statMemWriteCountTransactions);
 
-	DBG_ReadState <= std_logic_vector(to_unsigned(readState'pos(currentReadState), 4) );
-	DBG_WriteState <= std_logic_vector(to_unsigned(writeState'pos(currentWriteState), 4) );
 	DBG_ReadControlState <= std_logic_vector(to_unsigned(readControlState'pos(currentReadControlState), 4) );
 	DBG_WriteControlState <= std_logic_vector(to_unsigned(writeControlState'pos(currentWriteControlState), 4) );
-	DBG_NewReadEnable <= newReadEnable;
-	DBG_NewReadDataReady <= newReadDataReady;
-	DBG_ReadyForNewRead <= readyForNewRead;
 	DBG_ScanoutReadRequests_Empty <= ScanoutReadRequestsFIFO_empty;
 	DBG_ScanoutReadResponses_Full <= ScanoutReadResponsesFIFO_full;
 	DBG_ScanoutReadRequests_rd_en <= scanoutRequests_rd_en;
@@ -658,55 +671,40 @@ begin
 	--While not necessary per spec, it is advisable to reset READY signals in
 	--case of differing reset latencies between master/slave.
 
-	process(M_AXI_ACLK)                                            
+	process(M_AXI_ACLK)
 	begin
-		if (rising_edge (M_AXI_ACLK)) then                                 
-			if (M_AXI_ARESETN = '0') then                                   
-				axi_bready <= '0';                                             
-			else                                                             
-				if (M_AXI_BVALID = '1' and axi_bready = '0') then              
-					-- accept/acknowledge bresp with axi_bready by the master    
-					-- when M_AXI_BVALID is asserted by slave                    
-					axi_bready <= '1';                                          
-				elsif (axi_bready = '1') then                                  
-					-- deassert after one clock cycle                            
-					axi_bready <= '0';                                           
-				end if;                                                        
-			end if;                                                          
-		end if;                                                            
+		if (rising_edge (M_AXI_ACLK)) then
+			if (M_AXI_ARESETN = '0') then
+				axi_bready <= '0';
+			else
+				-- Always hold bready high to tell the AXI4 slave that we can always accept a write response
+				axi_bready <= '1';
+			end if;
+		end if;
 	end process;
 
 	------------------------------
-	-- Main controller read state machine
+	-- Main controller read state machine (issues the read transaction and controls the AR channel)
 	------------------------------
 	process(M_AXI_ACLK)
 	begin
 		if (rising_edge(M_AXI_ACLK)) then
+			scanoutRequests_rd_en <= '0';
+			ZStencilReadRequestsFIFO_rd_en <= '0';
+			CommandProcReadRequestsFIFO_rd_en <= '0';
+			IAReadRequestsFIFO_rd_en <= '0';
+			IBCPreReadRequestsFIFO_rd_en <= '0';
+			IBCPostReadRequestsFIFO_rd_en <= '0';
+			TexFetchReadRequestsFIFO_rd_en <= '0';
+			ROPReadRequestsFIFO_rd_en <= '0';
+			axi_arvalid <= '0';
+
 			if (M_AXI_ARESETN = '0') then
 				currentReadControlState <= READCTRL_INIT;
 			else
 				case (currentReadControlState) is
 					when READCTRL_INIT =>
-						newReadEnable <= '0';
 						readSystem_idle <= '0';
-
-						scanoutRequests_rd_en <= '0';
-						ZStencilReadRequestsFIFO_rd_en <= '0';
-						CommandProcReadRequestsFIFO_rd_en <= '0';
-						IAReadRequestsFIFO_rd_en <= '0';
-						IBCPreReadRequestsFIFO_rd_en <= '0';
-						IBCPostReadRequestsFIFO_rd_en <= '0';
-						TexFetchReadRequestsFIFO_rd_en <= '0';
-						ROPReadRequestsFIFO_rd_en <= '0';
-
-						ScanoutReadResponsesFIFO_wr_en <= '0';
-						ZStencilReadResponsesFIFO_wr_en <= '0';
-						CommandProcReadResponsesFIFO_wr_en <= '0';
-						IAReadResponsesFIFO_wr_en <= '0';
-						IBCPreReadResponsesFIFO_wr_en <= '0';
-						IBCPostReadResponsesFIFO_wr_en <= '0';
-						TexFetchReadResponsesFIFO_wr_en <= '0';
-						ROPReadResponsesFIFO_wr_en <= '0';
 
 						if (c0_init_calib_complete = '1') then
 							currentReadControlState <= READCTRL_HANDLE_INCOMING_MEMREQUEST;
@@ -715,152 +713,71 @@ begin
 					when READCTRL_HANDLE_INCOMING_MEMREQUEST =>
 						readSystem_idle <= '0';
 
-						-- Deassert all of these after one clock cycle
-						ScanoutReadResponsesFIFO_wr_en <= '0';
-						ZStencilReadResponsesFIFO_wr_en <= '0';
-						CommandProcReadResponsesFIFO_wr_en <= '0';
-						IAReadResponsesFIFO_wr_en <= '0';
-						IBCPreReadResponsesFIFO_wr_en <= '0';
-						IBCPreReadResponsesFIFO_wr_en <= '0';
-						TexFetchReadResponsesFIFO_wr_en <= '0';
-						ROPReadResponsesFIFO_wr_en <= '0';
-
-						if (readyForNewRead = '1') then
-
-							-- These memory clients are ordered in order of most important (first) to least important (last)
-							-- For example, SCANOUT always gets served first because if SCANOUT were to miss a memory read, it could cause screen glitches
-							if (ScanoutReadRequestsFIFO_empty = '0' and ScanoutReadResponsesFIFO_full = '0') then
-								newReadRequest.readAddress <= ScanoutReadRequestsFIFO_rd_data(C_M_AXI_ADDR_WIDTH-1 downto 5) & "00000";
-								scanoutRequests_rd_en <= '1';
-								newReadRequest.memoryClientIndex <= to_unsigned(memoryClient'pos(SCANOUT), 4);
-								newReadEnable <= '1';
-								currentReadControlState <= READCTRL_ROUTE_MEMRESPONSE;
-							elsif (ZStencilReadRequestsFIFO_empty = '0' and ZStencilReadResponsesFIFO_full = '0') then
-								newReadRequest.readAddress <= ZStencilReadRequestsFIFO_rd_data(C_M_AXI_ADDR_WIDTH-1 downto 5) & "00000";
-								ZStencilReadRequestsFIFO_rd_en <= '1';
-								newReadRequest.memoryClientIndex <= to_unsigned(memoryClient'pos(ZSTENCIL), 4);
-								newReadEnable <= '1';
-								currentReadControlState <= READCTRL_ROUTE_MEMRESPONSE;
-							elsif (CommandProcReadRequestsFIFO_empty = '0' and CommandProcReadResponsesFIFO_full = '0') then
-								newReadRequest.readAddress <= CommandProcReadRequestsFIFO_rd_data(C_M_AXI_ADDR_WIDTH-1 downto 5) & "00000";
-								CommandProcReadRequestsFIFO_rd_en <= '1';
-								newReadRequest.memoryClientIndex <= to_unsigned(memoryClient'pos(COMMANDPROCESSOR), 4);
-								newReadEnable <= '1';
-								currentReadControlState <= READCTRL_ROUTE_MEMRESPONSE;
-							elsif (IBCPreReadRequestsFIFO_empty = '0' and IBCPreReadResponsesFIFO_full = '0') then
-								newReadRequest.readAddress <= IBCPreReadRequestsFIFO_rd_data(C_M_AXI_ADDR_WIDTH-1 downto 5) & "00000";
-								IBCPreReadRequestsFIFO_rd_en <= '1';
-								newReadRequest.memoryClientIndex <= to_unsigned(memoryClient'pos(IBCPRE), 4);
-								newReadEnable <= '1';
-								currentReadControlState <= READCTRL_ROUTE_MEMRESPONSE;
-							elsif (IAReadRequestsFIFO_empty = '0' and IAReadResponsesFIFO_full = '0') then
-								newReadRequest.readAddress <= IAReadRequestsFIFO_rd_data(C_M_AXI_ADDR_WIDTH-1 downto 5) & "00000";
-								IAReadRequestsFIFO_rd_en <= '1';
-								newReadRequest.memoryClientIndex <= to_unsigned(memoryClient'pos(IA), 4);
-								newReadEnable <= '1';
-								currentReadControlState <= READCTRL_ROUTE_MEMRESPONSE;
-							elsif (IBCPostReadRequestsFIFO_empty = '0' and IBCPostReadResponsesFIFO_full = '0') then
-								newReadRequest.readAddress <= IBCPostReadRequestsFIFO_rd_data(C_M_AXI_ADDR_WIDTH-1 downto 5) & "00000";
-								IBCPostReadRequestsFIFO_rd_en <= '1';
-								newReadRequest.memoryClientIndex <= to_unsigned(memoryClient'pos(IBCPOST), 4);
-								newReadEnable <= '1';
-								currentReadControlState <= READCTRL_ROUTE_MEMRESPONSE;
-							elsif (TexFetchReadRequestsFIFO_empty = '0' and TexFetchReadResponsesFIFO_full = '0') then
-								newReadRequest.readAddress <= TexFetchReadRequestsFIFO_rd_data(C_M_AXI_ADDR_WIDTH-1 downto 5) & "00000";
-								TexFetchReadRequestsFIFO_rd_en <= '1';
-								newReadRequest.memoryClientIndex <= to_unsigned(memoryClient'pos(TEXTUREFETCH), 4);
-								newReadEnable <= '1';
-								currentReadControlState <= READCTRL_ROUTE_MEMRESPONSE;
-							elsif (ROPReadRequestsFIFO_empty = '0' and ROPReadResponsesFIFO_full = '0') then
-								newReadRequest.readAddress <= ROPReadRequestsFIFO_rd_data(C_M_AXI_ADDR_WIDTH-1 downto 5) & "00000";
-								ROPReadRequestsFIFO_rd_en <= '1';
-								newReadRequest.memoryClientIndex <= to_unsigned(memoryClient'pos(ROP), 4);
-								newReadEnable <= '1';
-								currentReadControlState <= READCTRL_ROUTE_MEMRESPONSE;
-							else
-								newReadEnable <= '0';
-								readSystem_idle <= '1';
-								currentReadControlState <= READCTRL_HANDLE_INCOMING_MEMREQUEST;
-							end if;
+						-- These memory clients are ordered in order of most important (first) to least important (last)
+						-- For example, SCANOUT always gets served first because if SCANOUT were to miss a memory read, it could cause screen glitches
+						if (ScanoutReadRequestsFIFO_empty = '0' and ScanoutReadResponsesFIFO_full = '0') then
+							QueueReadTransaction(newReadRequest, axi_araddr, axi_arvalid, M_AXI_ARID, 
+								SCANOUT, 
+								ScanoutReadRequestsFIFO_rd_data(C_M_AXI_ADDR_WIDTH-1 downto 5) );
+							scanoutRequests_rd_en <= '1';
+							currentReadControlState <= READCTRL_MEM_COOLDOWN;
+						elsif (ZStencilReadRequestsFIFO_empty = '0' and ZStencilReadResponsesFIFO_full = '0') then
+							QueueReadTransaction(newReadRequest, axi_araddr, axi_arvalid, M_AXI_ARID, 
+								ZSTENCIL, 
+								ZStencilReadRequestsFIFO_rd_data(C_M_AXI_ADDR_WIDTH-1 downto 5) );
+							ZStencilReadRequestsFIFO_rd_en <= '1';
+							currentReadControlState <= READCTRL_MEM_COOLDOWN;
+						elsif (CommandProcReadRequestsFIFO_empty = '0' and CommandProcReadResponsesFIFO_full = '0') then
+							QueueReadTransaction(newReadRequest, axi_araddr, axi_arvalid, M_AXI_ARID, 
+								COMMANDPROCESSOR, 
+								CommandProcReadRequestsFIFO_rd_data(C_M_AXI_ADDR_WIDTH-1 downto 5) );
+							CommandProcReadRequestsFIFO_rd_en <= '1';
+							currentReadControlState <= READCTRL_MEM_COOLDOWN;
+						elsif (IBCPreReadRequestsFIFO_empty = '0' and IBCPreReadResponsesFIFO_full = '0') then
+							QueueReadTransaction(newReadRequest, axi_araddr, axi_arvalid, M_AXI_ARID, 
+								IBCPRE, 
+								IBCPreReadRequestsFIFO_rd_data(C_M_AXI_ADDR_WIDTH-1 downto 5) );
+							IBCPreReadRequestsFIFO_rd_en <= '1';
+							currentReadControlState <= READCTRL_MEM_COOLDOWN;
+						elsif (IAReadRequestsFIFO_empty = '0' and IAReadResponsesFIFO_full = '0') then
+							QueueReadTransaction(newReadRequest, axi_araddr, axi_arvalid, M_AXI_ARID, 
+								IA, 
+								IAReadRequestsFIFO_rd_data(C_M_AXI_ADDR_WIDTH-1 downto 5) );
+							IAReadRequestsFIFO_rd_en <= '1';
+							currentReadControlState <= READCTRL_MEM_COOLDOWN;
+						elsif (IBCPostReadRequestsFIFO_empty = '0' and IBCPostReadResponsesFIFO_full = '0') then
+							QueueReadTransaction(newReadRequest, axi_araddr, axi_arvalid, M_AXI_ARID, 
+								IBCPOST, 
+								IBCPostReadRequestsFIFO_rd_data(C_M_AXI_ADDR_WIDTH-1 downto 5) );
+							IBCPostReadRequestsFIFO_rd_en <= '1';
+							currentReadControlState <= READCTRL_MEM_COOLDOWN;
+						elsif (TexFetchReadRequestsFIFO_empty = '0' and TexFetchReadResponsesFIFO_full = '0') then
+							QueueReadTransaction(newReadRequest, axi_araddr, axi_arvalid, M_AXI_ARID, 
+								TEXTUREFETCH, 
+								TexFetchReadRequestsFIFO_rd_data(C_M_AXI_ADDR_WIDTH-1 downto 5) );
+							TexFetchReadRequestsFIFO_rd_en <= '1';
+							currentReadControlState <= READCTRL_MEM_COOLDOWN;
+						elsif (ROPReadRequestsFIFO_empty = '0' and ROPReadResponsesFIFO_full = '0') then
+							QueueReadTransaction(newReadRequest, axi_araddr, axi_arvalid, M_AXI_ARID, 
+								ROP, 
+								ROPReadRequestsFIFO_rd_data(C_M_AXI_ADDR_WIDTH-1 downto 5) );
+							ROPReadRequestsFIFO_rd_en <= '1';
+							currentReadControlState <= READCTRL_MEM_COOLDOWN;
 						else
-							newReadEnable <= '0';
+							readSystem_idle <= '1';
+						end if;
 
-							scanoutRequests_rd_en <= '0';
-							ZStencilReadRequestsFIFO_rd_en <= '0';
-							CommandProcReadRequestsFIFO_rd_en <= '0';
-							IAReadRequestsFIFO_rd_en <= '0';
-							IBCPreReadRequestsFIFO_rd_en <= '0';
-							IBCPostReadRequestsFIFO_rd_en <= '0';
-							TexFetchReadRequestsFIFO_rd_en <= '0';
-							ROPReadRequestsFIFO_rd_en <= '0';
+					when READCTRL_MEM_COOLDOWN =>
+						readSystem_idle <= '0';
 
+						axi_arvalid <= '1';
+						if (M_AXI_ARREADY = '1' and axi_arvalid = '1') then
+							axi_arvalid <= '0';
+							LastReadAddress <= newReadRequest.readAddress;
+							LastReadMemoryClientIndex <= newReadRequest.memoryClientIndex;
 							currentReadControlState <= READCTRL_HANDLE_INCOMING_MEMREQUEST;
 						end if;
 
-					when READCTRL_ROUTE_MEMRESPONSE =>
-						-- Deassert all of these after one clock cycle
-						newReadEnable <= '0';
-						scanoutRequests_rd_en <= '0';
-						ZStencilReadRequestsFIFO_rd_en <= '0';
-						CommandProcReadRequestsFIFO_rd_en <= '0';
-						IAReadRequestsFIFO_rd_en <= '0';
-						IBCPreReadRequestsFIFO_rd_en <= '0';
-						IBCPostReadRequestsFIFO_rd_en <= '0';
-						TexFetchReadRequestsFIFO_rd_en <= '0';
-						ROPReadRequestsFIFO_rd_en <= '0';
-
-						LastReadAddress <= newReadRequest.readAddress;
-						LastReadMemoryClientIndex <= newReadRequest.memoryClientIndex;
-
-						if (newReadDataReady = '1') then
-							case (memoryClient'val(to_integer(newReadResponse.memoryClientIndex) ) ) is
-								when SCANOUT =>
-									ScanoutReadResponsesFIFO_wr_data <= newReadResponse.readData;
-									ScanoutReadResponsesFIFO_wr_en <= '1';
-								when ZSTENCIL =>
-									ZStencilReadResponsesFIFO_wr_data <= newReadResponse.readData;
-									ZStencilReadResponsesFIFO_wr_en <= '1';
-								when COMMANDPROCESSOR =>
-									CommandProcReadResponsesFIFO_wr_data <= newReadResponse.readData;
-									CommandProcReadResponsesFIFO_wr_en <= '1';
-								when IBCPRE =>
-									IBCPreReadResponsesFIFO_wr_data <= newReadResponse.readData;
-									IBCPreReadResponsesFIFO_wr_en <= '1';
-								when IA =>
-									IAReadResponsesFIFO_wr_data <= newReadResponse.readData;
-									IAReadResponsesFIFO_wr_en <= '1';
-								when IBCPOST =>
-									IBCPostReadResponsesFIFO_wr_data <= newReadResponse.readData;
-									IBCPostReadResponsesFIFO_wr_en <= '1';
-								when TEXTUREFETCH =>
-									TexFetchReadResponsesFIFO_wr_data <= newReadResponse.readData;
-									TexFetchReadResponsesFIFO_wr_en <= '1';
-								when ROP =>
-									ROPReadResponsesFIFO_wr_data <= newReadResponse.readData;
-									ROPReadResponsesFIFO_wr_en <= '1';
-								when others =>
-									-- Should never be here, just fall through and do nothing
-							end case;
-
-							statMemReadCountTransactions <= statMemReadCountTransactions + 1;
-							statMemReadCountBytesTransferred <= statMemReadCountBytesTransferred + 32;
-
-							if (newReadResponse.memoryClientIndex /= to_unsigned(memoryClient'pos(SCANOUT), 4) ) then
-								statMemReadCountNonScanoutTransactions <= statMemReadCountNonScanoutTransactions + 1;
-								statMemReadCountNonScanoutBytesTransferred <= statMemReadCountNonScanoutBytesTransferred + 32;
-							end if;
-
-							currentReadControlState <= READCTRL_HANDLE_INCOMING_MEMREQUEST;
-						else
-							ScanoutReadResponsesFIFO_wr_en <= '0';
-							ZStencilReadResponsesFIFO_wr_en <= '0';
-							CommandProcReadResponsesFIFO_wr_en <= '0';
-							IAReadResponsesFIFO_wr_en <= '0';
-							IBCPreReadResponsesFIFO_wr_en <= '0';
-							IBCPostReadResponsesFIFO_wr_en <= '0';
-							TexFetchReadResponsesFIFO_wr_en <= '0';
-							ROPReadResponsesFIFO_wr_en <= '0';
-						end if;
 				end case;
 			end if;
 		end if;
@@ -872,19 +789,21 @@ begin
 	process(M_AXI_ACLK)
 	begin
 		if (rising_edge(M_AXI_ACLK)) then
+			ZStencilWriteRequestsFIFO_rd_en <= '0';
+			CommandProcWriteRequestsFIFO_rd_en <= '0';
+			ROPWriteRequestsFIFO_rd_en <= '0';
+			ClearBlockWriteRequestsFIFO_rd_en <= '0';
+			StatsWriteRequestsFIFO_rd_en <= '0';
+
+			axi_awvalid <= '0';
+
 			if (M_AXI_ARESETN = '0') then
 				currentWriteControlState <= WRITECTRL_INIT;
 			else
 				case (currentWriteControlState) is
 					when WRITECTRL_INIT =>
-						newWriteEnable <= '0';
 						writeSystem_idle <= '0';
-
-						ZStencilWriteRequestsFIFO_rd_en <= '0';
-						CommandProcWriteRequestsFIFO_rd_en <= '0';
-						ROPWriteRequestsFIFO_rd_en <= '0';
-						ClearBlockWriteRequestsFIFO_rd_en <= '0';
-						StatsWriteRequestsFIFO_rd_en <= '0';
+						axi_wvalid <= '0';
 
 						if (c0_init_calib_complete = '1') then
 							currentWriteControlState <= WRITECTRL_HANDLE_INCOMING_WRITEREQUEST;
@@ -893,182 +812,146 @@ begin
 					when WRITECTRL_HANDLE_INCOMING_WRITEREQUEST =>
 						writeSystem_idle <= '0';
 
-						if (readyForNewWrite = '1') then
+						if (axi_wvalid = '0' or
+							(axi_wvalid = '1' and M_AXI_WREADY = '1') ) then
+
+							-- If we have a write that is currently pending, then finish it up
+							if (axi_wvalid = '1') then
+								axi_wvalid <= '0';
+
+								-- Write out our debug info
+								LastWriteAddress <= newWriteRequest.writeAddress;
+								LastWriteData <= newWriteRequest.writeData;
+								LastWriteDataDWORDEnables <= newWriteRequest.writeDataDWORDEnables;
+								LastWriteMemoryClientIndex <= newWriteRequest.memoryClientIndex;
+
+								statMemWriteCountTransactions <= statMemWriteCountTransactions + 1;
+								statMemWriteCountBytesTransferred <= statMemWriteCountBytesTransferred + to_integer(CountBytesInWriteTransaction(newWriteRequest.writeDataDWORDEnables) );
+							end if;
 
 							-- These memory clients are ordered in order of most important (first) to least important (last)
 							if (ZStencilWriteRequestsFIFO_empty = '0') then
-								newWriteRequest.writeAddress <= ZStencilWriteRequestsFIFO_rd_data(C_M_AXI_ADDR_WIDTH+C_M_AXI_DATA_WIDTH+C_M_AXI_DATA_WIDTH/32-1 downto C_M_AXI_DATA_WIDTH+C_M_AXI_DATA_WIDTH/32+5) & "00000";
-								newWriteRequest.writeData <= ZStencilWriteRequestsFIFO_rd_data(C_M_AXI_DATA_WIDTH+C_M_AXI_DATA_WIDTH/32-1 downto C_M_AXI_DATA_WIDTH/32);
-								newWriteRequest.writeDataDWORDEnables <= ZStencilWriteRequestsFIFO_rd_data(C_M_AXI_DATA_WIDTH/32-1 downto 0);
+								QueueWriteTransaction(newWriteRequest, axi_awaddr, axi_wdata, axi_wstrb, axi_awvalid, NextWriteTransactionID,
+									ZSTENCIL,
+									ZStencilWriteRequestsFIFO_rd_data(C_M_AXI_ADDR_WIDTH+C_M_AXI_DATA_WIDTH+C_M_AXI_DATA_WIDTH/32-1 downto C_M_AXI_DATA_WIDTH+C_M_AXI_DATA_WIDTH/32+5),
+									ZStencilWriteRequestsFIFO_rd_data(C_M_AXI_DATA_WIDTH+C_M_AXI_DATA_WIDTH/32-1 downto C_M_AXI_DATA_WIDTH/32),
+									ZStencilWriteRequestsFIFO_rd_data(C_M_AXI_DATA_WIDTH/32-1 downto 0) );
 								ZStencilWriteRequestsFIFO_rd_en <= '1';
-								newWriteRequest.memoryClientIndex <= to_unsigned(memoryClient'pos(ZSTENCIL), 4);
-								newWriteEnable <= '1';
 								currentWriteControlState <= WRITECTRL_DEASSERT;
 							elsif (CommandProcWriteRequestsFIFO_empty = '0') then
-								newWriteRequest.writeAddress <= CommandProcWriteRequestsFIFO_rd_data(C_M_AXI_ADDR_WIDTH+C_M_AXI_DATA_WIDTH+C_M_AXI_DATA_WIDTH/32-1 downto C_M_AXI_DATA_WIDTH+C_M_AXI_DATA_WIDTH/32+5) & "00000";
-								newWriteRequest.writeData <= CommandProcWriteRequestsFIFO_rd_data(C_M_AXI_DATA_WIDTH+C_M_AXI_DATA_WIDTH/32-1 downto C_M_AXI_DATA_WIDTH/32);
-								newWriteRequest.writeDataDWORDEnables <= CommandProcWriteRequestsFIFO_rd_data(C_M_AXI_DATA_WIDTH/32-1 downto 0);
-								CommandProcWriteRequestsFIFO_rd_en <= '1';
-								newWriteRequest.memoryClientIndex <= to_unsigned(memoryClient'pos(COMMANDPROCESSOR), 4);
-								newWriteEnable <= '1';
+								QueueWriteTransaction(newWriteRequest, axi_awaddr, axi_wdata, axi_wstrb, axi_awvalid, NextWriteTransactionID,
+									COMMANDPROCESSOR,
+									CommandProcWriteRequestsFIFO_rd_data(C_M_AXI_ADDR_WIDTH+C_M_AXI_DATA_WIDTH+C_M_AXI_DATA_WIDTH/32-1 downto C_M_AXI_DATA_WIDTH+C_M_AXI_DATA_WIDTH/32+5),
+									CommandProcWriteRequestsFIFO_rd_data(C_M_AXI_DATA_WIDTH+C_M_AXI_DATA_WIDTH/32-1 downto C_M_AXI_DATA_WIDTH/32),
+									CommandProcWriteRequestsFIFO_rd_data(C_M_AXI_DATA_WIDTH/32-1 downto 0) );
+									CommandProcWriteRequestsFIFO_rd_en <= '1';
 								currentWriteControlState <= WRITECTRL_DEASSERT;
 							elsif (ROPWriteRequestsFIFO_empty = '0') then
-								newWriteRequest.writeAddress <= ROPWriteRequestsFIFO_rd_data(C_M_AXI_ADDR_WIDTH+C_M_AXI_DATA_WIDTH+C_M_AXI_DATA_WIDTH/32-1 downto C_M_AXI_DATA_WIDTH+C_M_AXI_DATA_WIDTH/32+5) & "00000";
-								newWriteRequest.writeData <= ROPWriteRequestsFIFO_rd_data(C_M_AXI_DATA_WIDTH+C_M_AXI_DATA_WIDTH/32-1 downto C_M_AXI_DATA_WIDTH/32);
-								newWriteRequest.writeDataDWORDEnables <= ROPWriteRequestsFIFO_rd_data(C_M_AXI_DATA_WIDTH/32-1 downto 0);
+								QueueWriteTransaction(newWriteRequest, axi_awaddr, axi_wdata, axi_wstrb, axi_awvalid, NextWriteTransactionID,
+									ROP,
+									ROPWriteRequestsFIFO_rd_data(C_M_AXI_ADDR_WIDTH+C_M_AXI_DATA_WIDTH+C_M_AXI_DATA_WIDTH/32-1 downto C_M_AXI_DATA_WIDTH+C_M_AXI_DATA_WIDTH/32+5),
+									ROPWriteRequestsFIFO_rd_data(C_M_AXI_DATA_WIDTH+C_M_AXI_DATA_WIDTH/32-1 downto C_M_AXI_DATA_WIDTH/32),
+									ROPWriteRequestsFIFO_rd_data(C_M_AXI_DATA_WIDTH/32-1 downto 0) );
 								ROPWriteRequestsFIFO_rd_en <= '1';
-								newWriteRequest.memoryClientIndex <= to_unsigned(memoryClient'pos(ROP), 4);
-								newWriteEnable <= '1';
 								currentWriteControlState <= WRITECTRL_DEASSERT;
 							elsif (ClearBlockWriteRequestsFIFO_empty = '0') then
-								newWriteRequest.writeAddress <= ClearBlockWriteRequestsFIFO_rd_data(C_M_AXI_ADDR_WIDTH+C_M_AXI_DATA_WIDTH+C_M_AXI_DATA_WIDTH/32-1 downto C_M_AXI_DATA_WIDTH+C_M_AXI_DATA_WIDTH/32+5) & "00000";
-								newWriteRequest.writeData <= ClearBlockWriteRequestsFIFO_rd_data(C_M_AXI_DATA_WIDTH+C_M_AXI_DATA_WIDTH/32-1 downto C_M_AXI_DATA_WIDTH/32);
-								newWriteRequest.writeDataDWORDEnables <= ClearBlockWriteRequestsFIFO_rd_data(C_M_AXI_DATA_WIDTH/32-1 downto 0);
+								QueueWriteTransaction(newWriteRequest, axi_awaddr, axi_wdata, axi_wstrb, axi_awvalid, NextWriteTransactionID,
+									CLEARBLOCK,
+									ClearBlockWriteRequestsFIFO_rd_data(C_M_AXI_ADDR_WIDTH+C_M_AXI_DATA_WIDTH+C_M_AXI_DATA_WIDTH/32-1 downto C_M_AXI_DATA_WIDTH+C_M_AXI_DATA_WIDTH/32+5),
+									ClearBlockWriteRequestsFIFO_rd_data(C_M_AXI_DATA_WIDTH+C_M_AXI_DATA_WIDTH/32-1 downto C_M_AXI_DATA_WIDTH/32),
+									ClearBlockWriteRequestsFIFO_rd_data(C_M_AXI_DATA_WIDTH/32-1 downto 0) );
 								ClearBlockWriteRequestsFIFO_rd_en <= '1';
-								newWriteRequest.memoryClientIndex <= to_unsigned(memoryClient'pos(CLEARBLOCK), 4);
-								newWriteEnable <= '1';
 								currentWriteControlState <= WRITECTRL_DEASSERT;
 							elsif (StatsWriteRequestsFIFO_empty = '0') then
-								newWriteRequest.writeAddress <= StatsWriteRequestsFIFO_rd_data(C_M_AXI_ADDR_WIDTH+C_M_AXI_DATA_WIDTH+C_M_AXI_DATA_WIDTH/32-1 downto C_M_AXI_DATA_WIDTH+C_M_AXI_DATA_WIDTH/32+5) & "00000";
-								newWriteRequest.writeData <= StatsWriteRequestsFIFO_rd_data(C_M_AXI_DATA_WIDTH+C_M_AXI_DATA_WIDTH/32-1 downto C_M_AXI_DATA_WIDTH/32);
-								newWriteRequest.writeDataDWORDEnables <= StatsWriteRequestsFIFO_rd_data(C_M_AXI_DATA_WIDTH/32-1 downto 0);
+								QueueWriteTransaction(newWriteRequest, axi_awaddr, axi_wdata, axi_wstrb, axi_awvalid, NextWriteTransactionID,
+									STATS,
+									StatsWriteRequestsFIFO_rd_data(C_M_AXI_ADDR_WIDTH+C_M_AXI_DATA_WIDTH+C_M_AXI_DATA_WIDTH/32-1 downto C_M_AXI_DATA_WIDTH+C_M_AXI_DATA_WIDTH/32+5),
+									StatsWriteRequestsFIFO_rd_data(C_M_AXI_DATA_WIDTH+C_M_AXI_DATA_WIDTH/32-1 downto C_M_AXI_DATA_WIDTH/32),
+									StatsWriteRequestsFIFO_rd_data(C_M_AXI_DATA_WIDTH/32-1 downto 0) );
 								StatsWriteRequestsFIFO_rd_en <= '1';
-								newWriteRequest.memoryClientIndex <= to_unsigned(memoryClient'pos(STATS), 4);
-								newWriteEnable <= '1';
 								currentWriteControlState <= WRITECTRL_DEASSERT;
 							else
-								newWriteEnable <= '0';
 								writeSystem_idle <= '1';
 							end if;
-						else
-							newWriteEnable <= '0';
 						end if;
 
 					when WRITECTRL_DEASSERT =>
-						-- Deassert all of these after one clock cycle
-						newWriteEnable <= '0';
-						ZStencilWriteRequestsFIFO_rd_en <= '0';
-						CommandProcWriteRequestsFIFO_rd_en <= '0';
-						ROPWriteRequestsFIFO_rd_en <= '0';
-						ClearBlockWriteRequestsFIFO_rd_en <= '0';
-						StatsWriteRequestsFIFO_rd_en <= '0';
+						writeSystem_idle <= '0';
+						axi_awvalid <= '1';
 
-						-- Write out our debug info
-						LastWriteAddress <= newWriteRequest.writeAddress;
-						LastWriteData <= newWriteRequest.writeData;
-						LastWriteDataDWORDEnables <= newWriteRequest.writeDataDWORDEnables;
-						LastWriteMemoryClientIndex <= newWriteRequest.memoryClientIndex;
+						if (axi_awvalid = '1' and M_AXI_AWREADY = '1') then
+							axi_awvalid <= '0';
+							axi_wvalid <= '1';
 
-						statMemWriteCountTransactions <= statMemWriteCountTransactions + 1;
-						statMemWriteCountBytesTransferred <= statMemWriteCountBytesTransferred + to_integer(CountBytesInWriteTransaction(newWriteRequest.writeDataDWORDEnables) );
+							currentWriteControlState <= WRITECTRL_HANDLE_INCOMING_WRITEREQUEST;
+						end if;
 
-						currentWriteControlState <= WRITECTRL_HANDLE_INCOMING_WRITEREQUEST;
 				end case;
 			end if;
 		end if;
 	end process;
 
 	------------------------------
-	-- Read state machine
+	-- Read response state machine (is always ready to process incoming read responses on the RR channel)
 	------------------------------
 	process(M_AXI_ACLK)
 	begin
 		if (rising_edge(M_AXI_ACLK)) then
+			ScanoutReadResponsesFIFO_wr_en <= '0';
+			ZStencilReadResponsesFIFO_wr_en <= '0';
+			CommandProcReadResponsesFIFO_wr_en <= '0';
+			IBCPreReadResponsesFIFO_wr_en <= '0';
+			IAReadResponsesFIFO_wr_en <= '0';
+			IBCPostReadResponsesFIFO_wr_en <= '0';
+			TexFetchReadResponsesFIFO_wr_en <= '0';
+			ROPReadResponsesFIFO_wr_en <= '0';
+
 			if (M_AXI_ARESETN = '0') then
-				currentReadState <= READ_INIT;
+				axi_rready <= '0';
 			else
-				case (currentReadState) is
-					when READ_INIT =>
-						axi_araddr <= (others => '0');
-						axi_arvalid <= '0';
-						axi_rready <= '0';
-						newReadDataReady <= '0';
-						readyForNewRead <= '0';
-						currentReadState <= READ_WAIT_FOR_MEM_READY;
+				axi_rready <= '1';
+				if (M_AXI_RVALID = '1' and axi_rready = '1') then
+					newReadResponse.readData <= M_AXI_RDATA;
+					newReadResponse.readAddress <= newReadRequest.readAddress;
+					newReadResponse.memoryClientIndex <= unsigned(M_AXI_RID);
 
-					when READ_WAIT_FOR_MEM_READY =>
-						newReadDataReady <= '0';
-						if (newReadEnable = '1' and readyForNewRead = '1') then
-							axi_araddr <= newReadRequest.readAddress;
-							axi_arvalid <= '1';
-							readyForNewRead <= '0';
-							currentReadState <= READ_WRITE_AND_CHECK_STATUS;
-						else
-							axi_araddr <= (others => '0');
-							axi_rready <= '0';
-							axi_arvalid <= '0';
-							readyForNewRead <= '1';
-						end if;
+					case (memoryClient'val(to_integer(unsigned(M_AXI_RID) ) ) ) is
+						when SCANOUT =>
+							ScanoutReadResponsesFIFO_wr_data <= M_AXI_RDATA;
+							ScanoutReadResponsesFIFO_wr_en <= '1';
+						when ZSTENCIL =>
+							ZStencilReadResponsesFIFO_wr_data <= M_AXI_RDATA;
+							ZStencilReadResponsesFIFO_wr_en <= '1';
+						when COMMANDPROCESSOR =>
+							CommandProcReadResponsesFIFO_wr_data <= M_AXI_RDATA;
+							CommandProcReadResponsesFIFO_wr_en <= '1';
+						when IBCPRE =>
+							IBCPreReadResponsesFIFO_wr_data <= M_AXI_RDATA;
+							IBCPreReadResponsesFIFO_wr_en <= '1';
+						when IA =>
+							IAReadResponsesFIFO_wr_data <= M_AXI_RDATA;
+							IAReadResponsesFIFO_wr_en <= '1';
+						when IBCPOST =>
+							IBCPostReadResponsesFIFO_wr_data <= M_AXI_RDATA;
+							IBCPostReadResponsesFIFO_wr_en <= '1';
+						when TEXTUREFETCH =>
+							TexFetchReadResponsesFIFO_wr_data <= M_AXI_RDATA;
+							TexFetchReadResponsesFIFO_wr_en <= '1';
+						when ROP =>
+							ROPReadResponsesFIFO_wr_data <= M_AXI_RDATA;
+							ROPReadResponsesFIFO_wr_en <= '1';
+						when others =>
+							-- Should never be here, just fall through and do nothing
+					end case;
 
-					when READ_WRITE_AND_CHECK_STATUS =>
-						readyForNewRead <= '0';
-						if (axi_arvalid = '1' and M_AXI_ARREADY = '1') then
-							axi_rready <= '1';
-							axi_arvalid <= '0';
-						end if;
-						if (M_AXI_RVALID = '1' and axi_rready = '1') then
-							axi_rready <= '0';
-							newReadResponse.readData <= M_AXI_RDATA;
-							newReadResponse.readAddress <= newReadRequest.readAddress;
-							newReadResponse.memoryClientIndex <= newReadRequest.memoryClientIndex;
-							newReadDataReady <= '1';
-							currentReadState <= READ_WAIT_FOR_MEM_READY;
-						end if;
-				end case;
-			end if;
-		end if;
-	end process;
+					statMemReadCountTransactions <= statMemReadCountTransactions + 1;
+					statMemReadCountBytesTransferred <= statMemReadCountBytesTransferred + 32;
 
-	------------------------------
-	-- Write state machine
-	------------------------------
-	process (M_AXI_ACLK)
-	begin
-		if (rising_edge(M_AXI_ACLK)) then
-			if (M_AXI_ARESETN = '0') then
-				currentWriteState <= WRITE_INIT;
-			else
-				case (currentWriteState) is
-					when WRITE_INIT =>
-						readyForNewWrite <= '0';
-						axi_awaddr <= (others => '0');
-						axi_wdata <= (others => '0');
-						axi_wstrb <= (others => '1');
-						axi_awvalid <= '0';
-						axi_wvalid <= '0';
-						currentWriteState <= WRITE_WAIT_FOR_WRITE;
-
-					when WRITE_WAIT_FOR_WRITE =>
-						if (newWriteEnable = '1') then
-							readyForNewWrite <= '0';
-							axi_awaddr <= newWriteRequest.writeAddress;
-							axi_wdata <= newWriteRequest.writeData;
-							axi_wstrb <= ExpandDWORDMaskToByteMask(newWriteRequest.writeDataDWORDEnables);
-							axi_awvalid <= '1';
-							currentWriteState <= WRITE_CHECK_STATUS;
-						else
-							readyForNewWrite <= '1';
-							axi_awaddr <= (others => '0');
-							axi_wdata <= (others => '0');
-							axi_wstrb <= (others => '1');
-							axi_awvalid <= '0';
-						end if;
-
-					when WRITE_CHECK_STATUS =>
-						readyForNewWrite <= '0';
-						if (M_AXI_AWREADY = '1' and axi_awvalid = '1') then
-							axi_awvalid <= '0';
-							axi_wvalid <= '1';
-						end if;
-						if (M_AXI_WREADY = '1' and axi_wvalid = '1') then
-							axi_awvalid <= '0';
-							axi_wvalid <= '0';
-							axi_awaddr <= (others => '0');
-							axi_wdata <= (others => '0');
-
-							currentWriteState <= WRITE_WAIT_FOR_WRITE;
-						end if;
-				end case;
+					if (unsigned(M_AXI_RID) /= to_unsigned(memoryClient'pos(SCANOUT), 4) ) then
+						statMemReadCountNonScanoutTransactions <= statMemReadCountNonScanoutTransactions + 1;
+						statMemReadCountNonScanoutBytesTransferred <= statMemReadCountNonScanoutBytesTransferred + 32;
+					end if;
+				end if;
 			end if;
 		end if;
 	end process;

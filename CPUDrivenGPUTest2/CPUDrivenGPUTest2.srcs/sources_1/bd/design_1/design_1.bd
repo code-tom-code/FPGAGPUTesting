@@ -327,7 +327,7 @@
           <spirit:configurableElementValue spirit:referenceId="C_PROBE43_WIDTH">32</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="C_PROBE42_WIDTH">3</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="C_PROBE41_WIDTH">8</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="C_PROBE40_WIDTH">5</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="C_PROBE40_WIDTH">6</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="C_PROBE39_WIDTH">8</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="C_PROBE38_WIDTH">4</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="C_PROBE37_WIDTH">1</spirit:configurableElementValue>
@@ -1115,26 +1115,6 @@
         <spirit:activeInterface spirit:busRef="VERTOUT_FIFO" spirit:componentRef="InputAssembler2_0"/>
       </spirit:interconnection>
       <spirit:interconnection>
-        <spirit:name>ShaderCoreSystem_VBCacheReadRequests_0</spirit:name>
-        <spirit:activeInterface spirit:busRef="VBCacheReadRequests_0" spirit:componentRef="ShaderCoreSystem"/>
-        <spirit:activeInterface spirit:busRef="IAReadRequestsFIFO" spirit:componentRef="MemorySystem"/>
-      </spirit:interconnection>
-      <spirit:interconnection>
-        <spirit:name>ShaderCoreSystem_VBCacheReadResponses_0</spirit:name>
-        <spirit:activeInterface spirit:busRef="VBCacheReadResponses_0" spirit:componentRef="ShaderCoreSystem"/>
-        <spirit:activeInterface spirit:busRef="IAReadResponsesFIFO" spirit:componentRef="MemorySystem"/>
-      </spirit:interconnection>
-      <spirit:interconnection>
-        <spirit:name>IBCPreReadRequestsFIFO_1</spirit:name>
-        <spirit:activeInterface spirit:busRef="IBCPreReadRequestsFIFO" spirit:componentRef="MemorySystem"/>
-        <spirit:activeInterface spirit:busRef="IBCacheReadRequests" spirit:componentRef="IndexBufferCache_0"/>
-      </spirit:interconnection>
-      <spirit:interconnection>
-        <spirit:name>IBCPreReadResponsesFIFO_1</spirit:name>
-        <spirit:activeInterface spirit:busRef="IBCPreReadResponsesFIFO" spirit:componentRef="MemorySystem"/>
-        <spirit:activeInterface spirit:busRef="IBCacheReadResponses" spirit:componentRef="IndexBufferCache_0"/>
-      </spirit:interconnection>
-      <spirit:interconnection>
         <spirit:name>InputAssembler2_0_INDEXOUT_FIFO</spirit:name>
         <spirit:activeInterface spirit:busRef="INDEXOUT_FIFO" spirit:componentRef="InputAssembler2_0"/>
         <spirit:activeInterface spirit:busRef="FIFO_READ" spirit:componentRef="VBO_INDEX_FIFO"/>
@@ -1178,6 +1158,26 @@
         <spirit:name>AttrInterpolator_0_TEXSAMP_OUT_FIFO</spirit:name>
         <spirit:activeInterface spirit:busRef="TEXSAMP_OUT_FIFO" spirit:componentRef="AttrInterpolator_0"/>
         <spirit:activeInterface spirit:busRef="FIFO_WRITE" spirit:componentRef="TEXSAMP_FIFO"/>
+      </spirit:interconnection>
+      <spirit:interconnection>
+        <spirit:name>ShaderCoreSystem_VBCacheReadRequests_0</spirit:name>
+        <spirit:activeInterface spirit:busRef="VBCacheReadRequests_0" spirit:componentRef="ShaderCoreSystem"/>
+        <spirit:activeInterface spirit:busRef="VBCacheReadRequestsFIFO" spirit:componentRef="MemorySystem"/>
+      </spirit:interconnection>
+      <spirit:interconnection>
+        <spirit:name>ShaderCoreSystem_VBCacheReadResponses_0</spirit:name>
+        <spirit:activeInterface spirit:busRef="VBCacheReadResponses_0" spirit:componentRef="ShaderCoreSystem"/>
+        <spirit:activeInterface spirit:busRef="VBCacheReadResponsesFIFO" spirit:componentRef="MemorySystem"/>
+      </spirit:interconnection>
+      <spirit:interconnection>
+        <spirit:name>IndexBufferCache_0_IBCacheReadRequests</spirit:name>
+        <spirit:activeInterface spirit:busRef="IBCacheReadRequests" spirit:componentRef="IndexBufferCache_0"/>
+        <spirit:activeInterface spirit:busRef="IBCacheReadRequestsFIFO" spirit:componentRef="MemorySystem"/>
+      </spirit:interconnection>
+      <spirit:interconnection>
+        <spirit:name>IndexBufferCache_0_IBCacheReadResponses</spirit:name>
+        <spirit:activeInterface spirit:busRef="IBCacheReadResponses" spirit:componentRef="IndexBufferCache_0"/>
+        <spirit:activeInterface spirit:busRef="IBCacheReadResponsesFIFO" spirit:componentRef="MemorySystem"/>
       </spirit:interconnection>
     </spirit:interconnections>
     <spirit:adHocConnections>
@@ -2364,11 +2364,6 @@
         <spirit:internalPortReference spirit:componentRef="ila_333_250" spirit:portRef="probe39"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
-        <spirit:name>MemorySystem_DBG_WriteRequestsEmptyBitmask</spirit:name>
-        <spirit:internalPortReference spirit:componentRef="MemorySystem" spirit:portRef="DBG_WriteRequestsEmptyBitmask"/>
-        <spirit:internalPortReference spirit:componentRef="ila_333_250" spirit:portRef="probe40"/>
-      </spirit:adHocConnection>
-      <spirit:adHocConnection>
         <spirit:name>MemorySystem_DBG_ReadResponsesFullBitmask</spirit:name>
         <spirit:internalPortReference spirit:componentRef="MemorySystem" spirit:portRef="DBG_ReadResponsesFullBitmask"/>
         <spirit:internalPortReference spirit:componentRef="ila_333_250" spirit:portRef="probe41"/>
@@ -3395,6 +3390,11 @@
         <spirit:name>xlconstant_6_dout</spirit:name>
         <spirit:internalPortReference spirit:componentRef="xlconstant_6" spirit:portRef="dout"/>
         <spirit:internalPortReference spirit:componentRef="VertexBatchBuilder_0" spirit:portRef="DBG_UseConstantOutput"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>MemorySystem_DBG_WriteRequestsEmptyBitmask</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="MemorySystem" spirit:portRef="DBG_WriteRequestsEmptyBitmask"/>
+        <spirit:internalPortReference spirit:componentRef="ila_333_250" spirit:portRef="probe40"/>
       </spirit:adHocConnection>
     </spirit:adHocConnections>
     <spirit:hierConnections>
@@ -6243,18 +6243,6 @@
         <spirit:abstractionType spirit:library="interface" spirit:name="fifo_write_rtl" spirit:vendor="xilinx.com" spirit:version="1.0"/>
       </spirit:busInterface>
       <spirit:busInterface>
-        <spirit:name>IAReadRequestsFIFO</spirit:name>
-        <spirit:slave/>
-        <spirit:busType spirit:library="interface" spirit:name="fifo_write" spirit:vendor="xilinx.com" spirit:version="1.0"/>
-        <spirit:abstractionType spirit:library="interface" spirit:name="fifo_write_rtl" spirit:vendor="xilinx.com" spirit:version="1.0"/>
-      </spirit:busInterface>
-      <spirit:busInterface>
-        <spirit:name>IAReadResponsesFIFO</spirit:name>
-        <spirit:slave/>
-        <spirit:busType spirit:library="interface" spirit:name="fifo_read" spirit:vendor="xilinx.com" spirit:version="1.0"/>
-        <spirit:abstractionType spirit:library="interface" spirit:name="fifo_read_rtl" spirit:vendor="xilinx.com" spirit:version="1.0"/>
-      </spirit:busInterface>
-      <spirit:busInterface>
         <spirit:name>TexFetchReadRequestsFIFO</spirit:name>
         <spirit:slave/>
         <spirit:busType spirit:library="interface" spirit:name="fifo_write" spirit:vendor="xilinx.com" spirit:version="1.0"/>
@@ -6309,25 +6297,25 @@
         <spirit:abstractionType spirit:library="interface" spirit:name="fifo_write_rtl" spirit:vendor="xilinx.com" spirit:version="1.0"/>
       </spirit:busInterface>
       <spirit:busInterface>
-        <spirit:name>IBCPreReadRequestsFIFO</spirit:name>
+        <spirit:name>VBCacheReadRequestsFIFO</spirit:name>
         <spirit:slave/>
         <spirit:busType spirit:library="interface" spirit:name="fifo_write" spirit:vendor="xilinx.com" spirit:version="1.0"/>
         <spirit:abstractionType spirit:library="interface" spirit:name="fifo_write_rtl" spirit:vendor="xilinx.com" spirit:version="1.0"/>
       </spirit:busInterface>
       <spirit:busInterface>
-        <spirit:name>IBCPreReadResponsesFIFO</spirit:name>
+        <spirit:name>VBCacheReadResponsesFIFO</spirit:name>
         <spirit:slave/>
         <spirit:busType spirit:library="interface" spirit:name="fifo_read" spirit:vendor="xilinx.com" spirit:version="1.0"/>
         <spirit:abstractionType spirit:library="interface" spirit:name="fifo_read_rtl" spirit:vendor="xilinx.com" spirit:version="1.0"/>
       </spirit:busInterface>
       <spirit:busInterface>
-        <spirit:name>IBCPostReadRequestsFIFO</spirit:name>
+        <spirit:name>IBCacheReadRequestsFIFO</spirit:name>
         <spirit:slave/>
         <spirit:busType spirit:library="interface" spirit:name="fifo_write" spirit:vendor="xilinx.com" spirit:version="1.0"/>
         <spirit:abstractionType spirit:library="interface" spirit:name="fifo_write_rtl" spirit:vendor="xilinx.com" spirit:version="1.0"/>
       </spirit:busInterface>
       <spirit:busInterface>
-        <spirit:name>IBCPostReadResponsesFIFO</spirit:name>
+        <spirit:name>IBCacheReadResponsesFIFO</spirit:name>
         <spirit:slave/>
         <spirit:busType spirit:library="interface" spirit:name="fifo_read" spirit:vendor="xilinx.com" spirit:version="1.0"/>
         <spirit:abstractionType spirit:library="interface" spirit:name="fifo_read_rtl" spirit:vendor="xilinx.com" spirit:version="1.0"/>
@@ -6677,21 +6665,21 @@
           </spirit:wire>
         </spirit:port>
         <spirit:port>
-          <spirit:name>DBG_WriteRequestsEmptyBitmask</spirit:name>
-          <spirit:wire>
-            <spirit:direction>out</spirit:direction>
-            <spirit:vector>
-              <spirit:left>4</spirit:left>
-              <spirit:right>0</spirit:right>
-            </spirit:vector>
-          </spirit:wire>
-        </spirit:port>
-        <spirit:port>
           <spirit:name>DBG_ReadResponsesFullBitmask</spirit:name>
           <spirit:wire>
             <spirit:direction>out</spirit:direction>
             <spirit:vector>
               <spirit:left>7</spirit:left>
+              <spirit:right>0</spirit:right>
+            </spirit:vector>
+          </spirit:wire>
+        </spirit:port>
+        <spirit:port>
+          <spirit:name>DBG_WriteRequestsEmptyBitmask</spirit:name>
+          <spirit:wire>
+            <spirit:direction>out</spirit:direction>
+            <spirit:vector>
+              <spirit:left>5</spirit:left>
               <spirit:right>0</spirit:right>
             </spirit:vector>
           </spirit:wire>
@@ -6746,7 +6734,7 @@
         </spirit:configurableElementValues>
       </spirit:componentInstance>
       <spirit:componentInstance>
-        <spirit:instanceName>IAReadRequestsFIFO</spirit:instanceName>
+        <spirit:instanceName>VBCacheReadRequestsFIFO</spirit:instanceName>
         <spirit:componentRef spirit:library="ip" spirit:name="fifo_generator" spirit:vendor="xilinx.com" spirit:version="13.2"/>
         <spirit:configurableElementValues>
           <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_fifo_generator_0_9</spirit:configurableElementValue>
@@ -6837,7 +6825,7 @@
         </spirit:configurableElementValues>
       </spirit:componentInstance>
       <spirit:componentInstance>
-        <spirit:instanceName>IAReadResponsesFIFO</spirit:instanceName>
+        <spirit:instanceName>VBCacheReadResponsesFIFO</spirit:instanceName>
         <spirit:componentRef spirit:library="ip" spirit:name="fifo_generator" spirit:vendor="xilinx.com" spirit:version="13.2"/>
         <spirit:configurableElementValues>
           <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_fifo_generator_0_10</spirit:configurableElementValue>
@@ -6936,7 +6924,7 @@
         </spirit:configurableElementValues>
       </spirit:componentInstance>
       <spirit:componentInstance>
-        <spirit:instanceName>IBCPreReadRequestsFIFO</spirit:instanceName>
+        <spirit:instanceName>IBCacheReadRequestsFIFO</spirit:instanceName>
         <spirit:componentRef spirit:library="ip" spirit:name="fifo_generator" spirit:vendor="xilinx.com" spirit:version="13.2"/>
         <spirit:configurableElementValues>
           <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_fifo_generator_0_15</spirit:configurableElementValue>
@@ -6949,7 +6937,7 @@
         </spirit:configurableElementValues>
       </spirit:componentInstance>
       <spirit:componentInstance>
-        <spirit:instanceName>IBCPreReadResponsesFIFO</spirit:instanceName>
+        <spirit:instanceName>IBCacheReadResponsesFIFO</spirit:instanceName>
         <spirit:componentRef spirit:library="ip" spirit:name="fifo_generator" spirit:vendor="xilinx.com" spirit:version="13.2"/>
         <spirit:configurableElementValues>
           <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_fifo_generator_0_16</spirit:configurableElementValue>
@@ -6962,7 +6950,7 @@
         </spirit:configurableElementValues>
       </spirit:componentInstance>
       <spirit:componentInstance>
-        <spirit:instanceName>IBCPostReadRequestsFIFO</spirit:instanceName>
+        <spirit:instanceName>PacketDMAReadRequestsFIFO</spirit:instanceName>
         <spirit:componentRef spirit:library="ip" spirit:name="fifo_generator" spirit:vendor="xilinx.com" spirit:version="13.2"/>
         <spirit:configurableElementValues>
           <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_fifo_generator_0_17</spirit:configurableElementValue>
@@ -6975,7 +6963,7 @@
         </spirit:configurableElementValues>
       </spirit:componentInstance>
       <spirit:componentInstance>
-        <spirit:instanceName>IBCPostReadResponsesFIFO</spirit:instanceName>
+        <spirit:instanceName>PacketDMAReadResponsesFIFO</spirit:instanceName>
         <spirit:componentRef spirit:library="ip" spirit:name="fifo_generator" spirit:vendor="xilinx.com" spirit:version="13.2"/>
         <spirit:configurableElementValues>
           <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_fifo_generator_0_18</spirit:configurableElementValue>
@@ -7012,6 +7000,19 @@
           <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
         </spirit:configurableElementValues>
       </spirit:componentInstance>
+      <spirit:componentInstance>
+        <spirit:instanceName>PacketDMAWriteRequestsFIFO</spirit:instanceName>
+        <spirit:componentRef spirit:library="ip" spirit:name="fifo_generator" spirit:vendor="xilinx.com" spirit:version="13.2"/>
+        <spirit:configurableElementValues>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_fifo_generator_0_22</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="Fifo_Implementation">Independent_Clocks_Builtin_FIFO</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="Performance_Options">First_Word_Fall_Through</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="Input_Data_Width">294</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="Input_Depth">512</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="Read_Clock_Frequency">333</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="Write_Clock_Frequency">333</spirit:configurableElementValue>
+        </spirit:configurableElementValues>
+      </spirit:componentInstance>
     </spirit:componentInstances>
     <spirit:interconnections>
       <spirit:interconnection>
@@ -7028,11 +7029,6 @@
         <spirit:name>MemoryController_0_ROPWriteRequests</spirit:name>
         <spirit:activeInterface spirit:busRef="FIFO_READ" spirit:componentRef="ROPWriteRequestsFIFO"/>
         <spirit:activeInterface spirit:busRef="ROPWriteRequests" spirit:componentRef="MemoryController_0"/>
-      </spirit:interconnection>
-      <spirit:interconnection>
-        <spirit:name>MemoryController_0_IAReadRequests</spirit:name>
-        <spirit:activeInterface spirit:busRef="IAReadRequests" spirit:componentRef="MemoryController_0"/>
-        <spirit:activeInterface spirit:busRef="FIFO_READ" spirit:componentRef="IAReadRequestsFIFO"/>
       </spirit:interconnection>
       <spirit:interconnection>
         <spirit:name>MemoryController_0_CommandProcReadRequests</spirit:name>
@@ -7070,11 +7066,6 @@
         <spirit:activeInterface spirit:busRef="CommandProcWriteRequests" spirit:componentRef="MemoryController_0"/>
       </spirit:interconnection>
       <spirit:interconnection>
-        <spirit:name>MemoryController_0_IAReadResponses</spirit:name>
-        <spirit:activeInterface spirit:busRef="IAReadResponses" spirit:componentRef="MemoryController_0"/>
-        <spirit:activeInterface spirit:busRef="FIFO_WRITE" spirit:componentRef="IAReadResponsesFIFO"/>
-      </spirit:interconnection>
-      <spirit:interconnection>
         <spirit:name>MemoryController_0_TexFetchReadRequests</spirit:name>
         <spirit:activeInterface spirit:busRef="TexFetchReadRequests" spirit:componentRef="MemoryController_0"/>
         <spirit:activeInterface spirit:busRef="FIFO_READ" spirit:componentRef="TexFetchReadRequestsFIFO"/>
@@ -7100,29 +7091,44 @@
         <spirit:activeInterface spirit:busRef="StatsWriteRequests" spirit:componentRef="MemoryController_0"/>
       </spirit:interconnection>
       <spirit:interconnection>
-        <spirit:name>MemoryController_0_IBCPreReadRequests</spirit:name>
-        <spirit:activeInterface spirit:busRef="FIFO_READ" spirit:componentRef="IBCPreReadRequestsFIFO"/>
-        <spirit:activeInterface spirit:busRef="IBCPreReadRequests" spirit:componentRef="MemoryController_0"/>
-      </spirit:interconnection>
-      <spirit:interconnection>
-        <spirit:name>MemoryController_0_IBCPreReadResponses</spirit:name>
-        <spirit:activeInterface spirit:busRef="FIFO_WRITE" spirit:componentRef="IBCPreReadResponsesFIFO"/>
-        <spirit:activeInterface spirit:busRef="IBCPreReadResponses" spirit:componentRef="MemoryController_0"/>
-      </spirit:interconnection>
-      <spirit:interconnection>
-        <spirit:name>MemoryController_0_IBCPostReadRequests</spirit:name>
-        <spirit:activeInterface spirit:busRef="FIFO_READ" spirit:componentRef="IBCPostReadRequestsFIFO"/>
-        <spirit:activeInterface spirit:busRef="IBCPostReadRequests" spirit:componentRef="MemoryController_0"/>
-      </spirit:interconnection>
-      <spirit:interconnection>
-        <spirit:name>MemoryController_0_IBCPostReadResponses</spirit:name>
-        <spirit:activeInterface spirit:busRef="FIFO_WRITE" spirit:componentRef="IBCPostReadResponsesFIFO"/>
-        <spirit:activeInterface spirit:busRef="IBCPostReadResponses" spirit:componentRef="MemoryController_0"/>
-      </spirit:interconnection>
-      <spirit:interconnection>
         <spirit:name>MemoryController_0_M_AXI</spirit:name>
         <spirit:activeInterface spirit:busRef="C0_DDR4_S_AXI" spirit:componentRef="ddr4_0"/>
         <spirit:activeInterface spirit:busRef="M_AXI" spirit:componentRef="MemoryController_0"/>
+      </spirit:interconnection>
+      <spirit:interconnection>
+        <spirit:name>MemoryController_0_VBCacheReadRequests</spirit:name>
+        <spirit:activeInterface spirit:busRef="FIFO_READ" spirit:componentRef="VBCacheReadRequestsFIFO"/>
+        <spirit:activeInterface spirit:busRef="VBCacheReadRequests" spirit:componentRef="MemoryController_0"/>
+      </spirit:interconnection>
+      <spirit:interconnection>
+        <spirit:name>MemoryController_0_VBCacheReadResponses</spirit:name>
+        <spirit:activeInterface spirit:busRef="FIFO_WRITE" spirit:componentRef="VBCacheReadResponsesFIFO"/>
+        <spirit:activeInterface spirit:busRef="VBCacheReadResponses" spirit:componentRef="MemoryController_0"/>
+      </spirit:interconnection>
+      <spirit:interconnection>
+        <spirit:name>MemoryController_0_IBCacheReadRequests</spirit:name>
+        <spirit:activeInterface spirit:busRef="FIFO_READ" spirit:componentRef="IBCacheReadRequestsFIFO"/>
+        <spirit:activeInterface spirit:busRef="IBCacheReadRequests" spirit:componentRef="MemoryController_0"/>
+      </spirit:interconnection>
+      <spirit:interconnection>
+        <spirit:name>MemoryController_0_IBCacheReadResponses</spirit:name>
+        <spirit:activeInterface spirit:busRef="FIFO_WRITE" spirit:componentRef="IBCacheReadResponsesFIFO"/>
+        <spirit:activeInterface spirit:busRef="IBCacheReadResponses" spirit:componentRef="MemoryController_0"/>
+      </spirit:interconnection>
+      <spirit:interconnection>
+        <spirit:name>MemoryController_0_PacketDMAReadRequests</spirit:name>
+        <spirit:activeInterface spirit:busRef="FIFO_READ" spirit:componentRef="PacketDMAReadRequestsFIFO"/>
+        <spirit:activeInterface spirit:busRef="PacketDMAReadRequests" spirit:componentRef="MemoryController_0"/>
+      </spirit:interconnection>
+      <spirit:interconnection>
+        <spirit:name>MemoryController_0_PacketDMAReadResponses</spirit:name>
+        <spirit:activeInterface spirit:busRef="FIFO_WRITE" spirit:componentRef="PacketDMAReadResponsesFIFO"/>
+        <spirit:activeInterface spirit:busRef="PacketDMAReadResponses" spirit:componentRef="MemoryController_0"/>
+      </spirit:interconnection>
+      <spirit:interconnection>
+        <spirit:name>MemoryController_0_PacketDMAWriteRequests</spirit:name>
+        <spirit:activeInterface spirit:busRef="FIFO_READ" spirit:componentRef="PacketDMAWriteRequestsFIFO"/>
+        <spirit:activeInterface spirit:busRef="PacketDMAWriteRequests" spirit:componentRef="MemoryController_0"/>
       </spirit:interconnection>
     </spirit:interconnections>
     <spirit:adHocConnections>
@@ -7139,8 +7145,8 @@
         <spirit:internalPortReference spirit:componentRef="ClearBlockWriteRequestsFIFO" spirit:portRef="wr_clk"/>
         <spirit:internalPortReference spirit:componentRef="TexFetchReadResponsesFIFO" spirit:portRef="rd_clk"/>
         <spirit:internalPortReference spirit:componentRef="TexFetchReadRequestsFIFO" spirit:portRef="wr_clk"/>
-        <spirit:internalPortReference spirit:componentRef="IAReadResponsesFIFO" spirit:portRef="rd_clk"/>
-        <spirit:internalPortReference spirit:componentRef="IAReadRequestsFIFO" spirit:portRef="wr_clk"/>
+        <spirit:internalPortReference spirit:componentRef="VBCacheReadResponsesFIFO" spirit:portRef="rd_clk"/>
+        <spirit:internalPortReference spirit:componentRef="VBCacheReadRequestsFIFO" spirit:portRef="wr_clk"/>
         <spirit:internalPortReference spirit:componentRef="CommandProcWriteRequestsFIFO" spirit:portRef="wr_clk"/>
         <spirit:internalPortReference spirit:componentRef="CommandProcReadResponsesFIFO" spirit:portRef="rd_clk"/>
         <spirit:internalPortReference spirit:componentRef="CommandProcReadRequestsFIFO" spirit:portRef="wr_clk"/>
@@ -7151,8 +7157,8 @@
         <spirit:internalPortReference spirit:componentRef="ROPReadRequestsFIFO" spirit:portRef="rd_clk"/>
         <spirit:internalPortReference spirit:componentRef="TexFetchReadResponsesFIFO" spirit:portRef="wr_clk"/>
         <spirit:internalPortReference spirit:componentRef="TexFetchReadRequestsFIFO" spirit:portRef="rd_clk"/>
-        <spirit:internalPortReference spirit:componentRef="IAReadResponsesFIFO" spirit:portRef="wr_clk"/>
-        <spirit:internalPortReference spirit:componentRef="IAReadRequestsFIFO" spirit:portRef="rd_clk"/>
+        <spirit:internalPortReference spirit:componentRef="VBCacheReadResponsesFIFO" spirit:portRef="wr_clk"/>
+        <spirit:internalPortReference spirit:componentRef="VBCacheReadRequestsFIFO" spirit:portRef="rd_clk"/>
         <spirit:internalPortReference spirit:componentRef="CommandProcWriteRequestsFIFO" spirit:portRef="rd_clk"/>
         <spirit:internalPortReference spirit:componentRef="CommandProcReadResponsesFIFO" spirit:portRef="wr_clk"/>
         <spirit:internalPortReference spirit:componentRef="CommandProcReadRequestsFIFO" spirit:portRef="rd_clk"/>
@@ -7163,15 +7169,17 @@
         <spirit:internalPortReference spirit:componentRef="ROPReadResponsesFIFO" spirit:portRef="wr_clk"/>
         <spirit:internalPortReference spirit:componentRef="StatsWriteRequestsFIFO" spirit:portRef="wr_clk"/>
         <spirit:internalPortReference spirit:componentRef="StatsWriteRequestsFIFO" spirit:portRef="rd_clk"/>
-        <spirit:internalPortReference spirit:componentRef="IBCPreReadRequestsFIFO" spirit:portRef="wr_clk"/>
-        <spirit:internalPortReference spirit:componentRef="IBCPreReadRequestsFIFO" spirit:portRef="rd_clk"/>
-        <spirit:internalPortReference spirit:componentRef="IBCPreReadResponsesFIFO" spirit:portRef="wr_clk"/>
-        <spirit:internalPortReference spirit:componentRef="IBCPreReadResponsesFIFO" spirit:portRef="rd_clk"/>
-        <spirit:internalPortReference spirit:componentRef="IBCPostReadRequestsFIFO" spirit:portRef="wr_clk"/>
-        <spirit:internalPortReference spirit:componentRef="IBCPostReadRequestsFIFO" spirit:portRef="rd_clk"/>
-        <spirit:internalPortReference spirit:componentRef="IBCPostReadResponsesFIFO" spirit:portRef="wr_clk"/>
-        <spirit:internalPortReference spirit:componentRef="IBCPostReadResponsesFIFO" spirit:portRef="rd_clk"/>
+        <spirit:internalPortReference spirit:componentRef="IBCacheReadRequestsFIFO" spirit:portRef="wr_clk"/>
+        <spirit:internalPortReference spirit:componentRef="IBCacheReadRequestsFIFO" spirit:portRef="rd_clk"/>
+        <spirit:internalPortReference spirit:componentRef="IBCacheReadResponsesFIFO" spirit:portRef="wr_clk"/>
+        <spirit:internalPortReference spirit:componentRef="IBCacheReadResponsesFIFO" spirit:portRef="rd_clk"/>
+        <spirit:internalPortReference spirit:componentRef="PacketDMAReadRequestsFIFO" spirit:portRef="wr_clk"/>
+        <spirit:internalPortReference spirit:componentRef="PacketDMAReadRequestsFIFO" spirit:portRef="rd_clk"/>
+        <spirit:internalPortReference spirit:componentRef="PacketDMAReadResponsesFIFO" spirit:portRef="wr_clk"/>
+        <spirit:internalPortReference spirit:componentRef="PacketDMAReadResponsesFIFO" spirit:portRef="rd_clk"/>
         <spirit:internalPortReference spirit:componentRef="MemoryController_0" spirit:portRef="M_AXI_ACLK"/>
+        <spirit:internalPortReference spirit:componentRef="PacketDMAWriteRequestsFIFO" spirit:portRef="wr_clk"/>
+        <spirit:internalPortReference spirit:componentRef="PacketDMAWriteRequestsFIFO" spirit:portRef="rd_clk"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>ResetN_UntilClockLoc_0_resetn</spirit:name>
@@ -7300,11 +7308,6 @@
         <spirit:externalPortReference spirit:portRef="DBG_ReadRequestsEmptyBitmask"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
-        <spirit:name>MemoryController_0_DBG_WriteRequestsEmptyBitmask</spirit:name>
-        <spirit:internalPortReference spirit:componentRef="MemoryController_0" spirit:portRef="DBG_WriteRequestsEmptyBitmask"/>
-        <spirit:externalPortReference spirit:portRef="DBG_WriteRequestsEmptyBitmask"/>
-      </spirit:adHocConnection>
-      <spirit:adHocConnection>
         <spirit:name>MemoryController_0_DBG_ReadResponsesFullBitmask</spirit:name>
         <spirit:internalPortReference spirit:componentRef="MemoryController_0" spirit:portRef="DBG_ReadResponsesFullBitmask"/>
         <spirit:externalPortReference spirit:portRef="DBG_ReadResponsesFullBitmask"/>
@@ -7334,6 +7337,11 @@
         <spirit:internalPortReference spirit:componentRef="ddr4_0" spirit:portRef="c0_ddr4_ui_clk_sync_rst"/>
         <spirit:internalPortReference spirit:componentRef="rst_ddr4_0_333M" spirit:portRef="ext_reset_in"/>
       </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>MemoryController_0_DBG_WriteRequestsEmptyBitmask</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="MemoryController_0" spirit:portRef="DBG_WriteRequestsEmptyBitmask"/>
+        <spirit:externalPortReference spirit:portRef="DBG_WriteRequestsEmptyBitmask"/>
+      </spirit:adHocConnection>
     </spirit:adHocConnections>
     <spirit:hierConnections>
       <spirit:hierConnection spirit:interfaceRef="default_sysclk1_300/default_sysclk1_300_1">
@@ -7350,12 +7358,6 @@
       </spirit:hierConnection>
       <spirit:hierConnection spirit:interfaceRef="CommandProcWriteRequestsFIFO/Conn3">
         <spirit:activeInterface spirit:busRef="FIFO_WRITE" spirit:componentRef="CommandProcWriteRequestsFIFO"/>
-      </spirit:hierConnection>
-      <spirit:hierConnection spirit:interfaceRef="IAReadRequestsFIFO/Conn4">
-        <spirit:activeInterface spirit:busRef="FIFO_WRITE" spirit:componentRef="IAReadRequestsFIFO"/>
-      </spirit:hierConnection>
-      <spirit:hierConnection spirit:interfaceRef="IAReadResponsesFIFO/Conn5">
-        <spirit:activeInterface spirit:busRef="FIFO_READ" spirit:componentRef="IAReadResponsesFIFO"/>
       </spirit:hierConnection>
       <spirit:hierConnection spirit:interfaceRef="TexFetchReadRequestsFIFO/Conn6">
         <spirit:activeInterface spirit:busRef="FIFO_WRITE" spirit:componentRef="TexFetchReadRequestsFIFO"/>
@@ -7384,17 +7386,17 @@
       <spirit:hierConnection spirit:interfaceRef="StatsWriteRequestsFIFO/Conn14">
         <spirit:activeInterface spirit:busRef="FIFO_WRITE" spirit:componentRef="StatsWriteRequestsFIFO"/>
       </spirit:hierConnection>
-      <spirit:hierConnection spirit:interfaceRef="IBCPreReadRequestsFIFO/Conn15">
-        <spirit:activeInterface spirit:busRef="FIFO_WRITE" spirit:componentRef="IBCPreReadRequestsFIFO"/>
+      <spirit:hierConnection spirit:interfaceRef="VBCacheReadRequestsFIFO/Conn4">
+        <spirit:activeInterface spirit:busRef="FIFO_WRITE" spirit:componentRef="VBCacheReadRequestsFIFO"/>
       </spirit:hierConnection>
-      <spirit:hierConnection spirit:interfaceRef="IBCPreReadResponsesFIFO/Conn16">
-        <spirit:activeInterface spirit:busRef="FIFO_READ" spirit:componentRef="IBCPreReadResponsesFIFO"/>
+      <spirit:hierConnection spirit:interfaceRef="VBCacheReadResponsesFIFO/Conn5">
+        <spirit:activeInterface spirit:busRef="FIFO_READ" spirit:componentRef="VBCacheReadResponsesFIFO"/>
       </spirit:hierConnection>
-      <spirit:hierConnection spirit:interfaceRef="IBCPostReadRequestsFIFO/Conn17">
-        <spirit:activeInterface spirit:busRef="FIFO_WRITE" spirit:componentRef="IBCPostReadRequestsFIFO"/>
+      <spirit:hierConnection spirit:interfaceRef="IBCacheReadRequestsFIFO/Conn15">
+        <spirit:activeInterface spirit:busRef="FIFO_WRITE" spirit:componentRef="IBCacheReadRequestsFIFO"/>
       </spirit:hierConnection>
-      <spirit:hierConnection spirit:interfaceRef="IBCPostReadResponsesFIFO/Conn18">
-        <spirit:activeInterface spirit:busRef="FIFO_READ" spirit:componentRef="IBCPostReadResponsesFIFO"/>
+      <spirit:hierConnection spirit:interfaceRef="IBCacheReadResponsesFIFO/Conn16">
+        <spirit:activeInterface spirit:busRef="FIFO_READ" spirit:componentRef="IBCacheReadResponsesFIFO"/>
       </spirit:hierConnection>
     </spirit:hierConnections>
   </spirit:design>

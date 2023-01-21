@@ -139,35 +139,40 @@ entity MemoryController is
         CommandProcWriteRequestsFIFO_empty : in STD_LOGIC;
         CommandProcWriteRequestsFIFO_rd_en : out STD_LOGIC := '0';
 
-	-- Input Assembler (IA) system incoming read requests FIFO:
-        IAReadRequestsFIFO_rd_data : in STD_LOGIC_VECTOR(C_M_AXI_ADDR_WIDTH-1 downto 0);
-        IAReadRequestsFIFO_empty : in STD_LOGIC;
-        IAReadRequestsFIFO_rd_en : out STD_LOGIC := '0';
+	-- Vertex Buffer Cache (VBC) system incoming read requests FIFO:
+        VBCacheReadRequestsFIFO_rd_data : in STD_LOGIC_VECTOR(C_M_AXI_ADDR_WIDTH-1 downto 0);
+        VBCacheReadRequestsFIFO_empty : in STD_LOGIC;
+        VBCacheReadRequestsFIFO_rd_en : out STD_LOGIC := '0';
 
-	-- Input Assembler (IA) system returned read responses FIFO:
-		IAReadResponsesFIFO_full : in STD_LOGIC;
-		IAReadResponsesFIFO_wr_data : out STD_LOGIC_VECTOR(C_M_AXI_DATA_WIDTH-1 downto 0) := (others => '0');
-		IAReadResponsesFIFO_wr_en : out STD_LOGIC := '0';
+	-- Vertex Buffer Cache (VBC) system returned read responses FIFO:
+		VBCacheReadResponsesFIFO_full : in STD_LOGIC;
+		VBCacheReadResponsesFIFO_wr_data : out STD_LOGIC_VECTOR(C_M_AXI_DATA_WIDTH-1 downto 0) := (others => '0');
+		VBCacheReadResponsesFIFO_wr_en : out STD_LOGIC := '0';
 
-	-- Index Buffer Pretransform Cache (IBC) system incoming read requests FIFO:
-        IBCPreReadRequestsFIFO_rd_data : in STD_LOGIC_VECTOR(C_M_AXI_ADDR_WIDTH-1 downto 0);
-        IBCPreReadRequestsFIFO_empty : in STD_LOGIC;
-        IBCPreReadRequestsFIFO_rd_en : out STD_LOGIC := '0';
+	-- Index Buffer Cache (IBC) system incoming read requests FIFO:
+        IBCacheReadRequestsFIFO_rd_data : in STD_LOGIC_VECTOR(C_M_AXI_ADDR_WIDTH-1 downto 0);
+        IBCacheReadRequestsFIFO_empty : in STD_LOGIC;
+        IBCacheReadRequestsFIFO_rd_en : out STD_LOGIC := '0';
 
-	-- Index Buffer Pretransform Cache (IBC) system returned read responses FIFO:
-		IBCPreReadResponsesFIFO_full : in STD_LOGIC;
-		IBCPreReadResponsesFIFO_wr_data : out STD_LOGIC_VECTOR(C_M_AXI_DATA_WIDTH-1 downto 0) := (others => '0');
-		IBCPreReadResponsesFIFO_wr_en : out STD_LOGIC := '0';
+	-- Index Buffer Cache (IBC) system returned read responses FIFO:
+		IBCacheReadResponsesFIFO_full : in STD_LOGIC;
+		IBCacheReadResponsesFIFO_wr_data : out STD_LOGIC_VECTOR(C_M_AXI_DATA_WIDTH-1 downto 0) := (others => '0');
+		IBCacheReadResponsesFIFO_wr_en : out STD_LOGIC := '0';
 
-	-- Index Buffer Posttransform Cache (IBC) system incoming read requests FIFO:
-        IBCPostReadRequestsFIFO_rd_data : in STD_LOGIC_VECTOR(C_M_AXI_ADDR_WIDTH-1 downto 0);
-        IBCPostReadRequestsFIFO_empty : in STD_LOGIC;
-        IBCPostReadRequestsFIFO_rd_en : out STD_LOGIC := '0';
+	-- Packet DMA system incoming read requests FIFO:
+        PacketDMAReadRequestsFIFO_rd_data : in STD_LOGIC_VECTOR(C_M_AXI_ADDR_WIDTH-1 downto 0);
+        PacketDMAReadRequestsFIFO_empty : in STD_LOGIC;
+        PacketDMAReadRequestsFIFO_rd_en : out STD_LOGIC := '0';
 
-	-- Index Buffer Posttransform Cache (IBC) system returned read responses FIFO:
-		IBCPostReadResponsesFIFO_full : in STD_LOGIC;
-		IBCPostReadResponsesFIFO_wr_data : out STD_LOGIC_VECTOR(C_M_AXI_DATA_WIDTH-1 downto 0) := (others => '0');
-		IBCPostReadResponsesFIFO_wr_en : out STD_LOGIC := '0';
+	-- Packet DMA system returned read responses FIFO:
+		PacketDMAReadResponsesFIFO_full : in STD_LOGIC;
+		PacketDMAReadResponsesFIFO_wr_data : out STD_LOGIC_VECTOR(C_M_AXI_DATA_WIDTH-1 downto 0) := (others => '0');
+		PacketDMAReadResponsesFIFO_wr_en : out STD_LOGIC := '0';
+
+	-- Packet DMA system incoming write requests FIFO:
+        PacketDMAWriteRequestsFIFO_rd_data : in STD_LOGIC_VECTOR(C_M_AXI_ADDR_WIDTH+C_M_AXI_DATA_WIDTH+C_M_AXI_DATA_WIDTH/32-1 downto 0);
+        PacketDMAWriteRequestsFIFO_empty : in STD_LOGIC;
+        PacketDMAWriteRequestsFIFO_rd_en : out STD_LOGIC := '0';
 
 	-- Texture fetch incoming read requests FIFO:
         TexFetchReadRequestsFIFO_rd_data : in STD_LOGIC_VECTOR(C_M_AXI_ADDR_WIDTH-1 downto 0);
@@ -234,7 +239,7 @@ entity MemoryController is
 		DBG_LastReadAddress : out STD_LOGIC_VECTOR(C_M_AXI_ADDR_WIDTH-1 downto 0) := (others => '0');
 		DBG_LastReadMemoryClientIndex : out STD_LOGIC_VECTOR(3 downto 0) := (others => '0');
 		DBG_ReadRequestsEmptyBitmask : out STD_LOGIC_VECTOR(7 downto 0) := (others => '0');
-		DBG_WriteRequestsEmptyBitmask : out STD_LOGIC_VECTOR(4 downto 0) := (others => '0');
+		DBG_WriteRequestsEmptyBitmask : out STD_LOGIC_VECTOR(5 downto 0) := (others => '0');
 		DBG_ReadResponsesFullBitmask : out STD_LOGIC_VECTOR(7 downto 0) := (others => '0')
 		);
 end MemoryController;
@@ -312,29 +317,33 @@ architecture Behavioral of MemoryController is
 	ATTRIBUTE X_INTERFACE_INFO of CommandProcWriteRequestsFIFO_rd_en: SIGNAL is "xilinx.com:interface:fifo_read:1.0 CommandProcWriteRequests RD_EN";
 	ATTRIBUTE X_INTERFACE_INFO of CommandProcWriteRequestsFIFO_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 CommandProcWriteRequests EMPTY";
 
-	ATTRIBUTE X_INTERFACE_INFO of IAReadRequestsFIFO_rd_data: SIGNAL is "xilinx.com:interface:fifo_read:1.0 IAReadRequests RD_DATA";
-	ATTRIBUTE X_INTERFACE_INFO of IAReadRequestsFIFO_rd_en: SIGNAL is "xilinx.com:interface:fifo_read:1.0 IAReadRequests RD_EN";
-	ATTRIBUTE X_INTERFACE_INFO of IAReadRequestsFIFO_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 IAReadRequests EMPTY";
+	ATTRIBUTE X_INTERFACE_INFO of VBCacheReadRequestsFIFO_rd_data: SIGNAL is "xilinx.com:interface:fifo_read:1.0 VBCacheReadRequests RD_DATA";
+	ATTRIBUTE X_INTERFACE_INFO of VBCacheReadRequestsFIFO_rd_en: SIGNAL is "xilinx.com:interface:fifo_read:1.0 VBCacheReadRequests RD_EN";
+	ATTRIBUTE X_INTERFACE_INFO of VBCacheReadRequestsFIFO_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 VBCacheReadRequests EMPTY";
 
-	ATTRIBUTE X_INTERFACE_INFO of IAReadResponsesFIFO_wr_data: SIGNAL is "xilinx.com:interface:fifo_write:1.0 IAReadResponses WR_DATA";
-	ATTRIBUTE X_INTERFACE_INFO of IAReadResponsesFIFO_wr_en: SIGNAL is "xilinx.com:interface:fifo_write:1.0 IAReadResponses WR_EN";
-	ATTRIBUTE X_INTERFACE_INFO of IAReadResponsesFIFO_full: SIGNAL is "xilinx.com:interface:fifo_write:1.0 IAReadResponses FULL";
+	ATTRIBUTE X_INTERFACE_INFO of VBCacheReadResponsesFIFO_wr_data: SIGNAL is "xilinx.com:interface:fifo_write:1.0 VBCacheReadResponses WR_DATA";
+	ATTRIBUTE X_INTERFACE_INFO of VBCacheReadResponsesFIFO_wr_en: SIGNAL is "xilinx.com:interface:fifo_write:1.0 VBCacheReadResponses WR_EN";
+	ATTRIBUTE X_INTERFACE_INFO of VBCacheReadResponsesFIFO_full: SIGNAL is "xilinx.com:interface:fifo_write:1.0 VBCacheReadResponses FULL";
 
-	ATTRIBUTE X_INTERFACE_INFO of IBCPreReadRequestsFIFO_rd_data: SIGNAL is "xilinx.com:interface:fifo_read:1.0 IBCPreReadRequests RD_DATA";
-	ATTRIBUTE X_INTERFACE_INFO of IBCPreReadRequestsFIFO_rd_en: SIGNAL is "xilinx.com:interface:fifo_read:1.0 IBCPreReadRequests RD_EN";
-	ATTRIBUTE X_INTERFACE_INFO of IBCPreReadRequestsFIFO_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 IBCPreReadRequests EMPTY";
+	ATTRIBUTE X_INTERFACE_INFO of IBCacheReadRequestsFIFO_rd_data: SIGNAL is "xilinx.com:interface:fifo_read:1.0 IBCacheReadRequests RD_DATA";
+	ATTRIBUTE X_INTERFACE_INFO of IBCacheReadRequestsFIFO_rd_en: SIGNAL is "xilinx.com:interface:fifo_read:1.0 IBCacheReadRequests RD_EN";
+	ATTRIBUTE X_INTERFACE_INFO of IBCacheReadRequestsFIFO_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 IBCacheReadRequests EMPTY";
 
-	ATTRIBUTE X_INTERFACE_INFO of IBCPreReadResponsesFIFO_wr_data: SIGNAL is "xilinx.com:interface:fifo_write:1.0 IBCPreReadResponses WR_DATA";
-	ATTRIBUTE X_INTERFACE_INFO of IBCPreReadResponsesFIFO_wr_en: SIGNAL is "xilinx.com:interface:fifo_write:1.0 IBCPreReadResponses WR_EN";
-	ATTRIBUTE X_INTERFACE_INFO of IBCPreReadResponsesFIFO_full: SIGNAL is "xilinx.com:interface:fifo_write:1.0 IBCPreReadResponses FULL";
+	ATTRIBUTE X_INTERFACE_INFO of IBCacheReadResponsesFIFO_wr_data: SIGNAL is "xilinx.com:interface:fifo_write:1.0 IBCacheReadResponses WR_DATA";
+	ATTRIBUTE X_INTERFACE_INFO of IBCacheReadResponsesFIFO_wr_en: SIGNAL is "xilinx.com:interface:fifo_write:1.0 IBCacheReadResponses WR_EN";
+	ATTRIBUTE X_INTERFACE_INFO of IBCacheReadResponsesFIFO_full: SIGNAL is "xilinx.com:interface:fifo_write:1.0 IBCacheReadResponses FULL";
 
-	ATTRIBUTE X_INTERFACE_INFO of IBCPostReadRequestsFIFO_rd_data: SIGNAL is "xilinx.com:interface:fifo_read:1.0 IBCPostReadRequests RD_DATA";
-	ATTRIBUTE X_INTERFACE_INFO of IBCPostReadRequestsFIFO_rd_en: SIGNAL is "xilinx.com:interface:fifo_read:1.0 IBCPostReadRequests RD_EN";
-	ATTRIBUTE X_INTERFACE_INFO of IBCPostReadRequestsFIFO_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 IBCPostReadRequests EMPTY";
+	ATTRIBUTE X_INTERFACE_INFO of PacketDMAReadRequestsFIFO_rd_data: SIGNAL is "xilinx.com:interface:fifo_read:1.0 PacketDMAReadRequests RD_DATA";
+	ATTRIBUTE X_INTERFACE_INFO of PacketDMAReadRequestsFIFO_rd_en: SIGNAL is "xilinx.com:interface:fifo_read:1.0 PacketDMAReadRequests RD_EN";
+	ATTRIBUTE X_INTERFACE_INFO of PacketDMAReadRequestsFIFO_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 PacketDMAReadRequests EMPTY";
 
-	ATTRIBUTE X_INTERFACE_INFO of IBCPostReadResponsesFIFO_wr_data: SIGNAL is "xilinx.com:interface:fifo_write:1.0 IBCPostReadResponses WR_DATA";
-	ATTRIBUTE X_INTERFACE_INFO of IBCPostReadResponsesFIFO_wr_en: SIGNAL is "xilinx.com:interface:fifo_write:1.0 IBCPostReadResponses WR_EN";
-	ATTRIBUTE X_INTERFACE_INFO of IBCPostReadResponsesFIFO_full: SIGNAL is "xilinx.com:interface:fifo_write:1.0 IBCPostReadResponses FULL";
+	ATTRIBUTE X_INTERFACE_INFO of PacketDMAReadResponsesFIFO_wr_data: SIGNAL is "xilinx.com:interface:fifo_write:1.0 PacketDMAReadResponses WR_DATA";
+	ATTRIBUTE X_INTERFACE_INFO of PacketDMAReadResponsesFIFO_wr_en: SIGNAL is "xilinx.com:interface:fifo_write:1.0 PacketDMAReadResponses WR_EN";
+	ATTRIBUTE X_INTERFACE_INFO of PacketDMAReadResponsesFIFO_full: SIGNAL is "xilinx.com:interface:fifo_write:1.0 PacketDMAReadResponses FULL";
+
+	ATTRIBUTE X_INTERFACE_INFO of PacketDMAWriteRequestsFIFO_rd_data: SIGNAL is "xilinx.com:interface:fifo_read:1.0 PacketDMAWriteRequests RD_DATA";
+	ATTRIBUTE X_INTERFACE_INFO of PacketDMAWriteRequestsFIFO_rd_en: SIGNAL is "xilinx.com:interface:fifo_read:1.0 PacketDMAWriteRequests RD_EN";
+	ATTRIBUTE X_INTERFACE_INFO of PacketDMAWriteRequestsFIFO_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 PacketDMAWriteRequests EMPTY";
 
 	ATTRIBUTE X_INTERFACE_INFO of TexFetchReadRequestsFIFO_rd_data: SIGNAL is "xilinx.com:interface:fifo_read:1.0 TexFetchReadRequests RD_DATA";
 	ATTRIBUTE X_INTERFACE_INFO of TexFetchReadRequestsFIFO_rd_en: SIGNAL is "xilinx.com:interface:fifo_read:1.0 TexFetchReadRequests RD_EN";
@@ -368,14 +377,13 @@ architecture Behavioral of MemoryController is
 	type memoryClient is ( SCANOUT, -- 0
 						ZSTENCIL, -- 1
 						COMMANDPROCESSOR, -- 2
-						IA, -- 3
+						VBCACHE, -- 3
 						TEXTUREFETCH, -- 4
 						ROP, -- 5
 						CLEARBLOCK, -- 6
 						STATS, -- 7
-						IBCPRE, -- 8
-						IBCPOST -- 9
-						-- PACKETDMA -- 10 -- Coming soon!
+						IBCACHE, -- 8
+						PACKETDMA -- 9
 						);
 
 	type readControlState is ( READCTRL_INIT, -- 0
@@ -633,11 +641,11 @@ begin
 	DBG_LastWriteMemoryClientIndex <= std_logic_vector(LastWriteMemoryClientIndex);
 	DBG_LastReadAddress <= LastReadAddress;
 	DBG_LastReadMemoryClientIndex <= std_logic_vector(LastReadMemoryClientIndex);
-	DBG_ReadRequestsEmptyBitmask <= ROPReadRequestsFIFO_empty & TexFetchReadRequestsFIFO_empty & IBCPostReadRequestsFIFO_empty & IBCPreReadRequestsFIFO_empty &
-		IAReadRequestsFIFO_empty & CommandProcReadRequestsFIFO_empty & ZStencilReadRequestsFIFO_empty & ScanoutReadRequestsFIFO_empty;
-	DBG_WriteRequestsEmptyBitmask <= StatsWriteRequestsFIFO_empty & ClearBlockWriteRequestsFIFO_empty & ROPWriteRequestsFIFO_empty & CommandProcWriteRequestsFIFO_empty & ZStencilWriteRequestsFIFO_empty;
-	DBG_ReadResponsesFullBitmask <= ROPReadResponsesFIFO_full & TexFetchReadResponsesFIFO_full & IBCPostReadResponsesFIFO_full & IBCPreReadResponsesFIFO_full &
-		IAReadResponsesFIFO_full & CommandProcReadResponsesFIFO_full & ZStencilReadResponsesFIFO_full & ScanoutReadResponsesFIFO_full;
+	DBG_ReadRequestsEmptyBitmask <= ROPReadRequestsFIFO_empty & TexFetchReadRequestsFIFO_empty & PacketDMAReadRequestsFIFO_empty & IBCacheReadRequestsFIFO_empty &
+		VBCacheReadRequestsFIFO_empty & CommandProcReadRequestsFIFO_empty & ZStencilReadRequestsFIFO_empty & ScanoutReadRequestsFIFO_empty;
+	DBG_WriteRequestsEmptyBitmask <= PacketDMAWriteRequestsFIFO_empty & StatsWriteRequestsFIFO_empty & ClearBlockWriteRequestsFIFO_empty & ROPWriteRequestsFIFO_empty & CommandProcWriteRequestsFIFO_empty & ZStencilWriteRequestsFIFO_empty;
+	DBG_ReadResponsesFullBitmask <= ROPReadResponsesFIFO_full & TexFetchReadResponsesFIFO_full & PacketDMAReadResponsesFIFO_full & IBCacheReadResponsesFIFO_full &
+		VBCacheReadResponsesFIFO_full & CommandProcReadResponsesFIFO_full & ZStencilReadResponsesFIFO_full & ScanoutReadResponsesFIFO_full;
 
 	process(M_AXI_ACLK)
 	begin
@@ -692,9 +700,9 @@ begin
 			scanoutRequests_rd_en <= '0';
 			ZStencilReadRequestsFIFO_rd_en <= '0';
 			CommandProcReadRequestsFIFO_rd_en <= '0';
-			IAReadRequestsFIFO_rd_en <= '0';
-			IBCPreReadRequestsFIFO_rd_en <= '0';
-			IBCPostReadRequestsFIFO_rd_en <= '0';
+			VBCacheReadRequestsFIFO_rd_en <= '0';
+			IBCacheReadRequestsFIFO_rd_en <= '0';
+			PacketDMAReadRequestsFIFO_rd_en <= '0';
 			TexFetchReadRequestsFIFO_rd_en <= '0';
 			ROPReadRequestsFIFO_rd_en <= '0';
 			axi_arvalid <= '0';
@@ -733,23 +741,23 @@ begin
 								CommandProcReadRequestsFIFO_rd_data(C_M_AXI_ADDR_WIDTH-1 downto 5) );
 							CommandProcReadRequestsFIFO_rd_en <= '1';
 							currentReadControlState <= READCTRL_MEM_COOLDOWN;
-						elsif (IBCPreReadRequestsFIFO_empty = '0' and IBCPreReadResponsesFIFO_full = '0') then
+						elsif (IBCacheReadRequestsFIFO_empty = '0' and IBCacheReadResponsesFIFO_full = '0') then
 							QueueReadTransaction(newReadRequest, axi_araddr, axi_arvalid, M_AXI_ARID, 
-								IBCPRE, 
-								IBCPreReadRequestsFIFO_rd_data(C_M_AXI_ADDR_WIDTH-1 downto 5) );
-							IBCPreReadRequestsFIFO_rd_en <= '1';
+								IBCACHE, 
+								IBCacheReadRequestsFIFO_rd_data(C_M_AXI_ADDR_WIDTH-1 downto 5) );
+							IBCacheReadRequestsFIFO_rd_en <= '1';
 							currentReadControlState <= READCTRL_MEM_COOLDOWN;
-						elsif (IAReadRequestsFIFO_empty = '0' and IAReadResponsesFIFO_full = '0') then
+						elsif (VBCacheReadRequestsFIFO_empty = '0' and VBCacheReadResponsesFIFO_full = '0') then
 							QueueReadTransaction(newReadRequest, axi_araddr, axi_arvalid, M_AXI_ARID, 
-								IA, 
-								IAReadRequestsFIFO_rd_data(C_M_AXI_ADDR_WIDTH-1 downto 5) );
-							IAReadRequestsFIFO_rd_en <= '1';
+								VBCACHE, 
+								VBCacheReadRequestsFIFO_rd_data(C_M_AXI_ADDR_WIDTH-1 downto 5) );
+							VBCacheReadRequestsFIFO_rd_en <= '1';
 							currentReadControlState <= READCTRL_MEM_COOLDOWN;
-						elsif (IBCPostReadRequestsFIFO_empty = '0' and IBCPostReadResponsesFIFO_full = '0') then
+						elsif (PacketDMAReadRequestsFIFO_empty = '0' and PacketDMAReadResponsesFIFO_full = '0') then
 							QueueReadTransaction(newReadRequest, axi_araddr, axi_arvalid, M_AXI_ARID, 
-								IBCPOST, 
-								IBCPostReadRequestsFIFO_rd_data(C_M_AXI_ADDR_WIDTH-1 downto 5) );
-							IBCPostReadRequestsFIFO_rd_en <= '1';
+								PACKETDMA, 
+								PacketDMAReadRequestsFIFO_rd_data(C_M_AXI_ADDR_WIDTH-1 downto 5) );
+							PacketDMAReadRequestsFIFO_rd_en <= '1';
 							currentReadControlState <= READCTRL_MEM_COOLDOWN;
 						elsif (TexFetchReadRequestsFIFO_empty = '0' and TexFetchReadResponsesFIFO_full = '0') then
 							QueueReadTransaction(newReadRequest, axi_araddr, axi_arvalid, M_AXI_ARID, 
@@ -794,6 +802,7 @@ begin
 			ROPWriteRequestsFIFO_rd_en <= '0';
 			ClearBlockWriteRequestsFIFO_rd_en <= '0';
 			StatsWriteRequestsFIFO_rd_en <= '0';
+			PacketDMAWriteRequestsFIFO_rd_en <= '0';
 
 			axi_awvalid <= '0';
 
@@ -862,6 +871,14 @@ begin
 									ClearBlockWriteRequestsFIFO_rd_data(C_M_AXI_DATA_WIDTH/32-1 downto 0) );
 								ClearBlockWriteRequestsFIFO_rd_en <= '1';
 								currentWriteControlState <= WRITECTRL_DEASSERT;
+							elsif (PacketDMAWriteRequestsFIFO_empty = '0') then
+								QueueWriteTransaction(newWriteRequest, axi_awaddr, axi_wdata, axi_wstrb, axi_awvalid, NextWriteTransactionID,
+									PACKETDMA,
+									PacketDMAWriteRequestsFIFO_rd_data(C_M_AXI_ADDR_WIDTH+C_M_AXI_DATA_WIDTH+C_M_AXI_DATA_WIDTH/32-1 downto C_M_AXI_DATA_WIDTH+C_M_AXI_DATA_WIDTH/32+5),
+									PacketDMAWriteRequestsFIFO_rd_data(C_M_AXI_DATA_WIDTH+C_M_AXI_DATA_WIDTH/32-1 downto C_M_AXI_DATA_WIDTH/32),
+									PacketDMAWriteRequestsFIFO_rd_data(C_M_AXI_DATA_WIDTH/32-1 downto 0) );
+								PacketDMAWriteRequestsFIFO_rd_en <= '1';
+								currentWriteControlState <= WRITECTRL_DEASSERT;
 							elsif (StatsWriteRequestsFIFO_empty = '0') then
 								QueueWriteTransaction(newWriteRequest, axi_awaddr, axi_wdata, axi_wstrb, axi_awvalid, NextWriteTransactionID,
 									STATS,
@@ -900,9 +917,9 @@ begin
 			ScanoutReadResponsesFIFO_wr_en <= '0';
 			ZStencilReadResponsesFIFO_wr_en <= '0';
 			CommandProcReadResponsesFIFO_wr_en <= '0';
-			IBCPreReadResponsesFIFO_wr_en <= '0';
-			IAReadResponsesFIFO_wr_en <= '0';
-			IBCPostReadResponsesFIFO_wr_en <= '0';
+			VBCacheReadResponsesFIFO_wr_en <= '0';
+			IBCacheReadResponsesFIFO_wr_en <= '0';
+			PacketDMAReadResponsesFIFO_wr_en <= '0';
 			TexFetchReadResponsesFIFO_wr_en <= '0';
 			ROPReadResponsesFIFO_wr_en <= '0';
 
@@ -925,15 +942,15 @@ begin
 						when COMMANDPROCESSOR =>
 							CommandProcReadResponsesFIFO_wr_data <= M_AXI_RDATA;
 							CommandProcReadResponsesFIFO_wr_en <= '1';
-						when IBCPRE =>
-							IBCPreReadResponsesFIFO_wr_data <= M_AXI_RDATA;
-							IBCPreReadResponsesFIFO_wr_en <= '1';
-						when IA =>
-							IAReadResponsesFIFO_wr_data <= M_AXI_RDATA;
-							IAReadResponsesFIFO_wr_en <= '1';
-						when IBCPOST =>
-							IBCPostReadResponsesFIFO_wr_data <= M_AXI_RDATA;
-							IBCPostReadResponsesFIFO_wr_en <= '1';
+						when IBCACHE =>
+							IBCacheReadResponsesFIFO_wr_data <= M_AXI_RDATA;
+							IBCacheReadResponsesFIFO_wr_en <= '1';
+						when VBCACHE =>
+							VBCacheReadResponsesFIFO_wr_data <= M_AXI_RDATA;
+							VBCacheReadResponsesFIFO_wr_en <= '1';
+						when PACKETDMA =>
+							PacketDMAReadResponsesFIFO_wr_data <= M_AXI_RDATA;
+							PacketDMAReadResponsesFIFO_wr_en <= '1';
 						when TEXTUREFETCH =>
 							TexFetchReadResponsesFIFO_wr_data <= M_AXI_RDATA;
 							TexFetchReadResponsesFIFO_wr_en <= '1';

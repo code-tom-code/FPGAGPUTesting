@@ -1131,12 +1131,8 @@ proc create_hier_cell_MemorySystem { parentCell nameHier } {
   create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:fifo_write_rtl:1.0 CommandProcReadRequestsFIFO
   create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:fifo_read_rtl:1.0 CommandProcReadResponsesFIFO
   create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:fifo_write_rtl:1.0 CommandProcWriteRequestsFIFO
-  create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:fifo_write_rtl:1.0 IAReadRequestsFIFO
-  create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:fifo_read_rtl:1.0 IAReadResponsesFIFO
-  create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:fifo_write_rtl:1.0 IBCPostReadRequestsFIFO
-  create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:fifo_read_rtl:1.0 IBCPostReadResponsesFIFO
-  create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:fifo_write_rtl:1.0 IBCPreReadRequestsFIFO
-  create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:fifo_read_rtl:1.0 IBCPreReadResponsesFIFO
+  create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:fifo_write_rtl:1.0 IBCacheReadRequestsFIFO
+  create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:fifo_read_rtl:1.0 IBCacheReadResponsesFIFO
   create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:fifo_write_rtl:1.0 ROPReadRequestsFIFO
   create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:fifo_read_rtl:1.0 ROPReadResponsesFIFO
   create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:fifo_write_rtl:1.0 ROPWriteRequestsFIFO
@@ -1145,6 +1141,8 @@ proc create_hier_cell_MemorySystem { parentCell nameHier } {
   create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:fifo_write_rtl:1.0 StatsWriteRequestsFIFO
   create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:fifo_write_rtl:1.0 TexFetchReadRequestsFIFO
   create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:fifo_read_rtl:1.0 TexFetchReadResponsesFIFO
+  create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:fifo_write_rtl:1.0 VBCacheReadRequestsFIFO
+  create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:fifo_read_rtl:1.0 VBCacheReadResponsesFIFO
   create_bd_intf_pin -mode Master -vlnv xilinx.com:interface:ddr4_rtl:1.0 ddr4_sdram_c1
   create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:diff_clock_rtl:1.0 default_sysclk1_300
 
@@ -1163,7 +1161,7 @@ proc create_hier_cell_MemorySystem { parentCell nameHier } {
   create_bd_pin -dir O DBG_ScanoutReadRequests_rd_en
   create_bd_pin -dir O DBG_ScanoutReadResponses_Full
   create_bd_pin -dir O -from 3 -to 0 DBG_WriteControlState
-  create_bd_pin -dir O -from 4 -to 0 DBG_WriteRequestsEmptyBitmask
+  create_bd_pin -dir O -from 5 -to 0 DBG_WriteRequestsEmptyBitmask
   create_bd_pin -dir I -type rst M_AXI_ARESETN
   create_bd_pin -dir O -from 31 -to 0 STAT_MemReadCountBytesTransferred
   create_bd_pin -dir O -from 31 -to 0 STAT_MemReadCountNonScanoutBytesTransferred
@@ -1260,8 +1258,8 @@ proc create_hier_cell_MemorySystem { parentCell nameHier } {
    CONFIG.Write_Data_Count_Width {9} \
  ] $CommandProcWriteRequestsFIFO
 
-  # Create instance: IAReadRequestsFIFO, and set properties
-  set IAReadRequestsFIFO [ create_bd_cell -type ip -vlnv xilinx.com:ip:fifo_generator:13.2 IAReadRequestsFIFO ]
+  # Create instance: IBCacheReadRequestsFIFO, and set properties
+  set IBCacheReadRequestsFIFO [ create_bd_cell -type ip -vlnv xilinx.com:ip:fifo_generator:13.2 IBCacheReadRequestsFIFO ]
   set_property -dict [ list \
    CONFIG.Data_Count_Width {9} \
    CONFIG.Empty_Threshold_Assert_Value {6} \
@@ -1278,10 +1276,10 @@ proc create_hier_cell_MemorySystem { parentCell nameHier } {
    CONFIG.Read_Data_Count_Width {9} \
    CONFIG.Write_Clock_Frequency {333} \
    CONFIG.Write_Data_Count_Width {9} \
- ] $IAReadRequestsFIFO
+ ] $IBCacheReadRequestsFIFO
 
-  # Create instance: IAReadResponsesFIFO, and set properties
-  set IAReadResponsesFIFO [ create_bd_cell -type ip -vlnv xilinx.com:ip:fifo_generator:13.2 IAReadResponsesFIFO ]
+  # Create instance: IBCacheReadResponsesFIFO, and set properties
+  set IBCacheReadResponsesFIFO [ create_bd_cell -type ip -vlnv xilinx.com:ip:fifo_generator:13.2 IBCacheReadResponsesFIFO ]
   set_property -dict [ list \
    CONFIG.Data_Count_Width {9} \
    CONFIG.Empty_Threshold_Assert_Value {6} \
@@ -1298,87 +1296,7 @@ proc create_hier_cell_MemorySystem { parentCell nameHier } {
    CONFIG.Read_Data_Count_Width {9} \
    CONFIG.Write_Clock_Frequency {333} \
    CONFIG.Write_Data_Count_Width {9} \
- ] $IAReadResponsesFIFO
-
-  # Create instance: IBCPostReadRequestsFIFO, and set properties
-  set IBCPostReadRequestsFIFO [ create_bd_cell -type ip -vlnv xilinx.com:ip:fifo_generator:13.2 IBCPostReadRequestsFIFO ]
-  set_property -dict [ list \
-   CONFIG.Data_Count_Width {9} \
-   CONFIG.Empty_Threshold_Assert_Value {6} \
-   CONFIG.Empty_Threshold_Negate_Value {7} \
-   CONFIG.Fifo_Implementation {Independent_Clocks_Builtin_FIFO} \
-   CONFIG.Full_Threshold_Assert_Value {511} \
-   CONFIG.Full_Threshold_Negate_Value {510} \
-   CONFIG.Input_Data_Width {30} \
-   CONFIG.Input_Depth {512} \
-   CONFIG.Output_Data_Width {30} \
-   CONFIG.Output_Depth {512} \
-   CONFIG.Performance_Options {First_Word_Fall_Through} \
-   CONFIG.Read_Clock_Frequency {333} \
-   CONFIG.Read_Data_Count_Width {9} \
-   CONFIG.Write_Clock_Frequency {333} \
-   CONFIG.Write_Data_Count_Width {9} \
- ] $IBCPostReadRequestsFIFO
-
-  # Create instance: IBCPostReadResponsesFIFO, and set properties
-  set IBCPostReadResponsesFIFO [ create_bd_cell -type ip -vlnv xilinx.com:ip:fifo_generator:13.2 IBCPostReadResponsesFIFO ]
-  set_property -dict [ list \
-   CONFIG.Data_Count_Width {9} \
-   CONFIG.Empty_Threshold_Assert_Value {6} \
-   CONFIG.Empty_Threshold_Negate_Value {7} \
-   CONFIG.Fifo_Implementation {Independent_Clocks_Builtin_FIFO} \
-   CONFIG.Full_Threshold_Assert_Value {511} \
-   CONFIG.Full_Threshold_Negate_Value {510} \
-   CONFIG.Input_Data_Width {256} \
-   CONFIG.Input_Depth {512} \
-   CONFIG.Output_Data_Width {256} \
-   CONFIG.Output_Depth {512} \
-   CONFIG.Performance_Options {First_Word_Fall_Through} \
-   CONFIG.Read_Clock_Frequency {333} \
-   CONFIG.Read_Data_Count_Width {9} \
-   CONFIG.Write_Clock_Frequency {333} \
-   CONFIG.Write_Data_Count_Width {9} \
- ] $IBCPostReadResponsesFIFO
-
-  # Create instance: IBCPreReadRequestsFIFO, and set properties
-  set IBCPreReadRequestsFIFO [ create_bd_cell -type ip -vlnv xilinx.com:ip:fifo_generator:13.2 IBCPreReadRequestsFIFO ]
-  set_property -dict [ list \
-   CONFIG.Data_Count_Width {9} \
-   CONFIG.Empty_Threshold_Assert_Value {6} \
-   CONFIG.Empty_Threshold_Negate_Value {7} \
-   CONFIG.Fifo_Implementation {Independent_Clocks_Builtin_FIFO} \
-   CONFIG.Full_Threshold_Assert_Value {511} \
-   CONFIG.Full_Threshold_Negate_Value {510} \
-   CONFIG.Input_Data_Width {30} \
-   CONFIG.Input_Depth {512} \
-   CONFIG.Output_Data_Width {30} \
-   CONFIG.Output_Depth {512} \
-   CONFIG.Performance_Options {First_Word_Fall_Through} \
-   CONFIG.Read_Clock_Frequency {333} \
-   CONFIG.Read_Data_Count_Width {9} \
-   CONFIG.Write_Clock_Frequency {333} \
-   CONFIG.Write_Data_Count_Width {9} \
- ] $IBCPreReadRequestsFIFO
-
-  # Create instance: IBCPreReadResponsesFIFO, and set properties
-  set IBCPreReadResponsesFIFO [ create_bd_cell -type ip -vlnv xilinx.com:ip:fifo_generator:13.2 IBCPreReadResponsesFIFO ]
-  set_property -dict [ list \
-   CONFIG.Data_Count_Width {9} \
-   CONFIG.Empty_Threshold_Assert_Value {6} \
-   CONFIG.Empty_Threshold_Negate_Value {7} \
-   CONFIG.Fifo_Implementation {Independent_Clocks_Builtin_FIFO} \
-   CONFIG.Full_Threshold_Assert_Value {511} \
-   CONFIG.Full_Threshold_Negate_Value {510} \
-   CONFIG.Input_Data_Width {256} \
-   CONFIG.Input_Depth {512} \
-   CONFIG.Output_Data_Width {256} \
-   CONFIG.Output_Depth {512} \
-   CONFIG.Performance_Options {First_Word_Fall_Through} \
-   CONFIG.Read_Clock_Frequency {333} \
-   CONFIG.Read_Data_Count_Width {9} \
-   CONFIG.Write_Clock_Frequency {333} \
-   CONFIG.Write_Data_Count_Width {9} \
- ] $IBCPreReadResponsesFIFO
+ ] $IBCacheReadResponsesFIFO
 
   # Create instance: MemoryController_0, and set properties
   set block_name MemoryController
@@ -1391,6 +1309,66 @@ proc create_hier_cell_MemorySystem { parentCell nameHier } {
      return 1
    }
   
+  # Create instance: PacketDMAReadRequestsFIFO, and set properties
+  set PacketDMAReadRequestsFIFO [ create_bd_cell -type ip -vlnv xilinx.com:ip:fifo_generator:13.2 PacketDMAReadRequestsFIFO ]
+  set_property -dict [ list \
+   CONFIG.Data_Count_Width {9} \
+   CONFIG.Empty_Threshold_Assert_Value {6} \
+   CONFIG.Empty_Threshold_Negate_Value {7} \
+   CONFIG.Fifo_Implementation {Independent_Clocks_Builtin_FIFO} \
+   CONFIG.Full_Threshold_Assert_Value {511} \
+   CONFIG.Full_Threshold_Negate_Value {510} \
+   CONFIG.Input_Data_Width {30} \
+   CONFIG.Input_Depth {512} \
+   CONFIG.Output_Data_Width {30} \
+   CONFIG.Output_Depth {512} \
+   CONFIG.Performance_Options {First_Word_Fall_Through} \
+   CONFIG.Read_Clock_Frequency {333} \
+   CONFIG.Read_Data_Count_Width {9} \
+   CONFIG.Write_Clock_Frequency {333} \
+   CONFIG.Write_Data_Count_Width {9} \
+ ] $PacketDMAReadRequestsFIFO
+
+  # Create instance: PacketDMAReadResponsesFIFO, and set properties
+  set PacketDMAReadResponsesFIFO [ create_bd_cell -type ip -vlnv xilinx.com:ip:fifo_generator:13.2 PacketDMAReadResponsesFIFO ]
+  set_property -dict [ list \
+   CONFIG.Data_Count_Width {9} \
+   CONFIG.Empty_Threshold_Assert_Value {6} \
+   CONFIG.Empty_Threshold_Negate_Value {7} \
+   CONFIG.Fifo_Implementation {Independent_Clocks_Builtin_FIFO} \
+   CONFIG.Full_Threshold_Assert_Value {511} \
+   CONFIG.Full_Threshold_Negate_Value {510} \
+   CONFIG.Input_Data_Width {256} \
+   CONFIG.Input_Depth {512} \
+   CONFIG.Output_Data_Width {256} \
+   CONFIG.Output_Depth {512} \
+   CONFIG.Performance_Options {First_Word_Fall_Through} \
+   CONFIG.Read_Clock_Frequency {333} \
+   CONFIG.Read_Data_Count_Width {9} \
+   CONFIG.Write_Clock_Frequency {333} \
+   CONFIG.Write_Data_Count_Width {9} \
+ ] $PacketDMAReadResponsesFIFO
+
+  # Create instance: PacketDMAWriteRequestsFIFO, and set properties
+  set PacketDMAWriteRequestsFIFO [ create_bd_cell -type ip -vlnv xilinx.com:ip:fifo_generator:13.2 PacketDMAWriteRequestsFIFO ]
+  set_property -dict [ list \
+   CONFIG.Data_Count_Width {9} \
+   CONFIG.Empty_Threshold_Assert_Value {6} \
+   CONFIG.Empty_Threshold_Negate_Value {7} \
+   CONFIG.Fifo_Implementation {Independent_Clocks_Builtin_FIFO} \
+   CONFIG.Full_Threshold_Assert_Value {511} \
+   CONFIG.Full_Threshold_Negate_Value {510} \
+   CONFIG.Input_Data_Width {294} \
+   CONFIG.Input_Depth {512} \
+   CONFIG.Output_Data_Width {294} \
+   CONFIG.Output_Depth {512} \
+   CONFIG.Performance_Options {First_Word_Fall_Through} \
+   CONFIG.Read_Clock_Frequency {333} \
+   CONFIG.Read_Data_Count_Width {9} \
+   CONFIG.Write_Clock_Frequency {333} \
+   CONFIG.Write_Data_Count_Width {9} \
+ ] $PacketDMAWriteRequestsFIFO
+
   # Create instance: ROPReadRequestsFIFO, and set properties
   set ROPReadRequestsFIFO [ create_bd_cell -type ip -vlnv xilinx.com:ip:fifo_generator:13.2 ROPReadRequestsFIFO ]
   set_property -dict [ list \
@@ -1552,6 +1530,46 @@ proc create_hier_cell_MemorySystem { parentCell nameHier } {
    CONFIG.Write_Data_Count_Width {9} \
  ] $TexFetchReadResponsesFIFO
 
+  # Create instance: VBCacheReadRequestsFIFO, and set properties
+  set VBCacheReadRequestsFIFO [ create_bd_cell -type ip -vlnv xilinx.com:ip:fifo_generator:13.2 VBCacheReadRequestsFIFO ]
+  set_property -dict [ list \
+   CONFIG.Data_Count_Width {9} \
+   CONFIG.Empty_Threshold_Assert_Value {6} \
+   CONFIG.Empty_Threshold_Negate_Value {7} \
+   CONFIG.Fifo_Implementation {Independent_Clocks_Builtin_FIFO} \
+   CONFIG.Full_Threshold_Assert_Value {511} \
+   CONFIG.Full_Threshold_Negate_Value {510} \
+   CONFIG.Input_Data_Width {30} \
+   CONFIG.Input_Depth {512} \
+   CONFIG.Output_Data_Width {30} \
+   CONFIG.Output_Depth {512} \
+   CONFIG.Performance_Options {First_Word_Fall_Through} \
+   CONFIG.Read_Clock_Frequency {333} \
+   CONFIG.Read_Data_Count_Width {9} \
+   CONFIG.Write_Clock_Frequency {333} \
+   CONFIG.Write_Data_Count_Width {9} \
+ ] $VBCacheReadRequestsFIFO
+
+  # Create instance: VBCacheReadResponsesFIFO, and set properties
+  set VBCacheReadResponsesFIFO [ create_bd_cell -type ip -vlnv xilinx.com:ip:fifo_generator:13.2 VBCacheReadResponsesFIFO ]
+  set_property -dict [ list \
+   CONFIG.Data_Count_Width {9} \
+   CONFIG.Empty_Threshold_Assert_Value {6} \
+   CONFIG.Empty_Threshold_Negate_Value {7} \
+   CONFIG.Fifo_Implementation {Independent_Clocks_Builtin_FIFO} \
+   CONFIG.Full_Threshold_Assert_Value {511} \
+   CONFIG.Full_Threshold_Negate_Value {510} \
+   CONFIG.Input_Data_Width {256} \
+   CONFIG.Input_Depth {512} \
+   CONFIG.Output_Data_Width {256} \
+   CONFIG.Output_Depth {512} \
+   CONFIG.Performance_Options {First_Word_Fall_Through} \
+   CONFIG.Read_Clock_Frequency {333} \
+   CONFIG.Read_Data_Count_Width {9} \
+   CONFIG.Write_Clock_Frequency {333} \
+   CONFIG.Write_Data_Count_Width {9} \
+ ] $VBCacheReadResponsesFIFO
+
   # Create instance: ZStencilReadRequestsFIFO, and set properties
   set ZStencilReadRequestsFIFO [ create_bd_cell -type ip -vlnv xilinx.com:ip:fifo_generator:13.2 ZStencilReadRequestsFIFO ]
   set_property -dict [ list \
@@ -1636,8 +1654,8 @@ proc create_hier_cell_MemorySystem { parentCell nameHier } {
   connect_bd_intf_net -intf_net Conn1 [get_bd_intf_pins CommandProcReadRequestsFIFO] [get_bd_intf_pins CommandProcReadRequestsFIFO/FIFO_WRITE]
   connect_bd_intf_net -intf_net Conn2 [get_bd_intf_pins CommandProcReadResponsesFIFO] [get_bd_intf_pins CommandProcReadResponsesFIFO/FIFO_READ]
   connect_bd_intf_net -intf_net Conn3 [get_bd_intf_pins CommandProcWriteRequestsFIFO] [get_bd_intf_pins CommandProcWriteRequestsFIFO/FIFO_WRITE]
-  connect_bd_intf_net -intf_net Conn4 [get_bd_intf_pins IAReadRequestsFIFO] [get_bd_intf_pins IAReadRequestsFIFO/FIFO_WRITE]
-  connect_bd_intf_net -intf_net Conn5 [get_bd_intf_pins IAReadResponsesFIFO] [get_bd_intf_pins IAReadResponsesFIFO/FIFO_READ]
+  connect_bd_intf_net -intf_net Conn4 [get_bd_intf_pins VBCacheReadRequestsFIFO] [get_bd_intf_pins VBCacheReadRequestsFIFO/FIFO_WRITE]
+  connect_bd_intf_net -intf_net Conn5 [get_bd_intf_pins VBCacheReadResponsesFIFO] [get_bd_intf_pins VBCacheReadResponsesFIFO/FIFO_READ]
   connect_bd_intf_net -intf_net Conn6 [get_bd_intf_pins TexFetchReadRequestsFIFO] [get_bd_intf_pins TexFetchReadRequestsFIFO/FIFO_WRITE]
   connect_bd_intf_net -intf_net Conn7 [get_bd_intf_pins TexFetchReadResponsesFIFO] [get_bd_intf_pins TexFetchReadResponsesFIFO/FIFO_READ]
   connect_bd_intf_net -intf_net Conn8 [get_bd_intf_pins ROPReadRequestsFIFO] [get_bd_intf_pins ROPReadRequestsFIFO/FIFO_WRITE]
@@ -1647,21 +1665,18 @@ proc create_hier_cell_MemorySystem { parentCell nameHier } {
   connect_bd_intf_net -intf_net Conn12 [get_bd_intf_pins ScanoutReadResponsesFIFO] [get_bd_intf_pins ScanoutReadResponsesFIFO/FIFO_READ]
   connect_bd_intf_net -intf_net Conn13 [get_bd_intf_pins ClearBlockWriteRequestsFIFO] [get_bd_intf_pins ClearBlockWriteRequestsFIFO/FIFO_WRITE]
   connect_bd_intf_net -intf_net Conn14 [get_bd_intf_pins StatsWriteRequestsFIFO] [get_bd_intf_pins StatsWriteRequestsFIFO/FIFO_WRITE]
-  connect_bd_intf_net -intf_net Conn15 [get_bd_intf_pins IBCPreReadRequestsFIFO] [get_bd_intf_pins IBCPreReadRequestsFIFO/FIFO_WRITE]
-  connect_bd_intf_net -intf_net Conn16 [get_bd_intf_pins IBCPreReadResponsesFIFO] [get_bd_intf_pins IBCPreReadResponsesFIFO/FIFO_READ]
-  connect_bd_intf_net -intf_net Conn17 [get_bd_intf_pins IBCPostReadRequestsFIFO] [get_bd_intf_pins IBCPostReadRequestsFIFO/FIFO_WRITE]
-  connect_bd_intf_net -intf_net Conn18 [get_bd_intf_pins IBCPostReadResponsesFIFO] [get_bd_intf_pins IBCPostReadResponsesFIFO/FIFO_READ]
+  connect_bd_intf_net -intf_net Conn15 [get_bd_intf_pins IBCacheReadRequestsFIFO] [get_bd_intf_pins IBCacheReadRequestsFIFO/FIFO_WRITE]
+  connect_bd_intf_net -intf_net Conn16 [get_bd_intf_pins IBCacheReadResponsesFIFO] [get_bd_intf_pins IBCacheReadResponsesFIFO/FIFO_READ]
   connect_bd_intf_net -intf_net MemoryController_0_ClearBlockWriteRequests [get_bd_intf_pins ClearBlockWriteRequestsFIFO/FIFO_READ] [get_bd_intf_pins MemoryController_0/ClearBlockWriteRequests]
   connect_bd_intf_net -intf_net MemoryController_0_CommandProcReadRequests [get_bd_intf_pins CommandProcReadRequestsFIFO/FIFO_READ] [get_bd_intf_pins MemoryController_0/CommandProcReadRequests]
   connect_bd_intf_net -intf_net MemoryController_0_CommandProcReadResponses [get_bd_intf_pins CommandProcReadResponsesFIFO/FIFO_WRITE] [get_bd_intf_pins MemoryController_0/CommandProcReadResponses]
   connect_bd_intf_net -intf_net MemoryController_0_CommandProcWriteRequests [get_bd_intf_pins CommandProcWriteRequestsFIFO/FIFO_READ] [get_bd_intf_pins MemoryController_0/CommandProcWriteRequests]
-  connect_bd_intf_net -intf_net MemoryController_0_IAReadRequests [get_bd_intf_pins IAReadRequestsFIFO/FIFO_READ] [get_bd_intf_pins MemoryController_0/IAReadRequests]
-  connect_bd_intf_net -intf_net MemoryController_0_IAReadResponses [get_bd_intf_pins IAReadResponsesFIFO/FIFO_WRITE] [get_bd_intf_pins MemoryController_0/IAReadResponses]
-  connect_bd_intf_net -intf_net MemoryController_0_IBCPostReadRequests [get_bd_intf_pins IBCPostReadRequestsFIFO/FIFO_READ] [get_bd_intf_pins MemoryController_0/IBCPostReadRequests]
-  connect_bd_intf_net -intf_net MemoryController_0_IBCPostReadResponses [get_bd_intf_pins IBCPostReadResponsesFIFO/FIFO_WRITE] [get_bd_intf_pins MemoryController_0/IBCPostReadResponses]
-  connect_bd_intf_net -intf_net MemoryController_0_IBCPreReadRequests [get_bd_intf_pins IBCPreReadRequestsFIFO/FIFO_READ] [get_bd_intf_pins MemoryController_0/IBCPreReadRequests]
-  connect_bd_intf_net -intf_net MemoryController_0_IBCPreReadResponses [get_bd_intf_pins IBCPreReadResponsesFIFO/FIFO_WRITE] [get_bd_intf_pins MemoryController_0/IBCPreReadResponses]
+  connect_bd_intf_net -intf_net MemoryController_0_IBCacheReadRequests [get_bd_intf_pins IBCacheReadRequestsFIFO/FIFO_READ] [get_bd_intf_pins MemoryController_0/IBCacheReadRequests]
+  connect_bd_intf_net -intf_net MemoryController_0_IBCacheReadResponses [get_bd_intf_pins IBCacheReadResponsesFIFO/FIFO_WRITE] [get_bd_intf_pins MemoryController_0/IBCacheReadResponses]
   connect_bd_intf_net -intf_net MemoryController_0_M_AXI [get_bd_intf_pins MemoryController_0/M_AXI] [get_bd_intf_pins ddr4_0/C0_DDR4_S_AXI]
+  connect_bd_intf_net -intf_net MemoryController_0_PacketDMAReadRequests [get_bd_intf_pins MemoryController_0/PacketDMAReadRequests] [get_bd_intf_pins PacketDMAReadRequestsFIFO/FIFO_READ]
+  connect_bd_intf_net -intf_net MemoryController_0_PacketDMAReadResponses [get_bd_intf_pins MemoryController_0/PacketDMAReadResponses] [get_bd_intf_pins PacketDMAReadResponsesFIFO/FIFO_WRITE]
+  connect_bd_intf_net -intf_net MemoryController_0_PacketDMAWriteRequests [get_bd_intf_pins MemoryController_0/PacketDMAWriteRequests] [get_bd_intf_pins PacketDMAWriteRequestsFIFO/FIFO_READ]
   connect_bd_intf_net -intf_net MemoryController_0_ROPReadRequests [get_bd_intf_pins MemoryController_0/ROPReadRequests] [get_bd_intf_pins ROPReadRequestsFIFO/FIFO_READ]
   connect_bd_intf_net -intf_net MemoryController_0_ROPReadResponses [get_bd_intf_pins MemoryController_0/ROPReadResponses] [get_bd_intf_pins ROPReadResponsesFIFO/FIFO_WRITE]
   connect_bd_intf_net -intf_net MemoryController_0_ROPWriteRequests [get_bd_intf_pins MemoryController_0/ROPWriteRequests] [get_bd_intf_pins ROPWriteRequestsFIFO/FIFO_READ]
@@ -1670,6 +1685,8 @@ proc create_hier_cell_MemorySystem { parentCell nameHier } {
   connect_bd_intf_net -intf_net MemoryController_0_StatsWriteRequests [get_bd_intf_pins MemoryController_0/StatsWriteRequests] [get_bd_intf_pins StatsWriteRequestsFIFO/FIFO_READ]
   connect_bd_intf_net -intf_net MemoryController_0_TexFetchReadRequests [get_bd_intf_pins MemoryController_0/TexFetchReadRequests] [get_bd_intf_pins TexFetchReadRequestsFIFO/FIFO_READ]
   connect_bd_intf_net -intf_net MemoryController_0_TexFetchReadResponses [get_bd_intf_pins MemoryController_0/TexFetchReadResponses] [get_bd_intf_pins TexFetchReadResponsesFIFO/FIFO_WRITE]
+  connect_bd_intf_net -intf_net MemoryController_0_VBCacheReadRequests [get_bd_intf_pins MemoryController_0/VBCacheReadRequests] [get_bd_intf_pins VBCacheReadRequestsFIFO/FIFO_READ]
+  connect_bd_intf_net -intf_net MemoryController_0_VBCacheReadResponses [get_bd_intf_pins MemoryController_0/VBCacheReadResponses] [get_bd_intf_pins VBCacheReadResponsesFIFO/FIFO_WRITE]
   connect_bd_intf_net -intf_net MemoryController_0_ZStencilReadRequests [get_bd_intf_pins MemoryController_0/ZStencilReadRequests] [get_bd_intf_pins ZStencilReadRequestsFIFO/FIFO_READ]
   connect_bd_intf_net -intf_net MemoryController_0_ZStencilReadResponses [get_bd_intf_pins MemoryController_0/ZStencilReadResponses] [get_bd_intf_pins ZStencilReadResponsesFIFO/FIFO_WRITE]
   connect_bd_intf_net -intf_net MemoryController_0_ZStencilWriteRequests [get_bd_intf_pins MemoryController_0/ZStencilWriteRequests] [get_bd_intf_pins ZStencilWriteRequestsFIFO/FIFO_READ]
@@ -1704,7 +1721,7 @@ proc create_hier_cell_MemorySystem { parentCell nameHier } {
   connect_bd_net -net MemoryController_0_STAT_MemWriteCyclesSpentWorking [get_bd_pins STAT_MemWriteCyclesSpentWorking] [get_bd_pins MemoryController_0/STAT_MemWriteCyclesSpentWorking]
   connect_bd_net -net ResetN_UntilClockLoc_0_resetn [get_bd_pins M_AXI_ARESETN] [get_bd_pins MemoryController_0/M_AXI_ARESETN]
   connect_bd_net -net ddr4_0_addn_ui_clkout1 [get_bd_pins addn_ui_clkout1] [get_bd_pins ddr4_0/addn_ui_clkout1]
-  connect_bd_net -net ddr4_0_c0_ddr4_ui_clk [get_bd_pins c0_ddr4_ui_clk] [get_bd_pins ClearBlockWriteRequestsFIFO/rd_clk] [get_bd_pins ClearBlockWriteRequestsFIFO/wr_clk] [get_bd_pins CommandProcReadRequestsFIFO/rd_clk] [get_bd_pins CommandProcReadRequestsFIFO/wr_clk] [get_bd_pins CommandProcReadResponsesFIFO/rd_clk] [get_bd_pins CommandProcReadResponsesFIFO/wr_clk] [get_bd_pins CommandProcWriteRequestsFIFO/rd_clk] [get_bd_pins CommandProcWriteRequestsFIFO/wr_clk] [get_bd_pins IAReadRequestsFIFO/rd_clk] [get_bd_pins IAReadRequestsFIFO/wr_clk] [get_bd_pins IAReadResponsesFIFO/rd_clk] [get_bd_pins IAReadResponsesFIFO/wr_clk] [get_bd_pins IBCPostReadRequestsFIFO/rd_clk] [get_bd_pins IBCPostReadRequestsFIFO/wr_clk] [get_bd_pins IBCPostReadResponsesFIFO/rd_clk] [get_bd_pins IBCPostReadResponsesFIFO/wr_clk] [get_bd_pins IBCPreReadRequestsFIFO/rd_clk] [get_bd_pins IBCPreReadRequestsFIFO/wr_clk] [get_bd_pins IBCPreReadResponsesFIFO/rd_clk] [get_bd_pins IBCPreReadResponsesFIFO/wr_clk] [get_bd_pins MemoryController_0/M_AXI_ACLK] [get_bd_pins ROPReadRequestsFIFO/rd_clk] [get_bd_pins ROPReadRequestsFIFO/wr_clk] [get_bd_pins ROPReadResponsesFIFO/rd_clk] [get_bd_pins ROPReadResponsesFIFO/wr_clk] [get_bd_pins ROPWriteRequestsFIFO/rd_clk] [get_bd_pins ROPWriteRequestsFIFO/wr_clk] [get_bd_pins ScanoutReadRequestsFIFO/rd_clk] [get_bd_pins ScanoutReadResponsesFIFO/wr_clk] [get_bd_pins StatsWriteRequestsFIFO/rd_clk] [get_bd_pins StatsWriteRequestsFIFO/wr_clk] [get_bd_pins TexFetchReadRequestsFIFO/rd_clk] [get_bd_pins TexFetchReadRequestsFIFO/wr_clk] [get_bd_pins TexFetchReadResponsesFIFO/rd_clk] [get_bd_pins TexFetchReadResponsesFIFO/wr_clk] [get_bd_pins ZStencilReadRequestsFIFO/rd_clk] [get_bd_pins ZStencilReadRequestsFIFO/wr_clk] [get_bd_pins ZStencilReadResponsesFIFO/rd_clk] [get_bd_pins ZStencilReadResponsesFIFO/wr_clk] [get_bd_pins ZStencilWriteRequestsFIFO/rd_clk] [get_bd_pins ZStencilWriteRequestsFIFO/wr_clk] [get_bd_pins ddr4_0/c0_ddr4_ui_clk] [get_bd_pins rst_ddr4_0_333M/slowest_sync_clk]
+  connect_bd_net -net ddr4_0_c0_ddr4_ui_clk [get_bd_pins c0_ddr4_ui_clk] [get_bd_pins ClearBlockWriteRequestsFIFO/rd_clk] [get_bd_pins ClearBlockWriteRequestsFIFO/wr_clk] [get_bd_pins CommandProcReadRequestsFIFO/rd_clk] [get_bd_pins CommandProcReadRequestsFIFO/wr_clk] [get_bd_pins CommandProcReadResponsesFIFO/rd_clk] [get_bd_pins CommandProcReadResponsesFIFO/wr_clk] [get_bd_pins CommandProcWriteRequestsFIFO/rd_clk] [get_bd_pins CommandProcWriteRequestsFIFO/wr_clk] [get_bd_pins IBCacheReadRequestsFIFO/rd_clk] [get_bd_pins IBCacheReadRequestsFIFO/wr_clk] [get_bd_pins IBCacheReadResponsesFIFO/rd_clk] [get_bd_pins IBCacheReadResponsesFIFO/wr_clk] [get_bd_pins MemoryController_0/M_AXI_ACLK] [get_bd_pins PacketDMAReadRequestsFIFO/rd_clk] [get_bd_pins PacketDMAReadRequestsFIFO/wr_clk] [get_bd_pins PacketDMAReadResponsesFIFO/rd_clk] [get_bd_pins PacketDMAReadResponsesFIFO/wr_clk] [get_bd_pins PacketDMAWriteRequestsFIFO/rd_clk] [get_bd_pins PacketDMAWriteRequestsFIFO/wr_clk] [get_bd_pins ROPReadRequestsFIFO/rd_clk] [get_bd_pins ROPReadRequestsFIFO/wr_clk] [get_bd_pins ROPReadResponsesFIFO/rd_clk] [get_bd_pins ROPReadResponsesFIFO/wr_clk] [get_bd_pins ROPWriteRequestsFIFO/rd_clk] [get_bd_pins ROPWriteRequestsFIFO/wr_clk] [get_bd_pins ScanoutReadRequestsFIFO/rd_clk] [get_bd_pins ScanoutReadResponsesFIFO/wr_clk] [get_bd_pins StatsWriteRequestsFIFO/rd_clk] [get_bd_pins StatsWriteRequestsFIFO/wr_clk] [get_bd_pins TexFetchReadRequestsFIFO/rd_clk] [get_bd_pins TexFetchReadRequestsFIFO/wr_clk] [get_bd_pins TexFetchReadResponsesFIFO/rd_clk] [get_bd_pins TexFetchReadResponsesFIFO/wr_clk] [get_bd_pins VBCacheReadRequestsFIFO/rd_clk] [get_bd_pins VBCacheReadRequestsFIFO/wr_clk] [get_bd_pins VBCacheReadResponsesFIFO/rd_clk] [get_bd_pins VBCacheReadResponsesFIFO/wr_clk] [get_bd_pins ZStencilReadRequestsFIFO/rd_clk] [get_bd_pins ZStencilReadRequestsFIFO/wr_clk] [get_bd_pins ZStencilReadResponsesFIFO/rd_clk] [get_bd_pins ZStencilReadResponsesFIFO/wr_clk] [get_bd_pins ZStencilWriteRequestsFIFO/rd_clk] [get_bd_pins ZStencilWriteRequestsFIFO/wr_clk] [get_bd_pins ddr4_0/c0_ddr4_ui_clk] [get_bd_pins rst_ddr4_0_333M/slowest_sync_clk]
   connect_bd_net -net ddr4_0_c0_ddr4_ui_clk_sync_rst [get_bd_pins ddr4_0/c0_ddr4_ui_clk_sync_rst] [get_bd_pins rst_ddr4_0_333M/ext_reset_in]
   connect_bd_net -net ddr4_0_c0_init_calib_complete [get_bd_pins MemoryController_0/c0_init_calib_complete] [get_bd_pins ddr4_0/c0_init_calib_complete]
   connect_bd_net -net rd_clk_1 [get_bd_pins rd_clk] [get_bd_pins ScanoutReadRequestsFIFO/wr_clk] [get_bd_pins ScanoutReadResponsesFIFO/rd_clk]
@@ -2425,7 +2442,7 @@ proc create_root_design { parentCell } {
    CONFIG.C_PROBE39_WIDTH {8} \
    CONFIG.C_PROBE3_TYPE {0} \
    CONFIG.C_PROBE3_WIDTH {32} \
-   CONFIG.C_PROBE40_WIDTH {5} \
+   CONFIG.C_PROBE40_WIDTH {6} \
    CONFIG.C_PROBE41_WIDTH {8} \
    CONFIG.C_PROBE42_WIDTH {3} \
    CONFIG.C_PROBE43_WIDTH {32} \
@@ -2549,8 +2566,8 @@ proc create_root_design { parentCell } {
   connect_bd_intf_net -intf_net DepthBuffer_0_DBufferRAMR [get_bd_intf_pins DepthBuffer_0/DBufferRAMR] [get_bd_intf_pins DepthBuffer_URAM/BRAM_PORTB]
   connect_bd_intf_net -intf_net DepthBuffer_0_DBufferRAMW [get_bd_intf_pins DepthBuffer_0/DBufferRAMW] [get_bd_intf_pins DepthBuffer_URAM/BRAM_PORTA]
   connect_bd_intf_net -intf_net DepthInterpolator_0_RASTOUT_FIFO [get_bd_intf_pins DepthInterpolator_0/RASTOUT_FIFO] [get_bd_intf_pins rast_out_fifo/FIFO_READ]
-  connect_bd_intf_net -intf_net IBCPreReadRequestsFIFO_1 [get_bd_intf_pins IndexBufferCache_0/IBCacheReadRequests] [get_bd_intf_pins MemorySystem/IBCPreReadRequestsFIFO]
-  connect_bd_intf_net -intf_net IBCPreReadResponsesFIFO_1 [get_bd_intf_pins IndexBufferCache_0/IBCacheReadResponses] [get_bd_intf_pins MemorySystem/IBCPreReadResponsesFIFO]
+  connect_bd_intf_net -intf_net IndexBufferCache_0_IBCacheReadRequests [get_bd_intf_pins IndexBufferCache_0/IBCacheReadRequests] [get_bd_intf_pins MemorySystem/IBCacheReadRequestsFIFO]
+  connect_bd_intf_net -intf_net IndexBufferCache_0_IBCacheReadResponses [get_bd_intf_pins IndexBufferCache_0/IBCacheReadResponses] [get_bd_intf_pins MemorySystem/IBCacheReadResponsesFIFO]
   connect_bd_intf_net -intf_net InputAssembler2_0_INDEXOUT_FIFO [get_bd_intf_pins InputAssembler2_0/INDEXOUT_FIFO] [get_bd_intf_pins VBO_INDEX_FIFO/FIFO_READ]
   connect_bd_intf_net -intf_net InputAssembler2_0_VERTOUT_FIFO [get_bd_intf_pins InputAssembler2_0/VERTOUT_FIFO] [get_bd_intf_pins VBO_FIFO/FIFO_READ]
   connect_bd_intf_net -intf_net ROP_0_ROPReadRequestsFIFO [get_bd_intf_pins MemorySystem/ROPReadRequestsFIFO] [get_bd_intf_pins ROP_0/ROPReadRequestsFIFO]
@@ -2562,8 +2579,8 @@ proc create_root_design { parentCell } {
   connect_bd_intf_net -intf_net ScanOut_0_ScanoutReadResponses [get_bd_intf_pins MemorySystem/ScanoutReadResponsesFIFO] [get_bd_intf_pins ScanoutSystem/ScanoutReadResponses]
   connect_bd_intf_net -intf_net SerialPacketSystem_rs232_uart [get_bd_intf_ports rs232_uart] [get_bd_intf_pins SerialPacketSystem/rs232_uart]
   connect_bd_intf_net -intf_net ShaderCoreSystem_INDEXOUT_FIFO [get_bd_intf_pins ShaderCoreSystem/INDEXOUT_FIFO] [get_bd_intf_pins VBO_INDEX_FIFO/FIFO_WRITE]
-  connect_bd_intf_net -intf_net ShaderCoreSystem_VBCacheReadRequests_0 [get_bd_intf_pins MemorySystem/IAReadRequestsFIFO] [get_bd_intf_pins ShaderCoreSystem/VBCacheReadRequests_0]
-  connect_bd_intf_net -intf_net ShaderCoreSystem_VBCacheReadResponses_0 [get_bd_intf_pins MemorySystem/IAReadResponsesFIFO] [get_bd_intf_pins ShaderCoreSystem/VBCacheReadResponses_0]
+  connect_bd_intf_net -intf_net ShaderCoreSystem_VBCacheReadRequests_0 [get_bd_intf_pins MemorySystem/VBCacheReadRequestsFIFO] [get_bd_intf_pins ShaderCoreSystem/VBCacheReadRequests_0]
+  connect_bd_intf_net -intf_net ShaderCoreSystem_VBCacheReadResponses_0 [get_bd_intf_pins MemorySystem/VBCacheReadResponsesFIFO] [get_bd_intf_pins ShaderCoreSystem/VBCacheReadResponses_0]
   connect_bd_intf_net -intf_net ShaderCoreSystem_VERTBATCH_FIFO_0 [get_bd_intf_pins ShaderCoreSystem/VERTBATCH_FIFO_0] [get_bd_intf_pins VBB_FIFO/FIFO_READ]
   connect_bd_intf_net -intf_net ShaderCoreSystem_VERTOUT_FIFO_0 [get_bd_intf_pins ShaderCoreSystem/VERTOUT_FIFO_0] [get_bd_intf_pins VBO_FIFO/FIFO_WRITE]
   connect_bd_intf_net -intf_net StatsCollector_0_StatsWriteRequestsFIFO [get_bd_intf_pins MemorySystem/StatsWriteRequestsFIFO] [get_bd_intf_pins StatsCollector_0/StatsWriteRequestsFIFO]

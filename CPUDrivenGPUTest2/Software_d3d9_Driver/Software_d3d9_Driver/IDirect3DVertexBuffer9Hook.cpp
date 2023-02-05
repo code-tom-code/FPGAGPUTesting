@@ -56,7 +56,7 @@ void IDirect3DVertexBuffer9Hook::CreateVertexBuffer(UINT _Length, const Debuggab
 	PrintDebugVertexBufferName(debugObjectName, _Length, _Usage, _FVF, _Pool, VertexBuffersCreatedCounter);
 #endif
 
-	GPUBytes = GPUAlloc(_Length, GPUVAT_VertexStreamData, GPUFMT_VertexGeneral
+	GPUBytes = GPUAlloc(_Length, InternalLength, 1, 1, 1, GPUVAT_VertexStreamData, GPUFMT_VertexGeneral
 #ifdef _DEBUG
 		, debugObjectName
 #endif

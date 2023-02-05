@@ -1254,8 +1254,11 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::Present(THI
 	// Update our device settings dialog:
 	driverSettingsDlg.UpdateDialog();
 
-	// Update our GPU Stats dialog too:
+	// Update our GPU Stats dialog:
 	deviceStats.UpdateDialog();
+
+	// Also update our GPU Memory Map dialog:
+	deviceMemoryMapDialog.UpdateDialog();
 
 #ifdef ENABLE_END_TO_SKIP_DRAWS
 	ResetHoldingDownEndToSkip();
@@ -4562,7 +4565,7 @@ const bool IDirect3DDevice9Hook::CreateOrUseCachedVertDataBuffer(deviceAllocated
 		__debugbreak(); // Should never be here!
 #endif
 	}
-	newBuffer.deviceMemory = GPUAlloc(newBuffer.deviceSizeBytes, deviceAllocationUsage, newBuffer.format 
+	newBuffer.deviceMemory = GPUAlloc(newBuffer.deviceSizeBytes, newBuffer.deviceSizeBytes, 0, 0, 0, deviceAllocationUsage, newBuffer.format 
 #ifdef _DEBUG
 		, debugAllocString
 #endif
@@ -11265,7 +11268,7 @@ IDirect3DDevice9Hook::IDirect3DDevice9Hook(LPDIRECT3DDEVICE9 _d3d9dev, IDirect3D
 
 	baseDevice = new IBaseGPUDevice(deviceComms);
 
-	allocatedDebugShaderRegisterFile = GPUAlloc(sizeof(DeviceRegisterFile), GPUVAT_RegisterFileDumpMemory, GPUFMT_RegFileDump
+	allocatedDebugShaderRegisterFile = GPUAlloc(sizeof(DeviceRegisterFile), 1, 0, 0, 0, GPUVAT_RegisterFileDumpMemory, GPUFMT_RegFileDump
 #ifdef _DEBUG
 		, "DebugDeviceRegisterFileDump"
 #endif

@@ -91,6 +91,9 @@ static INT_PTR CALLBACK DriverSettingsDialogProc(_In_ HWND hWnd, _In_ UINT MSG, 
 					d3d9devhook->GetDeviceStats().CreateStatsDialog(hWnd);
 				}
 				return TRUE;
+			case IDC_BTN_OPENMEMORYSTATS:
+				d3d9devhook->GetDeviceMemoryMapDialog().CreateMemoryMapDialog(hWnd);
+				return TRUE;
 			case IDC_CHK_ENABLESCANOUT:
 				d3d9devhook->SetScanoutEnabled(IsDlgButtonChecked(hWnd, IDC_CHK_ENABLESCANOUT) ? true : false);
 				return TRUE;

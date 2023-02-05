@@ -185,6 +185,7 @@
     <ClCompile Include="Driver\DriverSettingsDlg.cpp" />
     <ClCompile Include="Driver\GPUAllocator.cpp" />
     <ClCompile Include="Driver\GPUCommandList.cpp" />
+    <ClCompile Include="Driver\GPUMemoryMapDlg.cpp" />
     <ClCompile Include="Driver\GPUStats.cpp" />
     <ClCompile Include="Driver\IBaseDeviceComms.cpp" />
     <ClCompile Include="Driver\IBaseGPUDevice.cpp" />
@@ -243,6 +244,7 @@
     <ClInclude Include="Driver\GPUAllocator.h" />
     <ClInclude Include="Driver\GPUCommandList.h" />
     <ClInclude Include="Driver\GPUDeviceLimits.h" />
+    <ClInclude Include="Driver\GPUMemoryMapDlg.h" />
     <ClInclude Include="Driver\GPUStats.h" />
     <ClInclude Include="Driver\IBaseDeviceComms.h" />
     <ClInclude Include="Driver\IBaseGPUDevice.h" />

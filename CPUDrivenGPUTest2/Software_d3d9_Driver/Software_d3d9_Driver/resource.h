@@ -9,6 +9,7 @@
 #define IDR_HLSL_FFPS_SRC               107
 #define IDR_HLSL_FFVS_SRC               108
 #define IDR_TGA1                        109
+#define IDD_DLG_GPUMEMORYMAP            115
 #define IDC_CHK_SOFTWARERAST            1001
 #define IDC_CHK_ENABLESTATS             1002
 #define IDC_CHK_ENABLESCANOUT           1003
@@ -27,7 +28,6 @@
 #define IDC_CHK_WAITFORVSYNC            1012
 #define IDC_CHK_FORCEDISABLEDEPTH       1013
 #define IDC_STATIC2                     1014
-#define IDC_CHK_OVERRIDETEXMODE2        1014
 #define IDC_CHK_SINGLESTEPDRAWCALLS     1014
 #define IDC_IA_STAT1                    1015
 #define IDC_IA_STAT2                    1016
@@ -47,8 +47,12 @@
 #define IDC_RAST_STAT4                  1026
 #define IDC_EDIT_DRAWSLEEPMICROS        1026
 #define IDC_INTERP_STAT1                1027
+#define IDC_LST_CATEGORYLIST            1027
 #define IDC_INTERP_STAT2                1028
+#define IDC_LST_ALLOCINFO               1028
 #define IDC_INTERP_STAT3                1029
+#define IDC_BUTTON1                     1029
+#define IDC_BTN_OPENMEMORYSTATS         1029
 #define IDC_TEXSAMP_STAT1               1030
 #define IDC_TEXSAMP_STAT2               1031
 #define IDC_TEXSAMP_STAT3               1032
@@ -82,9 +86,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        115
+#define _APS_NEXT_RESOURCE_VALUE        117
 #define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         1027
+#define _APS_NEXT_CONTROL_VALUE         1030
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

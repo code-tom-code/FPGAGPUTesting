@@ -324,7 +324,8 @@ void IDirect3DVertexShader9Hook::JitLoadShader()
 		return;
 	}
 
-	gpuvoid* allocVertexShaderBytes = GPUAlloc(deviceCompiledVertexShaderBytecode->deviceShaderInfo.deviceInstructionTokenCount * sizeof(instructionSlot), GPUVAT_ShaderInstructionsMemory, GPUFMT_VertexShaderInstructions
+	gpuvoid* allocVertexShaderBytes = GPUAlloc(deviceCompiledVertexShaderBytecode->deviceShaderInfo.deviceInstructionTokenCount * sizeof(instructionSlot), 
+		deviceCompiledVertexShaderBytecode->deviceShaderInfo.deviceInstructionTokenCount, 0, 0, 0, GPUVAT_ShaderInstructionsMemory, GPUFMT_VertexShaderInstructions
 #ifdef _DEBUG
 		, debugObjectName
 #endif

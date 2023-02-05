@@ -1,5 +1,7 @@
 #pragma once
 
+#include <functional>
+
 /*
 For this current FPGA configuration (Xilinx KCU116), DRAM pages are 2KBytes in size. So for efficiency, try to allocate small objects (small buffers) along 2KByte boundaries.
 Larger objects (textures, large buffers) should be allocated at 32KByte boundaries. This is the row size for the device.
@@ -122,11 +124,28 @@ const gpuFormat ConvertD3DFormatToDeviceFormat(const D3DFORMAT fmt);
 
 typedef void gpuvoid;
 
+struct liveAllocation
+{
+#ifdef _DEBUG
+	const char* debugAllocationName;
+#endif
+	gpuvoid* allocAddress;
+	unsigned requestedSize; // The size that the application passed to the allocator (ie. 1584 bytes)
+	unsigned allocSize; // The size that the allocator actually allocated (ie. 2048 bytes to be a whole multiple of the GPU page-size)
+	unsigned width; // The width, in pixels (if a texture) or element count (if a buffer) of this resource
+	unsigned short height; // Height is only used for texture resources (1D/2D/3D/Cube/RenderTarget/DepthStencil).
+	unsigned short depth; // Depth is only ever used for 3D volume textures. For all other texture-type resources it is "1" and for non-texture resources it may be "0".
+	unsigned char numMipLevels; // Mip-count is only used for texture resources (1D/2D/3D/Cube/RenderTarget/DepthStencil).
+	allocationUsage usage;
+	gpuFormat format;
+};
+
 // Must be called once at startup!
 void GPUInitializeAllocator();
 
 // Returns NULL if allocation fails (due to out of GPU memory, out of GPU address space, etc.)
-gpuvoid* GPUAlloc(const unsigned allocationSizeBytes, const allocationUsage usage, const gpuFormat format
+gpuvoid* GPUAlloc(const unsigned allocationSizeBytes,
+	const unsigned width, const unsigned short height, const unsigned short depth, const unsigned char numMipLevels, const allocationUsage usage, const gpuFormat format
 #ifdef _DEBUG
 	, const char* const debugAllocationString
 #endif
@@ -141,9 +160,18 @@ void GPUFree(gpuvoid* gpuAlloc);
 // Returns how much usable free memory is available, in bytes
 const unsigned GPUGetUsableFreeMemory();
 
+// Returns the current generation index of the allocator (used mainly for the driver's stats page to know when to redraw when the generation changes)
+const unsigned GPUGetAllocatorGeneration();
+
 // Returns NULL if allocation fails (due to out of GPU memory, cannot fit allocation at the requested address, out of GPU address space, etc.)
-gpuvoid* GPUAllocAtAddress(gpuvoid* const placementAddress, const unsigned allocationSizeBytes, const allocationUsage usage, const gpuFormat format
+gpuvoid* GPUAllocAtAddress(gpuvoid* const placementAddress, const unsigned allocationSizeBytes,
+	const unsigned width, const unsigned short height, const unsigned short depth, const unsigned char numMipLevels, const allocationUsage usage, const gpuFormat format
 #ifdef _DEBUG
 	, const char* const debugAllocationString
 #endif
 );
+
+// Invokes the user-provided callback function for all currently-live allocations.
+// Try to do the minimal amount of work possible in this callback because the entire allocator is locked while these callbacks are being run!
+// Warning: Do not hold any locks or do any blocking operations in this callback function or else you risk hanging the whole program!
+void IterateAllLiveAllocs(const std::function<void (const liveAllocation& thisAlloc)> callbackFunction);

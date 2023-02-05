@@ -29,7 +29,7 @@ void GPUStats::InitStatsBuffer()
 		return;
 	}
 
-	GPUStatsBuffer = GPUAlloc(sizeof(DWORD) * endFrameStatsResponse::TotalAllStatsCount, GPUVAT_StatsMemory, gpuFormat::GPUFMT_StatsBuffer
+	GPUStatsBuffer = GPUAlloc(sizeof(DWORD) * endFrameStatsResponse::TotalAllStatsCount, endFrameStatsResponse::TotalAllStatsCount, 0, 0, 0, GPUVAT_StatsMemory, gpuFormat::GPUFMT_StatsBuffer
 #ifdef _DEBUG
 		, "StatsBuffer"
 #endif

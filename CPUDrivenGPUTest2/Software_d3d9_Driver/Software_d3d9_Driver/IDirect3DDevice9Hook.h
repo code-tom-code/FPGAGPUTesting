@@ -12,6 +12,7 @@
 #include "Driver/IBaseGPUDevice.h"
 #include "Driver/GPUStats.h"
 #include "Driver/DriverSettingsDlg.h"
+#include "Driver/GPUMemoryMapDlg.h"
 
 #include "SimpleInstrumentedProfiler.h"
 
@@ -1406,6 +1407,11 @@ public:
 		return deviceStats;
 	}
 
+	GPUMemoryMapDlg& GetDeviceMemoryMapDialog()
+	{
+		return deviceMemoryMapDialog;
+	}
+
 	const bool DoEnableGPUStats() const
 	{
 		return enableGPUStats;
@@ -1616,6 +1622,7 @@ protected:
 	IBaseGPUDevice* baseDevice;
 
 	GPUStats deviceStats;
+	GPUMemoryMapDlg deviceMemoryMapDialog;
 
 	bool enableSoftwareRenderingVisualization;
 	bool enableGPUStats;

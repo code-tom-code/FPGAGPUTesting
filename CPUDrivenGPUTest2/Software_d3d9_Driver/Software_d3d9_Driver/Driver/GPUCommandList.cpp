@@ -75,7 +75,7 @@ void GPUCommandList::AllocateAndUpload(IBaseDeviceComms* const deviceComms)
 	}
 #endif
 
-	gpuAllocatedAddress = GPUAlloc(GetCommandListSize_bytes(), GPUVAT_CommandBuffer, GPUFMT_CommandBufferPacketData
+	gpuAllocatedAddress = GPUAlloc(GetCommandListSize_bytes(), GetCommandListCommandCount(), 0, 0, 0, GPUVAT_CommandBuffer, GPUFMT_CommandBufferPacketData
 #ifdef _DEBUG
 		, "CommandListAllocation"
 #endif

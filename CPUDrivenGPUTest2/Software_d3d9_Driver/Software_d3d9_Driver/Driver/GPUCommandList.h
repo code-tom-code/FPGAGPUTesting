@@ -33,6 +33,7 @@ struct GPUCommandList
 	static void ConvertSimplifiedCommandPacketToCommandPacket(const SimplifiedCommandPacket* const inSimplifiedPacket, command* const outFullPacket);
 
 	const unsigned GetCommandListSize_bytes() const;
+	const unsigned GetCommandListCommandCount() const { return commands.size(); }
 
 private:
 	enum _recordingState : unsigned char

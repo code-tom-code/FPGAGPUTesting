@@ -23,20 +23,9 @@ struct GlobalAllocatorStats
 	unsigned freeBytesTotal = GPU_DRAM_TOTAL_CAPACITY_BYTES;
 	unsigned usableFreeBytesTotal = GPU_DRAM_TOTAL_CAPACITY_BYTES; // Counts how many usable free bytes are available (not counting bytes unavailable due to alignment)
 	unsigned numLiveAllocations = 0;
+	unsigned currentGeneration = 1; // This is incremented once for each alloc/free to indicate to the driver UI that it needs to refresh its stats page
 	float allocatorFreePercent = 100.0f;
 } globalStats; // Only modify this if you currently hold the allocator critical section!
-
-struct liveAllocation
-{
-#ifdef _DEBUG
-	const char* debugAllocationName;
-#endif
-	gpuvoid* allocAddress;
-	unsigned requestedSize;
-	unsigned allocSize;
-	allocationUsage usage;
-	gpuFormat format;
-};
 
 // A false value means that a whole column is *free*, a true value means that a whole column is *occupied*!
 static bool occupiedColumnsMap[GPU_DRAM_TOTAL_CAPACITY_BYTES / GPU_COL_SIZE_BYTES] = { false };
@@ -189,6 +178,19 @@ private:
 #endif
 };
 
+// Returns the current generation index of the allocator (used mainly for the driver's stats page to know when to redraw when the generation changes)
+const unsigned GPUGetAllocatorGeneration()
+{
+	const ScopeLockCS lockAllocScope(&GPUAllocCS
+#ifdef _DEBUG
+		, GPUAllocCS_OwnerString, __FUNCTION__
+		, GPUAllocCS_DebugAllocationString, __FUNCTION__
+#endif
+	);
+
+	return globalStats.currentGeneration;
+}
+
 // Returns how much usable free memory is available, in bytes
 const unsigned GPUGetUsableFreeMemory()
 {
@@ -255,6 +257,10 @@ static inline void InitializeAllocNullPage_Internal()
 	nullAllocation.allocAddress = NULL;
 	nullAllocation.allocSize = GPU_PAGE_SIZE_BYTES;
 	nullAllocation.requestedSize = GPU_PAGE_SIZE_BYTES;
+	nullAllocation.width = 0;
+	nullAllocation.height = 0;
+	nullAllocation.depth = 0;
+	nullAllocation.numMipLevels = 0;
 	nullAllocation.format = GPUFMT_Unknown;
 	nullAllocation.usage = GPUVAT_Unknown;
 #ifdef _DEBUG
@@ -442,7 +448,8 @@ static const bool ValidateAllocationFits(gpuvoid* const gpuAddr, const unsigned 
 
 // Actually places the allocation at the specified address. Cannot fail, since we have already locked the critical section and verified that there are enough free pages at this address
 // to support this allocation being placed.
-static void GPUPlaceAllocation_Internal(gpuvoid* const placementAddress, const unsigned allocationSizeBytes, const allocationUsage usage, const gpuFormat format
+static void GPUPlaceAllocation_Internal(gpuvoid* const placementAddress, const unsigned allocationSizeBytes, 
+	const unsigned width, const unsigned short height, const unsigned short depth, const unsigned char numMipLevels, const allocationUsage usage, const gpuFormat format
 #ifdef _DEBUG
 	, const char* const debugAllocationString
 #endif
@@ -468,6 +475,10 @@ static void GPUPlaceAllocation_Internal(gpuvoid* const placementAddress, const u
 	newAlloc.allocAddress = placementAddress;
 	newAlloc.requestedSize = allocationSizeBytes;
 	newAlloc.allocSize = RoundUpSizeToNextPage(allocationSizeBytes);
+	newAlloc.width = width;
+	newAlloc.height = height;
+	newAlloc.depth = depth;
+	newAlloc.numMipLevels = numMipLevels;
 	newAlloc.usage = usage;
 	newAlloc.format = format;
 #ifdef _DEBUG
@@ -515,13 +526,15 @@ static void GPUPlaceAllocation_Internal(gpuvoid* const placementAddress, const u
 	}
 #endif
 
+	++globalStats.currentGeneration;
 	++globalStats.numLiveAllocations;
 	globalStats.freeBytesTotal -= allocationSizeBytes;
 	globalStats.usableFreeBytesTotal -= newAlloc.allocSize;
 	globalStats.allocatorFreePercent = globalStats.usableFreeBytesTotal / (const float)GPU_DRAM_TOTAL_CAPACITY_BYTES * 100.0f;
 }
 
-static gpuvoid* GPUAlloc_Internal(const unsigned allocationSizeBytes, const allocationUsage usage, const gpuFormat format
+static gpuvoid* GPUAlloc_Internal(const unsigned allocationSizeBytes,
+	const unsigned width, const unsigned short height, const unsigned short depth, const unsigned char numMipLevels, const allocationUsage usage, const gpuFormat format
 #ifdef _DEBUG
 	, const char* const debugAllocationString
 #endif
@@ -565,7 +578,7 @@ static gpuvoid* GPUAlloc_Internal(const unsigned allocationSizeBytes, const allo
 				if (isColumnRangeFree)
 				{
 					gpuvoid* const placementAddress = (gpuvoid* const)(columnIndex * GPU_COL_SIZE_BYTES);
-					GPUPlaceAllocation_Internal(placementAddress, allocationSizeBytes, usage, format
+					GPUPlaceAllocation_Internal(placementAddress, allocationSizeBytes, width, height, depth, numMipLevels, usage, format
 #ifdef _DEBUG
 						, debugAllocationString
 #endif
@@ -594,7 +607,7 @@ static gpuvoid* GPUAlloc_Internal(const unsigned allocationSizeBytes, const allo
 			if (allPagesFree)
 			{
 				gpuvoid* const placementAddress = (gpuvoid* const)alignedTestAddress;
-				GPUPlaceAllocation_Internal(placementAddress, allocationSizeBytes, usage, format
+				GPUPlaceAllocation_Internal(placementAddress, allocationSizeBytes, width, height, depth, numMipLevels, usage, format
 #ifdef _DEBUG
 					, debugAllocationString
 #endif
@@ -635,7 +648,7 @@ static gpuvoid* GPUAlloc_Internal(const unsigned allocationSizeBytes, const allo
 				if (allPagesFree)
 				{
 					gpuvoid* const placementAddress = (gpuvoid* const)testAddress;
-					GPUPlaceAllocation_Internal(placementAddress, allocationSizeBytes, usage, format
+					GPUPlaceAllocation_Internal(placementAddress, allocationSizeBytes, width, height, depth, numMipLevels, usage, format
 #ifdef _DEBUG
 						, debugAllocationString
 #endif
@@ -665,7 +678,7 @@ static gpuvoid* GPUAlloc_Internal(const unsigned allocationSizeBytes, const allo
 		if (allPagesFree)
 		{
 			gpuvoid* const placementAddress = (gpuvoid* const)alignedTestAddress;
-			GPUPlaceAllocation_Internal(placementAddress, allocationSizeBytes, usage, format
+			GPUPlaceAllocation_Internal(placementAddress, allocationSizeBytes, width, height, depth, numMipLevels, usage, format
 #ifdef _DEBUG
 				, debugAllocationString
 #endif
@@ -803,7 +816,8 @@ const gpuvoid* const ValidateMemoryRangeExistsInsideAllocation(const gpuvoid* co
 }
 
 // Returns NULL if allocation fails (due to out of GPU memory, out of GPU address space, etc.)
-gpuvoid* GPUAlloc(const unsigned allocationSizeBytes, const allocationUsage usage, const gpuFormat format
+gpuvoid* GPUAlloc(const unsigned allocationSizeBytes,
+	const unsigned width, const unsigned short height, const unsigned short depth, const unsigned char numMipLevels, const allocationUsage usage, const gpuFormat format
 #ifdef _DEBUG
 	, const char* const debugAllocationString
 #endif
@@ -864,7 +878,7 @@ gpuvoid* GPUAlloc(const unsigned allocationSizeBytes, const allocationUsage usag
 		return NULL;
 	}
 
-	return GPUAlloc_Internal(allocationSizeBytes, usage, format
+	return GPUAlloc_Internal(allocationSizeBytes, width, height, depth, numMipLevels, usage, format
 #ifdef _DEBUG
 		, debugAllocationString
 #endif
@@ -960,6 +974,7 @@ static void GPUFree_Internal(gpuvoid* gpuAlloc)
 		__debugbreak(); // Should never be here!
 	}
 #endif
+	++globalStats.currentGeneration;
 	--globalStats.numLiveAllocations;
 	globalStats.freeBytesTotal += foundExistingAllocation.requestedSize;
 	globalStats.usableFreeBytesTotal += foundExistingAllocation.allocSize;
@@ -1008,7 +1023,8 @@ void GPUFree(gpuvoid* gpuAlloc)
 }
 
 // Returns the placementAddress if allocation at this address was successful, or returns NULL if the allocation failed for some reason
-static gpuvoid* GPUAllocAtAddress_Internal(gpuvoid* const placementAddress, const unsigned allocationSizeBytes, const allocationUsage usage, const gpuFormat format
+static gpuvoid* GPUAllocAtAddress_Internal(gpuvoid* const placementAddress, const unsigned allocationSizeBytes,
+	const unsigned width, const unsigned short height, const unsigned short depth, const unsigned char numMipLevels, const allocationUsage usage, const gpuFormat format
 #ifdef _DEBUG
 	, const char* const debugAllocationString
 #endif
@@ -1046,7 +1062,7 @@ static gpuvoid* GPUAllocAtAddress_Internal(gpuvoid* const placementAddress, cons
 	// If the trivial check succeeds, then great! We can allocate the easy way:
 	if (allColumnsFree)
 	{
-		GPUPlaceAllocation_Internal(placementAddress, allocationSizeBytes, usage, format
+		GPUPlaceAllocation_Internal(placementAddress, allocationSizeBytes, width, height, depth, numMipLevels, usage, format
 #ifdef _DEBUG
 			, debugAllocationString
 #endif
@@ -1064,7 +1080,7 @@ static gpuvoid* GPUAllocAtAddress_Internal(gpuvoid* const placementAddress, cons
 	}
 
 	// Looks like our page scan succeeded, we can allocate here!
-	GPUPlaceAllocation_Internal(placementAddress, allocationSizeBytes, usage, format
+	GPUPlaceAllocation_Internal(placementAddress, allocationSizeBytes, width, height, depth, numMipLevels, usage, format
 #ifdef _DEBUG
 		, debugAllocationString
 #endif
@@ -1073,7 +1089,8 @@ static gpuvoid* GPUAllocAtAddress_Internal(gpuvoid* const placementAddress, cons
 }
 
 // Returns NULL if allocation fails (due to out of GPU memory, cannot fit allocation at the requested address, out of GPU address space, etc.)
-gpuvoid* GPUAllocAtAddress(gpuvoid* const placementAddress, const unsigned allocationSizeBytes, const allocationUsage usage, const gpuFormat format
+gpuvoid* GPUAllocAtAddress(gpuvoid* const placementAddress, const unsigned allocationSizeBytes,
+	const unsigned width, const unsigned short height, const unsigned short depth, const unsigned char numMipLevels, const allocationUsage usage, const gpuFormat format
 #ifdef _DEBUG
 	, const char* const debugAllocationString
 #endif
@@ -1166,9 +1183,24 @@ gpuvoid* GPUAllocAtAddress(gpuvoid* const placementAddress, const unsigned alloc
 		return NULL;
 	}
 
-	return GPUAllocAtAddress_Internal(placementAddress, allocationSizeBytes, usage, format
+	return GPUAllocAtAddress_Internal(placementAddress, allocationSizeBytes, width, height, depth, numMipLevels, usage, format
 #ifdef _DEBUG
 		, debugAllocationString
 #endif
 	);
+}
+
+void IterateAllLiveAllocs(const std::function<void (const liveAllocation& thisAlloc)> callbackFunction)
+{
+	const ScopeLockCS lockAllocScope(&GPUAllocCS
+#ifdef _DEBUG
+		, GPUAllocCS_OwnerString, __FUNCTION__
+		, GPUAllocCS_DebugAllocationString, __FUNCTION__
+#endif
+	);
+
+	for (std::map<gpuvoid*, liveAllocation>::const_iterator iter = liveAllocationsMap.cbegin(); iter != liveAllocationsMap.cend(); ++iter)
+	{
+		(callbackFunction)(iter->second);
+	}
 }

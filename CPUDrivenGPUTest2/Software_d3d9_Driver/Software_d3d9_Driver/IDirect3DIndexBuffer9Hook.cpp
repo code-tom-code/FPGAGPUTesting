@@ -40,7 +40,8 @@ void IDirect3DIndexBuffer9Hook::CreateIndexBuffer(UINT _Length, const Debuggable
 	PrintDebugIndexBufferName(debugObjectName, _Length, _Format, IndexBuffersCreatedCounter);
 #endif
 
-	GPUBytes = GPUAlloc(InternalLength % sizeof(DWORD) != 0 ? InternalLength + sizeof(unsigned short) : InternalLength, GPUVAT_IndexData, ConvertD3DFormatToDeviceFormat(InternalFormat)
+	GPUBytes = GPUAlloc(InternalLength % sizeof(DWORD) != 0 ? InternalLength + sizeof(unsigned short) : InternalLength, 
+		InternalLength, 1, 1, 1, GPUVAT_IndexData, ConvertD3DFormatToDeviceFormat(InternalFormat)
 #ifdef _DEBUG
 		, debugObjectName
 #endif

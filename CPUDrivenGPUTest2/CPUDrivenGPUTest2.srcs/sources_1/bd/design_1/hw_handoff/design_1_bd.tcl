@@ -991,6 +991,12 @@ proc create_hier_cell_ScanoutSystem { parentCell nameHier } {
      return 1
    }
   
+  # Create instance: HSyncPolarity0, and set properties
+  set HSyncPolarity0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant:1.1 HSyncPolarity0 ]
+  set_property -dict [ list \
+   CONFIG.CONST_VAL {0} \
+ ] $HSyncPolarity0
+
   # Create instance: ScanOut_0, and set properties
   set block_name ScanOut
   set block_cell_name ScanOut_0
@@ -1001,7 +1007,16 @@ proc create_hier_cell_ScanoutSystem { parentCell nameHier } {
      catch {common::send_msg_id "BD_TCL-106" "ERROR" "Unable to referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
      return 1
    }
-  
+    set_property -dict [ list \
+   CONFIG.Use_HDMI {false} \
+ ] $ScanOut_0
+
+  # Create instance: VSyncPolarity0, and set properties
+  set VSyncPolarity0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant:1.1 VSyncPolarity0 ]
+  set_property -dict [ list \
+   CONFIG.CONST_VAL {0} \
+ ] $VSyncPolarity0
+
   # Create instance: dvid_0, and set properties
   set block_name dvid
   set block_cell_name dvid_0
@@ -1035,14 +1050,22 @@ proc create_hier_cell_ScanoutSystem { parentCell nameHier } {
    CONFIG.CLKOUT2_PHASE_ERROR {328.812} \
    CONFIG.CLKOUT2_REQUESTED_OUT_FREQ {25.175} \
    CONFIG.CLKOUT2_USED {true} \
+   CONFIG.CLKOUT3_JITTER {169.784} \
+   CONFIG.CLKOUT3_PHASE_ERROR {328.812} \
+   CONFIG.CLKOUT3_REQUESTED_OUT_FREQ {251.75} \
+   CONFIG.CLKOUT3_REQUESTED_PHASE {180} \
+   CONFIG.CLKOUT3_USED {true} \
    CONFIG.CLK_OUT1_PORT {clk_x10} \
    CONFIG.CLK_OUT2_PORT {pixelclk_x1} \
+   CONFIG.CLK_OUT3_PORT {clk_x10n} \
    CONFIG.MMCM_CLKFBOUT_MULT_F {125.875} \
    CONFIG.MMCM_CLKIN1_PERIOD {4.000} \
    CONFIG.MMCM_CLKOUT0_DIVIDE_F {5.000} \
    CONFIG.MMCM_CLKOUT1_DIVIDE {50} \
+   CONFIG.MMCM_CLKOUT2_DIVIDE {5} \
+   CONFIG.MMCM_CLKOUT2_PHASE {180.000} \
    CONFIG.MMCM_DIVCLK_DIVIDE {25} \
-   CONFIG.NUM_OUT_CLKS {2} \
+   CONFIG.NUM_OUT_CLKS {3} \
    CONFIG.PRIM_IN_FREQ {250.0} \
    CONFIG.RESET_BOARD_INTERFACE {reset} \
    CONFIG.USE_LOCKED {false} \
@@ -1063,13 +1086,24 @@ proc create_hier_cell_ScanoutSystem { parentCell nameHier } {
   connect_bd_net -net CMD_OutputColorChannels_1 [get_bd_pins CMD_OutputColorChannels] [get_bd_pins CDC_Command_Scanout_0/CMD_OutputColorChannels]
   connect_bd_net -net CMD_ScanoutEnable_1 [get_bd_pins CMD_ScanoutEnable] [get_bd_pins CDC_Command_Scanout_0/CMD_ScanEnable]
   connect_bd_net -net CommandProcessor_0_SCANOUT_RenderTargetBaseAddr [get_bd_pins CMD_BaseRenderTargetAddr] [get_bd_pins CDC_Command_Scanout_0/CMD_RenderTargetBaseAddr]
+  connect_bd_net -net HSyncPolarity0_dout [get_bd_pins HSyncPolarity0/dout] [get_bd_pins ScanOut_0/HSyncActivePolarity]
+  connect_bd_net -net ScanOut_0_TERC4Character0 [get_bd_pins ScanOut_0/TERC4Character0] [get_bd_pins dvid_0/TERC4Character0]
+  connect_bd_net -net ScanOut_0_TERC4Character1 [get_bd_pins ScanOut_0/TERC4Character1] [get_bd_pins dvid_0/TERC4Character1]
+  connect_bd_net -net ScanOut_0_TERC4Character2 [get_bd_pins ScanOut_0/TERC4Character2] [get_bd_pins dvid_0/TERC4Character2]
   connect_bd_net -net ScanOut_0_blank [get_bd_pins ScanOut_0/blank] [get_bd_pins dvid_0/blank]
+  connect_bd_net -net ScanOut_0_controlChannel0Blue [get_bd_pins ScanOut_0/controlChannel0Blue] [get_bd_pins dvid_0/controlChannel0Blue]
+  connect_bd_net -net ScanOut_0_controlChannel1Green [get_bd_pins ScanOut_0/controlChannel1Green] [get_bd_pins dvid_0/controlChannel1Green]
+  connect_bd_net -net ScanOut_0_controlChannel2Red [get_bd_pins ScanOut_0/controlChannel2Red] [get_bd_pins dvid_0/controlChannel2Red]
+  connect_bd_net -net ScanOut_0_guardBandEnable [get_bd_pins ScanOut_0/guardBandEnable] [get_bd_pins dvid_0/guardBandEnable]
+  connect_bd_net -net ScanOut_0_guardBandType [get_bd_pins ScanOut_0/guardBandType] [get_bd_pins dvid_0/guardBandType]
   connect_bd_net -net ScanOut_0_hsync [get_bd_pins ScanOut_0/hsync] [get_bd_pins dvid_0/hsync]
+  connect_bd_net -net ScanOut_0_isTERC4Region [get_bd_pins ScanOut_0/isTERC4Region] [get_bd_pins dvid_0/isTERC4Region]
   connect_bd_net -net ScanOut_0_outB [get_bd_pins ScanOut_0/outB] [get_bd_pins dvid_0/blue_p]
   connect_bd_net -net ScanOut_0_outG [get_bd_pins ScanOut_0/outG] [get_bd_pins dvid_0/green_p]
   connect_bd_net -net ScanOut_0_outR [get_bd_pins ScanOut_0/outR] [get_bd_pins dvid_0/red_p]
   connect_bd_net -net ScanOut_0_out_scanout_enable [get_bd_pins ScanOut_0/out_scanout_enable] [get_bd_pins dvid_0/scanout_en]
   connect_bd_net -net ScanOut_0_vsync [get_bd_pins CDC_Command_Scanout_0/SCANOUT_VSync] [get_bd_pins ScanOut_0/vsync] [get_bd_pins dvid_0/vsync]
+  connect_bd_net -net VSyncPolarity0_dout [get_bd_pins ScanOut_0/VSyncActivePolarity] [get_bd_pins VSyncPolarity0/dout]
   connect_bd_net -net clk_wiz_0_clk_out1 [get_bd_pins clk_out1] [get_bd_pins CDC_Command_Scanout_0/scanout_clk] [get_bd_pins ScanOut_0/clk_x10] [get_bd_pins dvid_0/clk_x10] [get_bd_pins scanout_clk_25_175_x10/clk_x10]
   connect_bd_net -net cmd_clk_1 [get_bd_pins cmd_clk] [get_bd_pins CDC_Command_Scanout_0/cmd_clk]
   connect_bd_net -net ddr4_0_c0_ddr4_ui_clk [get_bd_pins clk_in1] [get_bd_pins scanout_clk_25_175_x10/clk_in1]
@@ -1086,7 +1120,8 @@ proc create_hier_cell_ScanoutSystem { parentCell nameHier } {
   connect_bd_net -net obuf_outputs_0_out_red_n [get_bd_pins out_red_n] [get_bd_pins obuf_outputs_0/out_red_n]
   connect_bd_net -net obuf_outputs_0_out_red_p [get_bd_pins out_red_p] [get_bd_pins obuf_outputs_0/out_red_p]
   connect_bd_net -net reset_1 [get_bd_pins reset] [get_bd_pins scanout_clk_25_175_x10/reset]
-  connect_bd_net -net scanout_clk_25_175_x10_pixelclk_x1 [get_bd_pins dvid_0/clk_pixel] [get_bd_pins scanout_clk_25_175_x10/pixelclk_x1]
+  connect_bd_net -net scanout_clk_25_175_x10_clk_x10n [get_bd_pins dvid_0/clk_x10n] [get_bd_pins scanout_clk_25_175_x10/clk_x10n]
+  connect_bd_net -net scanout_clk_25_175_x10_pixelclk_x1 [get_bd_pins dvid_0/clk_pixel_x1] [get_bd_pins scanout_clk_25_175_x10/pixelclk_x1]
 
   # Restore current instance
   current_bd_instance $oldCurInst

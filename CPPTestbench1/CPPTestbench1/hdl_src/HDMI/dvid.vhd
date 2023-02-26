@@ -2,7 +2,7 @@
 -- Engineer:      Mike Field <hamster@snap.net.nz>
 -- Description:   Converts VGA signals into DVID bitstreams.
 --
---                'clk_x10' and 'clk_x10n' should be 10x clk_pixel_x1.
+--                'clk' and 'clk_n' should be 10x clk_pixel.
 --
 --                'blank' should be asserted during the non-display 
 --                portions of the frame
@@ -15,10 +15,9 @@ Library UNISIM;
 use UNISIM.vcomponents.all;
 
 entity dvid is
-	Port (	clk_x10       : in  STD_LOGIC;
-			clk_x10n     : in  STD_LOGIC;
-			clk_pixel_x1 : in  STD_LOGIC;
-			scanout_en	: in STD_LOGIC;
+	Port (	clk       : in  STD_LOGIC;
+			clk_n     : in  STD_LOGIC;
+			clk_pixel : in  STD_LOGIC;
 			red_p     : in  STD_LOGIC_VECTOR (7 downto 0);
 			green_p   : in  STD_LOGIC_VECTOR (7 downto 0);
 			blue_p    : in  STD_LOGIC_VECTOR (7 downto 0);
@@ -73,33 +72,26 @@ begin
 	EncodedG <= encoded_green;
 	EncodedR <= encoded_red;
    
-	TDMS_encoder_red:   TDMS_encoder GENERIC MAP (isGreenLane => false, isChannel0 => false) PORT MAP(clk => clk_pixel_x1, data => red_p,  c => controlChannel2Red,   blank => blank, encoded => encoded_red, guardBandEnable => guardBandEnable, guardBandType => guardBandType, isTERC4Region => isTERC4Region, TERC4Character => TERC4Character2);
-	TDMS_encoder_green: TDMS_encoder GENERIC MAP (isGreenLane => true, isChannel0 => false) PORT MAP(clk => clk_pixel_x1, data => green_p, c => controlChannel1Green, blank => blank, encoded => encoded_green, guardBandEnable => guardBandEnable, guardBandType => guardBandType, isTERC4Region => isTERC4Region, TERC4Character => TERC4Character1);
-	TDMS_encoder_blue:  TDMS_encoder GENERIC MAP (isGreenLane => false, isChannel0 => true) PORT MAP(clk => clk_pixel_x1, data => blue_p,  c => controlChannel0Blue,  blank => blank, encoded => encoded_blue, guardBandEnable => guardBandEnable, guardBandType => guardBandType, isTERC4Region => isTERC4Region, TERC4Character => TERC4Character0);
+	TDMS_encoder_red:   TDMS_encoder GENERIC MAP (isGreenLane => false, isChannel0 => false) PORT MAP(clk => clk_pixel, data => red_p,  c => controlChannel2Red,   blank => blank, encoded => encoded_red, guardBandEnable => guardBandEnable, guardBandType => guardBandType, isTERC4Region => isTERC4Region, TERC4Character => TERC4Character2);
+	TDMS_encoder_green: TDMS_encoder GENERIC MAP (isGreenLane => true, isChannel0 => false) PORT MAP(clk => clk_pixel, data => green_p, c => controlChannel1Green, blank => blank, encoded => encoded_green, guardBandEnable => guardBandEnable, guardBandType => guardBandType, isTERC4Region => isTERC4Region, TERC4Character => TERC4Character1);
+	TDMS_encoder_blue:  TDMS_encoder GENERIC MAP (isGreenLane => false, isChannel0 => true) PORT MAP(clk => clk_pixel, data => blue_p,  c => controlChannel0Blue,  blank => blank, encoded => encoded_blue, guardBandEnable => guardBandEnable, guardBandType => guardBandType, isTERC4Region => isTERC4Region, TERC4Character => TERC4Character0);
 
-	process(clk_pixel_x1)
+	process(clk_pixel)
 	begin
-		if rising_edge(clk_pixel_x1) then 
+		if rising_edge(clk_pixel) then 
 			latched_red   <= encoded_red;
 			latched_green <= encoded_green;
 			latched_blue  <= encoded_blue;
 		end if;
 	end process;
 
-	process(clk_x10)
+	process(clk)
 	begin
-		if rising_edge(clk_x10) then 
-			if (scanout_en = '1') then
-				red_s <= shift_red(0);
-				green_s <= shift_green(0);
-				blue_s <= shift_blue(0);
-				cl_s <= shift_clock(0);
-			else
-				red_s <= '0';
-				green_s <= '0';
-				blue_s <= '0';
-				cl_s <= '0';
-			end if;
+		if rising_edge(clk) then 
+			red_s <= shift_red(0);
+			green_s <= shift_green(0);
+			blue_s <= shift_blue(0);
+			cl_s <= shift_clock(0);
 
 			if shift_clock = "0000011111" then
 				shift_red   <= latched_red;

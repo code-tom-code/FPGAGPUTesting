@@ -13,6 +13,7 @@ public:
 	RenderWindow();
 
 	void DisplayTexture(const void* const texelData);
+	void DisplayLine(const void* const texelData, const unsigned lineNumber);
 	void RenderLoop();
 
 	LPDIRECT3DDEVICE9 GetD3D9Dev()

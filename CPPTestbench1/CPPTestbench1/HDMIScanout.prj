@@ -1,0 +1,7 @@
+# vhdl work HDMIScanout.vhd
+# List other files here
+vhdl xil_defaultlib  \
+"hdl_src/HDMI/TDMS_encoder.vhd" \
+"hdl_src/HDMI/dvid.vhd" \
+"hdl_src/HDMI/ScanOut.vhd" \
+"hdl_src/HDMI/HDMIScanout.vhd" \

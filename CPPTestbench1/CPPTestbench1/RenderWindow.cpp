@@ -160,6 +160,18 @@ RenderWindow::~RenderWindow()
 	wnd = NULL;
 }
 
+void RenderWindow::DisplayLine(const void* const texelData, const unsigned lineNumber)
+{
+	D3DLOCKED_RECT d3dlr = {0};
+	dynamicTex->LockRect(0, &d3dlr, NULL, 0);
+
+	D3DCOLOR* const targetWrite = ( (D3DCOLOR* const)d3dlr.pBits) + lineNumber * 640;
+
+	memcpy(targetWrite, texelData, sizeof(D3DCOLOR) * 640);
+
+	dynamicTex->UnlockRect(0);
+}
+
 void RenderWindow::DisplayTexture(const void* const texelData)
 {
 	D3DLOCKED_RECT d3dlr = {0};

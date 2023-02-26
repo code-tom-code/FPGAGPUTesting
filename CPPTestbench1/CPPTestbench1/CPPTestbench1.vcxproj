@@ -194,6 +194,7 @@
     <ClCompile Include="Testbenches\DepthInterpTestbench.cpp" />
     <ClCompile Include="Testbenches\EthernetTestbench.cpp" />
     <ClCompile Include="Testbenches\FloatALUTestbench.cpp" />
+    <ClCompile Include="Testbenches\HDMIScanoutTestbench.cpp" />
     <ClCompile Include="Testbenches\IndexBufferCacheTestbench.cpp" />
     <ClCompile Include="Testbenches\InputAssemblerTestbench.cpp" />
     <ClCompile Include="Testbenches\RasterizerTestbench.cpp" />
@@ -214,6 +215,7 @@
     <ClInclude Include="Testbenches\DepthInterpTestbench.h" />
     <ClInclude Include="Testbenches\EthernetTestbench.h" />
     <ClInclude Include="Testbenches\FloatALUTestbench.h" />
+    <ClInclude Include="Testbenches\HDMIScanoutTestbench.h" />
     <ClInclude Include="Testbenches\IndexBufferCacheTestbench.h" />
     <ClInclude Include="Testbenches\InputAssemblerTestbench.h" />
     <ClInclude Include="Testbenches\LargeIndexBufferTest.h" />
@@ -259,6 +261,10 @@
     <None Include="hdl_src\FloatALU_Types.vhd" />
     <None Include="hdl_src\GPRQuad.vhd" />
     <None Include="hdl_src\GPRQuad2.vhd" />
+    <None Include="hdl_src\HDMI\dvid.vhd" />
+    <None Include="hdl_src\HDMI\HDMIScanout.vhd" />
+    <None Include="hdl_src\HDMI\ScanOut.vhd" />
+    <None Include="hdl_src\HDMI\TDMS_encoder.vhd" />
     <None Include="hdl_src\IndexBufferCache.vhd" />
     <None Include="hdl_src\IndexBufferCacheTestbench.vhd" />
     <None Include="hdl_src\InputAssembler2.vhd" />
@@ -280,6 +286,7 @@
     <None Include="hdl_src\UNORM8ToFloat.vhd" />
     <None Include="hdl_src\VertexBatchBuilder.vhd" />
     <None Include="hdl_src\VertexStreamCache.vhd" />
+    <None Include="HDMIScanout.prj" />
     <None Include="IndexBufferCache.prj" />
     <None Include="InputAssembler2.prj" />
     <None Include="MemoryController.prj" />

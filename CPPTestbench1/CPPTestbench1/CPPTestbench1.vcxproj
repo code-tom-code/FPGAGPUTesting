@@ -191,6 +191,7 @@
     <ClCompile Include="CPPTestbenchHelper.cpp" />
     <ClCompile Include="RenderWindow.cpp" />
     <ClCompile Include="Testbenches\AttributeInterpTestbench.cpp" />
+    <ClCompile Include="Testbenches\ClipUnitTestbench.cpp" />
     <ClCompile Include="Testbenches\DepthInterpTestbench.cpp" />
     <ClCompile Include="Testbenches\EthernetTestbench.cpp" />
     <ClCompile Include="Testbenches\FloatALUTestbench.cpp" />
@@ -212,6 +213,7 @@
     <ClInclude Include="D3DTriRasterizeTestData.h" />
     <ClInclude Include="RenderWindow.h" />
     <ClInclude Include="Testbenches\AttributeInterpTestbench.h" />
+    <ClInclude Include="Testbenches\ClipUnitTestbench.h" />
     <ClInclude Include="Testbenches\DepthInterpTestbench.h" />
     <ClInclude Include="Testbenches\EthernetTestbench.h" />
     <ClInclude Include="Testbenches\FloatALUTestbench.h" />
@@ -235,6 +237,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="AttrInterpolator.prj" />
+    <None Include="ClipUnit.prj" />
     <None Include="CommandProcessor.prj" />
     <None Include="ConstantBuffer.prj" />
     <None Include="DepthBuffer.prj" />
@@ -245,6 +248,10 @@
     <None Include="GPRQuad.prj" />
     <None Include="hdl_src\AttrInterpolator.vhd" />
     <None Include="hdl_src\CDC_Command_Scanout.vhd" />
+    <None Include="hdl_src\Clipping\AABB2DOverlapViewport.vhd" />
+    <None Include="hdl_src\Clipping\ClipCommon.vhd" />
+    <None Include="hdl_src\Clipping\ClipTypes.vhd" />
+    <None Include="hdl_src\Clipping\ClipUnit.vhd" />
     <None Include="hdl_src\CommandProcessor.vhd" />
     <None Include="hdl_src\ConstantBuffer.vhd" />
     <None Include="hdl_src\DepthBuffer.vhd" />

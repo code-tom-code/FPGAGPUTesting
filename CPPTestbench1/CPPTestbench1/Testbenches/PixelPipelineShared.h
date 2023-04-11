@@ -350,6 +350,9 @@ struct texSampOutput
 };
 static_assert(sizeof(texSampOutput) == 8, "Error: Unexpected struct padding!");
 
+// Note that the output triangle list may be longer or shorter than the input triangle list!
+void EmulateCPUClipper(const std::vector<triSetupInput>& inputUnclippedTriangles, std::vector<triSetupInput>& outputClippedTriangles);
+
 triSetupResultType EmulateCPUTriSetup(const triSetupInput& inTriData, triSetupOutput& outTriSetupOutput);
 
 // This rasterization algorithm, while it does work in most cases, is not fully correct with respect to the D3D11 rasterization rules: https://docs.microsoft.com/en-us/windows/win32/direct3d11/d3d10-graphics-programming-guide-rasterizer-stage-rules

@@ -10,6 +10,11 @@ use IEEE.NUMERIC_STD.ALL;
 library work;
 use work.PacketType.all;
 
+use work.FloatALU_Types.all;
+use work.FloatCommon.all;
+use work.ClipTypes.all;
+use work.ClipCommon.all;
+
 entity InputAssembler2 is
 	Port (clk : in STD_LOGIC;
 
@@ -35,6 +40,10 @@ entity InputAssembler2 is
 		TRISETUP_vertColor0_RGBA : out STD_LOGIC_VECTOR(127 downto 0) := (others => '0');
 		TRISETUP_vertColor1_RGBA : out STD_LOGIC_VECTOR(127 downto 0) := (others => '0');
 		TRISETUP_vertColor2_RGBA : out STD_LOGIC_VECTOR(127 downto 0) := (others => '0');
+		TRISETUP_v0ClipCodes : out STD_LOGIC_VECTOR(10 downto 0) := (others => '0');
+		TRISETUP_v1ClipCodes : out STD_LOGIC_VECTOR(10 downto 0) := (others => '0');
+		TRISETUP_v2ClipCodes : out STD_LOGIC_VECTOR(10 downto 0) := (others => '0');
+		TRISETUP_AABBTriOverlapsViewport : out STD_LOGIC := '0';
 		TRISETUP_readyForNewTri : in STD_LOGIC;
 		TRISETUP_newTriBegin : out STD_LOGIC := '0';
 	-- Triangle Setup interfaces end
@@ -94,6 +103,25 @@ ATTRIBUTE X_INTERFACE_INFO of INDEXOUT_FIFO_rd_data : SIGNAL is "xilinx.com:inte
 ATTRIBUTE X_INTERFACE_INFO of INDEXOUT_FIFO_rd_en : SIGNAL is "xilinx.com:interface:fifo_read:1.0 INDEXOUT_FIFO RD_EN";
 ATTRIBUTE X_INTERFACE_INFO of INDEXOUT_FIFO_empty : SIGNAL is "xilinx.com:interface:fifo_read:1.0 INDEXOUT_FIFO EMPTY";
 
+component AABB2DOverlapViewport
+	port(
+-- Triangle data in
+	inv0x : in STD_LOGIC_VECTOR(31 downto 0);
+	inv0y : in STD_LOGIC_VECTOR(31 downto 0);
+
+	inv1x : in STD_LOGIC_VECTOR(31 downto 0);
+	inv1y : in STD_LOGIC_VECTOR(31 downto 0);
+
+	inv2x : in STD_LOGIC_VECTOR(31 downto 0);
+	inv2y : in STD_LOGIC_VECTOR(31 downto 0);
+-- End Triangle data in
+
+-- Intersection test signal out
+	outWholeTriangleAABBIntersectsViewport : out STD_LOGIC := '0'
+-- End intersection test signal out
+	);
+end component;
+
 type IA_state_t is (
 	IAstate_readyIdleState, -- 0
 
@@ -130,6 +158,7 @@ type vertexData is record
 	pos : vertexPos;
 	texcoord : vertexTexcoord;
 	color : vertexColor;
+	clipCodes : std_logic_vector(10 downto 0);
 end record vertexData;
 
 type triangleData is record
@@ -170,6 +199,7 @@ begin
 	ret.color.g := vertDataBits(32*8-1 downto 32*7);
 	ret.color.b := vertDataBits(32*9-1 downto 32*8);
 	ret.color.a := vertDataBits(32*10-1 downto 32*9);
+	ret.clipCodes := ComputeClipOutCodes(vertDataBits(32*1-1 downto 32*0), vertDataBits(32*2-1 downto 32*1), vertDataBits(32*3-1 downto 32*2), vertDataBits(32*4-1 downto 32*3) );
 	return ret;
 end function;
     
@@ -205,6 +235,11 @@ signal statCyclesLoadingDataToCache : unsigned(31 downto 0) := (others => '0');
 signal statCyclesWaitingForOutput : unsigned(31 downto 0) := (others => '0');
 
 begin
+
+instIA2_AABB2DOverlapViewport : AABB2DOverlapViewport port map (inv0x => std_logic_vector(currentTri.v0.pos.vx), inv0y => std_logic_vector(currentTri.v0.pos.vy),
+	inv1x => std_logic_vector(currentTri.v1.pos.vx), inv1y => std_logic_vector(currentTri.v1.pos.vy),
+	inv2x => std_logic_vector(currentTri.v2.pos.vx), inv2y => std_logic_vector(currentTri.v2.pos.vy),
+	outWholeTriangleAABBIntersectsViewport => TRISETUP_AABBTriOverlapsViewport);
 
 CMD_DrawReady <= drawReady;
 CMD_SetStateReady <= setStateReady;
@@ -330,6 +365,8 @@ DBG_IA_VertexIDPerBatch <= std_logic_vector(vertexIDPerBatch(3 downto 0) );
 
 					TRISETUP_vertColor0_RGBA <= std_logic_vector(currentTri.v0.color.a) & std_logic_vector(currentTri.v0.color.b) & std_logic_vector(currentTri.v0.color.g) & std_logic_vector(currentTri.v0.color.r);
 
+					TRISETUP_v0ClipCodes <= currentTri.v0.clipCodes;
+
 					-- Swizzle our output triangles from (0, 1, 2) to (0, 2, 1) if we're doing CW culling instead of CCW culling:
 					if (cullState = CM_CullCW) then
 						TRISETUP_v1PosX <= std_logic_vector(currentTri.v2.pos.vx);
@@ -348,6 +385,9 @@ DBG_IA_VertexIDPerBatch <= std_logic_vector(vertexIDPerBatch(3 downto 0) );
 
 						TRISETUP_vertColor1_RGBA <= std_logic_vector(currentTri.v2.color.a) & std_logic_vector(currentTri.v2.color.b) & std_logic_vector(currentTri.v2.color.g) & std_logic_vector(currentTri.v2.color.r);
 						TRISETUP_vertColor2_RGBA <= std_logic_vector(currentTri.v1.color.a) & std_logic_vector(currentTri.v1.color.b) & std_logic_vector(currentTri.v1.color.g) & std_logic_vector(currentTri.v1.color.r);
+
+						TRISETUP_v1ClipCodes <= currentTri.v2.clipCodes;
+						TRISETUP_v2ClipCodes <= currentTri.v1.clipCodes;
 					else
 						TRISETUP_v1PosX <= std_logic_vector(currentTri.v1.pos.vx);
 						TRISETUP_v1PosY <= std_logic_vector(currentTri.v1.pos.vy);
@@ -365,6 +405,9 @@ DBG_IA_VertexIDPerBatch <= std_logic_vector(vertexIDPerBatch(3 downto 0) );
 
 						TRISETUP_vertColor1_RGBA <= std_logic_vector(currentTri.v1.color.a) & std_logic_vector(currentTri.v1.color.b) & std_logic_vector(currentTri.v1.color.g) & std_logic_vector(currentTri.v1.color.r);
 						TRISETUP_vertColor2_RGBA <= std_logic_vector(currentTri.v2.color.a) & std_logic_vector(currentTri.v2.color.b) & std_logic_vector(currentTri.v2.color.g) & std_logic_vector(currentTri.v2.color.r);
+
+						TRISETUP_v1ClipCodes <= currentTri.v1.clipCodes;
+						TRISETUP_v2ClipCodes <= currentTri.v2.clipCodes;
 					end if;
 
 					if (newTriBegin = '1' and TRISETUP_readyForNewTri = '1') then
@@ -394,6 +437,8 @@ DBG_IA_VertexIDPerBatch <= std_logic_vector(vertexIDPerBatch(3 downto 0) );
 
 					TRISETUP_vertColor0_RGBA <= std_logic_vector(currentTri.v0.color.a) & std_logic_vector(currentTri.v0.color.b) & std_logic_vector(currentTri.v0.color.g) & std_logic_vector(currentTri.v0.color.r);
 
+					TRISETUP_v0ClipCodes <= currentTri.v0.clipCodes;
+
 					TRISETUP_v1PosX <= std_logic_vector(currentTri.v2.pos.vx);
 					TRISETUP_v1PosY <= std_logic_vector(currentTri.v2.pos.vy);
 					TRISETUP_v1PosInvZ <= std_logic_vector(currentTri.v2.pos.vInvZ);
@@ -410,6 +455,8 @@ DBG_IA_VertexIDPerBatch <= std_logic_vector(vertexIDPerBatch(3 downto 0) );
 
 					TRISETUP_vertColor1_RGBA <= std_logic_vector(currentTri.v2.color.a) & std_logic_vector(currentTri.v2.color.b) & std_logic_vector(currentTri.v2.color.g) & std_logic_vector(currentTri.v2.color.r);
 					TRISETUP_vertColor2_RGBA <= std_logic_vector(currentTri.v1.color.a) & std_logic_vector(currentTri.v1.color.b) & std_logic_vector(currentTri.v1.color.g) & std_logic_vector(currentTri.v1.color.r);
+					TRISETUP_v1ClipCodes <= currentTri.v2.clipCodes;
+					TRISETUP_v2ClipCodes <= currentTri.v1.clipCodes;
 
 					if (newTriBegin = '1' and TRISETUP_readyForNewTri = '1') then
 						newTriBegin <= '0';

@@ -119,7 +119,7 @@ RenderWindow::RenderWindow()
 	d3dpp.AutoDepthStencilFormat = D3DFMT_D24S8;
 	d3dpp.Flags = 0;
 	d3dpp.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
-	HRESULT createDeviceHR = d3d9->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, wnd, D3DCREATE_HARDWARE_VERTEXPROCESSING | D3DCREATE_MULTITHREADED, &d3dpp, &d3d9dev);
+	HRESULT createDeviceHR = d3d9->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_REF, wnd, D3DCREATE_SOFTWARE_VERTEXPROCESSING | D3DCREATE_MULTITHREADED, &d3dpp, &d3d9dev);
 	if (FAILED(createDeviceHR) || !d3d9dev)
 	{
 		printf("Error in CreateDevice(). HRESULT: 0x%08X. GLE: %u\n", createDeviceHR, GetLastError() );
@@ -182,26 +182,40 @@ void RenderWindow::DisplayTexture(const void* const texelData)
 	dynamicTex->UnlockRect(0);
 }
 
-struct vert2D
-{
-	D3DXVECTOR4 xyzRhw;
-	D3DCOLOR diffuse;
-	D3DXVECTOR2 texcoord;
-};
-
-void RenderWindow::RenderLoop()
+void RenderWindow::RenderTrianglesBegin()
 {
 	PumpWindowsMessageLoop(wnd);
 
 	d3d9dev->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER | D3DCLEAR_STENCIL, D3DCOLOR_XRGB(0, 0, 255), 1.0f, 0x00000000);
 	
 	d3d9dev->BeginScene();
-	// Render stuff here!
 
+	d3d9dev->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
+	//d3d9dev->SetRenderState(D3DRS_ZENABLE, FALSE);
 	d3d9dev->SetRenderState(D3DRS_LIGHTING, FALSE);
 	d3d9dev->SetRenderState(D3DRS_COLORVERTEX, TRUE);
 
 	d3d9dev->SetFVF(D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_TEX1);
+
+	d3d9dev->SetTexture(0, NULL);
+}
+
+void RenderWindow::RenderTriangle(const HardwareTriangle2D& newTriangle)
+{
+	d3d9dev->DrawPrimitiveUP(D3DPT_TRIANGLELIST, 1, &newTriangle.verts[0], sizeof(vert2D) );
+}
+
+void RenderWindow::RenderTrianglesFinish()
+{
+	d3d9dev->EndScene();
+
+	d3d9dev->Present(NULL, NULL, NULL, NULL);
+}
+
+void RenderWindow::RenderLoop()
+{
+	RenderTrianglesBegin();
+
 	d3d9dev->SetTexture(0, dynamicTex);
 
 	vert2D quadVerts[4];
@@ -219,7 +233,5 @@ void RenderWindow::RenderLoop()
 	}
 	d3d9dev->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, &quadVerts, sizeof(vert2D) );
 
-	d3d9dev->EndScene();
-
-	d3d9dev->Present(NULL, NULL, NULL, NULL);
+	RenderTrianglesFinish();
 }

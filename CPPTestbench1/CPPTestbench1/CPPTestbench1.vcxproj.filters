@@ -31,6 +31,9 @@
     <Filter Include="HDL\HDMI">
       <UniqueIdentifier>{9a48f601-1a6a-493f-94cd-04c5f5edb8d4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="HDL\Clipping">
+      <UniqueIdentifier>{0bfdf831-34ad-441a-a053-a44e71a9a485}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CPPTestbench1.cpp">
@@ -88,6 +91,9 @@
       <Filter>Source Files\Testbenches</Filter>
     </ClCompile>
     <ClCompile Include="Testbenches\HDMIScanoutTestbench.cpp">
+      <Filter>Source Files\Testbenches</Filter>
+    </ClCompile>
+    <ClCompile Include="Testbenches\ClipUnitTestbench.cpp">
       <Filter>Source Files\Testbenches</Filter>
     </ClCompile>
   </ItemGroup>
@@ -162,6 +168,9 @@
       <Filter>Header Files\Testbenches</Filter>
     </ClInclude>
     <ClInclude Include="Testbenches\HDMIScanoutTestbench.h">
+      <Filter>Header Files\Testbenches</Filter>
+    </ClInclude>
+    <ClInclude Include="Testbenches\ClipUnitTestbench.h">
       <Filter>Header Files\Testbenches</Filter>
     </ClInclude>
   </ItemGroup>
@@ -375,6 +384,21 @@
     </None>
     <None Include="hdl_src\HDMI\TDMS_encoder.vhd">
       <Filter>HDL\HDMI</Filter>
+    </None>
+    <None Include="ClipUnit.prj">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="hdl_src\Clipping\AABB2DOverlapViewport.vhd">
+      <Filter>HDL\Clipping</Filter>
+    </None>
+    <None Include="hdl_src\Clipping\ClipCommon.vhd">
+      <Filter>HDL\Clipping</Filter>
+    </None>
+    <None Include="hdl_src\Clipping\ClipTypes.vhd">
+      <Filter>HDL\Clipping</Filter>
+    </None>
+    <None Include="hdl_src\Clipping\ClipUnit.vhd">
+      <Filter>HDL\Clipping</Filter>
     </None>
   </ItemGroup>
 </Project>

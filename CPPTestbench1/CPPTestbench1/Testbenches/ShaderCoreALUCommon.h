@@ -337,6 +337,101 @@ private:
 	}
 
 public:
+	void UpdateAddOnly(const std_logic_port& FPU_IADD_GO, 
+		const std_logic_vector_port<32>& FPU_IN_A, const std_logic_vector_port<32>& FPU_IN_B,
+		std_logic_vector_port<32>& FPU_OUT_RESULT)
+	{
+		const float aVal = FPU_IN_A.GetFloat32Val();
+		const float bVal = FPU_IN_B.GetFloat32Val();
+
+		for (unsigned x = 0; x < ARRAYSIZE(pipeStages) - 1; ++x)
+		{
+			pipeStages[x] = pipeStages[x + 1];
+			pipeStagesValid[x] = pipeStagesValid[x + 1];
+		}
+		pipeStages[ARRAYSIZE(pipeStages) - 1] = 0.0f;
+		pipeStagesValid[ARRAYSIZE(pipeStages) - 1] = false;
+
+		FPU_OUT_RESULT = pipeStages[0];
+
+		if (FPU_IADD_GO.GetBoolVal() )
+		{
+			// Add pipe runs in 4 cycles:
+			const float addResult = aVal + bVal;
+			pipeStages[ADD_CYCLES] = addResult;
+			if (pipeStagesValid[ADD_CYCLES] == true)
+			{
+				__debugbreak(); // Error: Overwriting existing FPU pipe stage!
+			}
+			pipeStagesValid[ADD_CYCLES] = true;
+			if (enableDebugOutput)
+				printf("FPU%u: %f + %f = %f\n", fpuIndex, aVal, bVal, addResult);
+		}
+	}
+
+	void UpdateMulOnly(const std_logic_port& FPU_IMUL_GO, 
+		const std_logic_vector_port<32>& FPU_IN_A, const std_logic_vector_port<32>& FPU_IN_B,
+		std_logic_vector_port<32>& FPU_OUT_RESULT)
+	{
+		const float aVal = FPU_IN_A.GetFloat32Val();
+		const float bVal = FPU_IN_B.GetFloat32Val();
+
+		for (unsigned x = 0; x < ARRAYSIZE(pipeStages) - 1; ++x)
+		{
+			pipeStages[x] = pipeStages[x + 1];
+			pipeStagesValid[x] = pipeStagesValid[x + 1];
+		}
+		pipeStages[ARRAYSIZE(pipeStages) - 1] = 0.0f;
+		pipeStagesValid[ARRAYSIZE(pipeStages) - 1] = false;
+
+		FPU_OUT_RESULT = pipeStages[0];
+
+		if (FPU_IMUL_GO.GetBoolVal() )
+		{
+			// Multiply pipe runs in 5 cycles:
+			const float multResult = aVal * bVal;
+			pipeStages[MUL_CYCLES] = multResult;
+			if (pipeStagesValid[MUL_CYCLES] == true)
+			{
+				__debugbreak(); // Error: Overwriting existing FPU pipe stage!
+			}
+			pipeStagesValid[MUL_CYCLES] = true;
+			if (enableDebugOutput)
+				printf("FPU%u: %f * %f = %f\n", fpuIndex, aVal, bVal, multResult);
+		}
+	}
+
+	void UpdateRcpOnly(const std_logic_port& FPU_ISPEC_GO, 
+		const std_logic_vector_port<32>& FPU_IN_A,
+		std_logic_vector_port<32>& FPU_OUT_RESULT)
+	{
+		const float aVal = FPU_IN_A.GetFloat32Val();
+
+		for (unsigned x = 0; x < ARRAYSIZE(pipeStages) - 1; ++x)
+		{
+			pipeStages[x] = pipeStages[x + 1];
+			pipeStagesValid[x] = pipeStagesValid[x + 1];
+		}
+		pipeStages[ARRAYSIZE(pipeStages) - 1] = 0.0f;
+		pipeStagesValid[ARRAYSIZE(pipeStages) - 1] = false;
+
+		FPU_OUT_RESULT = pipeStages[0];
+
+		if (FPU_ISPEC_GO.GetBoolVal() )
+		{
+			// Reciprocal pipe runs in 14 cycles:
+			const float rcpResult = 1.0f / aVal;
+			pipeStages[RCP_CYCLES] = rcpResult;
+			if (pipeStagesValid[RCP_CYCLES] == true)
+			{
+				__debugbreak(); // Error: Overwriting existing FPU pipe stage!
+			}
+			pipeStagesValid[RCP_CYCLES] = true;
+			if (enableDebugOutput)
+				printf("FPU%u: rcp(%f) = %f\n", fpuIndex, aVal, rcpResult);
+		}
+	}
+
 	void Update(const std_logic_port& FPU_ISHFT_GO, const std_logic_port& FPU_IMUL_GO, const std_logic_port& FPU_IADD_GO, const std_logic_port& FPU_ICMP_GO, const std_logic_port& FPU_ISPEC_GO, const std_logic_port& FPU_ICNV_GO, const std_logic_port& FPU_IBIT_GO,
 		const std_logic_vector_port<32>& FPU_IN_A, const std_logic_vector_port<32>& FPU_IN_B, const std_logic_vector_port<3>& FPU_IN_MODE,
 		std_logic_vector_port<32>& FPU_OUT_RESULT)

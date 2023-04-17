@@ -1998,6 +1998,9 @@ const ShaderCompileResultCode TranslateToDeviceBytecode(const ShaderInfo& inDXSh
 
 void AppendVSDivideByW(const unsigned oRegIndex, std::vector<instructionSlot>& inOutDeviceInstructionStream)
 {
+	// Now the Triangle Setup unit is doing the division by W for us, so we don't need to do this in the vertex shader anymore!
+	return;
+
 	const instructionSlot rcpW = { {Op_RCP, DRMod_None, DRTyp_X, 1 /*destRegIndex*/, Chan_W, SRMod_None, SRTyp_O, oRegIndex /*src0RegIndex*/, Chan_W, SRMod_None, SRTyp_0, 0 /*src0RegIndex*/, Chan_X} }; // rcp x1.w, oN.w, 0.x
 	inOutDeviceInstructionStream.push_back(rcpW);
 
@@ -2019,6 +2022,8 @@ void AppendVSInterpolantDivideByW(const unsigned oAttributeRegIndex, const unsig
 		__debugbreak();
 	}
 #endif
+	// Now the Triangle Setup unit is performing the attribute division by W for us, so we don't need to spend time doing this in the vertex shader!
+	return;
 	const instructionSlot mulX_rcpW = { {Op_MUL, DRMod_None, DRTyp_O, oAttributeRegIndex /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_O, oAttributeRegIndex /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_O, oPosRegIndex /*src1RegIndex*/, Chan_W} }; // mul oN.x, oN.x, oPos.w
 	const instructionSlot mulY_rcpW = { {Op_MUL, DRMod_None, DRTyp_O, oAttributeRegIndex /*destRegIndex*/, Chan_Y, SRMod_None, SRTyp_O, oAttributeRegIndex /*src0RegIndex*/, Chan_Y, SRMod_None, SRTyp_O, oPosRegIndex /*src1RegIndex*/, Chan_W} }; // mul oN.y, oN.y, oPos.w
 	const instructionSlot mulZ_rcpW = { {Op_MUL, DRMod_None, DRTyp_O, oAttributeRegIndex /*destRegIndex*/, Chan_Z, SRMod_None, SRTyp_O, oAttributeRegIndex /*src0RegIndex*/, Chan_Z, SRMod_None, SRTyp_O, oPosRegIndex /*src1RegIndex*/, Chan_W} }; // mul oN.z, oN.z, oPos.w
@@ -2077,6 +2082,9 @@ const signed short FindUnusedConstantRegisterIndex(const ShaderInfo& inDXShaderI
 
 void AppendVSViewportTransform(const unsigned cRegIndex, const unsigned oRegIndex, std::vector<instructionSlot>& inOutDeviceInstructionStream, const bool applyZTransform = true)
 {
+	// Now that the Triangle Setup block is handling viewport transforms for us, we don't need to do this at the end of the vertex shader anymore!
+	return;
+
 	const instructionSlot mulX = { {Op_MUL, DRMod_None, DRTyp_O, oRegIndex /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_O, oRegIndex /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_C, cRegIndex /*src1RegIndex*/, Chan_X} }; // mul oN.x, oN.x, cM.x
 	const instructionSlot mulNegY = { {Op_MUL, DRMod_None, DRTyp_O, oRegIndex /*destRegIndex*/, Chan_Y, SRMod_Neg, SRTyp_O, oRegIndex /*src0RegIndex*/, Chan_Y, SRMod_None, SRTyp_C, cRegIndex /*src1RegIndex*/, Chan_Y} }; // mul oN.y, -oN.y, cM.y // Note: This is negative to flip the Y-axis upside-down to the correct screen orientation
 	const instructionSlot mulZ = { {Op_MUL, DRMod_None, DRTyp_O, oRegIndex /*destRegIndex*/, Chan_Z, SRMod_None, SRTyp_O, oRegIndex /*src0RegIndex*/, Chan_Z, SRMod_None, SRTyp_C, cRegIndex /*src1RegIndex*/, Chan_Z} }; // mul oN.z, oN.z, cM.z // Note: This Z scale and offset is optional if the viewport Z scale is 1.0f and the Z offset is 0.0f
@@ -2111,20 +2119,20 @@ const ShaderCompileResultCode AppendVSSuffix(const ShaderInfo& inDXShaderInfo, s
 
 	if (inDXShaderInfo.isPixelShader == false && (inCompileOptions & SCOption_VS_AppendDivideByW) )
 	{
-		AppendVSDivideByW( (const unsigned)oPosRegIndex, inOutDeviceInstructionStream);
+		//AppendVSDivideByW( (const unsigned)oPosRegIndex, inOutDeviceInstructionStream);
 
 		const signed short oTex0RegIndex = HelperGetOutputRegister(inDXShaderInfo, D3DDECLUSAGE_TEXCOORD, 0);
 		if (oTex0RegIndex >= 0)
 		{
 			const unsigned oTex0RegDimension = 2; // TODO: Don't hardcode this in the future
-			AppendVSInterpolantDivideByW( (const unsigned)oTex0RegIndex, oTex0RegDimension, (const unsigned)oPosRegIndex, inOutDeviceInstructionStream);
+			//AppendVSInterpolantDivideByW( (const unsigned)oTex0RegIndex, oTex0RegDimension, (const unsigned)oPosRegIndex, inOutDeviceInstructionStream);
 		}
 
 		const signed short oD0RegIndex = HelperGetOutputRegister(inDXShaderInfo, D3DDECLUSAGE_COLOR, 0);
 		if (oD0RegIndex >= 0)
 		{
 			const unsigned oD0RegDimension = 4; // TODO: Don't hardcode this in the future
-			AppendVSInterpolantDivideByW(oD0RegIndex, oD0RegDimension, (const unsigned)oPosRegIndex, inOutDeviceInstructionStream);
+			//AppendVSInterpolantDivideByW(oD0RegIndex, oD0RegDimension, (const unsigned)oPosRegIndex, inOutDeviceInstructionStream);
 		}
 	}
 
@@ -2140,7 +2148,7 @@ const ShaderCompileResultCode AppendVSSuffix(const ShaderInfo& inDXShaderInfo, s
 			return ShaderCompile_ERR_NeededConstRegNotFound;
 		}
 
-		AppendVSViewportTransform( (const unsigned)outViewportConstRegIndex, (const unsigned)oPosRegIndex, inOutDeviceInstructionStream);
+		//AppendVSViewportTransform( (const unsigned)outViewportConstRegIndex, (const unsigned)oPosRegIndex, inOutDeviceInstructionStream);
 	}
 	return ShaderCompile_OK;
 }
@@ -2153,6 +2161,8 @@ void AppendVSPositionInvZ(const unsigned oRegIndex, std::vector<instructionSlot>
 		__debugbreak();
 	}
 #endif
+	// Now the Triangle Setup unit is performing reciprocal-Z for us so we don't need to do it here in the vertex shader
+	return;
 
 	const instructionSlot invZ = { {Op_RCP, DRMod_None, DRTyp_O, oRegIndex /*destRegIndex*/, Chan_Z, SRMod_None, SRTyp_O, oRegIndex /*src0RegIndex*/, Chan_Z, SRMod_None, SRTyp_0, 0 /*src1RegIndex*/, Chan_X} }; // rcp oPos.z, oPos.z, 0.x
 	inOutDeviceInstructionStream.push_back(invZ);
@@ -2996,7 +3006,7 @@ const ShaderCompileResultCode CompileShaderInternal(const ShaderInfo& inDXShader
 			return ShaderCompile_ERR_MissingOutputPos;
 		}
 
-		AppendVSPositionInvZ( (const unsigned)positionORegIndex, deviceInstructionStream);
+		//AppendVSPositionInvZ( (const unsigned)positionORegIndex, deviceInstructionStream);
 	}
 
 	// Shuffle VS output registers so that they match the expected output registers (o0 = oPos, o1 = oD0, o2 = oT0):

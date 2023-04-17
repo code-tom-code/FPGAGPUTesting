@@ -134,6 +134,10 @@ struct GPUFrameStats
 
 	MemReadCounterStats ReadMemCounterStats;
 	MemWriteCounterStats WriteMemCounterStats;
+
+	struct _ClipUnitTimerStats : StreamThroughTimerStats
+	{
+	} ClipUnitTimerStats;
 };
 static_assert(sizeof(GPUFrameStats) == sizeof(DWORD) * endFrameStatsResponse::TotalAllStatsCount, "Error: Unexpected struct padding!");
 

@@ -1586,7 +1586,7 @@ static const int RunTestsFloatCNV(Xsi::Loader& loader, std_logic_port& clk, std_
 			scoped_timestep time(loader, clk, 100);
 		}
 		IN_A = 101.5f;
-		IN_MODE = F_to_I23_RoundNearestEven;
+		IN_MODE = F_to_U24_RoundNearestEven;
 		{
 			scoped_timestep time(loader, clk, 100);
 		}
@@ -1619,7 +1619,7 @@ static const int RunTestsFloatCNV(Xsi::Loader& loader, std_logic_port& clk, std_
 		const unsigned short d = OUT_RESULT.GetUint16Val();
 		const bool dValid = (d == 0x35AB);
 		IN_A = 0.0f;
-		IN_MODE = F_to_I23_RoundNearestEven;
+		IN_MODE = F_to_U24_RoundNearestEven;
 		{
 			scoped_timestep time(loader, clk, 100);
 		}
@@ -1696,32 +1696,47 @@ static const int RunTestsFloatCNV(Xsi::Loader& loader, std_logic_port& clk, std_
 	allTestsSuccessful &= IsNanBitPattern(cnvTestFunc(NAN, F_Frc) );
 	allTestsSuccessful &= IsNanBitPattern(cnvTestFunc(-NAN, F_Frc) );
 
-	// Convert float to signed 23-bit integer with round to nearest even mode:
-	for (int x = -1024; x <= 1024; ++x)
+	// Convert float to unsigned 23-bit integer with round to nearest even mode:
+	for (int x = 0; x <= 1024; ++x)
 	{
 		const float fx = (const float)x;
-		allTestsSuccessful &= (cnvTestFunc(fx, F_to_I23_RoundNearestEven) == softRoundToNE(fx) );
+		allTestsSuccessful &= (cnvTestFunc(fx, F_to_U24_RoundNearestEven) == softRoundToNE(fx) );
 	}
 
-	// Convert float to signed 24-bit integer with round to nearest even mode:
-	for (float fx = -16.0f; fx <= 16.0f; fx += 0.1f)
+	// Convert float to unsigned 24-bit integer with round to nearest even mode:
+	for (float fx = 0.0f; fx <= 32.0f; fx += 0.1f)
 	{
-		allTestsSuccessful &= (cnvTestFunc(fx, F_to_I23_RoundNearestEven) == softRoundToNE(fx) );
+		allTestsSuccessful &= (cnvTestFunc(fx, F_to_U24_RoundNearestEven) == softRoundToNE(fx) );
+	}
+
+	for (unsigned x = 0; x < 16777216; ++x)
+	{
+		const float fx = (const float)x;
+		if (cnvTestFunc(fx, F_to_U24_RoundNearestEven) != x)
+		{
+			__debugbreak();
+		}
 	}
 
 	// Test a bunch of edge cases:
-	allTestsSuccessful &= (cnvTestFunc(0.0f, F_to_I23_RoundNearestEven) == 0);
-	allTestsSuccessful &= (cnvTestFunc(-0.0f, F_to_I23_RoundNearestEven) == 0);
-	allTestsSuccessful &= (cnvTestFunc(8388607.0f, F_to_I23_RoundNearestEven) == 8388607);
-	allTestsSuccessful &= (cnvTestFunc(-8388608.0f, F_to_I23_RoundNearestEven) == -8388608);
-	allTestsSuccessful &= (cnvTestFunc(8388607.0f * 2.0f, F_to_I23_RoundNearestEven) == 8388607);
-	allTestsSuccessful &= (cnvTestFunc(-8388608.0f * 2.0f, F_to_I23_RoundNearestEven) == -8388608);
-	allTestsSuccessful &= (cnvTestFunc(denormalFloat, F_to_I23_RoundNearestEven) == 0);
-	allTestsSuccessful &= (cnvTestFunc(-denormalFloat, F_to_I23_RoundNearestEven) == 0);
-	allTestsSuccessful &= (cnvTestFunc(INFINITY, F_to_I23_RoundNearestEven) == 8388607);
-	allTestsSuccessful &= (cnvTestFunc(-INFINITY, F_to_I23_RoundNearestEven) == -8388608);
-	allTestsSuccessful &= (cnvTestFunc(NAN, F_to_I23_RoundNearestEven) == 0);
-	allTestsSuccessful &= (cnvTestFunc(-NAN, F_to_I23_RoundNearestEven) == 0);
+	allTestsSuccessful &= (cnvTestFunc(0.0f, F_to_U24_RoundNearestEven) == 0);
+	allTestsSuccessful &= (cnvTestFunc(-0.0f, F_to_U24_RoundNearestEven) == 0);
+	allTestsSuccessful &= (cnvTestFunc(4194304.0f, F_to_U24_RoundNearestEven) == 4194304);
+	allTestsSuccessful &= (cnvTestFunc(-4194304.0f, F_to_U24_RoundNearestEven) == 0);
+	allTestsSuccessful &= (cnvTestFunc(4194303.0f, F_to_U24_RoundNearestEven) == 4194303);
+	allTestsSuccessful &= (cnvTestFunc(-4194303.0f, F_to_U24_RoundNearestEven) == 0);
+	allTestsSuccessful &= (cnvTestFunc(8388607.0f, F_to_U24_RoundNearestEven) == 8388607);
+	allTestsSuccessful &= (cnvTestFunc(-8388608.0f, F_to_U24_RoundNearestEven) == 0);
+	allTestsSuccessful &= (cnvTestFunc(16777215.0f, F_to_U24_RoundNearestEven) == 16777215);
+	allTestsSuccessful &= (cnvTestFunc(-16777215.0f, F_to_U24_RoundNearestEven) == 0);
+	allTestsSuccessful &= (cnvTestFunc(16777215.0f * 2.0f, F_to_U24_RoundNearestEven) == 16777215);
+	allTestsSuccessful &= (cnvTestFunc(-16777215.0f * 2.0f, F_to_U24_RoundNearestEven) == 0);
+	allTestsSuccessful &= (cnvTestFunc(denormalFloat, F_to_U24_RoundNearestEven) == 0);
+	allTestsSuccessful &= (cnvTestFunc(-denormalFloat, F_to_U24_RoundNearestEven) == 0);
+	allTestsSuccessful &= (cnvTestFunc(INFINITY, F_to_U24_RoundNearestEven) == 16777215);
+	allTestsSuccessful &= (cnvTestFunc(-INFINITY, F_to_U24_RoundNearestEven) == 0);
+	allTestsSuccessful &= (cnvTestFunc(NAN, F_to_U24_RoundNearestEven) == 0);
+	allTestsSuccessful &= (cnvTestFunc(-NAN, F_to_U24_RoundNearestEven) == 0);
 
 	// Convert float to signed 16-bit integer with round to nearest even mode:
 	for (int x = -1024; x <= 1024; ++x)

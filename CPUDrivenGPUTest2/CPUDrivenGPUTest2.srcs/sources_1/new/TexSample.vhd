@@ -544,6 +544,8 @@ DBG_TexCache_addra <= texCacheAddress;
 		variable tempCombine : unsigned(15 downto 0) := (others => '0');
 	begin
 		if (rising_edge(clk) ) then
+			cmdTexSampleIsIdle <= '0';
+
 			case currentState is
 				when init =>
 					currentState <= waitingForRead;
@@ -551,14 +553,7 @@ DBG_TexCache_addra <= texCacheAddress;
 				when waitingForRead =>
 					ROP_OutFIFO_wr_en <= '0'; -- Deassert after one cycle
 					INTERP_InFIFO_rd_en <= '0';
-					cmdTexSampleIsIdle <= '0';
-					if (CMD_SetTextureStateBeginSignal = '1') then
-						CMD_SetTextureStateAckSignal <= '1';
-						currentState <= setTextureState;
-					elsif (CMD_LoadTexCacheBeginSignal = '1') then
-						CMD_LoadTexCacheAckSignal <= '1';
-						currentState <= loadTextureState;
-					elsif (INTERP_InFIFO_empty = '0') then
+					if (INTERP_InFIFO_empty = '0') then
 						INTERP_InFIFO_rd_en <= '1';
 
 						storedVertColorRGBA <= INTERP_InFIFO_rd_data(95 downto 64);
@@ -576,6 +571,12 @@ DBG_TexCache_addra <= texCacheAddress;
 						else
 							currentState <= texSample_bilinear_readTL;
 						end if;
+					elsif (CMD_SetTextureStateBeginSignal = '1') then
+						CMD_SetTextureStateAckSignal <= '1';
+						currentState <= setTextureState;
+					elsif (CMD_LoadTexCacheBeginSignal = '1') then
+						CMD_LoadTexCacheAckSignal <= '1';
+						currentState <= loadTextureState;
 					else
 						cmdTexSampleIsIdle <= '1';
 						currentState <= waitingForRead;

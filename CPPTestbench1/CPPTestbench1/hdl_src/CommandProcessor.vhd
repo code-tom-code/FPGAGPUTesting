@@ -52,13 +52,17 @@ entity CommandProcessor is
 
 	-- Idle signals from the various systems begin
 		CMD_IA_Idle : in STD_LOGIC;
+		CMD_Clip_Idle : in STD_LOGIC;
+		CMD_TriSetup_Idle : in STD_LOGIC;
 		CMD_Rasterizer_Idle : in STD_LOGIC;
-		CMD_VSync : in STD_LOGIC;
-		CMD_TexSampler_Idle : in STD_LOGIC;
-		CMD_ClearBlock_Idle : in STD_LOGIC;
-		CMD_ROP_Idle : in STD_LOGIC;
-		CMD_MemController_Idle : in STD_LOGIC;
+		CMD_DepthInterpolator_Idle : in STD_LOGIC;
 		CMD_Depth_Idle : in STD_LOGIC;
+		CMD_AttrInterpolator_Idle : in STD_LOGIC;
+		CMD_TexSampler_Idle : in STD_LOGIC;
+		CMD_ROP_Idle : in STD_LOGIC;
+		CMD_ClearBlock_Idle : in STD_LOGIC;
+		CMD_MemController_Idle : in STD_LOGIC;
+		CMD_VSync : in STD_LOGIC;
 	-- Idle signals from the various systems end
 
 	-- Shader Core interfaces begin
@@ -87,12 +91,15 @@ entity CommandProcessor is
 		-- Set state interfaces:
 		IA_SetStateReady : in STD_LOGIC;
 		IA_SetStateEnable : out STD_LOGIC := '0';
-		IA_IndexBufferBaseAddr : out STD_LOGIC_VECTOR(29 downto 0) := (others => '0');
 		IA_StateCullMode : out STD_LOGIC_VECTOR(1 downto 0) := (others => '0');
 		IA_StatePrimTopology : out STD_LOGIC_VECTOR(2 downto 0) := (others => '0');
-		IA_StateStripCutType : out STD_LOGIC_VECTOR(1 downto 0) := (others => '0');
-		IA_StateIndexFormat : out STD_LOGIC_VECTOR(1 downto 0) := (others => '0');
 	-- Input Assembler interfaces end
+
+	-- Triangle Setup interfaces begin
+		TRISETUP_SetViewportParams : out STD_LOGIC_VECTOR(1 downto 0) := (others => '0');
+		TRISETUP_ViewportParams0 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		TRISETUP_ViewportParams1 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+	-- Triangle Setup interfaces end
 
 	-- Vertex Batch Builder interfaces begin
 		VBB_SendCommand : out STD_LOGIC_VECTOR(1 downto 0) := (others => '0');
@@ -185,7 +192,7 @@ entity CommandProcessor is
 		DBG_LAST_WRITE_ADDR : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 		DBG_LAST_WRITE_DATA : out STD_LOGIC_VECTOR(DATA_WIDTH_BITS-1 downto 0) := (others => '0');
 
-		DBG_IdleSignalsVector : out STD_LOGIC_VECTOR(7 downto 0) := (others => '0')
+		DBG_IdleSignalsVector : out STD_LOGIC_VECTOR(11 downto 0) := (others => '0')
 		);
 end CommandProcessor;
 
@@ -349,17 +356,21 @@ architecture Behavioral of CommandProcessor is
 
 	-- Idle signal registers
 	signal IAIdleSig : STD_LOGIC := '0';
+	signal ClipIdleSig : STD_LOGIC := '0';
+	signal TriSetupIdleSig : STD_LOGIC := '0';
 	signal RasterizerIdleSig : STD_LOGIC := '0';
+	signal DepthInterpolatorIdleSig : STD_LOGIC := '0';
+	signal DepthBufferIdleSig : STD_LOGIC := '0';
+	signal AttrInterpolatorIdleSig : STD_LOGIC := '0';
+	signal TexSamplerIdleSig : STD_LOGIC := '0';
+	signal ROPIdleSig : STD_LOGIC := '0';
+	signal ClearBlockIdleSig : STD_LOGIC := '0';
+	signal MemControllerIdleSig : STD_LOGIC := '0';
 	signal VSyncSig : STD_LOGIC := '0';
 	signal VSyncSigM1 : STD_LOGIC := '0';
 	signal VSyncResolvedSig : STD_LOGIC := '0';
-	signal TexSamplerIdleSig : STD_LOGIC := '0';
-	signal ClearBlockIdleSig : STD_LOGIC := '0';
-	signal ROPIdleSig : STD_LOGIC := '0';
-	signal MemControllerIdleSig : STD_LOGIC := '0';
-	signal DepthBufferIdleSig : STD_LOGIC := '0';
 	
-	signal CombinedIdleSignals : STD_LOGIC_VECTOR(7 downto 0) := (others => '0');
+	signal CombinedIdleSignals : STD_LOGIC_VECTOR(11 downto 0) := (others => '0');
 
 	signal statCyclesIdle : unsigned(31 downto 0) := (others => '0');
 	signal statCyclesWorking : unsigned(31 downto 0) := (others => '0');
@@ -451,19 +462,23 @@ begin
 	process(clk)
 	begin
 		if (rising_edge(clk) ) then
-			CombinedIdleSignals <= DepthBufferIdleSig & MemControllerIdleSig & ROPIdleSig & ClearBlockIdleSig & TexSamplerIdleSig & VSyncResolvedSig & RasterizerIdleSig & IAIdleSig;
+			CombinedIdleSignals <= VSyncResolvedSig & MemControllerIdleSig & ClearBlockIdleSig & ROPIdleSig & TexSamplerIdleSig & AttrInterpolatorIdleSig & DepthBufferIdleSig & DepthInterpolatorIdleSig & RasterizerIdleSig & TriSetupIdleSig & ClipIdleSig & IAIdleSig;
 
 			-- Sample the idle flags into registers to be read next cycle:
 			IAIdleSig <= CMD_IA_Idle;
+			ClipIdleSig <= CMD_Clip_Idle;
+			TriSetupIdleSig <= CMD_TriSetup_Idle;
 			RasterizerIdleSig <= CMD_Rasterizer_Idle;
+			DepthInterpolatorIdleSig <= CMD_DepthInterpolator_Idle;
+			DepthBufferIdleSig <= CMD_Depth_Idle;
+			AttrInterpolatorIdleSig <= CMD_AttrInterpolator_Idle;
+			TexSamplerIdleSig <= CMD_TexSampler_Idle;
+			ROPIdleSig <= CMD_ROP_Idle;
+			ClearBlockIdleSig <= CMD_ClearBlock_Idle;
+			MemControllerIdleSig <= CMD_MemController_Idle;
 			VSyncSigM1 <= VSyncSig; -- VSync needs two signal registers that get AND'd together because it's running on a different 
 			VSyncSig <= CMD_VSync; -- clock domain from the rest of the pipeline
 			VSyncResolvedSig <= VSyncSigM1 and VSyncSig;
-			TexSamplerIdleSig <= CMD_TexSampler_Idle;
-			ClearBlockIdleSig <= CMD_ClearBlock_Idle;
-			ROPIdleSig <= CMD_ROP_Idle;
-			MemControllerIdleSig <= CMD_MemController_Idle;
-			DepthBufferIdleSig <= CMD_Depth_Idle;
 		end if;
 	end process;
 
@@ -761,7 +776,7 @@ begin
 						if (loadTexDataEnable = '1' and TEXSAMP_LoadTexCacheAckSignal = '1') then
 							loadTexDataEnable <= '0'; -- Deassert after one clock cycle
 							mst_packet_state <= READ_NEXT_PACKET_FROM_FIFO;
-						else
+						elsif (CMD_TexSampler_Idle = '1') then
 							loadTexDataEnable <= '1';
 
 							TEXSAMP_LoadTexCacheAddr <= std_logic_vector(localIncomingPacket.payload0(ADDR_WIDTH_BITS-1 downto 0) );
@@ -773,9 +788,9 @@ begin
 
 					when WAIT_FOR_IDLE =>
 						-- The wait is completed when ( (waitFlags & waitSignals) == waitFlags):
-						if ( (localIncomingPacket.payload0(7 downto 0) and 
-							unsigned(CombinedIdleSignals) ) = localIncomingPacket.payload0(7 downto 0) ) then
-							if (localIncomingPacket.payload0(8) = '0') then -- Send back a DWORD (from payload1) after wait completes or not?
+						if ( (localIncomingPacket.payload0(11 downto 0) and 
+							unsigned(CombinedIdleSignals) ) = localIncomingPacket.payload0(11 downto 0) ) then
+							if (localIncomingPacket.payload0(31) = '0') then -- Send back a DWORD (from payload1) after wait completes or not?
 								mst_packet_state <= READ_NEXT_PACKET_FROM_FIFO;
 							else
 								localOutgoingPacket.magicByte <= to_unsigned(MAGIC_PACKET_BYTE_VALUE, 8);
@@ -884,9 +899,6 @@ begin
 							setIAStateEnable <= '1';
 							IA_StateCullMode <= std_logic_vector(localIncomingPacket.payload0(1 downto 0) );
 							IA_StatePrimTopology <= std_logic_vector(localIncomingPacket.payload0(10 downto 8) );
-							IA_StateStripCutType <= std_logic_vector(localIncomingPacket.payload0(17 downto 16) );
-							IA_StateIndexFormat <= std_logic_vector(localIncomingPacket.payload0(25 downto 24) );
-							IA_IndexBufferBaseAddr <= std_logic_vector(localIncomingPacket.payload1(29 downto 0) );
 						end if;
 
 					when ISSUE_CLEARBLOCK =>

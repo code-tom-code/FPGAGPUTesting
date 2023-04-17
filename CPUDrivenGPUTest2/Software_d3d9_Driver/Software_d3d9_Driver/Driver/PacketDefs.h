@@ -340,11 +340,11 @@ struct setTextureStateCommand : command
 
 struct waitForDeviceIdleCommand : command
 {
-	waitForDeviceIdleCommand() : command(PT_WAITFORDEVICEIDLE)
+	waitForDeviceIdleCommand() : command(PT_WAITFORDEVICEIDLE), waitBitmask(waitForFullPipelineFlush), returnCPUValue(TRUE), unused0(0)
 	{
 	}
 
-	enum waitForDeviceSubsystem : unsigned char
+	enum waitForDeviceSubsystem : unsigned
 	{
 		// Immediately returns without waiting (and optionally sends the return value back to the CPU)
 		waitForNothing = 0x0,
@@ -352,38 +352,50 @@ struct waitForDeviceIdleCommand : command
 		// Waits for the input assembler to have no work remaining
 		waitForIAIdle = 0x1, // bit 0
 
+		// Waits for the clipper unit to have no work remaining
+		waitForClipIdle = 0x2, // bit 1
+
+		// Waits for the TriSetup block to have no work remaining
+		waitForTriSetupIdle = 0x4, // bit 2
+
 		// Waits for the triangle rasterizer to have no work remaining
-		waitForRasterizerIdle = 0x2, // bit 1
+		waitForRasterizerIdle = 0x8, // bit 3
 
-		// Waits for the scanout module to reach VSync
-		waitForVSync = 0x4, // bit 2
-
-		// Waits for the texture samplers to have no work remaining
-		waitForTexSamplerIdle = 0x8, // bit 3
-
-		// Waits for the clear block to finish clearing a rendertarget
-		waitForClearBlockIdle = 0x10, // bit 4
-
-		// Waits for the ROP's to have no work remaining
-		waitForROPIdle = 0x20, // bit 5
-
-		// Waits for all DRAM reads/writes to have flushed
-		waitForMemControllerIdle = 0x40, // bit 6
+		// Waits for the depth interpolator to have no more pixels in flight
+		waitForDepthInterpolatorIdle = 0x10, // bit 4
 
 		// Waits for the depth buffer clear to have completed and for the depth buffer to have no in-flight pixels remaining
-		waitForDepthBuffer = 0x80, // bit 7
+		waitForDepthBuffer = 0x20, // bit 5
+
+		// Waits for the attribute interpolator to have no more pixels in flight
+		waitForAttrInterpolatorIdle = 0x40, // bit 6
+
+		// Waits for the texture samplers to have no work remaining
+		waitForTexSamplerIdle = 0x80, // bit 7
+
+		// Waits for the ROP's to have no work remaining
+		waitForROPIdle = 0x100, // bit 8
+
+		// Waits for the clear block to finish clearing a rendertarget
+		waitForClearBlockIdle = 0x200, // bit 9
+
+		// Waits for all DRAM reads/writes to have flushed
+		waitForMemControllerIdle = 0x400, // bit 10
+
+		// Waits for the scanout module to reach VSync
+		waitForVSync = 0x800, // bit 11
 
 		// Waits for the whole GPU to be idle and drained of any work (waits for everything except VSync)
-		waitForFullPipelineFlush = waitForIAIdle | waitForRasterizerIdle | waitForTexSamplerIdle | waitForClearBlockIdle | waitForROPIdle | waitForMemControllerIdle | waitForDepthBuffer,
+		waitForFullPipelineFlush = waitForIAIdle | waitForClipIdle | waitForTriSetupIdle | waitForRasterizerIdle | waitForDepthInterpolatorIdle | waitForDepthBuffer | waitForAttrInterpolatorIdle | waitForTexSamplerIdle | waitForROPIdle | waitForClearBlockIdle | waitForMemControllerIdle,
 
 		// Waits for everything
 		waitForFullPipelineFlushAndVSync = waitForFullPipelineFlush | waitForVSync
 	};
 
 	// Payload 0:
-	waitForDeviceSubsystem waitBitmask = waitForFullPipelineFlush; // You can wait for multiple systems at once if you bit-OR their flags together // 7 downto 0
-	bool returnCPUValue = true; // If set to true, then right after the wait completes the GPU will send the given DWORD value back to the CPU via a PT_WAITRESPONSE packet // 15 downto 8
-	USHORT unused = 0; // 31 downto 16
+	waitForDeviceSubsystem waitBitmask : 12; // You can wait for multiple systems at once if you bit-OR their flags together // 11 downto 0
+	unsigned unused0 : 19; // 30 downto 12
+	unsigned returnCPUValue : 1; // If set to true, then right after the wait completes the GPU will send the given DWORD value back to the CPU via a PT_WAITRESPONSE packet // 31 downto 31
 
 	// Payload 1:
 	DWORD returnValueToCPU = 0x00000000; // 31 downto 0
@@ -585,25 +597,38 @@ struct endFrameStatsResponse : command
 		IACyclesWaitingForDrawCommand = 0,
 		IACyclesSpentWorking = 1,
 		IACyclesLoadingDataToCache = 2,
-		IACyclesWaitingForTriSetup = 3,
+		IACyclesWaitingForClipUnit = 3,
 
 		MAX_IA_TIMER_STATS, // This must always be last
 
 		IAIdleCycles = IACyclesWaitingForDrawCommand,
 		IAWaitForInputCycles = IACyclesWaitingForDrawCommand,
-		IAWaitForOutputCycles = IACyclesWaitingForTriSetup
+		IAWaitForOutputCycles = IACyclesWaitingForClipUnit
+	};
+
+	enum eClipUnitTimerStats : unsigned char
+	{
+		ClipUnitCyclesWaitingForIA = 0,
+		ClipUnitCyclesSpentWorking = 1,
+		ClipUnitCyclesWaitingForRasterizer = 2,
+
+		MAX_CLIPUNIT_TIMER_STATS, // This must always be last
+
+		ClipUnitIdleCycles = ClipUnitCyclesWaitingForIA,
+		ClipUnitWaitForInputCycles = ClipUnitCyclesWaitingForIA,
+		ClipUnitWaitForOutputCycles = ClipUnitCyclesWaitingForRasterizer
 	};
 
 	enum eTriSetupTimerStats : unsigned char
 	{
-		TriSetupCyclesWaitingForIA = 0,
+		TriSetupCyclesWaitingForClip = 0,
 		TriSetupCyclesSpentWorking = 1,
 		TriSetupCyclesWaitingForRasterizer = 2,
 
 		MAX_TRISETUP_TIMER_STATS, // This must always be last
 
-		TriSetupIdleCycles = TriSetupCyclesWaitingForIA,
-		TriSetupWaitForInputCycles = TriSetupCyclesWaitingForIA,
+		TriSetupIdleCycles = TriSetupCyclesWaitingForClip,
+		TriSetupWaitForInputCycles = TriSetupCyclesWaitingForClip,
 		TriSetupWaitForOutputCycles = TriSetupCyclesWaitingForRasterizer
 	};
 
@@ -742,7 +767,7 @@ struct endFrameStatsResponse : command
 	
 	enum eTotalCounterStats : unsigned char
 	{
-		TotalTimerStatsCount = MAX_VSHADER_TIMER_STATS + MAX_IA_TIMER_STATS + MAX_TRISETUP_TIMER_STATS + MAX_RASTERIZER_TIMER_STATS + MAX_ATTRINTERP_TIMER_STATS + MAX_DEPTHINTERP_TIMER_STATS + MAX_TEXSAMPLER_TIMER_STATS + MAX_ROP_TIMER_STATS + 
+		TotalTimerStatsCount = MAX_VSHADER_TIMER_STATS + MAX_IA_TIMER_STATS + MAX_CLIPUNIT_TIMER_STATS + MAX_TRISETUP_TIMER_STATS + MAX_RASTERIZER_TIMER_STATS + MAX_ATTRINTERP_TIMER_STATS + MAX_DEPTHINTERP_TIMER_STATS + MAX_TEXSAMPLER_TIMER_STATS + MAX_ROP_TIMER_STATS + 
 			MAX_COMMANDPROC_TIMER_STATS + MAX_MEMCONTROLLER_READ_TIMER_STATS + MAX_MEMCONTROLLER_WRITE_TIMER_STATS + MAX_PADDING_ZEROES,
 
 		TotalCounterStatsCount = MAX_ROP_COUNTER_STATS + MAX_MEMREAD_COUNTER_STATS + MAX_MEMWRITE_COUNTER_STATS,
@@ -750,7 +775,7 @@ struct endFrameStatsResponse : command
 		// TotalAllStatsCount is the size (in DWORD's) of the DWORD array that backs our stats memory
 		TotalAllStatsCount = TotalTimerStatsCount + TotalCounterStatsCount
 	};
-	static_assert(eTotalCounterStats::TotalAllStatsCount == 44u, "Error: Need to update stats header files to match HDL PER_FRAME_STATS_COUNT value!");
+	static_assert(eTotalCounterStats::TotalAllStatsCount == 47u, "Error: Need to update stats header files to match HDL PER_FRAME_STATS_COUNT value!");
 
 	// Payload 0:
 	eSystemType system : 4; // 3 downto 0

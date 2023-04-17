@@ -103,7 +103,7 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>viewChecksum</spirit:name>
-            <spirit:value>9baa6a26</spirit:value>
+            <spirit:value>ba3c1fb0</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -116,7 +116,7 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>viewChecksum</spirit:name>
-            <spirit:value>9baa6a26</spirit:value>
+            <spirit:value>ba3c1fb0</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -144,7 +144,7 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
-        <spirit:name>TRISETUP_v0PosX</spirit:name>
+        <spirit:name>CLIP_v0PosX</spirit:name>
         <spirit:wire>
           <spirit:direction>out</spirit:direction>
           <spirit:vector>
@@ -164,7 +164,7 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
-        <spirit:name>TRISETUP_v0PosY</spirit:name>
+        <spirit:name>CLIP_v0PosY</spirit:name>
         <spirit:wire>
           <spirit:direction>out</spirit:direction>
           <spirit:vector>
@@ -184,7 +184,7 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
-        <spirit:name>TRISETUP_v0PosInvZ</spirit:name>
+        <spirit:name>CLIP_v0PosZ</spirit:name>
         <spirit:wire>
           <spirit:direction>out</spirit:direction>
           <spirit:vector>
@@ -204,7 +204,7 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
-        <spirit:name>TRISETUP_v0PosInvW</spirit:name>
+        <spirit:name>CLIP_v0PosW</spirit:name>
         <spirit:wire>
           <spirit:direction>out</spirit:direction>
           <spirit:vector>
@@ -224,7 +224,7 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
-        <spirit:name>TRISETUP_v1PosX</spirit:name>
+        <spirit:name>CLIP_v1PosX</spirit:name>
         <spirit:wire>
           <spirit:direction>out</spirit:direction>
           <spirit:vector>
@@ -244,7 +244,7 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
-        <spirit:name>TRISETUP_v1PosY</spirit:name>
+        <spirit:name>CLIP_v1PosY</spirit:name>
         <spirit:wire>
           <spirit:direction>out</spirit:direction>
           <spirit:vector>
@@ -264,7 +264,7 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
-        <spirit:name>TRISETUP_v1PosInvZ</spirit:name>
+        <spirit:name>CLIP_v1PosZ</spirit:name>
         <spirit:wire>
           <spirit:direction>out</spirit:direction>
           <spirit:vector>
@@ -284,7 +284,7 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
-        <spirit:name>TRISETUP_v1PosInvW</spirit:name>
+        <spirit:name>CLIP_v1PosW</spirit:name>
         <spirit:wire>
           <spirit:direction>out</spirit:direction>
           <spirit:vector>
@@ -304,7 +304,7 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
-        <spirit:name>TRISETUP_v2PosX</spirit:name>
+        <spirit:name>CLIP_v2PosX</spirit:name>
         <spirit:wire>
           <spirit:direction>out</spirit:direction>
           <spirit:vector>
@@ -324,7 +324,7 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
-        <spirit:name>TRISETUP_v2PosY</spirit:name>
+        <spirit:name>CLIP_v2PosY</spirit:name>
         <spirit:wire>
           <spirit:direction>out</spirit:direction>
           <spirit:vector>
@@ -344,7 +344,7 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
-        <spirit:name>TRISETUP_v2PosInvZ</spirit:name>
+        <spirit:name>CLIP_v2PosZ</spirit:name>
         <spirit:wire>
           <spirit:direction>out</spirit:direction>
           <spirit:vector>
@@ -364,7 +364,7 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
-        <spirit:name>TRISETUP_v2PosInvW</spirit:name>
+        <spirit:name>CLIP_v2PosW</spirit:name>
         <spirit:wire>
           <spirit:direction>out</spirit:direction>
           <spirit:vector>
@@ -384,7 +384,7 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
-        <spirit:name>TRISETUP_tex0_X</spirit:name>
+        <spirit:name>CLIP_tex0_X</spirit:name>
         <spirit:wire>
           <spirit:direction>out</spirit:direction>
           <spirit:vector>
@@ -404,7 +404,7 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
-        <spirit:name>TRISETUP_tex0_Y</spirit:name>
+        <spirit:name>CLIP_tex0_Y</spirit:name>
         <spirit:wire>
           <spirit:direction>out</spirit:direction>
           <spirit:vector>
@@ -424,7 +424,7 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
-        <spirit:name>TRISETUP_tex1_X</spirit:name>
+        <spirit:name>CLIP_tex1_X</spirit:name>
         <spirit:wire>
           <spirit:direction>out</spirit:direction>
           <spirit:vector>
@@ -444,7 +444,7 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
-        <spirit:name>TRISETUP_tex1_Y</spirit:name>
+        <spirit:name>CLIP_tex1_Y</spirit:name>
         <spirit:wire>
           <spirit:direction>out</spirit:direction>
           <spirit:vector>
@@ -464,7 +464,7 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
-        <spirit:name>TRISETUP_tex2_X</spirit:name>
+        <spirit:name>CLIP_tex2_X</spirit:name>
         <spirit:wire>
           <spirit:direction>out</spirit:direction>
           <spirit:vector>
@@ -484,7 +484,7 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
-        <spirit:name>TRISETUP_tex2_Y</spirit:name>
+        <spirit:name>CLIP_tex2_Y</spirit:name>
         <spirit:wire>
           <spirit:direction>out</spirit:direction>
           <spirit:vector>
@@ -504,7 +504,7 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
-        <spirit:name>TRISETUP_vertColor0_RGBA</spirit:name>
+        <spirit:name>CLIP_vertColor0_RGBA</spirit:name>
         <spirit:wire>
           <spirit:direction>out</spirit:direction>
           <spirit:vector>
@@ -524,7 +524,7 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
-        <spirit:name>TRISETUP_vertColor1_RGBA</spirit:name>
+        <spirit:name>CLIP_vertColor1_RGBA</spirit:name>
         <spirit:wire>
           <spirit:direction>out</spirit:direction>
           <spirit:vector>
@@ -544,7 +544,7 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
-        <spirit:name>TRISETUP_vertColor2_RGBA</spirit:name>
+        <spirit:name>CLIP_vertColor2_RGBA</spirit:name>
         <spirit:wire>
           <spirit:direction>out</spirit:direction>
           <spirit:vector>
@@ -564,7 +564,83 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
-        <spirit:name>TRISETUP_readyForNewTri</spirit:name>
+        <spirit:name>CLIP_v0ClipCodes</spirit:name>
+        <spirit:wire>
+          <spirit:direction>out</spirit:direction>
+          <spirit:vector>
+            <spirit:left spirit:format="long">10</spirit:left>
+            <spirit:right spirit:format="long">0</spirit:right>
+          </spirit:vector>
+          <spirit:wireTypeDefs>
+            <spirit:wireTypeDef>
+              <spirit:typeName>STD_LOGIC_VECTOR</spirit:typeName>
+              <spirit:viewNameRef>xilinx_anylanguagesynthesis</spirit:viewNameRef>
+              <spirit:viewNameRef>xilinx_anylanguagebehavioralsimulation</spirit:viewNameRef>
+            </spirit:wireTypeDef>
+          </spirit:wireTypeDefs>
+          <spirit:driver>
+            <spirit:defaultValue spirit:format="long">0</spirit:defaultValue>
+          </spirit:driver>
+        </spirit:wire>
+      </spirit:port>
+      <spirit:port>
+        <spirit:name>CLIP_v1ClipCodes</spirit:name>
+        <spirit:wire>
+          <spirit:direction>out</spirit:direction>
+          <spirit:vector>
+            <spirit:left spirit:format="long">10</spirit:left>
+            <spirit:right spirit:format="long">0</spirit:right>
+          </spirit:vector>
+          <spirit:wireTypeDefs>
+            <spirit:wireTypeDef>
+              <spirit:typeName>STD_LOGIC_VECTOR</spirit:typeName>
+              <spirit:viewNameRef>xilinx_anylanguagesynthesis</spirit:viewNameRef>
+              <spirit:viewNameRef>xilinx_anylanguagebehavioralsimulation</spirit:viewNameRef>
+            </spirit:wireTypeDef>
+          </spirit:wireTypeDefs>
+          <spirit:driver>
+            <spirit:defaultValue spirit:format="long">0</spirit:defaultValue>
+          </spirit:driver>
+        </spirit:wire>
+      </spirit:port>
+      <spirit:port>
+        <spirit:name>CLIP_v2ClipCodes</spirit:name>
+        <spirit:wire>
+          <spirit:direction>out</spirit:direction>
+          <spirit:vector>
+            <spirit:left spirit:format="long">10</spirit:left>
+            <spirit:right spirit:format="long">0</spirit:right>
+          </spirit:vector>
+          <spirit:wireTypeDefs>
+            <spirit:wireTypeDef>
+              <spirit:typeName>STD_LOGIC_VECTOR</spirit:typeName>
+              <spirit:viewNameRef>xilinx_anylanguagesynthesis</spirit:viewNameRef>
+              <spirit:viewNameRef>xilinx_anylanguagebehavioralsimulation</spirit:viewNameRef>
+            </spirit:wireTypeDef>
+          </spirit:wireTypeDefs>
+          <spirit:driver>
+            <spirit:defaultValue spirit:format="long">0</spirit:defaultValue>
+          </spirit:driver>
+        </spirit:wire>
+      </spirit:port>
+      <spirit:port>
+        <spirit:name>CLIP_AABBTriOverlapsViewport</spirit:name>
+        <spirit:wire>
+          <spirit:direction>out</spirit:direction>
+          <spirit:wireTypeDefs>
+            <spirit:wireTypeDef>
+              <spirit:typeName>STD_LOGIC</spirit:typeName>
+              <spirit:viewNameRef>xilinx_anylanguagesynthesis</spirit:viewNameRef>
+              <spirit:viewNameRef>xilinx_anylanguagebehavioralsimulation</spirit:viewNameRef>
+            </spirit:wireTypeDef>
+          </spirit:wireTypeDefs>
+          <spirit:driver>
+            <spirit:defaultValue spirit:format="bitString" spirit:bitStringLength="1">0x0</spirit:defaultValue>
+          </spirit:driver>
+        </spirit:wire>
+      </spirit:port>
+      <spirit:port>
+        <spirit:name>CLIP_readyForNewTri</spirit:name>
         <spirit:wire>
           <spirit:direction>in</spirit:direction>
           <spirit:wireTypeDefs>
@@ -577,7 +653,7 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
-        <spirit:name>TRISETUP_newTriBegin</spirit:name>
+        <spirit:name>CLIP_newTriBegin</spirit:name>
         <spirit:wire>
           <spirit:direction>out</spirit:direction>
           <spirit:wireTypeDefs>
@@ -1042,7 +1118,7 @@
         <xilinx:designToolContext>IPI</xilinx:designToolContext>
       </xilinx:designToolContexts>
       <xilinx:coreRevision>1</xilinx:coreRevision>
-      <xilinx:coreCreationDateTime>2022-09-08T03:38:22Z</xilinx:coreCreationDateTime>
+      <xilinx:coreCreationDateTime>2023-04-16T21:02:37Z</xilinx:coreCreationDateTime>
     </xilinx:coreExtensions>
     <xilinx:packagingInfo>
       <xilinx:xilinxVersion>2018.1_AR73068</xilinx:xilinxVersion>

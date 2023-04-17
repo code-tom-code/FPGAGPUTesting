@@ -18,86 +18,88 @@ static const float frand()
 
 enum depthInterpStateType
 {
-	init, // 0
-	waitingForRead, // 1
+	waitingForRead, // 0
 
 	// Convert our input barycentrics from int32 to float32
-	barycentricConversion0, // 2
-	barycentricConversion1, // 3
-	barycentricConversion2, // 4
-	barycentricConversion3, // 5
-	barycentricConversion4, // 6
-	barycentricConversion5, // 7
+	barycentricConversion0, // 1
+	barycentricConversion1, // 2
+	barycentricConversion2, // 3
+	barycentricConversion3, // 4
+	barycentricConversion4, // 5
+	barycentricConversion5, // 6
 
 	// Normalize our barycentrics by multiplying the [0.0f, 16777216.0f] values by the barycentric normalization factor (computed by the TriSetup block previously) to
 	// get them into the [0.0f, 1.0f] range.
-	barycentricNormalization0, // 8
-	barycentricNormalization1, // 9
-	barycentricNormalization2, // 10
-	barycentricNormalization3, // 11
-	barycentricNormalization4, // 12
-	barycentricNormalization5, // 13
-	barycentricNormalization6, // 14
-	barycentricNormalization7, // 15
+	barycentricNormalization0, // 7
+	barycentricNormalization1, // 8
+	barycentricNormalization2, // 9
+	barycentricNormalization3, // 10
+	barycentricNormalization4, // 11
+	barycentricNormalization5, // 12
+	barycentricNormalization6, // 13
+	barycentricNormalization7, // 14
 
 	// Multiply the normalized barycentrics with the inverseZ (1.0f/zN) values
-	barycentricMultiply0, // 16
-	barycentricMultiply1, // 17
-	barycentricMultiply2, // 18
-	barycentricMultiply3, // 19
-	barycentricMultiply4, // 20
-	barycentricMultiply5, // 21
-	barycentricMultiply6, // 22
-	barycentricMultiply7, // 23
-	barycentricMultiply8, // 24
-	barycentricMultiply9, // 25
+	barycentricMultiply0, // 15
+	barycentricMultiply1, // 16
+	barycentricMultiply2, // 17
+	barycentricMultiply3, // 18
+	barycentricMultiply4, // 19
+	barycentricMultiply5, // 20
+	barycentricMultiply6, // 21
+	barycentricMultiply7, // 22
+	barycentricMultiply8, // 23
+	barycentricMultiply9, // 24
 
 	// Sum the products together to complete the dot product
-	barycentricDotProductSums0, // 26
-	barycentricDotProductSums1, // 27
-	barycentricDotProductSums2, // 28
-	barycentricDotProductSums3, // 29
-	barycentricDotProductSums4, // 30
-	barycentricDotProductSums5, // 31
-	barycentricDotProductSums6, // 32
-	barycentricDotProductSums7, // 33
-	barycentricDotProductSums8, // 34
-	barycentricDotProductSums9, // 35
+	barycentricDotProductSums0, // 25
+	barycentricDotProductSums1, // 26
+	barycentricDotProductSums2, // 27
+	barycentricDotProductSums3, // 28
+	barycentricDotProductSums4, // 29
+	barycentricDotProductSums5, // 30
+	barycentricDotProductSums6, // 31
+	barycentricDotProductSums7, // 32
+	barycentricDotProductSums8, // 33
+	barycentricDotProductSums9, // 34
 
 	// Take the reciprocals of the dot product (1.0f / dot(normbary.abc, inverseZ.xyz) ) to yield the per-pixel depth value and per-pixel W value as a float32
-	barycentricDotProductRecip0, // 36
-	barycentricDotProductRecip1, // 37
-	barycentricDotProductRecip2, // 38
-	barycentricDotProductRecip3, // 39
-	barycentricDotProductRecip4, // 40
-	barycentricDotProductRecip5, // 41
-	barycentricDotProductRecip6, // 42
-	barycentricDotProductRecip7, // 43
-	barycentricDotProductRecip8, // 44
-	barycentricDotProductRecip9, // 45
-	barycentricDotProductRecip10, // 46
-	barycentricDotProductRecip11, // 47
-	barycentricDotProductRecip12, // 48
-	barycentricDotProductRecip13, // 49
-	barycentricDotProductRecip14, // 50
-	barycentricDotProductRecip15, // 51
-	barycentricDotProductRecip16, // 52
+	barycentricDotProductRecip0, // 35
+	barycentricDotProductRecip1, // 36
+	barycentricDotProductRecip2, // 37
+	barycentricDotProductRecip3, // 38
+	barycentricDotProductRecip4, // 39
+	barycentricDotProductRecip5, // 40
+	barycentricDotProductRecip6, // 41
+	barycentricDotProductRecip7, // 42
+	barycentricDotProductRecip8, // 43
+	barycentricDotProductRecip9, // 44
+	barycentricDotProductRecip10, // 45
+	barycentricDotProductRecip11, // 46
+	barycentricDotProductRecip12, // 47
+	barycentricDotProductRecip13, // 48
+	barycentricDotProductRecip14, // 49
+	barycentricDotProductRecip15, // 50
+	barycentricDotProductRecip16, // 51
 
 	// If depth testing is enabled, perform the depth test now. Otherwise, skip these stages entirely.
-	depthTestState0, // 53
-	depthTestState1, // 54
-	depthTestState2, // 55
-	depthTestState3, // 56
-	depthTestState4, // 57
-	depthTestState5, // 58
-	depthTestState6, // 59
-	depthTestState7, // 60
+	depthTestState0, // 52
+	depthTestState1, // 53
+	depthTestState2, // 54
+	depthTestState3, // 55
+	depthTestState4, // 56
+	depthTestState5, // 57
+	depthTestState6, // 58
+	depthTestState7, // 59
+	depthTestState8, // 60
+	depthTestState9, // 61
+	depthTestState10, // 62
 
 	// When it's ready we can send the now depth-test-passed pixel off to the next block for attribute interpolation
-	sendPixelForAttrInterpolation, // 61
+	sendPixelForAttrInterpolation, // 63
 
-	setNewPrimitiveSlot, // 62
-	signalPrimitiveComplete // 63
+	setNewPrimitiveSlot, // 64
+	signalPrimitiveComplete // 65
 };
 
 void EmulateDepthInterpCPU(const triSetupOutput& triSetupData, const std::vector<rasterizedPixelData>& rasterizedPixels, std::vector<depthInterpOutputData>& outDepthInterpData)
@@ -120,8 +122,16 @@ void EmulateDepthInterpCPU(const triSetupOutput& triSetupData, const std::vector
 
 		const float interpolatedPixelDepth = 1.0f / dotproductResultZ;
 
+		// Might need to add a slight epsilon here to account for floating-point imprecision
+		if (interpolatedPixelDepth > 1.0f || interpolatedPixelDepth < 0.0f)
+		{
+			__debugbreak(); // Should never be here since we should only ever be processing post-clipped triangles. Nothing should ever be beyond the far-plane or behind the near-plane!
+		}
+
+		const unsigned u24Depth = interpolatedPixelDepth * 16777215.0f;
+
 		// Perform depth testing (assuming lessequals depth test mode against a cleared zbuffer with 1.0f):
-		if (interpolatedPixelDepth <= 1.0f)
+		if (u24Depth <= 0xFFFFFFFF)
 		{
 			// Interpolate per-pixel W (uses the same calculation as per-pixel Z):
 			const float invW0 = triSetupData.v0.invW;
@@ -137,6 +147,7 @@ void EmulateDepthInterpCPU(const triSetupOutput& triSetupData, const std::vector
 			newDepthInterpOutput.interpolatedPixelW = interpolatedPixelW;
 			newDepthInterpOutput.normalizedBarycentricB = normalizedBarycentricB;
 			newDepthInterpOutput.normalizedBarycentricC = normalizedBarycentricC;
+			newDepthInterpOutput.dbgDepthU24 = u24Depth;
 			outDepthInterpData.push_back(newDepthInterpOutput);
 		}
 	}
@@ -168,7 +179,7 @@ struct simulatedDepthBuffer
 
 		if (pipeStages[0].pixelReady)
 		{
-			DEPTH_PixelPassedDepthTest = true;
+			DEPTH_PixelPassedDepthTest = (pipeStages[0].pixelDepth <= 16777215);
 			DEPTH_PixelFailedDepthTest = false;
 		}
 		else
@@ -269,6 +280,7 @@ const int RunTestsDepthInterp(Xsi::Loader& loader)
 	std_logic_vector_port<7> DBG_DepthInterpolator_State(PD_OUT, loader, "DBG_DepthInterpolator_State");
 	std_logic_vector_port<32> DBG_RastBarycentricB(PD_OUT, loader, "DBG_RastBarycentricB");
 	std_logic_vector_port<32> DBG_RastBarycentricC(PD_OUT, loader, "DBG_RastBarycentricC");
+	std_logic_vector_port<24> DBG_InterpolatedDepthU24(PD_OUT, loader, "DBG_InterpolatedDepthU24");
 
 	FPU depthInterpFPU(0);
 	simulatedDepthBuffer depthInterpDepthBuffer;
@@ -322,7 +334,7 @@ const int RunTestsDepthInterp(Xsi::Loader& loader)
 			if (ATTR_NewPixelValid.GetBoolVal() )
 			{
 				depthInterpOutputData newOutData;
-				newOutData.Serialize(ATTR_PosX, ATTR_PosY, ATTR_NormalizedBarycentricB, ATTR_NormalizedBarycentricC, ATTR_OutPixelW);
+				newOutData.Serialize(ATTR_PosX, ATTR_PosY, ATTR_NormalizedBarycentricB, ATTR_NormalizedBarycentricC, ATTR_OutPixelW, DBG_InterpolatedDepthU24);
 				outDepthInterpData.push_back(newOutData);
 			}
 			depthInterpFPU.Update(FPU_ISHFT_GO, FPU_IMUL_GO, FPU_IADD_GO, FPU_ICMP_GO, FPU_ISPEC_GO, FPU_ICNV_GO, FPU_IBIT_GO,	FPU_A, FPU_B, FPU_Mode, FPU_OUT);
@@ -373,7 +385,7 @@ const int RunTestsDepthInterp(Xsi::Loader& loader)
 			// Check for out of range depth values:
 			if (useRandomZWPositions)
 			{
-				if (simulatedRTLPixel.interpolatedPixelW < 0.5f ||
+				if (simulatedRTLPixel.interpolatedPixelW <= 0.0f ||
 					simulatedRTLPixel.interpolatedPixelW > 1.0f)
 				{
 					__debugbreak();
@@ -395,61 +407,83 @@ const int RunTestsDepthInterp(Xsi::Loader& loader)
 			// Draw vertices in "0, 2, 1" order to swizzle CCW to CW ordering for our triangle setup to not consider them backfacing:
 			primTriData.v0.xPos = vertices[indicesCCW[x * 3] ].posX;
 			primTriData.v0.yPos = vertices[indicesCCW[x * 3] ].posY;
-			primTriData.v0.invZ = 2.0f;
-			primTriData.v0.invW = 1.0f;
+			primTriData.v0.zPos = 0.5f;
+			primTriData.v0.wPos = 1.0f;
 			primTriData.v0.xTex = 1.0f / 15.0f;
 			primTriData.v0.yTex = 2.0f / 15.0f;
 			primTriData.v0.rgba = { 1.0f, 0.0f, 0.0f, 1.0f };
 			primTriData.v1.xPos = vertices[indicesCCW[x * 3 + 2] ].posX;
 			primTriData.v1.yPos = vertices[indicesCCW[x * 3 + 2] ].posY;
-			primTriData.v1.invZ = 2.0f;
-			primTriData.v1.invW = 1.0f;
+			primTriData.v1.zPos = 0.5f;
+			primTriData.v1.wPos = 1.0f;
 			primTriData.v1.xTex = 3.0f / 15.0f;
 			primTriData.v1.yTex = 4.0f / 15.0f;
 			primTriData.v1.rgba = { 0.0f, 1.0f, 0.0f, 1.0f };
 			primTriData.v2.xPos = vertices[indicesCCW[x * 3 + 1] ].posX;
 			primTriData.v2.yPos = vertices[indicesCCW[x * 3 + 1] ].posY;
-			primTriData.v2.invZ = 2.0f;
-			primTriData.v2.invW = 1.0f;
+			primTriData.v2.zPos = 0.5f;
+			primTriData.v2.wPos = 1.0f;
 			primTriData.v2.xTex = -5.0f / 15.0f;
 			primTriData.v2.yTex = -6.0f / 15.0f;
 			primTriData.v2.rgba = { 0.0f, 0.0f, 1.0f, 1.0f };
+
+			UntransformViewport(primTriData);
+
 			if (randomZWPositions)
 			{
-				const float randomZ0 = frand() * 0.5f + 0.5f; // We currently only support depth values between 0.5f and 1.0f
-				const float randomZ1 = frand() * 0.5f + 0.5f;
-				const float randomZ2 = frand() * 0.5f + 0.5f;
-				primTriData.v0.invZ = 1.0f / randomZ0;
-				primTriData.v1.invZ = 1.0f / randomZ1;
-				primTriData.v2.invZ = 1.0f / randomZ2;
-				const float randomW0 = frand() * 0.5f + 0.5f; // We currently only support W values between 0.5f and 1.0f too
-				const float randomW1 = frand() * 0.5f + 0.5f;
-				const float randomW2 = frand() * 0.5f + 0.5f;
-				primTriData.v0.invW = 1.0f / randomW0;
-				primTriData.v1.invW = 1.0f / randomW1;
-				primTriData.v2.invW = 1.0f / randomW2;
+				const float randomZ0 = frand();
+				const float randomZ1 = frand();
+				const float randomZ2 = frand();
+				primTriData.v0.zPos = randomZ0;
+				primTriData.v1.zPos = randomZ1;
+				primTriData.v2.zPos = randomZ2;
+				float randomW0 = frand();
+				float randomW1 = frand();
+				float randomW2 = frand();
+				if (randomW0 == 0.0f) randomW0 = 1.17549435082228750797e-38f;
+				if (randomW1 == 0.0f) randomW1 = 1.17549435082228750797e-38f;
+				if (randomW2 == 0.0f) randomW2 = 1.17549435082228750797e-38f;
+				primTriData.v0.wPos = randomW0;
+				primTriData.v1.wPos = randomW1;
+				primTriData.v2.wPos = randomW2;
+
+				// Premultiply the Z-values by the W-values because we want these to be the post-divide-by-zero z-values:
+				primTriData.v0.zPos *= primTriData.v0.wPos;
+				primTriData.v1.zPos *= primTriData.v1.wPos;
+				primTriData.v2.zPos *= primTriData.v2.wPos;
 			}
-			triSetupOutput triSetupData;
-			if (EmulateCPUTriSetup(primTriData, triSetupData) != triSetup_OK) // If this fails, then it's because our triangle got culled or clipped or backface-killed or something
+
+			std::vector<triSetupInput> unclippedTris;
+			unclippedTris.push_back(primTriData);
+			std::vector<triSetupInput> clippedTris;
+			EmulateCPUClipper(unclippedTris, clippedTris);
+
+			const unsigned numOutClippedTris = (const unsigned)clippedTris.size();
+			for (unsigned y = 0; y < numOutClippedTris; ++y)
 			{
-				// __debugbreak();
-				continue;
+				const triSetupInput& thisInputTri = clippedTris[y];
+				triSetupOutput triSetupData;
+				if (EmulateCPUTriSetup(thisInputTri, triSetupData) != triSetup_OK) // If this fails, then it's because our triangle got culled or clipped or backface-killed or something
+				{
+					// __debugbreak();
+					continue;
+				}
+				std::vector<rasterizedPixelData> rasterizedPixels;
+
+				rasterizedPixelData startNewTriMessage = {0};
+				startNewTriMessage.pixelX = startNewTriangleSlotCommand;
+				startNewTriMessage.pixelY = (currentTriCacheIndex) % 8;
+				rasterizedPixels.push_back(startNewTriMessage);
+
+				EmulateCPURasterizer(triSetupData, rasterizedPixels);
+
+				rasterizedPixelData endTriMessage = {0};
+				endTriMessage.pixelX = finishCurrentTriangleCommand;
+				endTriMessage.pixelY = (currentTriCacheIndex++) % 8;
+				rasterizedPixels.push_back(endTriMessage);
+
+				successResult &= runDepthInterpTest(triSetupData, rasterizedPixels, randomZWPositions);
 			}
-			std::vector<rasterizedPixelData> rasterizedPixels;
-
-			rasterizedPixelData startNewTriMessage = {0};
-			startNewTriMessage.pixelX = startNewTriangleSlotCommand;
-			startNewTriMessage.pixelY = (currentTriCacheIndex) % 8;
-			rasterizedPixels.push_back(startNewTriMessage);
-
-			EmulateCPURasterizer(triSetupData, rasterizedPixels);
-
-			rasterizedPixelData endTriMessage = {0};
-			endTriMessage.pixelX = finishCurrentTriangleCommand;
-			endTriMessage.pixelY = (currentTriCacheIndex++) % 8;
-			rasterizedPixels.push_back(endTriMessage);
-
-			successResult &= runDepthInterpTest(triSetupData, rasterizedPixels, randomZWPositions);
 		}
 	};
 
@@ -480,10 +514,10 @@ const int RunTestsDepthInterp(Xsi::Loader& loader)
 			verts[0].posY = ( (rand() % 600) - 60) + 0.5f; // Random yPos between -60 and +540
 
 			verts[1].posX = verts[0].posX + ( (rand() % 100) - 50); // Random xOffset between -50 and +50
-			verts[1].posY = verts[0].posY + ( (rand() % 100) - 50); // Random xOffset between -50 and +50
+			verts[1].posY = verts[0].posY + ( (rand() % 100) - 50); // Random yOffset between -50 and +50
 
 			verts[2].posX = verts[0].posX + ( (rand() % 100) - 50); // Random xOffset between -50 and +50
-			verts[2].posY = verts[0].posY + ( (rand() % 100) - 50); // Random xOffset between -50 and +50
+			verts[2].posY = verts[0].posY + ( (rand() % 100) - 50); // Random yOffset between -50 and +50
 
 			const bool useRandomZWPositions = true;
 			testSimpleDrawCall(verts, fullTriangleIB, ARRAYSIZE(fullTriangleIB) / 3, useRandomZWPositions);

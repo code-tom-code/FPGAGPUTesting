@@ -284,11 +284,15 @@ DBG_MaxY <= std_logic_vector(maxY);
 				-- Load new triangle data
 				when triRasterize_waitForTriData =>
 					fifoWriteEnable <= '0';
+					CMD_Rasterizer_Idle <= '0';
+
+					if (TRISETUP_newTriBegin = '0' and readyForNewTri = '1') then
+						CMD_Rasterizer_Idle <= '1'; -- Waiting for more than one cycle in a row means that we're idle
+					end if;
+
 					if (TRISETUP_newTriBegin = '1' and readyForNewTri = '1') then
 						pixelXPos <= unsigned(TRISETUP_inMinX);
 						pixelYPos <= unsigned(TRISETUP_inMinY);
-
-						CMD_Rasterizer_Idle <= '0'; -- We just got some new work, cancel our idle state!
 
 						fifoWriteEnable <= '0';
 
@@ -349,11 +353,7 @@ DBG_MaxY <= std_logic_vector(maxY);
 						readyForNewTri <= '0';
 						currentState <= triRasterize_mainLoop;
 					else
-						if (readyForNewTri = '1') then
-							CMD_Rasterizer_Idle <= '1'; -- Waiting for more than one cycle in a row means that we're idle
-						else
-							readyForNewTri <= '1';
-						end if;
+						readyForNewTri <= '1';
 					end if;
 
 				when triRasterize_mainLoop =>

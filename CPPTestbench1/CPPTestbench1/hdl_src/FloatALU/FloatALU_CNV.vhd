@@ -21,14 +21,14 @@ package FloatALU_CNV is
 		CnvAboveMaxEarlyOut -- 3
 	);
 
-	-- Converts a float32 input to signed int23 using round to nearest even mode
-	pure function CnvFloatToInt23_RoundNE_GetEarlyOutType(a : f32; aIsNaN : std_logic; aIsNegative : std_logic) return eCnvEarlyOutType;
+	-- Converts a float32 input to unsigned uint24 using round to nearest even mode
+	pure function CnvFloatToUInt24_RoundNE_GetEarlyOutType(a : f32; aIsNaN : std_logic; aIsNegative : std_logic) return eCnvEarlyOutType;
 
-	-- Converts a float32 input to signed int23 using round to nearest even mode
-	pure function CnvFloatToInt23_RoundNE_Cycle0(aSignedExp : signed(7 downto 0) ) return signed;
+	-- Converts a float32 input to unsigned uint24 using round to nearest even mode
+	pure function CnvFloatToUInt24_RoundNE_Cycle0(aSignedExp : signed(7 downto 0) ) return signed;
 
-	-- Converts a float32 input to signed int23 using round to nearest even mode
-	pure function CnvFloatToInt23_RoundNE_Cycle2(tempBuffer : signed(31 downto 0); isNegative : std_logic) return unsigned;
+	-- Converts a float32 input to unsigned uint24 using round to nearest even mode
+	pure function CnvFloatToUInt24_RoundNE_Cycle2(tempBuffer : signed(31 downto 0) ) return unsigned;
 
 	-- Converts a float32 input to signed int16 using round to nearest even mode
 	pure function CnvFloatToInt16_RoundNE_GetEarlyOutType(a : f32; aIsNaN : std_logic; aIsNegative : std_logic ) return eCnvEarlyOutType;
@@ -86,37 +86,33 @@ end package FloatALU_CNV;
 
 package body FloatALU_CNV is
 
-	-- Converts a float32 input to signed int23 using round to nearest even mode
-	pure function CnvFloatToInt23_RoundNE_GetEarlyOutType(a : f32; aIsNaN : std_logic; aIsNegative : std_logic) return eCnvEarlyOutType is
-		constant minNegativeVal : unsigned(30 downto 0) := "1001011000000000000000000000000"; -- This is -8388608.0f
-		constant maxPositiveVal : unsigned(30 downto 0) := "1001010111111111111111111111110"; -- This is 8388607.0f
+	-- Converts a float32 input to unsigned uint24 using round to nearest even mode
+	pure function CnvFloatToUInt24_RoundNE_GetEarlyOutType(a : f32; aIsNaN : std_logic; aIsNegative : std_logic) return eCnvEarlyOutType is
+		constant maxPositiveVal : unsigned(30 downto 0) := "1001011011111111111111111111111"; -- This is 16777215.0f
 	begin
 		if (aIsNaN = '1') then
 			return CnvNaNEarlyOut;
-		elsif (aIsNegative = '1' and a(30 downto 0) >= minNegativeVal) then
-			return CnvBelowMinEarlyOut; -- This is -8388608
-		elsif (a(30 downto 0) >= maxPositiveVal) then
-			return CnvAboveMaxEarlyOut; -- This is 8388607
+		elsif (aIsNegative = '1' or GetFloatIsDenorm(a) = '1') then
+			return CnvBelowMinEarlyOut; -- This is 0.0f
+		elsif (a(30 downto 0) > maxPositiveVal) then
+			return CnvAboveMaxEarlyOut; -- This is 16777215
 		else
 			return CnvNoEarlyOut;
 		end if;
 	end function;
 
-	-- Converts a float32 input to signed int23 using round to nearest even mode
-	pure function CnvFloatToInt23_RoundNE_Cycle0(aSignedExp : signed(7 downto 0) ) return signed is
+	-- Converts a float32 input to unsigned uint24 using round to nearest even mode
+	pure function CnvFloatToUInt24_RoundNE_Cycle0(aSignedExp : signed(7 downto 0) ) return signed is
 	begin
 		return 22 - aSignedExp;
 	end function;
 
-	-- Converts a float32 input to signed int23 using round to nearest even mode
-	pure function CnvFloatToInt23_RoundNE_Cycle2(tempBuffer : signed(31 downto 0); isNegative : std_logic) return unsigned is
+	-- Converts a float32 input to unsigned uint24 using round to nearest even mode
+	pure function CnvFloatToUInt24_RoundNE_Cycle2(tempBuffer : signed(31 downto 0) ) return unsigned is
 		variable newTempBuffer : signed(31 downto 0);
 	begin
 		newTempBuffer := tempBuffer + 1;
 		newTempBuffer := newTempBuffer srl 1;
-		if (isNegative = '1') then
-			newTempBuffer := -newTempBuffer; -- Two's compliment the buffer bits if float is negative
-		end if;
 		return unsigned(newTempBuffer);
 	end function;
 

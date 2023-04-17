@@ -200,7 +200,7 @@ begin
 
 					CMD_DepthIsIdle <= '0';
 				else
-					CMD_DepthIsIdle <= DepthBufferBlockIsIdle(depthPipeline);
+					CMD_DepthIsIdle <= DepthBufferBlockIsIdle(depthPipeline) and not RAST_PixelReady;
 				end if;
 			end if;
 		end if;

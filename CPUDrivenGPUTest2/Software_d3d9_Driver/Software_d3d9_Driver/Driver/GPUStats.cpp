@@ -175,6 +175,13 @@ void GPUStats::UpdateDialogStats()
 	PrintTimeStat(IDC_IA_STAT3, IAWaitCachePercent, uStats.typedFrameStats.IATimerStats.cyclesLoadingDataToCache);
 	PrintTimeStat(IDC_IA_STAT4, IAWorkingPercent, uStats.typedFrameStats.IATimerStats.cyclesWorking);
 
+	const float ClipUnitIdlePercent = uStats.typedFrameStats.ClipUnitTimerStats.cyclesIdle / (const float)uStats.typedFrameStats.ClipUnitTimerStats.GetTotalCycleCount();
+	const float ClipUnitOutWaitPercent = uStats.typedFrameStats.ClipUnitTimerStats.cyclesWaitingForOutput / (const float)uStats.typedFrameStats.ClipUnitTimerStats.GetTotalCycleCount();
+	const float ClipUnitWorkingPercent = uStats.typedFrameStats.ClipUnitTimerStats.cyclesWorking / (const float)uStats.typedFrameStats.ClipUnitTimerStats.GetTotalCycleCount();
+	PrintTimeStat(IDC_CLIPUNIT_STAT1, ClipUnitIdlePercent, uStats.typedFrameStats.ClipUnitTimerStats.cyclesIdle);
+	PrintTimeStat(IDC_CLIPUNIT_STAT2, ClipUnitOutWaitPercent, uStats.typedFrameStats.ClipUnitTimerStats.cyclesWaitingForOutput);
+	PrintTimeStat(IDC_CLIPUNIT_STAT3, ClipUnitWorkingPercent, uStats.typedFrameStats.ClipUnitTimerStats.cyclesWorking);
+
 	const float TriSetupIdlePercent = uStats.typedFrameStats.TriSetupTimerStats.cyclesIdle / (const float)uStats.typedFrameStats.TriSetupTimerStats.GetTotalCycleCount();
 	const float TriSetupOutWaitPercent = uStats.typedFrameStats.TriSetupTimerStats.cyclesWaitingForOutput / (const float)uStats.typedFrameStats.TriSetupTimerStats.GetTotalCycleCount();
 	const float TriSetupWorkingPercent = uStats.typedFrameStats.TriSetupTimerStats.cyclesWorking / (const float)uStats.typedFrameStats.TriSetupTimerStats.GetTotalCycleCount();

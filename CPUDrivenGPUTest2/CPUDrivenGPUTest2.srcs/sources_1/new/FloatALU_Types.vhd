@@ -83,7 +83,7 @@ package FloatALU_Types is
 	type eConvertMode is
 	(
 		F_Frc, -- 0
-		F_to_I23_RoundNearestEven, -- 1
+		F_to_U24_RoundNearestEven, -- 1
 		F_to_I16_RoundNearestEven, -- 2
 		F_to_UNORM16, -- 3
 		F_to_UNORM8, -- 4

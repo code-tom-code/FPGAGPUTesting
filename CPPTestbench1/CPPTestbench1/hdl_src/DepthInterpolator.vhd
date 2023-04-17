@@ -6,6 +6,7 @@ use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
 
 use work.FloatALU_Types.all;
+use work.FloatCommon.all;
 
 entity DepthInterpolator is
 	Port ( clk : in STD_LOGIC;
@@ -42,13 +43,13 @@ entity DepthInterpolator is
 		FPU_A : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 		FPU_B : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 		FPU_Mode : out STD_LOGIC_VECTOR(2 downto 0) := (others => '0');
-		FPU_ISHFT_GO : out STD_LOGIC := '0';
+		FPU_ISHFT_GO : out STD_LOGIC := '0'; -- Unused
 		FPU_IMUL_GO : out STD_LOGIC := '0';
 		FPU_IADD_GO : out STD_LOGIC := '0';
-		FPU_ICMP_GO : out STD_LOGIC := '0';
+		FPU_ICMP_GO : out STD_LOGIC := '0'; -- Unused
 		FPU_ICNV_GO : out STD_LOGIC := '0';
 		FPU_ISPEC_GO : out STD_LOGIC := '0';
-		FPU_IBIT_GO : out STD_LOGIC := '0';
+		FPU_IBIT_GO : out STD_LOGIC := '0'; -- Unused
 		FPU_OUT : in STD_LOGIC_VECTOR(31 downto 0);
 	-- FPU interfaces end
 
@@ -81,6 +82,10 @@ entity DepthInterpolator is
 		ATTR_OutPixelW : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 	-- Attribute Interpolator interface end
 
+	-- Command Processor interface begin
+		CMD_IsIdle : out STD_LOGIC := '0';
+	-- Command Processor interface end
+
 	-- Stats interface begin
 		STAT_CyclesIdle : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 		STAT_CyclesSpentWorking : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
@@ -90,7 +95,8 @@ entity DepthInterpolator is
 	-- Debug signals
 		DBG_DepthInterpolator_State : out STD_LOGIC_VECTOR(6 downto 0) := (others => '0');
 		DBG_RastBarycentricB : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-		DBG_RastBarycentricC : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0')
+		DBG_RastBarycentricC : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		DBG_InterpolatedDepthU24 : out STD_LOGIC_VECTOR(23 downto 0) := (others => '0')
 		);
 end DepthInterpolator;
 
@@ -110,86 +116,88 @@ constant noperspective : STD_LOGIC := '1';
 
 type depthInterpStateType is 
 (
-	init, -- 0
-	waitingForRead, -- 1
+	waitingForRead, -- 0
 
 	-- Convert our input barycentrics from int32 to float32
-	barycentricConversion0, -- 2
-	barycentricConversion1, -- 3
-	barycentricConversion2, -- 4
-	barycentricConversion3, -- 5
-	barycentricConversion4, -- 6
-	barycentricConversion5, -- 7
+	barycentricConversion0, -- 1
+	barycentricConversion1, -- 2
+	barycentricConversion2, -- 3
+	barycentricConversion3, -- 4
+	barycentricConversion4, -- 5
+	barycentricConversion5, -- 6
 
 	-- Normalize our barycentrics by multiplying the [0.0f, 16777216.0f] values by the barycentric normalization factor (computed by the TriSetup block previously) to
 	-- get them into the [0.0f, 1.0f] range.
-	barycentricNormalization0, -- 8
-	barycentricNormalization1, -- 9
-	barycentricNormalization2, -- 10
-	barycentricNormalization3, -- 11
-	barycentricNormalization4, -- 12
-	barycentricNormalization5, -- 13
-	barycentricNormalization6, -- 14
-	barycentricNormalization7, -- 15
+	barycentricNormalization0, -- 7
+	barycentricNormalization1, -- 8
+	barycentricNormalization2, -- 9
+	barycentricNormalization3, -- 10
+	barycentricNormalization4, -- 11
+	barycentricNormalization5, -- 12
+	barycentricNormalization6, -- 13
+	barycentricNormalization7, -- 14
 
 	-- Multiply the normalized barycentrics with the inverseZ (1.0f/zN) values
-	barycentricMultiply0, -- 16
-	barycentricMultiply1, -- 17
-	barycentricMultiply2, -- 18
-	barycentricMultiply3, -- 19
-	barycentricMultiply4, -- 20
-	barycentricMultiply5, -- 21
-	barycentricMultiply6, -- 22
-	barycentricMultiply7, -- 23
-	barycentricMultiply8, -- 24
-	barycentricMultiply9, -- 25
+	barycentricMultiply0, -- 15
+	barycentricMultiply1, -- 16
+	barycentricMultiply2, -- 17
+	barycentricMultiply3, -- 18
+	barycentricMultiply4, -- 19
+	barycentricMultiply5, -- 20
+	barycentricMultiply6, -- 21
+	barycentricMultiply7, -- 22
+	barycentricMultiply8, -- 23
+	barycentricMultiply9, -- 24
 
 	-- Sum the products together to complete the dot product
-	barycentricDotProductSums0, -- 26
-	barycentricDotProductSums1, -- 27
-	barycentricDotProductSums2, -- 28
-	barycentricDotProductSums3, -- 29
-	barycentricDotProductSums4, -- 30
-	barycentricDotProductSums5, -- 31
-	barycentricDotProductSums6, -- 32
-	barycentricDotProductSums7, -- 33
-	barycentricDotProductSums8, -- 34
-	barycentricDotProductSums9, -- 35
+	barycentricDotProductSums0, -- 25
+	barycentricDotProductSums1, -- 26
+	barycentricDotProductSums2, -- 27
+	barycentricDotProductSums3, -- 28
+	barycentricDotProductSums4, -- 29
+	barycentricDotProductSums5, -- 30
+	barycentricDotProductSums6, -- 31
+	barycentricDotProductSums7, -- 32
+	barycentricDotProductSums8, -- 33
+	barycentricDotProductSums9, -- 34
 
 	-- Take the reciprocals of the dot product (1.0f / dot(normbary.abc, inverseZ.xyz) ) to yield the per-pixel depth value and per-pixel W value as a float32
-	barycentricDotProductRecip0, -- 36
-	barycentricDotProductRecip1, -- 37
-	barycentricDotProductRecip2, -- 38
-	barycentricDotProductRecip3, -- 39
-	barycentricDotProductRecip4, -- 40
-	barycentricDotProductRecip5, -- 41
-	barycentricDotProductRecip6, -- 42
-	barycentricDotProductRecip7, -- 43
-	barycentricDotProductRecip8, -- 44
-	barycentricDotProductRecip9, -- 45
-	barycentricDotProductRecip10, -- 46
-	barycentricDotProductRecip11, -- 47
-	barycentricDotProductRecip12, -- 48
-	barycentricDotProductRecip13, -- 49
-	barycentricDotProductRecip14, -- 50
-	barycentricDotProductRecip15, -- 51
-	barycentricDotProductRecip16, -- 52
+	barycentricDotProductRecip0, -- 35
+	barycentricDotProductRecip1, -- 36
+	barycentricDotProductRecip2, -- 37
+	barycentricDotProductRecip3, -- 38
+	barycentricDotProductRecip4, -- 39
+	barycentricDotProductRecip5, -- 40
+	barycentricDotProductRecip6, -- 41
+	barycentricDotProductRecip7, -- 42
+	barycentricDotProductRecip8, -- 43
+	barycentricDotProductRecip9, -- 44
+	barycentricDotProductRecip10, -- 45
+	barycentricDotProductRecip11, -- 46
+	barycentricDotProductRecip12, -- 47
+	barycentricDotProductRecip13, -- 48
+	barycentricDotProductRecip14, -- 49
+	barycentricDotProductRecip15, -- 50
+	barycentricDotProductRecip16, -- 51
 
 	-- If depth testing is enabled, perform the depth test now. Otherwise, skip these stages entirely.
-	depthTestState0, -- 53
-	depthTestState1, -- 54
-	depthTestState2, -- 55
-	depthTestState3, -- 56
-	depthTestState4, -- 57
-	depthTestState5, -- 58
-	depthTestState6, -- 59
-	depthTestState7, -- 60
+	depthTestState0, -- 52
+	depthTestState1, -- 53
+	depthTestState2, -- 54
+	depthTestState3, -- 55
+	depthTestState4, -- 56
+	depthTestState5, -- 57
+	depthTestState6, -- 58
+	depthTestState7, -- 59
+	depthTestState8, -- 60
+	depthTestState9, -- 61
+	depthTestState10, -- 62
 
 	-- When it's ready we can send the now depth-test-passed pixel off to the next block for attribute interpolation
-	sendPixelForAttrInterpolation, -- 61
+	sendPixelForAttrInterpolation, -- 63
 
-	setNewPrimitiveSlot, -- 62
-	signalPrimitiveComplete -- 63
+	setNewPrimitiveSlot, -- 64
+	signalPrimitiveComplete -- 65
 );
 
 pure function isSpecialReadPacket(rd_data : STD_LOGIC_VECTOR(32+32+16+16 - 1 downto 0) ) return std_logic is
@@ -211,7 +219,33 @@ begin
 	end if;
 end function;
 
-signal currentState : depthInterpStateType := init;
+-- Multiplies a float value by 2^24-1 using fast shifting.
+-- Assumes input value is already in the [0.0f, 1.0f] range!
+pure function FloatMultiplyBy2_24(fltVal : f32) return f32 is
+	variable tempResult : unsigned(30 downto 0);
+begin
+	if (GetFloatIsDenorm(fltVal) = '1') then
+		return X"00000000"; -- Anything times 0.0f is 0.0f
+	else
+		tempResult := (fltVal(30 downto 23) + 24) & fltVal(22 downto 0);
+		return fltVal(31) & (tempResult - 1);
+	end if;
+end function;
+
+pure function FloatSaturate(fltVal : f32) return f32 is
+begin
+	if (fltVal(31) = '1') then
+		return X"00000000";
+	elsif (fltVal(30 downto 0) > X"3F800000") then
+		return X"3F800000";
+	else
+		return fltVal;
+	end if;
+end function;
+
+signal currentState : depthInterpStateType := waitingForRead;
+
+signal newPixelValid : std_logic := '0';
 
 signal storedPixelX : unsigned(15 downto 0) := (others => '0');
 signal storedPixelY : unsigned(15 downto 0) := (others => '0');
@@ -220,34 +254,35 @@ signal tempMultBarycentricB : signed(31 downto 0) := (others => '0'); -- int32 f
 signal tempMultBarycentricC : signed(31 downto 0) := (others => '0'); -- int32 format of the input barycentric
 signal tempMultBarycentricBIsNegative : std_logic := '0'; -- Save off the sign bit for restoring later
 signal tempMultBarycentricCIsNegative : std_logic := '0';
-signal tempFloatBarycentricB : unsigned(31 downto 0) := (others => '0'); -- float32 format of the input barycentric
-signal tempFloatBarycentricC : unsigned(31 downto 0) := (others => '0'); -- float32 format of the input barycentric
+signal tempFloatBarycentricB : f32 := (others => '0'); -- float32 format of the input barycentric
+signal tempFloatBarycentricC : f32 := (others => '0'); -- float32 format of the input barycentric
 
-signal normalizedBarycentricB : unsigned(31 downto 0) := (others => '0'); -- float32 format of barycentricNormalizeFactor * float(barycentricB)
-signal normalizedBarycentricC : unsigned(31 downto 0) := (others => '0'); -- float32 format of barycentricNormalizeFactor * float(barycentricC)
+signal normalizedBarycentricB : f32 := (others => '0'); -- float32 format of barycentricNormalizeFactor * float(barycentricB)
+signal normalizedBarycentricC : f32 := (others => '0'); -- float32 format of barycentricNormalizeFactor * float(barycentricC)
 
-signal tempInvZDP3B : unsigned(31 downto 0) := (others => '0'); -- float32 format of (1/z1 * normalizedBarycentricB)
-signal tempInvZDP3C : unsigned(31 downto 0) := (others => '0'); -- float32 format of (1/z2 * normalizedBarycentricC)
+signal tempInvZDP3B : f32 := (others => '0'); -- float32 format of (1/z1 * normalizedBarycentricB)
+signal tempInvZDP3C : f32 := (others => '0'); -- float32 format of (1/z2 * normalizedBarycentricC)
 
-signal tempInvWDP3B : unsigned(31 downto 0) := (others => '0'); -- float32 format of (1/w1 * normalizedBarycentricB)
-signal tempInvWDP3C : unsigned(31 downto 0) := (others => '0'); -- float32 format of (1/w2 * normalizedBarycentricC)
+signal tempInvWDP3B : f32 := (others => '0'); -- float32 format of (1/w1 * normalizedBarycentricB)
+signal tempInvWDP3C : f32 := (others => '0'); -- float32 format of (1/w2 * normalizedBarycentricC)
 
-signal pixelDepth : unsigned(31 downto 0) := (others => '0'); -- float32 format (0.0f to 1.0f) pixel depth value
-signal pixelW : unsigned(31 downto 0) := (others => '0'); -- float32 format (0.0f to 1.0f) pixel W value
+signal pixelDepth : f32 := (others => '0'); -- float32 format (0.0f to 1.0f) pixel depth value
+signal pixelW : f32 := (others => '0'); -- float32 format (0.0f to 1.0f) pixel W value
+signal pixelDepthU24 : unsigned(23 downto 0) := (others => '0');
 
-signal storedBarycentricInverse : unsigned(31 downto 0) := (others => '0'); -- float32 format (this is 1.0f / twiceTriangleArea)
-signal storedInvZ0 : unsigned(31 downto 0) := (others => '0'); -- float32 format (this is 1.0f / z0)
-signal storedInvZ10 : unsigned(31 downto 0) := (others => '0'); -- float32 format (this is 1.0f / z1)
-signal storedInvZ20 : unsigned(31 downto 0) := (others => '0'); -- float32 format (this is 1.0f / z2)
-signal storedInvW0 : unsigned(31 downto 0) := (others => '0'); -- float32 format (this is 1.0f / w0)
-signal storedInvW10 : unsigned(31 downto 0) := (others => '0'); -- float32 format (this is 1.0f / w1)
-signal storedInvW20 : unsigned(31 downto 0) := (others => '0'); -- float32 format (this is 1.0f / w2)
-signal storedTX0 : unsigned(31 downto 0) := (others => '0'); -- float32 format texcoords
-signal storedTY0 : unsigned(31 downto 0) := (others => '0'); -- float32 format texcoords
-signal storedTX10 : unsigned(31 downto 0) := (others => '0'); -- float32 format texcoords
-signal storedTY10 : unsigned(31 downto 0) := (others => '0'); -- float32 format texcoords
-signal storedTX20 : unsigned(31 downto 0) := (others => '0'); -- float32 format texcoords
-signal storedTY20 : unsigned(31 downto 0) := (others => '0'); -- float32 format texcoords
+signal storedBarycentricInverse : f32 := (others => '0'); -- float32 format (this is 1.0f / twiceTriangleArea)
+signal storedInvZ0 : f32 := (others => '0'); -- float32 format (this is 1.0f / z0)
+signal storedInvZ10 : f32 := (others => '0'); -- float32 format (this is 1.0f / z1)
+signal storedInvZ20 : f32 := (others => '0'); -- float32 format (this is 1.0f / z2)
+signal storedInvW0 : f32 := (others => '0'); -- float32 format (this is 1.0f / w0)
+signal storedInvW10 : f32 := (others => '0'); -- float32 format (this is 1.0f / w1)
+signal storedInvW20 : f32 := (others => '0'); -- float32 format (this is 1.0f / w2)
+signal storedTX0 : f32 := (others => '0'); -- float32 format texcoords
+signal storedTY0 : f32 := (others => '0'); -- float32 format texcoords
+signal storedTX10 : f32 := (others => '0'); -- float32 format texcoords
+signal storedTY10 : f32 := (others => '0'); -- float32 format texcoords
+signal storedTX20 : f32 := (others => '0'); -- float32 format texcoords
+signal storedTY20 : f32 := (others => '0'); -- float32 format texcoords
 signal storedColorRGBA0 : unsigned(127 downto 0) := (others => '0');
 signal storedColorRGBA10 : unsigned(127 downto 0) := (others => '0');
 signal storedColorRGBA20 : unsigned(127 downto 0) := (others => '0');
@@ -264,6 +299,7 @@ signal statCyclesWaitingForOutput : unsigned(31 downto 0) := (others => '0');
 begin
 
 RASTOUT_FIFO_rd_en <= readFromFifo;
+ATTR_NewPixelValid <= newPixelValid;
 
 STAT_CyclesIdle <= std_logic_vector(statCyclesIdle);
 STAT_CyclesSpentWorking <= std_logic_vector(statCyclesWorking);
@@ -292,14 +328,11 @@ DBG_RastBarycentricC <= std_logic_vector(storedDbgBarycentricC);
 	MainProcess : process(clk)
 	begin
 		if (rising_edge(clk) ) then
-			case currentState is
-				when init =>
-					readFromFifo <= '0';
-					currentState <= waitingForRead;
-					TRICACHE_SignalSlotComplete <= '0';
+			CMD_IsIdle <= '0';
 
+			case currentState is
 				when waitingForRead =>
-					ATTR_NewPixelValid <= '0'; -- Deassert after one clock cycle
+					newPixelValid <= '0'; -- Deassert after one clock cycle
 					TRICACHE_SignalSlotComplete <= '0'; -- Deassert after one clock cycle
 					DEPTH_PixelReady <= '0';
 					if (RASTOUT_FIFO_empty = '0') then
@@ -321,18 +354,18 @@ DBG_RastBarycentricC <= std_logic_vector(storedDbgBarycentricC);
 							storedPixelX <= unsigned(RASTOUT_FIFO_rd_data(32*2+16-1 downto 32*2) );
 							storedPixelY <= unsigned(RASTOUT_FIFO_rd_data(32*2+16*2-1 downto 32*2+16) );
 							storedBarycentricInverse <= unsigned(TRICACHE_inBarycentricInverse);
-							storedInvZ0 <= unsigned(TRICACHE_inInvZ0);
-							storedInvZ10 <= unsigned(TRICACHE_inInvZ10);
-							storedInvZ20 <= unsigned(TRICACHE_inInvZ20);
-							storedInvW0 <= unsigned(TRICACHE_inInvW0);
-							storedInvW10 <= unsigned(TRICACHE_inInvW10);
-							storedInvW20 <= unsigned(TRICACHE_inInvW20);
-							storedTX0 <= unsigned(TRICACHE_inT0X);
-							storedTY0 <= unsigned(TRICACHE_inT0Y);
-							storedTX10 <= unsigned(TRICACHE_inT10X);
-							storedTY10 <= unsigned(TRICACHE_inT10Y);
-							storedTX20 <= unsigned(TRICACHE_inT20X);
-							storedTY20 <= unsigned(TRICACHE_inT20Y);
+							storedInvZ0 <= f32(TRICACHE_inInvZ0);
+							storedInvZ10 <= f32(TRICACHE_inInvZ10);
+							storedInvZ20 <= f32(TRICACHE_inInvZ20);
+							storedInvW0 <= f32(TRICACHE_inInvW0);
+							storedInvW10 <= f32(TRICACHE_inInvW10);
+							storedInvW20 <= f32(TRICACHE_inInvW20);
+							storedTX0 <= f32(TRICACHE_inT0X);
+							storedTY0 <= f32(TRICACHE_inT0Y);
+							storedTX10 <= f32(TRICACHE_inT10X);
+							storedTY10 <= f32(TRICACHE_inT10Y);
+							storedTX20 <= f32(TRICACHE_inT20X);
+							storedTY20 <= f32(TRICACHE_inT20Y);
 							storedColorRGBA0 <= unsigned(TRICACHE_inColorRGBA0);
 							storedColorRGBA10 <= unsigned(TRICACHE_inColorRGBA10);
 							storedColorRGBA20 <= unsigned(TRICACHE_inColorRGBA20);
@@ -342,6 +375,10 @@ DBG_RastBarycentricC <= std_logic_vector(storedDbgBarycentricC);
 
 						readFromFifo <= '1'; -- Signal the read request
 					else
+						if (readFromFifo = '0') then
+							CMD_IsIdle <= '1';
+						end if;
+
 						readFromFifo <= '0';
 					end if;
 
@@ -401,11 +438,11 @@ DBG_RastBarycentricC <= std_logic_vector(storedDbgBarycentricC);
 					currentState <= barycentricNormalization6;
 
 				when barycentricNormalization6 =>
-					normalizedBarycentricB <= unsigned(FPU_OUT);
+					normalizedBarycentricB <= f32(FPU_OUT);
 					currentState <= barycentricNormalization7;
 
 				when barycentricNormalization7 =>
-					normalizedBarycentricC <= unsigned(FPU_OUT);
+					normalizedBarycentricC <= f32(FPU_OUT);
 					currentState <= barycentricMultiply0;
 
 				when barycentricMultiply0 =>
@@ -440,19 +477,19 @@ DBG_RastBarycentricC <= std_logic_vector(storedDbgBarycentricC);
 					currentState <= barycentricMultiply6;
 
 				when barycentricMultiply6 =>
-					tempInvZDP3B <= unsigned(FPU_OUT);
+					tempInvZDP3B <= f32(FPU_OUT);
 					currentState <= barycentricMultiply7;
 
 				when barycentricMultiply7 =>
-					tempInvWDP3B <= unsigned(FPU_OUT);
+					tempInvWDP3B <= f32(FPU_OUT);
 					currentState <= barycentricMultiply8;
 
 				when barycentricMultiply8 =>
-					tempInvZDP3C <= unsigned(FPU_OUT);
+					tempInvZDP3C <= f32(FPU_OUT);
 					currentState <= barycentricMultiply9;
 
 				when barycentricMultiply9 =>
-					tempInvWDP3C <= unsigned(FPU_OUT);
+					tempInvWDP3C <= f32(FPU_OUT);
 					currentState <= barycentricDotProductSums0;
 
 				when barycentricDotProductSums0 =>
@@ -550,11 +587,14 @@ DBG_RastBarycentricC <= std_logic_vector(storedDbgBarycentricC);
 					currentState <= barycentricDotProductRecip15;
 
 				when barycentricDotProductRecip15 =>
-					pixelDepth <= unsigned(FPU_OUT); -- Should we saturate() the interpolated per-pixel depth here just in case it's outside the [0.0f, 1.0f] range?
+					pixelDepth <= FloatMultiplyBy2_24(FloatSaturate(f32(FPU_OUT) ) ); -- Saturate() the interpolated per-pixel depth here just in case it's outside the [0.0f, 1.0f] range
 					currentState <= barycentricDotProductRecip16;
 
 				when barycentricDotProductRecip16 =>
-					pixelW <= unsigned(FPU_OUT); -- Should we saturate() the interpolated per-pixel W here just in case it's outside the [0.0f, 1.0f] range?
+					pixelW <= f32(FPU_OUT); -- Do *not* saturate the interpolated per-pixel W-value! It is supposed to be allowed outside of the [0.0f, 1.0f] range.
+					FPU_A <= std_logic_vector(pixelDepth);
+					FPU_Mode <= std_logic_vector(to_unsigned(eConvertMode'pos(F_to_U24_RoundNearestEven), 3) );
+					FPU_ICNV_GO <= '1';
 					if (DEPTH_DepthTestEnabled = '1') then
 						currentState <= depthTestState0;
 					else
@@ -562,24 +602,27 @@ DBG_RastBarycentricC <= std_logic_vector(storedDbgBarycentricC);
 					end if;
 
 				when depthTestState0 =>
-					-- Using the mantissa of the float assumes that the float is in the (0.5f, 1.0f) range, which it very likely is due to not many older D3D8/D3D9 games using reversed depth ranges or consuming the entirety of the depth range
-					DEPTH_OutPixelDepth <= '1' & std_logic_vector(pixelDepth(22 downto 0) );
-					DEPTH_PosX <= std_logic_vector(storedPixelX(9 downto 0) );
-					DEPTH_PosY <= std_logic_vector(storedPixelY(9 downto 0) );
-					DEPTH_PixelReady <= '1';
+					FPU_ICNV_GO <= '0';
 					currentState <= depthTestState1;
 
 				when depthTestState1 =>
-					DEPTH_PixelReady <= '0';
 					currentState <= depthTestState2;
 
 				when depthTestState2 =>
 					currentState <= depthTestState3;
 
 				when depthTestState3 =>
+					pixelDepthU24 <= unsigned(FPU_OUT(23 downto 0) );
+					DBG_InterpolatedDepthU24 <= FPU_OUT(23 downto 0);
+
+					DEPTH_OutPixelDepth <= FPU_OUT(23 downto 0);
+					DEPTH_PosX <= std_logic_vector(storedPixelX(9 downto 0) );
+					DEPTH_PosY <= std_logic_vector(storedPixelY(9 downto 0) );
+					DEPTH_PixelReady <= '1';
 					currentState <= depthTestState4;
 
 				when depthTestState4 =>
+					DEPTH_PixelReady <= '0';
 					currentState <= depthTestState5;
 
 				when depthTestState5 =>
@@ -589,6 +632,15 @@ DBG_RastBarycentricC <= std_logic_vector(storedDbgBarycentricC);
 					currentState <= depthTestState7;
 
 				when depthTestState7 =>
+					currentState <= depthTestState8;
+
+				when depthTestState8 =>
+					currentState <= depthTestState9;
+
+				when depthTestState9 =>
+					currentState <= depthTestState10;
+
+				when depthTestState10 =>
 					if (DEPTH_PixelPassedDepthTest = '1') then
 						currentState <= sendPixelForAttrInterpolation;
 					else
@@ -596,27 +648,28 @@ DBG_RastBarycentricC <= std_logic_vector(storedDbgBarycentricC);
 					end if;
 
 				when sendPixelForAttrInterpolation =>
-					if (ATTR_ReadyForNewPixel = '1') then
-						ATTR_NewPixelValid <= '1';
+					FPU_ICNV_GO <= '0';
+					ATTR_PosX <= std_logic_vector(storedPixelX(9 downto 0) );
+					ATTR_PosY <= std_logic_vector(storedPixelY(9 downto 0) );
+					ATTR_TX0 <= std_logic_vector(storedTX0);
+					ATTR_TX10 <= std_logic_vector(storedTX10);
+					ATTR_TX20 <= std_logic_vector(storedTX20);
+					ATTR_TY0 <= std_logic_vector(storedTY0);
+					ATTR_TY10 <= std_logic_vector(storedTY10);
+					ATTR_TY20 <= std_logic_vector(storedTY20);
+					ATTR_VC0 <= std_logic_vector(storedColorRGBA0);
+					ATTR_VC10 <= std_logic_vector(storedColorRGBA10);
+					ATTR_VC20 <= std_logic_vector(storedColorRGBA20);
+					ATTR_NormalizedBarycentricB <= std_logic_vector(normalizedBarycentricB);
+					ATTR_NormalizedBarycentricC <= std_logic_vector(normalizedBarycentricC);
+					ATTR_OutPixelW <= std_logic_vector(pixelW);
 
-						ATTR_PosX <= std_logic_vector(storedPixelX(9 downto 0) );
-						ATTR_PosY <= std_logic_vector(storedPixelY(9 downto 0) );
-						ATTR_TX0 <= std_logic_vector(storedTX0);
-						ATTR_TX10 <= std_logic_vector(storedTX10);
-						ATTR_TX20 <= std_logic_vector(storedTX20);
-						ATTR_TY0 <= std_logic_vector(storedTY0);
-						ATTR_TY10 <= std_logic_vector(storedTY10);
-						ATTR_TY20 <= std_logic_vector(storedTY20);
-						ATTR_VC0 <= std_logic_vector(storedColorRGBA0);
-						ATTR_VC10 <= std_logic_vector(storedColorRGBA10);
-						ATTR_VC20 <= std_logic_vector(storedColorRGBA20);
-						ATTR_NormalizedBarycentricB <= std_logic_vector(normalizedBarycentricB);
-						ATTR_NormalizedBarycentricC <= std_logic_vector(normalizedBarycentricC);
-						ATTR_OutPixelW <= std_logic_vector(pixelW);
+					if (ATTR_ReadyForNewPixel = '1' and newPixelValid = '1') then
+						newPixelValid <= '0';
 
 						currentState <= waitingForRead;
 					else
-						ATTR_NewPixelValid <= '0';
+						newPixelValid <= '1';
 					end if;
 
 				when setNewPrimitiveSlot =>

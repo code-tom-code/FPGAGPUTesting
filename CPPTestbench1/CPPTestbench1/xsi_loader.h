@@ -51,7 +51,7 @@ public:
 
 public:
     // Utility functions
-    int num_ports() { return _xsi_value_buffer.size(); };
+    int num_ports() { return (const int)_xsi_value_buffer.size(); };
     void display_value(int port_number);
     void display_port_values();
     static std::string convert_std_logic_to_str(const char* value_buffer, int width);

@@ -30,7 +30,7 @@
 static const WCHAR* const simengine_libpath = L"D:\\Xilinx\\Vivado\\2018.1\\lib\\win64.o";
 static const WCHAR* const simengine_imageformats_libpath = L"D:\\Xilinx\\Vivado\\2018.1\\lib\\win64.o\\imageformats";
 static const char* const simengine_libname = "librdi_simulator_kernel.dll";
-static const char* const design_name = "ClipUnit";
+static const char* const design_name = "DepthInterpolator";
 static char wdbName[] = "xsim.wdb";
 static D3DCOLOR colorsArray[640 * 480] = {0};
 static RenderWindow* renderWindow = NULL;
@@ -54,6 +54,7 @@ int main(const unsigned argc, const char* const argv[])
 	AddDllDirectory(simengine_imageformats_libpath);
 	AddDllDirectory(simengine_libpath);
 	SetDefaultDllDirectories(LOAD_LIBRARY_SEARCH_APPLICATION_DIR | LOAD_LIBRARY_SEARCH_DEFAULT_DIRS | LOAD_LIBRARY_SEARCH_SYSTEM32 | LOAD_LIBRARY_SEARCH_USER_DIRS);
+	InitClipPlanes();
 
 	int status = S_OK;
 
@@ -68,22 +69,27 @@ int main(const unsigned argc, const char* const argv[])
 		info.wdbFileName = NULL;
 		loader.open(&info);
 
-		//status = RunTestsShaderCore(loader);
+		// Test shared components:
 		//status = RunTestsFloatALU(loader);
 		//status = RunTestsUNORM8ToFloat(loader);
+
+		// Test individual pipeline cores one at a time in the order that they flow through the graphics pipeline:
 		//status = RunTestsIndexBufferCache(loader);
-		//status = RunTestsInputAssembler(loader);
-		//status = RunTestsVertexBatchBuilder(loader);
 		//status = RunTestsVertexStreamCache(loader);
+		//status = RunTestsVertexBatchBuilder(loader);
+		//status = RunTestsShaderCore(loader);
+		//status = RunTestsInputAssembler(loader);
+		//status = RunTestsClipUnit(loader, renderWindow);
 		//status = RunTestsTriSetup(loader);
 		//status = RunTestsRasterizer(loader);
-		//status = RunTestsDepthInterp(loader);
+		status = RunTestsDepthInterp(loader);
 		//status = RunTestsAttributeInterp(loader);
 		//status = RunTestsTexSampler(loader, renderWindow);
 		//status = RunTestsROP(loader, renderWindow);
-		//status = RunTestsEthernet(loader);
 		//status = RunTestsHDMIScanout(loader, renderWindow);
-		status = RunTestsClipUnit(loader, renderWindow);
+
+		// Test ethernet/comms core:
+		//status = RunTestsEthernet(loader);
 	}
 	catch (std::exception& except)
 	{

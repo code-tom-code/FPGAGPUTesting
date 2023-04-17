@@ -52,6 +52,8 @@ package PacketType is
 		PT_CONNBROADCAST, -- 29
 		PT_CONNREQUEST, -- 30
 		PT_CONNRESPONSE, -- 31
+		PT_SESSIONCOMBOPACKET, -- 32
+		PT_DISCONNECT, -- 33
 
 		PT_MAX_PACKET_TYPES -- Must always be last!
 	);

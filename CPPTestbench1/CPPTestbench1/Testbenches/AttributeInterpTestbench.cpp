@@ -26,73 +26,72 @@ static const float SoftFrac(const float f)
 
 enum attrInterpStateType
 {
-	init, // 0
-	waitingForRead, // 1
+	waitingForRead, // 0
 
-	multBarycentricsAndAttr0, // 2
-	multBarycentricsAndAttr1, // 3
-	multBarycentricsAndAttr2, // 4
-	multBarycentricsAndAttr3, // 5
-	multBarycentricsAndAttr4, // 6
-	multBarycentricsAndAttr5, // 7
-	multBarycentricsAndAttr6, // 8
-	multBarycentricsAndAttr7, // 9
-	multBarycentricsAndAttr8, // 10
-	multBarycentricsAndAttr9, // 11
-	multBarycentricsAndAttr10, // 12
-	multBarycentricsAndAttr11, // 13
-	multBarycentricsAndAttr12, // 14
-	multBarycentricsAndAttr13, // 15
-	multBarycentricsAndAttr14, // 16
-	multBarycentricsAndAttr15, // 17
-	multBarycentricsAndAttr16, // 18
-	multBarycentricsAndAttr17, // 19
+	multBarycentricsAndAttr0, // 1
+	multBarycentricsAndAttr1, // 2
+	multBarycentricsAndAttr2, // 3
+	multBarycentricsAndAttr3, // 4
+	multBarycentricsAndAttr4, // 5
+	multBarycentricsAndAttr5, // 6
+	multBarycentricsAndAttr6, // 7
+	multBarycentricsAndAttr7, // 8
+	multBarycentricsAndAttr8, // 9
+	multBarycentricsAndAttr9, // 10
+	multBarycentricsAndAttr10, // 11
+	multBarycentricsAndAttr11, // 12
+	multBarycentricsAndAttr12, // 13
+	multBarycentricsAndAttr13, // 14
+	multBarycentricsAndAttr14, // 15
+	multBarycentricsAndAttr15, // 16
+	multBarycentricsAndAttr16, // 17
+	multBarycentricsAndAttr17, // 18
 
-	addDotProductTerms0, // 20
-	addDotProductTerms1, // 21
-	addDotProductTerms2, // 22
-	addDotProductTerms3, // 23
-	addDotProductTerms4, // 24
-	addDotProductTerms5, // 25
-	addDotProductTerms6, // 26
-	addDotProductTerms7, // 27
-	addDotProductTerms8, // 28
-	addDotProductTerms9, // 29
-	addDotProductTerms10, // 30
-	addDotProductTerms11, // 31
-	addDotProductTerms12, // 32
-	addDotProductTerms13, // 33
-	addDotProductTerms14, // 34
-	addDotProductTerms15, // 35
-	addDotProductTerms16, // 36
+	addDotProductTerms0, // 19
+	addDotProductTerms1, // 20
+	addDotProductTerms2, // 21
+	addDotProductTerms3, // 22
+	addDotProductTerms4, // 23
+	addDotProductTerms5, // 24
+	addDotProductTerms6, // 25
+	addDotProductTerms7, // 26
+	addDotProductTerms8, // 27
+	addDotProductTerms9, // 28
+	addDotProductTerms10, // 29
+	addDotProductTerms11, // 30
+	addDotProductTerms12, // 31
+	addDotProductTerms13, // 32
+	addDotProductTerms14, // 33
+	addDotProductTerms15, // 34
+	addDotProductTerms16, // 35
 
-	multiplyPixelW0, // 37
-	multiplyPixelW1, // 38
-	multiplyPixelW2, // 39
-	multiplyPixelW3, // 40
-	multiplyPixelW4, // 41
-	multiplyPixelW5, // 42
-	multiplyPixelW6, // 43
-	multiplyPixelW7, // 44
-	multiplyPixelW8, // 45
-	multiplyPixelW9, // 46
-	multiplyPixelW10, // 47
-	multiplyPixelW11, // 48
+	multiplyPixelW0, // 36
+	multiplyPixelW1, // 37
+	multiplyPixelW2, // 38
+	multiplyPixelW3, // 39
+	multiplyPixelW4, // 40
+	multiplyPixelW5, // 41
+	multiplyPixelW6, // 42
+	multiplyPixelW7, // 43
+	multiplyPixelW8, // 44
+	multiplyPixelW9, // 45
+	multiplyPixelW10, // 46
+	multiplyPixelW11, // 47
 
-	compressOutput0, // 49
-	compressOutput1, // 50
-	compressOutput2, // 51
-	compressOutput3, // 52
-	compressOutput4, // 53
-	compressOutput5, // 54
-	compressOutput6, // 55
-	compressOutput7, // 56
-	compressOutput8, // 57
-	compressOutput9, // 58
-	compressOutput10, // 59
-	compressOutput11, // 60
+	compressOutput0, // 48
+	compressOutput1, // 49
+	compressOutput2, // 50
+	compressOutput3, // 51
+	compressOutput4, // 52
+	compressOutput5, // 53
+	compressOutput6, // 54
+	compressOutput7, // 55
+	compressOutput8, // 56
+	compressOutput9, // 57
+	compressOutput10, // 58
+	compressOutput11, // 59
 
-	waitingForWrite // 61
+	waitingForWrite // 60
 };
 
 static void ConvertCOLOR4ToFloat4(const vertAttributes::_rgba& inColor, float& outColorX, float& outColorY, float& outColorZ, float& outColorW)
@@ -119,7 +118,7 @@ const unsigned short ConvertFloatToUNORM16(const float fVal)
 	return (const unsigned short)(frcF * 65535.0f);
 }
 
-void EmulateAttributeInterpCPU(const triSetupOutput& triSetupData, const std::vector<depthInterpOutputData>& depthInterpData, std::vector<attributeInterpOutputData>& outAttributeInterpData)
+void EmulateAttributeInterpCPU(const triSetupOutput& triSetupData, const std::vector<depthInterpOutputData>& depthInterpData, const bool validateNormalizedTexcoords, std::vector<attributeInterpOutputData>& outAttributeInterpData)
 {
 	D3DXVECTOR2 tex0, tex10, tex20;
 	tex0.x = triSetupData.v0.xTex;
@@ -148,6 +147,15 @@ void EmulateAttributeInterpCPU(const triSetupOutput& triSetupData, const std::ve
 
 		const D3DXVECTOR2 interpolatedTexcoord = dotProdTex * thisPixelData.interpolatedPixelW;
 
+		if (validateNormalizedTexcoords)
+		{
+			// Add a tiny epsilon to account for occasional floating point imprecision causing the attribute interpolation to go very slightly out of bounds:
+			if (interpolatedTexcoord.x > 1.00000025f || interpolatedTexcoord.x < -0.00000025f || interpolatedTexcoord.y > 1.00000025f || interpolatedTexcoord.y < -0.00000025f)
+			{
+				__debugbreak();
+			}
+		}
+
 		const D3DXVECTOR4 vc0divW = vc0;
 		const D3DXVECTOR4 vc10divW = vc10;
 		const D3DXVECTOR4 vc20divW = vc20;
@@ -157,6 +165,23 @@ void EmulateAttributeInterpCPU(const triSetupOutput& triSetupData, const std::ve
 		const D3DXVECTOR4 dotProdVertColor = vcSum10 + vcSum20 + vc0divW;
 
 		const D3DXVECTOR4 interpolatedVertColor = dotProdVertColor * thisPixelData.interpolatedPixelW;
+		// Add a tiny epsilon to account for occasional floating point imprecision causing the attribute interpolation to go very slightly out of bounds:
+		if (interpolatedVertColor.x < -0.00000025f || interpolatedVertColor.x > 1.00000025f)
+		{
+			__debugbreak();
+		}
+		if (interpolatedVertColor.y < -0.00000025f || interpolatedVertColor.y > 1.00000025f)
+		{
+			__debugbreak();
+		}
+		if (interpolatedVertColor.z < -0.00000025f || interpolatedVertColor.z > 1.00000025f)
+		{
+			__debugbreak();
+		}
+		if (interpolatedVertColor.w < -0.00000025f || interpolatedVertColor.w > 1.00000025f)
+		{
+			__debugbreak();
+		}
 
 		attributeInterpOutputData outInterpolatedData;
 		outInterpolatedData.pixelX = thisPixelData.pixelX;
@@ -294,11 +319,11 @@ const int RunTestsAttributeInterp(Xsi::Loader& loader)
 		}
 	};
 
-	auto runAttributeInterpTest = [&](const triSetupOutput& triSetupData, const std::vector<depthInterpOutputData>& depthInterpOutput) -> bool
+	auto runAttributeInterpTest = [&](const triSetupOutput& triSetupData, const std::vector<depthInterpOutputData>& depthInterpOutput, const bool validateTexcoordsNormalized) -> bool
 	{
 		std::vector<attributeInterpOutputData> emulatedCPUAttributeInterpData;
 		std::vector<attributeInterpOutputData> simulatedRTLDepthInterpData;
-		EmulateAttributeInterpCPU(triSetupData, depthInterpOutput, emulatedCPUAttributeInterpData);
+		EmulateAttributeInterpCPU(triSetupData, depthInterpOutput, validateTexcoordsNormalized, emulatedCPUAttributeInterpData);
 		simulateRTLAttributeInterp(triSetupData, depthInterpOutput, simulatedRTLDepthInterpData);
 
 		if (depthInterpOutput.size() != emulatedCPUAttributeInterpData.size() )
@@ -343,22 +368,22 @@ const int RunTestsAttributeInterp(Xsi::Loader& loader)
 			// Draw vertices in "0, 2, 1" order to swizzle CCW to CW ordering for our triangle setup to not consider them backfacing:
 			primTriData.v0.xPos = vertices[indicesCCW[x * 3] ].posX;
 			primTriData.v0.yPos = vertices[indicesCCW[x * 3] ].posY;
-			primTriData.v0.invZ = 2.0f;
-			primTriData.v0.invW = 1.0f;
+			primTriData.v0.zPos = 0.5f;
+			primTriData.v0.wPos = 1.0f;
 			primTriData.v0.xTex = 0.0f;
 			primTriData.v0.yTex = 1.0f;
 			primTriData.v0.rgba = { 1.0f, 0.0f, 0.0f, 1.0f };
 			primTriData.v1.xPos = vertices[indicesCCW[x * 3 + 2] ].posX;
 			primTriData.v1.yPos = vertices[indicesCCW[x * 3 + 2] ].posY;
-			primTriData.v1.invZ = 2.0f;
-			primTriData.v1.invW = 1.0f;
+			primTriData.v1.zPos = 0.5f;
+			primTriData.v1.wPos = 1.0f;
 			primTriData.v1.xTex = 1.0f;
 			primTriData.v1.yTex = 0.0f;
 			primTriData.v1.rgba = { 0.0f, 1.0f, 0.0f, 1.0f };
 			primTriData.v2.xPos = vertices[indicesCCW[x * 3 + 1] ].posX;
 			primTriData.v2.yPos = vertices[indicesCCW[x * 3 + 1] ].posY;
-			primTriData.v2.invZ = 2.0f;
-			primTriData.v2.invW = 1.0f;
+			primTriData.v2.zPos = 0.5f;
+			primTriData.v2.wPos = 1.0f;
 			primTriData.v2.xTex = 0.0f;
 			primTriData.v2.yTex = 0.0f;
 			primTriData.v2.rgba = { 0.0f, 0.0f, 1.0f, 1.0f };
@@ -367,16 +392,16 @@ const int RunTestsAttributeInterp(Xsi::Loader& loader)
 				const float randomZ0 = frand() * 0.5f + 0.5f; // We currently only support depth values between 0.5f and 1.0f
 				const float randomZ1 = frand() * 0.5f + 0.5f;
 				const float randomZ2 = frand() * 0.5f + 0.5f;
-				primTriData.v0.invZ = 1.0f / randomZ0;
-				primTriData.v1.invZ = 1.0f / randomZ1;
-				primTriData.v2.invZ = 1.0f / randomZ2;
+				primTriData.v0.zPos = randomZ0;
+				primTriData.v1.zPos = randomZ1;
+				primTriData.v2.zPos = randomZ2;
 
 				const float randomW0 = frand() * 0.5f + 0.5f; // We currently only support W values between 0.5f and 1.0f
 				const float randomW1 = frand() * 0.5f + 0.5f;
 				const float randomW2 = frand() * 0.5f + 0.5f;
-				primTriData.v0.invW = 1.0f / randomW0;
-				primTriData.v1.invW = 1.0f / randomW1;
-				primTriData.v2.invW = 1.0f / randomW2;
+				primTriData.v0.wPos = randomW0;
+				primTriData.v1.wPos = randomW1;
+				primTriData.v2.wPos = randomW2;
 
 				primTriData.v0.rgba = { frand(), frand(), frand(), frand() };
 				primTriData.v1.rgba = { frand(), frand(), frand(), frand() };
@@ -388,10 +413,15 @@ const int RunTestsAttributeInterp(Xsi::Loader& loader)
 				primTriData.v1.yTex = frand() * 32.0f - 16.0f;
 				primTriData.v2.xTex = frand() * 32.0f - 16.0f;
 				primTriData.v2.yTex = frand() * 32.0f - 16.0f;
+
+				// Premultiply the Z-values by the W-values because we want these to be the post-divide-by-zero z-values:
+				primTriData.v0.zPos *= primTriData.v0.wPos;
+				primTriData.v1.zPos *= primTriData.v1.wPos;
+				primTriData.v2.zPos *= primTriData.v2.wPos;
 			}
 
 			// Emulate the vertex shader by pre-dividing the perspective-interpolated attributes by W:
-			primTriData.v0.xTex *= primTriData.v0.invW;
+			/*primTriData.v0.xTex *= primTriData.v0.invW;
 			primTriData.v0.yTex *= primTriData.v0.invW;
 			primTriData.v0.rgba.r *= primTriData.v0.invW;
 			primTriData.v0.rgba.g *= primTriData.v0.invW;
@@ -408,32 +438,45 @@ const int RunTestsAttributeInterp(Xsi::Loader& loader)
 			primTriData.v2.rgba.r *= primTriData.v2.invW;
 			primTriData.v2.rgba.g *= primTriData.v2.invW;
 			primTriData.v2.rgba.b *= primTriData.v2.invW;
-			primTriData.v2.rgba.a *= primTriData.v2.invW;
+			primTriData.v2.rgba.a *= primTriData.v2.invW;*/
 
-			triSetupOutput triSetupData;
-			if (EmulateCPUTriSetup(primTriData, triSetupData) != triSetup_OK) // If this fails, then it's because our triangle got culled or clipped or backface-killed or something
+			UntransformViewport(primTriData);
+
+			std::vector<triSetupInput> unclippedTris;
+			unclippedTris.push_back(primTriData);
+			std::vector<triSetupInput> clippedTris;
+			EmulateCPUClipper(unclippedTris, clippedTris);
+
+			const unsigned numClippedTris = (const unsigned)clippedTris.size();
+			for (unsigned y = 0; y < numClippedTris; ++y)
 			{
-				// __debugbreak();
-				continue;
+				const triSetupInput& thisClippedTri = clippedTris[y];
+
+				triSetupOutput triSetupData;
+				if (EmulateCPUTriSetup(thisClippedTri, triSetupData) != triSetup_OK) // If this fails, then it's because our triangle got culled or backface-killed or something
+				{
+					// __debugbreak();
+					continue;
+				}
+				std::vector<rasterizedPixelData> rasterizedPixels;
+
+				rasterizedPixelData startNewTriMessage = {0};
+				startNewTriMessage.pixelX = startNewTriangleSlotCommand;
+				startNewTriMessage.pixelY = (currentTriCacheIndex) % 8;
+				rasterizedPixels.push_back(startNewTriMessage);
+
+				EmulateCPURasterizer(triSetupData, rasterizedPixels);
+
+				rasterizedPixelData endTriMessage = {0};
+				endTriMessage.pixelX = finishCurrentTriangleCommand;
+				endTriMessage.pixelY = (currentTriCacheIndex++) % 8;
+				rasterizedPixels.push_back(endTriMessage);
+
+				std::vector<depthInterpOutputData> emulatedCPUDepthInterpData;
+				EmulateDepthInterpCPU(triSetupData, rasterizedPixels, emulatedCPUDepthInterpData);
+
+				successResult &= runAttributeInterpTest(triSetupData, emulatedCPUDepthInterpData, !randomAttributes);
 			}
-			std::vector<rasterizedPixelData> rasterizedPixels;
-
-			rasterizedPixelData startNewTriMessage = {0};
-			startNewTriMessage.pixelX = startNewTriangleSlotCommand;
-			startNewTriMessage.pixelY = (currentTriCacheIndex) % 8;
-			rasterizedPixels.push_back(startNewTriMessage);
-
-			EmulateCPURasterizer(triSetupData, rasterizedPixels);
-
-			rasterizedPixelData endTriMessage = {0};
-			endTriMessage.pixelX = finishCurrentTriangleCommand;
-			endTriMessage.pixelY = (currentTriCacheIndex++) % 8;
-			rasterizedPixels.push_back(endTriMessage);
-
-			std::vector<depthInterpOutputData> emulatedCPUDepthInterpData;
-			EmulateDepthInterpCPU(triSetupData, rasterizedPixels, emulatedCPUDepthInterpData);
-
-			successResult &= runAttributeInterpTest(triSetupData, emulatedCPUDepthInterpData);
 		}
 	};
 

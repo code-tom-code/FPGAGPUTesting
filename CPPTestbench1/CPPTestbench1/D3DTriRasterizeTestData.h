@@ -1,6 +1,7 @@
 #pragma once
 
 // For more info, see the image on this page: https://docs.microsoft.com/en-us/windows/win32/direct3d11/d3d10-graphics-programming-guide-rasterizer-stage-rules
+// Note that all triangle positions here are in *screen-space*
 
 struct testVert
 {

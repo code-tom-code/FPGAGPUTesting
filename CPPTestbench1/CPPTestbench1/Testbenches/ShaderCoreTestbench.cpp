@@ -594,8 +594,8 @@ public:
 			return "sgn";
 		case Op_Unused14:
 			return "unused14";
-		case Op_RND_SINT23NE:
-			return "rnd_sint23ne";
+		case Op_RND_UINT24NE:
+			return "rnd_uint24ne";
 		case Op_RND_SINT16NE:
 			return "rnd_sint16ne";
 		case Op_CNV_UNORM16:

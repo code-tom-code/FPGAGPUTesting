@@ -78,7 +78,7 @@ enum eBitMode : uint8_t
 enum eConvertMode : uint8_t
 {
 	F_Frc, // 0
-	F_to_I23_RoundNearestEven, // 1
+	F_to_U24_RoundNearestEven, // 1
 	F_to_I16_RoundNearestEven, // 2
 	F_to_UNORM16, // 3
 	F_to_UNORM8, // 4
@@ -189,11 +189,11 @@ public:
 			const float fResult = a - (const float)( (const int)floorf(a) );
 			return *reinterpret_cast<const int* const>(&fResult);
 		}
-		case F_to_I23_RoundNearestEven: // 1
-			if (a > 8388607)
-				return 8388607;
-			else if (a < -8388608)
-				return -8388608;
+		case F_to_U24_RoundNearestEven: // 1
+			if (a > 0x00FFFFFF)
+				return 0x00FFFFFF;
+			else if (a <= 0.0f)
+				return 0;
 			else
 			{
 				if (a >= 0.0f)
@@ -319,8 +319,8 @@ private:
 			return "Unknown";
 		case F_Frc:
 			return "F_Frc";
-		case F_to_I23_RoundNearestEven:
-			return "F_to_I23_RoundNearestEven";
+		case F_to_U24_RoundNearestEven:
+			return "F_to_U24_RoundNearestEven";
 		case F_to_I16_RoundNearestEven:
 			return "F_to_I16_RoundNearestEven";
 		case F_to_UNORM16:
@@ -429,6 +429,66 @@ public:
 			pipeStagesValid[RCP_CYCLES] = true;
 			if (enableDebugOutput)
 				printf("FPU%u: rcp(%f) = %f\n", fpuIndex, aVal, rcpResult);
+		}
+	}
+
+	void UpdateCnvOnly(const std_logic_port& FPU_ICNV_GO, 
+		const std_logic_vector_port<3>& FPU_IN_MODE,
+		const std_logic_vector_port<32>& FPU_IN_A,
+		std_logic_vector_port<32>& FPU_OUT_RESULT)
+	{
+		const float aVal = FPU_IN_A.GetFloat32Val();
+		const unsigned char inMode = FPU_IN_MODE.GetUint8Val();
+
+		for (unsigned x = 0; x < ARRAYSIZE(pipeStages) - 1; ++x)
+		{
+			pipeStages[x] = pipeStages[x + 1];
+			pipeStagesValid[x] = pipeStagesValid[x + 1];
+		}
+		pipeStages[ARRAYSIZE(pipeStages) - 1] = 0.0f;
+		pipeStagesValid[ARRAYSIZE(pipeStages) - 1] = false;
+
+		FPU_OUT_RESULT = pipeStages[0];
+
+		if (FPU_ICNV_GO.GetBoolVal() )
+		{
+			// Convert pipe runs in 2 cycles:
+			const eConvertMode cnvMode = (const eConvertMode)inMode;
+			const int convertResult = ComputeConvert(aVal, cnvMode);
+			pipeStages[CNV_CYCLES] = *reinterpret_cast<const float* const>(&convertResult);
+			if (pipeStagesValid[CNV_CYCLES] == true)
+			{
+				__debugbreak(); // Error: Overwriting existing FPU pipe stage!
+			}
+			pipeStagesValid[CNV_CYCLES] = true;
+			if (enableDebugOutput)
+			{
+				switch (cnvMode)
+				{
+				default:
+					__debugbreak(); // Should never be here!
+				case F_Frc:
+					printf("FPU%u: %s(%u)(%f) = %f\n", fpuIndex, GetConvertModeString(cnvMode), cnvMode, aVal, *(const float* const)&convertResult);
+					break;
+				case F_to_U24_RoundNearestEven:
+				case F_to_UNORM16:
+				case F_to_UNORM8:
+					printf("FPU%u: %s(%u)(%f) = %i\n", fpuIndex, GetConvertModeString(cnvMode), cnvMode, aVal, convertResult);
+					break;
+				case F_to_I16_RoundNearestEven:
+					printf("FPU%u: %s(%u)(%f) = %hi\n", fpuIndex, GetConvertModeString(cnvMode), cnvMode, aVal, (const short)convertResult);
+					break;
+				case F_to_Half:
+					printf("FPU%u: %s(%u)(%f) = 0x%04X(%f)\n", fpuIndex, GetConvertModeString(cnvMode), cnvMode, aVal, (const unsigned short)convertResult, SoftHalfToFloat( (const unsigned short)convertResult) );
+					break;
+				case Half_to_F:
+					printf("FPU%u: %s(%u)(0x%04X) = %f\n", fpuIndex, GetConvertModeString(cnvMode), cnvMode, *(const unsigned short* const)&aVal, *(const float* const)&convertResult);
+					break;
+				case U32_to_F:
+					printf("FPU%u: %s(%u)(%u) = %f\n", fpuIndex, GetConvertModeString(cnvMode), cnvMode, *(const unsigned* const)&aVal, *(const float* const)&convertResult);
+					break;
+				}
+			}
 		}
 	}
 
@@ -543,7 +603,7 @@ public:
 				case F_Frc:
 					printf("FPU%u: %s(%u)(%f) = %f\n", fpuIndex, GetConvertModeString(cnvMode), cnvMode, aVal, *(const float* const)&convertResult);
 					break;
-				case F_to_I23_RoundNearestEven:
+				case F_to_U24_RoundNearestEven:
 				case F_to_UNORM16:
 				case F_to_UNORM8:
 					printf("FPU%u: %s(%u)(%f) = %i\n", fpuIndex, GetConvertModeString(cnvMode), cnvMode, aVal, convertResult);

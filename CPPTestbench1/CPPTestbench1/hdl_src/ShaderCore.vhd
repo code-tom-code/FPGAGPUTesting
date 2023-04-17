@@ -253,7 +253,7 @@ type InstructionOperation is (
 	Op_SGE, -- 12
 	Op_SGN, -- 13
 	Op_Unused14, -- 14
-	Op_RND_SINT23NE, -- 15
+	Op_RND_UINT24NE, -- 15
 	Op_RND_SINT16NE, -- 16
 	Op_CNV_UNORM16, -- 17
 	Op_CNV_UNORM8, -- 18
@@ -512,7 +512,7 @@ begin
 			return to_unsigned(MUL_CYCLES, 5);
 		when Op_ADD => -- 4 cycle operation latency for ADD pipe
 			return to_unsigned(ADD_CYCLES, 5);
-		when Op_FRC | Op_CNV_UNORM16 | Op_CNV_UNORM8 | Op_RND_SINT16NE | Op_RND_SINT23NE | Op_CNV_F_TO_HALF | Op_CNV_HALF_TO_F | Op_CNV_U32_TO_F => -- 3 cycle operation latency for CNV pipe
+		when Op_FRC | Op_CNV_UNORM16 | Op_CNV_UNORM8 | Op_RND_SINT16NE | Op_RND_UINT24NE | Op_CNV_F_TO_HALF | Op_CNV_HALF_TO_F | Op_CNV_U32_TO_F => -- 3 cycle operation latency for CNV pipe
 			return to_unsigned(CNV_CYCLES, 5);
 		when Op_SHFT => -- 1 cycle operation latency for SHFT pipe
 			return to_unsigned(SHFT_CYCLES, 5);
@@ -783,8 +783,8 @@ begin
 			return to_unsigned(eCmpType'pos(CmpMov), 3);
 		when Op_FRC =>
 			return to_unsigned(eConvertMode'pos(F_Frc), 3);
-		when Op_RND_SINT23NE =>
-			return to_unsigned(eConvertMode'pos(F_to_I23_RoundNearestEven), 3);
+		when Op_RND_UINT24NE =>
+			return to_unsigned(eConvertMode'pos(F_to_U24_RoundNearestEven), 3);
 		when Op_RND_SINT16NE =>
 			return to_unsigned(eConvertMode'pos(F_to_I16_RoundNearestEven), 3);
 		when Op_CNV_UNORM16 =>
@@ -881,7 +881,7 @@ end function;
 pure function InstructionIsFPUCnv(instructionData : unsigned(63 downto 0) ) return std_logic is
 begin
 	case InstructionGetOperation(instructionData) is
-		when Op_FRC | Op_RND_SINT23NE | Op_RND_SINT16NE | Op_CNV_UNORM16 | Op_CNV_UNORM8 | Op_CNV_F_TO_HALF | Op_CNV_HALF_TO_F | Op_CNV_U32_TO_F =>
+		when Op_FRC | Op_RND_UINT24NE | Op_RND_SINT16NE | Op_CNV_UNORM16 | Op_CNV_UNORM8 | Op_CNV_F_TO_HALF | Op_CNV_HALF_TO_F | Op_CNV_U32_TO_F =>
 			return '1';
 		when others =>
 			return '0';

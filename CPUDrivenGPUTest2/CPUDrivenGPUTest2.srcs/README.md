@@ -22,11 +22,15 @@ The Shader Core takes (up to 16) index batches from the Vertex Batch Builder and
 
 ### Input Assembler (IA)
 
-The Input Assembler reads from memory to load its index cache, and then it assembles primitives (currently Triangle Lists, Triangle Strips, and Triangle Fans are supported) from the transformed vertices output by the vertex shader to pass the assembled primitives along to the [Triangle Setup](#Triangle-Setup-TRISETUP) unit. It can also cull degenerate triangles if all three triangle vertices have identical indices or identical vertex positions, as well as cull backfacing triangles according to the programmable backfacing modes (CULL_CW, CULL_CCW, or CULL_NONE).
+The Input Assembler assembles primitives (currently Triangle Lists, Triangle Strips, and Triangle Fans are supported) from the transformed vertices and indices output by the vertex shader to pass the assembled primitives along to the [Triangle Setup](#Triangle-Setup-TRISETUP) unit. It can also cull degenerate triangles if all three triangle vertices have identical indices or identical vertex positions, as well as cull backfacing triangles according to the programmable backfacing modes (CULL_CW, CULL_CCW, or CULL_NONE).
+
+### Clip Unit (CLIP)
+
+The Clip Unit performs viewport plane culling as well as clipping (if necessary). Its job is to ensure that all triangles that pass it are well-formed and do not extend beyond the guard band limits. Depending on the triangles, the Clip Unit may output more or fewer triangles than it receives as input.
 
 ### Triangle Setup (TRISETUP)
 
-Triangle Setup pre-computes per-triangle data given to it by the [Input Assembler](#Input-Assembler-IA). It also performs culling of triangles that are less than 1 pixel in area, or triangles that are completely off-screen. Surviving triangles have their pre-computed data passed to the [Rasterizer](#Rasterizer-RAST).
+Triangle Setup pre-computes per-triangle data given to it by the [Input Assembler](#Input-Assembler-IA). Triangle Setup also performs division-by-W and the Viewport Transform. It also performs culling of triangles that are less than 1 pixel in area, or backfacing triangles. Surviving triangles have their pre-computed data passed to the [Rasterizer](#Rasterizer-RAST).
 
 ### Rasterizer (RAST)
 

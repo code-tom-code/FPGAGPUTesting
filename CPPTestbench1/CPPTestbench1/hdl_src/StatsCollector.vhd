@@ -31,6 +31,10 @@ entity StatsCollector is
 		IA_CyclesLoadingDataToCache : in STD_LOGIC_VECTOR(31 downto 0);
 		IA_CyclesWaitingForOutput : in STD_LOGIC_VECTOR(31 downto 0);
 
+		CLIP_CyclesIdle : in STD_LOGIC_VECTOR(31 downto 0);
+		CLIP_CyclesSpentWorking : in STD_LOGIC_VECTOR(31 downto 0);
+		CLIP_CyclesWaitingForOutput : in STD_LOGIC_VECTOR(31 downto 0);
+
 		TRISETUP_CyclesIdle : in STD_LOGIC_VECTOR(31 downto 0);
 		TRISETUP_CyclesSpentWorking : in STD_LOGIC_VECTOR(31 downto 0);
 		TRISETUP_CyclesWaitingForOutput : in STD_LOGIC_VECTOR(31 downto 0);
@@ -121,6 +125,10 @@ type FrameCaptureCycleCounters is record
 	IACyclesWorking : CycleCounter;
 	IACyclesWaitingForOutput : CycleCounter;
 	IACyclesLoadingToCache : CycleCounter;
+
+	ClipCyclesIdle : CycleCounter;
+	ClipCyclesWorking : CycleCounter;
+	ClipCyclesWaitingForOutput : CycleCounter;
 
 	TriSetupCyclesIdle : CycleCounter;
 	TriSetupCyclesWorking : CycleCounter;
@@ -214,6 +222,10 @@ begin
 	timeCounters.IACyclesWorking <= unsigned(IA_CyclesSpentWorking);
 	timeCounters.IACyclesWaitingForOutput <= unsigned(IA_CyclesWaitingForOutput);
 	timeCounters.IACyclesLoadingToCache <= unsigned(IA_CyclesLoadingDataToCache);
+
+	timeCounters.ClipCyclesIdle <= unsigned(CLIP_CyclesIdle);
+	timeCounters.ClipCyclesWorking <= unsigned(CLIP_CyclesSpentWorking);
+	timeCounters.ClipCyclesWaitingForOutput <= unsigned(CLIP_CyclesWaitingForOutput);
 
 	timeCounters.TriSetupCyclesIdle <= unsigned(TRISETUP_CyclesIdle);
 	timeCounters.TriSetupCyclesWorking <= unsigned(TRISETUP_CyclesSpentWorking);
@@ -385,9 +397,9 @@ DBG_CurrentState <= std_logic_vector(to_unsigned(StatsCollectorStateType'pos(cur
 							endFrameCounterStats.MemReadCounterNonScanoutNumTransactions, startFrameCounterStats.MemReadCounterNonScanoutNumTransactions,
 							endFrameCounterStats.MemWriteCounterBytesTransferred, startFrameCounterStats.MemWriteCounterBytesTransferred,
 							endFrameCounterStats.MemWriteCounterNumTransactions, startFrameCounterStats.MemWriteCounterNumTransactions,
-							constUint0, constUint0,
-							constUint0, constUint0,
-							constUint0, constUint0,
+							endFrameTimeCounters.ClipCyclesIdle, startFrameTimeCounters.ClipCyclesIdle,
+							endFrameTimeCounters.ClipCyclesWorking, startFrameTimeCounters.ClipCyclesWorking,
+							endFrameTimeCounters.ClipCyclesWaitingForOutput, startFrameTimeCounters.ClipCyclesWaitingForOutput,
 							constUint0, constUint0);
 						CMD_StatsSaveComplete <= '1'; -- Signal to the CommandProcessor who is waiting on us to finish writing out stats that we are done
 						currentState <= startFrameCapture;

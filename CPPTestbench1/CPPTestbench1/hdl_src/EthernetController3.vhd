@@ -185,7 +185,9 @@ entity EthernetController3 is
 		DBG_Recv_pkt_header_prog_full : out STD_LOGIC := '0';
 		DBG_RecvPacketSizeDWORDs : out STD_LOGIC_VECTOR(11 downto 0) := (others => '0');
 		DBG_RecvFIFOAvailableBytes : out STD_LOGIC_VECTOR(10 downto 0) := (others => '0');
-		DBG_RecvFIFOCount : out STD_LOGIC_VECTOR(10 downto 0) := (others => '0')
+		DBG_RecvFIFOCount : out STD_LOGIC_VECTOR(10 downto 0) := (others => '0');
+		DBG_RecvFIFOCurrentPushDWORD : out STD_LOGIC_VECTOR(8 downto 0) := (others => '0');
+		DBG_RecvFIFOPktLengthDWORDs : out STD_LOGIC_VECTOR(11 downto 0) := (others => '0')
 		);
 end EthernetController3;
 
@@ -254,7 +256,8 @@ type EthStateType is
 	packetData, -- 4
 	FCSSequence, -- 5
 	minPacketSizePadding, -- 6
-	recvProcessPacket -- 7
+	recvProcessPacket, -- 7
+	recvAlignPacket4 -- 8
 );
 
 type RecvFifoPushStateType is
@@ -565,6 +568,8 @@ DBG_Recv_pkt_header_prog_full <= recv_pkt_header_prog_full;
 DBG_RecvPacketSizeDWORDs <= std_logic_vector(GetPacketSizeInDWORDs(recv_store_PktLength) );
 DBG_RecvFIFOAvailableBytes <= std_logic_vector(CalcAvailableSpaceInRecvFIFO(unsigned(recv_pkt_data_count) ) );
 DBG_RecvFIFOCount <= recv_pkt_data_count;
+DBG_RecvFIFOCurrentPushDWORD <= std_logic_vector(recv_fifo_current_push_DWORD);
+DBG_RecvFIFOPktLengthDWORDs <= std_logic_vector(recv_fifo_pkt_length_DWORDs);
 
 	mainStateMachine: process(clk125)
 	begin
@@ -1487,9 +1492,31 @@ DBG_RecvFIFOCount <= recv_pkt_data_count;
 
 						recvPacketLength <= recvPacketLength + 1;
 					else
+						if (recvScratchAddr(1 downto 0) = "00") then
+							recv_scratch_ena <= '0';
+							recv_scratch_wea <= "0";
+							recvEthState <= recvProcessPacket;
+						else
+							recv_scratch_ena <= '1';
+							recv_scratch_wea <= "1";
+							recvScratchAddr <= recvScratchAddr + 1;
+							recv_scratch_addra <= std_logic_vector(recvScratchAddr);
+							recv_scratch_dina <= (others => '0');
+							recvEthState <= recvAlignPacket4;
+						end if;
+					end if;
+
+				when recvAlignPacket4 =>
+					if (recvScratchAddr(1 downto 0) = "00") then
 						recv_scratch_ena <= '0';
 						recv_scratch_wea <= "0";
 						recvEthState <= recvProcessPacket;
+					else
+						recv_scratch_ena <= '1';
+						recv_scratch_wea <= "1";
+						recvScratchAddr <= recvScratchAddr + 1;
+						recv_scratch_addra <= std_logic_vector(recvScratchAddr);
+						recv_scratch_dina <= (others => '0');
 					end if;
 
 				when FCSSequence =>
@@ -1655,7 +1682,7 @@ DBG_RecvFIFOCount <= recv_pkt_data_count;
 					recv_pkt_data_wr_data <= recv_scratch_doutb;
 					recv_pkt_data_wr_en <= '1';
 
-					if (recv_fifo_current_push_DWORD > (recv_fifo_pkt_length_DWORDs + 1) ) then
+					if (recv_fifo_current_push_DWORD = recv_fifo_pkt_length_DWORDs) then
 						recv_scratch_enb <= '0';
 						recv_fifo_push_state <= recvFifoIdle;
 					else

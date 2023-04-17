@@ -99,7 +99,7 @@ const InstructionOperation GetInstructionOperation(const instructionToken& d3dIn
 	case _D3DSIO_ABS: // ABS dst, src gets converted to MOV dst, abs(src)
 		return Op_MOV;
 	case _D3DSIO_MOVA:
-		return Op_RND_SINT23NE; // MOVA is spec'd to round to nearest even, so use SINT23NE for that
+		return Op_RND_UINT24NE; // MOVA is spec'd to round to nearest even, so use SINT23NE for that. TODO: Fix this when we need to have MOVA work.
 	}
 }
 

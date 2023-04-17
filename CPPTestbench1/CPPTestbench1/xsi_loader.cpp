@@ -85,7 +85,7 @@ Loader::open(p_xsi_setup_info setup_info)
 void
 Loader::close()
 {
-    int size = _xsi_value_buffer.size();
+    const int size = (const int)_xsi_value_buffer.size();
     // Free up buffer for printing
     for(XSI_INT32 i=0; i<size; ++i) {
         delete[] _xsi_value_buffer[i];

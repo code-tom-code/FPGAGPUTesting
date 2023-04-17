@@ -18,35 +18,35 @@ use work.ClipCommon.all;
 entity InputAssembler2 is
 	Port (clk : in STD_LOGIC;
 
-	-- Triangle Setup interfaces begin
-		TRISETUP_v0PosX : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-		TRISETUP_v0PosY : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-		TRISETUP_v0PosInvZ : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-		TRISETUP_v0PosInvW : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-		TRISETUP_v1PosX : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-		TRISETUP_v1PosY : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-		TRISETUP_v1PosInvZ : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-		TRISETUP_v1PosInvW : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-		TRISETUP_v2PosX : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-		TRISETUP_v2PosY : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-		TRISETUP_v2PosInvZ : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-		TRISETUP_v2PosInvW : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-		TRISETUP_tex0_X : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-		TRISETUP_tex0_Y : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-		TRISETUP_tex1_X : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-		TRISETUP_tex1_Y : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-		TRISETUP_tex2_X : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-		TRISETUP_tex2_Y : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-		TRISETUP_vertColor0_RGBA : out STD_LOGIC_VECTOR(127 downto 0) := (others => '0');
-		TRISETUP_vertColor1_RGBA : out STD_LOGIC_VECTOR(127 downto 0) := (others => '0');
-		TRISETUP_vertColor2_RGBA : out STD_LOGIC_VECTOR(127 downto 0) := (others => '0');
-		TRISETUP_v0ClipCodes : out STD_LOGIC_VECTOR(10 downto 0) := (others => '0');
-		TRISETUP_v1ClipCodes : out STD_LOGIC_VECTOR(10 downto 0) := (others => '0');
-		TRISETUP_v2ClipCodes : out STD_LOGIC_VECTOR(10 downto 0) := (others => '0');
-		TRISETUP_AABBTriOverlapsViewport : out STD_LOGIC := '0';
-		TRISETUP_readyForNewTri : in STD_LOGIC;
-		TRISETUP_newTriBegin : out STD_LOGIC := '0';
-	-- Triangle Setup interfaces end
+	-- Clip unit interfaces begin
+		CLIP_v0PosX : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		CLIP_v0PosY : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		CLIP_v0PosZ : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		CLIP_v0PosW : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		CLIP_v1PosX : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		CLIP_v1PosY : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		CLIP_v1PosZ : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		CLIP_v1PosW : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		CLIP_v2PosX : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		CLIP_v2PosY : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		CLIP_v2PosZ : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		CLIP_v2PosW : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		CLIP_tex0_X : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		CLIP_tex0_Y : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		CLIP_tex1_X : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		CLIP_tex1_Y : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		CLIP_tex2_X : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		CLIP_tex2_Y : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		CLIP_vertColor0_RGBA : out STD_LOGIC_VECTOR(127 downto 0) := (others => '0');
+		CLIP_vertColor1_RGBA : out STD_LOGIC_VECTOR(127 downto 0) := (others => '0');
+		CLIP_vertColor2_RGBA : out STD_LOGIC_VECTOR(127 downto 0) := (others => '0');
+		CLIP_v0ClipCodes : out STD_LOGIC_VECTOR(10 downto 0) := (others => '0');
+		CLIP_v1ClipCodes : out STD_LOGIC_VECTOR(10 downto 0) := (others => '0');
+		CLIP_v2ClipCodes : out STD_LOGIC_VECTOR(10 downto 0) := (others => '0');
+		CLIP_AABBTriOverlapsViewport : out STD_LOGIC := '0';
+		CLIP_readyForNewTri : in STD_LOGIC;
+		CLIP_newTriBegin : out STD_LOGIC := '0';
+	-- Clip unit interfaces end
 
 	-- Vertex Batch Output (VBO) interfaces begin
 		VBO_Pushed : in STD_LOGIC; -- Set to 1 when we've completed pushing our next fully shaded batch of output verts
@@ -135,16 +135,16 @@ type IA_state_t is (
 	IAstate_advanceIndices -- 6
 );
     
-type vertexPos is record
+type vertexPosClipSpace is record
 	vx : unsigned(31 downto 0); -- float32 position X value
 	vy : unsigned(31 downto 0); -- float32 position Y value
-	vInvZ : unsigned(31 downto 0); -- float32 inverse Z value (1.0f / z)
-	vInvW : unsigned(31 downto 0); -- float32 inverse W value (1.0f / w)
-end record vertexPos;
+	vz : unsigned(31 downto 0); -- float32 position Z value
+	vw : unsigned(31 downto 0); -- float32 position W value
+end record vertexPosClipSpace;
 
 type vertexTexcoord is record
-	tx : unsigned(31 downto 0); -- float32 texcoord value
-	ty : unsigned(31 downto 0); -- float32 texcoord value
+	tx : unsigned(31 downto 0); -- float32 texcoord TX (U) value
+	ty : unsigned(31 downto 0); -- float32 texcoord TY (V) value
 end record vertexTexcoord;
 
 type vertexColor is record
@@ -155,7 +155,7 @@ type vertexColor is record
 end record vertexColor;
     
 type vertexData is record
-	pos : vertexPos;
+	pos : vertexPosClipSpace;
 	texcoord : vertexTexcoord;
 	color : vertexColor;
 	clipCodes : std_logic_vector(10 downto 0);
@@ -191,8 +191,8 @@ pure function UnpackVertexDataFromBuffer(vertDataBits : unsigned(319 downto 0) )
 begin
 	ret.pos.vx := vertDataBits(32*1-1 downto 32*0);
 	ret.pos.vy := vertDataBits(32*2-1 downto 32*1);
-	ret.pos.vInvZ := vertDataBits(32*3-1 downto 32*2);
-	ret.pos.vInvW := vertDataBits(32*4-1 downto 32*3);
+	ret.pos.vz := vertDataBits(32*3-1 downto 32*2);
+	ret.pos.vw := vertDataBits(32*4-1 downto 32*3);
 	ret.texcoord.tx := vertDataBits(32*5-1 downto 32*4);
 	ret.texcoord.ty := vertDataBits(32*6-1 downto 32*5);
 	ret.color.r := vertDataBits(32*7-1 downto 32*6);
@@ -228,6 +228,7 @@ signal drawReady : std_logic := '0';
 signal setStateReady : std_logic := '0';
 signal IAIsIdle : std_logic := '0';
 signal newTriBegin : std_logic := '0';
+signal wholeTriangleAABBIntersectsViewport : std_logic := '0';
 
 signal statCyclesIdle : unsigned(31 downto 0) := (others => '0');
 signal statCyclesWorking : unsigned(31 downto 0) := (others => '0');
@@ -239,12 +240,13 @@ begin
 instIA2_AABB2DOverlapViewport : AABB2DOverlapViewport port map (inv0x => std_logic_vector(currentTri.v0.pos.vx), inv0y => std_logic_vector(currentTri.v0.pos.vy),
 	inv1x => std_logic_vector(currentTri.v1.pos.vx), inv1y => std_logic_vector(currentTri.v1.pos.vy),
 	inv2x => std_logic_vector(currentTri.v2.pos.vx), inv2y => std_logic_vector(currentTri.v2.pos.vy),
-	outWholeTriangleAABBIntersectsViewport => TRISETUP_AABBTriOverlapsViewport);
+	outWholeTriangleAABBIntersectsViewport => wholeTriangleAABBIntersectsViewport);
 
 CMD_DrawReady <= drawReady;
 CMD_SetStateReady <= setStateReady;
 CMD_IA_Idle <= IAIsIdle;
-TRISETUP_newTriBegin <= newTriBegin;
+CLIP_newTriBegin <= newTriBegin;
+CLIP_AABBTriOverlapsViewport <= wholeTriangleAABBIntersectsViewport;
 
 STAT_CyclesIdle <= std_logic_vector(statCyclesIdle);
 STAT_CyclesSpentWorking <= std_logic_vector(statCyclesWorking);
@@ -279,12 +281,16 @@ DBG_IA_VertexIDPerBatch <= std_logic_vector(vertexIDPerBatch(3 downto 0) );
 			case currentState is
 				when IAstate_readyIdleState =>
 					newTriBegin <= '0';
+					IAIsIdle <= '0';
 
 					SV_PrimitiveID <= (others => '0'); -- Reset the primitive ID as we are done with our previous draw call
 
+					if (setStateReady = '1' and CMD_SetStateEnable = '0' and drawReady = '1' and VBO_Pushed = '0') then
+						IAIsIdle <= '1';
+					end if;
+
 					-- Wait for the load or draw signals:
 					if (CMD_SetStateEnable = '1' and setStateReady = '1') then
-						IAIsIdle <= '0';
 						setStateReady <= '0';
 						VBO_Ready <= '0';
 						cullState <= eCullMode'val(to_integer(unsigned(CMD_StateCullMode) ) );
@@ -306,7 +312,6 @@ DBG_IA_VertexIDPerBatch <= std_logic_vector(vertexIDPerBatch(3 downto 0) );
 						end case;
 						currentState <= IAstate_readyIdleState;
 					elsif (VBO_Pushed = '1' and drawReady = '1') then
-						IAIsIdle <= '0';
 						setStateReady <= '0';
 						drawReady <= '0';
 						VBO_Ready <= '0';
@@ -321,7 +326,6 @@ DBG_IA_VertexIDPerBatch <= std_logic_vector(vertexIDPerBatch(3 downto 0) );
 						end if;
 					else
 						-- Set our "ready" and "idle" signals (this *is* called the ready-idle state, after all...):
-						IAIsIdle <= '1';
 						VBO_Ready <= '1';
 						drawReady <= '1';
 						setStateReady <= '1';
@@ -355,62 +359,62 @@ DBG_IA_VertexIDPerBatch <= std_logic_vector(vertexIDPerBatch(3 downto 0) );
 					currentState <= IAState_readVertexData;
 					
 				when IAstate_sendTriData =>
-					TRISETUP_v0PosX <= std_logic_vector(currentTri.v0.pos.vx);
-					TRISETUP_v0PosY <= std_logic_vector(currentTri.v0.pos.vy);
-					TRISETUP_v0PosInvZ <= std_logic_vector(currentTri.v0.pos.vInvZ);
-					TRISETUP_v0PosInvW <= std_logic_vector(currentTri.v0.pos.vInvW);
+					CLIP_v0PosX <= std_logic_vector(currentTri.v0.pos.vx);
+					CLIP_v0PosY <= std_logic_vector(currentTri.v0.pos.vy);
+					CLIP_v0PosZ <= std_logic_vector(currentTri.v0.pos.vz);
+					CLIP_v0PosW <= std_logic_vector(currentTri.v0.pos.vw);
 
-					TRISETUP_tex0_X <= std_logic_vector(currentTri.v0.texcoord.tx);
-					TRISETUP_tex0_Y <= std_logic_vector(currentTri.v0.texcoord.ty);
+					CLIP_tex0_X <= std_logic_vector(currentTri.v0.texcoord.tx);
+					CLIP_tex0_Y <= std_logic_vector(currentTri.v0.texcoord.ty);
 
-					TRISETUP_vertColor0_RGBA <= std_logic_vector(currentTri.v0.color.a) & std_logic_vector(currentTri.v0.color.b) & std_logic_vector(currentTri.v0.color.g) & std_logic_vector(currentTri.v0.color.r);
+					CLIP_vertColor0_RGBA <= std_logic_vector(currentTri.v0.color.a) & std_logic_vector(currentTri.v0.color.b) & std_logic_vector(currentTri.v0.color.g) & std_logic_vector(currentTri.v0.color.r);
 
-					TRISETUP_v0ClipCodes <= currentTri.v0.clipCodes;
+					CLIP_v0ClipCodes <= currentTri.v0.clipCodes;
 
 					-- Swizzle our output triangles from (0, 1, 2) to (0, 2, 1) if we're doing CW culling instead of CCW culling:
 					if (cullState = CM_CullCW) then
-						TRISETUP_v1PosX <= std_logic_vector(currentTri.v2.pos.vx);
-						TRISETUP_v1PosY <= std_logic_vector(currentTri.v2.pos.vy);
-						TRISETUP_v1PosInvZ <= std_logic_vector(currentTri.v2.pos.vInvZ);
-						TRISETUP_v1PosInvW <= std_logic_vector(currentTri.v2.pos.vInvW);
-						TRISETUP_v2PosX <= std_logic_vector(currentTri.v1.pos.vx);
-						TRISETUP_v2PosY <= std_logic_vector(currentTri.v1.pos.vy);
-						TRISETUP_v2PosInvZ <= std_logic_vector(currentTri.v1.pos.vInvZ);
-						TRISETUP_v2PosInvW <= std_logic_vector(currentTri.v1.pos.vInvW);
+						CLIP_v1PosX <= std_logic_vector(currentTri.v2.pos.vx);
+						CLIP_v1PosY <= std_logic_vector(currentTri.v2.pos.vy);
+						CLIP_v1PosZ <= std_logic_vector(currentTri.v2.pos.vz);
+						CLIP_v1PosW <= std_logic_vector(currentTri.v2.pos.vw);
+						CLIP_v2PosX <= std_logic_vector(currentTri.v1.pos.vx);
+						CLIP_v2PosY <= std_logic_vector(currentTri.v1.pos.vy);
+						CLIP_v2PosZ <= std_logic_vector(currentTri.v1.pos.vz);
+						CLIP_v2PosW <= std_logic_vector(currentTri.v1.pos.vw);
 
-						TRISETUP_tex1_X <= std_logic_vector(currentTri.v2.texcoord.tx);
-						TRISETUP_tex1_Y <= std_logic_vector(currentTri.v2.texcoord.ty);
-						TRISETUP_tex2_X <= std_logic_vector(currentTri.v1.texcoord.tx);
-						TRISETUP_tex2_Y <= std_logic_vector(currentTri.v1.texcoord.ty);
+						CLIP_tex1_X <= std_logic_vector(currentTri.v2.texcoord.tx);
+						CLIP_tex1_Y <= std_logic_vector(currentTri.v2.texcoord.ty);
+						CLIP_tex2_X <= std_logic_vector(currentTri.v1.texcoord.tx);
+						CLIP_tex2_Y <= std_logic_vector(currentTri.v1.texcoord.ty);
 
-						TRISETUP_vertColor1_RGBA <= std_logic_vector(currentTri.v2.color.a) & std_logic_vector(currentTri.v2.color.b) & std_logic_vector(currentTri.v2.color.g) & std_logic_vector(currentTri.v2.color.r);
-						TRISETUP_vertColor2_RGBA <= std_logic_vector(currentTri.v1.color.a) & std_logic_vector(currentTri.v1.color.b) & std_logic_vector(currentTri.v1.color.g) & std_logic_vector(currentTri.v1.color.r);
+						CLIP_vertColor1_RGBA <= std_logic_vector(currentTri.v2.color.a) & std_logic_vector(currentTri.v2.color.b) & std_logic_vector(currentTri.v2.color.g) & std_logic_vector(currentTri.v2.color.r);
+						CLIP_vertColor2_RGBA <= std_logic_vector(currentTri.v1.color.a) & std_logic_vector(currentTri.v1.color.b) & std_logic_vector(currentTri.v1.color.g) & std_logic_vector(currentTri.v1.color.r);
 
-						TRISETUP_v1ClipCodes <= currentTri.v2.clipCodes;
-						TRISETUP_v2ClipCodes <= currentTri.v1.clipCodes;
+						CLIP_v1ClipCodes <= currentTri.v2.clipCodes;
+						CLIP_v2ClipCodes <= currentTri.v1.clipCodes;
 					else
-						TRISETUP_v1PosX <= std_logic_vector(currentTri.v1.pos.vx);
-						TRISETUP_v1PosY <= std_logic_vector(currentTri.v1.pos.vy);
-						TRISETUP_v1PosInvZ <= std_logic_vector(currentTri.v1.pos.vInvZ);
-						TRISETUP_v1PosInvW <= std_logic_vector(currentTri.v1.pos.vInvW);
-						TRISETUP_v2PosX <= std_logic_vector(currentTri.v2.pos.vx);
-						TRISETUP_v2PosY <= std_logic_vector(currentTri.v2.pos.vy);
-						TRISETUP_v2PosInvZ <= std_logic_vector(currentTri.v2.pos.vInvZ);
-						TRISETUP_v2PosInvW <= std_logic_vector(currentTri.v2.pos.vInvW);
+						CLIP_v1PosX <= std_logic_vector(currentTri.v1.pos.vx);
+						CLIP_v1PosY <= std_logic_vector(currentTri.v1.pos.vy);
+						CLIP_v1PosZ <= std_logic_vector(currentTri.v1.pos.vz);
+						CLIP_v1PosW <= std_logic_vector(currentTri.v1.pos.vw);
+						CLIP_v2PosX <= std_logic_vector(currentTri.v2.pos.vx);
+						CLIP_v2PosY <= std_logic_vector(currentTri.v2.pos.vy);
+						CLIP_v2PosZ <= std_logic_vector(currentTri.v2.pos.vz);
+						CLIP_v2PosW <= std_logic_vector(currentTri.v2.pos.vw);
 
-						TRISETUP_tex1_X <= std_logic_vector(currentTri.v1.texcoord.tx);
-						TRISETUP_tex1_Y <= std_logic_vector(currentTri.v1.texcoord.ty);
-						TRISETUP_tex2_X <= std_logic_vector(currentTri.v2.texcoord.tx);
-						TRISETUP_tex2_Y <= std_logic_vector(currentTri.v2.texcoord.ty);
+						CLIP_tex1_X <= std_logic_vector(currentTri.v1.texcoord.tx);
+						CLIP_tex1_Y <= std_logic_vector(currentTri.v1.texcoord.ty);
+						CLIP_tex2_X <= std_logic_vector(currentTri.v2.texcoord.tx);
+						CLIP_tex2_Y <= std_logic_vector(currentTri.v2.texcoord.ty);
 
-						TRISETUP_vertColor1_RGBA <= std_logic_vector(currentTri.v1.color.a) & std_logic_vector(currentTri.v1.color.b) & std_logic_vector(currentTri.v1.color.g) & std_logic_vector(currentTri.v1.color.r);
-						TRISETUP_vertColor2_RGBA <= std_logic_vector(currentTri.v2.color.a) & std_logic_vector(currentTri.v2.color.b) & std_logic_vector(currentTri.v2.color.g) & std_logic_vector(currentTri.v2.color.r);
+						CLIP_vertColor1_RGBA <= std_logic_vector(currentTri.v1.color.a) & std_logic_vector(currentTri.v1.color.b) & std_logic_vector(currentTri.v1.color.g) & std_logic_vector(currentTri.v1.color.r);
+						CLIP_vertColor2_RGBA <= std_logic_vector(currentTri.v2.color.a) & std_logic_vector(currentTri.v2.color.b) & std_logic_vector(currentTri.v2.color.g) & std_logic_vector(currentTri.v2.color.r);
 
-						TRISETUP_v1ClipCodes <= currentTri.v1.clipCodes;
-						TRISETUP_v2ClipCodes <= currentTri.v2.clipCodes;
+						CLIP_v1ClipCodes <= currentTri.v1.clipCodes;
+						CLIP_v2ClipCodes <= currentTri.v2.clipCodes;
 					end if;
 
-					if (newTriBegin = '1' and TRISETUP_readyForNewTri = '1') then
+					if (newTriBegin = '1' and CLIP_readyForNewTri = '1') then
 						newTriBegin <= '0';
 						if (cullState = CM_CullNone) then
 							currentState <= IAstate_sendTriDataNoCulling;
@@ -427,38 +431,38 @@ DBG_IA_VertexIDPerBatch <= std_logic_vector(vertexIDPerBatch(3 downto 0) );
 
 				when IAstate_sendTriDataNoCulling =>
 					-- Send the same triangle with a reversed vertex ordering in order to draw the back side of it:
-					TRISETUP_v0PosX <= std_logic_vector(currentTri.v0.pos.vx);
-					TRISETUP_v0PosY <= std_logic_vector(currentTri.v0.pos.vy);
-					TRISETUP_v0PosInvZ <= std_logic_vector(currentTri.v0.pos.vInvZ);
-					TRISETUP_v0PosInvW <= std_logic_vector(currentTri.v0.pos.vInvW);
+					CLIP_v0PosX <= std_logic_vector(currentTri.v0.pos.vx);
+					CLIP_v0PosY <= std_logic_vector(currentTri.v0.pos.vy);
+					CLIP_v0PosZ <= std_logic_vector(currentTri.v0.pos.vz);
+					CLIP_v0PosW <= std_logic_vector(currentTri.v0.pos.vw);
 
-					TRISETUP_tex0_X <= std_logic_vector(currentTri.v0.texcoord.tx);
-					TRISETUP_tex0_Y <= std_logic_vector(currentTri.v0.texcoord.ty);
+					CLIP_tex0_X <= std_logic_vector(currentTri.v0.texcoord.tx);
+					CLIP_tex0_Y <= std_logic_vector(currentTri.v0.texcoord.ty);
 
-					TRISETUP_vertColor0_RGBA <= std_logic_vector(currentTri.v0.color.a) & std_logic_vector(currentTri.v0.color.b) & std_logic_vector(currentTri.v0.color.g) & std_logic_vector(currentTri.v0.color.r);
+					CLIP_vertColor0_RGBA <= std_logic_vector(currentTri.v0.color.a) & std_logic_vector(currentTri.v0.color.b) & std_logic_vector(currentTri.v0.color.g) & std_logic_vector(currentTri.v0.color.r);
 
-					TRISETUP_v0ClipCodes <= currentTri.v0.clipCodes;
+					CLIP_v0ClipCodes <= currentTri.v0.clipCodes;
 
-					TRISETUP_v1PosX <= std_logic_vector(currentTri.v2.pos.vx);
-					TRISETUP_v1PosY <= std_logic_vector(currentTri.v2.pos.vy);
-					TRISETUP_v1PosInvZ <= std_logic_vector(currentTri.v2.pos.vInvZ);
-					TRISETUP_v1PosInvW <= std_logic_vector(currentTri.v2.pos.vInvW);
-					TRISETUP_v2PosX <= std_logic_vector(currentTri.v1.pos.vx);
-					TRISETUP_v2PosY <= std_logic_vector(currentTri.v1.pos.vy);
-					TRISETUP_v2PosInvZ <= std_logic_vector(currentTri.v1.pos.vInvZ);
-					TRISETUP_v2PosInvW <= std_logic_vector(currentTri.v1.pos.vInvW);
+					CLIP_v1PosX <= std_logic_vector(currentTri.v2.pos.vx);
+					CLIP_v1PosY <= std_logic_vector(currentTri.v2.pos.vy);
+					CLIP_v1PosZ <= std_logic_vector(currentTri.v2.pos.vz);
+					CLIP_v1PosW <= std_logic_vector(currentTri.v2.pos.vw);
+					CLIP_v2PosX <= std_logic_vector(currentTri.v1.pos.vx);
+					CLIP_v2PosY <= std_logic_vector(currentTri.v1.pos.vy);
+					CLIP_v2PosZ <= std_logic_vector(currentTri.v1.pos.vz);
+					CLIP_v2PosW <= std_logic_vector(currentTri.v1.pos.vw);
 
-					TRISETUP_tex1_X <= std_logic_vector(currentTri.v2.texcoord.tx);
-					TRISETUP_tex1_Y <= std_logic_vector(currentTri.v2.texcoord.ty);
-					TRISETUP_tex2_X <= std_logic_vector(currentTri.v1.texcoord.tx);
-					TRISETUP_tex2_Y <= std_logic_vector(currentTri.v1.texcoord.ty);
+					CLIP_tex1_X <= std_logic_vector(currentTri.v2.texcoord.tx);
+					CLIP_tex1_Y <= std_logic_vector(currentTri.v2.texcoord.ty);
+					CLIP_tex2_X <= std_logic_vector(currentTri.v1.texcoord.tx);
+					CLIP_tex2_Y <= std_logic_vector(currentTri.v1.texcoord.ty);
 
-					TRISETUP_vertColor1_RGBA <= std_logic_vector(currentTri.v2.color.a) & std_logic_vector(currentTri.v2.color.b) & std_logic_vector(currentTri.v2.color.g) & std_logic_vector(currentTri.v2.color.r);
-					TRISETUP_vertColor2_RGBA <= std_logic_vector(currentTri.v1.color.a) & std_logic_vector(currentTri.v1.color.b) & std_logic_vector(currentTri.v1.color.g) & std_logic_vector(currentTri.v1.color.r);
-					TRISETUP_v1ClipCodes <= currentTri.v2.clipCodes;
-					TRISETUP_v2ClipCodes <= currentTri.v1.clipCodes;
+					CLIP_vertColor1_RGBA <= std_logic_vector(currentTri.v2.color.a) & std_logic_vector(currentTri.v2.color.b) & std_logic_vector(currentTri.v2.color.g) & std_logic_vector(currentTri.v2.color.r);
+					CLIP_vertColor2_RGBA <= std_logic_vector(currentTri.v1.color.a) & std_logic_vector(currentTri.v1.color.b) & std_logic_vector(currentTri.v1.color.g) & std_logic_vector(currentTri.v1.color.r);
+					CLIP_v1ClipCodes <= currentTri.v2.clipCodes;
+					CLIP_v2ClipCodes <= currentTri.v1.clipCodes;
 
-					if (newTriBegin = '1' and TRISETUP_readyForNewTri = '1') then
+					if (newTriBegin = '1' and CLIP_readyForNewTri = '1') then
 						newTriBegin <= '0';
 						if (SV_PrimitiveID * 3 > indicesUsedPerBatch) then
 							currentState <= IAstate_readyIdleState;

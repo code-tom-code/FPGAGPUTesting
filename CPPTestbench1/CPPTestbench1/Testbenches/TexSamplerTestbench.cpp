@@ -719,22 +719,22 @@ const int RunTestsTexSampler(Xsi::Loader& loader, RenderWindow* renderWindow)
 			// Draw vertices in "0, 2, 1" order to swizzle CCW to CW ordering for our triangle setup to not consider them backfacing:
 			primTriData.v0.xPos = vertices[indicesCCW[x * 3] ].posX;
 			primTriData.v0.yPos = vertices[indicesCCW[x * 3] ].posY;
-			primTriData.v0.invZ = 2.0f;
-			primTriData.v0.invW = 1.0f;
+			primTriData.v0.zPos = 0.5f;
+			primTriData.v0.wPos = 1.0f;
 			primTriData.v0.xTex = 0.0f;
 			primTriData.v0.yTex = 1.0f;
 			primTriData.v0.rgba = { 1.0f, 0.0f, 0.0f, 1.0f };
 			primTriData.v1.xPos = vertices[indicesCCW[x * 3 + 2] ].posX;
 			primTriData.v1.yPos = vertices[indicesCCW[x * 3 + 2] ].posY;
-			primTriData.v1.invZ = 2.0f;
-			primTriData.v1.invW = 1.0f;
+			primTriData.v1.zPos = 0.5f;
+			primTriData.v1.wPos = 1.0f;
 			primTriData.v1.xTex = 1.0f;
 			primTriData.v1.yTex = 0.0f;
 			primTriData.v1.rgba = { 0.0f, 1.0f, 0.0f, 1.0f };
 			primTriData.v2.xPos = vertices[indicesCCW[x * 3 + 1] ].posX;
 			primTriData.v2.yPos = vertices[indicesCCW[x * 3 + 1] ].posY;
-			primTriData.v2.invZ = 2.0f;
-			primTriData.v2.invW = 1.0f;
+			primTriData.v2.zPos = 0.5f;
+			primTriData.v2.wPos = 1.0f;
 			primTriData.v2.xTex = 0.0f;
 			primTriData.v2.yTex = 0.0f;
 			primTriData.v2.rgba = { 0.0f, 0.0f, 1.0f, 1.0f };
@@ -743,16 +743,16 @@ const int RunTestsTexSampler(Xsi::Loader& loader, RenderWindow* renderWindow)
 				const float randomZ0 = frand() * 0.5f + 0.5f; // We currently only support depth values between 0.5f and 1.0f
 				const float randomZ1 = frand() * 0.5f + 0.5f;
 				const float randomZ2 = frand() * 0.5f + 0.5f;
-				primTriData.v0.invZ = 1.0f / randomZ0;
-				primTriData.v1.invZ = 1.0f / randomZ1;
-				primTriData.v2.invZ = 1.0f / randomZ2;
+				primTriData.v0.zPos = randomZ0;
+				primTriData.v1.zPos = randomZ1;
+				primTriData.v2.zPos = randomZ2;
 
 				const float randomW0 = frand() * 0.5f + 0.5f; // We currently only support W values between 0.5f and 1.0f
 				const float randomW1 = frand() * 0.5f + 0.5f;
 				const float randomW2 = frand() * 0.5f + 0.5f;
-				primTriData.v0.invW = 1.0f / randomW0;
-				primTriData.v1.invW = 1.0f / randomW1;
-				primTriData.v2.invW = 1.0f / randomW2;
+				primTriData.v0.wPos = randomW0;
+				primTriData.v1.wPos = randomW1;
+				primTriData.v2.wPos = randomW2;
 
 				primTriData.v0.rgba = { frand(), frand(), frand(), frand() };
 				primTriData.v1.rgba = { frand(), frand(), frand(), frand() };
@@ -764,10 +764,17 @@ const int RunTestsTexSampler(Xsi::Loader& loader, RenderWindow* renderWindow)
 				primTriData.v1.yTex = frand() * 32.0f - 16.0f;
 				primTriData.v2.xTex = frand() * 32.0f - 16.0f;
 				primTriData.v2.yTex = frand() * 32.0f - 16.0f;
+
+				// Premultiply the Z-values by the W-values because we want these to be the post-divide-by-zero z-values:
+				primTriData.v0.zPos *= primTriData.v0.wPos;
+				primTriData.v1.zPos *= primTriData.v1.wPos;
+				primTriData.v2.zPos *= primTriData.v2.wPos;
 			}
 
+			UntransformViewport(primTriData);
+
 			// Emulate the vertex shader by pre-dividing the perspective-interpolated attributes by W:
-			primTriData.v0.xTex *= primTriData.v0.invW;
+			/*primTriData.v0.xTex *= primTriData.v0.invW;
 			primTriData.v0.yTex *= primTriData.v0.invW;
 			primTriData.v0.rgba.r *= primTriData.v0.invW;
 			primTriData.v0.rgba.g *= primTriData.v0.invW;
@@ -784,35 +791,46 @@ const int RunTestsTexSampler(Xsi::Loader& loader, RenderWindow* renderWindow)
 			primTriData.v2.rgba.r *= primTriData.v2.invW;
 			primTriData.v2.rgba.g *= primTriData.v2.invW;
 			primTriData.v2.rgba.b *= primTriData.v2.invW;
-			primTriData.v2.rgba.a *= primTriData.v2.invW;
+			primTriData.v2.rgba.a *= primTriData.v2.invW;*/
 
-			triSetupOutput triSetupData;
-			if (EmulateCPUTriSetup(primTriData, triSetupData) != triSetup_OK) // If this fails, then it's because our triangle got culled or clipped or backface-killed or something
+			std::vector<triSetupInput> unclippedTris;
+			unclippedTris.push_back(primTriData);
+			std::vector<triSetupInput> clippedTris;
+			EmulateCPUClipper(unclippedTris, clippedTris);
+
+			const unsigned numClippedTris = (const unsigned)clippedTris.size();
+			for (unsigned y = 0; y < numClippedTris; ++y)
 			{
-				// __debugbreak();
-				continue;
+				const triSetupInput& thisClippedTri = clippedTris[y];
+
+				triSetupOutput triSetupData;
+				if (EmulateCPUTriSetup(thisClippedTri, triSetupData) != triSetup_OK) // If this fails, then it's because our triangle got culled or clipped or backface-killed or something
+				{
+					// __debugbreak();
+					continue;
+				}
+				std::vector<rasterizedPixelData> rasterizedPixels;
+
+				rasterizedPixelData startNewTriMessage = {0};
+				startNewTriMessage.pixelX = startNewTriangleSlotCommand;
+				startNewTriMessage.pixelY = (currentTriCacheIndex) % 8;
+				rasterizedPixels.push_back(startNewTriMessage);
+
+				EmulateCPURasterizer(triSetupData, rasterizedPixels);
+
+				rasterizedPixelData endTriMessage = {0};
+				endTriMessage.pixelX = finishCurrentTriangleCommand;
+				endTriMessage.pixelY = (currentTriCacheIndex++) % 8;
+				rasterizedPixels.push_back(endTriMessage);
+
+				std::vector<depthInterpOutputData> emulatedCPUDepthInterpData;
+				EmulateDepthInterpCPU(triSetupData, rasterizedPixels, emulatedCPUDepthInterpData);
+
+				std::vector<attributeInterpOutputData> emulatedCPUAttributeInterpData;
+				EmulateAttributeInterpCPU(triSetupData, emulatedCPUDepthInterpData, !randomAttributes, emulatedCPUAttributeInterpData);
+
+				successResult &= runTexSamplerTest(emulatedCPUAttributeInterpData, useBilinearInterp, texDesc, d3dlr);
 			}
-			std::vector<rasterizedPixelData> rasterizedPixels;
-
-			rasterizedPixelData startNewTriMessage = {0};
-			startNewTriMessage.pixelX = startNewTriangleSlotCommand;
-			startNewTriMessage.pixelY = (currentTriCacheIndex) % 8;
-			rasterizedPixels.push_back(startNewTriMessage);
-
-			EmulateCPURasterizer(triSetupData, rasterizedPixels);
-
-			rasterizedPixelData endTriMessage = {0};
-			endTriMessage.pixelX = finishCurrentTriangleCommand;
-			endTriMessage.pixelY = (currentTriCacheIndex++) % 8;
-			rasterizedPixels.push_back(endTriMessage);
-
-			std::vector<depthInterpOutputData> emulatedCPUDepthInterpData;
-			EmulateDepthInterpCPU(triSetupData, rasterizedPixels, emulatedCPUDepthInterpData);
-
-			std::vector<attributeInterpOutputData> emulatedCPUAttributeInterpData;
-			EmulateAttributeInterpCPU(triSetupData, emulatedCPUDepthInterpData, emulatedCPUAttributeInterpData);
-
-			successResult &= runTexSamplerTest(emulatedCPUAttributeInterpData, useBilinearInterp, texDesc, d3dlr);
 		}
 		setTexture->UnlockRect(0);
 	};

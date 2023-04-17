@@ -606,11 +606,11 @@ begin
 					earlyOutType := CnvFrc_GetEarlyOutType(f32(IN_A) );
 					cnvEarlyOutType0 <= earlyOutType;
 					frcNormalizedMantissa0 <= CnvFrc_Cycle0(f32(IN_A) );
-				when F_to_I23_RoundNearestEven =>
-					earlyOutType := CnvFloatToInt23_RoundNE_GetEarlyOutType(f32(IN_A), comAIsNaN, comAIsNeg );
+				when F_to_U24_RoundNearestEven =>
+					earlyOutType := CnvFloatToUInt24_RoundNE_GetEarlyOutType(f32(IN_A), comAIsNaN, comAIsNeg );
 					cnvEarlyOutType0 <= earlyOutType;
 					if (earlyOutType = CnvNoEarlyOut) then
-						cnvShiftAmount <= CnvFloatToInt23_RoundNE_Cycle0(comSignedExponentA);
+						cnvShiftAmount <= CnvFloatToUInt24_RoundNE_Cycle0(comSignedExponentA);
 					end if;
 				when F_to_I16_RoundNearestEven =>
 					earlyOutType := CnvFloatToInt16_RoundNE_GetEarlyOutType(f32(IN_A), comAIsNaN, comAIsNeg );
@@ -716,16 +716,16 @@ begin
 						when others => --when CnvBelowMinEarlyOut =>
 							OCNV <= X"00000000"; -- This is 0.0f
 					end case;
-				when F_to_I23_RoundNearestEven =>
+				when F_to_U24_RoundNearestEven =>
 					case cnvEarlyOutType1 is
 						when CnvNoEarlyOut =>
-							OCNV <= std_logic_vector(CnvFloatToInt23_RoundNE_Cycle2(signed(cnvShiftedTemporary), cnvIsNegative1) );
+							OCNV <= std_logic_vector(CnvFloatToUInt24_RoundNE_Cycle2(signed(cnvShiftedTemporary) ) );
 						when CnvNaNEarlyOut =>
 							OCNV <= X"00000000";
 						when CnvBelowMinEarlyOut =>
-							OCNV <= X"FF800000"; -- This is -8388608
+							OCNV <= X"00000000"; -- This is 0
 						when CnvAboveMaxEarlyOut =>
-							OCNV <= X"007FFFFF"; -- This is 8388607
+							OCNV <= X"00FFFFFF"; -- This is 16777215
 					end case;
 				when F_to_I16_RoundNearestEven =>
 					case cnvEarlyOutType1 is

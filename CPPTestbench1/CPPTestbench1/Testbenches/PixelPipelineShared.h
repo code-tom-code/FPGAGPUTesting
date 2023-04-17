@@ -1,6 +1,23 @@
 #pragma once
 
-struct vertInput
+struct vertInputClipSpace
+{
+	float xPos;
+	float yPos;
+	float zPos;
+	float wPos;
+	float xTex;
+	float yTex;
+	struct _rgba
+	{
+		float r;
+		float g;
+		float b;
+		float a;
+	} rgba;
+};
+
+struct vertInputScreenSpace
 {
 	float xPos;
 	float yPos;
@@ -34,9 +51,10 @@ struct vertAttributes
 
 	const bool operator==(const vertAttributes& rhs) const
 	{
-		return xTex == rhs.xTex && yTex == rhs.yTex &&
+		return memcmp(this, &rhs, sizeof(*this) ) == 0;
+		/*return xTex == rhs.xTex && yTex == rhs.yTex &&
 			invZ == rhs.invZ && invW == rhs.invW &&
-			rgba.r == rhs.rgba.r && rgba.g == rhs.rgba.g && rgba.b == rhs.rgba.b && rgba.a == rhs.rgba.a;
+			rgba.r == rhs.rgba.r && rgba.g == rhs.rgba.g && rgba.b == rhs.rgba.b && rgba.a == rhs.rgba.a;*/
 	}
 };
 
@@ -190,6 +208,7 @@ struct depthInterpOutputData
 	float interpolatedPixelW;
 	float normalizedBarycentricB;
 	float normalizedBarycentricC;
+	uint32_t dbgDepthU24;
 
 	void Deserialize(std_logic_vector_port<10>& ATTR_PosX, std_logic_vector_port<10>& ATTR_PosY,
 		std_logic_vector_port<32>& ATTR_NormalizedBarycentricB,
@@ -206,13 +225,15 @@ struct depthInterpOutputData
 	void Serialize(const std_logic_vector_port<10>& ATTR_PosX, const std_logic_vector_port<10>& ATTR_PosY,
 		const std_logic_vector_port<32>& ATTR_NormalizedBarycentricB,
 		const std_logic_vector_port<32>& ATTR_NormalizedBarycentricC,
-		const std_logic_vector_port<32>& ATTR_OutPixelW)
+		const std_logic_vector_port<32>& ATTR_OutPixelW,
+		const std_logic_vector_port<24>& DBG_InterpolatedDepthU24)
 	{
 		pixelX = ATTR_PosX.GetInt16Val();
 		pixelY = ATTR_PosY.GetInt16Val();
 		normalizedBarycentricB = ATTR_NormalizedBarycentricB.GetFloat32Val();
 		normalizedBarycentricC = ATTR_NormalizedBarycentricC.GetFloat32Val();
 		interpolatedPixelW = ATTR_OutPixelW.GetFloat32Val();
+		dbgDepthU24 = DBG_InterpolatedDepthU24.GetUint32Val();
 	}
 
 	const bool operator==(const depthInterpOutputData& rhs) const
@@ -220,7 +241,8 @@ struct depthInterpOutputData
 		// Might need to do float-epsilon comparisons here instead
 		return pixelX == rhs.pixelX && pixelY == rhs.pixelY &&
 			interpolatedPixelW == rhs.interpolatedPixelW &&
-			normalizedBarycentricB == rhs.normalizedBarycentricB && normalizedBarycentricC == rhs.normalizedBarycentricC;
+			normalizedBarycentricB == rhs.normalizedBarycentricB && normalizedBarycentricC == rhs.normalizedBarycentricC &&
+			(abs(int(dbgDepthU24) - int(rhs.dbgDepthU24) ) < 2);
 	}
 };
 
@@ -228,11 +250,11 @@ enum triSetupResultType
 {
 	// Passed triangle culling:
 	triSetup_OK,
+	triSetup_MULTI,
 
 	// Cull results:
 	triSetup_NAN_INF_Cull, // NAN/INF culling on the XYZW position components for each of the vertices
 	triSetup_DuplicateVertexCull, // Degenerate triangle culling
-	triSetup_CulledZClip, // Triangle intersects near or far clip planes. We need to cull it because we don't support clipping currently.
 	triSetup_ZeroBounds, // Triangle has zero bounds
 	triSetup_BackfaceCull, // Triangle is back-facing
 	triSetup_ZeroAreaCull, // Triangle has area less than 1 pixel
@@ -240,7 +262,12 @@ enum triSetupResultType
 
 struct triSetupInput
 {
-	vertInput v0, v1, v2;
+	vertInputClipSpace v0, v1, v2;
+};
+
+struct triSetupScreenspace
+{
+	vertInputScreenSpace v0, v1, v2;
 };
 
 struct rasterizedPixelData
@@ -350,6 +377,9 @@ struct texSampOutput
 };
 static_assert(sizeof(texSampOutput) == 8, "Error: Unexpected struct padding!");
 
+// Performs the reverse viewport transform on the data
+void UntransformViewport(triSetupInput& inoutTriData);
+
 // Note that the output triangle list may be longer or shorter than the input triangle list!
 void EmulateCPUClipper(const std::vector<triSetupInput>& inputUnclippedTriangles, std::vector<triSetupInput>& outputClippedTriangles);
 
@@ -359,5 +389,5 @@ triSetupResultType EmulateCPUTriSetup(const triSetupInput& inTriData, triSetupOu
 void EmulateCPURasterizer(const triSetupOutput& triSetupData, std::vector<rasterizedPixelData>& outRasterizedPixels);
 
 void EmulateDepthInterpCPU(const triSetupOutput& triSetupData, const std::vector<rasterizedPixelData>& rasterizedPixels, std::vector<depthInterpOutputData>& outDepthInterpData);
-void EmulateAttributeInterpCPU(const triSetupOutput& triSetupData, const std::vector<depthInterpOutputData>& depthInterpData, std::vector<attributeInterpOutputData>& outAttributeInterpData);
+void EmulateAttributeInterpCPU(const triSetupOutput& triSetupData, const std::vector<depthInterpOutputData>& depthInterpData, const bool validateNormalizedTexcoords, std::vector<attributeInterpOutputData>& outAttributeInterpData);
 void EmulateTexSamplerCPU(const std::vector<attributeInterpOutputData>& interpolatedData, std::vector<texSampOutput>& outTexSampData, const bool useBilinearInterp, const D3DSURFACE_DESC& texDesc, const D3DLOCKED_RECT& d3dlr);

@@ -278,6 +278,10 @@ HRESULT __stdcall IBaseGPUDevice::DeviceSetTexture(const gpuvoid* const textureM
 	if (DoCacheDeviceState() && textureFormat == currentCachedState.deviceCachedTexFormat && currentCachedState.deviceCachedSetTexture == textureMemory && currentCachedState.texSetWidth == texWidth && currentCachedState.texSetHeight == texHeight)
 		return S_OK;
 
+	// We need to stall the graphics pipeline until all the stages up to texture sampling have finished before it's safe to flush the texture cache and load in a new texture:
+	//DeviceWaitForIdle( (const waitForDeviceIdleCommand::waitForDeviceSubsystem)(waitForDeviceIdleCommand::waitForIAIdle | waitForDeviceIdleCommand::waitForDepthBuffer | waitForDeviceIdleCommand::waitForRasterizerIdle | waitForDeviceIdleCommand::waitForTexSamplerIdle) );
+	DeviceWaitForIdle(waitForDeviceIdleCommand::waitForFullPipelineFlush);
+
 	loadTexCacheDataCommand loadTexCache;
 	loadTexCache.sourceRAMAddr = (const DWORD)textureMemory;
 	loadTexCache.loadSourceFormat = textureFormat;

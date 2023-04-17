@@ -225,7 +225,8 @@ const int RunTestsVertexBatchBuilder(Xsi::Loader& loader)
 
 	std_logic_vector_port<2> CMD_SendCommand(PD_IN, loader, "CMD_SendCommand");
 	std_logic_vector_port<32> CMD_CommandArg0(PD_IN, loader, "CMD_CommandArg0");
-	std_logic_vector_port<32> CMD_CommandArg1(PD_IN, loader, "CMD_CommandArg1");
+	std_logic_vector_port<20> CMD_CommandArg1(PD_IN, loader, "CMD_CommandArg1");
+	std_logic_vector_port<16> CMD_CommandArg2(PD_IN, loader, "CMD_CommandArg2");
 	std_logic_vector_port<3> CMD_CommandArgType(PD_IN, loader, "CMD_CommandArgType");
 	std_logic_port CMD_ReadyState(PD_OUT, loader, "CMD_ReadyState");
 
@@ -256,6 +257,7 @@ const int RunTestsVertexBatchBuilder(Xsi::Loader& loader)
 		CMD_SendCommand = 0;
 		CMD_CommandArg0 = 0x00000000;
 		CMD_CommandArg1 = 0x00000000;
+		CMD_CommandArg2 = 0x0000;
 		CMD_CommandArgType = 0;
 
 		VERTBATCH_FIFO_full = false;
@@ -415,6 +417,7 @@ const int RunTestsVertexBatchBuilder(Xsi::Loader& loader)
 
 			CMD_CommandArg0 = numPrimsToRender;
 			CMD_CommandArg1 = startingVertex;
+			CMD_CommandArg2 = 0x0000; // Base vertex index
 			CMD_CommandArgType = primType;
 
 			if (ibPtr != NULL)

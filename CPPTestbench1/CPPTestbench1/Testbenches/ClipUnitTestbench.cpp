@@ -250,7 +250,7 @@ static const float GetClipDistanceZNear(const float insideVertZ, const float out
 	return intersectionPointZ0;
 }
 
-static const float GetClipDistanceForPlane(const vertInput& insideVert, const vertInput& outsideVert, const eClipPlane clipPlane)
+static const float GetClipDistanceForPlane(const vertInputClipSpace& insideVert, const vertInputClipSpace& outsideVert, const eClipPlane clipPlane)
 {
 	switch (clipPlane)
 	{
@@ -262,7 +262,7 @@ static const float GetClipDistanceForPlane(const vertInput& insideVert, const ve
 		const float insideDist = D3DXPlaneDot(&ClipPlanes[CP_Left], (const D3DXVECTOR4* const)&insideVert.xPos);
 		const float outsideDist = D3DXPlaneDot(&ClipPlanes[CP_Left], (const D3DXVECTOR4* const)&outsideVert.xPos);
 		const float planeDist = insideDist / (insideDist - outsideDist);
-		const float funcDist = GetClipDistanceAxisNegative(insideVert.xPos, insideVert.invW, outsideVert.xPos, outsideVert.invW, 1.0f);
+		const float funcDist = GetClipDistanceAxisNegative(insideVert.xPos, insideVert.wPos, outsideVert.xPos, outsideVert.wPos, 1.0f);
 		if (planeDist != funcDist) { __debugbreak(); }
 		return planeDist;
 	}
@@ -271,7 +271,7 @@ static const float GetClipDistanceForPlane(const vertInput& insideVert, const ve
 		const float insideDist = D3DXPlaneDot(&ClipPlanes[CP_Right], (const D3DXVECTOR4* const)&insideVert.xPos);
 		const float outsideDist = D3DXPlaneDot(&ClipPlanes[CP_Right], (const D3DXVECTOR4* const)&outsideVert.xPos);
 		const float planeDist = insideDist / (insideDist - outsideDist);
-		const float funcDist = GetClipDistanceAxisPositive(insideVert.xPos, insideVert.invW, outsideVert.xPos, outsideVert.invW, 1.0f);
+		const float funcDist = GetClipDistanceAxisPositive(insideVert.xPos, insideVert.wPos, outsideVert.xPos, outsideVert.wPos, 1.0f);
 		if (planeDist != funcDist) { __debugbreak(); }
 		return planeDist;
 	}
@@ -280,7 +280,7 @@ static const float GetClipDistanceForPlane(const vertInput& insideVert, const ve
 		const float insideDist = D3DXPlaneDot(&ClipPlanes[CP_Top], (const D3DXVECTOR4* const)&insideVert.xPos);
 		const float outsideDist = D3DXPlaneDot(&ClipPlanes[CP_Top], (const D3DXVECTOR4* const)&outsideVert.xPos);
 		const float planeDist = insideDist / (insideDist - outsideDist);
-		const float funcDist = GetClipDistanceAxisPositive(insideVert.yPos, insideVert.invW, outsideVert.yPos, outsideVert.invW, 1.0f);
+		const float funcDist = GetClipDistanceAxisPositive(insideVert.yPos, insideVert.wPos, outsideVert.yPos, outsideVert.wPos, 1.0f);
 		if (planeDist != funcDist) { __debugbreak(); }
 		return planeDist;
 	}
@@ -289,7 +289,7 @@ static const float GetClipDistanceForPlane(const vertInput& insideVert, const ve
 		const float insideDist = D3DXPlaneDot(&ClipPlanes[CP_Bottom], (const D3DXVECTOR4* const)&insideVert.xPos);
 		const float outsideDist = D3DXPlaneDot(&ClipPlanes[CP_Bottom], (const D3DXVECTOR4* const)&outsideVert.xPos);
 		const float planeDist = insideDist / (insideDist - outsideDist);
-		const float funcDist = GetClipDistanceAxisNegative(insideVert.yPos, insideVert.invW, outsideVert.yPos, outsideVert.invW, 1.0f);
+		const float funcDist = GetClipDistanceAxisNegative(insideVert.yPos, insideVert.wPos, outsideVert.yPos, outsideVert.wPos, 1.0f);
 		if (planeDist != funcDist) { __debugbreak(); }
 		return planeDist;
 	}
@@ -298,7 +298,7 @@ static const float GetClipDistanceForPlane(const vertInput& insideVert, const ve
 		const float insideDist = D3DXPlaneDot(&ClipPlanes[CP_Front], (const D3DXVECTOR4* const)&insideVert.xPos);
 		const float outsideDist = D3DXPlaneDot(&ClipPlanes[CP_Front], (const D3DXVECTOR4* const)&outsideVert.xPos);
 		const float planeDist = insideDist / (insideDist - outsideDist);
-		const float funcDist = GetClipDistanceZNear(insideVert.invZ, outsideVert.invZ);
+		const float funcDist = GetClipDistanceZNear(insideVert.zPos, outsideVert.zPos);
 		if (planeDist != funcDist) { __debugbreak(); }
 		return planeDist;
 	}
@@ -307,20 +307,20 @@ static const float GetClipDistanceForPlane(const vertInput& insideVert, const ve
 		const float insideDist = D3DXPlaneDot(&ClipPlanes[CP_Back], (const D3DXVECTOR4* const)&insideVert.xPos);
 		const float outsideDist = D3DXPlaneDot(&ClipPlanes[CP_Back], (const D3DXVECTOR4* const)&outsideVert.xPos);
 		const float planeDist = insideDist / (insideDist - outsideDist);
-		const float funcDist = GetClipDistanceAxisPositive(insideVert.invZ, insideVert.invW, outsideVert.invZ, outsideVert.invW, 1.0f);
+		const float funcDist = GetClipDistanceAxisPositive(insideVert.zPos, insideVert.wPos, outsideVert.zPos, outsideVert.wPos, 1.0f);
 		if (planeDist != funcDist) { __debugbreak(); }
 		return planeDist;
 	}
 	case CP_W0:
 	{
-		return GetClipDistanceW0(insideVert.invW, outsideVert.invW);
+		return GetClipDistanceW0(insideVert.wPos, outsideVert.wPos);
 	}
 	case CP_GBLeft:
 	{
 		const float insideDist = D3DXPlaneDot(&ClipPlanes[CP_GBLeft], (const D3DXVECTOR4* const)&insideVert.xPos);
 		const float outsideDist = D3DXPlaneDot(&ClipPlanes[CP_GBLeft], (const D3DXVECTOR4* const)&outsideVert.xPos);
 		const float planeDist = insideDist / (insideDist - outsideDist);
-		const float funcDist = GetClipDistanceAxisNegative(insideVert.xPos, insideVert.invW, outsideVert.xPos, outsideVert.invW, GuardBandXScale);
+		const float funcDist = GetClipDistanceAxisNegative(insideVert.xPos, insideVert.wPos, outsideVert.xPos, outsideVert.wPos, GuardBandXScale);
 		if (planeDist != funcDist) { __debugbreak(); }
 		return planeDist;
 	}
@@ -329,7 +329,7 @@ static const float GetClipDistanceForPlane(const vertInput& insideVert, const ve
 		const float insideDist = D3DXPlaneDot(&ClipPlanes[CP_GBRight], (const D3DXVECTOR4* const)&insideVert.xPos);
 		const float outsideDist = D3DXPlaneDot(&ClipPlanes[CP_GBRight], (const D3DXVECTOR4* const)&outsideVert.xPos);
 		const float planeDist = insideDist / (insideDist - outsideDist);
-		const float funcDist = GetClipDistanceAxisPositive(insideVert.xPos, insideVert.invW, outsideVert.xPos, outsideVert.invW, GuardBandXScale);
+		const float funcDist = GetClipDistanceAxisPositive(insideVert.xPos, insideVert.wPos, outsideVert.xPos, outsideVert.wPos, GuardBandXScale);
 		if (planeDist != funcDist) { __debugbreak(); }
 		return planeDist;
 	}
@@ -338,7 +338,7 @@ static const float GetClipDistanceForPlane(const vertInput& insideVert, const ve
 		const float insideDist = D3DXPlaneDot(&ClipPlanes[CP_GBTop], (const D3DXVECTOR4* const)&insideVert.xPos);
 		const float outsideDist = D3DXPlaneDot(&ClipPlanes[CP_GBTop], (const D3DXVECTOR4* const)&outsideVert.xPos);
 		const float planeDist = insideDist / (insideDist - outsideDist);
-		const float funcDist = GetClipDistanceAxisPositive(insideVert.yPos, insideVert.invW, outsideVert.yPos, outsideVert.invW, GuardBandYScale);
+		const float funcDist = GetClipDistanceAxisPositive(insideVert.yPos, insideVert.wPos, outsideVert.yPos, outsideVert.wPos, GuardBandYScale);
 		if (planeDist != funcDist) { __debugbreak(); }
 		return planeDist;
 	}
@@ -347,16 +347,16 @@ static const float GetClipDistanceForPlane(const vertInput& insideVert, const ve
 		const float insideDist = D3DXPlaneDot(&ClipPlanes[CP_GBBottom], (const D3DXVECTOR4* const)&insideVert.xPos);
 		const float outsideDist = D3DXPlaneDot(&ClipPlanes[CP_GBBottom], (const D3DXVECTOR4* const)&outsideVert.xPos);
 		const float planeDist = insideDist / (insideDist - outsideDist);
-		const float funcDist = GetClipDistanceAxisNegative(insideVert.yPos, insideVert.invW, outsideVert.yPos, outsideVert.invW, GuardBandYScale);
+		const float funcDist = GetClipDistanceAxisNegative(insideVert.yPos, insideVert.wPos, outsideVert.yPos, outsideVert.wPos, GuardBandYScale);
 		if (planeDist != funcDist) { __debugbreak(); }
 		return planeDist;
 	}
 	}
 }
 
-static void ClampToPlane(vertInput& outsideVert, const eClipPlane clipPlane)
+static void ClampToPlane(vertInputClipSpace& outsideVert, const eClipPlane clipPlane)
 {
-	const float w = outsideVert.invW;
+	const float w = outsideVert.wPos;
 	const float negW = -w;
 	switch (clipPlane)
 	{
@@ -380,16 +380,16 @@ static void ClampToPlane(vertInput& outsideVert, const eClipPlane clipPlane)
 			outsideVert.yPos = negW;
 		return;
 	case CP_Front:
-		if (outsideVert.invZ < 0.0f)
-			outsideVert.invZ = 0.0f;
+		if (outsideVert.zPos < 0.0f)
+			outsideVert.zPos = 0.0f;
 		return;
 	case CP_Back:
-		if (outsideVert.invZ > w)
-			outsideVert.invZ = w;
+		if (outsideVert.zPos > w)
+			outsideVert.zPos = w;
 		return;
 	case CP_W0:
-		if (outsideVert.invW < W_CLIP_EPSILON)
-			outsideVert.invW = W_CLIP_EPSILON; // Note that this will end up causing a division by zero when we perform the perspective divide later on, but that's okay
+		if (outsideVert.wPos < W_CLIP_EPSILON)
+			outsideVert.wPos = W_CLIP_EPSILON; // Note that this will end up causing a division by zero when we perform the perspective divide later on, but that's okay
 		return;
 	case CP_GBLeft:
 		if (outsideVert.xPos < negW * GuardBandXScale)
@@ -410,7 +410,7 @@ static void ClampToPlane(vertInput& outsideVert, const eClipPlane clipPlane)
 	}
 }
 
-static void ClampToAllPreviouslyClippedPlanes(vertInput& outsideVert, const unsigned short clippedPlanesBitmap)
+static void ClampToAllPreviouslyClippedPlanes(vertInputClipSpace& outsideVert, const unsigned short clippedPlanesBitmap)
 {
 	if (clippedPlanesBitmap & (1 << CP_W0) )
 		ClampToPlane(outsideVert, CP_W0);
@@ -440,15 +440,15 @@ static void LerpAttribute(const float lerpAlpha, const float invLerpAlpha, const
 	//outsideAttr = insideAttr + lerpAlpha * (outsideAttr - insideAttr);
 }
 
-static void ClipVertexInPlace(const vertInput& insideVert, vertInput& outsideVert, const float clipDistance, const unsigned short clippedPlanesBitmap)
+static void ClipVertexInPlace(const vertInputClipSpace& insideVert, vertInputClipSpace& outsideVert, const float clipDistance, const unsigned short clippedPlanesBitmap)
 {
 	const float invIntersection = 1.0f - clipDistance;
 
 	// Clip position:
 	LerpAttribute(clipDistance, invIntersection, insideVert.xPos, outsideVert.xPos);
 	LerpAttribute(clipDistance, invIntersection, insideVert.yPos, outsideVert.yPos);
-	LerpAttribute(clipDistance, invIntersection, insideVert.invZ, outsideVert.invZ);
-	LerpAttribute(clipDistance, invIntersection, insideVert.invW, outsideVert.invW);
+	LerpAttribute(clipDistance, invIntersection, insideVert.zPos, outsideVert.zPos);
+	LerpAttribute(clipDistance, invIntersection, insideVert.wPos, outsideVert.wPos);
 
 	// Clip vertex color too:
 	LerpAttribute(clipDistance, invIntersection, insideVert.rgba.r, outsideVert.rgba.r);
@@ -461,7 +461,7 @@ static void ClipVertexInPlace(const vertInput& insideVert, vertInput& outsideVer
 	LerpAttribute(clipDistance, invIntersection, insideVert.yTex, outsideVert.yTex);
 
 #ifdef _DEBUG
-	if (outsideVert.invW < 0.0f)
+	if (outsideVert.wPos < 0.0f)
 	{
 		//__debugbreak();
 	}
@@ -471,7 +471,7 @@ static void ClipVertexInPlace(const vertInput& insideVert, vertInput& outsideVer
 	ClampToAllPreviouslyClippedPlanes(outsideVert, clippedPlanesBitmap);
 
 #ifdef _DEBUG
-	if (outsideVert.invW < 0.0f)
+	if (outsideVert.wPos < 0.0f)
 	{
 		__debugbreak();
 	}
@@ -484,22 +484,22 @@ struct clipWorkingTriangle
 	triangleClipStatuses clipData;
 	unsigned short alreadyClippedPlanes;
 
-	static const unsigned short ComputeClipCodeForVertex(vertInput vert)
+	static const unsigned short ComputeClipCodeForVertex(vertInputClipSpace vert)
 	{
 		unsigned short outClipCodes = 0x0000;
 		unsigned short planeOutClipCodes = 0x0000;
 
-		/*if (vert.invW < 0.0f)
+		/*if (vert.wPos < 0.0f)
 		{
 			outClipCodes |= (1 << CP_W0);
 
 			vert.xPos *= -1.0f;
 			vert.yPos *= -1.0f;
-			vert.invZ *= -1.0f;
-			//vert.invW *= -1.0f;
+			vert.zPos *= -1.0f;
+			//vert.wPos *= -1.0f;
 		}*/
 
-		const float w = vert.invW;
+		const float w = vert.wPos;
 		const float negW = -w;
 
 		const float clipDistanceLeft = D3DXPlaneDot(&ClipPlanes[CP_Left], (const D3DXVECTOR4* const)&vert.xPos);
@@ -521,9 +521,9 @@ struct clipWorkingTriangle
 			outClipCodes |= (1 << CP_Bottom);
 		if (vert.yPos > w)
 			outClipCodes |= (1 << CP_Top);
-		if (vert.invZ < 0.0f)
+		if (vert.zPos < 0.0f)
 			outClipCodes |= (1 << CP_Front);
-		if (vert.invZ > w)
+		if (vert.zPos > w)
 			outClipCodes |= (1 << CP_Back);
 
 		if (vert.xPos < GuardBandXScale * negW)
@@ -561,7 +561,7 @@ struct clipWorkingTriangle
 			__debugbreak();
 		}*/
 
-		return planeOutClipCodes;
+		return outClipCodes;
 	}
 
 	void ComputeClipCodes()
@@ -588,16 +588,16 @@ static const eClipPlane orderedClipPlanes[] =
 	CP_W0
 };
 
-const bool IsDebugVertDifferent(const vertInput& existingVert, std_logic_vector_port<32>& DBG_VPosX, std_logic_vector_port<32>& DBG_VPosY, std_logic_vector_port<32>& DBG_VPosZ, std_logic_vector_port<32>& DBG_VPosW)
+const bool IsDebugVertDifferent(const vertInputClipSpace& existingVert, std_logic_vector_port<32>& DBG_VPosX, std_logic_vector_port<32>& DBG_VPosY, std_logic_vector_port<32>& DBG_VPosZ, std_logic_vector_port<32>& DBG_VPosW)
 {
 	const float newX = DBG_VPosX.GetFloat32Val();
 	const float newY = DBG_VPosY.GetFloat32Val();
 	const float newZ = DBG_VPosZ.GetFloat32Val();
 	const float newW = DBG_VPosW.GetFloat32Val();
-	return (existingVert.xPos != newX) || (existingVert.yPos != newY) || (existingVert.invZ != newZ) || (existingVert.invW != newW);
+	return (existingVert.xPos != newX) || (existingVert.yPos != newY) || (existingVert.zPos != newZ) || (existingVert.wPos != newW);
 }
 
-void AssignDebugVert(vertInput& newDebugVert, std_logic_vector_port<32>& DBG_VPosX, std_logic_vector_port<32>& DBG_VPosY, std_logic_vector_port<32>& DBG_VPosZ, std_logic_vector_port<32>& DBG_VPosW)
+void AssignDebugVert(vertInputClipSpace& newDebugVert, std_logic_vector_port<32>& DBG_VPosX, std_logic_vector_port<32>& DBG_VPosY, std_logic_vector_port<32>& DBG_VPosZ, std_logic_vector_port<32>& DBG_VPosW)
 {
 	const float newX = DBG_VPosX.GetFloat32Val();
 	const float newY = DBG_VPosY.GetFloat32Val();
@@ -605,13 +605,13 @@ void AssignDebugVert(vertInput& newDebugVert, std_logic_vector_port<32>& DBG_VPo
 	const float newW = DBG_VPosW.GetFloat32Val();
 	newDebugVert.xPos = newX;
 	newDebugVert.yPos = newY;
-	newDebugVert.invZ = newZ;
-	newDebugVert.invW = newW;
+	newDebugVert.zPos = newZ;
+	newDebugVert.wPos = newW;
 }
 
 // Note that the output triangle list may be longer or shorter than the input triangle list!
 static void SimulateHDLClipper(Xsi::Loader& loader, const std::vector<triSetupInput>& inputUnclippedTriangles, std::vector<triSetupInput>& outputClippedTriangles, std_logic_port& clk, 
-	std_logic_port& inNextStageisReady, std_logic_port& inPreviousStageIsValid, std_logic_port& outPreviousStageIsReady, 
+	std_logic_port& TRISETUP_inNextStageisReady, std_logic_port& IA_inPreviousStageIsValid, std_logic_port& IA_outPreviousStageIsReady, 
 	std_logic_vector_port<8>& DBG_CurrentState, std_logic_vector_port<4>& DBG_CurrentClipPlane, std_logic_vector_port<3>& DBG_CurrentClipBitmask, std_logic_vector_port<3>& DBG_ChildTriStackSize, 
 	std_logic_vector_port<32>& DBG_ClipDistance0, std_logic_vector_port<32>& DBG_ClipDistance1,
 	std_logic_vector_port<32>& DBG_V0PosX, std_logic_vector_port<32>& DBG_V0PosY, std_logic_vector_port<32>& DBG_V0PosZ, std_logic_vector_port<32>& DBG_V0PosW,
@@ -621,7 +621,7 @@ static void SimulateHDLClipper(Xsi::Loader& loader, const std::vector<triSetupIn
 	std::function<void()> UpdateFPUs, std::function<void(const triSetupInput& newInput)> SetNewPendingInput, std::function<void(std::vector<triSetupInput>& clippedOutputTris)> UpdateNewOutput)
 {
 	// Mark our next-stage as always ready to receive new tris
-	inNextStageisReady = true;
+	TRISETUP_inNextStageisReady = true;
 
 	clipper_state_t currentState = (const clipper_state_t)(DBG_CurrentState.GetUint8Val() );
 	eClipPlane currentClipPlane = CP_ClipDone;
@@ -629,9 +629,9 @@ static void SimulateHDLClipper(Xsi::Loader& loader, const std::vector<triSetupIn
 	unsigned char currentChildTriStackSize = DBG_ChildTriStackSize.GetUint8Val();
 	float clipDistance0 = DBG_ClipDistance0.GetFloat32Val();
 	float clipDistance1 = DBG_ClipDistance1.GetFloat32Val();
-	vertInput dbgV0;
-	vertInput dbgV1;
-	vertInput dbgV2;
+	vertInputClipSpace dbgV0;
+	vertInputClipSpace dbgV1;
+	vertInputClipSpace dbgV2;
 	AssignDebugVert(dbgV0, DBG_V0PosX, DBG_V0PosY, DBG_V0PosZ, DBG_V0PosW);
 	AssignDebugVert(dbgV1, DBG_V1PosX, DBG_V1PosY, DBG_V1PosZ, DBG_V1PosW);
 	AssignDebugVert(dbgV2, DBG_V2PosX, DBG_V2PosY, DBG_V2PosZ, DBG_V2PosW);
@@ -639,14 +639,14 @@ static void SimulateHDLClipper(Xsi::Loader& loader, const std::vector<triSetupIn
 	eClipPlane clipOutcodes1 = (eClipPlane)0;
 	eClipPlane clipOutcodes2 = (eClipPlane)0;
 
-	const unsigned numInputTris = inputUnclippedTriangles.size();
+	const unsigned numInputTris = (const unsigned)inputUnclippedTriangles.size();
 	for (unsigned x = 0; x < numInputTris; ++x)
 	{
 		const triSetupInput& newInputTri = inputUnclippedTriangles[x];
 		printf("New triangle %u:\n\t(%f,%f,%f,%f),\n\t(%f,%f,%f,%f),\n\t(%f,%f,%f,%f)\n\n", x,
-			newInputTri.v0.xPos, newInputTri.v0.yPos, newInputTri.v0.invZ, newInputTri.v0.invW,
-			newInputTri.v1.xPos, newInputTri.v1.yPos, newInputTri.v1.invZ, newInputTri.v1.invW,
-			newInputTri.v2.xPos, newInputTri.v2.yPos, newInputTri.v2.invZ, newInputTri.v2.invW);
+			newInputTri.v0.xPos, newInputTri.v0.yPos, newInputTri.v0.zPos, newInputTri.v0.wPos,
+			newInputTri.v1.xPos, newInputTri.v1.yPos, newInputTri.v1.zPos, newInputTri.v1.wPos,
+			newInputTri.v2.xPos, newInputTri.v2.yPos, newInputTri.v2.zPos, newInputTri.v2.wPos);
 		currentState = (const clipper_state_t)(DBG_CurrentState.GetUint8Val() );
 		if (currentState != idleState)
 		{
@@ -659,8 +659,8 @@ static void SimulateHDLClipper(Xsi::Loader& loader, const std::vector<triSetupIn
 			UpdateFPUs();
 			UpdateNewOutput(outputClippedTriangles);
 			currentState = (const clipper_state_t)(DBG_CurrentState.GetUint8Val() );
-		} while (currentState == idleState && outPreviousStageIsReady.GetBoolVal() != true); // Wait for the clipper core to pick up this new tri...
-		inPreviousStageIsValid = false;
+		} while (currentState == idleState && IA_outPreviousStageIsReady.GetBoolVal() != true); // Wait for the clipper core to pick up this new tri...
+		IA_inPreviousStageIsValid = false;
 
 		while ( (currentState = (const clipper_state_t)(DBG_CurrentState.GetUint8Val() ) ) != idleState) // Wait for the clipper core to finish with the tri
 		{
@@ -680,17 +680,17 @@ static void SimulateHDLClipper(Xsi::Loader& loader, const std::vector<triSetupIn
 				if (IsDebugVertDifferent(dbgV0, DBG_V0PosX, DBG_V0PosY, DBG_V0PosZ, DBG_V0PosW) )
 				{
 					AssignDebugVert(dbgV0, DBG_V0PosX, DBG_V0PosY, DBG_V0PosZ, DBG_V0PosW);
-					printf("v0 changed to: (%f,%f,%f,%f)\n", dbgV0.xPos, dbgV0.yPos, dbgV0.invZ, dbgV0.invW);
+					printf("v0 changed to: (%f,%f,%f,%f)\n", dbgV0.xPos, dbgV0.yPos, dbgV0.zPos, dbgV0.wPos);
 				}
 				if (IsDebugVertDifferent(dbgV1, DBG_V1PosX, DBG_V1PosY, DBG_V1PosZ, DBG_V1PosW) )
 				{
 					AssignDebugVert(dbgV1, DBG_V1PosX, DBG_V1PosY, DBG_V1PosZ, DBG_V1PosW);
-					printf("v1 changed to: (%f,%f,%f,%f)\n", dbgV1.xPos, dbgV1.yPos, dbgV1.invZ, dbgV1.invW);
+					printf("v1 changed to: (%f,%f,%f,%f)\n", dbgV1.xPos, dbgV1.yPos, dbgV1.zPos, dbgV1.wPos);
 				}
 				if (IsDebugVertDifferent(dbgV2, DBG_V2PosX, DBG_V2PosY, DBG_V2PosZ, DBG_V2PosW) )
 				{
 					AssignDebugVert(dbgV2, DBG_V2PosX, DBG_V2PosY, DBG_V2PosZ, DBG_V2PosW);
-					printf("v2 changed to: (%f,%f,%f,%f)\n", dbgV2.xPos, dbgV2.yPos, dbgV2.invZ, dbgV2.invW);
+					printf("v2 changed to: (%f,%f,%f,%f)\n", dbgV2.xPos, dbgV2.yPos, dbgV2.zPos, dbgV2.wPos);
 				}
 			}
 			
@@ -743,7 +743,7 @@ static void SimulateHDLClipper(Xsi::Loader& loader, const std::vector<triSetupIn
 			UpdateFPUs();
 			UpdateNewOutput(outputClippedTriangles);
 			currentState = (const clipper_state_t)(DBG_CurrentState.GetUint8Val() );
-		} while(currentState == idleState && outPreviousStageIsReady.GetBoolVal() != true);
+		} while(currentState == idleState && IA_outPreviousStageIsReady.GetBoolVal() != true);
 	}
 
 	currentState = (const clipper_state_t)(DBG_CurrentState.GetUint8Val() );
@@ -820,12 +820,12 @@ void EmulateCPUClipper(const std::vector<triSetupInput>& inputUnclippedTriangles
 			workingClipTriangles.pop_back();
 
 			// Early-out and remove any +/-INF or +/-NaN vertex position triangles:
-			if (isnan(mainWorkingClipTriangle.geomData.v0.xPos) || isnan(mainWorkingClipTriangle.geomData.v0.yPos) || isnan(mainWorkingClipTriangle.geomData.v0.invZ) || isnan(mainWorkingClipTriangle.geomData.v0.invW) ||
-				isnan(mainWorkingClipTriangle.geomData.v1.xPos) || isnan(mainWorkingClipTriangle.geomData.v1.yPos) || isnan(mainWorkingClipTriangle.geomData.v1.invZ) || isnan(mainWorkingClipTriangle.geomData.v1.invW) ||
-				isnan(mainWorkingClipTriangle.geomData.v2.xPos) || isnan(mainWorkingClipTriangle.geomData.v2.yPos) || isnan(mainWorkingClipTriangle.geomData.v2.invZ) || isnan(mainWorkingClipTriangle.geomData.v2.invW) ||
-				isinf(mainWorkingClipTriangle.geomData.v0.xPos) || isinf(mainWorkingClipTriangle.geomData.v0.yPos) || isinf(mainWorkingClipTriangle.geomData.v0.invZ) || isinf(mainWorkingClipTriangle.geomData.v0.invW) ||
-				isinf(mainWorkingClipTriangle.geomData.v1.xPos) || isinf(mainWorkingClipTriangle.geomData.v1.yPos) || isinf(mainWorkingClipTriangle.geomData.v1.invZ) || isinf(mainWorkingClipTriangle.geomData.v1.invW) ||
-				isinf(mainWorkingClipTriangle.geomData.v2.xPos) || isinf(mainWorkingClipTriangle.geomData.v2.yPos) || isinf(mainWorkingClipTriangle.geomData.v2.invZ) || isinf(mainWorkingClipTriangle.geomData.v2.invW) )
+			if (isnan(mainWorkingClipTriangle.geomData.v0.xPos) || isnan(mainWorkingClipTriangle.geomData.v0.yPos) || isnan(mainWorkingClipTriangle.geomData.v0.zPos) || isnan(mainWorkingClipTriangle.geomData.v0.wPos) ||
+				isnan(mainWorkingClipTriangle.geomData.v1.xPos) || isnan(mainWorkingClipTriangle.geomData.v1.yPos) || isnan(mainWorkingClipTriangle.geomData.v1.zPos) || isnan(mainWorkingClipTriangle.geomData.v1.wPos) ||
+				isnan(mainWorkingClipTriangle.geomData.v2.xPos) || isnan(mainWorkingClipTriangle.geomData.v2.yPos) || isnan(mainWorkingClipTriangle.geomData.v2.zPos) || isnan(mainWorkingClipTriangle.geomData.v2.wPos) ||
+				isinf(mainWorkingClipTriangle.geomData.v0.xPos) || isinf(mainWorkingClipTriangle.geomData.v0.yPos) || isinf(mainWorkingClipTriangle.geomData.v0.zPos) || isinf(mainWorkingClipTriangle.geomData.v0.wPos) ||
+				isinf(mainWorkingClipTriangle.geomData.v1.xPos) || isinf(mainWorkingClipTriangle.geomData.v1.yPos) || isinf(mainWorkingClipTriangle.geomData.v1.zPos) || isinf(mainWorkingClipTriangle.geomData.v1.wPos) ||
+				isinf(mainWorkingClipTriangle.geomData.v2.xPos) || isinf(mainWorkingClipTriangle.geomData.v2.yPos) || isinf(mainWorkingClipTriangle.geomData.v2.zPos) || isinf(mainWorkingClipTriangle.geomData.v2.wPos) )
 			{
 				continue;
 			}
@@ -881,36 +881,36 @@ void EmulateCPUClipper(const std::vector<triSetupInput>& inputUnclippedTriangles
 
 				/*if (thisClipPlane == CP_W0)
 				{
-					if (mainWorkingClipTriangle.geomData.v0.invW < 0)
+					if (mainWorkingClipTriangle.geomData.v0.wPos < 0)
 					{
 						mainWorkingClipTriangle.geomData.v0.xPos *= -1.0f;
 						mainWorkingClipTriangle.geomData.v0.yPos *= -1.0f;
-						mainWorkingClipTriangle.geomData.v0.invZ *= -1.0f;
-						mainWorkingClipTriangle.geomData.v0.invW *= -1.0f;
+						mainWorkingClipTriangle.geomData.v0.zPos *= -1.0f;
+						mainWorkingClipTriangle.geomData.v0.wPos *= -1.0f;
 					}
-					if (mainWorkingClipTriangle.geomData.v1.invW < 0)
+					if (mainWorkingClipTriangle.geomData.v1.wPos < 0)
 					{
 						mainWorkingClipTriangle.geomData.v1.xPos *= -1.0f;
 						mainWorkingClipTriangle.geomData.v1.yPos *= -1.0f;
-						mainWorkingClipTriangle.geomData.v1.invZ *= -1.0f;
-						mainWorkingClipTriangle.geomData.v1.invW *= -1.0f;
+						mainWorkingClipTriangle.geomData.v1.zPos *= -1.0f;
+						mainWorkingClipTriangle.geomData.v1.wPos *= -1.0f;
 					}
-					if (mainWorkingClipTriangle.geomData.v2.invW < 0)
+					if (mainWorkingClipTriangle.geomData.v2.wPos < 0)
 					{
 						mainWorkingClipTriangle.geomData.v2.xPos *= -1.0f;
 						mainWorkingClipTriangle.geomData.v2.yPos *= -1.0f;
-						mainWorkingClipTriangle.geomData.v2.invZ *= -1.0f;
-						mainWorkingClipTriangle.geomData.v2.invW *= -1.0f;
+						mainWorkingClipTriangle.geomData.v2.zPos *= -1.0f;
+						mainWorkingClipTriangle.geomData.v2.wPos *= -1.0f;
 					}
 					continue;
 				}*/
 
 				clipWorkingTriangle newChildTriangle = mainWorkingClipTriangle;
 
-				const vertInput* inside0 = NULL;
-				const vertInput* inside1 = NULL;
-				vertInput* outside0 = NULL;
-				vertInput* outside1 = NULL;
+				const vertInputClipSpace* inside0 = NULL;
+				const vertInputClipSpace* inside1 = NULL;
+				vertInputClipSpace* outside0 = NULL;
+				vertInputClipSpace* outside1 = NULL;
 
 				switch (outcodeBitmap)
 				{
@@ -1011,14 +1011,14 @@ void EmulateCPUClipper(const std::vector<triSetupInput>& inputUnclippedTriangles
 	}
 }
 
-void ApplyViewportTransform(vertInput& vert)
+void ApplyViewportTransform(vertInputClipSpace& vert)
 {
 	// Do division by W:
-	const float reciprocalW = 1.0f / vert.invW;
+	const float reciprocalW = 1.0f / vert.wPos;
 	vert.xPos *= reciprocalW;
 	vert.yPos *= reciprocalW;
-	vert.invZ *= reciprocalW;
-	vert.invW = reciprocalW;
+	vert.zPos *= reciprocalW;
+	vert.wPos = reciprocalW;
 
 	// Apply the viewport scaling and offsetting:
 	vert.xPos *= VIEWPORT_HALF_WIDTH;
@@ -1034,7 +1034,7 @@ const float frand()
 	return rand() / (const float)RAND_MAX;
 }
 
-const D3DCOLOR ConvertColorToD3DCOLOR(const vertInput::_rgba& color)
+const D3DCOLOR ConvertColorToD3DCOLOR(const vertInputClipSpace::_rgba& color)
 {
 	const unsigned r = (const unsigned)(color.r * 255.0f);
 	const unsigned g = (const unsigned)(color.g * 255.0f);
@@ -1043,7 +1043,7 @@ const D3DCOLOR ConvertColorToD3DCOLOR(const vertInput::_rgba& color)
 	return D3DCOLOR_ARGB(a, r, g, b);
 }
 
-void ApplyProjectionTransform(vertInput& vert)
+void ApplyProjectionTransform(vertInputClipSpace& vert)
 {
 	D3DXVec3Transform( (D3DXVECTOR4* const)&vert.xPos, (const D3DXVECTOR3* const)&vert.xPos, &projMatrix);
 }
@@ -1058,7 +1058,7 @@ const float MakeInfNanFloat(bool isNan, bool isNeg)
 	return *(const float* const)&val;
 }
 
-const int RunTestsClipUnit(Xsi::Loader& loader, RenderWindow* renderWindow)
+void InitClipPlanes()
 {
 	{
 		const D3DXVECTOR3 leftPlanePoint(-1.0f, 0.0f, 0.0f);
@@ -1110,90 +1110,75 @@ const int RunTestsClipUnit(Xsi::Loader& loader, RenderWindow* renderWindow)
 		const D3DXVECTOR3 bottomPlaneNormal(0.0f, 1.0f, 0.0f);
 		D3DXPlaneFromPointNormal(&ClipPlanes[CP_GBBottom], &GBBottomPlanePoint, &bottomPlaneNormal);
 	}
+}
 
+const int RunTestsClipUnit(Xsi::Loader& loader, RenderWindow* renderWindow)
+{
 	// Clock signal
 	std_logic_port clk(PD_IN, loader, "clk");
 
-	// Control signals:
-	std_logic_port inPreviousStageIsValid(PD_IN, loader, "inPreviousStageIsValid");
-	std_logic_port outPreviousStageIsReady(PD_OUT, loader, "outPreviousStageIsReady");
+	// Control signals for the previous (IA) and next (TRISETUP) stages:
+	std_logic_port IA_inPreviousStageIsValid(PD_IN, loader, "IA_inPreviousStageIsValid");
+	std_logic_port IA_outPreviousStageIsReady(PD_OUT, loader, "IA_outPreviousStageIsReady");
 
-	std_logic_port outNextStageIsValid(PD_OUT, loader, "outNextStageIsValid");
-	std_logic_port inNextStageisReady(PD_IN, loader, "inNextStageisReady");
+	std_logic_port TRISETUP_outNextStageIsValid(PD_OUT, loader, "TRISETUP_outNextStageIsValid");
+	std_logic_port TRISETUP_inNextStageisReady(PD_IN, loader, "TRISETUP_inNextStageisReady");
 
 	// Triangle data in:
-	std_logic_vector_port<32> inv0x(PD_IN, loader, "inv0x");
-	std_logic_vector_port<32> inv0y(PD_IN, loader, "inv0y");
-	std_logic_vector_port<32> inv0z(PD_IN, loader, "inv0z");
-	std_logic_vector_port<32> inv0w(PD_IN, loader, "inv0w");
-	std_logic_vector_port<32> inv0r(PD_IN, loader, "inv0r");
-	std_logic_vector_port<32> inv0g(PD_IN, loader, "inv0g");
-	std_logic_vector_port<32> inv0b(PD_IN, loader, "inv0b");
-	std_logic_vector_port<32> inv0a(PD_IN, loader, "inv0a");
-	std_logic_vector_port<32> inv0tx(PD_IN, loader, "inv0tx");
-	std_logic_vector_port<32> inv0ty(PD_IN, loader, "inv0ty");
-	std_logic_vector_port<11> inv0ClipOutcodes(PD_IN, loader, "inv0ClipOutcodes");
+	std_logic_vector_port<32> IA_inv0x(PD_IN, loader, "IA_inv0x");
+	std_logic_vector_port<32> IA_inv0y(PD_IN, loader, "IA_inv0y");
+	std_logic_vector_port<32> IA_inv0z(PD_IN, loader, "IA_inv0z");
+	std_logic_vector_port<32> IA_inv0w(PD_IN, loader, "IA_inv0w");
+	std_logic_vector_port<128> IA_inv0rgba(PD_IN, loader, "IA_inv0rgba");
+	std_logic_vector_port<32> IA_inv0tx(PD_IN, loader, "IA_inv0tx");
+	std_logic_vector_port<32> IA_inv0ty(PD_IN, loader, "IA_inv0ty");
+	std_logic_vector_port<11> IA_inv0ClipOutcodes(PD_IN, loader, "IA_inv0ClipOutcodes");
 
-	std_logic_vector_port<32> inv1x(PD_IN, loader, "inv1x");
-	std_logic_vector_port<32> inv1y(PD_IN, loader, "inv1y");
-	std_logic_vector_port<32> inv1z(PD_IN, loader, "inv1z");
-	std_logic_vector_port<32> inv1w(PD_IN, loader, "inv1w");
-	std_logic_vector_port<32> inv1r(PD_IN, loader, "inv1r");
-	std_logic_vector_port<32> inv1g(PD_IN, loader, "inv1g");
-	std_logic_vector_port<32> inv1b(PD_IN, loader, "inv1b");
-	std_logic_vector_port<32> inv1a(PD_IN, loader, "inv1a");
-	std_logic_vector_port<32> inv1tx(PD_IN, loader, "inv1tx");
-	std_logic_vector_port<32> inv1ty(PD_IN, loader, "inv1ty");
-	std_logic_vector_port<11> inv1ClipOutcodes(PD_IN, loader, "inv1ClipOutcodes");
+	std_logic_vector_port<32> IA_inv1x(PD_IN, loader, "IA_inv1x");
+	std_logic_vector_port<32> IA_inv1y(PD_IN, loader, "IA_inv1y");
+	std_logic_vector_port<32> IA_inv1z(PD_IN, loader, "IA_inv1z");
+	std_logic_vector_port<32> IA_inv1w(PD_IN, loader, "IA_inv1w");
+	std_logic_vector_port<128> IA_inv1rgba(PD_IN, loader, "IA_inv1rgba");
+	std_logic_vector_port<32> IA_inv1tx(PD_IN, loader, "IA_inv1tx");
+	std_logic_vector_port<32> IA_inv1ty(PD_IN, loader, "IA_inv1ty");
+	std_logic_vector_port<11> IA_inv1ClipOutcodes(PD_IN, loader, "IA_inv1ClipOutcodes");
 
-	std_logic_vector_port<32> inv2x(PD_IN, loader, "inv2x");
-	std_logic_vector_port<32> inv2y(PD_IN, loader, "inv2y");
-	std_logic_vector_port<32> inv2z(PD_IN, loader, "inv2z");
-	std_logic_vector_port<32> inv2w(PD_IN, loader, "inv2w");
-	std_logic_vector_port<32> inv2r(PD_IN, loader, "inv2r");
-	std_logic_vector_port<32> inv2g(PD_IN, loader, "inv2g");
-	std_logic_vector_port<32> inv2b(PD_IN, loader, "inv2b");
-	std_logic_vector_port<32> inv2a(PD_IN, loader, "inv2a");
-	std_logic_vector_port<32> inv2tx(PD_IN, loader, "inv2tx");
-	std_logic_vector_port<32> inv2ty(PD_IN, loader, "inv2ty");
-	std_logic_vector_port<11> inv2ClipOutcodes(PD_IN, loader, "inv2ClipOutcodes");
+	std_logic_vector_port<32> IA_inv2x(PD_IN, loader, "IA_inv2x");
+	std_logic_vector_port<32> IA_inv2y(PD_IN, loader, "IA_inv2y");
+	std_logic_vector_port<32> IA_inv2z(PD_IN, loader, "IA_inv2z");
+	std_logic_vector_port<32> IA_inv2w(PD_IN, loader, "IA_inv2w");
+	std_logic_vector_port<128> IA_inv2rgba(PD_IN, loader, "IA_inv2rgba");
+	std_logic_vector_port<32> IA_inv2tx(PD_IN, loader, "IA_inv2tx");
+	std_logic_vector_port<32> IA_inv2ty(PD_IN, loader, "IA_inv2ty");
+	std_logic_vector_port<11> IA_inv2ClipOutcodes(PD_IN, loader, "IA_inv2ClipOutcodes");
 
-	std_logic_port inWholeTriangleAABBIntersectsViewport(PD_IN, loader, "inWholeTriangleAABBIntersectsViewport");
+	std_logic_port IA_inWholeTriangleAABBIntersectsViewport(PD_IN, loader, "IA_inWholeTriangleAABBIntersectsViewport");
 	// End Triangle data in
 
 	// Triangle data out:
-	std_logic_vector_port<32> outv0x(PD_OUT, loader, "outv0x");
-	std_logic_vector_port<32> outv0y(PD_OUT, loader, "outv0y");
-	std_logic_vector_port<32> outv0z(PD_OUT, loader, "outv0z");
-	std_logic_vector_port<32> outv0w(PD_OUT, loader, "outv0w");
-	std_logic_vector_port<32> outv0r(PD_OUT, loader, "outv0r");
-	std_logic_vector_port<32> outv0g(PD_OUT, loader, "outv0g");
-	std_logic_vector_port<32> outv0b(PD_OUT, loader, "outv0b");
-	std_logic_vector_port<32> outv0a(PD_OUT, loader, "outv0a");
-	std_logic_vector_port<32> outv0tx(PD_OUT, loader, "outv0tx");
-	std_logic_vector_port<32> outv0ty(PD_OUT, loader, "outv0ty");
+	std_logic_vector_port<32> TRISETUP_outv0x(PD_OUT, loader, "TRISETUP_outv0x");
+	std_logic_vector_port<32> TRISETUP_outv0y(PD_OUT, loader, "TRISETUP_outv0y");
+	std_logic_vector_port<32> TRISETUP_outv0z(PD_OUT, loader, "TRISETUP_outv0z");
+	std_logic_vector_port<32> TRISETUP_outv0w(PD_OUT, loader, "TRISETUP_outv0w");
+	std_logic_vector_port<128> TRISETUP_outv0rgba(PD_OUT, loader, "TRISETUP_outv0rgba");
+	std_logic_vector_port<32> TRISETUP_outv0tx(PD_OUT, loader, "TRISETUP_outv0tx");
+	std_logic_vector_port<32> TRISETUP_outv0ty(PD_OUT, loader, "TRISETUP_outv0ty");
 
-	std_logic_vector_port<32> outv1x(PD_OUT, loader, "outv1x");
-	std_logic_vector_port<32> outv1y(PD_OUT, loader, "outv1y");
-	std_logic_vector_port<32> outv1z(PD_OUT, loader, "outv1z");
-	std_logic_vector_port<32> outv1w(PD_OUT, loader, "outv1w");
-	std_logic_vector_port<32> outv1r(PD_OUT, loader, "outv1r");
-	std_logic_vector_port<32> outv1g(PD_OUT, loader, "outv1g");
-	std_logic_vector_port<32> outv1b(PD_OUT, loader, "outv1b");
-	std_logic_vector_port<32> outv1a(PD_OUT, loader, "outv1a");
-	std_logic_vector_port<32> outv1tx(PD_OUT, loader, "outv1tx");
-	std_logic_vector_port<32> outv1ty(PD_OUT, loader, "outv1ty");
+	std_logic_vector_port<32> TRISETUP_outv1x(PD_OUT, loader, "TRISETUP_outv1x");
+	std_logic_vector_port<32> TRISETUP_outv1y(PD_OUT, loader, "TRISETUP_outv1y");
+	std_logic_vector_port<32> TRISETUP_outv1z(PD_OUT, loader, "TRISETUP_outv1z");
+	std_logic_vector_port<32> TRISETUP_outv1w(PD_OUT, loader, "TRISETUP_outv1w");
+	std_logic_vector_port<128> TRISETUP_outv1rgba(PD_OUT, loader, "TRISETUP_outv1rgba");
+	std_logic_vector_port<32> TRISETUP_outv1tx(PD_OUT, loader, "TRISETUP_outv1tx");
+	std_logic_vector_port<32> TRISETUP_outv1ty(PD_OUT, loader, "TRISETUP_outv1ty");
 
-	std_logic_vector_port<32> outv2x(PD_OUT, loader, "outv2x");
-	std_logic_vector_port<32> outv2y(PD_OUT, loader, "outv2y");
-	std_logic_vector_port<32> outv2z(PD_OUT, loader, "outv2z");
-	std_logic_vector_port<32> outv2w(PD_OUT, loader, "outv2w");
-	std_logic_vector_port<32> outv2r(PD_OUT, loader, "outv2r");
-	std_logic_vector_port<32> outv2g(PD_OUT, loader, "outv2g");
-	std_logic_vector_port<32> outv2b(PD_OUT, loader, "outv2b");
-	std_logic_vector_port<32> outv2a(PD_OUT, loader, "outv2a");
-	std_logic_vector_port<32> outv2tx(PD_OUT, loader, "outv2tx");
-	std_logic_vector_port<32> outv2ty(PD_OUT, loader, "outv2ty");
+	std_logic_vector_port<32> TRISETUP_outv2x(PD_OUT, loader, "TRISETUP_outv2x");
+	std_logic_vector_port<32> TRISETUP_outv2y(PD_OUT, loader, "TRISETUP_outv2y");
+	std_logic_vector_port<32> TRISETUP_outv2z(PD_OUT, loader, "TRISETUP_outv2z");
+	std_logic_vector_port<32> TRISETUP_outv2w(PD_OUT, loader, "TRISETUP_outv2w");
+	std_logic_vector_port<128> TRISETUP_outv2rgba(PD_OUT, loader, "TRISETUP_outv2rgba");
+	std_logic_vector_port<32> TRISETUP_outv2tx(PD_OUT, loader, "TRISETUP_outv2tx");
+	std_logic_vector_port<32> TRISETUP_outv2ty(PD_OUT, loader, "TRISETUP_outv2ty");
 	// End triangle data out
 
 	// FPU interfaces begin:
@@ -1268,36 +1253,27 @@ const int RunTestsClipUnit(Xsi::Loader& loader, RenderWindow* renderWindow)
 
 	auto SetNewPendingInput = [&](const triSetupInput& newInput)
 	{
-		inv0x = newInput.v0.xPos;
-		inv0y = newInput.v0.yPos;
-		inv0z = newInput.v0.invZ;
-		inv0w = newInput.v0.invW;
-		inv1x = newInput.v1.xPos;
-		inv1y = newInput.v1.yPos;
-		inv1z = newInput.v1.invZ;
-		inv1w = newInput.v1.invW;
-		inv2x = newInput.v2.xPos;
-		inv2y = newInput.v2.yPos;
-		inv2z = newInput.v2.invZ;
-		inv2w = newInput.v2.invW;
-		inv0tx = newInput.v0.xTex;
-		inv0ty = newInput.v0.yTex;
-		inv1tx = newInput.v1.xTex;
-		inv1ty = newInput.v1.yTex;
-		inv2tx = newInput.v2.xTex;
-		inv2ty = newInput.v2.yTex;
-		inv0r = newInput.v0.rgba.r;
-		inv0g = newInput.v0.rgba.g;
-		inv0b = newInput.v0.rgba.b;
-		inv0a = newInput.v0.rgba.a;
-		inv1r = newInput.v1.rgba.r;
-		inv1g = newInput.v1.rgba.g;
-		inv1b = newInput.v1.rgba.b;
-		inv1a = newInput.v1.rgba.a;
-		inv2r = newInput.v2.rgba.r;
-		inv2g = newInput.v2.rgba.g;
-		inv2b = newInput.v2.rgba.b;
-		inv2a = newInput.v2.rgba.a;
+		IA_inv0x = newInput.v0.xPos;
+		IA_inv0y = newInput.v0.yPos;
+		IA_inv0z = newInput.v0.zPos;
+		IA_inv0w = newInput.v0.wPos;
+		IA_inv1x = newInput.v1.xPos;
+		IA_inv1y = newInput.v1.yPos;
+		IA_inv1z = newInput.v1.zPos;
+		IA_inv1w = newInput.v1.wPos;
+		IA_inv2x = newInput.v2.xPos;
+		IA_inv2y = newInput.v2.yPos;
+		IA_inv2z = newInput.v2.zPos;
+		IA_inv2w = newInput.v2.wPos;
+		IA_inv0tx = newInput.v0.xTex;
+		IA_inv0ty = newInput.v0.yTex;
+		IA_inv1tx = newInput.v1.xTex;
+		IA_inv1ty = newInput.v1.yTex;
+		IA_inv2tx = newInput.v2.xTex;
+		IA_inv2ty = newInput.v2.yTex;
+		IA_inv0rgba.SetStructVal(newInput.v0.rgba);
+		IA_inv1rgba.SetStructVal(newInput.v1.rgba);
+		IA_inv2rgba.SetStructVal(newInput.v2.rgba);
 
 		clipWorkingTriangle clipWork;
 		clipWork.geomData.v0 = newInput.v0;
@@ -1305,58 +1281,49 @@ const int RunTestsClipUnit(Xsi::Loader& loader, RenderWindow* renderWindow)
 		clipWork.geomData.v2 = newInput.v2;
 		clipWork.ComputeClipCodes();
 
-		inv0ClipOutcodes = clipWork.clipData.clip0;
-		inv1ClipOutcodes = clipWork.clipData.clip1;
-		inv2ClipOutcodes = clipWork.clipData.clip2;
+		IA_inv0ClipOutcodes = clipWork.clipData.clip0;
+		IA_inv1ClipOutcodes = clipWork.clipData.clip1;
+		IA_inv2ClipOutcodes = clipWork.clipData.clip2;
 
-		inWholeTriangleAABBIntersectsViewport = GetTriangleNeedsEdgeClipping(clipWork);
+		IA_inWholeTriangleAABBIntersectsViewport = GetTriangleNeedsEdgeClipping(clipWork);
 
-		inPreviousStageIsValid = true;
+		IA_inPreviousStageIsValid = true;
 	};
 
 	auto UpdateNewOutput = [&](std::vector<triSetupInput>& clippedOutputTris)
 	{
-		if (outNextStageIsValid.GetBoolVal() )
+		if (TRISETUP_outNextStageIsValid.GetBoolVal() )
 		{
 			triSetupInput newClippedTri;
 			
-			newClippedTri.v0.xPos = outv0x.GetFloat32Val();
-			newClippedTri.v0.yPos = outv0y.GetFloat32Val();
-			newClippedTri.v0.invZ = outv0z.GetFloat32Val();
-			newClippedTri.v0.invW = outv0w.GetFloat32Val();
-			newClippedTri.v1.xPos = outv1x.GetFloat32Val();
-			newClippedTri.v1.yPos = outv1y.GetFloat32Val();
-			newClippedTri.v1.invZ = outv1z.GetFloat32Val();
-			newClippedTri.v1.invW = outv1w.GetFloat32Val();
-			newClippedTri.v2.xPos = outv2x.GetFloat32Val();
-			newClippedTri.v2.yPos = outv2y.GetFloat32Val();
-			newClippedTri.v2.invZ = outv2z.GetFloat32Val();
-			newClippedTri.v2.invW = outv2w.GetFloat32Val();
+			newClippedTri.v0.xPos = TRISETUP_outv0x.GetFloat32Val();
+			newClippedTri.v0.yPos = TRISETUP_outv0y.GetFloat32Val();
+			newClippedTri.v0.zPos = TRISETUP_outv0z.GetFloat32Val();
+			newClippedTri.v0.wPos = TRISETUP_outv0w.GetFloat32Val();
+			newClippedTri.v1.xPos = TRISETUP_outv1x.GetFloat32Val();
+			newClippedTri.v1.yPos = TRISETUP_outv1y.GetFloat32Val();
+			newClippedTri.v1.zPos = TRISETUP_outv1z.GetFloat32Val();
+			newClippedTri.v1.wPos = TRISETUP_outv1w.GetFloat32Val();
+			newClippedTri.v2.xPos = TRISETUP_outv2x.GetFloat32Val();
+			newClippedTri.v2.yPos = TRISETUP_outv2y.GetFloat32Val();
+			newClippedTri.v2.zPos = TRISETUP_outv2z.GetFloat32Val();
+			newClippedTri.v2.wPos = TRISETUP_outv2w.GetFloat32Val();
 
-			newClippedTri.v0.xTex = outv0tx.GetFloat32Val();
-			newClippedTri.v0.yTex = outv0ty.GetFloat32Val();
-			newClippedTri.v1.xTex = outv1tx.GetFloat32Val();
-			newClippedTri.v1.yTex = outv1ty.GetFloat32Val();
-			newClippedTri.v2.xTex = outv2tx.GetFloat32Val();
-			newClippedTri.v2.yTex = outv2ty.GetFloat32Val();
+			newClippedTri.v0.xTex = TRISETUP_outv0tx.GetFloat32Val();
+			newClippedTri.v0.yTex = TRISETUP_outv0ty.GetFloat32Val();
+			newClippedTri.v1.xTex = TRISETUP_outv1tx.GetFloat32Val();
+			newClippedTri.v1.yTex = TRISETUP_outv1ty.GetFloat32Val();
+			newClippedTri.v2.xTex = TRISETUP_outv2tx.GetFloat32Val();
+			newClippedTri.v2.yTex = TRISETUP_outv2ty.GetFloat32Val();
 
-			newClippedTri.v0.rgba.r = outv0r.GetFloat32Val();
-			newClippedTri.v0.rgba.g = outv0g.GetFloat32Val();
-			newClippedTri.v0.rgba.b = outv0b.GetFloat32Val();
-			newClippedTri.v0.rgba.a = outv0a.GetFloat32Val();
-			newClippedTri.v1.rgba.r = outv1r.GetFloat32Val();
-			newClippedTri.v1.rgba.g = outv1g.GetFloat32Val();
-			newClippedTri.v1.rgba.b = outv1b.GetFloat32Val();
-			newClippedTri.v1.rgba.a = outv1a.GetFloat32Val();
-			newClippedTri.v2.rgba.r = outv2r.GetFloat32Val();
-			newClippedTri.v2.rgba.g = outv2g.GetFloat32Val();
-			newClippedTri.v2.rgba.b = outv2b.GetFloat32Val();
-			newClippedTri.v2.rgba.a = outv2a.GetFloat32Val();
+			TRISETUP_outv0rgba.GetStructVal(newClippedTri.v0.rgba);
+			TRISETUP_outv1rgba.GetStructVal(newClippedTri.v1.rgba);
+			TRISETUP_outv2rgba.GetStructVal(newClippedTri.v2.rgba);
 
 			printf("New output tri %u:\n\t(%f,%f,%f,%f)\n\t(%f,%f,%f,%f)\n\t(%f,%f,%f,%f)\n\n", (const unsigned)clippedOutputTris.size(),
-				newClippedTri.v0.xPos, newClippedTri.v0.yPos, newClippedTri.v0.invZ, newClippedTri.v0.invW,
-				newClippedTri.v1.xPos, newClippedTri.v1.yPos, newClippedTri.v1.invZ, newClippedTri.v1.invW,
-				newClippedTri.v2.xPos, newClippedTri.v2.yPos, newClippedTri.v2.invZ, newClippedTri.v2.invW);
+				newClippedTri.v0.xPos, newClippedTri.v0.yPos, newClippedTri.v0.zPos, newClippedTri.v0.wPos,
+				newClippedTri.v1.xPos, newClippedTri.v1.yPos, newClippedTri.v1.zPos, newClippedTri.v1.wPos,
+				newClippedTri.v2.xPos, newClippedTri.v2.yPos, newClippedTri.v2.zPos, newClippedTri.v2.wPos);
 
 			clippedOutputTris.push_back(newClippedTri);
 		}
@@ -1370,9 +1337,9 @@ const int RunTestsClipUnit(Xsi::Loader& loader, RenderWindow* renderWindow)
 	for (unsigned startupCycle = 0; startupCycle < 100; ++startupCycle)
 	{
 		scoped_timestep time(loader, clk, 100);
-		inPreviousStageIsValid = false;
-		inWholeTriangleAABBIntersectsViewport = false;
-		inNextStageisReady = false;
+		IA_inPreviousStageIsValid = false;
+		IA_inWholeTriangleAABBIntersectsViewport = false;
+		TRISETUP_inNextStageisReady = false;
 	}
 
 	bool successResult = true;
@@ -1384,16 +1351,16 @@ const int RunTestsClipUnit(Xsi::Loader& loader, RenderWindow* renderWindow)
 	triSetupInput goodclipTri;
 	goodclipTri.v0.xPos = -0.5f;
 	goodclipTri.v0.yPos = -0.5f;
-	goodclipTri.v0.invZ = 0.0f;
-	goodclipTri.v0.invW = 1.0f;
+	goodclipTri.v0.zPos = 0.0f;
+	goodclipTri.v0.wPos = 1.0f;
 	goodclipTri.v1.xPos = 0.1f;
 	goodclipTri.v1.yPos = 3.0f;
-	goodclipTri.v1.invZ = 1.0f;
-	goodclipTri.v1.invW = 1.0f;
+	goodclipTri.v1.zPos = 1.0f;
+	goodclipTri.v1.wPos = 1.0f;
 	goodclipTri.v2.xPos = 1.75f;
 	goodclipTri.v2.yPos = 0.85f;
-	goodclipTri.v2.invZ = 2.0f;
-	goodclipTri.v2.invW = 2.5f;
+	goodclipTri.v2.zPos = 2.0f;
+	goodclipTri.v2.wPos = 2.5f;
 
 	goodclipTri.v0.rgba.r = goodclipTri.v0.rgba.g = goodclipTri.v0.rgba.b = 0.0f;
 	goodclipTri.v0.rgba.a = 1.0f;
@@ -1426,7 +1393,7 @@ const int RunTestsClipUnit(Xsi::Loader& loader, RenderWindow* renderWindow)
 				{
 					triSetupInput badclipTri = goodclipTri;
 
-					vertInput* vertPtr = NULL;
+					vertInputClipSpace* vertPtr = NULL;
 					switch (flt / 4)
 					{
 					default:
@@ -1456,9 +1423,9 @@ const int RunTestsClipUnit(Xsi::Loader& loader, RenderWindow* renderWindow)
 	{
 		triSetupInput leftClipTri = goodclipTri;
 
-		while (leftClipTri.v0.xPos >= -leftClipTri.v0.invW) leftClipTri.v0.xPos -= 0.001f;
-		while (leftClipTri.v1.xPos >= -leftClipTri.v1.invW) leftClipTri.v1.xPos -= 0.001f;
-		while (leftClipTri.v2.xPos >= -leftClipTri.v2.invW) leftClipTri.v2.xPos -= 0.001f;
+		while (leftClipTri.v0.xPos >= -leftClipTri.v0.wPos) leftClipTri.v0.xPos -= 0.001f;
+		while (leftClipTri.v1.xPos >= -leftClipTri.v1.wPos) leftClipTri.v1.xPos -= 0.001f;
+		while (leftClipTri.v2.xPos >= -leftClipTri.v2.wPos) leftClipTri.v2.xPos -= 0.001f;
 
 		unclippedInputTris.push_back(leftClipTri);
 	}
@@ -1467,9 +1434,9 @@ const int RunTestsClipUnit(Xsi::Loader& loader, RenderWindow* renderWindow)
 	{
 		triSetupInput rightClipTri = goodclipTri;
 
-		while (rightClipTri.v0.xPos <= rightClipTri.v0.invW) rightClipTri.v0.xPos += 0.001f;
-		while (rightClipTri.v1.xPos <= rightClipTri.v1.invW) rightClipTri.v1.xPos += 0.001f;
-		while (rightClipTri.v2.xPos <= rightClipTri.v2.invW) rightClipTri.v2.xPos += 0.001f;
+		while (rightClipTri.v0.xPos <= rightClipTri.v0.wPos) rightClipTri.v0.xPos += 0.001f;
+		while (rightClipTri.v1.xPos <= rightClipTri.v1.wPos) rightClipTri.v1.xPos += 0.001f;
+		while (rightClipTri.v2.xPos <= rightClipTri.v2.wPos) rightClipTri.v2.xPos += 0.001f;
 
 		unclippedInputTris.push_back(rightClipTri);
 	}
@@ -1478,9 +1445,9 @@ const int RunTestsClipUnit(Xsi::Loader& loader, RenderWindow* renderWindow)
 	{
 		triSetupInput topClipTri = goodclipTri;
 
-		while (topClipTri.v0.yPos <= topClipTri.v0.invW) topClipTri.v0.yPos += 0.001f;
-		while (topClipTri.v1.yPos <= topClipTri.v1.invW) topClipTri.v1.yPos += 0.001f;
-		while (topClipTri.v2.yPos <= topClipTri.v2.invW) topClipTri.v2.yPos += 0.001f;
+		while (topClipTri.v0.yPos <= topClipTri.v0.wPos) topClipTri.v0.yPos += 0.001f;
+		while (topClipTri.v1.yPos <= topClipTri.v1.wPos) topClipTri.v1.yPos += 0.001f;
+		while (topClipTri.v2.yPos <= topClipTri.v2.wPos) topClipTri.v2.yPos += 0.001f;
 
 		unclippedInputTris.push_back(topClipTri);
 	}
@@ -1489,9 +1456,9 @@ const int RunTestsClipUnit(Xsi::Loader& loader, RenderWindow* renderWindow)
 	{
 		triSetupInput bottomClipTri = goodclipTri;
 
-		while (bottomClipTri.v0.yPos >= -bottomClipTri.v0.invW) bottomClipTri.v0.yPos -= 0.001f;
-		while (bottomClipTri.v1.yPos >= -bottomClipTri.v1.invW) bottomClipTri.v1.yPos -= 0.001f;
-		while (bottomClipTri.v2.yPos >= -bottomClipTri.v2.invW) bottomClipTri.v2.yPos -= 0.001f;
+		while (bottomClipTri.v0.yPos >= -bottomClipTri.v0.wPos) bottomClipTri.v0.yPos -= 0.001f;
+		while (bottomClipTri.v1.yPos >= -bottomClipTri.v1.wPos) bottomClipTri.v1.yPos -= 0.001f;
+		while (bottomClipTri.v2.yPos >= -bottomClipTri.v2.wPos) bottomClipTri.v2.yPos -= 0.001f;
 
 		unclippedInputTris.push_back(bottomClipTri);
 	}
@@ -1500,9 +1467,9 @@ const int RunTestsClipUnit(Xsi::Loader& loader, RenderWindow* renderWindow)
 	{
 		triSetupInput zFrontClipTri = goodclipTri;
 
-		while (zFrontClipTri.v0.invZ >= 0.0f) zFrontClipTri.v0.invZ -= 0.001f;
-		while (zFrontClipTri.v1.invZ >= 0.0f) zFrontClipTri.v1.invZ -= 0.001f;
-		while (zFrontClipTri.v2.invZ >= 0.0f) zFrontClipTri.v2.invZ -= 0.001f;
+		while (zFrontClipTri.v0.zPos >= 0.0f) zFrontClipTri.v0.zPos -= 0.001f;
+		while (zFrontClipTri.v1.zPos >= 0.0f) zFrontClipTri.v1.zPos -= 0.001f;
+		while (zFrontClipTri.v2.zPos >= 0.0f) zFrontClipTri.v2.zPos -= 0.001f;
 
 		unclippedInputTris.push_back(zFrontClipTri);
 	}
@@ -1511,9 +1478,9 @@ const int RunTestsClipUnit(Xsi::Loader& loader, RenderWindow* renderWindow)
 	{
 		triSetupInput zBackClipTri = goodclipTri;
 
-		while (zBackClipTri.v0.invZ <= zBackClipTri.v0.invW) zBackClipTri.v0.invZ += 0.001f;
-		while (zBackClipTri.v1.invZ <= zBackClipTri.v1.invW) zBackClipTri.v1.invZ += 0.001f;
-		while (zBackClipTri.v2.invZ <= zBackClipTri.v2.invW) zBackClipTri.v2.invZ += 0.001f;
+		while (zBackClipTri.v0.zPos <= zBackClipTri.v0.wPos) zBackClipTri.v0.zPos += 0.001f;
+		while (zBackClipTri.v1.zPos <= zBackClipTri.v1.wPos) zBackClipTri.v1.zPos += 0.001f;
+		while (zBackClipTri.v2.zPos <= zBackClipTri.v2.wPos) zBackClipTri.v2.zPos += 0.001f;
 
 		unclippedInputTris.push_back(zBackClipTri);
 	}
@@ -1522,12 +1489,12 @@ const int RunTestsClipUnit(Xsi::Loader& loader, RenderWindow* renderWindow)
 	{
 		triSetupInput w0ClipTri = goodclipTri;
 
-		if (w0ClipTri.v0.invW > 0.0f)
-			w0ClipTri.v0.invW *= -1.0f;
-		if (w0ClipTri.v1.invW > 0.0f)
-			w0ClipTri.v1.invW *= -1.0f;
-		if (w0ClipTri.v2.invW > 0.0f)
-			w0ClipTri.v2.invW *= -1.0f;
+		if (w0ClipTri.v0.wPos > 0.0f)
+			w0ClipTri.v0.wPos *= -1.0f;
+		if (w0ClipTri.v1.wPos > 0.0f)
+			w0ClipTri.v1.wPos *= -1.0f;
+		if (w0ClipTri.v2.wPos > 0.0f)
+			w0ClipTri.v2.wPos *= -1.0f;
 
 		unclippedInputTris.push_back(w0ClipTri);
 	}
@@ -1536,9 +1503,9 @@ const int RunTestsClipUnit(Xsi::Loader& loader, RenderWindow* renderWindow)
 	{
 		triSetupInput leftGBClipTri = goodclipTri;
 
-		while (leftGBClipTri.v0.xPos >= -leftGBClipTri.v0.invW * GuardBandXScale) leftGBClipTri.v0.xPos -= 0.0023f;
-		while (leftGBClipTri.v1.xPos >= -leftGBClipTri.v1.invW * GuardBandXScale) leftGBClipTri.v1.xPos -= 0.0023f;
-		while (leftGBClipTri.v2.xPos >= -leftGBClipTri.v2.invW * GuardBandXScale) leftGBClipTri.v2.xPos -= 0.0023f;
+		while (leftGBClipTri.v0.xPos >= -leftGBClipTri.v0.wPos * GuardBandXScale) leftGBClipTri.v0.xPos -= 0.0023f;
+		while (leftGBClipTri.v1.xPos >= -leftGBClipTri.v1.wPos * GuardBandXScale) leftGBClipTri.v1.xPos -= 0.0023f;
+		while (leftGBClipTri.v2.xPos >= -leftGBClipTri.v2.wPos * GuardBandXScale) leftGBClipTri.v2.xPos -= 0.0023f;
 
 		unclippedInputTris.push_back(leftGBClipTri);
 	}
@@ -1547,9 +1514,9 @@ const int RunTestsClipUnit(Xsi::Loader& loader, RenderWindow* renderWindow)
 	{
 		triSetupInput rightGBClipTri = goodclipTri;
 
-		while (rightGBClipTri.v0.xPos <= rightGBClipTri.v0.invW * GuardBandXScale) rightGBClipTri.v0.xPos += 0.0023f;
-		while (rightGBClipTri.v1.xPos <= rightGBClipTri.v1.invW * GuardBandXScale) rightGBClipTri.v1.xPos += 0.0023f;
-		while (rightGBClipTri.v2.xPos <= rightGBClipTri.v2.invW * GuardBandXScale) rightGBClipTri.v2.xPos += 0.0023f;
+		while (rightGBClipTri.v0.xPos <= rightGBClipTri.v0.wPos * GuardBandXScale) rightGBClipTri.v0.xPos += 0.0023f;
+		while (rightGBClipTri.v1.xPos <= rightGBClipTri.v1.wPos * GuardBandXScale) rightGBClipTri.v1.xPos += 0.0023f;
+		while (rightGBClipTri.v2.xPos <= rightGBClipTri.v2.wPos * GuardBandXScale) rightGBClipTri.v2.xPos += 0.0023f;
 
 		unclippedInputTris.push_back(rightGBClipTri);
 	}
@@ -1558,9 +1525,9 @@ const int RunTestsClipUnit(Xsi::Loader& loader, RenderWindow* renderWindow)
 	{
 		triSetupInput topGBClipTri = goodclipTri;
 
-		while (topGBClipTri.v0.yPos <= topGBClipTri.v0.invW * GuardBandYScale) topGBClipTri.v0.yPos += 0.0023f;
-		while (topGBClipTri.v1.yPos <= topGBClipTri.v1.invW * GuardBandYScale) topGBClipTri.v1.yPos += 0.0023f;
-		while (topGBClipTri.v2.yPos <= topGBClipTri.v2.invW * GuardBandYScale) topGBClipTri.v2.yPos += 0.0023f;
+		while (topGBClipTri.v0.yPos <= topGBClipTri.v0.wPos * GuardBandYScale) topGBClipTri.v0.yPos += 0.0023f;
+		while (topGBClipTri.v1.yPos <= topGBClipTri.v1.wPos * GuardBandYScale) topGBClipTri.v1.yPos += 0.0023f;
+		while (topGBClipTri.v2.yPos <= topGBClipTri.v2.wPos * GuardBandYScale) topGBClipTri.v2.yPos += 0.0023f;
 
 		unclippedInputTris.push_back(topGBClipTri);
 	}
@@ -1569,15 +1536,15 @@ const int RunTestsClipUnit(Xsi::Loader& loader, RenderWindow* renderWindow)
 	{
 		triSetupInput bottomGBClipTri = goodclipTri;
 
-		while (bottomGBClipTri.v0.yPos >= -bottomGBClipTri.v0.invW * GuardBandYScale) bottomGBClipTri.v0.yPos -= 0.0023f;
-		while (bottomGBClipTri.v1.yPos >= -bottomGBClipTri.v1.invW * GuardBandYScale) bottomGBClipTri.v1.yPos -= 0.0023f;
-		while (bottomGBClipTri.v2.yPos >= -bottomGBClipTri.v2.invW * GuardBandYScale) bottomGBClipTri.v2.yPos -= 0.0023f;
+		while (bottomGBClipTri.v0.yPos >= -bottomGBClipTri.v0.wPos * GuardBandYScale) bottomGBClipTri.v0.yPos -= 0.0023f;
+		while (bottomGBClipTri.v1.yPos >= -bottomGBClipTri.v1.wPos * GuardBandYScale) bottomGBClipTri.v1.yPos -= 0.0023f;
+		while (bottomGBClipTri.v2.yPos >= -bottomGBClipTri.v2.wPos * GuardBandYScale) bottomGBClipTri.v2.yPos -= 0.0023f;
 
 		unclippedInputTris.push_back(bottomGBClipTri);
 	}
 
 	EmulateCPUClipper(unclippedInputTris, clippedOutputTris);
-	SimulateHDLClipper(loader, unclippedInputTris, HDLSimClippedOutputTris, clk, inNextStageisReady, inPreviousStageIsValid, outPreviousStageIsReady, 
+	SimulateHDLClipper(loader, unclippedInputTris, HDLSimClippedOutputTris, clk, TRISETUP_inNextStageisReady, IA_inPreviousStageIsValid, IA_outPreviousStageIsReady, 
 		DBG_CurrentState, DBG_CurrentClipPlane, DBG_CurrentClipBitmask, DBG_ChildTriStackSize, 
 		DBG_ClipDistance0, DBG_ClipDistance1,
 		DBG_V0PosX, DBG_V0PosY, DBG_V0PosZ, DBG_V0PosW,
@@ -1600,13 +1567,13 @@ const int RunTestsClipUnit(Xsi::Loader& loader, RenderWindow* renderWindow)
 	// Outside left edge, inside left guard band:
 	{
 		triSetupInput leftNoClipTri = goodclipTri;
-		leftNoClipTri.v0.xPos = -leftNoClipTri.v0.invW * 1.25f;
+		leftNoClipTri.v0.xPos = -leftNoClipTri.v0.wPos * 1.25f;
 		unclippedInputTris.push_back(leftNoClipTri);
 		leftNoClipTri = goodclipTri;
-		leftNoClipTri.v1.xPos = -leftNoClipTri.v1.invW * 4.5f;
+		leftNoClipTri.v1.xPos = -leftNoClipTri.v1.wPos * 4.5f;
 		unclippedInputTris.push_back(leftNoClipTri);
 		leftNoClipTri = goodclipTri;
-		leftNoClipTri.v2.xPos = -leftNoClipTri.v2.invW * 12.333f;
+		leftNoClipTri.v2.xPos = -leftNoClipTri.v2.wPos * 12.333f;
 		unclippedInputTris.push_back(leftNoClipTri);
 		static_assert(12.333f < GuardBandXScale, "Error: Out of range test for this guard band!");
 	}
@@ -1614,13 +1581,13 @@ const int RunTestsClipUnit(Xsi::Loader& loader, RenderWindow* renderWindow)
 	// Outside right edge, inside right guard band:
 	{
 		triSetupInput rightNoClipTri = goodclipTri;
-		rightNoClipTri.v0.xPos = rightNoClipTri.v0.invW * 2.75f;
+		rightNoClipTri.v0.xPos = rightNoClipTri.v0.wPos * 2.75f;
 		unclippedInputTris.push_back(rightNoClipTri);
 		rightNoClipTri = goodclipTri;
-		rightNoClipTri.v1.xPos = rightNoClipTri.v1.invW * 5.5f;
+		rightNoClipTri.v1.xPos = rightNoClipTri.v1.wPos * 5.5f;
 		unclippedInputTris.push_back(rightNoClipTri);
 		rightNoClipTri = goodclipTri;
-		rightNoClipTri.v2.xPos = rightNoClipTri.v2.invW * 13.667f;
+		rightNoClipTri.v2.xPos = rightNoClipTri.v2.wPos * 13.667f;
 		unclippedInputTris.push_back(rightNoClipTri);
 		static_assert(13.667f < GuardBandXScale, "Error: Out of range test for this guard band!");
 	}
@@ -1628,13 +1595,13 @@ const int RunTestsClipUnit(Xsi::Loader& loader, RenderWindow* renderWindow)
 	// Outside top edge, inside top guard band:
 	{
 		triSetupInput topNoClipTri = goodclipTri;
-		topNoClipTri.v0.yPos = topNoClipTri.v0.invW * 2.75f;
+		topNoClipTri.v0.yPos = topNoClipTri.v0.wPos * 2.75f;
 		unclippedInputTris.push_back(topNoClipTri);
 		topNoClipTri = goodclipTri;
-		topNoClipTri.v1.yPos = topNoClipTri.v1.invW * 5.5f;
+		topNoClipTri.v1.yPos = topNoClipTri.v1.wPos * 5.5f;
 		unclippedInputTris.push_back(topNoClipTri);
 		topNoClipTri = goodclipTri;
-		topNoClipTri.v2.yPos = topNoClipTri.v2.invW * 13.667f;
+		topNoClipTri.v2.yPos = topNoClipTri.v2.wPos * 13.667f;
 		unclippedInputTris.push_back(topNoClipTri);
 		static_assert(13.667f < GuardBandYScale, "Error: Out of range test for this guard band!");
 	}
@@ -1642,19 +1609,19 @@ const int RunTestsClipUnit(Xsi::Loader& loader, RenderWindow* renderWindow)
 	// Outside bottom edge, inside bottom guard band:
 	{
 		triSetupInput bottomNoClipTri = goodclipTri;
-		bottomNoClipTri.v0.yPos = -bottomNoClipTri.v0.invW * 1.25f;
+		bottomNoClipTri.v0.yPos = -bottomNoClipTri.v0.wPos * 1.25f;
 		unclippedInputTris.push_back(bottomNoClipTri);
 		bottomNoClipTri = goodclipTri;
-		bottomNoClipTri.v1.yPos = -bottomNoClipTri.v1.invW * 4.5f;
+		bottomNoClipTri.v1.yPos = -bottomNoClipTri.v1.wPos * 4.5f;
 		unclippedInputTris.push_back(bottomNoClipTri);
 		bottomNoClipTri = goodclipTri;
-		bottomNoClipTri.v2.yPos = -bottomNoClipTri.v2.invW * 12.333f;
+		bottomNoClipTri.v2.yPos = -bottomNoClipTri.v2.wPos * 12.333f;
 		unclippedInputTris.push_back(bottomNoClipTri);
 		static_assert(12.333f < GuardBandYScale, "Error: Out of range test for this guard band!");
 	}
 
 	EmulateCPUClipper(unclippedInputTris, clippedOutputTris);
-	SimulateHDLClipper(loader, unclippedInputTris, HDLSimClippedOutputTris, clk, inNextStageisReady, inPreviousStageIsValid, outPreviousStageIsReady, 
+	SimulateHDLClipper(loader, unclippedInputTris, HDLSimClippedOutputTris, clk, TRISETUP_inNextStageisReady, IA_inPreviousStageIsValid, IA_outPreviousStageIsReady, 
 		DBG_CurrentState, DBG_CurrentClipPlane, DBG_CurrentClipBitmask, DBG_ChildTriStackSize, 
 		DBG_ClipDistance0, DBG_ClipDistance1,
 		DBG_V0PosX, DBG_V0PosY, DBG_V0PosZ, DBG_V0PosW,
@@ -1694,8 +1661,8 @@ const int RunTestsClipUnit(Xsi::Loader& loader, RenderWindow* renderWindow)
 		triSetupInput newUnclippedTri;
 		newUnclippedTri.v0.xPos = frand() * 100.0f;
 		newUnclippedTri.v0.yPos = frand() * 100.0f;
-		newUnclippedTri.v0.invZ = frand() * 100.0f;
-		newUnclippedTri.v0.invW = frand() * 100.0f;
+		newUnclippedTri.v0.zPos = frand() * 100.0f;
+		newUnclippedTri.v0.wPos = frand() * 100.0f;
 
 		newUnclippedTri.v0.xTex = frand();
 		newUnclippedTri.v0.yTex = frand();
@@ -1707,8 +1674,8 @@ const int RunTestsClipUnit(Xsi::Loader& loader, RenderWindow* renderWindow)
 
 		newUnclippedTri.v1.xPos = frand() * 100.0f;
 		newUnclippedTri.v1.yPos = frand() * 100.0f;
-		newUnclippedTri.v1.invZ = frand() * 100.0f;
-		newUnclippedTri.v1.invW = frand() * 100.0f;
+		newUnclippedTri.v1.zPos = frand() * 100.0f;
+		newUnclippedTri.v1.wPos = frand() * 100.0f;
 
 		newUnclippedTri.v1.xTex = frand();
 		newUnclippedTri.v1.yTex = frand();
@@ -1720,8 +1687,8 @@ const int RunTestsClipUnit(Xsi::Loader& loader, RenderWindow* renderWindow)
 
 		newUnclippedTri.v2.xPos = frand() * 100.0f;
 		newUnclippedTri.v2.yPos = frand() * 100.0f;
-		newUnclippedTri.v2.invZ = frand() * 100.0f;
-		newUnclippedTri.v2.invW = frand() * 100.0f;
+		newUnclippedTri.v2.zPos = frand() * 100.0f;
+		newUnclippedTri.v2.wPos = frand() * 100.0f;
 
 		newUnclippedTri.v2.xTex = frand();
 		newUnclippedTri.v2.yTex = frand();
@@ -1733,18 +1700,18 @@ const int RunTestsClipUnit(Xsi::Loader& loader, RenderWindow* renderWindow)
 
 		if (randVec & 0x1) newUnclippedTri.v0.xPos = -newUnclippedTri.v0.xPos;
 		if (randVec & 0x2) newUnclippedTri.v0.yPos = -newUnclippedTri.v0.yPos;
-		if (randVec & 0x4) newUnclippedTri.v0.invZ = -newUnclippedTri.v0.invZ;
-		if (randVec & 0x8) newUnclippedTri.v0.invW = -newUnclippedTri.v0.invW;
+		if (randVec & 0x4) newUnclippedTri.v0.zPos = -newUnclippedTri.v0.zPos;
+		if (randVec & 0x8) newUnclippedTri.v0.wPos = -newUnclippedTri.v0.wPos;
 
 		if (randVec & 0x10) newUnclippedTri.v1.xPos = -newUnclippedTri.v1.xPos;
 		if (randVec & 0x20) newUnclippedTri.v1.yPos = -newUnclippedTri.v1.yPos;
-		if (randVec & 0x40) newUnclippedTri.v1.invZ = -newUnclippedTri.v1.invZ;
-		if (randVec & 0x80) newUnclippedTri.v1.invW = -newUnclippedTri.v1.invW;
+		if (randVec & 0x40) newUnclippedTri.v1.zPos = -newUnclippedTri.v1.zPos;
+		if (randVec & 0x80) newUnclippedTri.v1.wPos = -newUnclippedTri.v1.wPos;
 
 		if (randVec & 0x100) newUnclippedTri.v2.xPos = -newUnclippedTri.v2.xPos;
 		if (randVec & 0x200) newUnclippedTri.v2.yPos = -newUnclippedTri.v2.yPos;
-		if (randVec & 0x400) newUnclippedTri.v2.invZ = -newUnclippedTri.v2.invZ;
-		if (randVec & 0x800) newUnclippedTri.v2.invW = -newUnclippedTri.v2.invW;
+		if (randVec & 0x400) newUnclippedTri.v2.zPos = -newUnclippedTri.v2.zPos;
+		if (randVec & 0x800) newUnclippedTri.v2.wPos = -newUnclippedTri.v2.wPos;
 
 		ApplyProjectionTransform(newUnclippedTri.v0);
 		ApplyProjectionTransform(newUnclippedTri.v1);
@@ -1755,7 +1722,7 @@ const int RunTestsClipUnit(Xsi::Loader& loader, RenderWindow* renderWindow)
 	}
 
 	EmulateCPUClipper(unclippedInputTris, clippedOutputTris);
-	SimulateHDLClipper(loader, unclippedInputTris, HDLSimClippedOutputTris, clk, inNextStageisReady, inPreviousStageIsValid, outPreviousStageIsReady, 
+	SimulateHDLClipper(loader, unclippedInputTris, HDLSimClippedOutputTris, clk, TRISETUP_inNextStageisReady, IA_inPreviousStageIsValid, IA_outPreviousStageIsReady, 
 		DBG_CurrentState, DBG_CurrentClipPlane, DBG_CurrentClipBitmask, DBG_ChildTriStackSize, 
 		DBG_ClipDistance0, DBG_ClipDistance1,
 		DBG_V0PosX, DBG_V0PosY, DBG_V0PosZ, DBG_V0PosW,
@@ -1788,24 +1755,24 @@ const int RunTestsClipUnit(Xsi::Loader& loader, RenderWindow* renderWindow)
 			HardwareTriangle2D renderTri;
 			renderTri.verts[0].xyzRhw.x = thisOutputTri.v0.xPos;
 			renderTri.verts[0].xyzRhw.y = thisOutputTri.v0.yPos;
-			renderTri.verts[0].xyzRhw.z = thisOutputTri.v0.invZ;
-			renderTri.verts[0].xyzRhw.w = thisOutputTri.v0.invW;
+			renderTri.verts[0].xyzRhw.z = thisOutputTri.v0.zPos;
+			renderTri.verts[0].xyzRhw.w = thisOutputTri.v0.wPos;
 			renderTri.verts[0].texcoord.x = thisOutputTri.v0.xTex;
 			renderTri.verts[0].texcoord.y = thisOutputTri.v0.yTex;
 			renderTri.verts[0].diffuse = ConvertColorToD3DCOLOR(thisOutputTri.v0.rgba);
 
 			renderTri.verts[1].xyzRhw.x = thisOutputTri.v1.xPos;
 			renderTri.verts[1].xyzRhw.y = thisOutputTri.v1.yPos;
-			renderTri.verts[1].xyzRhw.z = thisOutputTri.v1.invZ;
-			renderTri.verts[1].xyzRhw.w = thisOutputTri.v1.invW;
+			renderTri.verts[1].xyzRhw.z = thisOutputTri.v1.zPos;
+			renderTri.verts[1].xyzRhw.w = thisOutputTri.v1.wPos;
 			renderTri.verts[1].texcoord.x = thisOutputTri.v1.xTex;
 			renderTri.verts[1].texcoord.y = thisOutputTri.v1.yTex;
 			renderTri.verts[1].diffuse = ConvertColorToD3DCOLOR(thisOutputTri.v1.rgba);
 
 			renderTri.verts[2].xyzRhw.x = thisOutputTri.v2.xPos;
 			renderTri.verts[2].xyzRhw.y = thisOutputTri.v2.yPos;
-			renderTri.verts[2].xyzRhw.z = thisOutputTri.v2.invZ;
-			renderTri.verts[2].xyzRhw.w = thisOutputTri.v2.invW;
+			renderTri.verts[2].xyzRhw.z = thisOutputTri.v2.zPos;
+			renderTri.verts[2].xyzRhw.w = thisOutputTri.v2.wPos;
 			renderTri.verts[2].texcoord.x = thisOutputTri.v2.xTex;
 			renderTri.verts[2].texcoord.y = thisOutputTri.v2.yTex;
 			renderTri.verts[2].diffuse = ConvertColorToD3DCOLOR(thisOutputTri.v2.rgba);

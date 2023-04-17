@@ -759,7 +759,7 @@ const int RunTestsHDMIScanout(Xsi::Loader& loader, RenderWindow* renderWindow)
 				currentLine = &currentFrame.lines.back();
 				if (currentFrame.lines.size() > 35 && currentFrame.lines.size() < 515)
 				{
-					renderWindow->DisplayLine(&linePixels.front() + 144, currentFrame.lines.size() - 36);
+					renderWindow->DisplayLine(&linePixels.front() + 144, (const unsigned)(currentFrame.lines.size() ) - 36);
 					renderWindow->RenderLoop();
 				}
 				linePixels.clear();

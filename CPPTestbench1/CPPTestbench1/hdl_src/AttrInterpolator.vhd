@@ -37,13 +37,13 @@ entity AttrInterpolator is
 		FPU_A : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 		FPU_B : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 		FPU_Mode : out STD_LOGIC_VECTOR(2 downto 0) := (others => '0');
-		FPU_ISHFT_GO : out STD_LOGIC := '0';
+		FPU_ISHFT_GO : out STD_LOGIC := '0'; -- Unused
 		FPU_IMUL_GO : out STD_LOGIC := '0';
 		FPU_IADD_GO : out STD_LOGIC := '0';
-		FPU_ICMP_GO : out STD_LOGIC := '0';
+		FPU_ICMP_GO : out STD_LOGIC := '0'; -- Unused
 		FPU_ICNV_GO : out STD_LOGIC := '0';
-		FPU_ISPEC_GO : out STD_LOGIC := '0';
-		FPU_IBIT_GO : out STD_LOGIC := '0';
+		FPU_ISPEC_GO : out STD_LOGIC := '0'; -- Unused
+		FPU_IBIT_GO : out STD_LOGIC := '0'; -- Unused
 		FPU_OUT : in STD_LOGIC_VECTOR(31 downto 0);
 	-- FPU interfaces end
 
@@ -52,6 +52,10 @@ entity AttrInterpolator is
         TEXSAMP_OutFIFO_full : in STD_LOGIC;
         TEXSAMP_OutFIFO_wr_en : out STD_LOGIC := '0';
 	-- Texture Sampler FIFO interface end
+
+	-- Command Processor interface begin
+		CMD_IsIdle : out STD_LOGIC := '0';
+	-- Command Processor interface end
 
 	-- Stats interface begin
 		STAT_CyclesIdle : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
@@ -82,73 +86,72 @@ constant flatshading : STD_LOGIC := '0';
 
 type attrInterpStateType is 
 (
-	init, -- 0
-	waitingForRead, -- 1
+	waitingForRead, -- 0
 
-	multBarycentricsAndAttr0, -- 2
-	multBarycentricsAndAttr1, -- 3
-	multBarycentricsAndAttr2, -- 4
-	multBarycentricsAndAttr3, -- 5
-	multBarycentricsAndAttr4, -- 6
-	multBarycentricsAndAttr5, -- 7
-	multBarycentricsAndAttr6, -- 8
-	multBarycentricsAndAttr7, -- 9
-	multBarycentricsAndAttr8, -- 10
-	multBarycentricsAndAttr9, -- 11
-	multBarycentricsAndAttr10, -- 12
-	multBarycentricsAndAttr11, -- 13
-	multBarycentricsAndAttr12, -- 14
-	multBarycentricsAndAttr13, -- 15
-	multBarycentricsAndAttr14, -- 16
-	multBarycentricsAndAttr15, -- 17
-	multBarycentricsAndAttr16, -- 18
-	multBarycentricsAndAttr17, -- 19
+	multBarycentricsAndAttr0, -- 1
+	multBarycentricsAndAttr1, -- 2
+	multBarycentricsAndAttr2, -- 3
+	multBarycentricsAndAttr3, -- 4
+	multBarycentricsAndAttr4, -- 5
+	multBarycentricsAndAttr5, -- 6
+	multBarycentricsAndAttr6, -- 7
+	multBarycentricsAndAttr7, -- 8
+	multBarycentricsAndAttr8, -- 9
+	multBarycentricsAndAttr9, -- 10
+	multBarycentricsAndAttr10, -- 11
+	multBarycentricsAndAttr11, -- 12
+	multBarycentricsAndAttr12, -- 13
+	multBarycentricsAndAttr13, -- 14
+	multBarycentricsAndAttr14, -- 15
+	multBarycentricsAndAttr15, -- 16
+	multBarycentricsAndAttr16, -- 17
+	multBarycentricsAndAttr17, -- 18
 
-	addDotProductTerms0, -- 20
-	addDotProductTerms1, -- 21
-	addDotProductTerms2, -- 22
-	addDotProductTerms3, -- 23
-	addDotProductTerms4, -- 24
-	addDotProductTerms5, -- 25
-	addDotProductTerms6, -- 26
-	addDotProductTerms7, -- 27
-	addDotProductTerms8, -- 28
-	addDotProductTerms9, -- 29
-	addDotProductTerms10, -- 30
-	addDotProductTerms11, -- 31
-	addDotProductTerms12, -- 32
-	addDotProductTerms13, -- 33
-	addDotProductTerms14, -- 34
-	addDotProductTerms15, -- 35
-	addDotProductTerms16, -- 36
+	addDotProductTerms0, -- 19
+	addDotProductTerms1, -- 20
+	addDotProductTerms2, -- 21
+	addDotProductTerms3, -- 22
+	addDotProductTerms4, -- 23
+	addDotProductTerms5, -- 24
+	addDotProductTerms6, -- 25
+	addDotProductTerms7, -- 26
+	addDotProductTerms8, -- 27
+	addDotProductTerms9, -- 28
+	addDotProductTerms10, -- 29
+	addDotProductTerms11, -- 30
+	addDotProductTerms12, -- 31
+	addDotProductTerms13, -- 32
+	addDotProductTerms14, -- 33
+	addDotProductTerms15, -- 34
+	addDotProductTerms16, -- 35
 
-	multiplyPixelW0, -- 37
-	multiplyPixelW1, -- 38
-	multiplyPixelW2, -- 39
-	multiplyPixelW3, -- 40
-	multiplyPixelW4, -- 41
-	multiplyPixelW5, -- 42
-	multiplyPixelW6, -- 43
-	multiplyPixelW7, -- 44
-	multiplyPixelW8, -- 45
-	multiplyPixelW9, -- 46
-	multiplyPixelW10, -- 47
-	multiplyPixelW11, -- 48
+	multiplyPixelW0, -- 36
+	multiplyPixelW1, -- 37
+	multiplyPixelW2, -- 38
+	multiplyPixelW3, -- 39
+	multiplyPixelW4, -- 40
+	multiplyPixelW5, -- 41
+	multiplyPixelW6, -- 42
+	multiplyPixelW7, -- 43
+	multiplyPixelW8, -- 44
+	multiplyPixelW9, -- 45
+	multiplyPixelW10, -- 46
+	multiplyPixelW11, -- 47
 
-	compressOutput0, -- 49
-	compressOutput1, -- 50
-	compressOutput2, -- 51
-	compressOutput3, -- 52
-	compressOutput4, -- 53
-	compressOutput5, -- 54
-	compressOutput6, -- 55
-	compressOutput7, -- 56
-	compressOutput8, -- 57
-	compressOutput9, -- 58
-	compressOutput10, -- 59
-	compressOutput11, -- 60
+	compressOutput0, -- 48
+	compressOutput1, -- 49
+	compressOutput2, -- 50
+	compressOutput3, -- 51
+	compressOutput4, -- 52
+	compressOutput5, -- 53
+	compressOutput6, -- 54
+	compressOutput7, -- 55
+	compressOutput8, -- 56
+	compressOutput9, -- 57
+	compressOutput10, -- 58
+	compressOutput11, -- 59
 
-	waitingForWrite -- 61
+	waitingForWrite -- 60
 );
 
 type VertexFloatData is record
@@ -163,7 +166,9 @@ end record VertexFloatData;
 
 constant DefaultVertexFloatData : VertexFloatData := (others => (others => '0') );
 
-signal currentState : attrInterpStateType := init;
+signal readyForNewPixel : std_logic := '0';
+
+signal currentState : attrInterpStateType := waitingForRead;
 
 signal storedPixelX : unsigned(15 downto 0) := (others => '0');
 signal storedPixelY : unsigned(15 downto 0) := (others => '0');
@@ -215,6 +220,8 @@ end function;
 
 begin
 
+DINTERP_ReadyForNewPixel <= readyForNewPixel;
+
 STAT_CyclesIdle <= std_logic_vector(statCyclesIdle);
 STAT_CyclesSpentWorking <= std_logic_vector(statCyclesWorking);
 STAT_CyclesWaitingForOutput <= std_logic_vector(statCyclesWaitingForOutput);
@@ -242,14 +249,15 @@ DBG_RastBarycentricC <= std_logic_vector(normalizedBarycentricC);
 	process(clk)
 	begin
 		if (rising_edge(clk) ) then
-			case currentState is
-				when init =>
-					currentState <= waitingForRead;
+			CMD_IsIdle <= '0';
 
+			case currentState is
 				when waitingForRead =>
+					readyForNewPixel <= '0';
+
 					TEXSAMP_OutFIFO_wr_en <= '0'; -- Deassert after one clock cycle
-					if (DINTERP_NewPixelValid = '1') then
-						DINTERP_ReadyForNewPixel <= '0';
+					if (DINTERP_NewPixelValid = '1' and readyForNewPixel = '1') then
+						readyForNewPixel <= '0';
 
 						storedPixelX <= "000000" & unsigned(DINTERP_PosX);
 						storedPixelY <= "000000" & unsigned(DINTERP_PosY);
@@ -284,7 +292,11 @@ DBG_RastBarycentricC <= std_logic_vector(normalizedBarycentricC);
 							currentState <= multBarycentricsAndAttr0;
 						end if;
 					else
-						DINTERP_ReadyForNewPixel <= '1';
+						if (readyForNewPixel = '1') then
+							CMD_IsIdle <= '1';
+						end if;
+
+						readyForNewPixel <= '1';
 					end if;
 
 				when multBarycentricsAndAttr0 =>

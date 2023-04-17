@@ -51,7 +51,6 @@
 #define IDC_INTERP_STAT2                1028
 #define IDC_LST_ALLOCINFO               1028
 #define IDC_INTERP_STAT3                1029
-#define IDC_BUTTON1                     1029
 #define IDC_BTN_OPENMEMORYSTATS         1029
 #define IDC_TEXSAMP_STAT1               1030
 #define IDC_TEXSAMP_STAT2               1031
@@ -80,7 +79,11 @@
 #define IDC_VS_STAT4                    1054
 #define IDC_DINTERP_STAT1               1055
 #define IDC_DINTERP_STAT2               1056
+#define IDC_CLIPUNIT_STAT1              1057
 #define IDC_DINTERP_STAT3               1058
+#define IDC_CLIPUNIT_STAT2              1059
+#define IDC_CLIPUNIT_STAT6              1060
+#define IDC_CLIPUNIT_STAT3              1060
 
 // Next default values for new objects
 // 

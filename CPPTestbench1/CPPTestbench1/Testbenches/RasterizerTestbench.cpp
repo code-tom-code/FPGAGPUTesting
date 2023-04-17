@@ -297,43 +297,57 @@ const int RunTestsRasterizer(Xsi::Loader& loader)
 			// Draw vertices in "0, 2, 1" order to swizzle CCW to CW ordering for our triangle setup to not consider them backfacing:
 			primTriData.v0.xPos = vertices[indicesCCW[x * 3] ].posX;
 			primTriData.v0.yPos = vertices[indicesCCW[x * 3] ].posY;
-			primTriData.v0.invZ = 2.0f;
-			primTriData.v0.invW = 1.0f;
+			primTriData.v0.zPos = 0.5f;
+			primTriData.v0.wPos = 1.0f;
 			primTriData.v0.xTex = 1.0f / 15.0f;
 			primTriData.v0.yTex = 2.0f / 15.0f;
 			primTriData.v0.rgba = { 1.0f, 0.0f, 0.0f, 1.0f };
 			primTriData.v1.xPos = vertices[indicesCCW[x * 3 + 2] ].posX;
 			primTriData.v1.yPos = vertices[indicesCCW[x * 3 + 2] ].posY;
-			primTriData.v1.invZ = 2.0f;
-			primTriData.v1.invW = 1.0f;
+			primTriData.v1.zPos = 0.5f;
+			primTriData.v1.wPos = 1.0f;
 			primTriData.v1.xTex = 3.0f / 15.0f;
 			primTriData.v1.yTex = 4.0f / 15.0f;
 			primTriData.v1.rgba = { 0.0f, 1.0f, 0.0f, 1.0f };
 			primTriData.v2.xPos = vertices[indicesCCW[x * 3 + 1] ].posX;
 			primTriData.v2.yPos = vertices[indicesCCW[x * 3 + 1] ].posY;
-			primTriData.v2.invZ = 2.0f;
-			primTriData.v2.invW = 1.0f;
+			primTriData.v2.zPos = 0.5f;
+			primTriData.v2.wPos = 1.0f;
 			primTriData.v2.xTex = -5.0f / 15.0f;
 			primTriData.v2.yTex = -6.0f / 15.0f;
 			primTriData.v2.rgba = { 0.0f, 0.0f, 1.0f, 1.0f };
-			triSetupOutput triSetupData;
-			if (EmulateCPUTriSetup(primTriData, triSetupData) != triSetup_OK) // If this fails, then it's because our triangle got culled or clipped or backface-killed or something
+
+			UntransformViewport(primTriData);
+
+			std::vector<triSetupInput> unclippedTris;
+			unclippedTris.push_back(primTriData);
+			std::vector<triSetupInput> clippedTris;
+			EmulateCPUClipper(unclippedTris, clippedTris);
+
+			const unsigned numClippedTris = (const unsigned)clippedTris.size();
+			for (unsigned y = 0; y < numClippedTris; ++y)
 			{
-				// __debugbreak();
-				continue;
+				const triSetupInput& thisClippedTri = clippedTris[y];
+
+				triSetupOutput triSetupData;
+				if (EmulateCPUTriSetup(thisClippedTri, triSetupData) != triSetup_OK) // If this fails, then it's because our triangle got culled or clipped or backface-killed or something
+				{
+					// __debugbreak();
+					continue;
+				}
+				triSetupData.DeserializeTriSetupOutput(TRISETUP_inBarycentricInverse,
+					TRISETUP_inInvZ0, TRISETUP_inInvZ10, TRISETUP_inInvZ20,
+					TRISETUP_inInvW0, TRISETUP_inInvW10, TRISETUP_inInvW20,
+					TRISETUP_inTX0, TRISETUP_inTX10, TRISETUP_inTX20,
+					TRISETUP_inTY0, TRISETUP_inTY10, TRISETUP_inTY20,
+					TRISETUP_inVertColor0, TRISETUP_inVertColor10, TRISETUP_inVertColor20,
+					TRISETUP_inMinX, TRISETUP_inMinY, TRISETUP_inMaxX, TRISETUP_inMaxY,
+					TRISETUP_inInitialBarycentricRowResetA, TRISETUP_inInitialBarycentricRowResetB, TRISETUP_inInitialBarycentricRowResetC,
+					TRISETUP_inIsTopLeftEdgeA, TRISETUP_inIsTopLeftEdgeB, TRISETUP_inIsTopLeftEdgeC,
+					TRISETUP_inBarycentricXDeltaA, TRISETUP_inBarycentricXDeltaB, TRISETUP_inBarycentricXDeltaC,
+					TRISETUP_inBarycentricYDeltaA, TRISETUP_inBarycentricYDeltaB, TRISETUP_inBarycentricYDeltaC);
+				successResult &= runRasterizerTest(triSetupData);
 			}
-			triSetupData.DeserializeTriSetupOutput(TRISETUP_inBarycentricInverse,
-				TRISETUP_inInvZ0, TRISETUP_inInvZ10, TRISETUP_inInvZ20,
-				TRISETUP_inInvW0, TRISETUP_inInvW10, TRISETUP_inInvW20,
-				TRISETUP_inTX0, TRISETUP_inTX10, TRISETUP_inTX20,
-				TRISETUP_inTY0, TRISETUP_inTY10, TRISETUP_inTY20,
-				TRISETUP_inVertColor0, TRISETUP_inVertColor10, TRISETUP_inVertColor20,
-				TRISETUP_inMinX, TRISETUP_inMinY, TRISETUP_inMaxX, TRISETUP_inMaxY,
-				TRISETUP_inInitialBarycentricRowResetA, TRISETUP_inInitialBarycentricRowResetB, TRISETUP_inInitialBarycentricRowResetC,
-				TRISETUP_inIsTopLeftEdgeA, TRISETUP_inIsTopLeftEdgeB, TRISETUP_inIsTopLeftEdgeC,
-				TRISETUP_inBarycentricXDeltaA, TRISETUP_inBarycentricXDeltaB, TRISETUP_inBarycentricXDeltaC,
-				TRISETUP_inBarycentricYDeltaA, TRISETUP_inBarycentricYDeltaB, TRISETUP_inBarycentricYDeltaC);
-			successResult &= runRasterizerTest(triSetupData);
 		}
 	};
 

@@ -134,8 +134,8 @@ enum triSetupState
 	triSetup_calculateColorB20Delta, // 72
 	triSetup_calculateColorA10Delta, // 73
 	triSetup_calculateColorA20Delta, // 74
-	triSetup_calculateInvZ10Delta, // 75
-	triSetup_calculateInvZ20Delta, // 76
+	triSetup_calculateZ10Delta, // 75
+	triSetup_calculateZ20Delta, // 76
 	triSetup_calculateInvW10Delta, // 77
 	triSetup_calculateInvW20Delta, // 78
 	triSetup_waitForDeltasCompletion0, // 79
@@ -249,8 +249,8 @@ static const char* const TriSetupStateToString[] =
 	"triSetup_calculateColorB20Delta", // 72
 	"triSetup_calculateColorA10Delta", // 73
 	"triSetup_calculateColorA20Delta", // 74
-	"triSetup_calculateInvZ10Delta", // 75
-	"triSetup_calculateInvZ20Delta", // 76
+	"triSetup_calculateZ10Delta", // 75
+	"triSetup_calculateZ20Delta", // 76
 	"triSetup_calculateInvW10Delta", // 77
 	"triSetup_calculateInvW20Delta", // 78
 	"triSetup_waitForDeltasCompletion0", // 79
@@ -313,9 +313,9 @@ triSetupScreenspace ApplyViewportAndDivideByW(const triSetupInput& inTri)
 	ret.v1.yPos = inTri.v1.yPos * invW1 * -VIEWPORT_HALF_HEIGHT + VIEWPORT_HALF_HEIGHT;
 	ret.v2.yPos = inTri.v2.yPos * invW2 * -VIEWPORT_HALF_HEIGHT + VIEWPORT_HALF_HEIGHT;
 
-	ret.v0.invZ = 1.0f / (inTri.v0.zPos * invW0);
-	ret.v1.invZ = 1.0f / (inTri.v1.zPos * invW1);
-	ret.v2.invZ = 1.0f / (inTri.v2.zPos * invW2);
+	ret.v0.Z = inTri.v0.zPos * invW0;
+	ret.v1.Z = inTri.v1.zPos * invW1;
+	ret.v2.Z = inTri.v2.zPos * invW2;
 
 	ret.v0.invW = invW0;
 	ret.v1.invW = invW1;
@@ -382,9 +382,9 @@ triSetupResultType EmulateCPUTriSetup(const triSetupInput& inTriData, triSetupOu
 	const signed short vy1 = RoundFloatToI16NE(screenspaceTri.v1.yPos);
 	const signed short vx2 = RoundFloatToI16NE(screenspaceTri.v2.xPos);
 	const signed short vy2 = RoundFloatToI16NE(screenspaceTri.v2.yPos);
-	const float vinvz0 = screenspaceTri.v0.invZ;
-	const float vinvz1 = screenspaceTri.v1.invZ;
-	const float vinvz2 = screenspaceTri.v2.invZ;
+	const float vz0 = screenspaceTri.v0.Z;
+	const float vz1 = screenspaceTri.v1.Z;
+	const float vz2 = screenspaceTri.v2.Z;
 	const float vinvw0 = screenspaceTri.v0.invW;
 	const float vinvw1 = screenspaceTri.v1.invW;
 	const float vinvw2 = screenspaceTri.v2.invW;
@@ -438,9 +438,9 @@ triSetupResultType EmulateCPUTriSetup(const triSetupInput& inTriData, triSetupOu
 
 	// Compute delta attribute vectors for more efficient per-pixel interpolation because (p0 + barycentricB * p10 + barycentricC * p20) is cheaper than (p0 * barycentricA + p1 * barycentricB + p2 * barycentricC):
 	// It trades off 6 extra subtractions in per-triangle triSetup stage for fewer multiplies and adds in the per-pixel depthInterpolator and attributeInterpolator stages and less data transferred per-pixel too.
-	const float invZ0 = vinvz0;
-	const float invZ10 = vinvz1 - invZ0;
-	const float invZ20 = vinvz2 - invZ0;
+	const float Z0 = vz0;
+	const float Z10 = vz1 - Z0;
+	const float Z20 = vz2 - Z0;
 	const float invW0 = vinvw0;
 	const float invW10 = vinvw1 - invW0;
 	const float invW20 = vinvw2 - invW0;
@@ -480,9 +480,9 @@ triSetupResultType EmulateCPUTriSetup(const triSetupInput& inTriData, triSetupOu
 	outTriSetupOutput.yDeltas.a = barycentricYDeltaA;
 	outTriSetupOutput.yDeltas.b = barycentricYDeltaB;
 	outTriSetupOutput.yDeltas.c = barycentricYDeltaC;
-	outTriSetupOutput.v0.invZ = invZ0;
-	outTriSetupOutput.v10.invZ = invZ10;
-	outTriSetupOutput.v20.invZ = invZ20;
+	outTriSetupOutput.v0.Z = Z0;
+	outTriSetupOutput.v10.Z = Z10;
+	outTriSetupOutput.v20.Z = Z20;
 	outTriSetupOutput.v0.invW = invW0;
 	outTriSetupOutput.v10.invW = invW10;
 	outTriSetupOutput.v20.invW = invW20;
@@ -546,9 +546,9 @@ const int RunTestsTriSetup(Xsi::Loader& loader)
 	std_logic_port RAST_triSetupDataIsValid(PD_OUT, loader, "RAST_triSetupDataIsValid");
 
 	std_logic_vector_port<32> RAST_outBarycentricInverse(PD_OUT, loader, "RAST_outBarycentricInverse");
-	std_logic_vector_port<32> RAST_v0_out_invZ(PD_OUT, loader, "RAST_v0_out_invZ");
-	std_logic_vector_port<32> RAST_v10_out_invZ(PD_OUT, loader, "RAST_v10_out_invZ");
-	std_logic_vector_port<32> RAST_v20_out_invZ(PD_OUT, loader, "RAST_v20_out_invZ");
+	std_logic_vector_port<32> RAST_v0_out_Z(PD_OUT, loader, "RAST_v0_out_Z");
+	std_logic_vector_port<32> RAST_v10_out_Z(PD_OUT, loader, "RAST_v10_out_Z");
+	std_logic_vector_port<32> RAST_v20_out_Z(PD_OUT, loader, "RAST_v20_out_Z");
 	std_logic_vector_port<32> RAST_v0_out_invW(PD_OUT, loader, "RAST_v0_out_invW");
 	std_logic_vector_port<32> RAST_v10_out_invW(PD_OUT, loader, "RAST_v10_out_invW");
 	std_logic_vector_port<32> RAST_v20_out_invW(PD_OUT, loader, "RAST_v20_out_invW");
@@ -736,7 +736,7 @@ const int RunTestsTriSetup(Xsi::Loader& loader)
 					if (triSetupOutputCount++ == 0)
 					{
 						simulatedRTLOutput.SerializeTriSetupOutput(RAST_outBarycentricInverse,
-							RAST_v0_out_invZ, RAST_v10_out_invZ, RAST_v20_out_invZ,
+							RAST_v0_out_Z, RAST_v10_out_Z, RAST_v20_out_Z,
 							RAST_v0_out_invW, RAST_v10_out_invW, RAST_v20_out_invW,
 							RAST_t0_out_x, RAST_t10_out_x, RAST_t20_out_x,
 							RAST_t0_out_y, RAST_t10_out_y, RAST_t20_out_y,
@@ -916,7 +916,7 @@ const int RunTestsTriSetup(Xsi::Loader& loader)
 					if (triSetupOutputCount++ == 0)
 					{
 						simulatedRTLOutput.SerializeTriSetupOutput(RAST_outBarycentricInverse,
-							RAST_v0_out_invZ, RAST_v10_out_invZ, RAST_v20_out_invZ,
+							RAST_v0_out_Z, RAST_v10_out_Z, RAST_v20_out_Z,
 							RAST_v0_out_invW, RAST_v10_out_invW, RAST_v20_out_invW,
 							RAST_t0_out_x, RAST_t10_out_x, RAST_t20_out_x,
 							RAST_t0_out_y, RAST_t10_out_y, RAST_t20_out_y,
@@ -1441,6 +1441,36 @@ const int RunTestsTriSetup(Xsi::Loader& loader)
 		successResult &= runTriSetupTest(triangleMatchesScreenCornersData, triSetup_OK);
 	}
 
+	// Test a case where one of the vertices has a zero Z-value
+	{
+		triSetupInput triangleHasZeroZData = {0};
+		triangleHasZeroZData.v0.xPos = triangleBottomCornerScreen[0].posX;
+		triangleHasZeroZData.v0.yPos = triangleBottomCornerScreen[0].posY;
+		triangleHasZeroZData.v0.zPos = 0.5f;
+		triangleHasZeroZData.v0.wPos = 1.0f;
+		triangleHasZeroZData.v0.xTex = 1.0f / 15.0f;
+		triangleHasZeroZData.v0.yTex = 2.0f / 15.0f;
+		triangleHasZeroZData.v0.rgba = { 1.0f, 0.0f, 0.0f, 1.0f };
+		triangleHasZeroZData.v1.xPos = triangleBottomCornerScreen[2].posX;
+		triangleHasZeroZData.v1.yPos = triangleBottomCornerScreen[2].posY;
+		triangleHasZeroZData.v1.zPos = 0.0f;
+		triangleHasZeroZData.v1.wPos = 1.0f;
+		triangleHasZeroZData.v1.xTex = 3.0f / 15.0f;
+		triangleHasZeroZData.v1.yTex = 4.0f / 15.0f;
+		triangleHasZeroZData.v1.rgba = { 0.0f, 1.0f, 0.0f, 1.0f };
+		triangleHasZeroZData.v2.xPos = triangleBottomCornerScreen[1].posX;
+		triangleHasZeroZData.v2.yPos = triangleBottomCornerScreen[1].posY;
+		triangleHasZeroZData.v2.zPos = 0.5f;
+		triangleHasZeroZData.v2.wPos = 1.0f;
+		triangleHasZeroZData.v2.xTex = -5.0f / 15.0f;
+		triangleHasZeroZData.v2.yTex = -6.0f / 15.0f;
+		triangleHasZeroZData.v2.rgba = { 0.0f, 0.0f, 1.0f, 1.0f };
+
+		UntransformViewport(triangleHasZeroZData);
+
+		successResult &= runTriSetupTest(triangleHasZeroZData, triSetup_OK);
+	}
+
 	srand(3); // Start with the same random seed every time
 
 	// Try it with 1024 * 16 random triangles with vertex positions between -16k and +16k
@@ -1449,7 +1479,7 @@ const int RunTestsTriSetup(Xsi::Loader& loader)
 		triSetupInput randomTriangleData = {0};
 		randomTriangleData.v0.xPos = rand() - (RAND_MAX / 2) + frand();
 		randomTriangleData.v0.yPos = rand() - (RAND_MAX / 2) + frand();
-		randomTriangleData.v0.zPos = frand() * 4.0f;
+		randomTriangleData.v0.zPos = frand() * 4.0f; // It is okay if Z or W go to exactly 0.0f. Our triangle setup won't produce any INF's or NaN's because of that.
 		randomTriangleData.v0.wPos = frand() * 4.0f;
 		randomTriangleData.v0.xTex = 1.0f / 15.0f;
 		randomTriangleData.v0.yTex = 2.0f / 15.0f;
@@ -1468,13 +1498,6 @@ const int RunTestsTriSetup(Xsi::Loader& loader)
 		randomTriangleData.v2.xTex = -5.0f / 15.0f;
 		randomTriangleData.v2.yTex = -6.0f / 15.0f;
 		randomTriangleData.v2.rgba = { frand(), frand(), frand(), 1.0f };
-
-		if (randomTriangleData.v0.zPos == 0.0f)
-			randomTriangleData.v0.zPos = (1.0f / (1024 * 1024) );
-		if (randomTriangleData.v1.zPos == 0.0f)
-			randomTriangleData.v1.zPos = (1.0f / (1024 * 1024) );
-		if (randomTriangleData.v2.zPos == 0.0f)
-			randomTriangleData.v2.zPos = (1.0f / (1024 * 1024) );
 
 		UntransformViewport(randomTriangleData);
 

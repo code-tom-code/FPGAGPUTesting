@@ -2130,7 +2130,7 @@ proc create_root_design { parentCell } {
   set_property -dict [ list \
    CONFIG.C_ENABLE_ILA_AXI_MON {false} \
    CONFIG.C_MONITOR_TYPE {Native} \
-   CONFIG.C_NUM_OF_PROBES {48} \
+   CONFIG.C_NUM_OF_PROBES {60} \
    CONFIG.C_PROBE0_WIDTH {32} \
    CONFIG.C_PROBE10_WIDTH {128} \
    CONFIG.C_PROBE11_WIDTH {128} \
@@ -2169,17 +2169,19 @@ proc create_root_design { parentCell } {
    CONFIG.C_PROBE45_WIDTH {320} \
    CONFIG.C_PROBE46_WIDTH {256} \
    CONFIG.C_PROBE47_WIDTH {8} \
-   CONFIG.C_PROBE48_WIDTH {1} \
-   CONFIG.C_PROBE49_WIDTH {1} \
+   CONFIG.C_PROBE48_WIDTH {4} \
+   CONFIG.C_PROBE49_WIDTH {3} \
    CONFIG.C_PROBE4_WIDTH {32} \
-   CONFIG.C_PROBE50_WIDTH {1} \
-   CONFIG.C_PROBE51_WIDTH {1} \
-   CONFIG.C_PROBE52_WIDTH {1} \
-   CONFIG.C_PROBE53_WIDTH {1} \
-   CONFIG.C_PROBE54_WIDTH {1} \
-   CONFIG.C_PROBE55_WIDTH {1} \
-   CONFIG.C_PROBE56_WIDTH {1} \
-   CONFIG.C_PROBE57_WIDTH {1} \
+   CONFIG.C_PROBE50_WIDTH {11} \
+   CONFIG.C_PROBE51_WIDTH {11} \
+   CONFIG.C_PROBE52_WIDTH {11} \
+   CONFIG.C_PROBE53_WIDTH {32} \
+   CONFIG.C_PROBE54_WIDTH {32} \
+   CONFIG.C_PROBE55_WIDTH {32} \
+   CONFIG.C_PROBE56_WIDTH {32} \
+   CONFIG.C_PROBE57_WIDTH {32} \
+   CONFIG.C_PROBE58_WIDTH {32} \
+   CONFIG.C_PROBE59_WIDTH {11} \
    CONFIG.C_PROBE5_WIDTH {32} \
    CONFIG.C_PROBE6_WIDTH {32} \
    CONFIG.C_PROBE7_WIDTH {32} \
@@ -2767,7 +2769,19 @@ proc create_root_design { parentCell } {
   connect_bd_net -net ClearBlock_0_DBG_ClearBlock_State [get_bd_pins ClearBlock_0/DBG_ClearBlock_State] [get_bd_pins ila_333_250/probe10]
   connect_bd_net -net ClearBlock_0_DBG_LastWrittenClearData [get_bd_pins ClearBlock_0/DBG_LastWrittenClearData] [get_bd_pins ila_333_250/probe21]
   connect_bd_net -net ClipUnit_0_CMD_IsIdle [get_bd_pins ClipUnit_0/CMD_IsIdle] [get_bd_pins CommandProcessor_0/CMD_Clip_Idle]
+  connect_bd_net -net ClipUnit_0_DBG_AlreadyClippedPlanes [get_bd_pins ClipUnit_0/DBG_AlreadyClippedPlanes] [get_bd_pins ILA_TriSetup/probe59]
+  connect_bd_net -net ClipUnit_0_DBG_ClipDistance0 [get_bd_pins ClipUnit_0/DBG_ClipDistance0] [get_bd_pins ILA_TriSetup/probe57]
+  connect_bd_net -net ClipUnit_0_DBG_ClipDistance1 [get_bd_pins ClipUnit_0/DBG_ClipDistance1] [get_bd_pins ILA_TriSetup/probe58]
+  connect_bd_net -net ClipUnit_0_DBG_ClipOutcodes0 [get_bd_pins ClipUnit_0/DBG_ClipOutcodes0] [get_bd_pins ILA_TriSetup/probe50]
+  connect_bd_net -net ClipUnit_0_DBG_ClipOutcodes1 [get_bd_pins ClipUnit_0/DBG_ClipOutcodes1] [get_bd_pins ILA_TriSetup/probe51]
+  connect_bd_net -net ClipUnit_0_DBG_ClipOutcodes2 [get_bd_pins ClipUnit_0/DBG_ClipOutcodes2] [get_bd_pins ILA_TriSetup/probe52]
+  connect_bd_net -net ClipUnit_0_DBG_CurrentClipBitmask [get_bd_pins ClipUnit_0/DBG_CurrentClipBitmask] [get_bd_pins ILA_TriSetup/probe49]
+  connect_bd_net -net ClipUnit_0_DBG_CurrentClipPlane [get_bd_pins ClipUnit_0/DBG_CurrentClipPlane] [get_bd_pins ILA_TriSetup/probe48]
   connect_bd_net -net ClipUnit_0_DBG_CurrentState [get_bd_pins ClipUnit_0/DBG_CurrentState] [get_bd_pins ILA_TriSetup/probe47]
+  connect_bd_net -net ClipUnit_0_DBG_V0PosW [get_bd_pins ClipUnit_0/DBG_V0PosW] [get_bd_pins ILA_TriSetup/probe56]
+  connect_bd_net -net ClipUnit_0_DBG_V0PosX [get_bd_pins ClipUnit_0/DBG_V0PosX] [get_bd_pins ILA_TriSetup/probe53]
+  connect_bd_net -net ClipUnit_0_DBG_V0PosY [get_bd_pins ClipUnit_0/DBG_V0PosY] [get_bd_pins ILA_TriSetup/probe54]
+  connect_bd_net -net ClipUnit_0_DBG_V0PosZ [get_bd_pins ClipUnit_0/DBG_V0PosZ] [get_bd_pins ILA_TriSetup/probe55]
   connect_bd_net -net ClipUnit_0_FPU_Add0_A [get_bd_pins CLIP_FPU_ADD_0/IN_A] [get_bd_pins ClipUnit_0/FPU_Add0_A]
   connect_bd_net -net ClipUnit_0_FPU_Add0_B [get_bd_pins CLIP_FPU_ADD_0/IN_B] [get_bd_pins ClipUnit_0/FPU_Add0_B]
   connect_bd_net -net ClipUnit_0_FPU_Add0_IADD_GO [get_bd_pins CLIP_FPU_ADD_0/IADD_GO] [get_bd_pins ClipUnit_0/FPU_Add0_IADD_GO]
@@ -3002,9 +3016,6 @@ proc create_root_design { parentCell } {
   connect_bd_net -net Rasterizer_0_TRICACHE_InvW0 [get_bd_pins Rasterizer_0/TRICACHE_InvW0] [get_bd_pins TriWorkCache_0/RAST_inInvW0]
   connect_bd_net -net Rasterizer_0_TRICACHE_InvW10 [get_bd_pins Rasterizer_0/TRICACHE_InvW10] [get_bd_pins TriWorkCache_0/RAST_inInvW10]
   connect_bd_net -net Rasterizer_0_TRICACHE_InvW20 [get_bd_pins Rasterizer_0/TRICACHE_InvW20] [get_bd_pins TriWorkCache_0/RAST_inInvW20]
-  connect_bd_net -net Rasterizer_0_TRICACHE_InvZ0 [get_bd_pins Rasterizer_0/TRICACHE_InvZ0] [get_bd_pins TriWorkCache_0/RAST_inInvZ0]
-  connect_bd_net -net Rasterizer_0_TRICACHE_InvZ10 [get_bd_pins Rasterizer_0/TRICACHE_InvZ10] [get_bd_pins TriWorkCache_0/RAST_inInvZ10]
-  connect_bd_net -net Rasterizer_0_TRICACHE_InvZ20 [get_bd_pins Rasterizer_0/TRICACHE_InvZ20] [get_bd_pins TriWorkCache_0/RAST_inInvZ20]
   connect_bd_net -net Rasterizer_0_TRICACHE_PrimitiveID [get_bd_pins Rasterizer_0/TRICACHE_PrimitiveID] [get_bd_pins TriWorkCache_0/RAST_inPrimitiveID]
   connect_bd_net -net Rasterizer_0_TRICACHE_RequestNewTriSlot [get_bd_pins Rasterizer_0/TRICACHE_RequestNewTriSlot] [get_bd_pins TriWorkCache_0/RAST_RequestNewTriSlot]
   connect_bd_net -net Rasterizer_0_TRICACHE_TX0 [get_bd_pins Rasterizer_0/TRICACHE_TX0] [get_bd_pins TriWorkCache_0/RAST_inT0X]
@@ -3017,6 +3028,9 @@ proc create_root_design { parentCell } {
   connect_bd_net -net Rasterizer_0_TRICACHE_VertColor0 [get_bd_pins Rasterizer_0/TRICACHE_VertColor0] [get_bd_pins TriWorkCache_0/RAST_inColorRGBA0]
   connect_bd_net -net Rasterizer_0_TRICACHE_VertColor10 [get_bd_pins Rasterizer_0/TRICACHE_VertColor10] [get_bd_pins TriWorkCache_0/RAST_inColorRGBA10]
   connect_bd_net -net Rasterizer_0_TRICACHE_VertColor20 [get_bd_pins Rasterizer_0/TRICACHE_VertColor20] [get_bd_pins TriWorkCache_0/RAST_inColorRGBA20]
+  connect_bd_net -net Rasterizer_0_TRICACHE_Z0 [get_bd_pins Rasterizer_0/TRICACHE_Z0] [get_bd_pins TriWorkCache_0/RAST_inZ0]
+  connect_bd_net -net Rasterizer_0_TRICACHE_Z10 [get_bd_pins Rasterizer_0/TRICACHE_Z10] [get_bd_pins TriWorkCache_0/RAST_inZ10]
+  connect_bd_net -net Rasterizer_0_TRICACHE_Z20 [get_bd_pins Rasterizer_0/TRICACHE_Z20] [get_bd_pins TriWorkCache_0/RAST_inZ20]
   connect_bd_net -net Rasterizer_0_TRISETUP_readyForNewTri [get_bd_pins Rasterizer_0/TRISETUP_readyForNewTri] [get_bd_pins TriSetup_0/RAST_readyForTriSetupData]
   connect_bd_net -net ResetN_UntilClockLoc_0_resetn [get_bd_pins CommandProcessor_0/resetn] [get_bd_pins MemorySystem/M_AXI_ARESETN] [get_bd_pins ResetN_UntilClockLoc_0/resetn] [get_bd_pins SerialPacketSystem/s_axi_aresetn]
   connect_bd_net -net ScanoutSystem_CMD_VSync [get_bd_pins CommandProcessor_0/CMD_VSync] [get_bd_pins ScanoutSystem/CMD_VSync]
@@ -3157,15 +3171,15 @@ proc create_root_design { parentCell } {
   connect_bd_net -net TriSetup_0_RAST_t20_out_x [get_bd_pins ILA_TriSetup/probe8] [get_bd_pins Rasterizer_0/TRISETUP_inTX20] [get_bd_pins TriSetup_0/RAST_t20_out_x]
   connect_bd_net -net TriSetup_0_RAST_t20_out_y [get_bd_pins ILA_TriSetup/probe9] [get_bd_pins Rasterizer_0/TRISETUP_inTY20] [get_bd_pins TriSetup_0/RAST_t20_out_y]
   connect_bd_net -net TriSetup_0_RAST_triSetupDataIsValid [get_bd_pins ILA_TriSetup/probe29] [get_bd_pins Rasterizer_0/TRISETUP_newTriBegin] [get_bd_pins TriSetup_0/RAST_triSetupDataIsValid]
+  connect_bd_net -net TriSetup_0_RAST_v0_out_Z [get_bd_pins ILA_TriSetup/probe1] [get_bd_pins Rasterizer_0/TRISETUP_inZ0] [get_bd_pins TriSetup_0/RAST_v0_out_Z]
   connect_bd_net -net TriSetup_0_RAST_v0_out_colorRGBA [get_bd_pins ILA_TriSetup/probe10] [get_bd_pins Rasterizer_0/TRISETUP_inVertColor0] [get_bd_pins TriSetup_0/RAST_v0_out_colorRGBA]
   connect_bd_net -net TriSetup_0_RAST_v0_out_invW [get_bd_pins Rasterizer_0/TRISETUP_inInvW0] [get_bd_pins TriSetup_0/RAST_v0_out_invW]
-  connect_bd_net -net TriSetup_0_RAST_v0_out_invZ [get_bd_pins ILA_TriSetup/probe1] [get_bd_pins Rasterizer_0/TRISETUP_inInvZ0] [get_bd_pins TriSetup_0/RAST_v0_out_invZ]
+  connect_bd_net -net TriSetup_0_RAST_v10_out_Z [get_bd_pins ILA_TriSetup/probe2] [get_bd_pins Rasterizer_0/TRISETUP_inZ10] [get_bd_pins TriSetup_0/RAST_v10_out_Z]
   connect_bd_net -net TriSetup_0_RAST_v10_out_colorRGBA [get_bd_pins ILA_TriSetup/probe11] [get_bd_pins Rasterizer_0/TRISETUP_inVertColor10] [get_bd_pins TriSetup_0/RAST_v10_out_colorRGBA]
   connect_bd_net -net TriSetup_0_RAST_v10_out_invW [get_bd_pins Rasterizer_0/TRISETUP_inInvW10] [get_bd_pins TriSetup_0/RAST_v10_out_invW]
-  connect_bd_net -net TriSetup_0_RAST_v10_out_invZ [get_bd_pins ILA_TriSetup/probe2] [get_bd_pins Rasterizer_0/TRISETUP_inInvZ10] [get_bd_pins TriSetup_0/RAST_v10_out_invZ]
+  connect_bd_net -net TriSetup_0_RAST_v20_out_Z [get_bd_pins ILA_TriSetup/probe3] [get_bd_pins Rasterizer_0/TRISETUP_inZ20] [get_bd_pins TriSetup_0/RAST_v20_out_Z]
   connect_bd_net -net TriSetup_0_RAST_v20_out_colorRGBA [get_bd_pins ILA_TriSetup/probe12] [get_bd_pins Rasterizer_0/TRISETUP_inVertColor20] [get_bd_pins TriSetup_0/RAST_v20_out_colorRGBA]
   connect_bd_net -net TriSetup_0_RAST_v20_out_invW [get_bd_pins Rasterizer_0/TRISETUP_inInvW20] [get_bd_pins TriSetup_0/RAST_v20_out_invW]
-  connect_bd_net -net TriSetup_0_RAST_v20_out_invZ [get_bd_pins ILA_TriSetup/probe3] [get_bd_pins Rasterizer_0/TRISETUP_inInvZ20] [get_bd_pins TriSetup_0/RAST_v20_out_invZ]
   connect_bd_net -net TriSetup_0_STAT_CyclesIdle [get_bd_pins StatsCollector_0/TRISETUP_CyclesIdle] [get_bd_pins TriSetup_0/STAT_CyclesIdle]
   connect_bd_net -net TriSetup_0_STAT_CyclesSpentWorking [get_bd_pins StatsCollector_0/TRISETUP_CyclesSpentWorking] [get_bd_pins TriSetup_0/STAT_CyclesSpentWorking]
   connect_bd_net -net TriSetup_0_STAT_CyclesWaitingForOutput [get_bd_pins StatsCollector_0/TRISETUP_CyclesWaitingForOutput] [get_bd_pins TriSetup_0/STAT_CyclesWaitingForOutput]
@@ -3177,15 +3191,15 @@ proc create_root_design { parentCell } {
   connect_bd_net -net TriWorkCache_0_INTERP_outInvW0 [get_bd_pins DepthInterpolator_0/TRICACHE_inInvW0] [get_bd_pins TriWorkCache_0/INTERP_outInvW0]
   connect_bd_net -net TriWorkCache_0_INTERP_outInvW10 [get_bd_pins DepthInterpolator_0/TRICACHE_inInvW10] [get_bd_pins TriWorkCache_0/INTERP_outInvW10]
   connect_bd_net -net TriWorkCache_0_INTERP_outInvW20 [get_bd_pins DepthInterpolator_0/TRICACHE_inInvW20] [get_bd_pins TriWorkCache_0/INTERP_outInvW20]
-  connect_bd_net -net TriWorkCache_0_INTERP_outInvZ0 [get_bd_pins DepthInterpolator_0/TRICACHE_inInvZ0] [get_bd_pins TriWorkCache_0/INTERP_outInvZ0]
-  connect_bd_net -net TriWorkCache_0_INTERP_outInvZ10 [get_bd_pins DepthInterpolator_0/TRICACHE_inInvZ10] [get_bd_pins TriWorkCache_0/INTERP_outInvZ10]
-  connect_bd_net -net TriWorkCache_0_INTERP_outInvZ20 [get_bd_pins DepthInterpolator_0/TRICACHE_inInvZ20] [get_bd_pins TriWorkCache_0/INTERP_outInvZ20]
   connect_bd_net -net TriWorkCache_0_INTERP_outT0X [get_bd_pins DepthInterpolator_0/TRICACHE_inT0X] [get_bd_pins TriWorkCache_0/INTERP_outT0X]
   connect_bd_net -net TriWorkCache_0_INTERP_outT0Y [get_bd_pins DepthInterpolator_0/TRICACHE_inT0Y] [get_bd_pins TriWorkCache_0/INTERP_outT0Y]
   connect_bd_net -net TriWorkCache_0_INTERP_outT10X [get_bd_pins DepthInterpolator_0/TRICACHE_inT10X] [get_bd_pins TriWorkCache_0/INTERP_outT10X]
   connect_bd_net -net TriWorkCache_0_INTERP_outT10Y [get_bd_pins DepthInterpolator_0/TRICACHE_inT10Y] [get_bd_pins TriWorkCache_0/INTERP_outT10Y]
   connect_bd_net -net TriWorkCache_0_INTERP_outT20X [get_bd_pins DepthInterpolator_0/TRICACHE_inT20X] [get_bd_pins TriWorkCache_0/INTERP_outT20X]
   connect_bd_net -net TriWorkCache_0_INTERP_outT20Y [get_bd_pins DepthInterpolator_0/TRICACHE_inT20Y] [get_bd_pins TriWorkCache_0/INTERP_outT20Y]
+  connect_bd_net -net TriWorkCache_0_INTERP_outZ0 [get_bd_pins DepthInterpolator_0/TRICACHE_inZ0] [get_bd_pins TriWorkCache_0/INTERP_outZ0]
+  connect_bd_net -net TriWorkCache_0_INTERP_outZ10 [get_bd_pins DepthInterpolator_0/TRICACHE_inZ10] [get_bd_pins TriWorkCache_0/INTERP_outZ10]
+  connect_bd_net -net TriWorkCache_0_INTERP_outZ20 [get_bd_pins DepthInterpolator_0/TRICACHE_inZ20] [get_bd_pins TriWorkCache_0/INTERP_outZ20]
   connect_bd_net -net TriWorkCache_0_RAST_NewTriSlotIndex [get_bd_pins Rasterizer_0/TRICACHE_NewTriSlotIndex] [get_bd_pins TriWorkCache_0/RAST_NewTriSlotIndex]
   connect_bd_net -net TriWorkCache_0_RAST_NewTriSlotIndexValid [get_bd_pins Rasterizer_0/TRICACHE_NewTriSlotIndexValid] [get_bd_pins TriWorkCache_0/RAST_NewTriSlotIndexValid]
   connect_bd_net -net VBO_FIFO_dout [get_bd_pins ILA_IA/probe9] [get_bd_pins ILA_TriSetup/probe45] [get_bd_pins InputAssembler2_0/VERTOUT_FIFO_rd_data] [get_bd_pins VBO_FIFO/dout]

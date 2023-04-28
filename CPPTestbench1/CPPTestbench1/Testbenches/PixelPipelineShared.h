@@ -1,7 +1,37 @@
 #pragma once
 
+inline bool FloatCompareEpsilon(const float a, const float b, const float epsilon)
+{
+	return fabs(a - b) <= epsilon;
+}
+
 struct vertInputClipSpace
 {
+	const bool operator==(const vertInputClipSpace& rhs) const
+	{
+		const bool xSame = FloatCompareEpsilon(xPos, rhs.xPos, 1.0f / 1024.0f);
+		const bool ySame = FloatCompareEpsilon(yPos, rhs.yPos, 1.0f / 1024.0f);
+		const float projectedZ = zPos / wPos;
+		const float rhsProjectedZ = rhs.zPos / rhs.wPos;
+		const int iprojectedZ = *(const int* const)&projectedZ;
+		const int irhsProjectedZ = *(const int* const)&rhsProjectedZ;
+		const bool zSame = FloatCompareEpsilon(projectedZ, rhsProjectedZ, 1.0f / 8388608.0f) || abs(iprojectedZ - irhsProjectedZ) <= 128;
+		const int iw = *(const int* const)&wPos;
+		const int irhsw = *(const int* const)&rhs.wPos;
+		const bool wSame = FloatCompareEpsilon(wPos, rhs.wPos, 1.0f / 8388608.0f) || abs(iw - irhsw) <= 128;
+		const bool txSame = FloatCompareEpsilon(xTex, rhs.xTex, 1.0f / 1024.0f);
+		const bool tySame = FloatCompareEpsilon(yTex, rhs.yTex, 1.0f / 1024.0f);
+		const bool rSame = FloatCompareEpsilon(rgba.r, rhs.rgba.r, 1.0f / 256.0f);
+		const bool gSame = FloatCompareEpsilon(rgba.g, rhs.rgba.g, 1.0f / 256.0f);
+		const bool bSame = FloatCompareEpsilon(rgba.b, rhs.rgba.b, 1.0f / 256.0f);
+		const bool aSame = FloatCompareEpsilon(rgba.a, rhs.rgba.a, 1.0f / 256.0f);
+		const bool ret = xSame && ySame && 
+			zSame && wSame && 
+			txSame && tySame && 
+			rSame && gSame && bSame && aSame;
+		return ret;
+	}
+
 	float xPos;
 	float yPos;
 	float zPos;
@@ -21,7 +51,7 @@ struct vertInputScreenSpace
 {
 	float xPos;
 	float yPos;
-	float invZ;
+	float Z;
 	float invW;
 	float xTex;
 	float yTex;
@@ -39,7 +69,7 @@ struct vertAttributes
 {
 	float xTex;
 	float yTex;
-	float invZ;
+	float Z;
 	float invW;
 	struct _rgba
 	{
@@ -53,7 +83,7 @@ struct vertAttributes
 	{
 		return memcmp(this, &rhs, sizeof(*this) ) == 0;
 		/*return xTex == rhs.xTex && yTex == rhs.yTex &&
-			invZ == rhs.invZ && invW == rhs.invW &&
+			Z == rhs.Z && invW == rhs.invW &&
 			rgba.r == rhs.rgba.r && rgba.g == rhs.rgba.g && rgba.b == rhs.rgba.b && rgba.a == rhs.rgba.a;*/
 	}
 };
@@ -118,7 +148,7 @@ struct triSetupOutput
 	}
 
 	void SerializeTriSetupOutput(const std_logic_vector_port<32>& outBarycentricInverse,
-		const std_logic_vector_port<32>& outInvZ0, const std_logic_vector_port<32>& outInvZ10, const std_logic_vector_port<32>& outInvZ20,
+		const std_logic_vector_port<32>& outZ0, const std_logic_vector_port<32>& outZ10, const std_logic_vector_port<32>& outZ20,
 		const std_logic_vector_port<32>& outInvW0, const std_logic_vector_port<32>& outInvW10, const std_logic_vector_port<32>& outInvW20,
 		const std_logic_vector_port<32>& outTX0, const std_logic_vector_port<32>& outTX10, const std_logic_vector_port<32>& outTX20,
 		const std_logic_vector_port<32>& outTY0, const std_logic_vector_port<32>& outTY10, const std_logic_vector_port<32>& outTY20,
@@ -130,7 +160,7 @@ struct triSetupOutput
 		const std_logic_vector_port<16>& outBarycentricYDeltaA, const std_logic_vector_port<16>& outBarycentricYDeltaB, const std_logic_vector_port<16>& outBarycentricYDeltaC)
 	{
 		barycentricInverse = outBarycentricInverse.GetFloat32Val();
-		v0.invZ = outInvZ0.GetFloat32Val(); v10.invZ = outInvZ10.GetFloat32Val(); v20.invZ = outInvZ20.GetFloat32Val();
+		v0.Z = outZ0.GetFloat32Val(); v10.Z = outZ10.GetFloat32Val(); v20.Z = outZ20.GetFloat32Val();
 		v0.invW = outInvW0.GetFloat32Val(); v10.invW = outInvW10.GetFloat32Val(); v20.invW = outInvW20.GetFloat32Val();
 		v0.xTex = outTX0.GetFloat32Val(); v10.xTex = outTX10.GetFloat32Val(); v20.xTex = outTX20.GetFloat32Val();
 		v0.yTex = outTY0.GetFloat32Val(); v10.yTex = outTY10.GetFloat32Val(); v20.yTex = outTY20.GetFloat32Val();
@@ -146,7 +176,7 @@ struct triSetupOutput
 	}
 
 	void DeserializeTriSetupOutput(std_logic_vector_port<32>& inBarycentricInverse,
-		std_logic_vector_port<32>& inInvZ0, std_logic_vector_port<32>& inInvZ10, std_logic_vector_port<32>& inInvZ20,
+		std_logic_vector_port<32>& inZ0, std_logic_vector_port<32>& inZ10, std_logic_vector_port<32>& inZ20,
 		std_logic_vector_port<32>& inInvW0, std_logic_vector_port<32>& inInvW10, std_logic_vector_port<32>& inInvW20,
 		std_logic_vector_port<32>& inTX0, std_logic_vector_port<32>& inTX10, std_logic_vector_port<32>& inTX20,
 		std_logic_vector_port<32>& inTY0, std_logic_vector_port<32>& inTY10, std_logic_vector_port<32>& inTY20,
@@ -158,7 +188,7 @@ struct triSetupOutput
 		std_logic_vector_port<16>& inBarycentricYDeltaA, std_logic_vector_port<16>& inBarycentricYDeltaB, std_logic_vector_port<16>& inBarycentricYDeltaC) const
 	{
 		inBarycentricInverse = barycentricInverse;
-		inInvZ0 = v0.invZ; inInvZ10 = v10.invZ; inInvZ20 = v20.invZ;
+		inZ0 = v0.Z; inZ10 = v10.Z; inZ20 = v20.Z;
 		inInvW0 = v0.invW; inInvW10 = v10.invW; inInvW20 = v20.invW;
 		inTX0 = v0.xTex; inTX10 = v10.xTex; inTX20 = v20.xTex;
 		inTY0 = v0.yTex; inTY10 = v10.yTex; inTY20 = v20.yTex;
@@ -173,14 +203,14 @@ struct triSetupOutput
 	}
 
 	void DeserializeTriSetupOutput(std_logic_vector_port<32>& inBarycentricInverse,
-		std_logic_vector_port<32>& inInvZ0, std_logic_vector_port<32>& inInvZ10, std_logic_vector_port<32>& inInvZ20,
+		std_logic_vector_port<32>& inZ0, std_logic_vector_port<32>& inZ10, std_logic_vector_port<32>& inZ20,
 		std_logic_vector_port<32>& inInvW0, std_logic_vector_port<32>& inInvW10, std_logic_vector_port<32>& inInvW20,
 		std_logic_vector_port<32>& inTX0, std_logic_vector_port<32>& inTX10, std_logic_vector_port<32>& inTX20,
 		std_logic_vector_port<32>& inTY0, std_logic_vector_port<32>& inTY10, std_logic_vector_port<32>& inTY20,
 		std_logic_vector_port<128>& inVC0, std_logic_vector_port<128>& inVC10, std_logic_vector_port<128>& inVC20) const
 	{
 		inBarycentricInverse = barycentricInverse;
-		inInvZ0 = v0.invZ; inInvZ10 = v10.invZ; inInvZ20 = v20.invZ;
+		inZ0 = v0.Z; inZ10 = v10.Z; inZ20 = v20.Z;
 		inInvW0 = v0.invW; inInvW10 = v10.invW; inInvW20 = v20.invW;
 		inTX0 = v0.xTex; inTX10 = v10.xTex; inTX20 = v20.xTex;
 		inTY0 = v0.yTex; inTY10 = v10.yTex; inTY20 = v20.yTex;
@@ -262,6 +292,16 @@ enum triSetupResultType
 
 struct triSetupInput
 {
+	const bool operator==(const triSetupInput& rhs) const
+	{
+		return v0 == rhs.v0 && v1 == rhs.v1 && v2 == rhs.v2;
+	}
+
+	const bool operator!=(const triSetupInput& rhs) const
+	{
+		return !(*this == rhs);
+	}
+
 	vertInputClipSpace v0, v1, v2;
 };
 

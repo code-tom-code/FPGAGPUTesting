@@ -30,6 +30,13 @@ package ClipTypes is
 		ClipPlaneBottomGB,
 		ClipDone
 	);
+
+	type ClipAxisCategoryEnum is
+	(
+		ClipAxisOutsideLess,
+		ClipAxisInside,
+		ClipAxisOutsideGreater
+	);
 	
 end package ClipTypes;
 

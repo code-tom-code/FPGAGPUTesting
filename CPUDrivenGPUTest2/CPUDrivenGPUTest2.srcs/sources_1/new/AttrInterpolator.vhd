@@ -155,13 +155,13 @@ type attrInterpStateType is
 );
 
 type VertexFloatData is record
-	tx : unsigned(31 downto 0);
-	ty : unsigned(31 downto 0);
+	tx : f32;
+	ty : f32;
 
-	color_r : unsigned(31 downto 0);
-	color_g : unsigned(31 downto 0);
-	color_b : unsigned(31 downto 0);
-	color_a : unsigned(31 downto 0);
+	color_r : f32;
+	color_g : f32;
+	color_b : f32;
+	color_a : f32;
 end record VertexFloatData;
 
 constant DefaultVertexFloatData : VertexFloatData := (others => (others => '0') );
@@ -173,24 +173,24 @@ signal currentState : attrInterpStateType := waitingForRead;
 signal storedPixelX : unsigned(15 downto 0) := (others => '0');
 signal storedPixelY : unsigned(15 downto 0) := (others => '0');
 
-signal pixelW : unsigned(31 downto 0) := (others => '0'); -- float32 format (0.0f to 1.0f) pixel W value
-signal normalizedBarycentricB : unsigned(31 downto 0) := (others => '0'); -- float32 format
-signal normalizedBarycentricC : unsigned(31 downto 0) := (others => '0'); -- float32 format
+signal pixelW : f32 := (others => '0'); -- float32 format (0.0f to 1.0f) pixel W value
+signal normalizedBarycentricB : f32 := (others => '0'); -- float32 format
+signal normalizedBarycentricC : f32 := (others => '0'); -- float32 format
 signal useFlatShading : std_logic := '0';
 
 signal unpackedVertex0 : VertexFloatData := DefaultVertexFloatData;
 signal unpackedVertex10 : VertexFloatData := DefaultVertexFloatData;
 signal unpackedVertex20 : VertexFloatData := DefaultVertexFloatData;
 
-signal dotProductTemporarySumTX : unsigned(31 downto 0) := (others => '0');
-signal dotProductTemporarySumTY : unsigned(31 downto 0) := (others => '0');
-signal dotProductTemporarySumColorR : unsigned(31 downto 0) := (others => '0');
-signal dotProductTemporarySumColorG : unsigned(31 downto 0) := (others => '0');
-signal dotProductTemporarySumColorB : unsigned(31 downto 0) := (others => '0');
-signal dotProductTemporarySumColorA : unsigned(31 downto 0) := (others => '0');
+signal dotProductTemporarySumTX : f32 := (others => '0');
+signal dotProductTemporarySumTY : f32 := (others => '0');
+signal dotProductTemporarySumColorR : f32 := (others => '0');
+signal dotProductTemporarySumColorG : f32 := (others => '0');
+signal dotProductTemporarySumColorB : f32 := (others => '0');
+signal dotProductTemporarySumColorA : f32 := (others => '0');
 
-signal wrappedTexcoordTX : unsigned(31 downto 0) := (others => '0');
-signal wrappedTexcoordTY : unsigned(31 downto 0) := (others => '0');
+signal wrappedTexcoordTX : f32 := (others => '0');
+signal wrappedTexcoordTY : f32 := (others => '0');
 signal compressedOutPixelDataTX : unsigned(15 downto 0) := (others => '0');
 signal compressedOutPixelDataTY : unsigned(15 downto 0) := (others => '0');
 signal compressedOutPixelDataColorR : unsigned(7 downto 0) := (others => '0');
@@ -202,7 +202,7 @@ signal statCyclesIdle : unsigned(31 downto 0) := (others => '0');
 signal statCyclesWorking : unsigned(31 downto 0) := (others => '0');
 signal statCyclesWaitingForOutput : unsigned(31 downto 0) := (others => '0');
 
-pure function SaturateFloat(inFloat : unsigned(31 downto 0) ) return unsigned is
+pure function SaturateFloat(inFloat : f32) return f32 is
 begin
 	if (inFloat(31) = '1') then
 		return X"00000000";
@@ -261,27 +261,27 @@ DBG_RastBarycentricC <= std_logic_vector(normalizedBarycentricC);
 
 						storedPixelX <= "000000" & unsigned(DINTERP_PosX);
 						storedPixelY <= "000000" & unsigned(DINTERP_PosY);
-						unpackedVertex0.tx <= unsigned(DINTERP_TX0);
-						unpackedVertex0.ty <= unsigned(DINTERP_TY0);
-						unpackedVertex10.tx <= unsigned(DINTERP_TX10);
-						unpackedVertex10.ty <= unsigned(DINTERP_TY10);
-						unpackedVertex20.tx <= unsigned(DINTERP_TX20);
-						unpackedVertex20.ty <= unsigned(DINTERP_TY20);
-						unpackedVertex0.color_r <= unsigned(DINTERP_VC0(31 downto 0) );
-						unpackedVertex0.color_g <= unsigned(DINTERP_VC0(63 downto 32) );
-						unpackedVertex0.color_b <= unsigned(DINTERP_VC0(95 downto 64) );
-						unpackedVertex0.color_a <= unsigned(DINTERP_VC0(127 downto 96) );
-						unpackedVertex10.color_r <= unsigned(DINTERP_VC10(31 downto 0) );
-						unpackedVertex10.color_g <= unsigned(DINTERP_VC10(63 downto 32) );
-						unpackedVertex10.color_b <= unsigned(DINTERP_VC10(95 downto 64) );
-						unpackedVertex10.color_a <= unsigned(DINTERP_VC10(127 downto 96) );
-						unpackedVertex20.color_r <= unsigned(DINTERP_VC20(31 downto 0) );
-						unpackedVertex20.color_g <= unsigned(DINTERP_VC20(63 downto 32) );
-						unpackedVertex20.color_b <= unsigned(DINTERP_VC20(95 downto 64) );
-						unpackedVertex20.color_a <= unsigned(DINTERP_VC20(127 downto 96) );
-						normalizedBarycentricB <= unsigned(DINTERP_NormalizedBarycentricB);
-						normalizedBarycentricC <= unsigned(DINTERP_NormalizedBarycentricC);
-						pixelW <= unsigned(DINTERP_OutPixelW);
+						unpackedVertex0.tx <= f32(DINTERP_TX0);
+						unpackedVertex0.ty <= f32(DINTERP_TY0);
+						unpackedVertex10.tx <= f32(DINTERP_TX10);
+						unpackedVertex10.ty <= f32(DINTERP_TY10);
+						unpackedVertex20.tx <= f32(DINTERP_TX20);
+						unpackedVertex20.ty <= f32(DINTERP_TY20);
+						unpackedVertex0.color_r <= f32(DINTERP_VC0(31 downto 0) );
+						unpackedVertex0.color_g <= f32(DINTERP_VC0(63 downto 32) );
+						unpackedVertex0.color_b <= f32(DINTERP_VC0(95 downto 64) );
+						unpackedVertex0.color_a <= f32(DINTERP_VC0(127 downto 96) );
+						unpackedVertex10.color_r <= f32(DINTERP_VC10(31 downto 0) );
+						unpackedVertex10.color_g <= f32(DINTERP_VC10(63 downto 32) );
+						unpackedVertex10.color_b <= f32(DINTERP_VC10(95 downto 64) );
+						unpackedVertex10.color_a <= f32(DINTERP_VC10(127 downto 96) );
+						unpackedVertex20.color_r <= f32(DINTERP_VC20(31 downto 0) );
+						unpackedVertex20.color_g <= f32(DINTERP_VC20(63 downto 32) );
+						unpackedVertex20.color_b <= f32(DINTERP_VC20(95 downto 64) );
+						unpackedVertex20.color_a <= f32(DINTERP_VC20(127 downto 96) );
+						normalizedBarycentricB <= f32(DINTERP_NormalizedBarycentricB);
+						normalizedBarycentricC <= f32(DINTERP_NormalizedBarycentricC);
+						pixelW <= f32(DINTERP_OutPixelW);
 
 						-- Sample our async command processor signal when we start a new pixel
 						useFlatShading <= CMD_UseFlatShading;
@@ -336,7 +336,7 @@ DBG_RastBarycentricC <= std_logic_vector(normalizedBarycentricC);
 					currentState <= multBarycentricsAndAttr6;
 
 				when multBarycentricsAndAttr6 =>
-					unpackedVertex10.tx <= unsigned(FPU_OUT);
+					unpackedVertex10.tx <= f32(FPU_OUT);
 
 					FPU_A <= std_logic_vector(normalizedBarycentricC);
 					FPU_B <= std_logic_vector(unpackedVertex20.tx);
@@ -344,7 +344,7 @@ DBG_RastBarycentricC <= std_logic_vector(normalizedBarycentricC);
 					currentState <= multBarycentricsAndAttr7;
 
 				when multBarycentricsAndAttr7 =>
-					unpackedVertex10.ty <= unsigned(FPU_OUT);
+					unpackedVertex10.ty <= f32(FPU_OUT);
 
 					FPU_A <= std_logic_vector(normalizedBarycentricC);
 					FPU_B <= std_logic_vector(unpackedVertex20.ty);
@@ -352,7 +352,7 @@ DBG_RastBarycentricC <= std_logic_vector(normalizedBarycentricC);
 					currentState <= multBarycentricsAndAttr8;
 
 				when multBarycentricsAndAttr8 =>
-					unpackedVertex10.color_r <= unsigned(FPU_OUT);
+					unpackedVertex10.color_r <= f32(FPU_OUT);
 
 					FPU_A <= std_logic_vector(normalizedBarycentricC);
 					FPU_B <= std_logic_vector(unpackedVertex20.color_r);
@@ -360,7 +360,7 @@ DBG_RastBarycentricC <= std_logic_vector(normalizedBarycentricC);
 					currentState <= multBarycentricsAndAttr9;
 
 				when multBarycentricsAndAttr9 =>
-					unpackedVertex10.color_g <= unsigned(FPU_OUT);
+					unpackedVertex10.color_g <= f32(FPU_OUT);
 
 					FPU_A <= std_logic_vector(normalizedBarycentricC);
 					FPU_B <= std_logic_vector(unpackedVertex20.color_g);
@@ -368,7 +368,7 @@ DBG_RastBarycentricC <= std_logic_vector(normalizedBarycentricC);
 					currentState <= multBarycentricsAndAttr10;
 
 				when multBarycentricsAndAttr10 =>
-					unpackedVertex10.color_b <= unsigned(FPU_OUT);
+					unpackedVertex10.color_b <= f32(FPU_OUT);
 
 					FPU_A <= std_logic_vector(normalizedBarycentricC);
 					FPU_B <= std_logic_vector(unpackedVertex20.color_b);
@@ -376,7 +376,7 @@ DBG_RastBarycentricC <= std_logic_vector(normalizedBarycentricC);
 					currentState <= multBarycentricsAndAttr11;
 
 				when multBarycentricsAndAttr11 =>
-					unpackedVertex10.color_a <= unsigned(FPU_OUT);
+					unpackedVertex10.color_a <= f32(FPU_OUT);
 
 					FPU_A <= std_logic_vector(normalizedBarycentricC);
 					FPU_B <= std_logic_vector(unpackedVertex20.color_a);
@@ -384,29 +384,29 @@ DBG_RastBarycentricC <= std_logic_vector(normalizedBarycentricC);
 					currentState <= multBarycentricsAndAttr12;
 
 				when multBarycentricsAndAttr12 =>
-					unpackedVertex20.tx <= unsigned(FPU_OUT);
+					unpackedVertex20.tx <= f32(FPU_OUT);
 
 					FPU_IMUL_GO <= '0';
 					currentState <= multBarycentricsAndAttr13;
 
 				when multBarycentricsAndAttr13 =>
-					unpackedVertex20.ty <= unsigned(FPU_OUT);
+					unpackedVertex20.ty <= f32(FPU_OUT);
 					currentState <= multBarycentricsAndAttr14;
 
 				when multBarycentricsAndAttr14 =>
-					unpackedVertex20.color_r <= unsigned(FPU_OUT);
+					unpackedVertex20.color_r <= f32(FPU_OUT);
 					currentState <= multBarycentricsAndAttr15;
 
 				when multBarycentricsAndAttr15 =>
-					unpackedVertex20.color_g <= unsigned(FPU_OUT);
+					unpackedVertex20.color_g <= f32(FPU_OUT);
 					currentState <= multBarycentricsAndAttr16;
 
 				when multBarycentricsAndAttr16 =>
-					unpackedVertex20.color_b <= unsigned(FPU_OUT);
+					unpackedVertex20.color_b <= f32(FPU_OUT);
 					currentState <= multBarycentricsAndAttr17;
 
 				when multBarycentricsAndAttr17 =>
-					unpackedVertex20.color_a <= unsigned(FPU_OUT);
+					unpackedVertex20.color_a <= f32(FPU_OUT);
 					currentState <= addDotProductTerms0;
 
 				when addDotProductTerms0 =>
@@ -440,7 +440,7 @@ DBG_RastBarycentricC <= std_logic_vector(normalizedBarycentricC);
 					currentState <= addDotProductTerms5;
 
 				when addDotProductTerms5 =>
-					dotProductTemporarySumTX <= unsigned(FPU_OUT);
+					dotProductTemporarySumTX <= f32(FPU_OUT);
 
 					FPU_A <= std_logic_vector(unpackedVertex10.color_a);
 					FPU_B <= std_logic_vector(unpackedVertex20.color_a);
@@ -448,7 +448,7 @@ DBG_RastBarycentricC <= std_logic_vector(normalizedBarycentricC);
 					currentState <= addDotProductTerms6;
 
 				when addDotProductTerms6 =>
-					dotProductTemporarySumTY <= unsigned(FPU_OUT);
+					dotProductTemporarySumTY <= f32(FPU_OUT);
 
 					FPU_A <= std_logic_vector(dotProductTemporarySumTX);
 					FPU_B <= std_logic_vector(unpackedVertex0.tx);
@@ -456,7 +456,7 @@ DBG_RastBarycentricC <= std_logic_vector(normalizedBarycentricC);
 					currentState <= addDotProductTerms7;
 
 				when addDotProductTerms7 =>
-					dotProductTemporarySumColorR <= unsigned(FPU_OUT);
+					dotProductTemporarySumColorR <= f32(FPU_OUT);
 
 					FPU_A <= std_logic_vector(dotProductTemporarySumTY);
 					FPU_B <= std_logic_vector(unpackedVertex0.ty);
@@ -464,7 +464,7 @@ DBG_RastBarycentricC <= std_logic_vector(normalizedBarycentricC);
 					currentState <= addDotProductTerms8;
 
 				when addDotProductTerms8 =>
-					dotProductTemporarySumColorG <= unsigned(FPU_OUT);
+					dotProductTemporarySumColorG <= f32(FPU_OUT);
 
 					FPU_A <= std_logic_vector(dotProductTemporarySumColorR);
 					FPU_B <= std_logic_vector(unpackedVertex0.color_r);
@@ -472,7 +472,7 @@ DBG_RastBarycentricC <= std_logic_vector(normalizedBarycentricC);
 					currentState <= addDotProductTerms9;
 
 				when addDotProductTerms9 =>
-					dotProductTemporarySumColorB <= unsigned(FPU_OUT);
+					dotProductTemporarySumColorB <= f32(FPU_OUT);
 
 					FPU_A <= std_logic_vector(dotProductTemporarySumColorG);
 					FPU_B <= std_logic_vector(unpackedVertex0.color_g);
@@ -480,7 +480,7 @@ DBG_RastBarycentricC <= std_logic_vector(normalizedBarycentricC);
 					currentState <= addDotProductTerms10;
 
 				when addDotProductTerms10 =>
-					dotProductTemporarySumColorA <= unsigned(FPU_OUT);
+					dotProductTemporarySumColorA <= f32(FPU_OUT);
 
 					FPU_A <= std_logic_vector(dotProductTemporarySumColorB);
 					FPU_B <= std_logic_vector(unpackedVertex0.color_b);
@@ -488,7 +488,7 @@ DBG_RastBarycentricC <= std_logic_vector(normalizedBarycentricC);
 					currentState <= addDotProductTerms11;
 
 				when addDotProductTerms11 =>
-					dotProductTemporarySumTX <= unsigned(FPU_OUT);
+					dotProductTemporarySumTX <= f32(FPU_OUT);
 
 					FPU_A <= std_logic_vector(dotProductTemporarySumColorA);
 					FPU_B <= std_logic_vector(unpackedVertex0.color_a);
@@ -496,25 +496,25 @@ DBG_RastBarycentricC <= std_logic_vector(normalizedBarycentricC);
 					currentState <= addDotProductTerms12;
 
 				when addDotProductTerms12 =>
-					dotProductTemporarySumTY <= unsigned(FPU_OUT);
+					dotProductTemporarySumTY <= f32(FPU_OUT);
 
 					FPU_IADD_GO <= '0';
 					currentState <= addDotProductTerms13;
 
 				when addDotProductTerms13 =>
-					dotProductTemporarySumColorR <= unsigned(FPU_OUT);
+					dotProductTemporarySumColorR <= f32(FPU_OUT);
 					currentState <= addDotProductTerms14;
 
 				when addDotProductTerms14 =>
-					dotProductTemporarySumColorG <= unsigned(FPU_OUT);
+					dotProductTemporarySumColorG <= f32(FPU_OUT);
 					currentState <= addDotProductTerms15;
 
 				when addDotProductTerms15 =>
-					dotProductTemporarySumColorB <= unsigned(FPU_OUT);
+					dotProductTemporarySumColorB <= f32(FPU_OUT);
 					currentState <= addDotProductTerms16;
 
 				when addDotProductTerms16 =>
-					dotProductTemporarySumColorA <= unsigned(FPU_OUT);
+					dotProductTemporarySumColorA <= f32(FPU_OUT);
 					currentState <= multiplyPixelW0;
 
 				when multiplyPixelW0 =>
@@ -549,28 +549,28 @@ DBG_RastBarycentricC <= std_logic_vector(normalizedBarycentricC);
 					currentState <= multiplyPixelW6;
 
 				when multiplyPixelW6 =>
-					unpackedVertex0.tx <= unsigned(FPU_OUT);
+					unpackedVertex0.tx <= f32(FPU_OUT);
 					FPU_IMUL_GO <= '0';
 					currentState <= multiplyPixelW7;
 
 				when multiplyPixelW7 =>
-					unpackedVertex0.ty <= unsigned(FPU_OUT);
+					unpackedVertex0.ty <= f32(FPU_OUT);
 					currentState <= multiplyPixelW8;
 
 				when multiplyPixelW8 =>
-					unpackedVertex0.color_r <= unsigned(FPU_OUT);
+					unpackedVertex0.color_r <= f32(FPU_OUT);
 					currentState <= multiplyPixelW9;
 
 				when multiplyPixelW9 =>
-					unpackedVertex0.color_g <= unsigned(FPU_OUT);
+					unpackedVertex0.color_g <= f32(FPU_OUT);
 					currentState <= multiplyPixelW10;
 
 				when multiplyPixelW10 =>
-					unpackedVertex0.color_b <= unsigned(FPU_OUT);
+					unpackedVertex0.color_b <= f32(FPU_OUT);
 					currentState <= multiplyPixelW11;
 
 				when multiplyPixelW11 =>
-					unpackedVertex0.color_a <= unsigned(FPU_OUT);
+					unpackedVertex0.color_a <= f32(FPU_OUT);
 					currentState <= compressOutput0;
 
 				when compressOutput0 =>
@@ -598,14 +598,14 @@ DBG_RastBarycentricC <= std_logic_vector(normalizedBarycentricC);
 					currentState <= compressOutput4;
 
 				when compressOutput4 =>
-					wrappedTexcoordTX <= unsigned(FPU_OUT);
+					wrappedTexcoordTX <= f32(FPU_OUT);
 					FPU_A <= std_logic_vector(SaturateFloat(unpackedVertex0.color_b) );
 					FPU_Mode <= std_logic_vector(to_unsigned(eConvertMode'pos(F_to_UNORM8), 3) );
 					FPU_ICNV_GO <= '1';
 					currentState <= compressOutput5;
 
 				when compressOutput5 =>
-					wrappedTexcoordTY <= unsigned(FPU_OUT);
+					wrappedTexcoordTY <= f32(FPU_OUT);
 					FPU_A <= std_logic_vector(SaturateFloat(unpackedVertex0.color_a) );
 					FPU_Mode <= std_logic_vector(to_unsigned(eConvertMode'pos(F_to_UNORM8), 3) );
 					FPU_ICNV_GO <= '1';

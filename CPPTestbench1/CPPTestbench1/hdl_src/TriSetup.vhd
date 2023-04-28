@@ -43,9 +43,9 @@ entity TriSetup is
 
 	-- Rasterizer interfaces begin
 		RAST_outBarycentricInverse : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0'); -- These are all floating point values
-		RAST_v0_out_invZ : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-		RAST_v10_out_invZ : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-		RAST_v20_out_invZ : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		RAST_v0_out_Z : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		RAST_v10_out_Z : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		RAST_v20_out_Z : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 		RAST_v0_out_invW : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 		RAST_v10_out_invW : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 		RAST_v20_out_invW : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
@@ -251,8 +251,8 @@ ATTRIBUTE X_INTERFACE_PARAMETER of clk: SIGNAL is "FREQ_HZ 333250000";
 		triSetup_calculateColorB20Delta, -- 72
 		triSetup_calculateColorA10Delta, -- 73
 		triSetup_calculateColorA20Delta, -- 74
-		triSetup_calculateInvZ10Delta, -- 75
-		triSetup_calculateInvZ20Delta, -- 76
+		triSetup_calculateZ10Delta, -- 75
+		triSetup_calculateZ20Delta, -- 76
 		triSetup_calculateInvW10Delta, -- 77
 		triSetup_calculateInvW20Delta, -- 78
 		triSetup_waitForDeltasCompletion0, -- 79
@@ -363,11 +363,11 @@ type vertexColor is record
 end record vertexColor;
 
 -- External store signals
-signal v0_store_invZ : f32 := (others => '0');
+signal v0_store_Z0 : f32 := (others => '0');
 signal v0_store_invW : f32 := (others => '0');
-signal v1_store_invZ : f32 := (others => '0');
+signal v1_store_Z10 : f32 := (others => '0');
 signal v1_store_invW : f32 := (others => '0');
-signal v2_store_invZ : f32 := (others => '0');
+signal v2_store_Z20 : f32 := (others => '0');
 signal v2_store_invW : f32 := (others => '0');
 signal t0_store_x : f32 := (others => '0');
 signal t0_store_y : f32 := (others => '0');
@@ -880,8 +880,7 @@ DBG_TwiceTriArea <= std_logic_vector(twiceTriangleArea);
 					FPU_MUL_A <= std_logic_vector(v1_store_RGBA.r);
 					FPU_MUL_B <= std_logic_vector(v1_store_invW);
 
-					FPU_SPEC_A <= std_logic_vector(v0_zPosFloat);
-					FPU_SPEC_GO <= '1';
+					v0_store_Z0 <= v0_zPosFloat;
 
 					if (skipZOffset = '0') then
 						v1_zPosFloat <= f32(FPU_ADD_OUT);
@@ -899,7 +898,7 @@ DBG_TwiceTriArea <= std_logic_vector(twiceTriangleArea);
 
 					FPU_MUL_A <= std_logic_vector(v1_store_RGBA.g);
 
-					FPU_SPEC_A <= std_logic_vector(v1_zPosFloat);
+					v1_store_Z10 <= v1_zPosFloat;
 
 					if (skipZOffset = '0') then
 						v2_zPosFloat <= f32(FPU_ADD_OUT);
@@ -921,12 +920,11 @@ DBG_TwiceTriArea <= std_logic_vector(twiceTriangleArea);
 
 					FPU_MUL_A <= std_logic_vector(v1_store_RGBA.b);
 
-					FPU_SPEC_A <= std_logic_vector(v2_zPosFloat);
+					v2_store_Z20 <= v2_zPosFloat;
 					currentState <= triSetup_QuantizeSnapToGridWait0;
 
 				when triSetup_QuantizeSnapToGridWait0 => -- 39 -- mul a1 * rcp_w1
 					FPU_CNV_GO <= '0';
-					FPU_SPEC_GO <= '0';
 
 					FPU_MUL_A <= std_logic_vector(v1_store_RGBA.a);
 
@@ -1073,7 +1071,6 @@ DBG_TwiceTriArea <= std_logic_vector(twiceTriangleArea);
 				when triSetup_sendToRecip =>
 					v2_store_RGBA.a <= f32(FPU_MUL_OUT);
 
-					v0_store_invZ <= f32(FPU_SPEC_OUT);
 
 					FPU_CNV_A <= std_logic_vector('0' & twiceTriangleArea(30 downto 0) );
 					FPU_CNV_Mode <= std_logic_vector(to_unsigned(eConvertMode'pos(U32_to_F), 3) );
@@ -1082,14 +1079,12 @@ DBG_TwiceTriArea <= std_logic_vector(twiceTriangleArea);
 
 				when triSetup_waitForConvert0 =>
 					t2_store_x <= f32(FPU_MUL_OUT);
-					v1_store_invZ <= f32(FPU_SPEC_OUT);
 
 					FPU_CNV_GO <= '0'; -- Deassert after one clock cycle
 					currentState <= triSetup_waitForConvert1;
 
 				when triSetup_waitForConvert1 =>
 					t2_store_y <= f32(FPU_MUL_OUT);
-					v2_store_invZ <= f32(FPU_SPEC_OUT);
 
 					currentState <= triSetup_waitForConvert2;
 
@@ -1245,16 +1240,16 @@ DBG_TwiceTriArea <= std_logic_vector(twiceTriangleArea);
 				when triSetup_calculateColorA20Delta => -- colorA20 = colorA2 - colorA0
 					FPU_ADD_A <= std_logic_vector(v2_store_RGBA.a);
 					v1_store_RGBA.g <= f32(FPU_ADD_OUT); -- colorG10
-					currentState <= triSetup_calculateInvZ10Delta;
+					currentState <= triSetup_calculateZ10Delta;
 
-				when triSetup_calculateInvZ10Delta => -- invZ10 = invZ1 - invZ0
-					FPU_ADD_A <= std_logic_vector(v1_store_invZ);
-					FPU_ADD_B <= std_logic_vector(NegateFloat(v0_store_invZ) );
+				when triSetup_calculateZ10Delta => -- Z10 = Z1 - Z0
+					FPU_ADD_A <= std_logic_vector(v1_store_Z10);
+					FPU_ADD_B <= std_logic_vector(NegateFloat(v0_store_Z0) );
 					v2_store_RGBA.g <= f32(FPU_ADD_OUT); -- colorG20
-					currentState <= triSetup_calculateInvZ20Delta;
+					currentState <= triSetup_calculateZ20Delta;
 
-				when triSetup_calculateInvZ20Delta => -- invZ20 = invZ2 - invZ0
-					FPU_ADD_A <= std_logic_vector(v2_store_invZ);
+				when triSetup_calculateZ20Delta => -- Z20 = Z2 - Z0
+					FPU_ADD_A <= std_logic_vector(v2_store_Z20);
 					v1_store_RGBA.b <= f32(FPU_ADD_OUT); -- colorB10
 					currentState <= triSetup_calculateInvW10Delta;
 
@@ -1275,11 +1270,11 @@ DBG_TwiceTriArea <= std_logic_vector(twiceTriangleArea);
 					currentState <= triSetup_waitForDeltasCompletion1;
 					
 				when triSetup_waitForDeltasCompletion1 =>
-					v1_store_invZ <= f32(FPU_ADD_OUT); -- invZ10
+					v1_store_Z10 <= f32(FPU_ADD_OUT); -- Z10
 					currentState <= triSetup_waitForDeltasCompletion2;
 
 				when triSetup_waitForDeltasCompletion2 =>
-					v2_store_invZ <= f32(FPU_ADD_OUT); -- invZ20
+					v2_store_Z20 <= f32(FPU_ADD_OUT); -- Z20
 					currentState <= triSetup_waitForDeltasCompletion3;
 
 				when triSetup_waitForDeltasCompletion3 =>
@@ -1313,9 +1308,9 @@ DBG_TwiceTriArea <= std_logic_vector(twiceTriangleArea);
 						RAST_outBarycentricYDeltaA <= std_logic_vector(barycentricYDeltaA);
 						RAST_outBarycentricYDeltaB <= std_logic_vector(barycentricYDeltaB);
 						RAST_outBarycentricYDeltaC <= std_logic_vector(barycentricYDeltaC);
-						RAST_v0_out_invZ <= std_logic_vector(v0_store_invZ);
-						RAST_v10_out_invZ <= std_logic_vector(v1_store_invZ);
-						RAST_v20_out_invZ <= std_logic_vector(v2_store_invZ);
+						RAST_v0_out_Z <= std_logic_vector(v0_store_Z0);
+						RAST_v10_out_Z <= std_logic_vector(v1_store_Z10);
+						RAST_v20_out_Z <= std_logic_vector(v2_store_Z20);
 						RAST_v0_out_invW <= std_logic_vector(v0_store_invW);
 						RAST_v10_out_invW <= std_logic_vector(v1_store_invW);
 						RAST_v20_out_invW <= std_logic_vector(v2_store_invW);

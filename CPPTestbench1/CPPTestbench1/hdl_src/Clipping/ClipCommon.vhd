@@ -27,44 +27,99 @@ end package ClipCommon;
 
 package body ClipCommon is
 
+	pure function PositiveFloatLessEqualsPositiveFloat(a : f32; b : f32) return boolean is
+	begin
+		return a(30 downto 0) <= b(30 downto 0);
+	end function;
+
+	pure function CategorizeAxis(signBits : unsigned(1 downto 0); axis : f32; w : f32) return ClipAxisCategoryEnum is
+		variable comparitor : boolean;
+	begin
+		comparitor := PositiveFloatLessEqualsPositiveFloat('0' & axis(30 downto 0), '0' & w(30 downto 0) );
+		case signBits is
+			when "00" => -- Positive/Positive case
+				-- if abs(x) <= abs(w) return inside else return outsidegreater;
+				if (comparitor) then
+					return ClipAxisInside;
+				else
+					return ClipAxisOutsideGreater;
+				end if;
+			when "01" => -- Negative axis/Positive W case
+				-- if abs(x) <= abs(w) return inside else return outsideless;
+				if (comparitor) then
+					return ClipAxisInside;
+				else
+					return ClipAxisOutsideLess;
+				end if;
+			when "10" => -- Positive axis/Negative W case
+				-- if abs(x) <= abs(w) return outsideless else return outsidegreater;
+				if (comparitor) then
+					return ClipAxisOutsideLess;
+				else
+					return ClipAxisOutsideGreater;
+				end if;
+			when others => -- when "11" => -- Negative axis/Negative W case
+				return ClipAxisOutsideLess;
+		end case;
+	end function;
+
+	pure function CategorizeZAxis(signBits : unsigned(1 downto 0); axisZ : f32; w : f32) return ClipAxisCategoryEnum is
+	begin
+		case signBits is
+			when "00" => -- Positive/Positive case
+				-- if abs(x) <= abs(w) return inside else return outsidegreater;
+				if (PositiveFloatLessEqualsPositiveFloat('0' & axisZ(30 downto 0), '0' & w(30 downto 0) ) ) then
+					return ClipAxisInside;
+				else
+					return ClipAxisOutsideGreater;
+				end if;
+			when "10" => -- Positive axisZ/Negative W case
+				return ClipAxisOutsideGreater;
+			when others => --when "01" | "11" => -- Negative axisZ case
+				return ClipAxisOutsideLess;
+		end case;
+	end function;
+
 	-- Returns floating-point a < b (ignores NaN tests - assumes that NaN's are tested for separately!)
 	pure function FloatLessThanFloat(a : f32; b : f32) return boolean is
+		variable signBits : std_logic_vector(1 downto 0);
 	begin
 		if (GetFloatIsDenorm(a) = '1' and GetFloatIsDenorm(b) = '1') then -- +/-0.0f < +/-0.0f is always false
 			return false;
 		end if;
 
-		if (GetFloatIsNegative(a) = '1' and GetFloatIsNegative(b) = '0') then
-			return true;
-		elsif(GetFloatIsNegative(a) = '0' and GetFloatIsNegative(b) = '1') then
-			return false;
-		else -- Same sign case
-			if (GetFloatIsNegative(a) = '0') then -- positive < positive case
+		signBits := GetFloatIsNegative(a) & GetFloatIsNegative(b);
+		case signBits is
+			when "10" =>
+				return true;
+			when "01" =>
+				return false;
+			when "00" => -- positive < positive case
 				return a(30 downto 0) < b(30 downto 0);
-			else -- negative < negative case
+			when others => --when "11" => -- negative < negative case
 				return a(30 downto 0) > b(30 downto 0);
-			end if;
-		end if;
+		end case;
 	end function;
 
 	-- Returns floating-point a > b (ignores NaN tests - assumes that NaN's are tested for separately!)
 	pure function FloatGreaterThanFloat(a : f32; b : f32) return boolean is
+		variable signBits : std_logic_vector(1 downto 0);
 	begin
 		if (GetFloatIsDenorm(a) = '1' and GetFloatIsDenorm(b) = '1') then -- +/-0.0f > +/-0.0f is always false
 			return false;
 		end if;
 
-		if (GetFloatIsNegative(a) = '1' and GetFloatIsNegative(b) = '0') then
-			return false;
-		elsif(GetFloatIsNegative(a) = '0' and GetFloatIsNegative(b) = '1') then
-			return true;
-		else -- Same sign case
-			if (GetFloatIsNegative(a) = '0') then -- positive < positive case
+		signBits := GetFloatIsNegative(a) & GetFloatIsNegative(b);
+		case signBits is
+			when "10" =>
+				return false;
+			when "01" =>
+				return true;
+			when "00" => -- positive > positive case
 				return a(30 downto 0) > b(30 downto 0);
-			else -- negative < negative case
+			when others => --when "11" => -- negative > negative case
 				return a(30 downto 0) < b(30 downto 0);
-			end if;
-		end if;
+		end case;
 	end function;
 
 	-- Given "a", this function will return "-a".
@@ -77,16 +132,17 @@ package body ClipCommon is
 		variable ret : f32;
 	begin
 		ret(31) := a(31);
-		if (GetRawExponent(a) > 250) then
-			ret(30 downto 23) := "11111111"; -- Return +/- INF
-			ret(22 downto 0) := "00000000000000000000000";
-		elsif (GetRawExponent(a) = 0) then
-			ret(30 downto 23) := "00000000"; -- Return +/- 0.0f
-			ret(22 downto 0) := "00000000000000000000000";
-		else
-			ret(30 downto 23) := (GetRawExponent(a) + 4);
-			ret(22 downto 0) := GetMantissa(a);
-		end if;
+		case GetRawExponent(a) is
+			when X"FB" | X"FC" | X"FD" | X"FE" | X"FF" =>
+				ret(30 downto 23) := "11111111"; -- Return +/- INF
+				ret(22 downto 0) := "00000000000000000000000";
+			when X"00" =>
+				ret(30 downto 23) := "00000000"; -- Return +/- 0.0f
+				ret(22 downto 0) := "00000000000000000000000";
+			when others =>
+				ret(30 downto 23) := (GetRawExponent(a) + 4);
+				ret(22 downto 0) := GetMantissa(a);
+		end case;
 		return ret;
 	end function;
 
@@ -94,16 +150,17 @@ package body ClipCommon is
 		variable ret : f32;
 	begin
 		ret(31) := a(31);
-		if (GetRawExponent(a) > 249) then
-			ret(30 downto 23) := "11111111"; -- Return +/- INF
-			ret(22 downto 0) := "00000000000000000000000";
-		elsif (GetRawExponent(a) = 0) then
-			ret(30 downto 23) := "00000000"; -- Return +/- 0.0f
-			ret(22 downto 0) := "00000000000000000000000";
-		else
-			ret(30 downto 23) := (GetRawExponent(a) + 5);
-			ret(22 downto 0) := GetMantissa(a);
-		end if;
+		case GetRawExponent(a) is
+			when X"FA" | X"FB" | X"FC" | X"FD" | X"FE" | X"FF" =>
+				ret(30 downto 23) := "11111111"; -- Return +/- INF
+				ret(22 downto 0) := "00000000000000000000000";
+			when X"00" =>
+				ret(30 downto 23) := "00000000"; -- Return +/- 0.0f
+				ret(22 downto 0) := "00000000000000000000000";
+			when others =>
+				ret(30 downto 23) := (GetRawExponent(a) + 5);
+				ret(22 downto 0) := GetMantissa(a);
+		end case;
 		return ret;
 	end function;
 
@@ -113,47 +170,57 @@ package body ClipCommon is
 		ret := (others => '0');
 
 		-- Viewport clip planes:
-		if (FloatLessThanFloat(vx, FloatNegate(vw) ) ) then -- if (vx < -vw)
-			ret(ClipPlaneEnum'pos(ClipPlaneLeft) ) := '1';
-		end if;
-		if (FloatGreaterThanFloat(vx, vw) ) then -- if (vx > vw)
-			ret(ClipPlaneEnum'pos(ClipPlaneRight) ) := '1';
-		end if;
+		case CategorizeAxis(vw(31) & vx(31), vx, vw) is
+			when ClipAxisOutsideLess => -- if (vx < -vw)
+				ret(ClipPlaneEnum'pos(ClipPlaneLeft) ) := '1';
+			when ClipAxisOutsideGreater => -- if (vx > vw)
+				ret(ClipPlaneEnum'pos(ClipPlaneRight) ) := '1';
+			when ClipAxisInside =>
+				-- Do nothing
+		end case;
 
-		if (FloatLessThanFloat(vy, FloatNegate(vw) ) ) then -- if (vy < -vw)
-			ret(ClipPlaneEnum'pos(ClipPlaneBottom) ) := '1';
-		end if;
-		if (FloatGreaterThanFloat(vy, vw) ) then -- if (vy > vw)
-			ret(ClipPlaneEnum'pos(ClipPlaneTop) ) := '1';
-		end if;
+		case CategorizeAxis(vw(31) & vy(31), vy, vw) is
+			when ClipAxisOutsideLess => -- if (vy < -vw)
+				ret(ClipPlaneEnum'pos(ClipPlaneBottom) ) := '1';
+			when ClipAxisOutsideGreater => -- if (vy > vw)
+				ret(ClipPlaneEnum'pos(ClipPlaneTop) ) := '1';
+			when ClipAxisInside =>
+				-- Do nothing
+		end case;
 
 		-- ZNear/ZFar clip planes:
-		if (FloatLessThanFloat(vz, X"00000000") ) then -- if (vz < 0.0f)
-			ret(ClipPlaneEnum'pos(ClipPlaneZNear) ) := '1';
-		end if;
-		if (FloatGreaterThanFloat(vz, vw) ) then -- if (vz > vw)
-			ret(ClipPlaneEnum'pos(ClipPlaneZFar) ) := '1';
-		end if;
+		case CategorizeZAxis(vw(31) & vz(31), vz, vw) is
+			when ClipAxisOutsideLess => -- if (vy < -vw)
+				ret(ClipPlaneEnum'pos(ClipPlaneZNear) ) := '1';
+			when ClipAxisOutsideGreater => -- if (vy > vw)
+				ret(ClipPlaneEnum'pos(ClipPlaneZFar) ) := '1';
+			when ClipAxisInside =>
+				-- Do nothing
+		end case;
 
 		-- W<0 clip plane:
-		if (FloatLessThanFloat(vw, W_CLIP_EPSILON) ) then -- if (vw < W_CLIP_EPSILON)
+		if (vw(31) = '1' or GetRawExponent(vw) < GetRawExponent(W_CLIP_EPSILON) ) then -- if (vw < W_CLIP_EPSILON)
 			ret(ClipPlaneEnum'pos(ClipPlaneW0) ) := '1';
 		end if;
 
 		-- Guard band planes:
-		if (FloatLessThanFloat(vx, FloatShiftX16(FloatNegate(vw) ) ) ) then -- if (vx < -vw * 16)
-			ret(ClipPlaneEnum'pos(ClipPlaneLeftGB) ) := '1';
-		end if;
-		if (FloatGreaterThanFloat(vx, FloatShiftX16(vw) ) ) then -- if (vx > vw * 16)
-			ret(ClipPlaneEnum'pos(ClipPlaneRightGB) ) := '1';
-		end if;
+		case CategorizeAxis(vw(31) & vx(31), vx, FloatShiftX16(vw) ) is
+			when ClipAxisOutsideLess => -- if (vx < -vw * 16)
+				ret(ClipPlaneEnum'pos(ClipPlaneLeftGB) ) := '1';
+			when ClipAxisOutsideGreater => -- if (vx > vw * 16)
+				ret(ClipPlaneEnum'pos(ClipPlaneRightGB) ) := '1';
+			when ClipAxisInside =>
+				-- Do nothing
+		end case;
 
-		if (FloatLessThanFloat(vy, FloatShiftX32(FloatNegate(vw) ) ) ) then -- if (vy < -vw * 32)
-			ret(ClipPlaneEnum'pos(ClipPlaneBottomGB) ) := '1';
-		end if;
-		if (FloatGreaterThanFloat(vy, FloatShiftX32(vw) ) ) then -- if (vy > vw * 32)
-			ret(ClipPlaneEnum'pos(ClipPlaneTopGB) ) := '1';
-		end if;
+		case CategorizeAxis(vw(31) & vy(31), vy, FloatShiftX32(vw) ) is
+			when ClipAxisOutsideLess => -- if (vy < -vw * 32)
+				ret(ClipPlaneEnum'pos(ClipPlaneBottomGB) ) := '1';
+			when ClipAxisOutsideGreater => -- if (vy > vw * 32)
+				ret(ClipPlaneEnum'pos(ClipPlaneTopGB) ) := '1';
+			when ClipAxisInside =>
+				-- Do nothing
+		end case;
 
 		return ret;
 	end function;

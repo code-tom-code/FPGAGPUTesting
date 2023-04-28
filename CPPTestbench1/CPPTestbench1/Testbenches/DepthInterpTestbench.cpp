@@ -28,7 +28,7 @@ enum depthInterpStateType
 	barycentricConversion4, // 5
 	barycentricConversion5, // 6
 
-	// Normalize our barycentrics by multiplying the [0.0f, 16777216.0f] values by the barycentric normalization factor (computed by the TriSetup block previously) to
+	// Normalize our barycentrics by multiplying the [0.0f, 16777215.0f] values by the barycentric normalization factor (computed by the TriSetup block previously) to
 	// get them into the [0.0f, 1.0f] range.
 	barycentricNormalization0, // 7
 	barycentricNormalization1, // 8
@@ -39,7 +39,7 @@ enum depthInterpStateType
 	barycentricNormalization6, // 13
 	barycentricNormalization7, // 14
 
-	// Multiply the normalized barycentrics with the inverseZ (1.0f/zN) values
+	// Multiply the normalized barycentrics with the Z (zN) values
 	barycentricMultiply0, // 15
 	barycentricMultiply1, // 16
 	barycentricMultiply2, // 17
@@ -63,7 +63,8 @@ enum depthInterpStateType
 	barycentricDotProductSums8, // 33
 	barycentricDotProductSums9, // 34
 
-	// Take the reciprocals of the dot product (1.0f / dot(normbary.abc, inverseZ.xyz) ) to yield the per-pixel depth value and per-pixel W value as a float32
+	// Take the dot product (dot(normbary.abc, Z.xyz) ) to yield the per-pixel depth value and 
+	// take the inverse dot product (1.0f / (dot(normbary.abc, invW.xyz) ) ) to yield the per-pixel W value as a float32
 	barycentricDotProductRecip0, // 35
 	barycentricDotProductRecip1, // 36
 	barycentricDotProductRecip2, // 37
@@ -115,12 +116,12 @@ void EmulateDepthInterpCPU(const triSetupOutput& triSetupData, const std::vector
 		const float normalizedBarycentricB = thisPixelData.barycentricB * triSetupData.barycentricInverse;
 		const float normalizedBarycentricC = thisPixelData.barycentricC * triSetupData.barycentricInverse;
 
-		const float invZ0 = triSetupData.v0.invZ;
-		const float invZ10 = triSetupData.v10.invZ;
-		const float invZ20 = triSetupData.v20.invZ;
-		const float dotproductResultZ = invZ10 * normalizedBarycentricB + invZ20 * normalizedBarycentricC + invZ0;
+		const float Z0 = triSetupData.v0.Z;
+		const float Z10 = triSetupData.v10.Z;
+		const float Z20 = triSetupData.v20.Z;
+		const float dotproductResultZ = Z10 * normalizedBarycentricB + Z20 * normalizedBarycentricC + Z0;
 
-		const float interpolatedPixelDepth = 1.0f / dotproductResultZ;
+		const float interpolatedPixelDepth = dotproductResultZ;
 
 		// Might need to add a slight epsilon here to account for floating-point imprecision
 		if (interpolatedPixelDepth > 1.0f || interpolatedPixelDepth < 0.0f)
@@ -128,7 +129,7 @@ void EmulateDepthInterpCPU(const triSetupOutput& triSetupData, const std::vector
 			__debugbreak(); // Should never be here since we should only ever be processing post-clipped triangles. Nothing should ever be beyond the far-plane or behind the near-plane!
 		}
 
-		const unsigned u24Depth = interpolatedPixelDepth * 16777215.0f;
+		const unsigned u24Depth = (const unsigned)(interpolatedPixelDepth * 16777215.0f);
 
 		// Perform depth testing (assuming lessequals depth test mode against a cleared zbuffer with 1.0f):
 		if (u24Depth <= 0xFFFFFFFF)
@@ -207,9 +208,9 @@ const int RunTestsDepthInterp(Xsi::Loader& loader)
 
 // TriWorkCache per-triangle interface begin
 	std_logic_vector_port<32> TRICACHE_inBarycentricInverse(PD_IN, loader, "TRICACHE_inBarycentricInverse");
-	std_logic_vector_port<32> TRICACHE_inInvZ0(PD_IN, loader, "TRICACHE_inInvZ0");
-	std_logic_vector_port<32> TRICACHE_inInvZ10(PD_IN, loader, "TRICACHE_inInvZ10");
-	std_logic_vector_port<32> TRICACHE_inInvZ20(PD_IN, loader, "TRICACHE_inInvZ20");
+	std_logic_vector_port<32> TRICACHE_inZ0(PD_IN, loader, "TRICACHE_inZ0");
+	std_logic_vector_port<32> TRICACHE_inZ10(PD_IN, loader, "TRICACHE_inZ10");
+	std_logic_vector_port<32> TRICACHE_inZ20(PD_IN, loader, "TRICACHE_inZ20");
 	std_logic_vector_port<32> TRICACHE_inInvW0(PD_IN, loader, "TRICACHE_inInvW0");
 	std_logic_vector_port<32> TRICACHE_inInvW10(PD_IN, loader, "TRICACHE_inInvW10");
 	std_logic_vector_port<32> TRICACHE_inInvW20(PD_IN, loader, "TRICACHE_inInvW20");
@@ -304,7 +305,7 @@ const int RunTestsDepthInterp(Xsi::Loader& loader)
 	auto simulateRTLDepthInterp = [&](const triSetupOutput& triSetupData, std::vector<rasterizedPixelData> rasterizedPixels, std::vector<depthInterpOutputData>& outDepthInterpData)
 	{
 		// TODO: Simulate tricache with different slots
-		triSetupData.DeserializeTriSetupOutput(TRICACHE_inBarycentricInverse, TRICACHE_inInvZ0, TRICACHE_inInvZ10, TRICACHE_inInvZ20,
+		triSetupData.DeserializeTriSetupOutput(TRICACHE_inBarycentricInverse, TRICACHE_inZ0, TRICACHE_inZ10, TRICACHE_inZ20,
 			TRICACHE_inInvW0, TRICACHE_inInvW10, TRICACHE_inInvW20,
 			TRICACHE_inT0X, TRICACHE_inT0Y, TRICACHE_inT10X, TRICACHE_inT10Y, TRICACHE_inT20X, TRICACHE_inT20Y,
 			TRICACHE_inColorRGBA0, TRICACHE_inColorRGBA10, TRICACHE_inColorRGBA20);
@@ -347,7 +348,7 @@ const int RunTestsDepthInterp(Xsi::Loader& loader)
 		}
 	};
 
-	auto runDepthInterpTest = [&](const triSetupOutput& triSetupData, const std::vector<rasterizedPixelData>& rasterizedPixels, const bool useRandomZWPositions) -> bool
+	auto runDepthInterpTest = [&](const triSetupInput& clipspaceOutTri, const triSetupOutput& triSetupData, const std::vector<rasterizedPixelData>& rasterizedPixels, const bool useRandomZWPositions) -> bool
 	{
 		std::vector<depthInterpOutputData> emulatedCPUDepthInterpData;
 		std::vector<depthInterpOutputData> simulatedRTLDepthInterpData;
@@ -359,6 +360,21 @@ const int RunTestsDepthInterp(Xsi::Loader& loader)
 			__debugbreak();
 			return false;
 		}
+
+		const float z0 = clipspaceOutTri.v0.zPos / clipspaceOutTri.v0.wPos;
+		const float z1 = clipspaceOutTri.v1.zPos / clipspaceOutTri.v1.wPos;
+		const float z2 = clipspaceOutTri.v2.zPos / clipspaceOutTri.v2.wPos;
+		float zMin, zMax;
+		if (z0 < z1 && z0 < z2) zMin = z0;
+		else if (z1 < z0 && z1 < z2) zMin = z1;
+		else zMin = z2;
+
+		if (z0 > z1 && z0 > z2) zMax = z0;
+		else if (z1 > z0 && z1 > z2) zMax = z1;
+		else zMax = z2;
+
+		const unsigned zMinU24 = (const unsigned)(16777215.0f * zMin);
+		const unsigned zMaxU24 = (const unsigned)(16777215.0f * zMax);
 
 		const unsigned numOutputPixels = (const unsigned)emulatedCPUDepthInterpData.size();
 		for (unsigned x = 0; x < numOutputPixels; ++x)
@@ -382,7 +398,25 @@ const int RunTestsDepthInterp(Xsi::Loader& loader)
 				return false;
 			}
 
-			// Check for out of range depth values:
+			// Check for out of range depth values that might be due to accidental extrapolation rather than our interpolation:
+			/*if (simulatedRTLPixel.dbgDepthU24 < zMinU24)
+			{
+				__debugbreak();
+			}
+			if (simulatedRTLPixel.dbgDepthU24 > zMaxU24)
+			{
+				__debugbreak();
+			}*/
+			if (simulatedRTLPixel.dbgDepthU24 + 1 < zMinU24) // Fudge by one depth unit just in case we have some float precision issues
+			{
+				__debugbreak();
+			}
+			if (simulatedRTLPixel.dbgDepthU24 - 1 > zMaxU24)
+			{
+				__debugbreak();
+			}
+
+			// Check for out of range interpolated W values:
 			if (useRandomZWPositions)
 			{
 				if (simulatedRTLPixel.interpolatedPixelW <= 0.0f ||
@@ -395,6 +429,41 @@ const int RunTestsDepthInterp(Xsi::Loader& loader)
 		}
 
 		return true;
+	};
+
+	auto testComplexDrawCallSingleTri = [&](const triSetupInput& singleTri, const bool testRandomZWPositions = false)
+	{
+		std::vector<triSetupInput> unclippedTris;
+		unclippedTris.push_back(singleTri);
+		std::vector<triSetupInput> clippedTris;
+		EmulateCPUClipper(unclippedTris, clippedTris);
+
+		const unsigned numOutClippedTris = (const unsigned)clippedTris.size();
+		for (unsigned y = 0; y < numOutClippedTris; ++y)
+		{
+			const triSetupInput& thisInputTri = clippedTris[y];
+			triSetupOutput triSetupData;
+			if (EmulateCPUTriSetup(thisInputTri, triSetupData) != triSetup_OK) // If this fails, then it's because our triangle got culled or clipped or backface-killed or something
+			{
+				// __debugbreak();
+				continue;
+			}
+			std::vector<rasterizedPixelData> rasterizedPixels;
+
+			rasterizedPixelData startNewTriMessage = {0};
+			startNewTriMessage.pixelX = startNewTriangleSlotCommand;
+			startNewTriMessage.pixelY = (currentTriCacheIndex) % 8;
+			rasterizedPixels.push_back(startNewTriMessage);
+
+			EmulateCPURasterizer(triSetupData, rasterizedPixels);
+
+			rasterizedPixelData endTriMessage = {0};
+			endTriMessage.pixelX = finishCurrentTriangleCommand;
+			endTriMessage.pixelY = (currentTriCacheIndex++) % 8;
+			rasterizedPixels.push_back(endTriMessage);
+
+			successResult &= runDepthInterpTest(thisInputTri, triSetupData, rasterizedPixels, testRandomZWPositions);
+		}
 	};
 
 	// Indices are expected to arrive in CCW order:
@@ -453,37 +522,7 @@ const int RunTestsDepthInterp(Xsi::Loader& loader)
 				primTriData.v2.zPos *= primTriData.v2.wPos;
 			}
 
-			std::vector<triSetupInput> unclippedTris;
-			unclippedTris.push_back(primTriData);
-			std::vector<triSetupInput> clippedTris;
-			EmulateCPUClipper(unclippedTris, clippedTris);
-
-			const unsigned numOutClippedTris = (const unsigned)clippedTris.size();
-			for (unsigned y = 0; y < numOutClippedTris; ++y)
-			{
-				const triSetupInput& thisInputTri = clippedTris[y];
-				triSetupOutput triSetupData;
-				if (EmulateCPUTriSetup(thisInputTri, triSetupData) != triSetup_OK) // If this fails, then it's because our triangle got culled or clipped or backface-killed or something
-				{
-					// __debugbreak();
-					continue;
-				}
-				std::vector<rasterizedPixelData> rasterizedPixels;
-
-				rasterizedPixelData startNewTriMessage = {0};
-				startNewTriMessage.pixelX = startNewTriangleSlotCommand;
-				startNewTriMessage.pixelY = (currentTriCacheIndex) % 8;
-				rasterizedPixels.push_back(startNewTriMessage);
-
-				EmulateCPURasterizer(triSetupData, rasterizedPixels);
-
-				rasterizedPixelData endTriMessage = {0};
-				endTriMessage.pixelX = finishCurrentTriangleCommand;
-				endTriMessage.pixelY = (currentTriCacheIndex++) % 8;
-				rasterizedPixels.push_back(endTriMessage);
-
-				successResult &= runDepthInterpTest(triSetupData, rasterizedPixels, randomZWPositions);
-			}
+			testComplexDrawCallSingleTri(primTriData, randomZWPositions);
 		}
 	};
 
@@ -501,6 +540,33 @@ const int RunTestsDepthInterp(Xsi::Loader& loader)
 			0, 3, 4
 		};
 		testSimpleDrawCall(threeTrisSharedVertex, sharedVertex3TrianglesIndices, ARRAYSIZE(sharedVertex3TrianglesIndices) / 3);
+	}
+
+	// Test case with three triangles using data from a PIX capture (warning: may take a little while to rasterize and validate - this is not a super small triangle):
+	{
+		triSetupInput testTri; // This triangle will not get clipped. It is firmly inside our viewport:
+		testTri.v0.rgba.r = testTri.v0.rgba.g = testTri.v0.rgba.b = testTri.v0.rgba.a = 1.0f;
+		testTri.v1.rgba.r = testTri.v1.rgba.g = testTri.v1.rgba.b = testTri.v1.rgba.a = 1.0f;
+		testTri.v2.rgba.r = testTri.v2.rgba.g = testTri.v2.rgba.b = testTri.v2.rgba.a = 1.0f;
+		testTri.v0.xPos = -0.341374397f;
+		testTri.v0.yPos = -0.031077266f;
+		testTri.v0.zPos = 0.549123645f;
+		testTri.v0.wPos = 0.558848858f;
+		testTri.v0.xTex = 0.0f;
+		testTri.v0.yTex = 0.035156f;
+		testTri.v1.xPos = 0.200791836f;
+		testTri.v1.yPos = 0.239187300f;
+		testTri.v1.zPos = 1.613220334f;
+		testTri.v1.wPos = 1.622413635f;
+		testTri.v1.xTex = 3.972656012f;
+		testTri.v1.yTex = 0.035156f;
+		testTri.v2.xPos = 0.013064623f;
+		testTri.v2.yPos = -0.107485890f;
+		testTri.v2.zPos = 0.248284698f;
+		testTri.v2.wPos = 0.258160591f;
+		testTri.v2.xTex = 0.0f;
+		testTri.v2.yTex = -0.9667976994f;
+		testComplexDrawCallSingleTri(testTri);
 	}
 
 	// Let's try doing 128 random small triangles (about half will get backface culled, and some others may get degenerate triangle culled or clipped off the screen):

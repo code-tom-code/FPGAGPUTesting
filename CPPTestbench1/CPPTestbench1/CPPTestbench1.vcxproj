@@ -209,6 +209,7 @@
     <ClCompile Include="xsi_loader.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ClipTestData.h" />
     <ClInclude Include="CPPTestbench.h" />
     <ClInclude Include="D3DTriRasterizeTestData.h" />
     <ClInclude Include="RenderWindow.h" />

@@ -94,11 +94,12 @@ ATTRIBUTE X_INTERFACE_PARAMETER : STRING;
 		variable combinedYMinMax : unsigned(63 downto 0);
 	begin
 
-		combinedXMinMax := AABB2DGetMinMaxAxis(vx0, vx1, vx2);
-		combinedYMinMax := AABB2DGetMinMaxAxis(vy0, vy1, vy2);
+		--combinedXMinMax := AABB2DGetMinMaxAxis(vx0, vx1, vx2);
+		--combinedYMinMax := AABB2DGetMinMaxAxis(vy0, vy1, vy2);
 
-		return OverlapViewportTest(f32(combinedXMinMax(31 downto 0) ), f32(combinedXMinMax(63 downto 32) ), 
-			f32(combinedYMinMax(31 downto 0) ), f32(combinedYMinMax(63 downto 32) ) );
+		--return OverlapViewportTest(f32(combinedXMinMax(31 downto 0) ), f32(combinedXMinMax(63 downto 32) ), 
+			--f32(combinedYMinMax(31 downto 0) ), f32(combinedYMinMax(63 downto 32) ) );
+		return '1';
 	end function;
 
 begin

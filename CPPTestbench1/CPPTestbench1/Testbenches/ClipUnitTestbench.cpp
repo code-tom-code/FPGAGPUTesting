@@ -4,8 +4,10 @@
 
 #include "../CPPTestbench.h"
 #include "../RenderWindow.h"
+#include "../ClipTestData.h"
 #include "PixelPipelineShared.h"
 #include "ShaderCoreALUCommon.h"
+#include <intrin.h>
 #include <vector>
 #include <functional>
 
@@ -15,6 +17,7 @@ static const float W_CLIP_EPSILON = 1.0f / 8388608.0f; // This needs to be sligh
 static const float VIEWPORT_HALF_WIDTH = 640.0f / 2.0f;
 static const float VIEWPORT_HALF_HEIGHT = 480.0f / 2.0f;
 static D3DXMATRIXA16 projMatrix = {};
+extern bool enableDebugOutput;
 
 enum clipper_state_t : uint8_t
 {
@@ -499,6 +502,9 @@ struct clipWorkingTriangle
 			//vert.wPos *= -1.0f;
 		}*/
 
+		if (vert.wPos < W_CLIP_EPSILON)
+			outClipCodes |= (1 << CP_W0);
+
 		const float w = vert.wPos;
 		const float negW = -w;
 
@@ -613,7 +619,7 @@ void AssignDebugVert(vertInputClipSpace& newDebugVert, std_logic_vector_port<32>
 static void SimulateHDLClipper(Xsi::Loader& loader, const std::vector<triSetupInput>& inputUnclippedTriangles, std::vector<triSetupInput>& outputClippedTriangles, std_logic_port& clk, 
 	std_logic_port& TRISETUP_inNextStageisReady, std_logic_port& IA_inPreviousStageIsValid, std_logic_port& IA_outPreviousStageIsReady, 
 	std_logic_vector_port<8>& DBG_CurrentState, std_logic_vector_port<4>& DBG_CurrentClipPlane, std_logic_vector_port<3>& DBG_CurrentClipBitmask, std_logic_vector_port<3>& DBG_ChildTriStackSize, 
-	std_logic_vector_port<32>& DBG_ClipDistance0, std_logic_vector_port<32>& DBG_ClipDistance1,
+	std_logic_vector_port<32>& DBG_ClipDistance0, std_logic_vector_port<32>& DBG_ClipDistance1, std_logic_port& DBG_TriangleIntersectsViewport,
 	std_logic_vector_port<32>& DBG_V0PosX, std_logic_vector_port<32>& DBG_V0PosY, std_logic_vector_port<32>& DBG_V0PosZ, std_logic_vector_port<32>& DBG_V0PosW,
 	std_logic_vector_port<32>& DBG_V1PosX, std_logic_vector_port<32>& DBG_V1PosY, std_logic_vector_port<32>& DBG_V1PosZ, std_logic_vector_port<32>& DBG_V1PosW,
 	std_logic_vector_port<32>& DBG_V2PosX, std_logic_vector_port<32>& DBG_V2PosY, std_logic_vector_port<32>& DBG_V2PosZ, std_logic_vector_port<32>& DBG_V2PosW,
@@ -627,6 +633,7 @@ static void SimulateHDLClipper(Xsi::Loader& loader, const std::vector<triSetupIn
 	eClipPlane currentClipPlane = CP_ClipDone;
 	unsigned char currentClipBitmask = 0;
 	unsigned char currentChildTriStackSize = DBG_ChildTriStackSize.GetUint8Val();
+	bool currentTriangleIntersectsViewport = false;
 	float clipDistance0 = DBG_ClipDistance0.GetFloat32Val();
 	float clipDistance1 = DBG_ClipDistance1.GetFloat32Val();
 	vertInputClipSpace dbgV0;
@@ -716,6 +723,12 @@ static void SimulateHDLClipper(Xsi::Loader& loader, const std::vector<triSetupIn
 				printf("New clipOutcodes2: 0x%04X\n", clipOutcodes2);
 			}
 
+			if (DBG_TriangleIntersectsViewport.GetBoolVal() != currentTriangleIntersectsViewport)
+			{
+				currentTriangleIntersectsViewport = DBG_TriangleIntersectsViewport.GetBoolVal();
+				printf("New triangle intersects viewport value: %s\n", currentTriangleIntersectsViewport ? "true" : "false");
+			}
+
 			if (DBG_ChildTriStackSize.GetUint8Val() != currentChildTriStackSize)
 			{
 				if (DBG_ChildTriStackSize.GetUint8Val() > currentChildTriStackSize)
@@ -777,21 +790,20 @@ static const float maxf(const float a, const float b)
 // A full test would involve separating axis theorem between the viewport AABB and the triangle in 2D space
 static const bool GetTriangleNeedsEdgeClipping(const clipWorkingTriangle& triangle)
 {
+	if ( ( (triangle.clipData.clip0 | triangle.clipData.clip1 | triangle.clipData.clip2) & ( (1 << CP_Front) | (1 << CP_Back) ) ) != 0)
+		return true;
 	const bool oneVertOutsideGuardBand = ( (triangle.clipData.clip0 | triangle.clipData.clip1 | triangle.clipData.clip2) & ( (1 << CP_GBLeft) | (1 << CP_GBRight) | (1 << CP_GBTop) | (1 << CP_GBBottom) ) ) != 0;
 	if (!oneVertOutsideGuardBand)
 		return false;
 
+	/*D3DXVECTOR2 unclippedTriangleAABBMinX, unclippedTriangleAABBMinY, unclippedTriangleAABBMaxX, unclippedTriangleAABBMaxY;
 	const float unclippedTriangleAABBMinX = minf(minf(triangle.geomData.v0.xPos, triangle.geomData.v1.xPos), triangle.geomData.v2.xPos);
 	const float unclippedTriangleAABBMaxX = maxf(maxf(triangle.geomData.v0.xPos, triangle.geomData.v1.xPos), triangle.geomData.v2.xPos);
 	const float unclippedTriangleAABBMinY = minf(minf(triangle.geomData.v0.yPos, triangle.geomData.v1.yPos), triangle.geomData.v2.yPos);
 	const float unclippedTriangleAABBMaxY = maxf(maxf(triangle.geomData.v0.yPos, triangle.geomData.v1.yPos), triangle.geomData.v2.yPos);
-	const bool triangleAABBOverlapViewport = AABBIntersectViewport2D(unclippedTriangleAABBMinX, unclippedTriangleAABBMaxX, unclippedTriangleAABBMinY, unclippedTriangleAABBMaxY);
+	const bool triangleAABBOverlapViewport = AABBIntersectViewport2D(unclippedTriangleAABBMinX, unclippedTriangleAABBMaxX, unclippedTriangleAABBMinY, unclippedTriangleAABBMaxY);*/
 
-	const bool v0InsideViewport = ( (triangle.clipData.clip0 & ( (1 << CP_Left) | (1 << CP_Right) | (1 << CP_Top) | (1 << CP_Bottom) ) ) == 0);
-	const bool v1InsideViewport = ( (triangle.clipData.clip1 & ( (1 << CP_Left) | (1 << CP_Right) | (1 << CP_Top) | (1 << CP_Bottom) ) ) == 0);
-	const bool v2InsideViewport = ( (triangle.clipData.clip2 & ( (1 << CP_Left) | (1 << CP_Right) | (1 << CP_Top) | (1 << CP_Bottom) ) ) == 0);
-
-	return triangleAABBOverlapViewport || (v0InsideViewport | v1InsideViewport | v2InsideViewport);
+	return true;//triangleAABBOverlapViewport;
 }
 
 // Note that the output triangle list may be longer or shorter than the input triangle list!
@@ -818,7 +830,7 @@ void EmulateCPUClipper(const std::vector<triSetupInput>& inputUnclippedTriangles
 		{
 			mainWorkingClipTriangle = workingClipTriangles.back();
 			workingClipTriangles.pop_back();
-
+			
 			// Early-out and remove any +/-INF or +/-NaN vertex position triangles:
 			if (isnan(mainWorkingClipTriangle.geomData.v0.xPos) || isnan(mainWorkingClipTriangle.geomData.v0.yPos) || isnan(mainWorkingClipTriangle.geomData.v0.zPos) || isnan(mainWorkingClipTriangle.geomData.v0.wPos) ||
 				isnan(mainWorkingClipTriangle.geomData.v1.xPos) || isnan(mainWorkingClipTriangle.geomData.v1.yPos) || isnan(mainWorkingClipTriangle.geomData.v1.zPos) || isnan(mainWorkingClipTriangle.geomData.v1.wPos) ||
@@ -837,6 +849,10 @@ void EmulateCPUClipper(const std::vector<triSetupInput>& inputUnclippedTriangles
 				( (mainWorkingClipTriangle.clipData.clip0 & mainWorkingClipTriangle.clipData.clip1 & mainWorkingClipTriangle.clipData.clip2) & (1 << CP_Bottom) ) ||
 				( (mainWorkingClipTriangle.clipData.clip0 & mainWorkingClipTriangle.clipData.clip1 & mainWorkingClipTriangle.clipData.clip2) & (1 << CP_Front) ) ||
 				( (mainWorkingClipTriangle.clipData.clip0 & mainWorkingClipTriangle.clipData.clip1 & mainWorkingClipTriangle.clipData.clip2) & (1 << CP_Back) ) ||
+				( (mainWorkingClipTriangle.clipData.clip0 & mainWorkingClipTriangle.clipData.clip1 & mainWorkingClipTriangle.clipData.clip2) & (1 << CP_GBLeft) ) ||
+				( (mainWorkingClipTriangle.clipData.clip0 & mainWorkingClipTriangle.clipData.clip1 & mainWorkingClipTriangle.clipData.clip2) & (1 << CP_GBRight) ) ||
+				( (mainWorkingClipTriangle.clipData.clip0 & mainWorkingClipTriangle.clipData.clip1 & mainWorkingClipTriangle.clipData.clip2) & (1 << CP_GBTop) ) ||
+				( (mainWorkingClipTriangle.clipData.clip0 & mainWorkingClipTriangle.clipData.clip1 & mainWorkingClipTriangle.clipData.clip2) & (1 << CP_GBBottom) ) ||
 				( (mainWorkingClipTriangle.clipData.clip0 & mainWorkingClipTriangle.clipData.clip1 & mainWorkingClipTriangle.clipData.clip2) & (1 << CP_W0) ) )
 			{
 				continue;
@@ -1005,7 +1021,10 @@ void EmulateCPUClipper(const std::vector<triSetupInput>& inputUnclippedTriangles
 			// If our main triangle survives clipping, then output it by adding it to the output list of clipped triangles
 			if (mainTriangleIsValid)
 			{
-				outputClippedTriangles.push_back(mainWorkingClipTriangle.geomData);
+				if ( (mainWorkingClipTriangle.clipData.clip0 & mainWorkingClipTriangle.clipData.clip1 & mainWorkingClipTriangle.clipData.clip2) == 0)
+				{
+					outputClippedTriangles.push_back(mainWorkingClipTriangle.geomData);
+				}
 			}
 		};
 	}
@@ -1056,6 +1075,58 @@ const float MakeInfNanFloat(bool isNan, bool isNeg)
 	if (isNan)
 		val |= ( (1 << 23) - 1);
 	return *(const float* const)&val;
+}
+
+void AddScreenspaceTriToUnclippedTrisList(std::vector<triSetupInput>& unclippedInputTris, const testVert3D* const newScreenspaceTri, const unsigned short expectedClipPlanes, const bool expectsOneInside = true)
+{
+	triSetupInput newTri;
+	newTri.v0.wPos = 1.0f;
+	newTri.v0.rgba.r = 0.0f;
+	newTri.v0.rgba.g = 0.0f;
+	newTri.v0.rgba.b = 0.0f;
+	newTri.v0.rgba.a = 1.0f;
+	newTri.v1 = newTri.v0;
+	newTri.v2 = newTri.v0;
+
+	newTri.v0.xPos = newScreenspaceTri[0].posX;
+	newTri.v0.yPos = newScreenspaceTri[0].posY;
+	newTri.v0.zPos = newScreenspaceTri[0].posZ;
+	newTri.v0.xTex = 0.0f;
+	newTri.v0.yTex = 0.0f;
+	newTri.v0.rgba.r = 1.0f;
+
+	newTri.v1.xPos = newScreenspaceTri[1].posX;
+	newTri.v1.yPos = newScreenspaceTri[1].posY;
+	newTri.v1.zPos = newScreenspaceTri[1].posZ;
+	newTri.v1.xTex = 0.0f;
+	newTri.v1.yTex = 1.0f;
+	newTri.v1.rgba.g = 1.0f;
+
+	newTri.v2.xPos = newScreenspaceTri[2].posX;
+	newTri.v2.yPos = newScreenspaceTri[2].posY;
+	newTri.v2.zPos = newScreenspaceTri[2].posZ;
+	newTri.v2.xTex = 2.0f;
+	newTri.v2.yTex = 2.0f;
+	newTri.v2.rgba.b = 1.0f;
+
+	UntransformViewport(newTri);
+
+	unclippedInputTris.push_back(newTri);
+
+	clipWorkingTriangle mainWorkingClipTriangle;
+	mainWorkingClipTriangle.geomData = newTri;
+	mainWorkingClipTriangle.ComputeClipCodes();
+	const bool isOneInside = (mainWorkingClipTriangle.clipData.clip0 == 0 || mainWorkingClipTriangle.clipData.clip1 == 0 || mainWorkingClipTriangle.clipData.clip2 == 0);
+	if (!isOneInside && expectsOneInside)
+	{
+		__debugbreak();
+	}
+	unsigned short clipPlanes = mainWorkingClipTriangle.clipData.clip0 | mainWorkingClipTriangle.clipData.clip1 | mainWorkingClipTriangle.clipData.clip2;
+	clipPlanes &= ~( (1 << CP_Left) | (1 << CP_Right) | (1 << CP_Top) | (1 << CP_Bottom) );
+	if (clipPlanes != expectedClipPlanes)
+	{
+		__debugbreak();
+	}
 }
 
 void InitClipPlanes()
@@ -1220,6 +1291,7 @@ const int RunTestsClipUnit(Xsi::Loader& loader, RenderWindow* renderWindow)
 	std_logic_vector_port<3> DBG_ChildTriStackSize(PD_OUT, loader, "DBG_ChildTriStackSize");
 	std_logic_vector_port<32> DBG_ClipDistance0(PD_OUT, loader, "DBG_ClipDistance0");
 	std_logic_vector_port<32> DBG_ClipDistance1(PD_OUT, loader, "DBG_ClipDistance1");
+	std_logic_port DBG_TriangleIntersectsViewport(PD_OUT, loader, "DBG_TriangleIntersectsViewport");
 	std_logic_vector_port<32> DBG_V0PosX(PD_OUT, loader, "DBG_V0PosX");
 	std_logic_vector_port<32> DBG_V0PosY(PD_OUT, loader, "DBG_V0PosY");
 	std_logic_vector_port<32> DBG_V0PosZ(PD_OUT, loader, "DBG_V0PosZ");
@@ -1546,7 +1618,7 @@ const int RunTestsClipUnit(Xsi::Loader& loader, RenderWindow* renderWindow)
 	EmulateCPUClipper(unclippedInputTris, clippedOutputTris);
 	SimulateHDLClipper(loader, unclippedInputTris, HDLSimClippedOutputTris, clk, TRISETUP_inNextStageisReady, IA_inPreviousStageIsValid, IA_outPreviousStageIsReady, 
 		DBG_CurrentState, DBG_CurrentClipPlane, DBG_CurrentClipBitmask, DBG_ChildTriStackSize, 
-		DBG_ClipDistance0, DBG_ClipDistance1,
+		DBG_ClipDistance0, DBG_ClipDistance1, DBG_TriangleIntersectsViewport,
 		DBG_V0PosX, DBG_V0PosY, DBG_V0PosZ, DBG_V0PosW,
 		DBG_V1PosX, DBG_V1PosY, DBG_V1PosZ, DBG_V1PosW,
 		DBG_V2PosX, DBG_V2PosY, DBG_V2PosZ, DBG_V2PosW,
@@ -1623,7 +1695,7 @@ const int RunTestsClipUnit(Xsi::Loader& loader, RenderWindow* renderWindow)
 	EmulateCPUClipper(unclippedInputTris, clippedOutputTris);
 	SimulateHDLClipper(loader, unclippedInputTris, HDLSimClippedOutputTris, clk, TRISETUP_inNextStageisReady, IA_inPreviousStageIsValid, IA_outPreviousStageIsReady, 
 		DBG_CurrentState, DBG_CurrentClipPlane, DBG_CurrentClipBitmask, DBG_ChildTriStackSize, 
-		DBG_ClipDistance0, DBG_ClipDistance1,
+		DBG_ClipDistance0, DBG_ClipDistance1, DBG_TriangleIntersectsViewport,
 		DBG_V0PosX, DBG_V0PosY, DBG_V0PosZ, DBG_V0PosW,
 		DBG_V1PosX, DBG_V1PosY, DBG_V1PosZ, DBG_V1PosW,
 		DBG_V2PosX, DBG_V2PosY, DBG_V2PosZ, DBG_V2PosW,
@@ -1637,6 +1709,9 @@ const int RunTestsClipUnit(Xsi::Loader& loader, RenderWindow* renderWindow)
 	{
 		__debugbreak();
 	}
+
+	// For this particular test, none of these triangles should be actually getting clipped. The D3D spec says that if a triangle doesn't get clipped,
+	// then its vertex data must be passed through bit-exactly without being touched! So let's use memcmp() to make sure that that is indeed the case:
 	for (unsigned x = 0; x < unclippedInputTris.size(); ++x)
 	{
 		const triSetupInput& compareBase = unclippedInputTris[x];
@@ -1651,6 +1726,195 @@ const int RunTestsClipUnit(Xsi::Loader& loader, RenderWindow* renderWindow)
 			__debugbreak();
 		}
 	}
+
+	unclippedInputTris.clear();
+	clippedOutputTris.clear();
+	HDLSimClippedOutputTris.clear();
+
+	// Add a very special triangle that does not want to cooperate:
+	{
+		triSetupInput helpfulTriangle;
+		helpfulTriangle.v0.xPos = 0.847900748f;
+		helpfulTriangle.v0.yPos = 1.36517990f;
+		helpfulTriangle.v0.zPos = -0.231953144f;
+		helpfulTriangle.v0.wPos = -0.221837044f;
+		helpfulTriangle.v0.xTex = 0.0f;
+		helpfulTriangle.v0.yTex = 0.0f;
+		helpfulTriangle.v0.rgba.r = 1.0f;
+		helpfulTriangle.v0.rgba.g = 0.0f;
+		helpfulTriangle.v0.rgba.b = 0.0f;
+		helpfulTriangle.v0.rgba.a = 1.0f;
+		helpfulTriangle.v1.xPos = 0.847891688f;
+		helpfulTriangle.v1.yPos = -1.44278109f;
+		helpfulTriangle.v1.zPos = 0.255837917f;
+		helpfulTriangle.v1.wPos = 0.265709877f;
+		helpfulTriangle.v1.xTex = 0.0f;
+		helpfulTriangle.v1.yTex = 1.0f;
+		helpfulTriangle.v1.rgba.r = 0.0f;
+		helpfulTriangle.v1.rgba.g = 1.0f;
+		helpfulTriangle.v1.rgba.b = 0.0f;
+		helpfulTriangle.v1.rgba.a = 1.0f;
+		helpfulTriangle.v2.xPos = -0.651093245f;
+		helpfulTriangle.v2.yPos = -0.928283453f;
+		helpfulTriangle.v2.zPos = 3.22035694f;
+		helpfulTriangle.v2.wPos = 3.22874737f;
+		helpfulTriangle.v2.xTex = 1.0f;
+		helpfulTriangle.v2.yTex = 0.0f;
+		helpfulTriangle.v2.rgba.r = 0.0f;
+		helpfulTriangle.v2.rgba.g = 0.0f;
+		helpfulTriangle.v2.rgba.b = 1.0f;
+		helpfulTriangle.v2.rgba.a = 1.0f;
+		unclippedInputTris.push_back(helpfulTriangle);
+	}
+
+	clippedOutputTris.clear();
+	HDLSimClippedOutputTris.clear();
+
+	EmulateCPUClipper(unclippedInputTris, clippedOutputTris);
+	SimulateHDLClipper(loader, unclippedInputTris, HDLSimClippedOutputTris, clk, TRISETUP_inNextStageisReady, IA_inPreviousStageIsValid, IA_outPreviousStageIsReady, 
+		DBG_CurrentState, DBG_CurrentClipPlane, DBG_CurrentClipBitmask, DBG_ChildTriStackSize, 
+		DBG_ClipDistance0, DBG_ClipDistance1, DBG_TriangleIntersectsViewport,
+		DBG_V0PosX, DBG_V0PosY, DBG_V0PosZ, DBG_V0PosW,
+		DBG_V1PosX, DBG_V1PosY, DBG_V1PosZ, DBG_V1PosW,
+		DBG_V2PosX, DBG_V2PosY, DBG_V2PosZ, DBG_V2PosW,
+		DBG_ClipOutcodes0, DBG_ClipOutcodes1, DBG_ClipOutcodes2,
+		UpdateFPUs, SetNewPendingInput, UpdateNewOutput);
+
+	if (HDLSimClippedOutputTris.size() != clippedOutputTris.size() )
+	{
+		__debugbreak();
+	}
+	unsigned minClipListSize = HDLSimClippedOutputTris.size() < clippedOutputTris.size() ? HDLSimClippedOutputTris.size() : clippedOutputTris.size();
+	for (unsigned x = 0; x < minClipListSize; ++x)
+	{
+		const triSetupInput& hdlSimClippedTri = HDLSimClippedOutputTris[x];
+		const triSetupInput& cpuEmuClippedTri = clippedOutputTris[x];
+		if (hdlSimClippedTri != cpuEmuClippedTri)
+		{
+			__debugbreak();
+		}
+	}
+
+	unclippedInputTris.clear();
+
+	// For this next test, push a bunch of triangles that we know will all need to be clipped against the edges of the screen and the ZNear/ZFar planes:
+	// Each triangle is clipped against exactly one clip plane for this test:
+	AddScreenspaceTriToUnclippedTrisList(unclippedInputTris, offLeftEdge2inside, 1 << CP_GBLeft);
+	AddScreenspaceTriToUnclippedTrisList(unclippedInputTris, offLeftEdge1inside, 1 << CP_GBLeft);
+	AddScreenspaceTriToUnclippedTrisList(unclippedInputTris, offRightEdge2inside, 1 << CP_GBRight);
+	AddScreenspaceTriToUnclippedTrisList(unclippedInputTris, offRightEdge1inside, 1 << CP_GBRight);
+	AddScreenspaceTriToUnclippedTrisList(unclippedInputTris, offTopEdge2inside, 1 << CP_GBTop);
+	AddScreenspaceTriToUnclippedTrisList(unclippedInputTris, offTopEdge1inside, 1 << CP_GBTop);
+	AddScreenspaceTriToUnclippedTrisList(unclippedInputTris, offBottomEdge2inside, 1 << CP_GBBottom);
+	AddScreenspaceTriToUnclippedTrisList(unclippedInputTris, offBottomEdge1inside, 1 << CP_GBBottom);
+	AddScreenspaceTriToUnclippedTrisList(unclippedInputTris, offZNearEdge2inside, 1 << CP_Front);
+	AddScreenspaceTriToUnclippedTrisList(unclippedInputTris, offZNearEdge1inside, 1 << CP_Front);
+	AddScreenspaceTriToUnclippedTrisList(unclippedInputTris, offZFarEdge2inside, 1 << CP_Back);
+	AddScreenspaceTriToUnclippedTrisList(unclippedInputTris, offZFarEdge1inside, 1 << CP_Back);
+	// These twelve input unclipped triangles should produce 18 clipped triangles
+
+	// Each of these tris is off of exactly two clipping planes:
+	AddScreenspaceTriToUnclippedTrisList(unclippedInputTris, offLeftTop2inside, (1 << CP_GBLeft) | (1 << CP_GBTop) );
+	AddScreenspaceTriToUnclippedTrisList(unclippedInputTris, offLeftTop1inside, (1 << CP_GBLeft) | (1 << CP_GBTop) );
+	AddScreenspaceTriToUnclippedTrisList(unclippedInputTris, offLeftBot2inside, (1 << CP_GBLeft) | (1 << CP_GBBottom) );
+	AddScreenspaceTriToUnclippedTrisList(unclippedInputTris, offLeftBot1inside, (1 << CP_GBLeft) | (1 << CP_GBBottom) );
+	//enableDebugOutput = true;
+	AddScreenspaceTriToUnclippedTrisList(unclippedInputTris, offRightTop2inside, (1 << CP_GBRight) | (1 << CP_GBTop) );
+	AddScreenspaceTriToUnclippedTrisList(unclippedInputTris, offRightTop1inside, (1 << CP_GBRight) | (1 << CP_GBTop) );
+	AddScreenspaceTriToUnclippedTrisList(unclippedInputTris, offRightBot2inside, (1 << CP_GBRight) | (1 << CP_GBBottom) );
+	AddScreenspaceTriToUnclippedTrisList(unclippedInputTris, offRightBot1inside, (1 << CP_GBRight) | (1 << CP_GBBottom) );
+	AddScreenspaceTriToUnclippedTrisList(unclippedInputTris, offNearLeft2inside, (1 << CP_GBLeft) | (1 << CP_Front) );
+	AddScreenspaceTriToUnclippedTrisList(unclippedInputTris, offNearLeft1inside, (1 << CP_GBLeft) | (1 << CP_Front) );
+	AddScreenspaceTriToUnclippedTrisList(unclippedInputTris, offNearRight2inside, (1 << CP_GBRight) | (1 << CP_Front) );
+	AddScreenspaceTriToUnclippedTrisList(unclippedInputTris, offNearRight1inside, (1 << CP_GBRight) | (1 << CP_Front) );
+	AddScreenspaceTriToUnclippedTrisList(unclippedInputTris, offNearTop2inside, (1 << CP_GBTop) | (1 << CP_Front) );
+	AddScreenspaceTriToUnclippedTrisList(unclippedInputTris, offNearTop1inside, (1 << CP_GBTop) | (1 << CP_Front) );
+	AddScreenspaceTriToUnclippedTrisList(unclippedInputTris, offNearBot2inside, (1 << CP_GBBottom) | (1 << CP_Front) );
+	AddScreenspaceTriToUnclippedTrisList(unclippedInputTris, offNearBot1inside, (1 << CP_GBBottom) | (1 << CP_Front) );
+	AddScreenspaceTriToUnclippedTrisList(unclippedInputTris, offFarLeft2inside, (1 << CP_GBLeft) | (1 << CP_Back) );
+	AddScreenspaceTriToUnclippedTrisList(unclippedInputTris, offFarLeft1inside, (1 << CP_GBLeft) | (1 << CP_Back) );
+	AddScreenspaceTriToUnclippedTrisList(unclippedInputTris, offFarRight2inside, (1 << CP_GBRight) | (1 << CP_Back) );
+	AddScreenspaceTriToUnclippedTrisList(unclippedInputTris, offFarRight1inside, (1 << CP_GBRight) | (1 << CP_Back) );
+	AddScreenspaceTriToUnclippedTrisList(unclippedInputTris, offFarTop2inside, (1 << CP_GBTop) | (1 << CP_Back) );
+	AddScreenspaceTriToUnclippedTrisList(unclippedInputTris, offFarTop1inside, (1 << CP_GBTop) | (1 << CP_Back) );
+	AddScreenspaceTriToUnclippedTrisList(unclippedInputTris, offFarBot2inside, (1 << CP_GBBottom) | (1 << CP_Back) );
+	AddScreenspaceTriToUnclippedTrisList(unclippedInputTris, offFarBot1inside, (1 << CP_GBBottom) | (1 << CP_Back) );
+	// These are 24 input tris
+
+	// Each of these tris is off of exactly three clipping planes:
+	AddScreenspaceTriToUnclippedTrisList(unclippedInputTris, offLeftTopNear2inside, (1 << CP_GBLeft) | (1 << CP_GBTop) | (1 << CP_Front) );
+	AddScreenspaceTriToUnclippedTrisList(unclippedInputTris, offLeftTopNear1inside, (1 << CP_GBLeft) | (1 << CP_GBTop) | (1 << CP_Front) );
+	AddScreenspaceTriToUnclippedTrisList(unclippedInputTris, offRightTopNear2inside, (1 << CP_GBRight) | (1 << CP_GBTop) | (1 << CP_Front) );
+	AddScreenspaceTriToUnclippedTrisList(unclippedInputTris, offRightTopNear1inside, (1 << CP_GBRight) | (1 << CP_GBTop) | (1 << CP_Front) );
+	AddScreenspaceTriToUnclippedTrisList(unclippedInputTris, offLeftBotNear2inside, (1 << CP_GBLeft) | (1 << CP_GBBottom) | (1 << CP_Front) );
+	AddScreenspaceTriToUnclippedTrisList(unclippedInputTris, offLeftBotNear1inside, (1 << CP_GBLeft) | (1 << CP_GBBottom) | (1 << CP_Front) );
+	AddScreenspaceTriToUnclippedTrisList(unclippedInputTris, offRightBotNear2inside, (1 << CP_GBRight) | (1 << CP_GBBottom) | (1 << CP_Front) );
+	AddScreenspaceTriToUnclippedTrisList(unclippedInputTris, offRightBotNear1inside, (1 << CP_GBRight) | (1 << CP_GBBottom) | (1 << CP_Front) );
+	AddScreenspaceTriToUnclippedTrisList(unclippedInputTris, offLeftTopFar2inside, (1 << CP_GBLeft) | (1 << CP_GBTop) | (1 << CP_Back) );
+	AddScreenspaceTriToUnclippedTrisList(unclippedInputTris, offLeftTopFar1inside, (1 << CP_GBLeft) | (1 << CP_GBTop) | (1 << CP_Back) );
+	AddScreenspaceTriToUnclippedTrisList(unclippedInputTris, offRightTopFar2inside, (1 << CP_GBRight) | (1 << CP_GBTop) | (1 << CP_Back) );
+	AddScreenspaceTriToUnclippedTrisList(unclippedInputTris, offRightTopFar1inside, (1 << CP_GBRight) | (1 << CP_GBTop) | (1 << CP_Back) );
+	AddScreenspaceTriToUnclippedTrisList(unclippedInputTris, offLeftBotFar2inside, (1 << CP_GBLeft) | (1 << CP_GBBottom) | (1 << CP_Back) );
+	AddScreenspaceTriToUnclippedTrisList(unclippedInputTris, offLeftBotFar1inside, (1 << CP_GBLeft) | (1 << CP_GBBottom) | (1 << CP_Back) );
+	AddScreenspaceTriToUnclippedTrisList(unclippedInputTris, offRightBotFar2inside, (1 << CP_GBRight) | (1 << CP_GBBottom) | (1 << CP_Back) );
+	AddScreenspaceTriToUnclippedTrisList(unclippedInputTris, offRightBotFar1inside, (1 << CP_GBRight) | (1 << CP_GBBottom) | (1 << CP_Back) );
+	// This is 16 input tris
+
+	// Test large tris that have no verts inside the viewport but that partially intersect the viewport:
+	AddScreenspaceTriToUnclippedTrisList(unclippedInputTris, offLeftTopBotLarge, (1 << CP_GBLeft) | (1 << CP_GBTop) | (1 << CP_GBBottom), false);
+	AddScreenspaceTriToUnclippedTrisList(unclippedInputTris, offLeftTopRightLarge, (1 << CP_GBLeft) | (1 << CP_GBTop) | (1 << CP_GBRight), false);
+	AddScreenspaceTriToUnclippedTrisList(unclippedInputTris, offLeftRightBotLarge, (1 << CP_GBLeft) | (1 << CP_GBRight) | (1 << CP_GBBottom), false);
+	AddScreenspaceTriToUnclippedTrisList(unclippedInputTris, offRightTopBotLarge, (1 << CP_GBRight) | (1 << CP_GBTop) | (1 << CP_GBBottom), false);
+
+	// Test huge straddling tris. These tris are outside of opposite clip-planes!
+	AddScreenspaceTriToUnclippedTrisList(unclippedInputTris, offLeftRight1insideHuge, (1 << CP_GBLeft) | (1 << CP_GBRight), true);
+	AddScreenspaceTriToUnclippedTrisList(unclippedInputTris, offLeftRight1inGBHuge, (1 << CP_GBLeft) | (1 << CP_GBRight), false);
+	AddScreenspaceTriToUnclippedTrisList(unclippedInputTris, offLeftRightTopViewportContainedHuge, (1 << CP_GBLeft) | (1 << CP_GBRight) | (1 << CP_GBTop), false);
+	AddScreenspaceTriToUnclippedTrisList(unclippedInputTris, offAllGuardBandsContainedHuge, (1 << CP_GBLeft) | (1 << CP_GBRight) | (1 << CP_GBTop) | (1 << CP_GBBottom), false);
+	AddScreenspaceTriToUnclippedTrisList(unclippedInputTris, offAllGuardBandsContainedHuge6clip, (1 << CP_GBLeft) | (1 << CP_GBRight) | (1 << CP_GBTop) | (1 << CP_GBBottom) | (1 << CP_Front) | (1 << CP_Back), false);
+
+	// Test some fullscreen triangles that are each intended to individually fill the entire viewport:
+	AddScreenspaceTriToUnclippedTrisList(unclippedInputTris, rightTriangleFullViewportBottomLeftOutsideTop, (1 << CP_GBTop) );
+	AddScreenspaceTriToUnclippedTrisList(unclippedInputTris, rightTriangleFullViewportBottomLeftOutsideRight, (1 << CP_GBRight) );
+	AddScreenspaceTriToUnclippedTrisList(unclippedInputTris, rightTriangleFullViewportBottomRightOutsideTop, (1 << CP_GBTop) );
+	AddScreenspaceTriToUnclippedTrisList(unclippedInputTris, rightTriangleFullViewportBottomRightOutsideLeft, (1 << CP_GBLeft) );
+	AddScreenspaceTriToUnclippedTrisList(unclippedInputTris, rightTriangleFullViewportTopLeftOutsideBottom, (1 << CP_GBBottom) );
+	AddScreenspaceTriToUnclippedTrisList(unclippedInputTris, rightTriangleFullViewportTopLeftOutsideRight, (1 << CP_GBRight) );
+	AddScreenspaceTriToUnclippedTrisList(unclippedInputTris, rightTriangleFullViewportTopRightOutsideBottom, (1 << CP_GBBottom) );
+	AddScreenspaceTriToUnclippedTrisList(unclippedInputTris, rightTriangleFullViewportTopRightOutsideLeft, (1 << CP_GBLeft) );
+	AddScreenspaceTriToUnclippedTrisList(unclippedInputTris, isoscelesTriangleFullViewportBottomEdge, (1 << CP_GBLeft) | (1 << CP_GBRight), false);
+	AddScreenspaceTriToUnclippedTrisList(unclippedInputTris, isoscelesTriangleFullViewportTopEdge, (1 << CP_GBLeft) | (1 << CP_GBRight), false);
+	AddScreenspaceTriToUnclippedTrisList(unclippedInputTris, isoscelesTriangleFullViewportLeftEdge, (1 << CP_GBTop) | (1 << CP_GBBottom), false);
+	AddScreenspaceTriToUnclippedTrisList(unclippedInputTris, isoscelesTriangleFullViewportRightEdge, (1 << CP_GBTop) | (1 << CP_GBBottom), false);
+
+	clippedOutputTris.clear();
+	HDLSimClippedOutputTris.clear();
+
+	EmulateCPUClipper(unclippedInputTris, clippedOutputTris);
+	SimulateHDLClipper(loader, unclippedInputTris, HDLSimClippedOutputTris, clk, TRISETUP_inNextStageisReady, IA_inPreviousStageIsValid, IA_outPreviousStageIsReady, 
+		DBG_CurrentState, DBG_CurrentClipPlane, DBG_CurrentClipBitmask, DBG_ChildTriStackSize, 
+		DBG_ClipDistance0, DBG_ClipDistance1, DBG_TriangleIntersectsViewport,
+		DBG_V0PosX, DBG_V0PosY, DBG_V0PosZ, DBG_V0PosW,
+		DBG_V1PosX, DBG_V1PosY, DBG_V1PosZ, DBG_V1PosW,
+		DBG_V2PosX, DBG_V2PosY, DBG_V2PosZ, DBG_V2PosW,
+		DBG_ClipOutcodes0, DBG_ClipOutcodes1, DBG_ClipOutcodes2,
+		UpdateFPUs, SetNewPendingInput, UpdateNewOutput);
+
+	if (HDLSimClippedOutputTris.size() != clippedOutputTris.size() )
+	{
+		__debugbreak();
+	}
+	minClipListSize = HDLSimClippedOutputTris.size() < clippedOutputTris.size() ? HDLSimClippedOutputTris.size() : clippedOutputTris.size();
+	for (unsigned x = 0; x < minClipListSize; ++x)
+	{
+		const triSetupInput& hdlSimClippedTri = HDLSimClippedOutputTris[x];
+		const triSetupInput& cpuEmuClippedTri = clippedOutputTris[x];
+		if (hdlSimClippedTri != cpuEmuClippedTri)
+		{
+			__debugbreak();
+		}
+	}
+
 	unclippedInputTris.clear();
 
 	// Now generate a ton of random triangles, some of which need clipping, some need culling, and others don't need anything:
@@ -1717,14 +1981,18 @@ const int RunTestsClipUnit(Xsi::Loader& loader, RenderWindow* renderWindow)
 		ApplyProjectionTransform(newUnclippedTri.v1);
 		ApplyProjectionTransform(newUnclippedTri.v2);
 
-		//if (x == 9)
+		//if (x == 55)
 			unclippedInputTris.push_back(newUnclippedTri);
 	}
+	clippedOutputTris.clear();
+	HDLSimClippedOutputTris.clear();
+
+	enableDebugOutput = true;
 
 	EmulateCPUClipper(unclippedInputTris, clippedOutputTris);
 	SimulateHDLClipper(loader, unclippedInputTris, HDLSimClippedOutputTris, clk, TRISETUP_inNextStageisReady, IA_inPreviousStageIsValid, IA_outPreviousStageIsReady, 
 		DBG_CurrentState, DBG_CurrentClipPlane, DBG_CurrentClipBitmask, DBG_ChildTriStackSize, 
-		DBG_ClipDistance0, DBG_ClipDistance1,
+		DBG_ClipDistance0, DBG_ClipDistance1, DBG_TriangleIntersectsViewport,
 		DBG_V0PosX, DBG_V0PosY, DBG_V0PosZ, DBG_V0PosW,
 		DBG_V1PosX, DBG_V1PosY, DBG_V1PosZ, DBG_V1PosW,
 		DBG_V2PosX, DBG_V2PosY, DBG_V2PosZ, DBG_V2PosW,
@@ -1734,6 +2002,16 @@ const int RunTestsClipUnit(Xsi::Loader& loader, RenderWindow* renderWindow)
 	if (HDLSimClippedOutputTris.size() != clippedOutputTris.size() )
 	{
 		__debugbreak();
+	}
+	minClipListSize = HDLSimClippedOutputTris.size() < clippedOutputTris.size() ? HDLSimClippedOutputTris.size() : clippedOutputTris.size();
+	for (unsigned x = 0; x < minClipListSize; ++x)
+	{
+		const triSetupInput& hdlSimClippedTri = HDLSimClippedOutputTris[x];
+		const triSetupInput& cpuEmuClippedTri = clippedOutputTris[x];
+		if (hdlSimClippedTri != cpuEmuClippedTri)
+		{
+			__debugbreak();
+		}
 	}
 
 	while (true)

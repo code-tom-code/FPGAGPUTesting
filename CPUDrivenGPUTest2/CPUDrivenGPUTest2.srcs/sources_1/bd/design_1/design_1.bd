@@ -532,16 +532,18 @@
         <spirit:componentRef spirit:library="ip" spirit:name="ila" spirit:vendor="xilinx.com" spirit:version="6.2"/>
         <spirit:configurableElementValues>
           <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_ila_0_2</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="C_PROBE57_WIDTH">1</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="C_PROBE56_WIDTH">1</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="C_PROBE55_WIDTH">1</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="C_PROBE54_WIDTH">1</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="C_PROBE53_WIDTH">1</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="C_PROBE52_WIDTH">1</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="C_PROBE51_WIDTH">1</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="C_PROBE50_WIDTH">1</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="C_PROBE49_WIDTH">1</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="C_PROBE48_WIDTH">1</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="C_PROBE59_WIDTH">11</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="C_PROBE58_WIDTH">32</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="C_PROBE57_WIDTH">32</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="C_PROBE56_WIDTH">32</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="C_PROBE55_WIDTH">32</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="C_PROBE54_WIDTH">32</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="C_PROBE53_WIDTH">32</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="C_PROBE52_WIDTH">11</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="C_PROBE51_WIDTH">11</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="C_PROBE50_WIDTH">11</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="C_PROBE49_WIDTH">3</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="C_PROBE48_WIDTH">4</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="C_PROBE47_WIDTH">8</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="C_PROBE46_WIDTH">256</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="C_PROBE45_WIDTH">320</spirit:configurableElementValue>
@@ -586,7 +588,7 @@
           <spirit:configurableElementValue spirit:referenceId="C_PROBE2_WIDTH">32</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="C_PROBE1_WIDTH">32</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="C_PROBE0_WIDTH">32</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="C_NUM_OF_PROBES">48</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="C_NUM_OF_PROBES">60</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="C_ENABLE_ILA_AXI_MON">false</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="C_MONITOR_TYPE">Native</spirit:configurableElementValue>
         </spirit:configurableElementValues>
@@ -770,17 +772,6 @@
         </spirit:configurableElementValues>
       </spirit:componentInstance>
       <spirit:componentInstance>
-        <spirit:instanceName>TriWorkCache_0</spirit:instanceName>
-        <spirit:componentRef spirit:library="module_ref" spirit:name="TriWorkCache" spirit:vendor="xilinx.com" spirit:version="1.0"/>
-        <spirit:configurableElementValues>
-          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_TriWorkCache_0_0</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">TriWorkCache</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
-        </spirit:configurableElementValues>
-      </spirit:componentInstance>
-      <spirit:componentInstance>
         <spirit:instanceName>xlconstant_4</spirit:instanceName>
         <spirit:componentRef spirit:library="ip" spirit:name="xlconstant" spirit:vendor="xilinx.com" spirit:version="1.1"/>
         <spirit:configurableElementValues>
@@ -892,17 +883,6 @@
         </spirit:configurableElementValues>
       </spirit:componentInstance>
       <spirit:componentInstance>
-        <spirit:instanceName>Rasterizer_0</spirit:instanceName>
-        <spirit:componentRef spirit:library="module_ref" spirit:name="Rasterizer" spirit:vendor="xilinx.com" spirit:version="1.0"/>
-        <spirit:configurableElementValues>
-          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_Rasterizer_0_0</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">Rasterizer</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
-        </spirit:configurableElementValues>
-      </spirit:componentInstance>
-      <spirit:componentInstance>
         <spirit:instanceName>vio_0</spirit:instanceName>
         <spirit:componentRef spirit:library="ip" spirit:name="vio" spirit:vendor="xilinx.com" spirit:version="3.0"/>
         <spirit:configurableElementValues>
@@ -949,39 +929,6 @@
         <spirit:configurableElementValues>
           <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_AttrInterpFloatALU_0_0</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="bd:referenceName">AttrInterpFloatALU</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
-        </spirit:configurableElementValues>
-      </spirit:componentInstance>
-      <spirit:componentInstance>
-        <spirit:instanceName>AttrInterpolator_0</spirit:instanceName>
-        <spirit:componentRef spirit:library="module_ref" spirit:name="AttrInterpolator" spirit:vendor="xilinx.com" spirit:version="1.0"/>
-        <spirit:configurableElementValues>
-          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_AttrInterpolator_0_0</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">AttrInterpolator</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
-        </spirit:configurableElementValues>
-      </spirit:componentInstance>
-      <spirit:componentInstance>
-        <spirit:instanceName>ClipUnit_0</spirit:instanceName>
-        <spirit:componentRef spirit:library="module_ref" spirit:name="ClipUnit" spirit:vendor="xilinx.com" spirit:version="1.0"/>
-        <spirit:configurableElementValues>
-          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_ClipUnit_0_0</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">ClipUnit</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
-        </spirit:configurableElementValues>
-      </spirit:componentInstance>
-      <spirit:componentInstance>
-        <spirit:instanceName>InputAssembler2_0</spirit:instanceName>
-        <spirit:componentRef spirit:library="module_ref" spirit:name="InputAssembler2" spirit:vendor="xilinx.com" spirit:version="1.0"/>
-        <spirit:configurableElementValues>
-          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_InputAssembler2_0_0</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">InputAssembler2</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
@@ -1076,17 +1023,6 @@
         </spirit:configurableElementValues>
       </spirit:componentInstance>
       <spirit:componentInstance>
-        <spirit:instanceName>TriSetup_0</spirit:instanceName>
-        <spirit:componentRef spirit:library="module_ref" spirit:name="TriSetup" spirit:vendor="xilinx.com" spirit:version="1.0"/>
-        <spirit:configurableElementValues>
-          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_TriSetup_0_0</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">TriSetup</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
-        </spirit:configurableElementValues>
-      </spirit:componentInstance>
-      <spirit:componentInstance>
         <spirit:instanceName>DepthInterpFloatALU_0</spirit:instanceName>
         <spirit:componentRef spirit:library="module_ref" spirit:name="DepthInterpFloatALU" spirit:vendor="xilinx.com" spirit:version="1.0"/>
         <spirit:configurableElementValues>
@@ -1109,11 +1045,77 @@
         </spirit:configurableElementValues>
       </spirit:componentInstance>
       <spirit:componentInstance>
+        <spirit:instanceName>AttrInterpolator_0</spirit:instanceName>
+        <spirit:componentRef spirit:library="module_ref" spirit:name="AttrInterpolator" spirit:vendor="xilinx.com" spirit:version="1.0"/>
+        <spirit:configurableElementValues>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_AttrInterpolator_0_0</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">AttrInterpolator</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
+        </spirit:configurableElementValues>
+      </spirit:componentInstance>
+      <spirit:componentInstance>
+        <spirit:instanceName>InputAssembler2_0</spirit:instanceName>
+        <spirit:componentRef spirit:library="module_ref" spirit:name="InputAssembler2" spirit:vendor="xilinx.com" spirit:version="1.0"/>
+        <spirit:configurableElementValues>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_InputAssembler2_0_0</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">InputAssembler2</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
+        </spirit:configurableElementValues>
+      </spirit:componentInstance>
+      <spirit:componentInstance>
+        <spirit:instanceName>TriSetup_0</spirit:instanceName>
+        <spirit:componentRef spirit:library="module_ref" spirit:name="TriSetup" spirit:vendor="xilinx.com" spirit:version="1.0"/>
+        <spirit:configurableElementValues>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_TriSetup_0_0</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">TriSetup</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
+        </spirit:configurableElementValues>
+      </spirit:componentInstance>
+      <spirit:componentInstance>
+        <spirit:instanceName>Rasterizer_0</spirit:instanceName>
+        <spirit:componentRef spirit:library="module_ref" spirit:name="Rasterizer" spirit:vendor="xilinx.com" spirit:version="1.0"/>
+        <spirit:configurableElementValues>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_Rasterizer_0_0</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">Rasterizer</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
+        </spirit:configurableElementValues>
+      </spirit:componentInstance>
+      <spirit:componentInstance>
+        <spirit:instanceName>TriWorkCache_0</spirit:instanceName>
+        <spirit:componentRef spirit:library="module_ref" spirit:name="TriWorkCache" spirit:vendor="xilinx.com" spirit:version="1.0"/>
+        <spirit:configurableElementValues>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_TriWorkCache_0_0</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">TriWorkCache</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
+        </spirit:configurableElementValues>
+      </spirit:componentInstance>
+      <spirit:componentInstance>
         <spirit:instanceName>DepthInterpolator_0</spirit:instanceName>
         <spirit:componentRef spirit:library="module_ref" spirit:name="DepthInterpolator" spirit:vendor="xilinx.com" spirit:version="1.0"/>
         <spirit:configurableElementValues>
           <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_DepthInterpolator_0_1</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="bd:referenceName">DepthInterpolator</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
+        </spirit:configurableElementValues>
+      </spirit:componentInstance>
+      <spirit:componentInstance>
+        <spirit:instanceName>ClipUnit_0</spirit:instanceName>
+        <spirit:componentRef spirit:library="module_ref" spirit:name="ClipUnit" spirit:vendor="xilinx.com" spirit:version="1.0"/>
+        <spirit:configurableElementValues>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_ClipUnit_0_0</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">ClipUnit</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
@@ -1330,25 +1332,17 @@
         <spirit:internalPortReference spirit:componentRef="VBO_FIFO" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="ClearBlock_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="VBO_INDEX_FIFO" spirit:portRef="clk"/>
-        <spirit:internalPortReference spirit:componentRef="TriWorkCache_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="VertexBatchBuilder_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="ROP_FIFO" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="TEXSAMP_FIFO" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="ROP_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="IndexBufferCache_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="StatsCollector_0" spirit:portRef="clk"/>
-        <spirit:internalPortReference spirit:componentRef="Rasterizer_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="vio_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="DepthBuffer_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="TexSample_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="CommandProcessor_0" spirit:portRef="clk"/>
-        <spirit:internalPortReference spirit:componentRef="SerialPacketSystem" spirit:portRef="rd_clk"/>
-        <spirit:internalPortReference spirit:componentRef="ShaderCoreSystem" spirit:portRef="clk_0"/>
-        <spirit:internalPortReference spirit:componentRef="ScanoutSystem" spirit:portRef="cmd_clk"/>
         <spirit:internalPortReference spirit:componentRef="AttrInterpFloatALU_0" spirit:portRef="clk"/>
-        <spirit:internalPortReference spirit:componentRef="AttrInterpolator_0" spirit:portRef="clk"/>
-        <spirit:internalPortReference spirit:componentRef="ClipUnit_0" spirit:portRef="clk"/>
-        <spirit:internalPortReference spirit:componentRef="InputAssembler2_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="TRISETUP_FPU_ADD" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="CLIP_FPU_ADD_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="CLIP_FPU_ADD_1" spirit:portRef="clk"/>
@@ -1357,10 +1351,18 @@
         <spirit:internalPortReference spirit:componentRef="CLIP_FPU_MUL_1" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="TRISETUP_FPU_SPEC" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="CLIP_FPU_SPEC_0" spirit:portRef="clk"/>
-        <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="DepthInterpFloatALU_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="TRISETUP_FPU_CNV" spirit:portRef="clk"/>
+        <spirit:internalPortReference spirit:componentRef="AttrInterpolator_0" spirit:portRef="clk"/>
+        <spirit:internalPortReference spirit:componentRef="InputAssembler2_0" spirit:portRef="clk"/>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="clk"/>
+        <spirit:internalPortReference spirit:componentRef="Rasterizer_0" spirit:portRef="clk"/>
+        <spirit:internalPortReference spirit:componentRef="TriWorkCache_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="DepthInterpolator_0" spirit:portRef="clk"/>
+        <spirit:internalPortReference spirit:componentRef="SerialPacketSystem" spirit:portRef="rd_clk"/>
+        <spirit:internalPortReference spirit:componentRef="ShaderCoreSystem" spirit:portRef="clk_0"/>
+        <spirit:internalPortReference spirit:componentRef="ScanoutSystem" spirit:portRef="cmd_clk"/>
+        <spirit:internalPortReference spirit:componentRef="ClipUnit_0" spirit:portRef="clk"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>xlconstant_0_dout</spirit:name>
@@ -1503,12 +1505,6 @@
         <spirit:name>Rasterizer_0_TRISETUP_readyForNewTri</spirit:name>
         <spirit:internalPortReference spirit:componentRef="Rasterizer_0" spirit:portRef="TRISETUP_readyForNewTri"/>
         <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="RAST_readyForTriSetupData"/>
-      </spirit:adHocConnection>
-      <spirit:adHocConnection>
-        <spirit:name>TriSetup_0_RAST_v0_out_invZ</spirit:name>
-        <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="RAST_v0_out_invZ"/>
-        <spirit:internalPortReference spirit:componentRef="ILA_TriSetup" spirit:portRef="probe1"/>
-        <spirit:internalPortReference spirit:componentRef="Rasterizer_0" spirit:portRef="TRISETUP_inInvZ0"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>TriSetup_0_RAST_t0_out_x</spirit:name>
@@ -1896,11 +1892,6 @@
         <spirit:name>Rasterizer_0_TRICACHE_VFACE</spirit:name>
         <spirit:internalPortReference spirit:componentRef="Rasterizer_0" spirit:portRef="TRICACHE_VFACE"/>
         <spirit:internalPortReference spirit:componentRef="TriWorkCache_0" spirit:portRef="RAST_inVFACE"/>
-      </spirit:adHocConnection>
-      <spirit:adHocConnection>
-        <spirit:name>Rasterizer_0_TRICACHE_InvZ0</spirit:name>
-        <spirit:internalPortReference spirit:componentRef="Rasterizer_0" spirit:portRef="TRICACHE_InvZ0"/>
-        <spirit:internalPortReference spirit:componentRef="TriWorkCache_0" spirit:portRef="RAST_inInvZ0"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>Rasterizer_0_TRICACHE_TX0</spirit:name>
@@ -2839,11 +2830,6 @@
         <spirit:internalPortReference spirit:componentRef="DepthInterpolator_0" spirit:portRef="TRICACHE_inBarycentricInverse"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
-        <spirit:name>TriWorkCache_0_INTERP_outInvZ0</spirit:name>
-        <spirit:internalPortReference spirit:componentRef="TriWorkCache_0" spirit:portRef="INTERP_outInvZ0"/>
-        <spirit:internalPortReference spirit:componentRef="DepthInterpolator_0" spirit:portRef="TRICACHE_inInvZ0"/>
-      </spirit:adHocConnection>
-      <spirit:adHocConnection>
         <spirit:name>TriWorkCache_0_INTERP_outT0X</spirit:name>
         <spirit:internalPortReference spirit:componentRef="TriWorkCache_0" spirit:portRef="INTERP_outT0X"/>
         <spirit:internalPortReference spirit:componentRef="DepthInterpolator_0" spirit:portRef="TRICACHE_inT0X"/>
@@ -3026,18 +3012,6 @@
         <spirit:internalPortReference spirit:componentRef="AttrInterpolator_0" spirit:portRef="DINTERP_OutPixelW"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
-        <spirit:name>TriSetup_0_RAST_v10_out_invZ</spirit:name>
-        <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="RAST_v10_out_invZ"/>
-        <spirit:internalPortReference spirit:componentRef="ILA_TriSetup" spirit:portRef="probe2"/>
-        <spirit:internalPortReference spirit:componentRef="Rasterizer_0" spirit:portRef="TRISETUP_inInvZ10"/>
-      </spirit:adHocConnection>
-      <spirit:adHocConnection>
-        <spirit:name>TriSetup_0_RAST_v20_out_invZ</spirit:name>
-        <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="RAST_v20_out_invZ"/>
-        <spirit:internalPortReference spirit:componentRef="ILA_TriSetup" spirit:portRef="probe3"/>
-        <spirit:internalPortReference spirit:componentRef="Rasterizer_0" spirit:portRef="TRISETUP_inInvZ20"/>
-      </spirit:adHocConnection>
-      <spirit:adHocConnection>
         <spirit:name>TriSetup_0_RAST_t10_out_x</spirit:name>
         <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="RAST_t10_out_x"/>
         <spirit:internalPortReference spirit:componentRef="ILA_TriSetup" spirit:portRef="probe6"/>
@@ -3084,16 +3058,6 @@
         <spirit:internalPortReference spirit:componentRef="Rasterizer_0" spirit:portRef="TRISETUP_inInvW20"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
-        <spirit:name>Rasterizer_0_TRICACHE_InvZ10</spirit:name>
-        <spirit:internalPortReference spirit:componentRef="Rasterizer_0" spirit:portRef="TRICACHE_InvZ10"/>
-        <spirit:internalPortReference spirit:componentRef="TriWorkCache_0" spirit:portRef="RAST_inInvZ10"/>
-      </spirit:adHocConnection>
-      <spirit:adHocConnection>
-        <spirit:name>Rasterizer_0_TRICACHE_InvZ20</spirit:name>
-        <spirit:internalPortReference spirit:componentRef="Rasterizer_0" spirit:portRef="TRICACHE_InvZ20"/>
-        <spirit:internalPortReference spirit:componentRef="TriWorkCache_0" spirit:portRef="RAST_inInvZ20"/>
-      </spirit:adHocConnection>
-      <spirit:adHocConnection>
         <spirit:name>Rasterizer_0_TRICACHE_InvW10</spirit:name>
         <spirit:internalPortReference spirit:componentRef="Rasterizer_0" spirit:portRef="TRICACHE_InvW10"/>
         <spirit:internalPortReference spirit:componentRef="TriWorkCache_0" spirit:portRef="RAST_inInvW10"/>
@@ -3132,16 +3096,6 @@
         <spirit:name>Rasterizer_0_TRICACHE_VertColor20</spirit:name>
         <spirit:internalPortReference spirit:componentRef="Rasterizer_0" spirit:portRef="TRICACHE_VertColor20"/>
         <spirit:internalPortReference spirit:componentRef="TriWorkCache_0" spirit:portRef="RAST_inColorRGBA20"/>
-      </spirit:adHocConnection>
-      <spirit:adHocConnection>
-        <spirit:name>TriWorkCache_0_INTERP_outInvZ10</spirit:name>
-        <spirit:internalPortReference spirit:componentRef="TriWorkCache_0" spirit:portRef="INTERP_outInvZ10"/>
-        <spirit:internalPortReference spirit:componentRef="DepthInterpolator_0" spirit:portRef="TRICACHE_inInvZ10"/>
-      </spirit:adHocConnection>
-      <spirit:adHocConnection>
-        <spirit:name>TriWorkCache_0_INTERP_outInvZ20</spirit:name>
-        <spirit:internalPortReference spirit:componentRef="TriWorkCache_0" spirit:portRef="INTERP_outInvZ20"/>
-        <spirit:internalPortReference spirit:componentRef="DepthInterpolator_0" spirit:portRef="TRICACHE_inInvZ20"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>TriWorkCache_0_INTERP_outInvW10</spirit:name>
@@ -3831,6 +3785,114 @@
         <spirit:name>AttrInterpolator_0_CMD_IsIdle</spirit:name>
         <spirit:internalPortReference spirit:componentRef="AttrInterpolator_0" spirit:portRef="CMD_IsIdle"/>
         <spirit:internalPortReference spirit:componentRef="CommandProcessor_0" spirit:portRef="CMD_AttrInterpolator_Idle"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriSetup_0_RAST_v0_out_Z</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="RAST_v0_out_Z"/>
+        <spirit:internalPortReference spirit:componentRef="ILA_TriSetup" spirit:portRef="probe1"/>
+        <spirit:internalPortReference spirit:componentRef="Rasterizer_0" spirit:portRef="TRISETUP_inZ0"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriSetup_0_RAST_v10_out_Z</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="RAST_v10_out_Z"/>
+        <spirit:internalPortReference spirit:componentRef="ILA_TriSetup" spirit:portRef="probe2"/>
+        <spirit:internalPortReference spirit:componentRef="Rasterizer_0" spirit:portRef="TRISETUP_inZ10"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriSetup_0_RAST_v20_out_Z</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="RAST_v20_out_Z"/>
+        <spirit:internalPortReference spirit:componentRef="ILA_TriSetup" spirit:portRef="probe3"/>
+        <spirit:internalPortReference spirit:componentRef="Rasterizer_0" spirit:portRef="TRISETUP_inZ20"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriWorkCache_0_INTERP_outZ0</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriWorkCache_0" spirit:portRef="INTERP_outZ0"/>
+        <spirit:internalPortReference spirit:componentRef="DepthInterpolator_0" spirit:portRef="TRICACHE_inZ0"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriWorkCache_0_INTERP_outZ10</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriWorkCache_0" spirit:portRef="INTERP_outZ10"/>
+        <spirit:internalPortReference spirit:componentRef="DepthInterpolator_0" spirit:portRef="TRICACHE_inZ10"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriWorkCache_0_INTERP_outZ20</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriWorkCache_0" spirit:portRef="INTERP_outZ20"/>
+        <spirit:internalPortReference spirit:componentRef="DepthInterpolator_0" spirit:portRef="TRICACHE_inZ20"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>Rasterizer_0_TRICACHE_Z0</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="Rasterizer_0" spirit:portRef="TRICACHE_Z0"/>
+        <spirit:internalPortReference spirit:componentRef="TriWorkCache_0" spirit:portRef="RAST_inZ0"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>Rasterizer_0_TRICACHE_Z10</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="Rasterizer_0" spirit:portRef="TRICACHE_Z10"/>
+        <spirit:internalPortReference spirit:componentRef="TriWorkCache_0" spirit:portRef="RAST_inZ10"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>Rasterizer_0_TRICACHE_Z20</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="Rasterizer_0" spirit:portRef="TRICACHE_Z20"/>
+        <spirit:internalPortReference spirit:componentRef="TriWorkCache_0" spirit:portRef="RAST_inZ20"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>ClipUnit_0_DBG_CurrentClipPlane</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="ClipUnit_0" spirit:portRef="DBG_CurrentClipPlane"/>
+        <spirit:internalPortReference spirit:componentRef="ILA_TriSetup" spirit:portRef="probe48"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>ClipUnit_0_DBG_CurrentClipBitmask</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="ClipUnit_0" spirit:portRef="DBG_CurrentClipBitmask"/>
+        <spirit:internalPortReference spirit:componentRef="ILA_TriSetup" spirit:portRef="probe49"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>ClipUnit_0_DBG_ClipOutcodes0</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="ClipUnit_0" spirit:portRef="DBG_ClipOutcodes0"/>
+        <spirit:internalPortReference spirit:componentRef="ILA_TriSetup" spirit:portRef="probe50"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>ClipUnit_0_DBG_ClipOutcodes1</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="ClipUnit_0" spirit:portRef="DBG_ClipOutcodes1"/>
+        <spirit:internalPortReference spirit:componentRef="ILA_TriSetup" spirit:portRef="probe51"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>ClipUnit_0_DBG_ClipOutcodes2</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="ClipUnit_0" spirit:portRef="DBG_ClipOutcodes2"/>
+        <spirit:internalPortReference spirit:componentRef="ILA_TriSetup" spirit:portRef="probe52"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>ClipUnit_0_DBG_V0PosX</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="ClipUnit_0" spirit:portRef="DBG_V0PosX"/>
+        <spirit:internalPortReference spirit:componentRef="ILA_TriSetup" spirit:portRef="probe53"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>ClipUnit_0_DBG_V0PosY</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="ClipUnit_0" spirit:portRef="DBG_V0PosY"/>
+        <spirit:internalPortReference spirit:componentRef="ILA_TriSetup" spirit:portRef="probe54"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>ClipUnit_0_DBG_V0PosZ</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="ClipUnit_0" spirit:portRef="DBG_V0PosZ"/>
+        <spirit:internalPortReference spirit:componentRef="ILA_TriSetup" spirit:portRef="probe55"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>ClipUnit_0_DBG_V0PosW</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="ClipUnit_0" spirit:portRef="DBG_V0PosW"/>
+        <spirit:internalPortReference spirit:componentRef="ILA_TriSetup" spirit:portRef="probe56"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>ClipUnit_0_DBG_ClipDistance0</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="ClipUnit_0" spirit:portRef="DBG_ClipDistance0"/>
+        <spirit:internalPortReference spirit:componentRef="ILA_TriSetup" spirit:portRef="probe57"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>ClipUnit_0_DBG_ClipDistance1</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="ClipUnit_0" spirit:portRef="DBG_ClipDistance1"/>
+        <spirit:internalPortReference spirit:componentRef="ILA_TriSetup" spirit:portRef="probe58"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>ClipUnit_0_DBG_AlreadyClippedPlanes</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="ClipUnit_0" spirit:portRef="DBG_AlreadyClippedPlanes"/>
+        <spirit:internalPortReference spirit:componentRef="ILA_TriSetup" spirit:portRef="probe59"/>
       </spirit:adHocConnection>
     </spirit:adHocConnections>
     <spirit:hierConnections>
@@ -4775,12 +4837,12 @@
         <spirit:internalPortReference spirit:componentRef="ConstantBuffer_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="UNORM8ToFloat_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="VertexStreamCache_0" spirit:portRef="clk"/>
-        <spirit:internalPortReference spirit:componentRef="GPRQuadSystem" spirit:portRef="clk_0"/>
         <spirit:internalPortReference spirit:componentRef="FloatALU_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="FloatALU_1" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="FloatALU_2" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="FloatALU_3" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="ShaderCore_0" spirit:portRef="clk"/>
+        <spirit:internalPortReference spirit:componentRef="GPRQuadSystem" spirit:portRef="clk_0"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>ConstantBuffer_0_readOutData</spirit:name>

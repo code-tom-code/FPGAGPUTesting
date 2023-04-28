@@ -173,6 +173,9 @@
     <ClInclude Include="Testbenches\ClipUnitTestbench.h">
       <Filter>Header Files\Testbenches</Filter>
     </ClInclude>
+    <ClInclude Include="ClipTestData.h">
+      <Filter>Header Files\Testbenches</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="rebuild_xsim.bat">

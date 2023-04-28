@@ -186,7 +186,7 @@ void RenderWindow::RenderTrianglesBegin()
 {
 	PumpWindowsMessageLoop(wnd);
 
-	d3d9dev->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER | D3DCLEAR_STENCIL, D3DCOLOR_XRGB(0, 0, 255), 1.0f, 0x00000000);
+	d3d9dev->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER | D3DCLEAR_STENCIL, D3DCOLOR_XRGB(64, 64, 64), 1.0f, 0x00000000);
 	
 	d3d9dev->BeginScene();
 

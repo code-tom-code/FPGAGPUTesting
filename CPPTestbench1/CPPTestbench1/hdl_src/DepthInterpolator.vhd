@@ -13,9 +13,9 @@ entity DepthInterpolator is
 
 	-- TriWorkCache per-triangle interface begin
 		TRICACHE_inBarycentricInverse : in STD_LOGIC_VECTOR(31 downto 0);
-		TRICACHE_inInvZ0 : in STD_LOGIC_VECTOR(31 downto 0);
-		TRICACHE_inInvZ10 : in STD_LOGIC_VECTOR(31 downto 0);
-		TRICACHE_inInvZ20 : in STD_LOGIC_VECTOR(31 downto 0);
+		TRICACHE_inZ0 : in STD_LOGIC_VECTOR(31 downto 0);
+		TRICACHE_inZ10 : in STD_LOGIC_VECTOR(31 downto 0);
+		TRICACHE_inZ20 : in STD_LOGIC_VECTOR(31 downto 0);
 		TRICACHE_inInvW0 : in STD_LOGIC_VECTOR(31 downto 0);
 		TRICACHE_inInvW10 : in STD_LOGIC_VECTOR(31 downto 0);
 		TRICACHE_inInvW20 : in STD_LOGIC_VECTOR(31 downto 0);
@@ -126,7 +126,7 @@ type depthInterpStateType is
 	barycentricConversion4, -- 5
 	barycentricConversion5, -- 6
 
-	-- Normalize our barycentrics by multiplying the [0.0f, 16777216.0f] values by the barycentric normalization factor (computed by the TriSetup block previously) to
+	-- Normalize our barycentrics by multiplying the [0.0f, 16777215.0f] values by the barycentric normalization factor (computed by the TriSetup block previously) to
 	-- get them into the [0.0f, 1.0f] range.
 	barycentricNormalization0, -- 7
 	barycentricNormalization1, -- 8
@@ -161,7 +161,8 @@ type depthInterpStateType is
 	barycentricDotProductSums8, -- 33
 	barycentricDotProductSums9, -- 34
 
-	-- Take the reciprocals of the dot product (1.0f / dot(normbary.abc, inverseZ.xyz) ) to yield the per-pixel depth value and per-pixel W value as a float32
+	-- Take the dot product (dot(normbary.abc, Z.xyz) ) to yield the per-pixel depth value and 
+	-- take the inverse dot product (1.0f / (dot(normbary.abc, invW.xyz) ) ) to yield the per-pixel W value as a float32
 	barycentricDotProductRecip0, -- 35
 	barycentricDotProductRecip1, -- 36
 	barycentricDotProductRecip2, -- 37
@@ -219,7 +220,7 @@ begin
 	end if;
 end function;
 
--- Multiplies a float value by 2^24-1 using fast shifting.
+-- Multiplies a float value by 2^24-1 (16777215 or 0x00FFFFFF) using fast shifting.
 -- Assumes input value is already in the [0.0f, 1.0f] range!
 pure function FloatMultiplyBy2_24(fltVal : f32) return f32 is
 	variable tempResult : unsigned(30 downto 0);
@@ -260,8 +261,8 @@ signal tempFloatBarycentricC : f32 := (others => '0'); -- float32 format of the 
 signal normalizedBarycentricB : f32 := (others => '0'); -- float32 format of barycentricNormalizeFactor * float(barycentricB)
 signal normalizedBarycentricC : f32 := (others => '0'); -- float32 format of barycentricNormalizeFactor * float(barycentricC)
 
-signal tempInvZDP3B : f32 := (others => '0'); -- float32 format of (1/z1 * normalizedBarycentricB)
-signal tempInvZDP3C : f32 := (others => '0'); -- float32 format of (1/z2 * normalizedBarycentricC)
+signal tempZDP3B : f32 := (others => '0'); -- float32 format of (z1 * normalizedBarycentricB)
+signal tempZDP3C : f32 := (others => '0'); -- float32 format of (z2 * normalizedBarycentricC)
 
 signal tempInvWDP3B : f32 := (others => '0'); -- float32 format of (1/w1 * normalizedBarycentricB)
 signal tempInvWDP3C : f32 := (others => '0'); -- float32 format of (1/w2 * normalizedBarycentricC)
@@ -271,9 +272,9 @@ signal pixelW : f32 := (others => '0'); -- float32 format (0.0f to 1.0f) pixel W
 signal pixelDepthU24 : unsigned(23 downto 0) := (others => '0');
 
 signal storedBarycentricInverse : f32 := (others => '0'); -- float32 format (this is 1.0f / twiceTriangleArea)
-signal storedInvZ0 : f32 := (others => '0'); -- float32 format (this is 1.0f / z0)
-signal storedInvZ10 : f32 := (others => '0'); -- float32 format (this is 1.0f / z1)
-signal storedInvZ20 : f32 := (others => '0'); -- float32 format (this is 1.0f / z2)
+signal storedZ0 : f32 := (others => '0'); -- float32 format (this is z0)
+signal storedZ10 : f32 := (others => '0'); -- float32 format (this is z1 - z0)
+signal storedZ20 : f32 := (others => '0'); -- float32 format (this is z2 - z0)
 signal storedInvW0 : f32 := (others => '0'); -- float32 format (this is 1.0f / w0)
 signal storedInvW10 : f32 := (others => '0'); -- float32 format (this is 1.0f / w1)
 signal storedInvW20 : f32 := (others => '0'); -- float32 format (this is 1.0f / w2)
@@ -354,9 +355,9 @@ DBG_RastBarycentricC <= std_logic_vector(storedDbgBarycentricC);
 							storedPixelX <= unsigned(RASTOUT_FIFO_rd_data(32*2+16-1 downto 32*2) );
 							storedPixelY <= unsigned(RASTOUT_FIFO_rd_data(32*2+16*2-1 downto 32*2+16) );
 							storedBarycentricInverse <= unsigned(TRICACHE_inBarycentricInverse);
-							storedInvZ0 <= f32(TRICACHE_inInvZ0);
-							storedInvZ10 <= f32(TRICACHE_inInvZ10);
-							storedInvZ20 <= f32(TRICACHE_inInvZ20);
+							storedZ0 <= f32(TRICACHE_inZ0);
+							storedZ10 <= f32(TRICACHE_inZ10);
+							storedZ20 <= f32(TRICACHE_inZ20);
 							storedInvW0 <= f32(TRICACHE_inInvW0);
 							storedInvW10 <= f32(TRICACHE_inInvW10);
 							storedInvW20 <= f32(TRICACHE_inInvW20);
@@ -447,7 +448,7 @@ DBG_RastBarycentricC <= std_logic_vector(storedDbgBarycentricC);
 
 				when barycentricMultiply0 =>
 					FPU_A <= std_logic_vector(normalizedBarycentricB);
-					FPU_B <= std_logic_vector(storedInvZ10);
+					FPU_B <= std_logic_vector(storedZ10);
 					FPU_IMUL_GO <= '1';
 					currentState <= barycentricMultiply1;
 
@@ -459,7 +460,7 @@ DBG_RastBarycentricC <= std_logic_vector(storedDbgBarycentricC);
 
 				when barycentricMultiply2 =>
 					FPU_A <= std_logic_vector(normalizedBarycentricC);
-					FPU_B <= std_logic_vector(storedInvZ20);
+					FPU_B <= std_logic_vector(storedZ20);
 					FPU_IMUL_GO <= '1';
 					currentState <= barycentricMultiply3;
 
@@ -477,7 +478,7 @@ DBG_RastBarycentricC <= std_logic_vector(storedDbgBarycentricC);
 					currentState <= barycentricMultiply6;
 
 				when barycentricMultiply6 =>
-					tempInvZDP3B <= f32(FPU_OUT);
+					tempZDP3B <= f32(FPU_OUT);
 					currentState <= barycentricMultiply7;
 
 				when barycentricMultiply7 =>
@@ -485,7 +486,7 @@ DBG_RastBarycentricC <= std_logic_vector(storedDbgBarycentricC);
 					currentState <= barycentricMultiply8;
 
 				when barycentricMultiply8 =>
-					tempInvZDP3C <= f32(FPU_OUT);
+					tempZDP3C <= f32(FPU_OUT);
 					currentState <= barycentricMultiply9;
 
 				when barycentricMultiply9 =>
@@ -493,8 +494,8 @@ DBG_RastBarycentricC <= std_logic_vector(storedDbgBarycentricC);
 					currentState <= barycentricDotProductSums0;
 
 				when barycentricDotProductSums0 =>
-					FPU_A <= std_logic_vector(tempInvZDP3B);
-					FPU_B <= std_logic_vector(tempInvZDP3C);
+					FPU_A <= std_logic_vector(tempZDP3B);
+					FPU_B <= std_logic_vector(tempZDP3C);
 					FPU_IADD_GO <= '1';
 					currentState <= barycentricDotProductSums1;
 
@@ -516,7 +517,7 @@ DBG_RastBarycentricC <= std_logic_vector(storedDbgBarycentricC);
 
 				when barycentricDotProductSums5 =>
 					FPU_A <= FPU_OUT;
-					FPU_B <= std_logic_vector(storedInvZ0);
+					FPU_B <= std_logic_vector(storedZ0);
 					FPU_IADD_GO <= '1';
 					currentState <= barycentricDotProductSums6;
 
@@ -537,17 +538,18 @@ DBG_RastBarycentricC <= std_logic_vector(storedDbgBarycentricC);
 					currentState <= barycentricDotProductRecip0;
 
 				when barycentricDotProductRecip0 =>
-					FPU_A <= FPU_OUT;
-					FPU_ISPEC_GO <= '1';
+					pixelDepth <= f32(FPU_OUT);
 					currentState <= barycentricDotProductRecip1;
 
 				when barycentricDotProductRecip1 =>
 					FPU_A <= FPU_OUT;
 					FPU_ISPEC_GO <= '1';
+					pixelDepth <= FloatSaturate(pixelDepth);
 					currentState <= barycentricDotProductRecip2;
 
 				when barycentricDotProductRecip2 =>
 					FPU_ISPEC_GO <= '0';
+					pixelDepth <= FloatMultiplyBy2_24(pixelDepth);
 					currentState <= barycentricDotProductRecip3;
 
 				when barycentricDotProductRecip3 =>
@@ -587,7 +589,6 @@ DBG_RastBarycentricC <= std_logic_vector(storedDbgBarycentricC);
 					currentState <= barycentricDotProductRecip15;
 
 				when barycentricDotProductRecip15 =>
-					pixelDepth <= FloatMultiplyBy2_24(FloatSaturate(f32(FPU_OUT) ) ); -- Saturate() the interpolated per-pixel depth here just in case it's outside the [0.0f, 1.0f] range
 					currentState <= barycentricDotProductRecip16;
 
 				when barycentricDotProductRecip16 =>

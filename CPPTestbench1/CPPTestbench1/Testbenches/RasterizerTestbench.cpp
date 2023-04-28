@@ -88,9 +88,9 @@ const int RunTestsRasterizer(Xsi::Loader& loader)
 	std_logic_vector_port<16> TRISETUP_inBarycentricYDeltaC(PD_IN, loader, "TRISETUP_inBarycentricYDeltaC");
 	std_logic_vector_port<32> TRISETUP_inBarycentricInverse(PD_IN, loader, "TRISETUP_inBarycentricInverse");
 
-	std_logic_vector_port<32> TRISETUP_inInvZ0(PD_IN, loader, "TRISETUP_inInvZ0");
-	std_logic_vector_port<32> TRISETUP_inInvZ10(PD_IN, loader, "TRISETUP_inInvZ10");
-	std_logic_vector_port<32> TRISETUP_inInvZ20(PD_IN, loader, "TRISETUP_inInvZ20");
+	std_logic_vector_port<32> TRISETUP_inZ0(PD_IN, loader, "TRISETUP_inZ0");
+	std_logic_vector_port<32> TRISETUP_inZ10(PD_IN, loader, "TRISETUP_inZ10");
+	std_logic_vector_port<32> TRISETUP_inZ20(PD_IN, loader, "TRISETUP_inZ20");
 	std_logic_vector_port<32> TRISETUP_inInvW0(PD_IN, loader, "TRISETUP_inInvW0");
 	std_logic_vector_port<32> TRISETUP_inInvW10(PD_IN, loader, "TRISETUP_inInvW10");
 	std_logic_vector_port<32> TRISETUP_inInvW20(PD_IN, loader, "TRISETUP_inInvW20");
@@ -120,9 +120,9 @@ const int RunTestsRasterizer(Xsi::Loader& loader)
 	std_logic_vector_port<16> TRICACHE_DrawCallID(PD_OUT, loader, "TRICACHE_DrawCallID");
 	std_logic_port TRICACHE_VFACE(PD_OUT, loader, "TRICACHE_VFACE");
 
-	std_logic_vector_port<32> TRICACHE_InvZ0(PD_OUT, loader, "TRICACHE_InvZ0");
-	std_logic_vector_port<32> TRICACHE_InvZ10(PD_OUT, loader, "TRICACHE_InvZ10");
-	std_logic_vector_port<32> TRICACHE_InvZ20(PD_OUT, loader, "TRICACHE_InvZ20");
+	std_logic_vector_port<32> TRICACHE_Z0(PD_OUT, loader, "TRICACHE_Z0");
+	std_logic_vector_port<32> TRICACHE_Z10(PD_OUT, loader, "TRICACHE_Z10");
+	std_logic_vector_port<32> TRICACHE_Z20(PD_OUT, loader, "TRICACHE_Z20");
 
 	std_logic_vector_port<32> TRICACHE_InvW0(PD_OUT, loader, "TRICACHE_InvW0");
 	std_logic_vector_port<32> TRICACHE_InvW10(PD_OUT, loader, "TRICACHE_InvW10");
@@ -170,9 +170,9 @@ const int RunTestsRasterizer(Xsi::Loader& loader)
 	auto validateTriCacheData = [&](const triSetupOutput& triData)
 	{
 		if (TRICACHE_BarycentricInverse.GetFloat32Val() != triData.barycentricInverse) { __debugbreak(); }
-		if (TRICACHE_InvZ0.GetFloat32Val() != triData.v0.invZ) { __debugbreak(); }
-		if (TRICACHE_InvZ10.GetFloat32Val() != triData.v10.invZ) { __debugbreak(); }
-		if (TRICACHE_InvZ20.GetFloat32Val() != triData.v20.invZ) { __debugbreak(); }
+		if (TRICACHE_Z0.GetFloat32Val() != triData.v0.Z) { __debugbreak(); }
+		if (TRICACHE_Z10.GetFloat32Val() != triData.v10.Z) { __debugbreak(); }
+		if (TRICACHE_Z20.GetFloat32Val() != triData.v20.Z) { __debugbreak(); }
 		if (TRICACHE_InvW0.GetFloat32Val() != triData.v0.invW) { __debugbreak(); }
 		if (TRICACHE_InvW10.GetFloat32Val() != triData.v10.invW) { __debugbreak(); }
 		if (TRICACHE_InvW20.GetFloat32Val() != triData.v20.invW) { __debugbreak(); }
@@ -336,7 +336,7 @@ const int RunTestsRasterizer(Xsi::Loader& loader)
 					continue;
 				}
 				triSetupData.DeserializeTriSetupOutput(TRISETUP_inBarycentricInverse,
-					TRISETUP_inInvZ0, TRISETUP_inInvZ10, TRISETUP_inInvZ20,
+					TRISETUP_inZ0, TRISETUP_inZ10, TRISETUP_inZ20,
 					TRISETUP_inInvW0, TRISETUP_inInvW10, TRISETUP_inInvW20,
 					TRISETUP_inTX0, TRISETUP_inTX10, TRISETUP_inTX20,
 					TRISETUP_inTY0, TRISETUP_inTY10, TRISETUP_inTY20,

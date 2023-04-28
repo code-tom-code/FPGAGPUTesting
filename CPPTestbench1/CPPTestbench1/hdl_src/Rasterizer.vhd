@@ -30,9 +30,9 @@ entity Rasterizer is
 		TRISETUP_inBarycentricYDeltaC : in STD_LOGIC_VECTOR(15 downto 0);
 		TRISETUP_inBarycentricInverse : in STD_LOGIC_VECTOR(31 downto 0);
 
-		TRISETUP_inInvZ0 : in STD_LOGIC_VECTOR(31 downto 0);
-		TRISETUP_inInvZ10 : in STD_LOGIC_VECTOR(31 downto 0);
-		TRISETUP_inInvZ20 : in STD_LOGIC_VECTOR(31 downto 0);
+		TRISETUP_inZ0 : in STD_LOGIC_VECTOR(31 downto 0);
+		TRISETUP_inZ10 : in STD_LOGIC_VECTOR(31 downto 0);
+		TRISETUP_inZ20 : in STD_LOGIC_VECTOR(31 downto 0);
 
 		TRISETUP_inInvW0 : in STD_LOGIC_VECTOR(31 downto 0);
 		TRISETUP_inInvW10 : in STD_LOGIC_VECTOR(31 downto 0);
@@ -63,9 +63,9 @@ entity Rasterizer is
 		TRICACHE_DrawCallID : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
 		TRICACHE_VFACE : out STD_LOGIC := '0';
 
-		TRICACHE_InvZ0 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-		TRICACHE_InvZ10 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-		TRICACHE_InvZ20 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		TRICACHE_Z0 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		TRICACHE_Z10 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		TRICACHE_Z20 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 
 		TRICACHE_InvW0 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 		TRICACHE_InvW10 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
@@ -152,7 +152,7 @@ end record vertexColor;
 type vertexAttributes is record
 	texcoord : vertexTexcoord;
 	color : vertexColor;
-	invZ : unsigned(31 downto 0);
+	Z : unsigned(31 downto 0);
 	invW : unsigned(31 downto 0);
 end record vertexAttributes;
 
@@ -322,7 +322,7 @@ DBG_MaxY <= std_logic_vector(maxY);
 						vertDataA.color.g <= unsigned(TRISETUP_inVertColor0(63 downto 32) );
 						vertDataA.color.b <= unsigned(TRISETUP_inVertColor0(95 downto 64) );
 						vertDataA.color.a <= unsigned(TRISETUP_inVertColor0(127 downto 96) );
-						vertDataA.invZ <= unsigned(TRISETUP_inInvZ0);
+						vertDataA.Z <= unsigned(TRISETUP_inZ0);
 						vertDataA.invW <= unsigned(TRISETUP_inInvW0);
 
 						vertDataB.texcoord.tx <= unsigned(TRISETUP_inTX10);
@@ -331,7 +331,7 @@ DBG_MaxY <= std_logic_vector(maxY);
 						vertDataB.color.g <= unsigned(TRISETUP_inVertColor10(63 downto 32) );
 						vertDataB.color.b <= unsigned(TRISETUP_inVertColor10(95 downto 64) );
 						vertDataB.color.a <= unsigned(TRISETUP_inVertColor10(127 downto 96) );
-						vertDataB.invZ <= unsigned(TRISETUP_inInvZ10);
+						vertDataB.Z <= unsigned(TRISETUP_inZ10);
 						vertDataB.invW <= unsigned(TRISETUP_inInvW10);
 
 						vertDataC.texcoord.tx <= unsigned(TRISETUP_inTX20);
@@ -340,7 +340,7 @@ DBG_MaxY <= std_logic_vector(maxY);
 						vertDataC.color.g <= unsigned(TRISETUP_inVertColor20(63 downto 32) );
 						vertDataC.color.b <= unsigned(TRISETUP_inVertColor20(95 downto 64) );
 						vertDataC.color.a <= unsigned(TRISETUP_inVertColor20(127 downto 96) );
-						vertDataC.invZ <= unsigned(TRISETUP_inInvZ20);
+						vertDataC.Z <= unsigned(TRISETUP_inZ20);
 						vertDataC.invW <= unsigned(TRISETUP_inInvW20);
 
 						-- Set the initial values of our barycentric coordinates to the starting row reset values:
@@ -439,19 +439,19 @@ DBG_MaxY <= std_logic_vector(maxY);
 						TRICACHE_TX0 <= std_logic_vector(vertDataA.texcoord.tx);
 						TRICACHE_TY0 <= std_logic_vector(vertDataA.texcoord.ty);
 						TRICACHE_VertColor0 <= std_logic_vector(vertDataA.color.a & vertDataA.color.b & vertDataA.color.g & vertDataA.color.r);
-						TRICACHE_InvZ0 <= std_logic_vector(vertDataA.invZ);
+						TRICACHE_Z0 <= std_logic_vector(vertDataA.Z);
 						TRICACHE_InvW0 <= std_logic_vector(vertDataA.invW);
 
 						TRICACHE_TX10 <= std_logic_vector(vertDataB.texcoord.tx);
 						TRICACHE_TY10 <= std_logic_vector(vertDataB.texcoord.ty);
 						TRICACHE_VertColor10 <= std_logic_vector(vertDataB.color.a & vertDataB.color.b & vertDataB.color.g & vertDataB.color.r);
-						TRICACHE_InvZ10 <= std_logic_vector(vertDataB.invZ);
+						TRICACHE_Z10 <= std_logic_vector(vertDataB.Z);
 						TRICACHE_InvW10 <= std_logic_vector(vertDataB.invW);
 
 						TRICACHE_TX20 <= std_logic_vector(vertDataC.texcoord.tx);
 						TRICACHE_TY20 <= std_logic_vector(vertDataC.texcoord.ty);
 						TRICACHE_VertColor20 <= std_logic_vector(vertDataC.color.a & vertDataC.color.b & vertDataC.color.g & vertDataC.color.r);
-						TRICACHE_InvZ20 <= std_logic_vector(vertDataC.invZ);
+						TRICACHE_Z20 <= std_logic_vector(vertDataC.Z);
 						TRICACHE_InvW20 <= std_logic_vector(vertDataC.invW);
 
 						TRICACHE_BarycentricInverse <= std_logic_vector(barycentricInverse);

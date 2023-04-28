@@ -79,7 +79,7 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>viewChecksum</spirit:name>
-            <spirit:value>c28e5589</spirit:value>
+            <spirit:value>7cf5f512</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -92,7 +92,7 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>viewChecksum</spirit:name>
-            <spirit:value>c28e5589</spirit:value>
+            <spirit:value>7cf5f512</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -426,7 +426,7 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
-        <spirit:name>TRISETUP_inInvZ0</spirit:name>
+        <spirit:name>TRISETUP_inZ0</spirit:name>
         <spirit:wire>
           <spirit:direction>in</spirit:direction>
           <spirit:vector>
@@ -443,7 +443,7 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
-        <spirit:name>TRISETUP_inInvZ10</spirit:name>
+        <spirit:name>TRISETUP_inZ10</spirit:name>
         <spirit:wire>
           <spirit:direction>in</spirit:direction>
           <spirit:vector>
@@ -460,7 +460,7 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
-        <spirit:name>TRISETUP_inInvZ20</spirit:name>
+        <spirit:name>TRISETUP_inZ20</spirit:name>
         <spirit:wire>
           <spirit:direction>in</spirit:direction>
           <spirit:vector>
@@ -825,7 +825,7 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
-        <spirit:name>TRICACHE_InvZ0</spirit:name>
+        <spirit:name>TRICACHE_Z0</spirit:name>
         <spirit:wire>
           <spirit:direction>out</spirit:direction>
           <spirit:vector>
@@ -845,7 +845,7 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
-        <spirit:name>TRICACHE_InvZ10</spirit:name>
+        <spirit:name>TRICACHE_Z10</spirit:name>
         <spirit:wire>
           <spirit:direction>out</spirit:direction>
           <spirit:vector>
@@ -865,7 +865,7 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
-        <spirit:name>TRICACHE_InvZ20</spirit:name>
+        <spirit:name>TRICACHE_Z20</spirit:name>
         <spirit:wire>
           <spirit:direction>out</spirit:direction>
           <spirit:vector>
@@ -1501,7 +1501,7 @@
         <xilinx:designToolContext>IPI</xilinx:designToolContext>
       </xilinx:designToolContexts>
       <xilinx:coreRevision>1</xilinx:coreRevision>
-      <xilinx:coreCreationDateTime>2023-04-15T00:57:21Z</xilinx:coreCreationDateTime>
+      <xilinx:coreCreationDateTime>2023-04-26T06:11:43Z</xilinx:coreCreationDateTime>
     </xilinx:coreExtensions>
     <xilinx:packagingInfo>
       <xilinx:xilinxVersion>2018.1_AR73068</xilinx:xilinxVersion>

@@ -121,6 +121,7 @@ entity ClipUnit is
 		DBG_ChildTriStackSize : out STD_LOGIC_VECTOR(2 downto 0) := (others => '0');
 		DBG_ClipDistance0 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 		DBG_ClipDistance1 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		DBG_TriangleIntersectsViewport : out STD_LOGIC := '0';
 		DBG_V0PosX : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 		DBG_V0PosY : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 		DBG_V0PosZ : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
@@ -135,7 +136,8 @@ entity ClipUnit is
 		DBG_V2PosW : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 		DBG_ClipOutcodes0 : out STD_LOGIC_VECTOR(10 downto 0) := (others => '0');
 		DBG_ClipOutcodes1 : out STD_LOGIC_VECTOR(10 downto 0) := (others => '0');
-		DBG_ClipOutcodes2 : out STD_LOGIC_VECTOR(10 downto 0) := (others => '0')
+		DBG_ClipOutcodes2 : out STD_LOGIC_VECTOR(10 downto 0) := (others => '0');
+		DBG_AlreadyClippedPlanes : out STD_LOGIC_VECTOR(10 downto 0) := (others => '0')
 		);
 end ClipUnit;
 
@@ -248,29 +250,23 @@ ATTRIBUTE X_INTERFACE_PARAMETER of clk: SIGNAL is "FREQ_HZ 333250000";
 
 	-- Returns "true" if this triangle should be discarded due to being culled, or "false" otherwise
 	pure function ShouldDiscardTriangleCulled(v0outcodes : VertexAllClipCodes; v1outcodes : VertexAllClipCodes; v2outcodes : VertexAllClipCodes) return boolean is
+		variable combinedClipCodes : VertexAllClipCodes;
 	begin
-		if (v0outcodes(ClipPlaneEnum'pos(ClipPlaneRight) ) = '1' and v1outcodes(ClipPlaneEnum'pos(ClipPlaneRight) ) = '1' and v2outcodes(ClipPlaneEnum'pos(ClipPlaneRight) ) = '1') then
-			return true;
-		end if;
-		if (v0outcodes(ClipPlaneEnum'pos(ClipPlaneLeft) ) = '1' and v1outcodes(ClipPlaneEnum'pos(ClipPlaneLeft) ) = '1' and v2outcodes(ClipPlaneEnum'pos(ClipPlaneLeft) ) = '1') then
-			return true;
-		end if;
-		if (v0outcodes(ClipPlaneEnum'pos(ClipPlaneTop) ) = '1' and v1outcodes(ClipPlaneEnum'pos(ClipPlaneTop) ) = '1' and v2outcodes(ClipPlaneEnum'pos(ClipPlaneTop) ) = '1') then
-			return true;
-		end if;
-		if (v0outcodes(ClipPlaneEnum'pos(ClipPlaneBottom) ) = '1' and v1outcodes(ClipPlaneEnum'pos(ClipPlaneBottom) ) = '1' and v2outcodes(ClipPlaneEnum'pos(ClipPlaneBottom) ) = '1') then
-			return true;
-		end if;
-		if (v0outcodes(ClipPlaneEnum'pos(ClipPlaneZNear) ) = '1' and v1outcodes(ClipPlaneEnum'pos(ClipPlaneZNear) ) = '1' and v2outcodes(ClipPlaneEnum'pos(ClipPlaneZNear) ) = '1') then
-			return true;
-		end if;
-		if (v0outcodes(ClipPlaneEnum'pos(ClipPlaneZFar) ) = '1' and v1outcodes(ClipPlaneEnum'pos(ClipPlaneZFar) ) = '1' and v2outcodes(ClipPlaneEnum'pos(ClipPlaneZFar) ) = '1') then
-			return true;
-		end if;
-		if (v0outcodes(ClipPlaneEnum'pos(ClipPlaneW0) ) = '1' and v1outcodes(ClipPlaneEnum'pos(ClipPlaneW0) ) = '1' and v2outcodes(ClipPlaneEnum'pos(ClipPlaneW0) ) = '1') then
-			return true;
-		end if;
-		return false;
+		combinedClipCodes := v0outcodes and v1outcodes and v2outcodes;
+
+		-- Note that we need to test both the GB and regular viewport bits here because due to the weirdness of -w vertices in a triangle, it's possible for a triangle to be
+		-- entirely outside of one of the GB edges without being entirely outside of its corresponding viewport edge.
+		return combinedClipCodes(ClipPlaneEnum'pos(ClipPlaneRight) ) = '1' or
+			combinedClipCodes(ClipPlaneEnum'pos(ClipPlaneLeft) ) = '1' or
+			combinedClipCodes(ClipPlaneEnum'pos(ClipPlaneTop) ) = '1' or
+			combinedClipCodes(ClipPlaneEnum'pos(ClipPlaneBottom) ) = '1' or
+			combinedClipCodes(ClipPlaneEnum'pos(ClipPlaneZNear) ) = '1' or
+			combinedClipCodes(ClipPlaneEnum'pos(ClipPlaneZFar) ) = '1' or
+			combinedClipCodes(ClipPlaneEnum'pos(ClipPlaneRightGB) ) = '1' or
+			combinedClipCodes(ClipPlaneEnum'pos(ClipPlaneLeftGB) ) = '1' or
+			combinedClipCodes(ClipPlaneEnum'pos(ClipPlaneTopGB) ) = '1' or
+			combinedClipCodes(ClipPlaneEnum'pos(ClipPlaneBottomGB) ) = '1' or
+			combinedClipCodes(ClipPlaneEnum'pos(ClipPlaneW0) ) = '1';
 	end function;
 
 	pure function ShouldDiscardTriangleInfNaNCulled(v0x : f32; v0y : f32; v0z : f32; v0w : f32;
@@ -283,24 +279,26 @@ ATTRIBUTE X_INTERFACE_PARAMETER of clk: SIGNAL is "FREQ_HZ 333250000";
 	end function;
 
 	pure function GetNextPlaneNeedsClipping(v0outcodes : VertexAllClipCodes; v1outcodes : VertexAllClipCodes; v2outcodes : VertexAllClipCodes; inTriAABBIntersectsViewport : std_logic) return ClipPlaneEnum is
+		variable combinedClipCodes : VertexAllClipCodes;
 	begin
-		if (v0outcodes(ClipPlaneEnum'pos(ClipPlaneZNear) ) = '1' or v1outcodes(ClipPlaneEnum'pos(ClipPlaneZNear) ) = '1' or v2outcodes(ClipPlaneEnum'pos(ClipPlaneZNear) ) = '1') then
+		combinedClipCodes := v0outcodes or v1outcodes or v2outcodes;
+		if (combinedClipCodes(ClipPlaneEnum'pos(ClipPlaneZNear) ) = '1') then
 			return ClipPlaneZNear;
 		end if;
-		if (v0outcodes(ClipPlaneEnum'pos(ClipPlaneZFar) ) = '1' or v1outcodes(ClipPlaneEnum'pos(ClipPlaneZFar) ) = '1' or v2outcodes(ClipPlaneEnum'pos(ClipPlaneZFar) ) = '1') then
+		if (combinedClipCodes(ClipPlaneEnum'pos(ClipPlaneZFar) ) = '1') then
 			return ClipPlaneZFar;
 		end if;
 		if (inTriAABBIntersectsViewport = '1') then
-			if (v0outcodes(ClipPlaneEnum'pos(ClipPlaneLeftGB) ) = '1' or v1outcodes(ClipPlaneEnum'pos(ClipPlaneLeftGB) ) = '1' or v2outcodes(ClipPlaneEnum'pos(ClipPlaneLeftGB) ) = '1') then
+			if (combinedClipCodes(ClipPlaneEnum'pos(ClipPlaneLeftGB) ) = '1') then
 				return ClipPlaneLeftGB;
 			end if;
-			if (v0outcodes(ClipPlaneEnum'pos(ClipPlaneRightGB) ) = '1' or v1outcodes(ClipPlaneEnum'pos(ClipPlaneRightGB) ) = '1' or v2outcodes(ClipPlaneEnum'pos(ClipPlaneRightGB) ) = '1') then
+			if (combinedClipCodes(ClipPlaneEnum'pos(ClipPlaneRightGB) ) = '1') then
 				return ClipPlaneRightGB;
 			end if;
-			if (v0outcodes(ClipPlaneEnum'pos(ClipPlaneBottomGB) ) = '1' or v1outcodes(ClipPlaneEnum'pos(ClipPlaneBottomGB) ) = '1' or v2outcodes(ClipPlaneEnum'pos(ClipPlaneBottomGB) ) = '1') then
+			if (combinedClipCodes(ClipPlaneEnum'pos(ClipPlaneBottomGB) ) = '1') then
 				return ClipPlaneBottomGB;
 			end if;
-			if (v0outcodes(ClipPlaneEnum'pos(ClipPlaneTopGB) ) = '1' or v1outcodes(ClipPlaneEnum'pos(ClipPlaneTopGB) ) = '1' or v2outcodes(ClipPlaneEnum'pos(ClipPlaneTopGB) ) = '1') then
+			if (combinedClipCodes(ClipPlaneEnum'pos(ClipPlaneTopGB) ) = '1') then
 				return ClipPlaneTopGB;
 			end if;
 		end if;
@@ -316,7 +314,7 @@ ATTRIBUTE X_INTERFACE_PARAMETER of clk: SIGNAL is "FREQ_HZ 333250000";
 	pure function DoesTriangleNeedClipping(v0ClipOutcodes : VertexAllClipCodes; v1ClipOutcodes : VertexAllClipCodes; v2ClipOutcodes : VertexAllClipCodes; inWholeTriangleAABBIntersectsViewport : std_logic) return boolean is
 		variable combinedOutcodes : VertexAllClipCodes;
 	begin
-		combinedOutcodes := v2ClipOutcodes or v1ClipOutcodes or v0ClipOutcodes;
+		combinedOutcodes := v0ClipOutcodes or v1ClipOutcodes or v2ClipOutcodes;
 		if (combinedOutcodes(ClipPlaneEnum'pos(ClipPlaneZNear) ) = '1' or combinedOutcodes(ClipPlaneEnum'pos(ClipPlaneZFar) ) = '1') then
 			return true;
 		end if;
@@ -362,7 +360,7 @@ ATTRIBUTE X_INTERFACE_PARAMETER of clk: SIGNAL is "FREQ_HZ 333250000";
 	pure function ClampZToClippedPlanes(alreadyClippedPlanes : VertexAllClipCodes; zPos : f32; wPos : f32) return f32 is
 	begin
 		if (alreadyClippedPlanes(ClipPlaneEnum'pos(ClipPlaneZNear) ) = '1') then
-			if (FloatLessThanFloat(zPos, X"00000000") ) then
+			if (GetFloatIsNegative(zPos) = '1') then
 				return X"00000000";
 			end if;
 		end if;
@@ -515,6 +513,8 @@ DBG_V2PosW <= std_logic_vector(v2.w);
 DBG_ClipOutcodes0 <= v0ClipOutcodes;
 DBG_ClipOutcodes1 <= v1ClipOutcodes;
 DBG_ClipOutcodes2 <= v2ClipOutcodes;
+DBG_TriangleIntersectsViewport <= triAABBIntersectsViewport;
+DBG_AlreadyClippedPlanes <= currentTriAlreadyClippedPlanes;
 
 	process(clk)
 	begin
@@ -548,7 +548,7 @@ DBG_ClipOutcodes2 <= v2ClipOutcodes;
 					CMD_IsIdle <= '0';
 
 					currentClipPlane <= GetNextPlaneNeedsClipping(IA_inv0ClipOutcodes, IA_inv1ClipOutcodes, IA_inv2ClipOutcodes, IA_inWholeTriangleAABBIntersectsViewport);
-					currentTriAlreadyClippedPlanes <= not (IA_inv0ClipOutcodes or IA_inv1ClipOutcodes or IA_inv2ClipOutcodes);
+					currentTriAlreadyClippedPlanes <= (others => '0'); -- Make sure to reset our already clipped planes bitmap each time we receive a new triangle!
 
 					prevStageReady <= '1';
 					if (IA_inPreviousStageIsValid = '1' and prevStageReady = '1') then
@@ -634,6 +634,8 @@ DBG_ClipOutcodes2 <= v2ClipOutcodes;
 						when others =>
 					end case;
 
+					currentState <= clip_computeClipDistance0;
+
 					case GetOutcodeBitmapForPlane(v0ClipOutcodes, v1ClipOutcodes, v2ClipOutcodes, currentClipPlane) is
 						when "001" => -- 001 = A is outside, BC are inside
 							outsideVert0 <= v0;
@@ -670,8 +672,6 @@ DBG_ClipOutcodes2 <= v2ClipOutcodes;
 					end case;
 
 					currentTriAlreadyClippedPlanes(ClipPlaneEnum'pos(currentClipPlane) ) <= '1';
-
-					currentState <= clip_computeClipDistance0;
 
 				when clip_computeClipDistance0 =>
 					case currentClipPlane is
@@ -1374,7 +1374,15 @@ DBG_ClipOutcodes2 <= v2ClipOutcodes;
 
 				when clip_finishOrNextPlane =>
 					currentClipPlane <= GetNextPlaneNeedsClipping(v0ClipOutcodes, v1ClipOutcodes, v2ClipOutcodes, triAABBIntersectsViewport);
-					if (GetNextPlaneNeedsClipping(v0ClipOutcodes, v1ClipOutcodes, v2ClipOutcodes, triAABBIntersectsViewport) = ClipDone) then
+					if (ShouldDiscardTriangleCulled(v0ClipOutcodes, v1ClipOutcodes, v2ClipOutcodes) ) then
+						if (triDataStackSize = 0) then
+							prevStageReady <= '1';
+							currentState <= idleState;
+						else
+							prevStageReady <= '0';
+							currentState <= clip_popNextChildTriangle0;
+						end if;
+					elsif (GetNextPlaneNeedsClipping(v0ClipOutcodes, v1ClipOutcodes, v2ClipOutcodes, triAABBIntersectsViewport) = ClipDone) then
 						currentState <= clip_sendToNextStage;
 					else
 						currentState <= clip_computeClipMask;

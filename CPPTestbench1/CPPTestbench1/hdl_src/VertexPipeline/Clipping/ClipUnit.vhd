@@ -9,6 +9,7 @@ use work.FloatALU_Types.all;
 use work.FloatCommon.all;
 use work.ClipTypes.all;
 use work.ClipCommon.all;
+use work.ClipUnitState.all;
 
 entity ClipUnit is
 	Port ( clk : in STD_LOGIC;
@@ -48,6 +49,7 @@ entity ClipUnit is
 		IA_inv2ty : in STD_LOGIC_VECTOR(31 downto 0);
 		IA_inv2ClipOutcodes : in STD_LOGIC_VECTOR(10 downto 0);
 
+		IA_CurrentDrawEventID : in STD_LOGIC_VECTOR(15 downto 0);
 		IA_inWholeTriangleAABBIntersectsViewport : in STD_LOGIC;
 	-- End Triangle data in
 
@@ -75,6 +77,8 @@ entity ClipUnit is
 		TRISETUP_outv2rgba : out STD_LOGIC_VECTOR(127 downto 0) := (others => '0');
 		TRISETUP_outv2tx : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 		TRISETUP_outv2ty : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+
+		TRISETUP_CurrentDrawEventID : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
 	-- End Triangle data out
 
 	-- FPU interfaces begin
@@ -103,6 +107,13 @@ entity ClipUnit is
 		FPU_Rcp0_OUT : in STD_LOGIC_VECTOR(31 downto 0);
 	-- FPU interfaces end
 
+	-- Clip Unit State Block interface begin
+		STATE_StateBitsAtDrawID : in STD_LOGIC_VECTOR(CLIP_UNIT_STATE_SIZE_BITS-1 downto 0);
+		STATE_NextDrawID : in STD_LOGIC_VECTOR(15 downto 0);
+		STATE_StateIsValid : in STD_LOGIC;
+		STATE_ConsumeStateSlot : out STD_LOGIC := '0';
+	-- Clip Unit State Block interface end
+
 	-- Command Processor interface begin
 		CMD_IsIdle : out STD_LOGIC := '0';
 	-- Command Processor interface end
@@ -111,6 +122,7 @@ entity ClipUnit is
 		STAT_CyclesIdle : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 		STAT_CyclesSpentWorking : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 		STAT_CyclesWaitingForOutput : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		STAT_CurrentDrawEventID : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
 	-- Stats interface end
 
 	-- Debug signals
@@ -245,7 +257,8 @@ ATTRIBUTE X_INTERFACE_PARAMETER of clk: SIGNAL is "FREQ_HZ 333250000";
 		clip_finishOrNextPlane, -- 73
 		clip_sendToNextStage, -- 74
 		clip_popNextChildTriangle0, -- 75
-		clip_popNextChildTriangle1 -- 76
+		clip_popNextChildTriangle1, -- 76
+		clip_sendNewDrawEventID -- 77
 		);
 
 	-- Returns "true" if this triangle should be discarded due to being culled, or "false" otherwise
@@ -427,6 +440,8 @@ ATTRIBUTE X_INTERFACE_PARAMETER of clk: SIGNAL is "FREQ_HZ 333250000";
 	end procedure;
 	
 signal currentState : clipper_state_t := idleState;
+signal currentDrawEventID : unsigned(15 downto 0) := (others => '0');
+signal hasSentCurrentDrawEventID : std_logic := '0';
 signal prevStageReady : std_logic := '0';
 signal nextStageValid : std_logic := '0';
 
@@ -460,6 +475,8 @@ signal insideVert0 : vertData;
 signal insideVert1 : vertData;
 signal outsideVert0 : vertData;
 signal outsideVert1 : vertData;
+
+signal currentStateBlock : sClipUnitState := DEFAULT_CLIP_UNIT_STATE;
 
 -- Numerical stats (triangle count and clip count stats):
 signal stats_TrianglesInputToClipCullUnit : unsigned(11 downto 0) := (others => '0');
@@ -519,6 +536,7 @@ DBG_AlreadyClippedPlanes <= currentTriAlreadyClippedPlanes;
 	process(clk)
 	begin
 		if (rising_edge(clk) ) then
+			STAT_CurrentDrawEventID <= std_logic_vector(currentDrawEventID);
 			case currentState is
 				when idleState =>
 					statCyclesIdle <= statCyclesIdle + 1;
@@ -533,10 +551,12 @@ DBG_AlreadyClippedPlanes <= currentTriAlreadyClippedPlanes;
 	end process;
 
 	process(clk)
+		variable newDrawEventIDClear : std_logic;
 	begin
 		if (rising_edge(clk) ) then
 			prevStageReady <= '0';
 			nextStageValid <= '0';
+			STATE_ConsumeStateSlot <= '0';
 
 			case currentState is
 				when idleState =>
@@ -550,54 +570,75 @@ DBG_AlreadyClippedPlanes <= currentTriAlreadyClippedPlanes;
 					currentClipPlane <= GetNextPlaneNeedsClipping(IA_inv0ClipOutcodes, IA_inv1ClipOutcodes, IA_inv2ClipOutcodes, IA_inWholeTriangleAABBIntersectsViewport);
 					currentTriAlreadyClippedPlanes <= (others => '0'); -- Make sure to reset our already clipped planes bitmap each time we receive a new triangle!
 
+					v0.x <= f32(IA_inv0x);
+					v0.y <= f32(IA_inv0y);
+					v0.z <= f32(IA_inv0z);
+					v0.w <= f32(IA_inv0w);
+					v0.r <= f32(IA_inv0rgba(31 downto 0) );
+					v0.g <= f32(IA_inv0rgba(63 downto 32) );
+					v0.b <= f32(IA_inv0rgba(95 downto 64) );
+					v0.a <= f32(IA_inv0rgba(127 downto 96) );
+					v0.tx <= f32(IA_inv0tx);
+					v0.ty <= f32(IA_inv0ty);
+					v0ClipOutcodes <= IA_inv0ClipOutcodes;
+
+					v1.x <= f32(IA_inv1x);
+					v1.y <= f32(IA_inv1y);
+					v1.z <= f32(IA_inv1z);
+					v1.w <= f32(IA_inv1w);
+					v1.r <= f32(IA_inv1rgba(31 downto 0) );
+					v1.g <= f32(IA_inv1rgba(63 downto 32) );
+					v1.b <= f32(IA_inv1rgba(95 downto 64) );
+					v1.a <= f32(IA_inv1rgba(127 downto 96) );
+					v1.tx <= f32(IA_inv1tx);
+					v1.ty <= f32(IA_inv1ty);
+					v1ClipOutcodes <= IA_inv1ClipOutcodes;
+
+					v2.x <= f32(IA_inv2x);
+					v2.y <= f32(IA_inv2y);
+					v2.z <= f32(IA_inv2z);
+					v2.w <= f32(IA_inv2w);
+					v2.r <= f32(IA_inv2rgba(31 downto 0) );
+					v2.g <= f32(IA_inv2rgba(63 downto 32) );
+					v2.b <= f32(IA_inv2rgba(95 downto 64) );
+					v2.a <= f32(IA_inv2rgba(127 downto 96) );
+					v2.tx <= f32(IA_inv2tx);
+					v2.ty <= f32(IA_inv2ty);
+					v2ClipOutcodes <= IA_inv2ClipOutcodes;
+
 					prevStageReady <= '1';
 					if (IA_inPreviousStageIsValid = '1' and prevStageReady = '1') then
 
-						v0.x <= f32(IA_inv0x);
-						v0.y <= f32(IA_inv0y);
-						v0.z <= f32(IA_inv0z);
-						v0.w <= f32(IA_inv0w);
-						v0.r <= f32(IA_inv0rgba(31 downto 0) );
-						v0.g <= f32(IA_inv0rgba(63 downto 32) );
-						v0.b <= f32(IA_inv0rgba(95 downto 64) );
-						v0.a <= f32(IA_inv0rgba(127 downto 96) );
-						v0.tx <= f32(IA_inv0tx);
-						v0.ty <= f32(IA_inv0ty);
-						v0ClipOutcodes <= IA_inv0ClipOutcodes;
+						if (currentDrawEventID /= unsigned(IA_CurrentDrawEventID) ) then
+							newDrawEventIDClear := '1';
+							hasSentCurrentDrawEventID <= '0';
+						else
+							newDrawEventIDClear := '0';
+						end if;
+						currentDrawEventID <= unsigned(IA_CurrentDrawEventID);
 
-						v1.x <= f32(IA_inv1x);
-						v1.y <= f32(IA_inv1y);
-						v1.z <= f32(IA_inv1z);
-						v1.w <= f32(IA_inv1w);
-						v1.r <= f32(IA_inv1rgba(31 downto 0) );
-						v1.g <= f32(IA_inv1rgba(63 downto 32) );
-						v1.b <= f32(IA_inv1rgba(95 downto 64) );
-						v1.a <= f32(IA_inv1rgba(127 downto 96) );
-						v1.tx <= f32(IA_inv1tx);
-						v1.ty <= f32(IA_inv1ty);
-						v1ClipOutcodes <= IA_inv1ClipOutcodes;
-
-						v2.x <= f32(IA_inv2x);
-						v2.y <= f32(IA_inv2y);
-						v2.z <= f32(IA_inv2z);
-						v2.w <= f32(IA_inv2w);
-						v2.r <= f32(IA_inv2rgba(31 downto 0) );
-						v2.g <= f32(IA_inv2rgba(63 downto 32) );
-						v2.b <= f32(IA_inv2rgba(95 downto 64) );
-						v2.a <= f32(IA_inv2rgba(127 downto 96) );
-						v2.tx <= f32(IA_inv2tx);
-						v2.ty <= f32(IA_inv2ty);
-						v2ClipOutcodes <= IA_inv2ClipOutcodes;
+						if (STATE_StateIsValid = '1' and STATE_NextDrawID = IA_CurrentDrawEventID) then
+							STATE_ConsumeStateSlot <= '1';
+							currentStateBlock <= DeserializeBitsToStruct(STATE_StateBitsAtDrawID);
+						end if;
 
 						stats_TrianglesInputToClipCullUnit <= stats_TrianglesInputToClipCullUnit + 1;
 
 						if (ShouldDiscardTriangleCulled(IA_inv0ClipOutcodes, IA_inv1ClipOutcodes, IA_inv2ClipOutcodes) or ShouldDiscardTriangleInfNaNCulled(f32(IA_inv0x), f32(IA_inv0y), f32(IA_inv0z), f32(IA_inv0w), f32(IA_inv1x), f32(IA_inv1y), f32(IA_inv1z), f32(IA_inv1w), f32(IA_inv2x), f32(IA_inv2y), f32(IA_inv2z), f32(IA_inv2w) ) ) then
-							prevStageReady <= '1';
-							currentState <= idleState;
-						elsif (DoesTriangleNeedClipping(IA_inv0ClipOutcodes, IA_inv1ClipOutcodes, IA_inv2ClipOutcodes, IA_inWholeTriangleAABBIntersectsViewport) ) then							
-							if (DBG_DisableClipping = '1') then
+							if (hasSentCurrentDrawEventID = '1' and newDrawEventIDClear = '0') then
 								prevStageReady <= '1';
 								currentState <= idleState;
+							else
+								currentState <= clip_sendNewDrawEventID;
+							end if;
+						elsif (DoesTriangleNeedClipping(IA_inv0ClipOutcodes, IA_inv1ClipOutcodes, IA_inv2ClipOutcodes, IA_inWholeTriangleAABBIntersectsViewport) ) then							
+							if (DBG_DisableClipping = '1') then
+								if (hasSentCurrentDrawEventID = '1' and newDrawEventIDClear = '0') then
+									prevStageReady <= '1';
+									currentState <= idleState;
+								else
+									currentState <= clip_sendNewDrawEventID;
+								end if;
 							else
 								prevStageReady <= '0';
 								currentState <= clip_computeClipMask;
@@ -1376,8 +1417,12 @@ DBG_AlreadyClippedPlanes <= currentTriAlreadyClippedPlanes;
 					currentClipPlane <= GetNextPlaneNeedsClipping(v0ClipOutcodes, v1ClipOutcodes, v2ClipOutcodes, triAABBIntersectsViewport);
 					if (ShouldDiscardTriangleCulled(v0ClipOutcodes, v1ClipOutcodes, v2ClipOutcodes) ) then
 						if (triDataStackSize = 0) then
-							prevStageReady <= '1';
-							currentState <= idleState;
+							if (hasSentCurrentDrawEventID = '1') then
+								prevStageReady <= '1';
+								currentState <= idleState;
+							else
+								currentState <= clip_sendNewDrawEventID;
+							end if;
 						else
 							prevStageReady <= '0';
 							currentState <= clip_popNextChildTriangle0;
@@ -1415,6 +1460,9 @@ DBG_AlreadyClippedPlanes <= currentTriAlreadyClippedPlanes;
 					TRISETUP_outv2tx <= std_logic_vector(v2.tx);
 					TRISETUP_outv2ty <= std_logic_vector(v2.ty);
 
+					TRISETUP_CurrentDrawEventID <= std_logic_vector(currentDrawEventID);
+					hasSentCurrentDrawEventID <= '1';
+
 					if (nextStageValid = '1' and TRISETUP_inNextStageisReady = '1') then
 						nextStageValid <= '0';
 
@@ -1446,8 +1494,12 @@ DBG_AlreadyClippedPlanes <= currentTriAlreadyClippedPlanes;
 				when clip_popNextChildTriangle1 =>
 					if (ShouldDiscardTriangleCulled(v0ClipOutcodes, v1ClipOutcodes, v2ClipOutcodes) or ShouldDiscardTriangleInfNaNCulled(v0.x, v0.y, v0.z, v0.w, v1.x, v1.y, v1.z, v1.w, v2.x, v2.y, v2.z, v2.w) ) then
 						if (triDataStackSize = 0) then
-							prevStageReady <= '1';
-							currentState <= idleState;
+							if (hasSentCurrentDrawEventID = '1') then
+								prevStageReady <= '1';
+								currentState <= idleState;
+							else
+								currentState <= clip_sendNewDrawEventID;
+							end if;
 						else
 							currentState <= clip_popNextChildTriangle0;
 						end if;
@@ -1457,6 +1509,12 @@ DBG_AlreadyClippedPlanes <= currentTriAlreadyClippedPlanes;
 					else
 						currentState <= clip_sendToNextStage;
 					end if;
+
+				when clip_sendNewDrawEventID =>
+					v0.x <= (others => '1'); -- NaN
+					v0.w <= (others => '0'); -- Denormal zero reciprocal-W
+					currentState <= clip_sendToNextStage;
+
 			end case;
 		end if;
 	end process;

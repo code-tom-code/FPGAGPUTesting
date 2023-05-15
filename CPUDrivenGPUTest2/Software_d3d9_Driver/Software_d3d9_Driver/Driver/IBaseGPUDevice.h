@@ -43,9 +43,9 @@ struct CachedVertexStream
 	BYTE dwordOffset = 0;
 };
 
-struct BlendStateBlock
+struct ROPBlock
 {
-	BlendStateBlock()
+	ROPBlock()
 	{
 		dataUnion.bitsStruct.blendModeSrcRGB = blendRGB_0; dataUnion.bitsStruct.blendModeSrcRGBInvert = true; // D3DRS_SRCBLEND defaults to D3DBLEND_ONE
 		dataUnion.bitsStruct.blendModeDestRGB = blendRGB_0; dataUnion.bitsStruct.blendModeDestRGBInvert = false; // D3DRS_DESTBLEND defaults to D3DBLEND_ZERO
@@ -57,13 +57,17 @@ struct BlendStateBlock
 		dataUnion.bitsStruct.unusedPadding = 0x000;
 	}
 
-	const bool operator==(const BlendStateBlock& rhs) const
+	const bool operator==(const ROPBlock& rhs) const
 	{
-		return dataUnion.solidDWORD == rhs.dataUnion.solidDWORD;
+		return dataUnion.solidDWORD == rhs.dataUnion.solidDWORD && 
+			deviceCachedAlphaTestEnabled == rhs.deviceCachedAlphaTestEnabled &&
+			deviceCachedAlphaTestRefVal == rhs.deviceCachedAlphaTestRefVal &&
+			deviceCachedAlphaTestCmpFunc == rhs.deviceCachedAlphaTestCmpFunc &&
+			deviceCachedWriteMask == rhs.deviceCachedWriteMask;
 	}
 
 	// Conversion entrypoint:
-	void ConvertFromD3DRS(const bool alphaBlendEnable,
+	void ConvertBlendStateFromD3DRS(const bool alphaBlendEnable,
 		const D3DBLEND srcColorBlend, const D3DBLEND destColorBlend, const D3DBLENDOP colorBlendOp,
 		const D3DBLEND srcAlphaBlend, const D3DBLEND destAlphaBlend, const D3DBLENDOP alphaBlendOp,
 		const D3DCOLOR blendFactor_ARGB);
@@ -93,6 +97,13 @@ struct BlendStateBlock
 
 		DWORD solidDWORD;
 	} dataUnion;
+	static_assert(sizeof(dataUnion) == sizeof(unsigned), "Error: Unexpected union packing!");
+
+	bool deviceCachedAlphaTestEnabled = false;
+	BYTE deviceCachedAlphaTestRefVal = 0x00;
+	eCmpFunc deviceCachedAlphaTestCmpFunc = cmp_MAX_CMP_FUNCS;
+	eBlendMask deviceCachedWriteMask = (eBlendMask)0xFF;
+	bool deviceCachedAlphaBlendEnabled = false;
 
 private:
 	// Internal conversion helper functions:
@@ -100,27 +111,13 @@ private:
 	static void ConvertColorBlend(const D3DBLEND colorBlend, blendModeSourcesRGB& outBlendMode, bool& outBlendInvert, const bool isDestination);
 	static void ConvertAlphaBlend(const D3DBLEND alphaBlend, blendModeSourcesA& outBlendMode, bool& outBlendInvert, const bool isDestination);
 };
-static_assert(sizeof(BlendStateBlock) == sizeof(unsigned), "Error: Unexpected struct packing!");
 
-struct GPUDeviceState
+struct TextureBlock
 {
 	const gpuvoid* deviceCachedSetTexture = nullptr;
-	const gpuvoid* deviceCachedScanoutBuffer = nullptr;
-	const gpuvoid* deviceSetIndexBuffer = nullptr; // This is the *pre*transform index cache
-	const gpuvoid* deviceCachedRenderTarget = nullptr;
-	const gpuvoid* deviceCachedIAIndexBuffer = nullptr; // This is the *post*transform index cache
-	const gpuvoid* deviceCachedVertexShader = nullptr;
+	eTexFormat deviceCachedTexFormat = eTexFmtNumFormats;
 	unsigned texStateWidth = 0;
 	unsigned texStateHeight = 0;
-	unsigned texSetWidth = 0;
-	unsigned texSetHeight = 0;
-	unsigned deviceCachedSetVertexStartAddress = 0x0000;
-	eCullMode deviceCachedCullMode = eCullMode_NUM_CULL_MODES;
-	ePrimTopology deviceCachedPrimTop = primTop_NUM_PRIM_TOPOLOGIES;
-	eStripCutType deviceCachedStripCut = sct_NUM_STRIP_CUT_TYPES;
-	eIndexFormat deviceCachedIndexFormat = ibfmt_NUM_INDEX_FORMATS;
-	eTexFormat deviceCachedTexFormat = eTexFmtNumFormats;
-	eBlendMask deviceCachedWriteMask = (eBlendMask)0xFF;
 	eTexFilterMode deviceCachedTexFilter = TF_MAXFILTER;
 	eTexChannelMUX deviceCachedTexR = tcm_MAX;
 	eTexChannelMUX deviceCachedTexG = tcm_MAX;
@@ -128,20 +125,36 @@ struct GPUDeviceState
 	eTexChannelMUX deviceCachedTexA = tcm_MAX;
 	combinerMode deviceCachedCombinerModeColor = cbm_MAX_NUM_COMBINER_MODES;
 	combinerMode deviceCachedCombinerModeAlpha = cbm_MAX_NUM_COMBINER_MODES;
+};
+
+struct GPUDeviceState
+{
+	const gpuvoid* deviceCachedScanoutBuffer = nullptr;
+	const gpuvoid* deviceSetIndexBuffer = nullptr; // This is the *pre*transform index cache
+	const gpuvoid* deviceCachedRenderTarget = nullptr;
+	const gpuvoid* deviceCachedIAIndexBuffer = nullptr; // This is the *post*transform index cache
+	const gpuvoid* deviceCachedVertexShader = nullptr;
+	unsigned deviceCachedSetVertexStartAddress = 0x0000;
+	eCullMode deviceCachedCullMode = eCullMode_NUM_CULL_MODES;
+	ePrimTopology deviceCachedPrimTop = primTop_NUM_PRIM_TOPOLOGIES;
+	eStripCutType deviceCachedStripCut = sct_NUM_STRIP_CUT_TYPES;
+	eIndexFormat deviceCachedIndexFormat = ibfmt_NUM_INDEX_FORMATS;
 	setScanoutPointerCommand::eDisplayChannelSwizzle deviceScanoutSwizzleR = setScanoutPointerCommand::dcs_red;
 	setScanoutPointerCommand::eDisplayChannelSwizzle deviceScanoutSwizzleG = setScanoutPointerCommand::dcs_green;
 	setScanoutPointerCommand::eDisplayChannelSwizzle deviceScanoutSwizzleB = setScanoutPointerCommand::dcs_blue;
 	bool deviceCachedScanoutEnabled = false;
 	bool deviceCachedZEnabled = false;
 	bool deviceCachedZWriteEnabled = false;
-	bool deviceCachedAlphaTestEnabled = false;
-	BYTE deviceCachedAlphaTestRefVal = 0x00;
 	bool deviceCachedScanoutInvertColors = false;
-	eCmpFunc deviceCachedAlphaTestCmpFunc = cmp_MAX_CMP_FUNCS;
+	bool deviceCachedDepthClipEnable = true;
+	bool deviceCachedOpenGLNearZClipMode = false;
+	unsigned deviceCachedGuardBandXScale = 4;
+	unsigned deviceCachedGuardBandYScale = 5;
 	eCmpFunc deviceCachedDepthTestCmpFunc = cmp_MAX_CMP_FUNCS;
 	CachedVertexStream deviceCachedVertexStreams[GPU_MAX_NUM_VERTEX_STREAMS];
 	float4 deviceCachedConstantRegisters[GPU_SHADER_MAX_NUM_CONSTANT_FLOAT_REG];
-	BlendStateBlock deviceCachedBlendState;
+	TextureBlock deviceCachedTextureState;
+	ROPBlock deviceCachedROPState;
 
 	void ResetFields(const GPUDeviceState& defaultRhs)
 	{
@@ -174,15 +187,17 @@ __declspec(align(16) ) struct IBaseGPUDevice
 	HRESULT __stdcall DeviceClearDepthStencil(gpuvoid* const zStencilMemory, const bool bDoClearDepth, const bool bDoClearStencil, 
 		const float clearDepth = 1.0f, const BYTE clearStencil = 0x00);
 
-	HRESULT __stdcall DeviceSetTexture(const gpuvoid* const textureMemory, const eTexFormat textureFormat, const unsigned texWidth, const unsigned texHeight);
-
 	HRESULT __stdcall DeviceSetTextureState(const unsigned texWidth, const unsigned texHeight, const eTexFilterMode filterMode, 
+		const eTexChannelMUX rChannel, const eTexChannelMUX gChannel, const eTexChannelMUX bChannel, const eTexChannelMUX aChannel, const combinerMode cbModeColor, const combinerMode cbModeAlpha,
+		const gpuvoid* const textureMemory, const eTexFormat textureFormat);
+	HRESULT __stdcall DeviceSetNullTextureState(const eTexFilterMode filterMode, 
 		const eTexChannelMUX rChannel, const eTexChannelMUX gChannel, const eTexChannelMUX bChannel, const eTexChannelMUX aChannel, const combinerMode cbModeColor, const combinerMode cbModeAlpha);
 
-	HRESULT __stdcall DeviceSetRenderTargetAlphaTestState(gpuvoid* const renderTargetMemory, const eBlendMask writeMask, const bool alphaTestEnabled, const BYTE alphaTestRefVal, const eCmpFunc alphaTestCmpFunc);
-	HRESULT __stdcall DeviceSetBlendState(const bool alphaBlendingEnabled, const D3DBLEND srcColorBlend, const D3DBLEND destColorBlend, const D3DBLENDOP colorBlendOp, 
-	const D3DBLEND srcAlphaBlend, const D3DBLEND destAlphaBlend, const D3DBLENDOP alphaBlendOp, const D3DCOLOR blendFactorARGB);
+	HRESULT __stdcall DeviceSetROPState(gpuvoid* const renderTargetMemory, const eBlendMask writeMask, const bool alphaTestEnabled, const BYTE alphaTestRefVal, const eCmpFunc alphaTestCmpFunc,
+		const bool alphaBlendingEnabled, const D3DBLEND srcColorBlend, const D3DBLEND destColorBlend, const D3DBLENDOP colorBlendOp, 
+		const D3DBLEND srcAlphaBlend, const D3DBLEND destAlphaBlend, const D3DBLENDOP alphaBlendOp, const D3DCOLOR blendFactorARGB);
 
+	HRESULT __stdcall DeviceSetClipState(const bool depthClipEnabled, const bool useOpenGLNearZClip, const float guardBandXScale, const float guardBandYScale);
 	HRESULT __stdcall DeviceSetDepthState(const bool zEnabled, const bool zWriteEnabled, const eCmpFunc zTestCmpFunc);
 
 	HRESULT __stdcall DeviceSetIAState(const eCullMode cullMode, const ePrimTopology primTopology, const eStripCutType stripCut, const eIndexFormat indexFormat, const gpuvoid* const indexBufferBaseAddr);
@@ -190,6 +205,9 @@ __declspec(align(16) ) struct IBaseGPUDevice
 	HRESULT __stdcall DeviceSetScanoutBuffer(const gpuvoid* const renderTargetMemory, const bool bEnableScanout = true, const bool invertScanoutColors = false, 
 		const setScanoutPointerCommand::eDisplayChannelSwizzle redChannelSwizzle = setScanoutPointerCommand::dcs_red, const setScanoutPointerCommand::eDisplayChannelSwizzle greenChannelSwizzle = setScanoutPointerCommand::dcs_green, const setScanoutPointerCommand::eDisplayChannelSwizzle blueChannelSwizzle = setScanoutPointerCommand::dcs_blue);
 	HRESULT __stdcall DeviceDownloadEndOfFrameStats(const gpuvoid* const statsMemory, DWORD* const outReadbackStatsData);
+	HRESULT __stdcall DeviceEndFrame();
+
+	HRESULT __stdcall DeviceIssueQuery(const gpuvoid* const queryAddress, const bool isEndEvent, const eQueryType queryType);
 
 	HRESULT __stdcall DeviceSetIndexBuffer(const gpuvoid* const indexBufferMemory, const unsigned indexBuffer16LengthIndices, const eIndexFormat indexFormat);
 

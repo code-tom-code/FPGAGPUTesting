@@ -157,10 +157,17 @@ void GPUStats::UpdateDialogStats()
 	if (!GPUStatsDialog)
 		return;
 
+	const float VBBIdlePercent = uStats.typedFrameStats.VBBTimerStats.cyclesIdle / (const float)uStats.typedFrameStats.VBBTimerStats.GetTotalCycleCount();
+	const float VBBOutWaitPercent = uStats.typedFrameStats.VBBTimerStats.cyclesWaitingForOutput / (const float)uStats.typedFrameStats.VBBTimerStats.GetTotalCycleCount();
+	const float VBBWorkingPercent = uStats.typedFrameStats.VBBTimerStats.cyclesWorking / (const float)uStats.typedFrameStats.VBBTimerStats.GetTotalCycleCount();
+	PrintTimeStat(IDC_VBB_STAT1, VBBIdlePercent, uStats.typedFrameStats.VBBTimerStats.cyclesIdle);
+	PrintTimeStat(IDC_VBB_STAT2, VBBOutWaitPercent, uStats.typedFrameStats.VBBTimerStats.cyclesWaitingForOutput);
+	PrintTimeStat(IDC_VBB_STAT3, VBBWorkingPercent, uStats.typedFrameStats.VBBTimerStats.cyclesWorking);
+
 	const float VShaderIdlePercent = uStats.typedFrameStats.VShaderTimerStats.cyclesIdle / (const float)uStats.typedFrameStats.VShaderTimerStats.GetTotalCycleCount();
 	const float VShaderOutWaitPercent = uStats.typedFrameStats.VShaderTimerStats.cyclesWaitingForOutput / (const float)uStats.typedFrameStats.VShaderTimerStats.GetTotalCycleCount();
 	const float VShaderExecShaderCode = uStats.typedFrameStats.VShaderTimerStats.cyclesExecShaderCode / (const float)uStats.typedFrameStats.VShaderTimerStats.GetTotalCycleCount();
-	const float VShaderWorkingPercent = uStats.typedFrameStats.IATimerStats.cyclesWorking / (const float)uStats.typedFrameStats.VShaderTimerStats.GetTotalCycleCount();
+	const float VShaderWorkingPercent = uStats.typedFrameStats.VShaderTimerStats.cyclesWorking / (const float)uStats.typedFrameStats.VShaderTimerStats.GetTotalCycleCount();
 	PrintTimeStat(IDC_VS_STAT1, VShaderIdlePercent, uStats.typedFrameStats.VShaderTimerStats.cyclesIdle);
 	PrintTimeStat(IDC_VS_STAT2, VShaderOutWaitPercent, uStats.typedFrameStats.VShaderTimerStats.cyclesWaitingForOutput);
 	PrintTimeStat(IDC_VS_STAT3, VShaderExecShaderCode, uStats.typedFrameStats.VShaderTimerStats.cyclesExecShaderCode);

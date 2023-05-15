@@ -14,6 +14,7 @@ entity ShaderCore is
     Port (clk : in STD_LOGIC;
 		
 		-- Command processor signals:
+		CMD_IsIdle : out STD_LOGIC := '0';
 		CMD_IsReadyForCommand : out STD_LOGIC := '0';
 		CMD_InCommand : in STD_LOGIC_VECTOR(2 downto 0); -- 000 = do nothing; 010 = LoadProgram; 001 = SetConstant; 011 = SetVertexStream; 100 = BeginShading
 		CMD_LoadProgramAddr : in STD_LOGIC_VECTOR(29 downto 0);
@@ -31,7 +32,7 @@ entity ShaderCore is
 		-- Vertex Batch Builder (VBB) signals:
 		VBB_Done : in STD_LOGIC; -- Set to 1 when there's no more pending work to push into the FIFO. Shading is complete when this is 1 and VERTBATCH_FIFO_empty is 1 at the same time.
 		VERTBATCH_FIFO_empty : in STD_LOGIC;
-		VERTBATCH_FIFO_rd_data : in STD_LOGIC_VECTOR(528-1 downto 0);
+		VERTBATCH_FIFO_rd_data : in STD_LOGIC_VECTOR(544-1 downto 0);
 		VERTBATCH_FIFO_rd_en : out STD_LOGIC := '0';
 
 		-- Vertex Batch Output (VBO) signals:
@@ -44,7 +45,7 @@ entity ShaderCore is
 		VERTOUT_FIFO_wr_data : out STD_LOGIC_VECTOR(319 downto 0);
 		VERTOUT_FIFO_wr_en : out STD_LOGIC := '0';
 		INDEXOUT_FIFO_full : in STD_LOGIC;
-		INDEXOUT_FIFO_wr_data : out STD_LOGIC_VECTOR(255 downto 0);
+		INDEXOUT_FIFO_wr_data : out STD_LOGIC_VECTOR(271 downto 0);
 		INDEXOUT_FIFO_wr_en : out STD_LOGIC := '0';
 
 		-- Vertex Stream Cache (VSC) signals:
@@ -136,6 +137,7 @@ entity ShaderCore is
 		STAT_CyclesSpentWorking : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 		STAT_CyclesExecShaderCode : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 		STAT_CyclesWaitingForOutput : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		STAT_CurrentDrawEventID : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
 
 		-- Debugging signals:
 		DBG_CurrentState : out STD_LOGIC_VECTOR(5 downto 0) := (others => '0');
@@ -186,55 +188,53 @@ ATTRIBUTE X_INTERFACE_INFO of ICache_Address: SIGNAL is "xilinx.com:interface:br
 
 type eShaderCoreState is
 (
-	initState, -- 0
+	readyState, -- 0
 
-	readyState, -- 1
+	loadProgramState, -- 1
+	loadProgramStateLoopLow, -- 2
+	loadProgramStateLoopLowWaitForData, -- 3
+	loadProgramStateLoopHigh, -- 4
+	loadProgramStateLoopHighWaitForData, -- 5
+	loadProgramStateCleanup, -- 6
 
-	loadProgramState, -- 2
-	loadProgramStateLoopLow, -- 3
-	loadProgramStateLoopLowWaitForData, -- 4
-	loadProgramStateLoopHigh, -- 5
-	loadProgramStateLoopHighWaitForData, -- 6
-	loadProgramStateCleanup, -- 7
+	setShaderConstantY, -- 7
+	setShaderConstantZ, -- 8
+	setShaderConstantW, -- 9
+	setShaderConstantCooldown0, -- 10
+	setShaderConstantCooldown1, -- 11
 
-	setShaderConstantY, -- 8
-	setShaderConstantZ, -- 9
-	setShaderConstantW, -- 10
-	setShaderConstantCooldown0, -- 11
-	setShaderConstantCooldown1, -- 12
+	getVertexBatch, -- 12
 
-	getVertexBatch, -- 13
+	fetchVertexStreamData0, -- 13
+	fetchVertexStreamData1, -- 14
+	fetchVertexStreamDataWaitForData, -- 15
+	writeVertexDataToGPR, -- 16
 
-	fetchVertexStreamData0, -- 14
-	fetchVertexStreamData1, -- 15
-	fetchVertexStreamDataWaitForData, -- 16
-	writeVertexDataToGPR, -- 17
+	unpackColorData_Lane0, -- 17
+	unpackColorData_Lane1, -- 18
+	unpackColorData_Lane2, -- 19
+	unpackColorData_Lane3, -- 20
+	unpackColorData_WriteWait, -- 21
+	unpackColorData_WriteX, -- 22
+	unpackColorData_WriteY, -- 23
+	unpackColorData_WriteZ, -- 24
+	unpackColorData_WriteW, -- 25
 
-	unpackColorData_Lane0, -- 18
-	unpackColorData_Lane1, -- 19
-	unpackColorData_Lane2, -- 20
-	unpackColorData_Lane3, -- 21
-	unpackColorData_WriteWait, -- 22
-	unpackColorData_WriteX, -- 23
-	unpackColorData_WriteY, -- 24
-	unpackColorData_WriteZ, -- 25
-	unpackColorData_WriteW, -- 26
+	setupRunShader, -- 26
+	setupRunShader2, -- 27
+	setupRunShader3, -- 28
+	setupRunShader4, -- 29
+	runShader, -- 30
+	waitForWritesToComplete, -- 31
 
-	setupRunShader, -- 27
-	setupRunShader2, -- 28
-	setupRunShader3, -- 29
-	setupRunShader4, -- 30
-	runShader, -- 31
-	waitForWritesToComplete, -- 32
+	dbgOutputRegisterData, -- 32
+	dbgOutputRegisterDataRFWait0, -- 33
+	dbgOutputRegisterDataRFWait1, -- 34
+	dbgOutputRegisterDataRFWait2, -- 35
+	dbgOutputRegisterDataOutput, -- 36
 
-	dbgOutputRegisterData, -- 33
-	dbgOutputRegisterDataRFWait0, -- 34
-	dbgOutputRegisterDataRFWait1, -- 35
-	dbgOutputRegisterDataRFWait2, -- 36
-	dbgOutputRegisterDataOutput, -- 37
-
-	collectShaderResults, -- 38
-	submitShaderResults -- 39
+	collectShaderResults, -- 37
+	submitShaderResults -- 38
 );
 
 type InstructionOperation is (
@@ -1058,7 +1058,7 @@ begin
 end function;
 
 -- The current state of the shader core
-signal currentState : eShaderCoreState := initState;
+signal currentState : eShaderCoreState := readyState;
 
 -- This bitmask determines which lanes are currently active (1) and which are inactive (0)
 signal activeWaveLanesBitmask : unsigned(16 downto 0) := (others => '0');
@@ -1089,6 +1089,7 @@ signal currentColorConvertRegisters0 : unsigned(127 downto 0) := (others => '0')
 signal currentColorConvertRegisters1 : unsigned(127 downto 0) := (others => '0');
 signal currentColorConvertRegisters2 : unsigned(127 downto 0) := (others => '0');
 signal readyToRunShader : std_logic := '0';
+signal currentDrawEventID : unsigned(15 downto 0) := (others => '0');
 
 -- Shader Execution signals
 signal instructionPointer : unsigned(8 downto 0) := (others => '0');
@@ -1194,6 +1195,7 @@ GPR0_PortW_writeInData(127 downto 96) <= std_logic_vector(GetStoreOutputValue(Po
 StatsProcess : process(clk)
 begin
 	if (rising_edge(clk) ) then
+		STAT_CurrentDrawEventID <= std_logic_vector(currentDrawEventID);
 		case currentState is
 			when readyState =>
 				statCyclesIdle <= statCyclesIdle + 1;
@@ -1213,10 +1215,9 @@ end process StatsProcess;
 MainProcess : process(clk)
 begin
 	if (rising_edge(clk) ) then
-		case currentState is
-			when initState =>
-				currentState <= readyState;
+		CMD_IsIdle <= '0';
 
+		case currentState is
 			when readyState =>
 				CB_Enable <= '0';
 				CB_WriteMode <= '0';
@@ -1264,6 +1265,7 @@ begin
 
 					when others =>
 						-- Do nothing
+						CMD_IsIdle <= '1';
 				end case;
 				
 			when loadProgramState =>
@@ -1345,27 +1347,30 @@ begin
 			when getVertexBatch =>
 				VSC_InvalidateCache <= '0';
 				VBO_Pushed <= '0';
+
+				for i in 0 to 15 loop
+					vertexBatchData(i) <= unsigned(VERTBATCH_FIFO_rd_data(16 * (i + 1) - 1 downto 16 * i) );
+				end loop;
+				numVerticesInBatch <= unsigned(VERTBATCH_FIFO_rd_data(16 * 16 + 5 - 1 downto 16 * 16) );
+				indexBatchData <= unsigned(VERTBATCH_FIFO_rd_data(519 downto 264) );
+				numIndicesInBatch <= unsigned(VERTBATCH_FIFO_rd_data(526 downto 520) );
+				isIndexedDrawCall <= VERTBATCH_FIFO_rd_data(527);
+				currentDrawEventID <= unsigned(VERTBATCH_FIFO_rd_data(543 downto 528) );
+				readyToRunShader <= '0'; -- Reset our ready flag for shader execution
+				activeWaveLanesBitmask <= ComputeActiveLanesBitmask(unsigned(VERTBATCH_FIFO_rd_data(16 * 16 + 5 - 1 downto 16 * 16) ) );
+				currentFetchWave <= (others => '0'); -- Reset all of our counters to 0 for the start fetching a new vertex batch
+				currentStreamID <= (others => '0');
+				currentDWORDID <= (others => '0');
+				GPR0_WriteQuadIndex <= (others => '0');
+				GPR0_PortW_en <= '0';
+				GPR0_PortW_regType <= std_logic_vector(to_unsigned(RegisterFileRegType'pos(RFType_VInput), 2) ); -- Set our regtype to "V#"
+				GPR0_PortW_regIdx <= (others => '0'); -- Set our regindex to 0
+				GPR0_PortW_regChan <= (others => '0'); -- Set our regChan to "X"
+
 				if (VBB_Done = '1' and VERTBATCH_FIFO_empty = '1') then
 					currentState <= readyState; -- All done shading!
 				elsif (VERTBATCH_FIFO_empty = '0') then
-					for i in 0 to 15 loop
-						vertexBatchData(i) <= unsigned(VERTBATCH_FIFO_rd_data(16 * (i + 1) - 1 downto 16 * i) );
-					end loop;
-					numVerticesInBatch <= unsigned(VERTBATCH_FIFO_rd_data(16 * 16 + 5 - 1 downto 16 * 16) );
-					indexBatchData <= unsigned(VERTBATCH_FIFO_rd_data(519 downto 264) );
-					numIndicesInBatch <= unsigned(VERTBATCH_FIFO_rd_data(526 downto 520) );
-					isIndexedDrawCall <= VERTBATCH_FIFO_rd_data(527);
 					VERTBATCH_FIFO_rd_en <= '1';
-					readyToRunShader <= '0';
-					activeWaveLanesBitmask <= ComputeActiveLanesBitmask(unsigned(VERTBATCH_FIFO_rd_data(16 * 16 + 5 - 1 downto 16 * 16) ) );
-					currentFetchWave <= (others => '0'); -- Reset all of our counters to 0 for the start fetching a new vertex batch
-					currentStreamID <= (others => '0');
-					currentDWORDID <= (others => '0');
-					GPR0_WriteQuadIndex <= (others => '0');
-					GPR0_PortW_en <= '0';
-					GPR0_PortW_regType <= std_logic_vector(to_unsigned(RegisterFileRegType'pos(RFType_VInput), 2) ); -- Set our regtype to "V#"
-					GPR0_PortW_regIdx <= (others => '0'); -- Set our regindex to 0
-					GPR0_PortW_regChan <= (others => '0'); -- Set our regChan to "X"
 					currentState <= fetchVertexStreamData0;
 				end if;
 
@@ -1952,7 +1957,7 @@ begin
 						VERTOUT_FIFO_wr_data(32*(i+1)-1 downto 32*i) <= std_logic_vector(currentOutputDWORDs(i) );
 					end loop;
 					if (hasSentIndicesForBatch = '0') then -- Only do this once per batch!
-						INDEXOUT_FIFO_wr_data <= std_logic_vector(indexBatchData);
+						INDEXOUT_FIFO_wr_data <= std_logic_vector(currentDrawEventID) & std_logic_vector(indexBatchData);
 						INDEXOUT_FIFO_wr_en <= '1';
 						hasSentIndicesForBatch <= '1';
 					end if;

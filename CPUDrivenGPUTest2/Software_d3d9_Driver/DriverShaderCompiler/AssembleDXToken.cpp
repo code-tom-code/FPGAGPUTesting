@@ -27,14 +27,6 @@ static const validMinorVertexShaderModels validMajorVertexShaderModels[4] =
 	{true, false} // vs_3_0
 };
 
-enum registerPermissions : unsigned char
-{
-	NotAvailable = 0, // This register does not exist in this shader model
-	ReadOnly = 1, // This register may only be read from as a source parameter
-	WriteOnly = 2, // This register may only be written to as a dest parameter
-	ReadWrite = 3 // This register may be used as a source or a dest parameter
-};
-
 struct shaderModelRegisterPermissions
 {
 	const registerPermissions registerPermissions[D3DSPR_PREDICATE + 1] = { NotAvailable };
@@ -398,7 +390,7 @@ static void ValidateInstructionForShaderModel(const ShaderInfo& inDXShaderInfo, 
 	}
 }
 
-static void GetRegisterPermissionsAndCount(const ShaderInfo& inDXShaderInfo, const D3DSHADER_PARAM_REGISTER_TYPE regType, registerPermissions& outRegPermissions, unsigned short& outRegCount)
+void GetRegisterPermissionsAndCount(const ShaderInfo& inDXShaderInfo, const D3DSHADER_PARAM_REGISTER_TYPE regType, registerPermissions& outRegPermissions, unsigned short& outRegCount)
 {
 	if (regType > D3DSPR_PREDICATE)
 	{

@@ -31,6 +31,7 @@ enum ShaderCompileResultCode : unsigned
 	ShaderCompile_ERR_UnknownInstructionOpcode, // An unknown or unexpected shader opcode was encountered. This is likely a corrupted or malformed shader.
 	ShaderCompile_ERR_NeededTempGPRNotFound, // A free temp r# GPR was needed for combo instruction decomposition and no free temp GPR's were found for use in the shader
 	ShaderCompile_ERR_NeededConstRegNotFound, // A free const buffer c# register was needed and no free const buffer registers were found for use in the shader
+	ShaderCompile_ERR_IllegalInstruction, // An existing instruction (which may have been generated in a previous compiler pass) is now illegal and does not make sense
 	ShaderCompile_ERR_TempGPRCountExceedsHardware, // This shader uses too many temp. GPR's to fit on the hardware!
 	ShaderCompile_ERR_ShaderInstructionCountExceedsHardware, // This shader uses too many instructions to fit on the hardware!
 	ShaderCompile_ERR_MallocFail, // Malloc failed internally. We must be out of CPU memory.

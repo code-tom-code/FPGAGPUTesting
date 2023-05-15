@@ -82,8 +82,11 @@
 #define IDC_CLIPUNIT_STAT1              1057
 #define IDC_DINTERP_STAT3               1058
 #define IDC_CLIPUNIT_STAT2              1059
-#define IDC_CLIPUNIT_STAT6              1060
 #define IDC_CLIPUNIT_STAT3              1060
+#define IDC_VBB_STAT1                   1061
+#define IDC_VBB_STAT2                   1062
+#define IDC_CLIPUNIT_STAT6              1063
+#define IDC_VBB_STAT3                   1063
 
 // Next default values for new objects
 // 

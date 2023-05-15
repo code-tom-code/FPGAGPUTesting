@@ -831,9 +831,6 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::LightEnable
 		{
 			if (Enable)
 			{
-#ifdef _DEBUG
-				DbgBreakPrint("Warning: Enabling an already-enabled light");
-#endif
 				// Do nothing, light is already enabled
 				return ret;
 			}
@@ -867,9 +864,6 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::LightEnable
 			}
 			else
 			{
-#ifdef _DEBUG
-				OutputDebugStringA("Warning: Disabling an already-disabled light");
-#endif
 				// Do nothing, light is already disabled
 				return ret;
 			}

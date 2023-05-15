@@ -2,4 +2,7 @@
 # List other files here
 vhdl xil_defaultlib  \
 "hdl_src/FloatALU_Types.vhd" \
-"hdl_src/AttrInterpolator.vhd" \
+"hdl_src/PacketType.vhd" \
+"hdl_src/PixelPipeline/PixelPipeline_Types.vhd" \
+"hdl_src/RenderState/AttrInterpolatorState.vhd" \
+"hdl_src/PixelPipeline/AttrInterpolator.vhd" \

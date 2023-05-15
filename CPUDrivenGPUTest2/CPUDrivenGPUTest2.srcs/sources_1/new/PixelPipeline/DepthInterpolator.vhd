@@ -7,6 +7,7 @@ use IEEE.NUMERIC_STD.ALL;
 
 use work.FloatALU_Types.all;
 use work.FloatCommon.all;
+use work.PixelPipeline_Types.all;
 
 entity DepthInterpolator is
 	Port ( clk : in STD_LOGIC;
@@ -66,8 +67,8 @@ entity DepthInterpolator is
 	-- Attribute Interpolator interface begin
 		ATTR_ReadyForNewPixel : in STD_LOGIC;
 		ATTR_NewPixelValid : out STD_LOGIC := '0';
-		ATTR_PosX : out STD_LOGIC_VECTOR(9 downto 0) := (others => '0');
-		ATTR_PosY : out STD_LOGIC_VECTOR(9 downto 0) := (others => '0');
+		ATTR_PosX : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
+		ATTR_PosY : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
 		ATTR_TX0 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 		ATTR_TX10 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 		ATTR_TX20 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
@@ -90,6 +91,7 @@ entity DepthInterpolator is
 		STAT_CyclesIdle : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 		STAT_CyclesSpentWorking : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 		STAT_CyclesWaitingForOutput : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		STAT_CurrentDrawEventID : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
 	-- Stats interface end
 
 	-- Debug signals
@@ -198,18 +200,10 @@ type depthInterpStateType is
 	sendPixelForAttrInterpolation, -- 63
 
 	setNewPrimitiveSlot, -- 64
-	signalPrimitiveComplete -- 65
+	signalPrimitiveComplete, -- 65
+	signalNewDrawEventID, -- 66
+	signalTerminateDrawEventID -- 67
 );
-
-pure function isSpecialReadPacket(rd_data : STD_LOGIC_VECTOR(32+32+16+16 - 1 downto 0) ) return std_logic is
-begin
-	if (rd_data(32*2+16-1 downto 32*2) = x"FFFF" or
-		rd_data(32*2+16-1 downto 32*2) = x"FFFE") then
-		return '1';
-	else
-		return '0';
-	end if;
-end function;
 
 pure function Int32toUint32(intVal : signed(31 downto 0); signBit : std_logic) return unsigned is
 begin
@@ -244,12 +238,33 @@ begin
 	end if;
 end function;
 
+pure function GetPixelCoordinateX(depthInterpolatorFifoPacket : unsigned(32+32+16+16 - 1 downto 0) ) return unsigned is
+begin
+	return depthInterpolatorFifoPacket(32*2+16-1 downto 32*2);
+end function;
+
+pure function GetPixelCoordinateY(depthInterpolatorFifoPacket : unsigned(32+32+16+16 - 1 downto 0) ) return unsigned is
+begin
+	return depthInterpolatorFifoPacket(32*2+16*2-1 downto 32*2+16);
+end function;
+
+pure function GetBarycentricCoordinateB(depthInterpolatorFifoPacket : unsigned(32+32+16+16 - 1 downto 0) ) return signed is
+begin
+	return signed(depthInterpolatorFifoPacket(32*1-1 downto 32*0) );
+end function;
+
+pure function GetBarycentricCoordinateC(depthInterpolatorFifoPacket : unsigned(32+32+16+16 - 1 downto 0) ) return signed is
+begin
+	return signed(depthInterpolatorFifoPacket(32*2-1 downto 32*1) );
+end function;
+
 signal currentState : depthInterpStateType := waitingForRead;
 
 signal newPixelValid : std_logic := '0';
 
 signal storedPixelX : unsigned(15 downto 0) := (others => '0');
 signal storedPixelY : unsigned(15 downto 0) := (others => '0');
+signal currentDrawEventID : unsigned(15 downto 0) := (others => '0');
 
 signal tempMultBarycentricB : signed(31 downto 0) := (others => '0'); -- int32 format of the input barycentric
 signal tempMultBarycentricC : signed(31 downto 0) := (others => '0'); -- int32 format of the input barycentric
@@ -313,11 +328,12 @@ DBG_RastBarycentricC <= std_logic_vector(storedDbgBarycentricC);
 	StatsProcess : process(clk)
 	begin
 		if (rising_edge(clk) ) then
+			STAT_CurrentDrawEventID <= std_logic_vector(currentDrawEventID);
 			case currentState is
 				when waitingForRead =>
 					statCyclesIdle <= statCyclesIdle + 1;
 
-				when sendPixelForAttrInterpolation =>
+				when sendPixelForAttrInterpolation | signalNewDrawEventID | signalTerminateDrawEventID =>
 					statCyclesWaitingForOutput <= statCyclesWaitingForOutput + 1;
 
 				when others =>
@@ -327,6 +343,9 @@ DBG_RastBarycentricC <= std_logic_vector(storedDbgBarycentricC);
 	end process StatsProcess;
 
 	MainProcess : process(clk)
+		variable barycentricB : signed(31 downto 0);
+		variable barycentricC : signed(31 downto 0);
+		variable tempPixelX : unsigned(15 downto 0);
 	begin
 		if (rising_edge(clk) ) then
 			CMD_IsIdle <= '0';
@@ -336,41 +355,51 @@ DBG_RastBarycentricC <= std_logic_vector(storedDbgBarycentricC);
 					newPixelValid <= '0'; -- Deassert after one clock cycle
 					TRICACHE_SignalSlotComplete <= '0'; -- Deassert after one clock cycle
 					DEPTH_PixelReady <= '0';
+
+					barycentricB := GetBarycentricCoordinateB(unsigned(RASTOUT_FIFO_rd_data) );
+					barycentricC := GetBarycentricCoordinateC(unsigned(RASTOUT_FIFO_rd_data) );
+					tempMultBarycentricB <= GetBarycentricCoordinateB(unsigned(RASTOUT_FIFO_rd_data) );
+					tempMultBarycentricC <= GetBarycentricCoordinateC(unsigned(RASTOUT_FIFO_rd_data) );
+					tempMultBarycentricBIsNegative <= barycentricB(31); -- Save off the sign bit for restoring later
+					tempMultBarycentricCIsNegative <= barycentricC(31);
+					storedDbgBarycentricB <= GetBarycentricCoordinateB(unsigned(RASTOUT_FIFO_rd_data) );
+					storedDbgBarycentricC <= GetBarycentricCoordinateC(unsigned(RASTOUT_FIFO_rd_data) );
+					storedPixelX <= GetPixelCoordinateX(unsigned(RASTOUT_FIFO_rd_data) );
+					storedPixelY <= GetPixelCoordinateY(unsigned(RASTOUT_FIFO_rd_data) );
+					tempPixelX := GetPixelCoordinateX(unsigned(RASTOUT_FIFO_rd_data) );
+					storedBarycentricInverse <= unsigned(TRICACHE_inBarycentricInverse);
+					storedZ0 <= f32(TRICACHE_inZ0);
+					storedZ10 <= f32(TRICACHE_inZ10);
+					storedZ20 <= f32(TRICACHE_inZ20);
+					storedInvW0 <= f32(TRICACHE_inInvW0);
+					storedInvW10 <= f32(TRICACHE_inInvW10);
+					storedInvW20 <= f32(TRICACHE_inInvW20);
+					storedTX0 <= f32(TRICACHE_inT0X);
+					storedTY0 <= f32(TRICACHE_inT0Y);
+					storedTX10 <= f32(TRICACHE_inT10X);
+					storedTY10 <= f32(TRICACHE_inT10Y);
+					storedTX20 <= f32(TRICACHE_inT20X);
+					storedTY20 <= f32(TRICACHE_inT20Y);
+					storedColorRGBA0 <= unsigned(TRICACHE_inColorRGBA0);
+					storedColorRGBA10 <= unsigned(TRICACHE_inColorRGBA10);
+					storedColorRGBA20 <= unsigned(TRICACHE_inColorRGBA20);
+
 					if (RASTOUT_FIFO_empty = '0') then
-						if (isSpecialReadPacket(RASTOUT_FIFO_rd_data) = '1') then
-							if (RASTOUT_FIFO_rd_data(32*2+16-1 downto 32*2) = x"FFFF") then -- "FFFF" means "terminate primitive slot"
-								storedPixelY <= unsigned(RASTOUT_FIFO_rd_data(32*2+16*2-1 downto 32*2+16) );
+						if (IsSpecialPixelMessage(GetPixelCoordinateX(unsigned(RASTOUT_FIFO_rd_data) ) ) ) then
+							if (tempPixelX(eSpecialPixelCodeBits'pos(TerminateCurrentPrimSlot) ) = '1') then -- "terminate primitive slot"
 								currentState <= signalPrimitiveComplete;
-							else -- "FFFE" means "set new primitive slot"
-								storedPixelY <= unsigned(RASTOUT_FIFO_rd_data(32*2+16*2-1 downto 32*2+16) );
+							end if;
+							if (tempPixelX(eSpecialPixelCodeBits'pos(SetNewPrimSlot) ) = '1') then -- "set new primitive slot"
 								currentState <= setNewPrimitiveSlot;
 							end if;
+							if (tempPixelX(eSpecialPixelCodeBits'pos(SetNewDrawEventID) ) = '1') then -- "set new draw event ID"
+								currentDrawEventID <= GetPixelCoordinateY(unsigned(RASTOUT_FIFO_rd_data) );
+								currentState <= signalNewDrawEventID;
+							end if;
+							if (tempPixelX(eSpecialPixelCodeBits'pos(TerminateCurrentDrawEventID) ) = '1') then -- "terminate current draw event ID"
+								currentState <= signalTerminateDrawEventID;
+							end if;
 						else
-							tempMultBarycentricB <= signed(RASTOUT_FIFO_rd_data(32*1-1 downto 32*0) );
-							tempMultBarycentricC <= signed(RASTOUT_FIFO_rd_data(32*2-1 downto 32*1) );
-							tempMultBarycentricBIsNegative <= RASTOUT_FIFO_rd_data(32*1-1); -- Save off the sign bit for restoring later
-							tempMultBarycentricCIsNegative <= RASTOUT_FIFO_rd_data(32*2-1);
-							storedDbgBarycentricB <= signed(RASTOUT_FIFO_rd_data(32*1-1 downto 32*0) );
-							storedDbgBarycentricC <= signed(RASTOUT_FIFO_rd_data(32*2-1 downto 32*1) );
-							storedPixelX <= unsigned(RASTOUT_FIFO_rd_data(32*2+16-1 downto 32*2) );
-							storedPixelY <= unsigned(RASTOUT_FIFO_rd_data(32*2+16*2-1 downto 32*2+16) );
-							storedBarycentricInverse <= unsigned(TRICACHE_inBarycentricInverse);
-							storedZ0 <= f32(TRICACHE_inZ0);
-							storedZ10 <= f32(TRICACHE_inZ10);
-							storedZ20 <= f32(TRICACHE_inZ20);
-							storedInvW0 <= f32(TRICACHE_inInvW0);
-							storedInvW10 <= f32(TRICACHE_inInvW10);
-							storedInvW20 <= f32(TRICACHE_inInvW20);
-							storedTX0 <= f32(TRICACHE_inT0X);
-							storedTY0 <= f32(TRICACHE_inT0Y);
-							storedTX10 <= f32(TRICACHE_inT10X);
-							storedTY10 <= f32(TRICACHE_inT10Y);
-							storedTX20 <= f32(TRICACHE_inT20X);
-							storedTY20 <= f32(TRICACHE_inT20Y);
-							storedColorRGBA0 <= unsigned(TRICACHE_inColorRGBA0);
-							storedColorRGBA10 <= unsigned(TRICACHE_inColorRGBA10);
-							storedColorRGBA20 <= unsigned(TRICACHE_inColorRGBA20);
-
 							currentState <= barycentricConversion0;
 						end if;
 
@@ -650,8 +679,8 @@ DBG_RastBarycentricC <= std_logic_vector(storedDbgBarycentricC);
 
 				when sendPixelForAttrInterpolation =>
 					FPU_ICNV_GO <= '0';
-					ATTR_PosX <= std_logic_vector(storedPixelX(9 downto 0) );
-					ATTR_PosY <= std_logic_vector(storedPixelY(9 downto 0) );
+					ATTR_PosX <= std_logic_vector(storedPixelX);
+					ATTR_PosY <= std_logic_vector(storedPixelY);
 					ATTR_TX0 <= std_logic_vector(storedTX0);
 					ATTR_TX10 <= std_logic_vector(storedTX10);
 					ATTR_TX20 <= std_logic_vector(storedTX20);
@@ -683,6 +712,30 @@ DBG_RastBarycentricC <= std_logic_vector(storedDbgBarycentricC);
 					TRICACHE_CurrentSlotIndex <= std_logic_vector(storedPixelY(2 downto 0) ); -- This set isn't really necessary...
 					TRICACHE_SignalSlotComplete <= '1';
 					currentState <= waitingForRead;
+
+				when signalNewDrawEventID =>
+					readFromFifo <= '0'; -- Stop reading from the FIFO after one cycle in order to not pull more than one item off of the queue
+					ATTR_PosX <= std_logic_vector(PixelMsg_SetNewDrawEventID);
+					ATTR_PosY <= std_logic_vector(currentDrawEventID);
+					if (ATTR_ReadyForNewPixel = '1' and newPixelValid = '1') then
+						newPixelValid <= '0';
+
+						currentState <= waitingForRead;
+					else
+						newPixelValid <= '1';
+					end if;
+
+				when signalTerminateDrawEventID =>
+					readFromFifo <= '0'; -- Stop reading from the FIFO after one cycle in order to not pull more than one item off of the queue
+					ATTR_PosX <= std_logic_vector(PixelMsg_TermCurrentDrawEventID);
+					ATTR_PosY <= std_logic_vector(currentDrawEventID);
+					if (ATTR_ReadyForNewPixel = '1' and newPixelValid = '1') then
+						newPixelValid <= '0';
+
+						currentState <= waitingForRead;
+					else
+						newPixelValid <= '1';
+					end if;
 
 			end case;
 		end if;

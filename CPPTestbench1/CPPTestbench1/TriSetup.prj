@@ -2,4 +2,4 @@
 # List other files here
 vhdl xil_defaultlib  \
 "hdl_src/FloatALU_Types.vhd" \
-"hdl_src/TriSetup.vhd" \
+"hdl_src/VertexPipeline/TriSetup.vhd" \

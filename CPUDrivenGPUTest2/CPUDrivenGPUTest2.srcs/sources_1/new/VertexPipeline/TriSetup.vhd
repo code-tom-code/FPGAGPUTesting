@@ -33,6 +33,8 @@ entity TriSetup is
 		CLIP_v1_in_RGBA : in STD_LOGIC_VECTOR(127 downto 0);
 		CLIP_v2_in_RGBA : in STD_LOGIC_VECTOR(127 downto 0);
 
+		CLIP_CurrentDrawEventID : in STD_LOGIC_VECTOR(15 downto 0);
+
 		CLIP_newTriBegin : in STD_LOGIC;
 		CLIP_readyForNewTri : out STD_LOGIC := '0';
 	-- Clip unit interfaces end
@@ -76,6 +78,8 @@ entity TriSetup is
 		RAST_outBarycentricYDeltaB : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
 		RAST_outBarycentricYDeltaC : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
 
+		RAST_CurrentDrawEventID : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
+
 		RAST_readyForTriSetupData : in STD_LOGIC;
 		RAST_triSetupDataIsValid : out STD_LOGIC := '0';
 	-- Rasterizer interfaces end
@@ -117,6 +121,7 @@ entity TriSetup is
 		STAT_CyclesIdle : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 		STAT_CyclesSpentWorking : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 		STAT_CyclesWaitingForOutput : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		STAT_CurrentDrawEventID : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
 	-- Stats interface end
 
 	-- Debug signals
@@ -262,7 +267,8 @@ ATTRIBUTE X_INTERFACE_PARAMETER of clk: SIGNAL is "FREQ_HZ 333250000";
 		triSetup_waitForDeltasCompletion4, -- 83
 
 		-- Finally, send our setup tri result data to the rasterizer
-		triSetup_broadcastOutput -- 84
+		triSetup_broadcastOutput, -- 84
+		triSetup_broadcastNewDrawEventEmptyTriangle -- 85
 		);
 
 	pure function isTopLeftEdge(vertA_X : signed(15 downto 0); 
@@ -388,6 +394,8 @@ signal VIEWPORT_Z_OFFSET : f32 := X"00000000"; -- This is 0.0f
 -- Internal signals
 signal readyForNextTriSig : STD_LOGIC := '1';
 signal currentState : trisetup_state_t := triSetup_waitForTriData;
+signal currentDrawEventID : unsigned(15 downto 0) := (others => '0');
+signal hasBroadcastStartForDrawID : std_logic := '0';
 
 -- Internal computation intermediaries
 signal v0_xPosFloat : f32 := (others => '0'); -- 32-bit floating point
@@ -519,6 +527,7 @@ DBG_TwiceTriArea <= std_logic_vector(twiceTriangleArea);
 	process(clk)
 	begin
 		if (rising_edge(clk) ) then
+			STAT_CurrentDrawEventID <= std_logic_vector(currentDrawEventID);
 			case currentState is
 				when triSetup_waitForTriData =>
 					statCyclesIdle <= statCyclesIdle + 1;
@@ -553,37 +562,45 @@ DBG_TwiceTriArea <= std_logic_vector(twiceTriangleArea);
 				when triSetup_waitForTriData =>
 					triSetupDataIsValid <= '0';
 					CMD_TriSetupIsIdle <= '0';
+
+					v0_xPosFloat <= f32(CLIP_v0_in_x);
+					v0_yPosFloat <= f32(CLIP_v0_in_y);
+					v1_xPosFloat <= f32(CLIP_v1_in_x);
+					v1_yPosFloat <= f32(CLIP_v1_in_y);
+					v2_xPosFloat <= f32(CLIP_v2_in_x);
+					v2_yPosFloat <= f32(CLIP_v2_in_y);
+					v0_zPosFloat <= f32(CLIP_v0_in_z);
+					v1_zPosFloat <= f32(CLIP_v1_in_z);
+					v2_zPosFloat <= f32(CLIP_v2_in_z);
+					v0_wPosFloat <= f32(CLIP_v0_in_w);
+					v1_wPosFloat <= f32(CLIP_v1_in_w);
+					v2_wPosFloat <= f32(CLIP_v2_in_w);
+					t0_store_x <= f32(CLIP_t0_in_x);
+					t0_store_y <= f32(CLIP_t0_in_y);
+					t1_store_x <= f32(CLIP_t1_in_x);
+					t1_store_y <= f32(CLIP_t1_in_y);
+					t2_store_x <= f32(CLIP_t2_in_x);
+					t2_store_y <= f32(CLIP_t2_in_y);
+					v0_store_RGBA.r <= f32(CLIP_v0_in_RGBA(31 downto 0) );
+					v0_store_RGBA.g <= f32(CLIP_v0_in_RGBA(63 downto 32) );
+					v0_store_RGBA.b <= f32(CLIP_v0_in_RGBA(95 downto 64) );
+					v0_store_RGBA.a <= f32(CLIP_v0_in_RGBA(127 downto 96) );
+					v1_store_RGBA.r <= f32(CLIP_v1_in_RGBA(31 downto 0) );
+					v1_store_RGBA.g <= f32(CLIP_v1_in_RGBA(63 downto 32) );
+					v1_store_RGBA.b <= f32(CLIP_v1_in_RGBA(95 downto 64) );
+					v1_store_RGBA.a <= f32(CLIP_v1_in_RGBA(127 downto 96) );
+					v2_store_RGBA.r <= f32(CLIP_v2_in_RGBA(31 downto 0) );
+					v2_store_RGBA.g <= f32(CLIP_v2_in_RGBA(63 downto 32) );
+					v2_store_RGBA.b <= f32(CLIP_v2_in_RGBA(95 downto 64) );
+					v2_store_RGBA.a <= f32(CLIP_v2_in_RGBA(127 downto 96) );
+
 					if (CLIP_newTriBegin = '1' and readyForNextTriSig = '1') then
-						v0_xPosFloat <= f32(CLIP_v0_in_x);
-						v0_yPosFloat <= f32(CLIP_v0_in_y);
-						v1_xPosFloat <= f32(CLIP_v1_in_x);
-						v1_yPosFloat <= f32(CLIP_v1_in_y);
-						v2_xPosFloat <= f32(CLIP_v2_in_x);
-						v2_yPosFloat <= f32(CLIP_v2_in_y);
-						v0_zPosFloat <= f32(CLIP_v0_in_z);
-						v1_zPosFloat <= f32(CLIP_v1_in_z);
-						v2_zPosFloat <= f32(CLIP_v2_in_z);
-						v0_wPosFloat <= f32(CLIP_v0_in_w);
-						v1_wPosFloat <= f32(CLIP_v1_in_w);
-						v2_wPosFloat <= f32(CLIP_v2_in_w);
-						t0_store_x <= f32(CLIP_t0_in_x);
-						t0_store_y <= f32(CLIP_t0_in_y);
-						t1_store_x <= f32(CLIP_t1_in_x);
-						t1_store_y <= f32(CLIP_t1_in_y);
-						t2_store_x <= f32(CLIP_t2_in_x);
-						t2_store_y <= f32(CLIP_t2_in_y);
-						v0_store_RGBA.r <= f32(CLIP_v0_in_RGBA(31 downto 0) );
-						v0_store_RGBA.g <= f32(CLIP_v0_in_RGBA(63 downto 32) );
-						v0_store_RGBA.b <= f32(CLIP_v0_in_RGBA(95 downto 64) );
-						v0_store_RGBA.a <= f32(CLIP_v0_in_RGBA(127 downto 96) );
-						v1_store_RGBA.r <= f32(CLIP_v1_in_RGBA(31 downto 0) );
-						v1_store_RGBA.g <= f32(CLIP_v1_in_RGBA(63 downto 32) );
-						v1_store_RGBA.b <= f32(CLIP_v1_in_RGBA(95 downto 64) );
-						v1_store_RGBA.a <= f32(CLIP_v1_in_RGBA(127 downto 96) );
-						v2_store_RGBA.r <= f32(CLIP_v2_in_RGBA(31 downto 0) );
-						v2_store_RGBA.g <= f32(CLIP_v2_in_RGBA(63 downto 32) );
-						v2_store_RGBA.b <= f32(CLIP_v2_in_RGBA(95 downto 64) );
-						v2_store_RGBA.a <= f32(CLIP_v2_in_RGBA(127 downto 96) );
+
+						if (currentDrawEventID /= unsigned(CLIP_CurrentDrawEventID) ) then
+							hasBroadcastStartForDrawID <= '0';
+						end if;
+						currentDrawEventID <= unsigned(CLIP_CurrentDrawEventID);
+
 						readyForNextTriSig <= '0';
 						currentState <= triSetup_NAN_INF_ZeroW_Cull; -- Start the triangle setup state machine
 					else
@@ -599,8 +616,12 @@ DBG_TwiceTriArea <= std_logic_vector(twiceTriangleArea);
 				when triSetup_NAN_INF_ZeroW_Cull =>
 					if (ShouldCullTriBadVertex(v0_xPosFloat, v0_yPosFloat, v0_zPosFloat, v0_wPosFloat) or ShouldCullTriBadVertex(v1_xPosFloat, v1_yPosFloat, v1_zPosFloat, v1_wPosFloat) or ShouldCullTriBadVertex(v2_xPosFloat, v2_yPosFloat, v2_zPosFloat, v2_wPosFloat) ) then
 						stats_totalTrianglesINF_NAN_ZeroWVertCulled <= stats_totalTrianglesINF_NAN_ZeroWVertCulled + 1;
-						readyForNextTriSig <= '1';
-						currentState <= triSetup_waitForTriData;
+						if (hasBroadcastStartForDrawID = '1') then
+							readyForNextTriSig <= '1';
+							currentState <= triSetup_waitForTriData;
+						else
+							currentState <= triSetup_broadcastNewDrawEventEmptyTriangle;
+						end if;
 					else
 						currentState <= triSetup_FloatDegenerateTriDuplicateVert;
 					end if;
@@ -609,9 +630,13 @@ DBG_TwiceTriArea <= std_logic_vector(twiceTriangleArea);
 					if ( ( (v0_xPosFloat = v1_xPosFloat) and (v0_yPosFloat = v1_yPosFloat) and (v0_zPosFloat = v1_zPosFloat) and (v0_wPosFloat = v1_wPosFloat) ) or -- v0 == v1
 					( (v0_xPosFloat = v2_xPosFloat) and (v0_yPosFloat = v2_yPosFloat) and (v0_zPosFloat = v2_zPosFloat) and (v0_wPosFloat = v2_wPosFloat) ) or -- v0 == v2
 					( (v1_xPosFloat = v2_xPosFloat) and (v1_yPosFloat = v2_yPosFloat) and (v1_zPosFloat = v2_zPosFloat) and (v1_wPosFloat = v2_wPosFloat) ) ) then -- v1 == v2
-						readyForNextTriSig <= '1';
 						stats_totalTrianglesDuplicateVertCulled <= stats_totalTrianglesDuplicateVertCulled + 1;
-						currentState <= triSetup_waitForTriData;
+						if (hasBroadcastStartForDrawID = '1') then
+							readyForNextTriSig <= '1';
+							currentState <= triSetup_waitForTriData;
+						else
+							currentState <= triSetup_broadcastNewDrawEventEmptyTriangle;
+						end if;
 					else
 						currentState <= triSetup_InvWSubmitRcpW0;
 					end if;
@@ -967,8 +992,12 @@ DBG_TwiceTriArea <= std_logic_vector(twiceTriangleArea);
 						( (v1_x = v2_x) and (v1_y = v2_y) ) or -- v1 = v2
 						( (v0_x = v2_x) and (v0_y = v2_y) ) ) then -- v0 = v2
 						stats_totalTrianglesDuplicateVertCulled <= stats_totalTrianglesDuplicateVertCulled + 1;
-						readyForNextTriSig <= '1';
-						currentState <= triSetup_waitForTriData;
+						if (hasBroadcastStartForDrawID = '1') then
+							readyForNextTriSig <= '1';
+							currentState <= triSetup_waitForTriData;
+						else
+							currentState <= triSetup_broadcastNewDrawEventEmptyTriangle;
+						end if;
 					else
 						currentState <= triSetup_bounds;
 					end if;
@@ -1012,8 +1041,12 @@ DBG_TwiceTriArea <= std_logic_vector(twiceTriangleArea);
 
 					if ( (minX >= maxX) or (minY >= maxY) ) then
 						stats_totalTrianglesZeroAreaBoundsCulled <= stats_totalTrianglesZeroAreaBoundsCulled + 1;
-						readyForNextTriSig <= '1';
-						currentState <= triSetup_waitForTriData;
+						if (hasBroadcastStartForDrawID = '1') then
+							readyForNextTriSig <= '1';
+							currentState <= triSetup_waitForTriData;
+						else
+							currentState <= triSetup_broadcastNewDrawEventEmptyTriangle;
+						end if;
 					else
 						currentState <= triSetup_crossProduct;
 					end if;
@@ -1054,12 +1087,20 @@ DBG_TwiceTriArea <= std_logic_vector(twiceTriangleArea);
 
 					if (twiceTriangleArea(31) = '1') then -- Backface culling if we have a negative triangle area (topmost sign bit set)
 						stats_totalTrianglesBackfaceCulled <= stats_totalTrianglesBackfaceCulled + 1;
-						readyForNextTriSig <= '1';
-						currentState <= triSetup_waitForTriData;
+						if (hasBroadcastStartForDrawID = '1') then
+							readyForNextTriSig <= '1';
+							currentState <= triSetup_waitForTriData;
+						else
+							currentState <= triSetup_broadcastNewDrawEventEmptyTriangle;
+						end if;
 					elsif (twiceTriangleArea = 0) then -- Zero area culling
 						stats_totalTrianglesZeroAreaTriCulled <= stats_totalTrianglesZeroAreaTriCulled + 1;
-						readyForNextTriSig <= '1';
-						currentState <= triSetup_waitForTriData;
+						if (hasBroadcastStartForDrawID = '1') then
+							readyForNextTriSig <= '1';
+							currentState <= triSetup_waitForTriData;
+						else
+							currentState <= triSetup_broadcastNewDrawEventEmptyTriangle;
+						end if;
 					else
 						if (TEXCFG_nointerpolation = '1') then
 							currentState <= triSetup_topLeftBiasA;
@@ -1323,9 +1364,17 @@ DBG_TwiceTriArea <= std_logic_vector(twiceTriangleArea);
 						RAST_v0_out_colorRGBA <= std_logic_vector(v0_store_RGBA.a & v0_store_RGBA.b & v0_store_RGBA.g & v0_store_RGBA.r);
 						RAST_v10_out_colorRGBA <= std_logic_vector(v1_store_RGBA.a & v1_store_RGBA.b & v1_store_RGBA.g & v1_store_RGBA.r);
 						RAST_v20_out_colorRGBA <= std_logic_vector(v2_store_RGBA.a & v2_store_RGBA.b & v2_store_RGBA.g & v2_store_RGBA.r);
+						RAST_CurrentDrawEventID <= std_logic_vector(currentDrawEventID);
 						RAST_outBarycentricInverse <= std_logic_vector(barycentricInverse);
+						hasBroadcastStartForDrawID <= '1';
 						triSetupDataIsValid <= '1';
 					end if;
+
+				when triSetup_broadcastNewDrawEventEmptyTriangle =>
+					minY <= (others => '1'); -- Using an inside-out bounds like this will cause the rasterizer to instantly terminate the empty triangle for us
+					maxY <= (others => '0');
+					currentState <= triSetup_broadcastOutput;
+
 			end case;
 		end if;
 	end process;

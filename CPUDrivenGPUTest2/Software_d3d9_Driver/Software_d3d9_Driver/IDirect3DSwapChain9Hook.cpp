@@ -131,7 +131,13 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DSwapChain9Hook::Present(
 	// Don't download stats every frame since pulling them is relatively expensive over serial UART and it will affect total frame-times:
 	if (parentDevice->DoEnableGPUStats() )
 	{
+		// This implicitly calls DeviceEndFrame() internally so we don't need to call it twice
 		parentDevice->GetDeviceStats().DownloadEndOfFrameStats(parentDevice->GetBaseDevice() );
+	}
+	else
+	{
+		// Ends the frame, causing the command processor to clear all of the state blocks and reset its draw calls counter
+		parentDevice->GetBaseDevice()->DeviceEndFrame();
 	}
 
 	UpdateOverlay(parentDevice);

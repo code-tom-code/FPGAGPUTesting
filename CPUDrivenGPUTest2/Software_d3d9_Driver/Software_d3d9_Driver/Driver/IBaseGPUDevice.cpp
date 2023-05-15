@@ -240,7 +240,9 @@ HRESULT __stdcall IBaseGPUDevice::DeviceClearDepthStencil(gpuvoid* const zStenci
 	return clearZStencilHR;
 }
 
-HRESULT __stdcall IBaseGPUDevice::DeviceSetTexture(const gpuvoid* const textureMemory, const eTexFormat textureFormat, const unsigned texWidth, const unsigned texHeight)
+HRESULT __stdcall IBaseGPUDevice::DeviceSetTextureState(const unsigned texWidth, const unsigned texHeight, const eTexFilterMode filterMode, 
+		const eTexChannelMUX rChannel, const eTexChannelMUX gChannel, const eTexChannelMUX bChannel, const eTexChannelMUX aChannel, const combinerMode cbModeColor, const combinerMode cbModeAlpha,
+		const gpuvoid* const textureMemory, const eTexFormat textureFormat)
 {
 	if (!ValidateAddress(textureMemory) )
 		return E_INVALIDARG;
@@ -259,7 +261,7 @@ HRESULT __stdcall IBaseGPUDevice::DeviceSetTexture(const gpuvoid* const textureM
 	if (!ValidateTextureDimension(texHeight) )
 		return E_INVALIDARG;
 
-	if (texWidth * texHeight > 0xFFFF)
+	if (texWidth * texHeight > 0xFFFF || texWidth * texHeight < 1)
 	{
 #ifdef _DEBUG
 		__debugbreak();
@@ -274,49 +276,6 @@ HRESULT __stdcall IBaseGPUDevice::DeviceSetTexture(const gpuvoid* const textureM
 #endif
 		return E_INVALIDARG;
 	}
-
-	if (DoCacheDeviceState() && textureFormat == currentCachedState.deviceCachedTexFormat && currentCachedState.deviceCachedSetTexture == textureMemory && currentCachedState.texSetWidth == texWidth && currentCachedState.texSetHeight == texHeight)
-		return S_OK;
-
-	// We need to stall the graphics pipeline until all the stages up to texture sampling have finished before it's safe to flush the texture cache and load in a new texture:
-	//DeviceWaitForIdle( (const waitForDeviceIdleCommand::waitForDeviceSubsystem)(waitForDeviceIdleCommand::waitForIAIdle | waitForDeviceIdleCommand::waitForDepthBuffer | waitForDeviceIdleCommand::waitForRasterizerIdle | waitForDeviceIdleCommand::waitForTexSamplerIdle) );
-	DeviceWaitForIdle(waitForDeviceIdleCommand::waitForFullPipelineFlush);
-
-	loadTexCacheDataCommand loadTexCache;
-	loadTexCache.sourceRAMAddr = (const DWORD)textureMemory;
-	loadTexCache.loadSourceFormat = textureFormat;
-	loadTexCache.loadTexelCount = (const USHORT)(texWidth * texHeight);
-	loadTexCache.checksum = command::ComputeChecksum(&loadTexCache, sizeof(loadTexCache) );
-#ifdef _DEBUG
-	if (!command::IsValidPacket(&loadTexCache, sizeof(loadTexCache) ) )
-	{
-		__debugbreak();
-	}
-#endif
-	const HRESULT hRet = SendOrStorePacket(&loadTexCache);
-	if (SUCCEEDED(hRet) && DoCacheDeviceState() )
-	{
-		currentCachedState.deviceCachedTexFormat = textureFormat;
-		currentCachedState.deviceCachedSetTexture = textureMemory;
-		currentCachedState.texSetWidth = texWidth;
-		currentCachedState.texSetHeight = texHeight;
-	}
-	if (FAILED(hRet) )
-		return hRet;
-
-	if (DoSyncEveryCall() )
-		return DeviceWaitForIdle();
-	return hRet;
-}
-
-HRESULT __stdcall IBaseGPUDevice::DeviceSetTextureState(const unsigned texWidth, const unsigned texHeight, const eTexFilterMode filterMode, 
-		const eTexChannelMUX rChannel, const eTexChannelMUX gChannel, const eTexChannelMUX bChannel, const eTexChannelMUX aChannel, const combinerMode cbModeColor, const combinerMode cbModeAlpha)
-{
-	if (!ValidateTextureDimension(texWidth) )
-		return E_INVALIDARG;
-
-	if (!ValidateTextureDimension(texHeight) )
-		return E_INVALIDARG;
 
 	if (filterMode >= TF_MAXFILTER)
 	{
@@ -354,14 +313,15 @@ HRESULT __stdcall IBaseGPUDevice::DeviceSetTextureState(const unsigned texWidth,
 		return E_INVALIDARG;
 	}
 
-	if (DoCacheDeviceState() && currentCachedState.texStateWidth == texWidth && currentCachedState.texStateHeight == texHeight && currentCachedState.deviceCachedTexFilter == filterMode && 
-		currentCachedState.deviceCachedTexR == rChannel && currentCachedState.deviceCachedTexG == gChannel && currentCachedState.deviceCachedTexB == bChannel && currentCachedState.deviceCachedTexA == aChannel && 
-		currentCachedState.deviceCachedCombinerModeColor == cbModeColor && currentCachedState.deviceCachedCombinerModeAlpha == cbModeAlpha)
+	if (DoCacheDeviceState() && currentCachedState.deviceCachedTextureState.texStateWidth == texWidth && currentCachedState.deviceCachedTextureState.texStateHeight == texHeight && currentCachedState.deviceCachedTextureState.deviceCachedTexFilter == filterMode && 
+		currentCachedState.deviceCachedTextureState.deviceCachedTexR == rChannel && currentCachedState.deviceCachedTextureState.deviceCachedTexG == gChannel && currentCachedState.deviceCachedTextureState.deviceCachedTexB == bChannel && currentCachedState.deviceCachedTextureState.deviceCachedTexA == aChannel && 
+		currentCachedState.deviceCachedTextureState.deviceCachedCombinerModeColor == cbModeColor && currentCachedState.deviceCachedTextureState.deviceCachedCombinerModeAlpha == cbModeAlpha &&
+		currentCachedState.deviceCachedTextureState.deviceCachedSetTexture == textureMemory && currentCachedState.deviceCachedTextureState.deviceCachedTexFormat == textureFormat)
 		return S_OK;
 
 	setTextureStateCommand setTextureState;
-	setTextureState.texWidth = (const BYTE)texWidth;//GetLog2TexDimension(texWidth); // Command processor will perform the log2 operation on these for us
-	setTextureState.texHeight = (const BYTE)texHeight;//GetLog2TexDimension(texHeight);
+	setTextureState.texWidthLog2 = (const BYTE)GetLog2TexDimension(texWidth);
+	setTextureState.texHeightLog2 = (const BYTE)GetLog2TexDimension(texHeight);
 	setTextureState.filterMode = filterMode;
 	setTextureState.channel0 = rChannel;
 	setTextureState.channel1 = gChannel;
@@ -376,28 +336,147 @@ HRESULT __stdcall IBaseGPUDevice::DeviceSetTextureState(const unsigned texWidth,
 		__debugbreak();
 	}
 #endif
-	const HRESULT hRet = SendOrStorePacket(&setTextureState);
-	if (SUCCEEDED(hRet) && DoCacheDeviceState() )
+
+	loadTexCacheDataCommand loadTexCache;
+	loadTexCache.sourceRAMAddr = (const DWORD)textureMemory;
+	loadTexCache.loadSourceFormat = textureFormat;
+	loadTexCache.loadTexelCount = (const USHORT)(texWidth * texHeight);
+	loadTexCache.checksum = command::ComputeChecksum(&loadTexCache, sizeof(loadTexCache) );
+#ifdef _DEBUG
+	if (!command::IsValidPacket(&loadTexCache, sizeof(loadTexCache) ) )
 	{
-		currentCachedState.texStateWidth = texWidth;
-		currentCachedState.texStateHeight = texHeight;
-		currentCachedState.deviceCachedTexFilter = filterMode;
-		currentCachedState.deviceCachedTexR = rChannel;
-		currentCachedState.deviceCachedTexG = gChannel;
-		currentCachedState.deviceCachedTexB = bChannel;
-		currentCachedState.deviceCachedTexA = aChannel;
-		currentCachedState.deviceCachedCombinerModeColor = cbModeColor;
-		currentCachedState.deviceCachedCombinerModeAlpha = cbModeAlpha;
+		__debugbreak();
 	}
-	if (FAILED(hRet) )
-		return hRet;
+#endif
+	const HRESULT hRetSetState = SendOrStorePacket(&setTextureState);
+	const HRESULT hRetLoadTexCache = SendOrStorePacket(&loadTexCache);
+	if (SUCCEEDED(hRetSetState) && SUCCEEDED(hRetLoadTexCache) && DoCacheDeviceState() )
+	{
+		currentCachedState.deviceCachedTextureState.texStateWidth = texWidth;
+		currentCachedState.deviceCachedTextureState.texStateHeight = texHeight;
+		currentCachedState.deviceCachedTextureState.deviceCachedTexFilter = filterMode;
+		currentCachedState.deviceCachedTextureState.deviceCachedTexR = rChannel;
+		currentCachedState.deviceCachedTextureState.deviceCachedTexG = gChannel;
+		currentCachedState.deviceCachedTextureState.deviceCachedTexB = bChannel;
+		currentCachedState.deviceCachedTextureState.deviceCachedTexA = aChannel;
+		currentCachedState.deviceCachedTextureState.deviceCachedCombinerModeColor = cbModeColor;
+		currentCachedState.deviceCachedTextureState.deviceCachedCombinerModeAlpha = cbModeAlpha;
+		currentCachedState.deviceCachedTextureState.deviceCachedSetTexture = textureMemory;
+		currentCachedState.deviceCachedTextureState.deviceCachedTexFormat = textureFormat;
+	}
+	if (FAILED(hRetSetState) )
+		return hRetSetState;
+	if (FAILED(hRetLoadTexCache) )
+		return hRetLoadTexCache;
 	
 	if (DoSyncEveryCall() )
 		return DeviceWaitForIdle();
-	return hRet;
+	return hRetSetState;
 }
 
-HRESULT __stdcall IBaseGPUDevice::DeviceSetRenderTargetAlphaTestState(gpuvoid* const renderTargetMemory, const eBlendMask writeMask, const bool alphaTestEnabled, const BYTE alphaTestRefVal, const eCmpFunc alphaTestCmpFunc)
+HRESULT __stdcall IBaseGPUDevice::DeviceSetNullTextureState(const eTexFilterMode filterMode, 
+		const eTexChannelMUX rChannel, const eTexChannelMUX gChannel, const eTexChannelMUX bChannel, const eTexChannelMUX aChannel, const combinerMode cbModeColor, const combinerMode cbModeAlpha)
+{
+	if (filterMode >= TF_MAXFILTER)
+	{
+#ifdef _DEBUG
+		__debugbreak();
+#endif
+		return E_INVALIDARG;
+	}
+
+	if (!ValidateTexChannelMUX(rChannel) )
+		return E_INVALIDARG;
+
+	if (!ValidateTexChannelMUX(gChannel) )
+		return E_INVALIDARG;
+
+	if (!ValidateTexChannelMUX(bChannel) )
+		return E_INVALIDARG;
+
+	if (!ValidateTexChannelMUX(aChannel) )
+		return E_INVALIDARG;
+
+	if (cbModeColor >= cbm_MAX_NUM_COMBINER_MODES)
+	{
+#ifdef _DEBUG
+		__debugbreak();
+#endif
+		return E_INVALIDARG;
+	}
+
+	if (cbModeAlpha >= cbm_MAX_NUM_COMBINER_MODES)
+	{
+#ifdef _DEBUG
+		__debugbreak();
+#endif
+		return E_INVALIDARG;
+	}
+
+	if (DoCacheDeviceState() && currentCachedState.deviceCachedTextureState.texStateWidth == 0 && currentCachedState.deviceCachedTextureState.texStateHeight == 0 && currentCachedState.deviceCachedTextureState.deviceCachedTexFilter == filterMode && 
+		currentCachedState.deviceCachedTextureState.deviceCachedTexR == rChannel && currentCachedState.deviceCachedTextureState.deviceCachedTexG == gChannel && currentCachedState.deviceCachedTextureState.deviceCachedTexB == bChannel && currentCachedState.deviceCachedTextureState.deviceCachedTexA == aChannel && 
+		currentCachedState.deviceCachedTextureState.deviceCachedCombinerModeColor == cbModeColor && currentCachedState.deviceCachedTextureState.deviceCachedCombinerModeAlpha == cbModeAlpha &&
+		currentCachedState.deviceCachedTextureState.deviceCachedSetTexture == NULL && currentCachedState.deviceCachedTextureState.deviceCachedTexFormat == eTexFmtA8R8G8B8)
+		return S_OK;
+
+	setTextureStateCommand setTextureState;
+	setTextureState.texWidthLog2 = 0;
+	setTextureState.texHeightLog2 = 0;
+	setTextureState.filterMode = filterMode;
+	setTextureState.channel0 = rChannel;
+	setTextureState.channel1 = gChannel;
+	setTextureState.channel2 = bChannel;
+	setTextureState.channel3 = aChannel;
+	setTextureState.cbModeColor = cbModeColor;
+	setTextureState.cbModeAlpha = cbModeAlpha;
+	setTextureState.checksum = command::ComputeChecksum(&setTextureState, sizeof(setTextureState) );
+#ifdef _DEBUG
+	if (!command::IsValidPacket(&setTextureState, sizeof(setTextureState) ) )
+	{
+		__debugbreak();
+	}
+#endif
+
+	loadTexCacheDataCommand loadTexCache;
+	loadTexCache.sourceRAMAddr = (const DWORD)NULL;
+	loadTexCache.loadSourceFormat = eTexFmtA8R8G8B8;
+	loadTexCache.loadTexelCount = (const USHORT)0;
+	loadTexCache.checksum = command::ComputeChecksum(&loadTexCache, sizeof(loadTexCache) );
+#ifdef _DEBUG
+	if (!command::IsValidPacket(&loadTexCache, sizeof(loadTexCache) ) )
+	{
+		__debugbreak();
+	}
+#endif
+	const HRESULT hRetSetState = SendOrStorePacket(&setTextureState);
+	const HRESULT hRetLoadTexCache = SendOrStorePacket(&loadTexCache);
+	if (SUCCEEDED(hRetSetState) && SUCCEEDED(hRetLoadTexCache) && DoCacheDeviceState() )
+	{
+		currentCachedState.deviceCachedTextureState.texStateWidth = 0;
+		currentCachedState.deviceCachedTextureState.texStateHeight = 0;
+		currentCachedState.deviceCachedTextureState.deviceCachedTexFilter = filterMode;
+		currentCachedState.deviceCachedTextureState.deviceCachedTexR = rChannel;
+		currentCachedState.deviceCachedTextureState.deviceCachedTexG = gChannel;
+		currentCachedState.deviceCachedTextureState.deviceCachedTexB = bChannel;
+		currentCachedState.deviceCachedTextureState.deviceCachedTexA = aChannel;
+		currentCachedState.deviceCachedTextureState.deviceCachedCombinerModeColor = cbModeColor;
+		currentCachedState.deviceCachedTextureState.deviceCachedCombinerModeAlpha = cbModeAlpha;
+		currentCachedState.deviceCachedTextureState.deviceCachedSetTexture = NULL;
+		currentCachedState.deviceCachedTextureState.deviceCachedTexFormat = eTexFmtA8R8G8B8;
+	}
+	if (FAILED(hRetSetState) )
+		return hRetSetState;
+	if (FAILED(hRetLoadTexCache) )
+		return hRetLoadTexCache;
+	
+	if (DoSyncEveryCall() )
+		return DeviceWaitForIdle();
+	return hRetSetState;
+}
+
+HRESULT __stdcall IBaseGPUDevice::DeviceSetROPState(gpuvoid* const renderTargetMemory, const eBlendMask writeMask, const bool alphaTestEnabled, const BYTE alphaTestRefVal, const eCmpFunc alphaTestCmpFunc,
+		const bool alphaBlendingEnabled, const D3DBLEND srcColorBlend, const D3DBLEND destColorBlend, const D3DBLENDOP colorBlendOp, 
+		const D3DBLEND srcAlphaBlend, const D3DBLEND destAlphaBlend, const D3DBLENDOP alphaBlendOp, const D3DCOLOR blendFactorARGB)
 {
 	if (!ValidateAddress(renderTargetMemory) )
 		return E_INVALIDARG;
@@ -426,43 +505,6 @@ HRESULT __stdcall IBaseGPUDevice::DeviceSetRenderTargetAlphaTestState(gpuvoid* c
 		return E_INVALIDARG;
 	}
 
-	if (DoCacheDeviceState() && currentCachedState.deviceCachedRenderTarget == renderTargetMemory && currentCachedState.deviceCachedWriteMask == writeMask &&
-		currentCachedState.deviceCachedAlphaTestEnabled == alphaTestEnabled && currentCachedState.deviceCachedAlphaTestRefVal == alphaTestRefVal && currentCachedState.deviceCachedAlphaTestCmpFunc == alphaTestCmpFunc)
-		return S_OK;
-
-	setAlphaTestAndRTAddressStateCommand setAlphaTestAndRTAddrState;
-	setAlphaTestAndRTAddrState.renderTargetBaseAddress = (const DWORD)renderTargetMemory;
-	setAlphaTestAndRTAddrState.writeMask = writeMask;
-	setAlphaTestAndRTAddrState.alphaTestEnabled = alphaTestEnabled;
-	setAlphaTestAndRTAddrState.alphaTestRefValue = alphaTestRefVal;
-	setAlphaTestAndRTAddrState.alphaTestFunc = alphaTestCmpFunc;
-	setAlphaTestAndRTAddrState.checksum = command::ComputeChecksum(&setAlphaTestAndRTAddrState, sizeof(setAlphaTestAndRTAddrState) );
-#ifdef _DEBUG
-	if (!command::IsValidPacket(&setAlphaTestAndRTAddrState, sizeof(setAlphaTestAndRTAddrState) ) )
-	{
-		__debugbreak();
-	}
-#endif
-	const HRESULT hRet = SendOrStorePacket(&setAlphaTestAndRTAddrState);
-	if (SUCCEEDED(hRet) && DoCacheDeviceState() )
-	{
-		currentCachedState.deviceCachedRenderTarget = renderTargetMemory;
-		currentCachedState.deviceCachedWriteMask = writeMask;
-		currentCachedState.deviceCachedAlphaTestEnabled = alphaTestEnabled;
-		currentCachedState.deviceCachedAlphaTestRefVal = alphaTestRefVal;
-		currentCachedState.deviceCachedAlphaTestCmpFunc = alphaTestCmpFunc;
-	}
-	if (FAILED(hRet) )
-		return hRet;
-	
-	if (DoSyncEveryCall() )
-		return DeviceWaitForIdle();
-	return hRet;
-}
-
-HRESULT __stdcall IBaseGPUDevice::DeviceSetBlendState(const bool alphaBlendingEnabled, const D3DBLEND srcColorBlend, const D3DBLEND destColorBlend, const D3DBLENDOP colorBlendOp, 
-	const D3DBLEND srcAlphaBlend, const D3DBLEND destAlphaBlend, const D3DBLENDOP alphaBlendOp, const D3DCOLOR blendFactorARGB)
-{
 	if (srcColorBlend > D3DBLEND_INVSRCCOLOR2 || srcColorBlend < D3DBLEND_ZERO)
 	{
 #ifdef _DEBUG
@@ -534,11 +576,30 @@ HRESULT __stdcall IBaseGPUDevice::DeviceSetBlendState(const bool alphaBlendingEn
 		return E_INVALIDARG;
 	}
 
-	BlendStateBlock deviceBlendState;
-	deviceBlendState.ConvertFromD3DRS(alphaBlendingEnabled, srcColorBlend, destColorBlend, colorBlendOp, srcAlphaBlend, destAlphaBlend, alphaBlendOp, blendFactorARGB);
+	ROPBlock deviceROPState;
+	deviceROPState.ConvertBlendStateFromD3DRS(alphaBlendingEnabled, srcColorBlend, destColorBlend, colorBlendOp, srcAlphaBlend, destAlphaBlend, alphaBlendOp, blendFactorARGB);
+	deviceROPState.deviceCachedAlphaTestEnabled = alphaTestEnabled;
+	deviceROPState.deviceCachedAlphaTestRefVal = alphaTestRefVal;
+	deviceROPState.deviceCachedAlphaTestCmpFunc = alphaTestCmpFunc;
+	deviceROPState.deviceCachedWriteMask = writeMask;
+	deviceROPState.deviceCachedAlphaBlendEnabled = alphaBlendingEnabled;
 
-	if (DoCacheDeviceState() && currentCachedState.deviceCachedBlendState == deviceBlendState)
+	if (DoCacheDeviceState() && currentCachedState.deviceCachedROPState == deviceROPState && renderTargetMemory == currentCachedState.deviceCachedRenderTarget)
 		return S_OK;
+
+	setAlphaTestAndRTAddressStateCommand setAlphaTestAndRTAddrState;
+	setAlphaTestAndRTAddrState.renderTargetBaseAddress = (const DWORD)renderTargetMemory;
+	setAlphaTestAndRTAddrState.writeMask = writeMask;
+	setAlphaTestAndRTAddrState.alphaTestEnabled = alphaTestEnabled;
+	setAlphaTestAndRTAddrState.alphaTestRefValue = alphaTestRefVal;
+	setAlphaTestAndRTAddrState.alphaTestFunc = alphaTestCmpFunc;
+	setAlphaTestAndRTAddrState.checksum = command::ComputeChecksum(&setAlphaTestAndRTAddrState, sizeof(setAlphaTestAndRTAddrState) );
+#ifdef _DEBUG
+	if (!command::IsValidPacket(&setAlphaTestAndRTAddrState, sizeof(setAlphaTestAndRTAddrState) ) )
+	{
+		__debugbreak();
+	}
+#endif
 
 	// Convert our D3DCOLOR ARGB color to an ABGR color for the blend factor:
 	const unsigned char blendFactorA = blendFactorARGB >> 24;
@@ -548,7 +609,7 @@ HRESULT __stdcall IBaseGPUDevice::DeviceSetBlendState(const bool alphaBlendingEn
 	const DWORD blendFactorABGR = (blendFactorA << 24) | (blendFactorB << 16) | (blendFactorG << 8) | (blendFactorR);
 
 	setBlendStateCommand setBlendState;
-	setBlendState.blendStateBlock = deviceBlendState.dataUnion.solidDWORD;
+	setBlendState.blendStateBlock = deviceROPState.dataUnion.solidDWORD;
 	setBlendState.alphaBlendingEnabled = alphaBlendingEnabled;
 	setBlendState.blendFactorABGR = blendFactorABGR;
 	setBlendState.checksum = command::ComputeChecksum(&setBlendState, sizeof(setBlendState) );
@@ -558,10 +619,83 @@ HRESULT __stdcall IBaseGPUDevice::DeviceSetBlendState(const bool alphaBlendingEn
 		__debugbreak();
 	}
 #endif
-	const HRESULT hRet = SendOrStorePacket(&setBlendState);
+
+	const HRESULT hRetAlphaTest = SendOrStorePacket(&setAlphaTestAndRTAddrState);
+
+	// Blend state must always be sent after the alpha-test/rendertarget state because it's the blend state update that makes the
+	// command processor trigger a push of the new states to the ROP unit.
+	const HRESULT hRetBlendState = SendOrStorePacket(&setBlendState);
+	if (SUCCEEDED(hRetAlphaTest) && SUCCEEDED(hRetBlendState) && DoCacheDeviceState() )
+	{
+		currentCachedState.deviceCachedROPState = deviceROPState;
+		currentCachedState.deviceCachedRenderTarget = renderTargetMemory;
+	}
+	if (FAILED(hRetAlphaTest) )
+		return hRetAlphaTest;
+	if (FAILED(hRetBlendState) )
+		return hRetBlendState;
+	
+	if (DoSyncEveryCall() )
+		return DeviceWaitForIdle();
+	return S_OK;
+}
+
+static inline const unsigned GetLog2ExactFloat(const float f)
+{
+	const unsigned ret = (const unsigned)log2f(f);
+#ifdef _DEBUG
+	if ( (1 << ret) != f)
+	{
+		__debugbreak(); // Value passed in must be an exact positive integer power of 2
+	}
+#endif
+	return ret;
+}
+
+HRESULT __stdcall IBaseGPUDevice::DeviceSetClipState(const bool depthClipEnabled, const bool useOpenGLNearZClip, const float guardBandXScale, const float guardBandYScale)
+{
+	if (guardBandXScale < 1.0f || guardBandXScale > 32768.0f || guardBandYScale < 1.0f || guardBandYScale > 32768.0f)
+	{
+#ifdef _DEBUG
+		__debugbreak();
+#endif
+		return E_INVALIDARG;
+	}
+
+	const unsigned guardBandXScaleLog2 = GetLog2ExactFloat(guardBandXScale);
+	const unsigned guardBandYScaleLog2 = GetLog2ExactFloat(guardBandYScale);
+	if (guardBandXScaleLog2 > 15 || guardBandYScaleLog2 > 15)
+	{
+#ifdef _DEBUG
+		__debugbreak();
+#endif
+		return E_INVALIDARG;
+	}
+
+	if (DoCacheDeviceState() && currentCachedState.deviceCachedDepthClipEnable == depthClipEnabled && currentCachedState.deviceCachedOpenGLNearZClipMode == useOpenGLNearZClip 
+			&& currentCachedState.deviceCachedGuardBandXScale == guardBandXScaleLog2 && currentCachedState.deviceCachedGuardBandYScale == guardBandYScaleLog2)
+		return S_OK;
+
+	setClipperStateCommand setClipState;
+	setClipState.depthClipEnable = depthClipEnabled;
+	setClipState.useOpenGLNearZClip = useOpenGLNearZClip;
+	setClipState.guardBandScaleX = guardBandXScaleLog2;
+	setClipState.guardBandScaleY = guardBandYScaleLog2;
+
+	setClipState.checksum = command::ComputeChecksum(&setClipState, sizeof(setClipState) );
+#ifdef _DEBUG
+	if (!command::IsValidPacket(&setClipState, sizeof(setClipState) ) )
+	{
+		__debugbreak();
+	}
+#endif
+	const HRESULT hRet = SendOrStorePacket(&setClipState);
 	if (SUCCEEDED(hRet) && DoCacheDeviceState() )
 	{
-		currentCachedState.deviceCachedBlendState = deviceBlendState;
+		currentCachedState.deviceCachedDepthClipEnable = depthClipEnabled;
+		currentCachedState.deviceCachedOpenGLNearZClipMode = useOpenGLNearZClip;
+		currentCachedState.deviceCachedGuardBandXScale = guardBandXScaleLog2;
+		currentCachedState.deviceCachedGuardBandYScale = guardBandYScaleLog2;
 	}
 	if (FAILED(hRet) )
 		return hRet;
@@ -791,16 +925,42 @@ HRESULT __stdcall IBaseGPUDevice::DeviceDownloadEndOfFrameStats(const gpuvoid* c
 		return E_INVALIDARG;
 	}
 
+	endFrameCommand endFrameStatsReadbackCmd;
+	endFrameStatsReadbackCmd.statsMemoryAddress = (const DWORD)statsMemory;
+	endFrameStatsReadbackCmd.finalizeStatsCollection = true;
+	endFrameStatsReadbackCmd.checksum = command::ComputeChecksum(&endFrameStatsReadbackCmd, sizeof(endFrameStatsReadbackCmd) );
+#ifdef _DEBUG
+	if (!command::IsValidPacket(&endFrameStatsReadbackCmd, sizeof(endFrameStatsReadbackCmd) ) )
+	{
+		__debugbreak();
+	}
+#endif
+	const HRESULT hRet = SendOrStorePacket(&endFrameStatsReadbackCmd);
+	if (FAILED(hRet) )
+		return hRet;
+
+	if (DoSyncEveryCall() )
+		DeviceWaitForIdle();
+
+	// Wait for the memory controller to be done working before we try to read back our stats data from the frame
+	DeviceWaitForIdle(waitForDeviceIdleCommand::waitForMemControllerIdle);
+
+	return deviceComms->ReadFromDevice(statsMemory, outReadbackStatsData, sizeof(DWORD) * endFrameStatsResponse::TotalAllStatsCount);
+}
+
+HRESULT __stdcall IBaseGPUDevice::DeviceEndFrame()
+{
 	if (currentlyRecordingCommandList != NULL)
 	{
 #ifdef _DEBUG
-		__debugbreak(); // Error: Cannot record this packet into a command list!
+		__debugbreak(); // Illegal to call this function while we are recording a command list!
 #endif
 		return E_INVALIDARG;
 	}
 
 	endFrameCommand endFrameCmd;
-	endFrameCmd.statsMemoryAddress = (const DWORD)statsMemory;
+	endFrameCmd.statsMemoryAddress = 0x00000000;
+	endFrameCmd.finalizeStatsCollection = false;
 	endFrameCmd.checksum = command::ComputeChecksum(&endFrameCmd, sizeof(endFrameCmd) );
 #ifdef _DEBUG
 	if (!command::IsValidPacket(&endFrameCmd, sizeof(endFrameCmd) ) )
@@ -815,10 +975,49 @@ HRESULT __stdcall IBaseGPUDevice::DeviceDownloadEndOfFrameStats(const gpuvoid* c
 	if (DoSyncEveryCall() )
 		DeviceWaitForIdle();
 
-	// Wait for the memory controller to be done working before we try to read back our stats data from the frame
-	DeviceWaitForIdle(waitForDeviceIdleCommand::waitForMemControllerIdle);
+	return S_OK;
+}
 
-	return deviceComms->ReadFromDevice(statsMemory, outReadbackStatsData, sizeof(DWORD) * endFrameStatsResponse::TotalAllStatsCount);
+HRESULT __stdcall IBaseGPUDevice::DeviceIssueQuery(const gpuvoid* const queryAddress, const bool isEndEvent, const eQueryType queryType)
+{
+	if (!ValidateAddress(queryAddress) )
+		return E_INVALIDARG;
+
+	if (!ValidateMemoryRangeExistsInsideAllocation(queryAddress, 32) )
+	{
+#ifdef _DEBUG
+		__debugbreak();
+#endif
+		return E_INVALIDARG;
+	}
+
+	if (queryType > eQTTimestamp)
+	{
+#ifdef _DEBUG
+		__debugbreak();
+#endif
+		return E_INVALIDARG;
+	}
+
+	issueQueryCommand issueQuery;
+	issueQuery.queryAddress = (const DWORD)queryAddress;
+	issueQuery.isEndQuery = isEndEvent;
+	issueQuery.queryType = queryType;
+
+	issueQuery.checksum = command::ComputeChecksum(&issueQuery, sizeof(issueQuery) );
+#ifdef _DEBUG
+	if (!command::IsValidPacket(&issueQuery, sizeof(issueQuery) ) )
+	{
+		__debugbreak();
+	}
+#endif
+	const HRESULT hRet = SendOrStorePacket(&issueQuery);
+	if (FAILED(hRet) )
+		return hRet;
+	
+	if (DoSyncEveryCall() )
+		return DeviceWaitForIdle();
+	return hRet;
 }
 
 HRESULT __stdcall IBaseGPUDevice::DeviceSetIndexBuffer(const gpuvoid* const indexBufferMemory, const unsigned indexBuffer16LengthIndices, const eIndexFormat indexFormat)
@@ -1297,6 +1496,9 @@ HRESULT __stdcall IBaseGPUDevice::DeviceSetConstantDataSingleSpecial(const float
 	const unsigned compZ = CompressFloat(registerData.z);
 	const unsigned compW = CompressFloat(registerData.w);
 	setShaderConstantSpecialCommand setShaderConstantSpecial;
+
+	setShaderConstantSpecial.shaderRegIndex = registerIndex;
+
 	setShaderConstantSpecial.isXNegative = (compX & (0x1 << 0) ) ? true : false;
 	setShaderConstantSpecial.isXPow2 = (compX & (0x1 << 1) ) ? true : false;
 	setShaderConstantSpecial.isXSpec = (compX & (0x1 << 2) ) ? true : false;
@@ -1838,7 +2040,7 @@ const bool __stdcall IBaseGPUDevice::ValidateDeviceStateIsSetForDraw() const
 		return false;
 	}
 
-	if (currentCachedState.deviceCachedWriteMask > wm_writeAll)
+	if (currentCachedState.deviceCachedROPState.deviceCachedWriteMask > wm_writeAll)
 	{
 #ifdef _DEBUG
 		__debugbreak();
@@ -1970,6 +2172,8 @@ const bool IBaseGPUDevice::PacketIsValidForRecording(const command::ePacketType 
 	case command::PT_SETSHADERSTARTADDRESS:
 	case command::PT_SETDEPTHSTATE:
 	case command::PT_SETBLENDSTATE:
+	case command::PT_SETCLIPSTATE:
+	case command::PT_ISSUEQUERY:
 		return true;
 	default:
 #ifdef _DEBUG
@@ -1988,7 +2192,7 @@ const bool IBaseGPUDevice::PacketIsValidForRecording(const command::ePacketType 
 	case command::PT_DEBUGSHADERNEXTDRAWCALL:
 		return false;
 	}
-	static_assert(command::PT_MAX_PACKET_TYPES == 29, "Reminder: Need to update this switch statement with new cases when adding new packets!");
+	static_assert(command::PT_MAX_PACKET_TYPES == 36, "Reminder: Need to update this switch statement with new cases when adding new packets!");
 }
 
 HRESULT IBaseGPUDevice::SendOrStorePacket(const command* const sendPacket)

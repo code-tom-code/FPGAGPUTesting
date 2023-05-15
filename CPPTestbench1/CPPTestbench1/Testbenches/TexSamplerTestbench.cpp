@@ -9,6 +9,45 @@
 #include "PixelPipelineShared.h"
 #include <vector>
 
+enum texSampleStateType
+{
+	waitingForRead, // 0
+    
+	// Tex sample entry points (one for point-sampling and the other for bilinear)
+	texSample_point_address, // 1
+	texSample_point_read, // 2
+	texSample_point_read2, // 3
+	texSample_point_read3, // 4
+	texSample_bilinear_readTL, // 5
+	texSample_bilinear_readTR, // 6
+	texSample_bilinear_readBL, // 7
+	texSample_bilinear_readBR, // 8
+	texSample_bilinear_waitReadsComplete1, // 9
+	texSample_bilinear_waitReadsComplete2, // 10
+	texSample_bilinear_waitReadsComplete3, // 11
+
+	// These stages are used for bilinear interpolation only
+	bilinear_xMinMax, // 12
+	bilinear_xDelta, // 13
+	bilinear_xMultiply, // 14
+	bilinear_xCombine, // 15
+	bilinear_yMinMax, // 16
+	bilinear_yDelta, // 17
+	bilinear_yMultiply, // 18
+	bilinear_yCombine, // 19
+
+	// These latter stages are once again shared by both point and bilinear sampling:
+	swizzleTexColors, // 20
+	modulateTexWithVertexColor, // 21
+	setupOutput, // 22
+	waitingForWrite, // 23
+
+	loadTextureState_memRequest, // 24
+	loadTextureState_memResponse, // 25
+	loadTextureState_cacheLine, // 26
+	loadNullTextureState // 27
+};
+
 static unsigned currentTriCacheIndex = 0;
 
 struct memResponse
@@ -19,6 +58,8 @@ static_assert(sizeof(memResponse) == 32, "Error: Unexpected struct size!");
 
 #define COLOR4_ARGB(a,r,g,b) \
     ((D3DCOLOR)((((a)&0xff)<<24)|(((b)&0xff)<<16)|(((g)&0xff)<<8)|((r)&0xff)))
+
+static const unsigned TEX_SAMPLER_STATE_SIZE_BITS = 74u;
 
 enum eTexChannelMUX : unsigned char
 {
@@ -57,6 +98,23 @@ enum eTexFormat : unsigned char
 
 	eTexFmtNumFormats // This must always be last!
 };
+
+struct sTexSamplerState // Currently 74 bits in total
+{
+	unsigned TextureBaseAddr : 30; // 29 : 0 // This could probably be a lot smaller due to minimum texture alignment but whatever
+	unsigned /*eTexFormat*/ TextureFormat : 3; // 32 : 30
+	unsigned TextureWidthLog2 : 3; // 35 : 33
+	unsigned TextureHeightLog2 : 3; // 38 : 36
+	unsigned TotalTexelCount : 16; // 54 : 39
+	unsigned /*bool*/ UseBilinearFiltering : 1; // 55
+	unsigned /*combinerMode*/ ColorCombinerMode : 3; // 58 : 56
+	unsigned /*combinerMode*/ AlphaCombinerMode : 3; // 61 : 59
+	unsigned /*eTexChannelMUX*/ ChannelSwizzleR : 3; // 64 : 62
+	unsigned /*eTexChannelMUX*/ ChannelSwizzleG : 3; // 67 : 65
+	unsigned /*eTexChannelMUX*/ ChannelSwizzleB : 3; // 70 : 68
+	unsigned /*eTexChannelMUX*/ ChannelSwizzleA : 3; // 73 : 71
+};
+static_assert(sizeof(sTexSamplerState) * 8 >= TEX_SAMPLER_STATE_SIZE_BITS, "Error: Unexpected struct padding!");
 
 const unsigned char GetLog2TexDimension(const unsigned short textureDimension)
 {
@@ -337,47 +395,6 @@ void EmulateTexSamplerCPU(const std::vector<attributeInterpOutputData>& interpol
 	}
 }
 
-enum texSampleStateType
-{
-	init, // 0
-	waitingForRead, // 1
-    
-	// Tex sample entry points (one for point-sampling and the other for bilinear)
-	texSample_point_address, // 2
-	texSample_point_read, // 3
-	texSample_point_read2, // 4
-	texSample_point_read3, // 5
-	texSample_bilinear_readTL, // 6
-	texSample_bilinear_readTR, // 7
-	texSample_bilinear_readBL, // 8
-	texSample_bilinear_readBR, // 9
-	texSample_bilinear_waitReadsComplete1, // 10
-	texSample_bilinear_waitReadsComplete2, // 11
-	texSample_bilinear_waitReadsComplete3, // 12
-
-	// These stages are used for bilinear interpolation only
-	bilinear_xMinMax, // 13
-	bilinear_xDelta, // 14
-	bilinear_xMultiply, // 15
-	bilinear_xCombine, // 16
-	bilinear_yMinMax, // 17
-	bilinear_yDelta, // 18
-	bilinear_yMultiply, // 19
-	bilinear_yCombine, // 20
-
-	// These latter stages are once again shared by both point and bilinear sampling:
-	swizzleTexColors, // 21
-	modulateTexWithVertexColor, // 22
-	setupOutput, // 23
-	waitingForWrite, // 24
-
-	setTextureState, // 25
-	loadTextureState, // 26
-	loadTextureState_memRequest, // 27
-	loadTextureState_memResponse, // 28
-	loadTextureState_cacheLine // 29
-};
-
 struct textureCachePipelineState
 {
 	bool isEnabled;
@@ -411,6 +428,12 @@ const int RunTestsTexSampler(Xsi::Loader& loader, RenderWindow* renderWindow)
 	std_logic_port MEM_TexSampReadResponsesFIFO_rd_en(PD_OUT, loader, "MEM_TexSampReadResponsesFIFO_rd_en");
 // Memory Controller FIFO interface end
 
+// Texture Sampler State Block interface begin
+	std_logic_vector_port<TEX_SAMPLER_STATE_SIZE_BITS> STATE_StateBitsAtDrawID(PD_IN, loader, "STATE_StateBitsAtDrawID");
+	std_logic_vector_port<16> STATE_NextDrawID(PD_IN, loader, "STATE_NextDrawID");
+	std_logic_port STATE_ConsumeStateSlot(PD_OUT, loader, "STATE_ConsumeStateSlot");
+// Texture Sampler State Block interface end
+
 // Texture cache BRAM interfaces begin
 	std_logic_vector_port<14> TexCache_addra(PD_OUT, loader, "TexCache_addra");
 	std_logic_vector_port<32> TexCache_dina(PD_OUT, loader, "TexCache_dina");
@@ -421,20 +444,6 @@ const int RunTestsTexSampler(Xsi::Loader& loader, RenderWindow* renderWindow)
 
 // Command Processor block interface begin
 	std_logic_port CMD_TexSampleIsIdle(PD_OUT, loader, "CMD_TexSampleIsIdle");
-
-	std_logic_port CMD_LoadTexCacheBeginSignal(PD_IN, loader, "CMD_LoadTexCacheBeginSignal");
-	std_logic_port CMD_LoadTexCacheAckSignal(PD_OUT, loader, "CMD_LoadTexCacheAckSignal");
-	std_logic_vector_port<30> CMD_LoadTexCacheAddr(PD_IN, loader, "CMD_LoadTexCacheAddr");
-	std_logic_vector_port<3> CMD_LoadTexCacheFormat(PD_IN, loader, "CMD_LoadTexCacheFormat");
-	std_logic_vector_port<16> CMD_LoadTexCacheTexelCount(PD_IN, loader, "CMD_LoadTexCacheTexelCount");
-	std_logic_vector_port<3> CMD_LoadTexCacheTexelWidth(PD_IN, loader, "CMD_LoadTexCacheTexelWidth"); // Since these are all known to be powers of 2, we can simply use log2(x) here instead of the actual resolution to save bits
-	std_logic_vector_port<3> CMD_LoadTexCacheTexelHeight(PD_IN, loader, "CMD_LoadTexCacheTexelHeight"); // Value of 0=1x1, 1=2x2, 2=4x4, 3=8x8, 4=16x16, 5=32x32, 6=64x64, 7=128x128
-
-	std_logic_port CMD_SetTextureStateBeginSignal(PD_IN, loader, "CMD_SetTextureStateBeginSignal");
-	std_logic_port CMD_SetTextureStateAckSignal(PD_OUT, loader, "CMD_SetTextureStateAckSignal");
-	std_logic_port CMD_SetTextureStateUseBilinear(PD_IN, loader, "CMD_SetTextureStateUseBilinear");
-	std_logic_vector_port<3> CMD_SetTextureStateCombinerModeColor(PD_IN, loader, "CMD_SetTextureStateCombinerModeColor");
-	std_logic_vector_port<3> CMD_SetTextureStateCombinerModeAlpha(PD_IN, loader, "CMD_SetTextureStateCombinerModeAlpha");
 // Command Processor block interface end
 
 // ROP interface begin
@@ -470,16 +479,24 @@ const int RunTestsTexSampler(Xsi::Loader& loader, RenderWindow* renderWindow)
 		MEM_TexSampReadRequestsFIFO_full = false;
 		MEM_TexSampReadResponsesFIFO_empty = true;
 		TexCache_douta = 0x00000000;
-		CMD_LoadTexCacheBeginSignal = false;
-		CMD_LoadTexCacheAddr = 0x00000000;
-		CMD_LoadTexCacheFormat = eTexFmtA8R8G8B8;
-		CMD_LoadTexCacheTexelCount = 0;
-		CMD_LoadTexCacheTexelWidth = 6;
-		CMD_LoadTexCacheTexelHeight = 6;
-		CMD_SetTextureStateBeginSignal = false;
-		CMD_SetTextureStateUseBilinear = true;
-		CMD_SetTextureStateCombinerModeColor = cbm_textureModulateVertexColor;
-		CMD_SetTextureStateCombinerModeAlpha = cbm_textureModulateVertexColor;
+
+		sTexSamplerState defaultZeroState;
+		defaultZeroState.TextureBaseAddr = 0x00000000;
+		defaultZeroState.TextureFormat = eTexFmtA8R8G8B8;
+		defaultZeroState.TextureWidthLog2 = 6; // 64x64
+		defaultZeroState.TextureHeightLog2 = 6; // 64x64
+		defaultZeroState.UseBilinearFiltering = true;
+		defaultZeroState.ColorCombinerMode = cbm_textureModulateVertexColor;
+		defaultZeroState.AlphaCombinerMode = cbm_textureModulateVertexColor;
+		defaultZeroState.TotalTexelCount = 0;
+		defaultZeroState.ChannelSwizzleR = tcm_r;
+		defaultZeroState.ChannelSwizzleG = tcm_g;
+		defaultZeroState.ChannelSwizzleB = tcm_b;
+		defaultZeroState.ChannelSwizzleA = tcm_a;
+
+		STATE_StateBitsAtDrawID.SetToByteMemory(&defaultZeroState);
+
+		STATE_NextDrawID = (const uint16_t)0u;
 	}
 
 	const char* textureMemoryUpperBits = NULL;
@@ -600,33 +617,34 @@ const int RunTestsTexSampler(Xsi::Loader& loader, RenderWindow* renderWindow)
 
 		// Configure texture state:
 		const eTexFormat deviceTexFormat = GetDeviceFormatFromD3DFormat(texDesc.Format);
-		CMD_LoadTexCacheFormat = deviceTexFormat;
 		const unsigned char log2width = GetLog2TexDimension(texDesc.Width);
 		const unsigned char log2height = GetLog2TexDimension(texDesc.Height);
-		CMD_LoadTexCacheTexelWidth = log2width;
-		CMD_LoadTexCacheTexelHeight = log2height;
-		CMD_SetTextureStateUseBilinear = useBilinearInterp;
-		CMD_LoadTexCacheAddr = (tcm_b) | (tcm_g << 4) | (tcm_r << 8) | (tcm_a << 12); // Swizzle BGRA to RGBA
-		CMD_SetTextureStateCombinerModeColor = cbm_textureModulateVertexColor;
-		CMD_SetTextureStateCombinerModeAlpha = cbm_textureModulateVertexColor;
-		CMD_SetTextureStateBeginSignal = true; // Pulse this on for just one cycle
+
+		sTexSamplerState newTexSamplerState;
+		newTexSamplerState.TextureBaseAddr = ( ( (const unsigned)(d3dlr.pBits) ) & 0x3FFFFFFF);
+		newTexSamplerState.TotalTexelCount = texDesc.Width * texDesc.Height;
+		newTexSamplerState.TextureFormat = deviceTexFormat;
+		newTexSamplerState.TextureWidthLog2 = log2width;
+		newTexSamplerState.TextureHeightLog2 = log2height;
+		newTexSamplerState.UseBilinearFiltering = useBilinearInterp;
+		newTexSamplerState.ColorCombinerMode = cbm_textureModulateVertexColor;
+		newTexSamplerState.AlphaCombinerMode = cbm_textureModulateVertexColor;
+		newTexSamplerState.ChannelSwizzleR = tcm_b; // Swizzle BGRA to RGBA
+		newTexSamplerState.ChannelSwizzleG = tcm_g;
+		newTexSamplerState.ChannelSwizzleB = tcm_r;
+		newTexSamplerState.ChannelSwizzleA = tcm_a;
+
+		STATE_StateBitsAtDrawID.SetToByteMemory(&newTexSamplerState);
+		STATE_NextDrawID = (const uint16_t)1u;
+
 		{
 			scoped_timestep time(loader, clk, 100);
 		}
-		CMD_SetTextureStateBeginSignal = false;
 		while (CMD_TexSampleIsIdle.GetBoolVal() == false) // Wait for idle again
 		{
 			scoped_timestep time(loader, clk, 100);
 		}
 
-		// Load texture cache:
-		CMD_LoadTexCacheAddr = ( ( (const unsigned)(d3dlr.pBits) ) & 0x3FFFFFFF);
-		CMD_LoadTexCacheTexelCount = texDesc.Width * texDesc.Height;
-		CMD_LoadTexCacheBeginSignal = true; // Pulse this on for just one cycle
-		{
-			scoped_timestep time(loader, clk, 100);
-		}
-		CMD_LoadTexCacheBeginSignal = false;
 		while (CMD_TexSampleIsIdle.GetBoolVal() == false) // Wait for the texture cache to fill up
 		{
 			scoped_timestep time(loader, clk, 100);

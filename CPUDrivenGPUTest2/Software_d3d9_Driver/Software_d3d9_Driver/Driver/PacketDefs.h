@@ -42,6 +42,13 @@ struct command
 		PT_DEBUGSHADERNEXTDRAWCALL = 26,
 		PT_SETDEPTHSTATE = 27,
 		PT_SETBLENDSTATE = 28,
+		PT_CONNBROADCAST = 29,
+		PT_CONNREQUEST = 30,
+		PT_CONNRESPONSE = 31,
+		PT_SESSIONCOMBOPACKET = 32,
+		PT_DISCONNECT = 33,
+		PT_SETCLIPSTATE = 34,
+		PT_ISSUEQUERY = 35,
 
 		PT_MAX_PACKET_TYPES // This must always be last
 	};
@@ -304,6 +311,10 @@ struct setBlendStateCommand : command
 struct setTextureStateCommand : command
 {
 	setTextureStateCommand() : command(PT_SETTEXTURESTATE),
+		texWidthLog2(0),
+		unused0(0),
+		texHeightLog2(0),
+		unused1(0),
 		channel0(tcm_r), 
 		channel1(tcm_g), 
 		channel2(tcm_b), 
@@ -323,8 +334,10 @@ struct setTextureStateCommand : command
 	};
 
 	// Payload 0:
-	BYTE texWidth = 1; // Texture width, in texels (must be power of 2, does not need to match height) // 7 downto 0
-	BYTE texHeight = 1; // Texture height, in texels (must be power of 2, does not need to match width) // 15 downto 8
+	BYTE texWidthLog2 : 3; // Log2 of texture width, in texels (must be power of 2, does not need to match height) // 2 downto 0
+	BYTE unused0 : 5;
+	BYTE texHeightLog2 : 3; // Log2 of texture height, in texels (must be power of 2, does not need to match width) // 10 downto 8
+	BYTE unused1 : 5;
 	eTexFilterMode filterMode = TF_pointFilter; // 23 downto 16
 	texAddressMode addressU : 4; // 27 downto 24
 	texAddressMode addressV : 4; // 31 downto 28
@@ -349,52 +362,55 @@ struct waitForDeviceIdleCommand : command
 		// Immediately returns without waiting (and optionally sends the return value back to the CPU)
 		waitForNothing = 0x0,
 
+		// Waits for the vertex shader to have no work remaining
+		waitForVSIdle = 0x1, // bit 0
+
 		// Waits for the input assembler to have no work remaining
-		waitForIAIdle = 0x1, // bit 0
+		waitForIAIdle = 0x2, // bit 1
 
 		// Waits for the clipper unit to have no work remaining
-		waitForClipIdle = 0x2, // bit 1
+		waitForClipIdle = 0x4, // bit 2
 
 		// Waits for the TriSetup block to have no work remaining
-		waitForTriSetupIdle = 0x4, // bit 2
+		waitForTriSetupIdle = 0x8, // bit 3
 
 		// Waits for the triangle rasterizer to have no work remaining
-		waitForRasterizerIdle = 0x8, // bit 3
+		waitForRasterizerIdle = 0x10, // bit 4
 
 		// Waits for the depth interpolator to have no more pixels in flight
-		waitForDepthInterpolatorIdle = 0x10, // bit 4
+		waitForDepthInterpolatorIdle = 0x20, // bit 5
 
 		// Waits for the depth buffer clear to have completed and for the depth buffer to have no in-flight pixels remaining
-		waitForDepthBuffer = 0x20, // bit 5
+		waitForDepthBuffer = 0x40, // bit 6
 
 		// Waits for the attribute interpolator to have no more pixels in flight
-		waitForAttrInterpolatorIdle = 0x40, // bit 6
+		waitForAttrInterpolatorIdle = 0x80, // bit 7
 
 		// Waits for the texture samplers to have no work remaining
-		waitForTexSamplerIdle = 0x80, // bit 7
+		waitForTexSamplerIdle = 0x100, // bit 8
 
 		// Waits for the ROP's to have no work remaining
-		waitForROPIdle = 0x100, // bit 8
+		waitForROPIdle = 0x200, // bit 9
 
 		// Waits for the clear block to finish clearing a rendertarget
-		waitForClearBlockIdle = 0x200, // bit 9
+		waitForClearBlockIdle = 0x400, // bit 10
 
 		// Waits for all DRAM reads/writes to have flushed
-		waitForMemControllerIdle = 0x400, // bit 10
+		waitForMemControllerIdle = 0x800, // bit 11
 
 		// Waits for the scanout module to reach VSync
-		waitForVSync = 0x800, // bit 11
+		waitForVSync = 0x1000, // bit 12
 
 		// Waits for the whole GPU to be idle and drained of any work (waits for everything except VSync)
-		waitForFullPipelineFlush = waitForIAIdle | waitForClipIdle | waitForTriSetupIdle | waitForRasterizerIdle | waitForDepthInterpolatorIdle | waitForDepthBuffer | waitForAttrInterpolatorIdle | waitForTexSamplerIdle | waitForROPIdle | waitForClearBlockIdle | waitForMemControllerIdle,
+		waitForFullPipelineFlush = waitForVSIdle | waitForIAIdle | waitForClipIdle | waitForTriSetupIdle | waitForRasterizerIdle | waitForDepthInterpolatorIdle | waitForDepthBuffer | waitForAttrInterpolatorIdle | waitForTexSamplerIdle | waitForROPIdle | waitForClearBlockIdle | waitForMemControllerIdle,
 
 		// Waits for everything
 		waitForFullPipelineFlushAndVSync = waitForFullPipelineFlush | waitForVSync
 	};
 
 	// Payload 0:
-	waitForDeviceSubsystem waitBitmask : 12; // You can wait for multiple systems at once if you bit-OR their flags together // 11 downto 0
-	unsigned unused0 : 19; // 30 downto 12
+	waitForDeviceSubsystem waitBitmask : 13; // You can wait for multiple systems at once if you bit-OR their flags together // 12 downto 0
+	unsigned unused0 : 18; // 30 downto 13
 	unsigned returnCPUValue : 1; // If set to true, then right after the wait completes the GPU will send the given DWORD value back to the CPU via a PT_WAITRESPONSE packet // 31 downto 31
 
 	// Payload 1:
@@ -576,6 +592,19 @@ struct endFrameStatsResponse : command
 		MS_CounterStatMetrics = 2,
 
 		MS_MAX_NUM_METRIC_SPACES // This must always be last!
+	};
+
+	enum eVBBTimerStats : unsigned char
+	{
+		VBBCyclesWaitingForCommand = 0,
+		VBBCyclesSpentWorking = 1,
+		VBBCyclesWaitingForVShader = 2,
+
+		MAX_VBB_TIMER_STATS, // This must always be last
+
+		VBBIdleCycles = VBBCyclesWaitingForCommand,
+		VBBWaitForInputCycles = VBBCyclesSpentWorking,
+		VBBWaitForOutputCycles = VBBCyclesWaitingForVShader
 	};
 
 	enum eVShaderTimerStats : unsigned char
@@ -760,14 +789,15 @@ struct endFrameStatsResponse : command
 		MAX_MEMWRITE_COUNTER_STATS // This must always be last
 	};
 
+	// How many zeroed DWORD's are there in the stats structs?
 	enum eExtraPaddingZeroes : unsigned char
 	{
-		MAX_PADDING_ZEROES = 1
+		MAX_PADDING_ZEROES = 2
 	};
 	
 	enum eTotalCounterStats : unsigned char
 	{
-		TotalTimerStatsCount = MAX_VSHADER_TIMER_STATS + MAX_IA_TIMER_STATS + MAX_CLIPUNIT_TIMER_STATS + MAX_TRISETUP_TIMER_STATS + MAX_RASTERIZER_TIMER_STATS + MAX_ATTRINTERP_TIMER_STATS + MAX_DEPTHINTERP_TIMER_STATS + MAX_TEXSAMPLER_TIMER_STATS + MAX_ROP_TIMER_STATS + 
+		TotalTimerStatsCount = MAX_VBB_TIMER_STATS + MAX_VSHADER_TIMER_STATS + MAX_IA_TIMER_STATS + MAX_CLIPUNIT_TIMER_STATS + MAX_TRISETUP_TIMER_STATS + MAX_RASTERIZER_TIMER_STATS + MAX_ATTRINTERP_TIMER_STATS + MAX_DEPTHINTERP_TIMER_STATS + MAX_TEXSAMPLER_TIMER_STATS + MAX_ROP_TIMER_STATS + 
 			MAX_COMMANDPROC_TIMER_STATS + MAX_MEMCONTROLLER_READ_TIMER_STATS + MAX_MEMCONTROLLER_WRITE_TIMER_STATS + MAX_PADDING_ZEROES,
 
 		TotalCounterStatsCount = MAX_ROP_COUNTER_STATS + MAX_MEMREAD_COUNTER_STATS + MAX_MEMWRITE_COUNTER_STATS,
@@ -775,7 +805,7 @@ struct endFrameStatsResponse : command
 		// TotalAllStatsCount is the size (in DWORD's) of the DWORD array that backs our stats memory
 		TotalAllStatsCount = TotalTimerStatsCount + TotalCounterStatsCount
 	};
-	static_assert(eTotalCounterStats::TotalAllStatsCount == 47u, "Error: Need to update stats header files to match HDL PER_FRAME_STATS_COUNT value!");
+	static_assert(eTotalCounterStats::TotalAllStatsCount == 51u, "Error: Need to update stats header files to match HDL PER_FRAME_STATS_COUNT value!");
 
 	// Payload 0:
 	eSystemType system : 4; // 3 downto 0
@@ -794,10 +824,12 @@ struct endFrameCommand : command
 	}
 
 	// Payload 0:
+	// (Only used if finalizeStatsCollection is true)
 	DWORD statsMemoryAddress = 0x00000000; // 31 downto 0
 
 	// Payload 1:
-	DWORD unused1 = 0; // 31 downto 0
+	bool finalizeStatsCollection = false; // 7 downto 0
+	unsigned char unused1[3] = {0}; // 31 downto 8
 };
 
 struct runCommandListCommand : command
@@ -978,6 +1010,45 @@ struct setDepthStateCommand : command
 	DWORD unused1 = 0x00000000; // 31 downto 0
 };
 
+// This configures the clipper state
+struct setClipperStateCommand : command
+{
+	setClipperStateCommand() : command(PT_SETCLIPSTATE), 
+		depthClipEnable(true), useOpenGLNearZClip(false), unused0(0),
+		guardBandScaleX(4), guardBandScaleY(5), unused1(0)
+	{
+	}
+
+	// Payload 0:
+	unsigned depthClipEnable : 1; // 0
+	unsigned useOpenGLNearZClip : 1; // 1
+	unsigned unused0 : 30; // 31 downto 2
+
+	// Payload 1:
+	unsigned guardBandScaleX : 4; // 3 downto 0
+	unsigned guardBandScaleY : 4; // 7 downto 4
+	unsigned unused1 : 24; // 31 downto 8
+};
+
+// This configures the clipper state
+struct issueQueryCommand : command
+{
+	issueQueryCommand() : command(PT_ISSUEQUERY), 
+		queryType(eQTEvent), isEndQuery(true), unused0(0),
+		queryAddress(0x00000000), unused1(0)
+	{
+	}
+
+	// Payload 0:
+	unsigned queryType : 2; // 1 downto 0
+	unsigned isEndQuery : 1; // 2
+	unsigned unused0 : 29; // 31 downto 3
+
+	// Payload 1:
+	unsigned queryAddress : 30; // 29 downto 0
+	unsigned unused1 : 2; // 31 downto 30
+};
+
 // TODO: One day implement variable-sized packets and then this can go away
 static_assert(sizeof(genericCommand) == sizeof(doNothingCommand) &&
 	sizeof(genericCommand) == sizeof(writeMemCommand) &&
@@ -1007,6 +1078,8 @@ static_assert(sizeof(genericCommand) == sizeof(doNothingCommand) &&
 	sizeof(genericCommand) == sizeof(debugShaderNextDrawCallCommand) && 
 	sizeof(genericCommand) == sizeof(setDepthStateCommand) &&
 	sizeof(genericCommand) == sizeof(setBlendStateCommand) &&
+	sizeof(genericCommand) == sizeof(setClipperStateCommand) &&
+	sizeof(genericCommand) == sizeof(issueQueryCommand) &&
 	sizeof(genericCommand) == 11, "Error: Unexpected struct size!");
 
 #pragma pack(pop) // End pragma pack 1 region

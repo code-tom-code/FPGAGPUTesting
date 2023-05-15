@@ -2,7 +2,7 @@
 
 // TODO: Include information about which channels are available in the output render target format (does it have alpha? does it have color?) and use that info (along with the write mask)
 // in the determination for whether to load srcColor and whether to load destColor.
-void BlendStateBlock::ComputeDoLoadSrcDest(const D3DCOLOR blendFactor_ARGB)
+void ROPBlock::ComputeDoLoadSrcDest(const D3DCOLOR blendFactor_ARGB)
 {
 	// These modes short-circuit the blending unit and force either a min or a max which requires both the incoming pixel color and the framebuffer color
 	if (dataUnion.bitsStruct.blendOpRGB >= bop_min || dataUnion.bitsStruct.blendOpA >= bop_min)
@@ -109,7 +109,7 @@ void BlendStateBlock::ComputeDoLoadSrcDest(const D3DCOLOR blendFactor_ARGB)
 	dataUnion.bitsStruct.doLoadDestColor = (const BOOL)destLoad;
 }
 
-/*static*/ void BlendStateBlock::ConvertColorBlend(const D3DBLEND colorBlend, blendModeSourcesRGB& outBlendMode, bool& outBlendInvert, const bool isDestination)
+/*static*/ void ROPBlock::ConvertColorBlend(const D3DBLEND colorBlend, blendModeSourcesRGB& outBlendMode, bool& outBlendInvert, const bool isDestination)
 {
 	if (colorBlend == D3DBLEND_BOTHSRCALPHA)
 	{
@@ -176,7 +176,7 @@ void BlendStateBlock::ComputeDoLoadSrcDest(const D3DCOLOR blendFactor_ARGB)
 	}
 }
 
-/*static*/ void BlendStateBlock::ConvertAlphaBlend(const D3DBLEND alphaBlend, blendModeSourcesA& outBlendMode, bool& outBlendInvert, const bool isDestination)
+/*static*/ void ROPBlock::ConvertAlphaBlend(const D3DBLEND alphaBlend, blendModeSourcesA& outBlendMode, bool& outBlendInvert, const bool isDestination)
 {
 	if (alphaBlend == D3DBLEND_BOTHSRCALPHA)
 	{
@@ -233,7 +233,7 @@ void BlendStateBlock::ComputeDoLoadSrcDest(const D3DCOLOR blendFactor_ARGB)
 	}
 }
 
-void BlendStateBlock::ConvertFromD3DRS(const bool alphaBlendEnable,
+void ROPBlock::ConvertBlendStateFromD3DRS(const bool alphaBlendEnable,
 	const D3DBLEND srcColorBlend, const D3DBLEND destColorBlend, const D3DBLENDOP colorBlendOp,
 	const D3DBLEND srcAlphaBlend, const D3DBLEND destAlphaBlend, const D3DBLENDOP alphaBlendOp,
 	const D3DCOLOR blendFactor_ARGB)

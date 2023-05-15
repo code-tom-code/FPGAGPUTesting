@@ -5,6 +5,11 @@ use IEEE.NUMERIC_STD.ALL;
 -- Include our packet types library so we can access all of the shared enums and struct definitions in there
 library work;
 use work.PacketType.all;
+use work.InputAssemblerState.all;
+use work.ClipUnitState.all;
+use work.AttrInterpolatorState.all;
+use work.TexSampleState.all;
+use work.ROPState.all;
 
 entity CommandProcessor is
 	generic (
@@ -51,6 +56,7 @@ entity CommandProcessor is
 	-- Memory controller interfaces end
 
 	-- Idle signals from the various systems begin
+		CMD_VS_Idle : in STD_LOGIC;
 		CMD_IA_Idle : in STD_LOGIC;
 		CMD_Clip_Idle : in STD_LOGIC;
 		CMD_TriSetup_Idle : in STD_LOGIC;
@@ -63,6 +69,11 @@ entity CommandProcessor is
 		CMD_ClearBlock_Idle : in STD_LOGIC;
 		CMD_MemController_Idle : in STD_LOGIC;
 		CMD_VSync : in STD_LOGIC;
+		CMD_FIFO_EMPTY_VBB : in STD_LOGIC;
+		CMD_FIFO_EMPTY_VS : in STD_LOGIC;
+		CMD_FIFO_EMPTY_RASTOUT : in STD_LOGIC;
+		CMD_FIFO_EMPTY_TEXSAMP : in STD_LOGIC;
+		CMD_FIFO_EMPTY_ROP : in STD_LOGIC;
 	-- Idle signals from the various systems end
 
 	-- Shader Core interfaces begin
@@ -84,16 +95,13 @@ entity CommandProcessor is
 		SHADER_ReadRegisterOutData : in STD_LOGIC_VECTOR(127 downto 0);
 	-- Shader Core interfaces end
 
-	-- Input Assembler interfaces begin
-		-- Draw interfaces:
-		IA_DrawReady : in STD_LOGIC;
-
-		-- Set state interfaces:
-		IA_SetStateReady : in STD_LOGIC;
-		IA_SetStateEnable : out STD_LOGIC := '0';
-		IA_StateCullMode : out STD_LOGIC_VECTOR(1 downto 0) := (others => '0');
-		IA_StatePrimTopology : out STD_LOGIC_VECTOR(2 downto 0) := (others => '0');
-	-- Input Assembler interfaces end
+	-- Input Assembler state interfaces begin
+		IA_SetNewState : out STD_LOGIC := '0';
+		IA_EndFrameReset : out STD_LOGIC := '0';
+		IA_NumFreeSlots : in STD_LOGIC_VECTOR(2 downto 0);
+		IA_NewStateBits : out STD_LOGIC_VECTOR(INPUT_ASSEMBLER_STATE_SIZE_BITS-1 downto 0) := (others => '0');
+		IA_NewStateDrawEventID : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
+	-- Input Assembler state interfaces end
 
 	-- Triangle Setup interfaces begin
 		TRISETUP_SetViewportParams : out STD_LOGIC_VECTOR(1 downto 0) := (others => '0');
@@ -106,9 +114,18 @@ entity CommandProcessor is
 		VBB_CommandArg0 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0'); -- Used for our index buffer address (SetIndexBuffer), as well as our primitive count (DrawPrimitive/DrawIndexedPrimitive)
 		VBB_CommandArg1 : out STD_LOGIC_VECTOR(19 downto 0) := (others => '0'); -- Used for our uint StartIndex
 		VBB_CommandArg2 : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0'); -- Used for our signed short BaseVertexIndex
+		VBB_NewDrawEventID : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0'); -- Used for keeping track of draw calls and draw states
 		VBB_CommandArgType : out STD_LOGIC_VECTOR(2 downto 0) := (others => '0'); -- Transmits our PrimitiveType
 		VBB_ReadyState : in STD_LOGIC;
 	-- Vertex Batch Builder interfaces end
+
+	-- Clip Unit state interfaces begin
+		CLIP_SetNewState : out STD_LOGIC := '0';
+		CLIP_EndFrameReset : out STD_LOGIC := '0';
+		CLIP_NumFreeSlots : in STD_LOGIC_VECTOR(2 downto 0);
+		CLIP_NewStateBits : out STD_LOGIC_VECTOR(CLIP_UNIT_STATE_SIZE_BITS-1 downto 0) := (others => '0');
+		CLIP_NewStateDrawEventID : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
+	-- Clip Unit state interfaces end
 
 	-- Depth Buffer interfaces begin
 		DEPTH_ClearDepthBuffer : out STD_LOGIC := '0';
@@ -117,27 +134,24 @@ entity CommandProcessor is
 		DEPTH_DepthFunction : out STD_LOGIC_VECTOR(2 downto 0) := (others => '0');
 		DEPTH_SetDepthParams : out STD_LOGIC := '0';
 	-- Depth Buffer interfaces end
+	
+	-- Attribute Interpolator state interfaces begin
+		INTERP_SetNewState : out STD_LOGIC := '0';
+		INTERP_EndFrameReset : out STD_LOGIC := '0';
+		INTERP_NumFreeSlots : in STD_LOGIC_VECTOR(2 downto 0);
+		INTERP_NewStateBits : out STD_LOGIC_VECTOR(ATTR_INTERPOLATOR_STATE_SIZE_BITS-1 downto 0) := (others => '0');
+		INTERP_NewStateDrawEventID : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
+	-- Attribute Interpolator state interfaces end
 
-	-- Texture sampler interfaces begin
-		TEXSAMP_LoadTexCacheBeginSignal : out STD_LOGIC := '0';
-		TEXSAMP_LoadTexCacheAckSignal : in STD_LOGIC;
-		TEXSAMP_LoadTexCacheAddr : out STD_LOGIC_VECTOR(29 downto 0) := (others => '0');
-		TEXSAMP_LoadTexCacheFormat : out STD_LOGIC_VECTOR(2 downto 0) := (others => '0');
-		TEXSAMP_LoadTexCacheTexelCount : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
-		TEXSAMP_LoadTexCacheTexelWidth : out STD_LOGIC_VECTOR(2 downto 0) := (others => '0');
-		TEXSAMP_LoadTexCacheTexelHeight : out STD_LOGIC_VECTOR(2 downto 0) := (others => '0');
-
-		TEXSAMP_SetTextureStateBeginSignal : out STD_LOGIC := '0';
-		TEXSAMP_SetTextureStateAckSignal : in STD_LOGIC;
-		TEXSAMP_SetTextureStateUseBilinear : out STD_LOGIC := '0';
-		TEXSAMP_SetTextureStateCombinerModeColor : out STD_LOGIC_VECTOR(2 downto 0) := (others => '0');
-		TEXSAMP_SetTextureStateCombinerModeAlpha : out STD_LOGIC_VECTOR(2 downto 0) := (others => '0');
-	-- Texture sampler interfaces end
+	-- Texture Sampler state interfaces begin
+		TEXSAMP_SetNewState : out STD_LOGIC := '0';
+		TEXSAMP_EndFrameReset : out STD_LOGIC := '0';
+		TEXSAMP_NumFreeSlots : in STD_LOGIC_VECTOR(2 downto 0);
+		TEXSAMP_NewStateBits : out STD_LOGIC_VECTOR(TEX_SAMPLER_STATE_SIZE_BITS-1 downto 0) := (others => '0');
+		TEXSAMP_NewStateDrawEventID : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
+	-- Texture Sampler state interfaces end
 
 	-- ROP interfaces begin
-		ROP_SetBaseAddrAndAlphaTestSignal : out STD_LOGIC := '0';
-		ROP_SetBaseAddrAndAlphaTestSignalAck : in STD_LOGIC;
-
 		ROP_SetClearColor : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 		ROP_ClearSignal : out STD_LOGIC := '0';
 		ROP_ClearSignalAck : in STD_LOGIC;
@@ -145,18 +159,17 @@ entity CommandProcessor is
 		ROP_FlushCacheSignal : out STD_LOGIC := '0';
 		ROP_FlushCacheAck : in STD_LOGIC;
 
-		ROP_SetRenderTargetBaseAddr : out STD_LOGIC_VECTOR(29 downto 0) := (others => '0');
-		ROP_SetWriteMask : out STD_LOGIC_VECTOR(3 downto 0) := (others => '0');
-		ROP_SetAlphaTestEnabled : out STD_LOGIC := '0';
-		ROP_SetAlphaTestRefVal : out STD_LOGIC_VECTOR(7 downto 0) := (others => '0');
-		ROP_SetAlphaTestFunc : out STD_LOGIC_VECTOR(2 downto 0) := (others => '0');
-
-		ROP_SetBlendStateSignal : out STD_LOGIC := '0';
-		ROP_SetBlendStateSigAck : in STD_LOGIC;
-		ROP_SetAlphaBlendEnable : out STD_LOGIC := '0';
-		ROP_SetAlphaBlendFactor : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-		ROP_SetAlphaBlendStateBlock : out STD_LOGIC_VECTOR(21 downto 0) := (others => '0');
+		ROP_STAT_CountPixelsPassed : in STD_LOGIC_VECTOR(31 downto 0);
+		ROP_STAT_CurrentDrawEventID : in STD_LOGIC_VECTOR(15 downto 0);
 	-- ROP interfaces begin
+
+	-- ROP state interfaces begin
+		ROP_SetNewState : out STD_LOGIC := '0';
+		ROP_EndFrameReset : out STD_LOGIC := '0';
+		ROP_NumFreeSlots : in STD_LOGIC_VECTOR(2 downto 0);
+		ROP_NewStateBits : out STD_LOGIC_VECTOR(ROP_STATE_SIZE_BITS-1 downto 0) := (others => '0');
+		ROP_NewStateDrawEventID : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
+	-- ROP state interfaces end
 
 	-- Scanout interfaces begin
 		SCANOUT_RenderTargetBaseAddr : out STD_LOGIC_VECTOR(29 downto 0) := (others => '0');
@@ -192,7 +205,8 @@ entity CommandProcessor is
 		DBG_LAST_WRITE_ADDR : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 		DBG_LAST_WRITE_DATA : out STD_LOGIC_VECTOR(DATA_WIDTH_BITS-1 downto 0) := (others => '0');
 
-		DBG_IdleSignalsVector : out STD_LOGIC_VECTOR(11 downto 0) := (others => '0')
+		DBG_IdleSignalsVector : out STD_LOGIC_VECTOR(12 downto 0) := (others => '0');
+		DBG_CurrentDrawGeneration : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0')
 		);
 end CommandProcessor;
 
@@ -243,7 +257,7 @@ architecture Behavioral of CommandProcessor is
 						READMEM_PUSH_TO_OUT_FIFO, -- 11
 						READMEM_DEASSERT_FIFO, -- 12
 
-						Removed13, -- LOAD_VERTSTREAM_DATA, -- 13
+						PUSH_NEW_TEXTURESAMPLER_STATE, -- 13
 						LOAD_TEXTURE_DATA, -- 14
 
 						WAIT_FOR_IDLE, -- 15
@@ -291,7 +305,10 @@ architecture Behavioral of CommandProcessor is
 						DBG_DUMP_SHADER_REGISTERS_HIGH, -- 48
 						DBG_DUMP_SHADER_REGISTERS_MEMWRITE, -- 49
 
-						SET_BLEND_STATE -- 50
+						SET_BLEND_STATE, -- 50
+						PUSH_NEW_ROP_STATE, -- 51
+						SET_CLIP_STATE, -- 52
+						ISSUE_QUERY_STATE -- 53
 						);
 
 	type commandListExecState is record
@@ -309,6 +326,7 @@ architecture Behavioral of CommandProcessor is
 	end record scanoutSendState;
 
 	constant DefaultScanoutSendState : scanoutSendState := (RenderTargetBaseAddr => (others => '0'), ScanEnable => '0', InvertOutputColor => '0', OutputColorChannels => "010001000" );
+	constant FullPipeSyncIdleFlags : std_logic_vector(12 downto 0) := "0011111111111";
 
 	signal mst_packet_state : packetState := PACKETINITSTATE;
 	signal has_new_read_data : std_logic := '0';
@@ -332,14 +350,14 @@ architecture Behavioral of CommandProcessor is
 
 	signal newWriteData : std_logic_vector(DATA_WIDTH_BITS-1 downto 0) := (others => '0');
 	signal newWriteDWORDEnable : std_logic_vector(DATA_WIDTH_BITS/32-1 downto 0) := (others => '1');
-	signal loadTexDataEnable : std_logic := '0';
-	signal setTexStateEnable : std_logic := '0';
-	signal setAlphaTestAndRenderTargetStateEnable : std_logic := '0';
-	signal setBlendStateEnable : std_logic := '0';
-	signal setIAStateEnable : std_logic := '0';
 	signal setROPClearEnable : std_logic := '0';
 	signal flushROPCache : std_logic := '0';
 	signal shaderStartAddress : unsigned(8 downto 0) := (others => '0');
+	signal currentDrawStateGeneration : unsigned(15 downto 0) := X"0001"; -- 1 at the start of the frame and increments by 1 for each draw/dispatch/clear call that is invoked in which graphics state has changed
+	signal hasUpdatedDrawState : std_logic := '0'; -- Cleared to '0' on each draw/dispatch/clear call, and set to '1' on each graphics state change
+
+	-- This timestamp is used for timestamp queries and increments once for each clock cycle that runs through the command processor
+	signal currentTimestamp : unsigned(47 downto 0) := (others => '0');
 
 	signal debugShaderRegistersSet : std_logic := '0';
 	signal debugShaderRegistersTransactionsCount : unsigned(9 downto 0) := (others => '0');
@@ -355,6 +373,7 @@ architecture Behavioral of CommandProcessor is
 	signal commandListState : commandListExecState;
 
 	-- Idle signal registers
+	signal VSIdleSig : STD_LOGIC := '0';
 	signal IAIdleSig : STD_LOGIC := '0';
 	signal ClipIdleSig : STD_LOGIC := '0';
 	signal TriSetupIdleSig : STD_LOGIC := '0';
@@ -369,32 +388,15 @@ architecture Behavioral of CommandProcessor is
 	signal VSyncSig : STD_LOGIC := '0';
 	signal VSyncSigM1 : STD_LOGIC := '0';
 	signal VSyncResolvedSig : STD_LOGIC := '0';
+
+	-- Current states for the various stages of the pipeline:
+	signal CurrentTexSamplerState : sTexSamplerState := DEFAULT_TEX_SAMPLER_STATE;
+	signal CurrentROPState : sROPState := DEFAULT_ROP_STATE;
 	
-	signal CombinedIdleSignals : STD_LOGIC_VECTOR(11 downto 0) := (others => '0');
+	signal CombinedIdleSignals : STD_LOGIC_VECTOR(12 downto 0) := (others => '0');
 
 	signal statCyclesIdle : unsigned(31 downto 0) := (others => '0');
 	signal statCyclesWorking : unsigned(31 downto 0) := (others => '0');
-
-	pure function GetTexSizeLog2(texSize : unsigned(7 downto 0) ) return unsigned is
-	begin
-		if (texSize(7) = '1') then
-			return to_unsigned(7, 3);
-		elsif (texSize(6) = '1') then
-			return to_unsigned(6, 3);
-		elsif (texSize(5) = '1') then
-			return to_unsigned(5, 3);
-		elsif (texSize(4) = '1') then
-			return to_unsigned(4, 3);
-		elsif (texSize(3) = '1') then
-			return to_unsigned(3, 3);
-		elsif (texSize(2) = '1') then
-			return to_unsigned(2, 3);
-		elsif (texSize(1) = '1') then
-			return to_unsigned(1, 3);
-		else
-			return to_unsigned(0, 3);
-		end if;
-	end function;
 
 	pure function DecodeSpecialConstantToFloat32(isNegative : std_logic; isPow2 : std_logic; isSpecValue : std_logic; index : unsigned(3 downto 0) ) return unsigned is
 	begin
@@ -424,13 +426,8 @@ architecture Behavioral of CommandProcessor is
 	end function;
 
 begin
-	TEXSAMP_LoadTexCacheBeginSignal <= loadTexDataEnable;
-	TEXSAMP_SetTextureStateBeginSignal <= setTexStateEnable;
-	ROP_SetBaseAddrAndAlphaTestSignal <= setAlphaTestAndRenderTargetStateEnable;
-	ROP_SetBlendStateSignal <= setBlendStateEnable;
 	ROP_ClearSignal <= setROPClearEnable;
 	ROP_FlushCacheSignal <= flushROPCache;
-	IA_SetStateEnable <= setIAStateEnable;
 
 	SCANOUT_ScanEnable <= currentScanoutSendState.ScanEnable;
 	SCANOUT_RenderTargetBaseAddr <= currentScanoutSendState.RenderTargetBaseAddr;
@@ -445,6 +442,7 @@ begin
 	DBG_LAST_IN_PACKET <= std_logic_vector(localIncomingPacket.magicByte) & std_logic_vector(localIncomingPacket.checksum) & std_logic_vector(localIncomingPacket.packetTypeByte) & std_logic_vector(localIncomingPacket.payload0) & std_logic_vector(localIncomingPacket.payload1);
 	DBG_LAST_OUT_PACKET <= std_logic_vector(localOutgoingPacket.magicByte) & std_logic_vector(localOutgoingPacket.checksum) & std_logic_vector(localOutgoingPacket.packetTypeByte) & std_logic_vector(localOutgoingPacket.payload0) & std_logic_vector(localOutgoingPacket.payload1);
 	DBG_LAST_READ_DATA <= newReadData;
+	DBG_CurrentDrawGeneration <= std_logic_vector(currentDrawStateGeneration);
 
 	process(clk)
 	begin
@@ -462,18 +460,26 @@ begin
 	process(clk)
 	begin
 		if (rising_edge(clk) ) then
-			CombinedIdleSignals <= VSyncResolvedSig & MemControllerIdleSig & ClearBlockIdleSig & ROPIdleSig & TexSamplerIdleSig & AttrInterpolatorIdleSig & DepthBufferIdleSig & DepthInterpolatorIdleSig & RasterizerIdleSig & TriSetupIdleSig & ClipIdleSig & IAIdleSig;
+			currentTimestamp <= currentTimestamp + 1;
+		end if;
+	end process;
+
+	process(clk)
+	begin
+		if (rising_edge(clk) ) then
+			CombinedIdleSignals <= VSyncResolvedSig & MemControllerIdleSig & ClearBlockIdleSig & ROPIdleSig & TexSamplerIdleSig & AttrInterpolatorIdleSig & DepthBufferIdleSig & DepthInterpolatorIdleSig & RasterizerIdleSig & TriSetupIdleSig & ClipIdleSig & IAIdleSig & VSIdleSig;
 
 			-- Sample the idle flags into registers to be read next cycle:
-			IAIdleSig <= CMD_IA_Idle;
+			VSIdleSig <= CMD_VS_Idle and CMD_FIFO_EMPTY_VBB;
+			IAIdleSig <= CMD_IA_Idle and CMD_FIFO_EMPTY_VS;
 			ClipIdleSig <= CMD_Clip_Idle;
 			TriSetupIdleSig <= CMD_TriSetup_Idle;
 			RasterizerIdleSig <= CMD_Rasterizer_Idle;
-			DepthInterpolatorIdleSig <= CMD_DepthInterpolator_Idle;
+			DepthInterpolatorIdleSig <= CMD_DepthInterpolator_Idle and CMD_FIFO_EMPTY_RASTOUT;
 			DepthBufferIdleSig <= CMD_Depth_Idle;
 			AttrInterpolatorIdleSig <= CMD_AttrInterpolator_Idle;
-			TexSamplerIdleSig <= CMD_TexSampler_Idle;
-			ROPIdleSig <= CMD_ROP_Idle;
+			TexSamplerIdleSig <= CMD_TexSampler_Idle and CMD_FIFO_EMPTY_TEXSAMP;
+			ROPIdleSig <= CMD_ROP_Idle and CMD_FIFO_EMPTY_ROP;
 			ClearBlockIdleSig <= CMD_ClearBlock_Idle;
 			MemControllerIdleSig <= CMD_MemController_Idle;
 			VSyncSigM1 <= VSyncSig; -- VSync needs two signal registers that get AND'd together because it's running on a different 
@@ -531,6 +537,17 @@ begin
 						DEPTH_SetDepthParams <= '0';
 						DEPTH_ClearDepthBuffer <= '0';
 						CommandProcReadResponsesFIFO_rd_en <= '0';
+						IA_SetNewState <= '0';
+						IA_EndFrameReset <= '0';
+						CLIP_SetNewState <= '0';
+						CLIP_EndFrameReset <= '0';
+						INTERP_SetNewState <= '0';
+						INTERP_EndFrameReset <= '0';
+						TEXSAMP_SetNewState <= '0';
+						TEXSAMP_EndFrameReset <= '0';
+						ROP_SetNewState <= '0';
+						ROP_EndFrameReset <= '0';
+						CommandProcWriteRequestsFIFO_wr_en <= '0';
 
 						if (commandListState.numRemainingCommands > 0) then -- If we're executing a command list from memory:
 							if (commandListState.numCommandsThisDRAMRead > 0) then
@@ -637,6 +654,12 @@ begin
 
 							when PT_SETBLENDSTATE =>
 								mst_packet_state <= SET_BLEND_STATE;
+
+							when PT_SETCLIPSTATE =>
+								mst_packet_state <= SET_CLIP_STATE;
+
+							when PT_ISSUEQUERY =>
+								mst_packet_state <= ISSUE_QUERY_STATE;
 
 							when others => --when PT_DONOTHING =>
 								mst_packet_state <= DONOTHING_PACKET;
@@ -773,23 +796,17 @@ begin
 						mst_packet_state <= READ_NEXT_PACKET_FROM_FIFO;
 
 					when LOAD_TEXTURE_DATA =>
-						if (loadTexDataEnable = '1' and TEXSAMP_LoadTexCacheAckSignal = '1') then
-							loadTexDataEnable <= '0'; -- Deassert after one clock cycle
-							mst_packet_state <= READ_NEXT_PACKET_FROM_FIFO;
-						elsif (CMD_TexSampler_Idle = '1') then
-							loadTexDataEnable <= '1';
+						hasUpdatedDrawState <= '1';
 
-							TEXSAMP_LoadTexCacheAddr <= std_logic_vector(localIncomingPacket.payload0(ADDR_WIDTH_BITS-1 downto 0) );
-							TEXSAMP_LoadTexCacheFormat <= std_logic_vector(localIncomingPacket.payload1(2 downto 0) );
-							TEXSAMP_LoadTexCacheTexelCount <= std_logic_vector(localIncomingPacket.payload1(23 downto 8) );
+						CurrentTexSamplerState.TextureBaseAddr <= unsigned(localIncomingPacket.payload0(ADDR_WIDTH_BITS-1 downto 0) );
+						CurrentTexSamplerState.TextureFormat <= eTexFormat'val(to_integer(unsigned(localIncomingPacket.payload1(2 downto 0) ) ) );
+						CurrentTexSamplerState.TotalTexelCount <= unsigned(localIncomingPacket.payload1(23 downto 8) );
 
-							mst_packet_state <= LOAD_TEXTURE_DATA;
-						end if;
+						mst_packet_state <= PUSH_NEW_TEXTURESAMPLER_STATE;
 
 					when WAIT_FOR_IDLE =>
 						-- The wait is completed when ( (waitFlags & waitSignals) == waitFlags):
-						if ( (localIncomingPacket.payload0(11 downto 0) and 
-							unsigned(CombinedIdleSignals) ) = localIncomingPacket.payload0(11 downto 0) ) then
+						if ( (localIncomingPacket.payload0(12 downto 0) and unsigned(CombinedIdleSignals) ) = localIncomingPacket.payload0(12 downto 0) ) then
 							if (localIncomingPacket.payload0(31) = '0') then -- Send back a DWORD (from payload1) after wait completes or not?
 								mst_packet_state <= READ_NEXT_PACKET_FROM_FIFO;
 							else
@@ -813,51 +830,51 @@ begin
 						mst_packet_state <= READ_NEXT_PACKET_FROM_FIFO;
 
 					when SET_TEXTURE_STATE =>
-						if (setTexStateEnable = '1' and TEXSAMP_SetTextureStateAckSignal = '1') then
-							setTexStateEnable <= '0'; -- Deassert after one clock cycle
-							mst_packet_state <= READ_NEXT_PACKET_FROM_FIFO;
-						else
-							setTexStateEnable <= '1';
+						hasUpdatedDrawState <= '1';
 
-							TEXSAMP_SetTextureStateUseBilinear <= localIncomingPacket.payload0(16);
-							TEXSAMP_LoadTexCacheTexelWidth <= std_logic_vector(GetTexSizeLog2(localIncomingPacket.payload0(7 downto 0) ) );
-							TEXSAMP_LoadTexCacheTexelHeight <= std_logic_vector(GetTexSizeLog2(localIncomingPacket.payload0(15 downto 8) ) );
-							TEXSAMP_LoadTexCacheAddr <= std_logic_vector(resize(localIncomingPacket.payload1(15 downto 0), ADDR_WIDTH_BITS) ); -- Set the channel swizzles up
-							TEXSAMP_SetTextureStateCombinerModeColor <= std_logic_vector(localIncomingPacket.payload1(26 downto 24) );
-							TEXSAMP_SetTextureStateCombinerModeAlpha <= std_logic_vector(localIncomingPacket.payload1(18 downto 16) );
+						CurrentTexSamplerState.UseBilinearFiltering <= localIncomingPacket.payload0(16);
+						CurrentTexSamplerState.TextureWidthLog2 <= localIncomingPacket.payload0(2 downto 0);
+						CurrentTexSamplerState.TextureHeightLog2 <= localIncomingPacket.payload0(10 downto 8);
+						CurrentTexSamplerState.ColorCombinerMode <= eCombinerMode'val(to_integer(unsigned(localIncomingPacket.payload1(26 downto 24) ) ) );
+						CurrentTexSamplerState.AlphaCombinerMode <= eCombinerMode'val(to_integer(unsigned(localIncomingPacket.payload1(18 downto 16) ) ) );
+						CurrentTexSamplerState.ChannelSwizzleR <= texChannelMUX'val(to_integer(unsigned(localIncomingPacket.payload1(2 downto 0) ) ) );
+						CurrentTexSamplerState.ChannelSwizzleG <= texChannelMUX'val(to_integer(unsigned(localIncomingPacket.payload1(6 downto 4) ) ) );
+						CurrentTexSamplerState.ChannelSwizzleB <= texChannelMUX'val(to_integer(unsigned(localIncomingPacket.payload1(10 downto 8) ) ) );
+						CurrentTexSamplerState.ChannelSwizzleA <= texChannelMUX'val(to_integer(unsigned(localIncomingPacket.payload1(14 downto 12) ) ) );
 
-							mst_packet_state <= SET_TEXTURE_STATE;
-						end if;
+						mst_packet_state <= READ_NEXT_PACKET_FROM_FIFO;
 
 					when SET_ALPHATEST_AND_RENDERTARGET_STATE =>
-						if (setAlphaTestAndRenderTargetStateEnable = '1' and ROP_SetBaseAddrAndAlphaTestSignalAck = '1') then
-							setAlphaTestAndRenderTargetStateEnable <= '0'; -- Deassert after one clock cycle
-							mst_packet_state <= READ_NEXT_PACKET_FROM_FIFO;
-						else
-							setAlphaTestAndRenderTargetStateEnable <= '1';
+						hasUpdatedDrawState <= '1';
 
-							ROP_SetRenderTargetBaseAddr <= std_logic_vector(localIncomingPacket.payload0(29 downto 0) );
-							ROP_SetWriteMask <= std_logic_vector(localIncomingPacket.payload1(3 downto 0) );
-							ROP_SetAlphaTestEnabled <= localIncomingPacket.payload1(10);
-							ROP_SetAlphaTestRefVal <= std_logic_vector(localIncomingPacket.payload1(23 downto 16) );
-							ROP_SetAlphaTestFunc <= std_logic_vector(localIncomingPacket.payload1(26 downto 24) );
-						end if;
+						CurrentROPState.RenderTargetBaseAddress <= localIncomingPacket.payload0(29 downto 0);
+						CurrentROPState.ColorWriteMask <= localIncomingPacket.payload1(3 downto 0);
+						CurrentROPState.AlphaTestEnabled <= localIncomingPacket.payload1(10);
+						CurrentROPState.AlphaTestRefValue <= localIncomingPacket.payload1(23 downto 16);
+						CurrentROPState.AlphaTestCompareFunc <= eCmpFunc'val(to_integer(localIncomingPacket.payload1(26 downto 24) ) );
+
+						mst_packet_state <= READ_NEXT_PACKET_FROM_FIFO;
 
 					when SET_BLEND_STATE =>
-						if (setBlendStateEnable = '1' and ROP_SetBlendStateSigAck = '1') then
-							setBlendStateEnable <= '0'; -- Deassert after one clock cycle
-							mst_packet_state <= READ_NEXT_PACKET_FROM_FIFO;
-						else
-							setBlendStateEnable <= '1';
+						hasUpdatedDrawState <= '1';
 
-							ROP_SetAlphaBlendEnable <= std_logic(localIncomingPacket.payload0(31) );
-							ROP_SetAlphaBlendStateBlock <= std_logic_vector(localIncomingPacket.payload0(21 downto 0) );
-							ROP_SetAlphaBlendFactor <= std_logic_vector(localIncomingPacket.payload1);
+						CurrentROPState.AlphaBlendEnable <= std_logic(localIncomingPacket.payload0(31) );
+						CurrentROPState.BlendFactorRGBA <= localIncomingPacket.payload1;
+						CurrentROPState.AlphaBlendConfigBlock <= DeserializeBitsToStruct(std_logic_vector(localIncomingPacket.payload0(21 downto 0) ) );
+
+						mst_packet_state <= PUSH_NEW_ROP_STATE;
+
+					when PUSH_NEW_ROP_STATE =>
+						ROP_NewStateBits <= SerializeStructToBits(CurrentROPState);
+						ROP_NewStateDrawEventID <= std_logic_vector(currentDrawStateGeneration);
+						if (unsigned(ROP_NumFreeSlots) /= 0) then
+							ROP_SetNewState <= '1';
+							mst_packet_state <= READ_NEXT_PACKET_FROM_FIFO;
 						end if;
 
 					when DRAW_COMMAND =>
 						-- Wait for the whole IA system (VBB, ShaderCore, and IA) to be ready before we kick off a new draw call:
-						if (IA_DrawReady = '1' and VBB_ReadyState = '1' and SHADER_IsReadyForCommand = '1') then
+						if (VBB_ReadyState = '1' and SHADER_IsReadyForCommand = '1') then
 							
 							-- Signal to the VBB to begin collecting vertices and batching them up for our draw call:
 							if (localIncomingPacket.payload0(24) = '1') then
@@ -869,6 +886,11 @@ begin
 							end if;
 							VBB_CommandArg0 <= "00000000" & std_logic_vector(localIncomingPacket.payload0(23 downto 0) );
 							VBB_CommandArg1 <= std_logic_vector(localIncomingPacket.payload0(31 downto 25) ) & std_logic_vector(localIncomingPacket.payload1(12 downto 0) );
+							VBB_NewDrawEventID <= std_logic_vector(currentDrawStateGeneration);
+							if (hasUpdatedDrawState = '1') then
+								currentDrawStateGeneration <= currentDrawStateGeneration + 1;
+								hasUpdatedDrawState <= '0';
+							end if;
 							VBB_CommandArgType <= std_logic_vector(localIncomingPacket.payload1(31 downto 29) );
 							mst_packet_state <= DRAW_COMMAND2;
 						end if;
@@ -885,6 +907,8 @@ begin
 						end if;
 
 					when SET_SCANOUT_POINTER =>
+						hasUpdatedDrawState <= '1';
+
 						currentScanoutSendState.RenderTargetBaseAddr <= std_logic_vector(localIncomingPacket.payload0(29 downto 0) );
 						currentScanoutSendState.ScanEnable <= localIncomingPacket.payload1(0);
 						currentScanoutSendState.InvertOutputColor <= localIncomingPacket.payload1(1);
@@ -892,13 +916,15 @@ begin
 						mst_packet_state <= READ_NEXT_PACKET_FROM_FIFO;
 
 					when SET_IA_STATE =>
-						if (IA_SetStateReady = '1' and setIAStateEnable = '1') then
-							setIAStateEnable <= '0'; -- Deassert after one clock cycle
+						hasUpdatedDrawState <= '1';
+
+						IA_NewStateBits <= SerializeStructToBits(MakeStructFromMembers(eCullMode'val(to_integer(unsigned(localIncomingPacket.payload0(1 downto 0) ) ) ), 
+							ePrimTopology'val(to_integer(unsigned(localIncomingPacket.payload0(10 downto 8) ) ) ) ) );
+						IA_NewStateDrawEventID <= std_logic_vector(currentDrawStateGeneration);
+
+						if (unsigned(IA_NumFreeSlots) /= 0) then
+							IA_SetNewState <= '1';
 							mst_packet_state <= READ_NEXT_PACKET_FROM_FIFO;
-						else
-							setIAStateEnable <= '1';
-							IA_StateCullMode <= std_logic_vector(localIncomingPacket.payload0(1 downto 0) );
-							IA_StatePrimTopology <= std_logic_vector(localIncomingPacket.payload0(10 downto 8) );
 						end if;
 
 					when ISSUE_CLEARBLOCK =>
@@ -907,6 +933,12 @@ begin
 							CLEAR_ClearColorRGBA <= std_logic_vector(localIncomingPacket.payload0);
 							CLEAR_ClearDRAMLineCount <= std_logic_vector(to_unsigned(640*480*4/32, 16) );
 							CLEAR_ClearBlockBeginSignal <= '1';
+
+							--if (hasUpdatedDrawState = '1') then
+								--currentDrawStateGeneration <= currentDrawStateGeneration + 1;
+								--hasUpdatedDrawState <= '0';
+							--end if;
+
 							mst_packet_state <= ISSUE_CLEARBLOCK_DEASSERT;
 						end if;
 
@@ -915,6 +947,8 @@ begin
 						mst_packet_state <= CLEARBLOCK_SYNC_ROP;
 
 					when CLEARBLOCK_SYNC_ROP =>
+						hasUpdatedDrawState <= '1';
+
 						ROP_SetClearColor <= std_logic_vector(localIncomingPacket.payload0);
 						if (setROPClearEnable = '1' and ROP_ClearSignalAck = '1') then
 							setROPClearEnable <= '0';
@@ -932,12 +966,25 @@ begin
 						end if;
 
 					when SIGNAL_END_OF_FRAME_STATS =>
-						if (STAT_StatsSaveComplete = '1') then
-							STAT_PresentSignal <= '0';
-							mst_packet_state <= READ_NEXT_PACKET_FROM_FIFO;
+						-- Reset our "has state changed" flag, and also reset our current draw event ID:
+						hasUpdatedDrawState <= '0';
+						currentDrawStateGeneration <= X"0001";
+						IA_EndFrameReset <= '1';
+						CLIP_EndFrameReset <= '1';
+						INTERP_EndFrameReset <= '1';
+						TEXSAMP_EndFrameReset <= '1';
+						ROP_EndFrameReset <= '1';
+
+						if (localIncomingPacket.payload1(0) = '1') then
+							if (STAT_StatsSaveComplete = '1') then
+								STAT_PresentSignal <= '0';
+								mst_packet_state <= READ_NEXT_PACKET_FROM_FIFO;
+							else
+								STAT_PresentSignal <= '1';
+								STAT_WriteFrameStatsAddress <= std_logic_vector(localIncomingPacket.payload0(29 downto 0) );
+							end if;
 						else
-							STAT_PresentSignal <= '1';
-							STAT_WriteFrameStatsAddress <= std_logic_vector(localIncomingPacket.payload0(29 downto 0) );
+							mst_packet_state <= READ_NEXT_PACKET_FROM_FIFO;
 						end if;
 
 					when BEGIN_EXECUTE_COMMAND_LIST =>
@@ -970,6 +1017,7 @@ begin
 
 					when LOAD_SHADER_INSTRUCTIONS =>
 						CommandProcReadResponsesFIFO_rd_en <= '0'; -- Deassert after one clock cycle
+						hasUpdatedDrawState <= '1';
 						if (SHADER_IsReadyForCommand = '1') then
 							SHADER_InCommand <= std_logic_vector(to_unsigned(eShaderCMDPacket'pos(LoadProgramCommand), 3) );
 							SHADER_LoadProgramAddr <= std_logic_vector(localIncomingPacket.payload0(29 downto 0) );
@@ -978,16 +1026,17 @@ begin
 						end if;
 
 					when SET_SHADER_CONSTANT =>
-							if (localIncomingPacket.payload1(15 downto 8) = 0) then
-								mst_packet_state <= READ_NEXT_PACKET_FROM_FIFO;
-							else
-								if (CommandProcReadRequestsFIFO_full = '0') then
-									constantBufferLoadAddr <= localIncomingPacket.payload0(29 downto 0);
-									constantBufferLoadRemainingRegs <= localIncomingPacket.payload1(15 downto 8);
-									constantBufferLoadRegisterIndex <= localIncomingPacket.payload1(7 downto 0);
-									mst_packet_state <= SET_SHADER_CONSTANT2;
-								end if;
+						hasUpdatedDrawState <= '1';
+						if (localIncomingPacket.payload1(15 downto 8) = 0) then
+							mst_packet_state <= READ_NEXT_PACKET_FROM_FIFO;
+						else
+							if (CommandProcReadRequestsFIFO_full = '0') then
+								constantBufferLoadAddr <= localIncomingPacket.payload0(29 downto 0);
+								constantBufferLoadRemainingRegs <= localIncomingPacket.payload1(15 downto 8);
+								constantBufferLoadRegisterIndex <= localIncomingPacket.payload1(7 downto 0);
+								mst_packet_state <= SET_SHADER_CONSTANT2;
 							end if;
+						end if;
 
 					when SET_SHADER_CONSTANT2 =>
 						CommandProcReadResponsesFIFO_rd_en <= '0'; -- Deassert after one clock cycle
@@ -1056,6 +1105,7 @@ begin
 						end if;
 
 					when SET_SHADER_CONSTANT_SPECIAL =>
+						hasUpdatedDrawState <= '1';
 						if (SHADER_IsReadyForCommand = '1') then
 							SHADER_InCommand <= std_logic_vector(to_unsigned(eShaderCMDPacket'pos(SetShaderConstantFCommand), 3) );
 							SHADER_SetConstantIndex <= std_logic_vector(localIncomingPacket.payload0(7 downto 0) );
@@ -1068,6 +1118,7 @@ begin
 
 					when SET_VERTEX_STREAM_DATA =>
 						CommandProcReadResponsesFIFO_rd_en <= '0'; -- Deassert after one clock cycle
+						hasUpdatedDrawState <= '1';
 						if (SHADER_IsReadyForCommand = '1') then
 							SHADER_InCommand <= std_logic_vector(to_unsigned(eShaderCMDPacket'pos(IASetVertexStreamCommand), 3) );
 							SHADER_SetVertexStreamID <= std_logic_vector(localIncomingPacket.payload1(2 downto 0) );
@@ -1084,6 +1135,7 @@ begin
 
 					when SET_INDEX_BUFFER =>
 						CommandProcReadResponsesFIFO_rd_en <= '0'; -- Deassert after one clock cycle
+						hasUpdatedDrawState <= '1';
 						if (VBB_ReadyState = '1') then
 							VBB_SendCommand <= std_logic_vector(to_unsigned(eVBB_CMDPacket'pos(SetIndexBuffer), 2) );
 							VBB_CommandArg0 <= std_logic_vector(localIncomingPacket.payload0);
@@ -1091,6 +1143,7 @@ begin
 						end if;
 
 					when SET_SHADER_START_ADDRESS =>
+						hasUpdatedDrawState <= '1';
 						shaderStartAddress <= localIncomingPacket.payload0(8 downto 0);
 						mst_packet_state <= READ_NEXT_PACKET_FROM_FIFO;
 
@@ -1135,6 +1188,7 @@ begin
 						end if;
 
 					when SET_DEPTH_STATE =>
+						hasUpdatedDrawState <= '1';
 						if (DepthBufferIdleSig = '1' and CMD_Depth_Idle = '1') then
 							DEPTH_SetDepthParams <= '1';
 							DEPTH_DepthFunction <= std_logic_vector(localIncomingPacket.payload0(2 downto 0) );
@@ -1146,12 +1200,68 @@ begin
 						if (DepthBufferIdleSig = '1' and CMD_Depth_Idle = '1') then
 							DEPTH_ClearDepthBuffer <= '1';
 							DEPTH_ClearDepthValue <= '1' & std_logic_vector(localIncomingPacket.payload0(22 downto 0) );
+
+							--if (hasUpdatedDrawState = '1') then
+								--currentDrawStateGeneration <= currentDrawStateGeneration + 1;
+								--hasUpdatedDrawState <= '0';
+							--end if;
+
 							mst_packet_state <= READ_NEXT_PACKET_FROM_FIFO;
 						end if;
 
-					-- Removed! May repurpose this case
-					when Removed13 =>
-						mst_packet_state <= READ_NEXT_PACKET_FROM_FIFO;
+					when PUSH_NEW_TEXTURESAMPLER_STATE =>
+						TEXSAMP_NewStateBits <= SerializeStructToBits(CurrentTexSamplerState);
+						TEXSAMP_NewStateDrawEventID <= std_logic_vector(currentDrawStateGeneration);
+						if (unsigned(TEXSAMP_NumFreeSlots) /= 0) then
+							TEXSAMP_SetNewState <= '1';
+							mst_packet_state <= READ_NEXT_PACKET_FROM_FIFO;
+						end if;
+
+					when SET_CLIP_STATE =>
+						CLIP_NewStateBits <= SerializeStructToBits(MakeStructFromMembers(localIncomingPacket.payload0(0), localIncomingPacket.payload0(1), 
+							localIncomingPacket.payload1(3 downto 0), localIncomingPacket.payload1(7 downto 4) ) );
+						CLIP_NewStateDrawEventID <= std_logic_vector(currentDrawStateGeneration);
+						if (unsigned(CLIP_NumFreeSlots) /= 0) then
+							CLIP_SetNewState <= '1';
+							mst_packet_state <= READ_NEXT_PACKET_FROM_FIFO;
+						end if;
+
+					when ISSUE_QUERY_STATE =>
+						if (CommandProcWriteRequestsFIFO_full = '0' and 
+							( (CombinedIdleSignals and FullPipeSyncIdleFlags) = FullPipeSyncIdleFlags) ) then
+							--and unsigned(ROP_STAT_CurrentDrawEventID) = (currentDrawStateGeneration) ) then
+
+							CommandProcWriteRequestsFIFO_wr_en <= '1';
+
+							-- Is this an EndQuery or a BeginQuery?
+							if (localIncomingPacket.payload0(2) = '1') then -- EndQuery case
+								case eQueryType'val(to_integer(localIncomingPacket.payload0(1 downto 0) ) ) is
+									when eQTEvent =>
+										CommandProcWriteRequestsFIFO_wr_data <= std_logic_vector(localIncomingPacket.payload1(ADDR_WIDTH_BITS-1 downto 0) ) -- Write Address
+											& X"00000000000000000000000000000000000000000000000000000000" & X"00000001" -- Write data
+											& "00000001"; -- Write DWORD enable mask
+									when eQTOcclusion | eQTBinaryOcclusion =>
+										CommandProcWriteRequestsFIFO_wr_data <= std_logic_vector(localIncomingPacket.payload1(ADDR_WIDTH_BITS-1 downto 0) ) -- Write Address
+											& X"000000000000000000000000000000000000000000000000" & ROP_STAT_CountPixelsPassed & X"00000000" -- Write data
+											& "00000010"; -- Write DWORD enable mask
+									when eQTTimestamp =>
+										CommandProcWriteRequestsFIFO_wr_data <= std_logic_vector(localIncomingPacket.payload1(ADDR_WIDTH_BITS-1 downto 0) ) -- Write Address
+											& X"000000000000000000000000000000000000000000000000" & X"0000" & std_logic_vector(currentTimestamp) -- Write data
+											& "00000011"; -- Write DWORD enable mask
+								end case;
+							else -- BeginQuery case
+								case eQueryType'val(to_integer(localIncomingPacket.payload0(1 downto 0) ) ) is
+									when eQTOcclusion | eQTBinaryOcclusion =>
+										CommandProcWriteRequestsFIFO_wr_data <= std_logic_vector(localIncomingPacket.payload1(ADDR_WIDTH_BITS-1 downto 0) ) -- Write Address
+											& X"00000000000000000000000000000000000000000000000000000000" & ROP_STAT_CountPixelsPassed -- Write data
+											& "00000001"; -- Write DWORD enable mask
+									when others => -- Do nothing
+										CommandProcWriteRequestsFIFO_wr_en <= '0';
+								end case;
+							end if;
+
+							mst_packet_state <= READ_NEXT_PACKET_FROM_FIFO;
+						end if;
 
 				end case;
 			end if;

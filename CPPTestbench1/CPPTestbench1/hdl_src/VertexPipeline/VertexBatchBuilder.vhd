@@ -23,6 +23,7 @@ entity VertexBatchBuilder is
 		CMD_CommandArg0 : in STD_LOGIC_VECTOR(31 downto 0); -- Used for our index buffer address (SetIndexBuffer), as well as our primitive count (DrawPrimitive/DrawIndexedPrimitive)
 		CMD_CommandArg1 : in STD_LOGIC_VECTOR(19 downto 0); -- Used for our uint StartIndex
 		CMD_CommandArg2 : in STD_LOGIC_VECTOR(15 downto 0); -- Used for our signed short BaseVertexIndex
+		CMD_NewDrawEventID : in STD_LOGIC_VECTOR(15 downto 0); -- Used for keeping track of draw calls and draw states
 		CMD_CommandArgType : in STD_LOGIC_VECTOR(2 downto 0); -- Transmits our PrimitiveType
 		CMD_ReadyState : out STD_LOGIC := '0';
 	-- Command processor interfaces end
@@ -41,9 +42,16 @@ entity VertexBatchBuilder is
 
 	-- Vertex Batch FIFO interface begin
 		VERTBATCH_FIFO_full : in STD_LOGIC;
-		VERTBATCH_FIFO_wr_data : out STD_LOGIC_VECTOR(528 - 1 downto 0) := (others => '0');
+		VERTBATCH_FIFO_wr_data : out STD_LOGIC_VECTOR(544 - 1 downto 0) := (others => '0');
 		VERTBATCH_FIFO_wr_en : out STD_LOGIC := '0';
 	-- Vertex Batch FIFO interface end
+
+	-- Stats interface begin
+		STAT_CyclesIdle : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		STAT_CyclesSpentWorking : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		STAT_CyclesWaitingForOutput : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		STAT_CurrentDrawEventID : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
+	-- Stats interface end
 
 	-- Debug interfaces begin
 		DBG_UseConstantOutput : in STD_LOGIC;
@@ -74,18 +82,17 @@ ATTRIBUTE X_INTERFACE_INFO of VERTBATCH_FIFO_full: SIGNAL is "xilinx.com:interfa
 
 type eVertexBatchBuilderState is
 (
-	initState, -- 0
-	readyState, -- 1
-	fillBatch, -- 2
-	startupState, -- 3
-	comparitorState, -- 4
-	comparitorState2, -- 5
-	batchInsertState, -- 6
-	finishAndSubmitBatch, -- 7
-	finishAndSubmitBatch2, -- 8
-	submitBatch, -- 9
-	finishCooldown, -- 10
-	fillBatch_constantOut -- 11
+	readyState, -- 0
+	fillBatch, -- 1
+	startupState, -- 2
+	comparitorState, -- 3
+	comparitorState2, -- 4
+	batchInsertState, -- 5
+	finishAndSubmitBatch, -- 6
+	finishAndSubmitBatch2, -- 7
+	submitBatch, -- 8
+	finishCooldown, -- 9
+	fillBatch_constantOut -- 10
 );
 
 type eIndexFormat is
@@ -378,7 +385,8 @@ signal batchVertsAreUsed : STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
 signal batchIndicesAreUsed : STD_LOGIC_VECTOR(63 downto 0) := (others => '0');
 
 -- The current state of the VBB main process
-signal currentState : eVertexBatchBuilderState := initState;
+signal currentState : eVertexBatchBuilderState := readyState;
+signal currentDrawEventID : unsigned(15 downto 0) := (others => '0');
 signal currentBatch : VertexBatchType := (others => (others => '1') );
 signal currentIndexBatch : IndexBatchType := (others => (others => '1') );
 signal currentBatchLength : unsigned(4 downto 0) := to_unsigned(0, 5); -- How many vertices do we currently have in our vertex batch?
@@ -394,9 +402,17 @@ signal currentDrawCallParams : DrawCallParams := DefaultDrawCallParams;
 signal doneGeneratingIndices : std_logic := '1'; -- Signal from the Index Generator Process to the main VBB Process to tell it that we're done with this draw call
 signal cooldownState : std_logic := '0';
 
+-- Stats signals:
+signal statCyclesIdle : unsigned(31 downto 0) := (others => '0');
+signal statCyclesWaitingForOutput : unsigned(31 downto 0) := (others => '0');
+signal statCyclesWorking : unsigned(31 downto 0) := (others => '0');
+
 begin
 
 CMD_ReadyState <= '1' when GetCMDReadyFlag(currentState) else '0';
+STAT_CyclesIdle <= std_logic_vector(statCyclesIdle);
+STAT_CyclesWaitingForOutput <= std_logic_vector(statCyclesWaitingForOutput);
+STAT_CyclesSpentWorking <= std_logic_vector(statCyclesWorking);
 DBG_CurrentState <= std_logic_vector(to_unsigned(eVertexBatchBuilderState'pos(currentState), 4) );
 DBG_CurrentBatchLength <= std_logic_vector(currentBatchLength);
 DBG_CurrentIndexBatchLength <= std_logic_vector(currentIndexBatchLength);
@@ -407,6 +423,23 @@ DBG_DoneGeneratingIndices <= doneGeneratingIndices;
 DBG_IndexGeneratorRemainingPrims <= std_logic_vector(currentDrawCallParams.remainingPrimCount);
 DBG_LastPolygonIndices <= std_logic_vector(currentPoppedPrim.indexC) & std_logic_vector(currentPoppedPrim.indexB) & std_logic_vector(currentPoppedPrim.indexA);
 IBC_ReadAddr <= std_logic_vector(currentIndexBufferAddr);
+
+StatsProcess : process(clk)
+begin
+	if (rising_edge(clk) ) then
+		STAT_CurrentDrawEventID <= std_logic_vector(currentDrawEventID);
+		case currentState is
+			when readyState =>
+				statCyclesIdle <= statCyclesIdle + 1;
+
+			when submitBatch =>
+				statCyclesWaitingForOutput <= statCyclesWaitingForOutput + 1;
+
+			when others =>
+				statCyclesWorking <= statCyclesWorking + 1;
+		end case;
+	end if;
+end process StatsProcess;
 
 BatchComparitorProcess : process(clk)
 begin
@@ -675,9 +708,6 @@ MainVertexBatchBuilderProcess : process(clk)
 begin
 	if (rising_edge(clk) ) then
 		case currentState is
-			when initState =>
-				currentState <= readyState;
-
 			when readyState =>
 				VERTBATCH_FIFO_wr_en <= '0';
 				SHADER_Done <= '1';
@@ -691,12 +721,13 @@ begin
 						newDrawCallParams.remainingPrimCount <= unsigned(CMD_CommandArg0(23 downto 0) );
 						newDrawCallParams.primTopology <= GetPrimitiveToplogyFromUnsigned(unsigned(CMD_CommandArgType) );
 						newDrawCallParams.isIndexedDraw <= '0';
+						newDrawCallParams.indexBufferPtr <= (others => '0');
 						newDrawCallParams.BaseVertexIndex <= (others => '0'); -- DrawPrimitive() doesn't use the BaseVertexIndex param
 						newDrawCallParams.startIndex <= unsigned(CMD_CommandArg1);
-						newDrawCallParams.indexBufferPtr <= (others => '0');
-						newDrawCallParams.indexFormat <= index16;
 						newDrawCallParams.primIsEven <= '1';
 						newDrawCallParams.isFirstPolygon <= '1';
+						newDrawCallParams.indexFormat <= index16;
+						currentDrawEventID <= unsigned(CMD_NewDrawEventID);
 						currentBatchLength <= (others => '0');
 						currentIndexBatchLength <= (others => '0');
 						SHADER_Done <= '0';
@@ -706,15 +737,16 @@ begin
 					when DrawIndexedPrimitive =>
 						newDrawCallParams.remainingPrimCount <= unsigned(CMD_CommandArg0(23 downto 0) );
 						newDrawCallParams.primTopology <= GetPrimitiveToplogyFromUnsigned(unsigned(CMD_CommandArgType) );
+						newDrawCallParams.isIndexedDraw <= '1';
+						newDrawCallParams.indexBufferPtr <= savedIndexBufferAddr;
 						newDrawCallParams.BaseVertexIndex <= signed(CMD_CommandArg2);
 						newDrawCallParams.startIndex <= unsigned(CMD_CommandArg1);
-						newDrawCallParams.indexBufferPtr <= savedIndexBufferAddr;
-						newDrawCallParams.indexFormat <= savedIndexBufferFmt;
 						newDrawCallParams.primIsEven <= '1';
 						newDrawCallParams.isFirstPolygon <= '1';
+						newDrawCallParams.indexFormat <= savedIndexBufferFmt;
+						currentDrawEventID <= unsigned(CMD_NewDrawEventID);
 						currentBatchLength <= (others => '0');
 						currentIndexBatchLength <= (others => '0');
-						newDrawCallParams.isIndexedDraw <= '1';
 						SHADER_Done <= '0';
 						newDrawCallSignal <= '1'; -- Signal the IndexGeneratorProcess to start generating indices for us!
 						IBC_InvalidateIndexCache <= '1'; -- Signal the IndexBufferCache to invalidate its cache for this new draw call
@@ -888,7 +920,7 @@ begin
 			when submitBatch =>
 				if (VERTBATCH_FIFO_full = '0') then -- FIFO is ready
 					VERTBATCH_FIFO_wr_en <= '1';
-					VERTBATCH_FIFO_wr_data <= std_logic_vector(SerializeIndexBatch(currentIndexBatch, currentIndexBatchLength, newDrawCallParams.isIndexedDraw) ) & std_logic_vector(SerializeBatch(currentBatch, currentBatchLength) );
+					VERTBATCH_FIFO_wr_data <= std_logic_vector(currentDrawEventID) & std_logic_vector(SerializeIndexBatch(currentIndexBatch, currentIndexBatchLength, newDrawCallParams.isIndexedDraw) ) & std_logic_vector(SerializeBatch(currentBatch, currentBatchLength) );
 					if (leftoverPrimitiveNextBatch = '0' and doneGeneratingIndices = '1') then
 						currentState <= finishCooldown;
 					else

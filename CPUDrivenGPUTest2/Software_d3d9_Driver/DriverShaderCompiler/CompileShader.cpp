@@ -337,22 +337,22 @@ const ShaderCompileResultCode ScalarizeVectorShader(const ShaderInfo& inDXShader
 						if (RegistersAreSame(aliasedInstruction->srcSrcDst.dst, aliasedInstruction->srcSrcDst.src0) )
 						{
 							AppendNewTokenToTokenStream(outScalarizedInstructions, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, freeGPRRegIndex, src0Swizzle, 
-								(const debuggableSourceModifierType)aliasedInstruction->srcSrcDst.src0.GetSourceModifiersUnshifted(), aliasedInstruction->srcSrcDst.src0.GetRelativeAddressingType() ? true : false) ); // src0 (as temp copy)
+								(const debuggableSourceModifierType)aliasedInstruction->srcSrcDst.src0.GetSourceModifiers(), aliasedInstruction->srcSrcDst.src0.GetRelativeAddressingType() ? true : false) ); // src0 (as temp copy)
 						}
 						else
 						{
 							AppendNewTokenToTokenStream(outScalarizedInstructions, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, aliasedInstruction->srcSrcDst.src0.GetRegisterType(), aliasedInstruction->srcSrcDst.src0.GetRegisterIndex(),
-								src0Swizzle, (const debuggableSourceModifierType)aliasedInstruction->srcSrcDst.src0.GetSourceModifiersUnshifted(), aliasedInstruction->srcSrcDst.src0.GetRelativeAddressingType() ? true : false) ); // src0
+								src0Swizzle, (const debuggableSourceModifierType)aliasedInstruction->srcSrcDst.src0.GetSourceModifiers(), aliasedInstruction->srcSrcDst.src0.GetRelativeAddressingType() ? true : false) ); // src0
 						}
 						if (RegistersAreSame(aliasedInstruction->srcSrcDst.dst, aliasedInstruction->srcSrcDst.src1) )
 						{
 							AppendNewTokenToTokenStream(outScalarizedInstructions, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, freeGPRRegIndex, src1Swizzle, 
-								(const debuggableSourceModifierType)aliasedInstruction->srcSrcDst.src1.GetSourceModifiersUnshifted(), aliasedInstruction->srcSrcDst.src1.GetRelativeAddressingType() ? true : false) ); // src1 (as temp copy)
+								(const debuggableSourceModifierType)aliasedInstruction->srcSrcDst.src1.GetSourceModifiers(), aliasedInstruction->srcSrcDst.src1.GetRelativeAddressingType() ? true : false) ); // src1 (as temp copy)
 						}
 						else
 						{
 							AppendNewTokenToTokenStream(outScalarizedInstructions, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, aliasedInstruction->srcSrcDst.src1.GetRegisterType(), aliasedInstruction->srcSrcDst.src1.GetRegisterIndex(),
-								src1Swizzle, (const debuggableSourceModifierType)aliasedInstruction->srcSrcDst.src1.GetSourceModifiersUnshifted(), aliasedInstruction->srcSrcDst.src1.GetRelativeAddressingType() ? true : false) ); // src1
+								src1Swizzle, (const debuggableSourceModifierType)aliasedInstruction->srcSrcDst.src1.GetSourceModifiers(), aliasedInstruction->srcSrcDst.src1.GetRelativeAddressingType() ? true : false) ); // src1
 						}
 					}
 				}
@@ -372,9 +372,9 @@ const ShaderCompileResultCode ScalarizeVectorShader(const ShaderInfo& inDXShader
 						AppendNewTokenToTokenStream(outScalarizedInstructions, AssembleDestParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcDst.dst.GetRegisterIndex(), writeChannelMask, 
 							(const resultModifierType)aliasedInstruction->srcSrcDst.dst.GetResultModifier(), aliasedInstruction->srcSrcDst.dst.GetResultShiftScale(), aliasedInstruction->srcSrcDst.dst.GetRelativeAddressingType() ? true : false) ); // dst
 						AppendNewTokenToTokenStream(outScalarizedInstructions, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, aliasedInstruction->srcSrcDst.src0.GetRegisterType(), aliasedInstruction->srcSrcDst.src0.GetRegisterIndex(),
-							src0Swizzle, (const debuggableSourceModifierType)aliasedInstruction->srcSrcDst.src0.GetSourceModifiersUnshifted(), aliasedInstruction->srcSrcDst.src0.GetRelativeAddressingType() ? true : false) ); // src0
+							src0Swizzle, (const debuggableSourceModifierType)aliasedInstruction->srcSrcDst.src0.GetSourceModifiers(), aliasedInstruction->srcSrcDst.src0.GetRelativeAddressingType() ? true : false) ); // src0
 						AppendNewTokenToTokenStream(outScalarizedInstructions, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, aliasedInstruction->srcSrcDst.src1.GetRegisterType(), aliasedInstruction->srcSrcDst.src1.GetRegisterIndex(),
-							src1Swizzle, (const debuggableSourceModifierType)aliasedInstruction->srcSrcDst.src1.GetSourceModifiersUnshifted(), aliasedInstruction->srcSrcDst.src1.GetRelativeAddressingType() ? true : false) ); // src1
+							src1Swizzle, (const debuggableSourceModifierType)aliasedInstruction->srcSrcDst.src1.GetSourceModifiers(), aliasedInstruction->srcSrcDst.src1.GetRelativeAddressingType() ? true : false) ); // src1
 					}
 				}
 			}
@@ -656,13 +656,14 @@ static const bool DoesInstructionDecompositionRequireTemporaryRegister(const DEB
 		// These combo instructions don't require the use of temporary registers:
 	case _D3DSIO_SUB:
 	case _D3DSIO_DST:
-	case _D3DSIO_POW:
 		return false;
 
-		// MAD and LRP are 3-source instructions (dst,src0,src1,src2). 3-source instructions may require a temporary GPR in case src2 aliases with dst, so we'll
+		// MAD and LRP are 3-source instructions (dst,src0,src1,src2). 3-source instructions may require a temporary GPR in case src2 aliases with dst (or if dst is not a GPR), so we'll
 		// list them here just to be safe!
 	case _D3DSIO_MAD:
 	case _D3DSIO_LRP:
+		// POW can require a temporary GPR in case dst is not a GPR:
+	case _D3DSIO_POW:
 		// These combo instructions require one extra temporary GPR to use (usually as an accumulator for dot-products):
 	case _D3DSIO_DP3:
 	case _D3DSIO_DP4:
@@ -793,44 +794,83 @@ const ShaderCompileResultCode DecomposeShaderInstructions(const ShaderInfo& inDX
 		case _D3DSIO_MAD:
 		{
 			// MAD dst, src0, src1, src2 ->
-			// If no aliasing:
+			// If no aliasing and dst is a read/write register:
 			// MUL dst, src0, src1
 			// ADD dst, dst, src2
-			// If aliasing:
+			// If aliasing and dst is a read/write register:
 			// MOV tmp, src2
 			// MUL dst, src0, src1
 			// ADD dst, dst, tmp
+			// If dst is not a read/write register:
+			// MUL tmp, src0, src1
+			// ADD dst, tmp, src2
 
+			const D3DSHADER_PARAM_REGISTER_TYPE dstRegType = aliasedInstruction->srcSrcSrcDst.dst.GetRegisterType();
 			const bool dstAliasesSrc2 = (aliasedInstruction->srcSrcSrcDst.dst.GetRegisterIndex() == aliasedInstruction->srcSrcSrcDst.src2.GetRegisterIndex() ) &&
-				(aliasedInstruction->srcSrcSrcDst.dst.GetRegisterType() == aliasedInstruction->srcSrcSrcDst.src2.GetRegisterType() );
+				(dstRegType == aliasedInstruction->srcSrcSrcDst.src2.GetRegisterType() );
+			registerPermissions dstRegPermissions = NotAvailable;
+			unsigned short dstRegTypeMaxCount = 0;
+			GetRegisterPermissionsAndCount(inDXShaderInfo, dstRegType, dstRegPermissions, dstRegTypeMaxCount);
+			const bool dstIsReadWrite = (dstRegPermissions == ReadWrite);
 
-			if (dstAliasesSrc2)
+			if (dstIsReadWrite) // RW Dest register case:
 			{
-				// MOV tmp, src2
+				if (dstAliasesSrc2)
+				{
+					// MOV tmp, src2
+					AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
+					AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_MOV) ); // MOV
+					AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, WM_XYZW) ); // temp.xyzw
+					AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcSrcDst.src2.GetRegisterType(), aliasedInstruction->srcSrcSrcDst.src2.GetRegisterIndex(), _NoSwizzleRGBA) ); // src2 (as src0 for the MOV)
+				}
+
+				// MUL dst, src0, src1
 				AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
-				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_MOV) ); // MOV
-				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, WM_XYZW) ); // temp.xyzw
-				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcSrcDst.src2.GetRegisterType(), aliasedInstruction->srcSrcSrcDst.src2.GetRegisterIndex(), _NoSwizzleRGBA) ); // src2 (as src0 for the MOV)
-			}
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_MUL) ); // MUL
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, CopyExistingDestParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcSrcDst.dst) ); // dst
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, CopyExistingSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcSrcDst.src0) ); // src0
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, CopyExistingSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcSrcDst.src1) ); // src1
 
-			// MUL dst, src0, src1
-			AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
-			AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_MUL) ); // MUL
-			AppendNewTokenToTokenStream(outDecomposedInstructionStream, CopyExistingDestParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcSrcDst.dst) ); // dst
-			AppendNewTokenToTokenStream(outDecomposedInstructionStream, CopyExistingSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcSrcDst.src0) ); // src0
-			AppendNewTokenToTokenStream(outDecomposedInstructionStream, CopyExistingSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcSrcDst.src1) ); // src1
-
-			// ADD dst, dst, tmp/src2
-			AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
-			AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_ADD) ); // ADD
-			AppendNewTokenToTokenStream(outDecomposedInstructionStream, CopyExistingDestParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcSrcDst.dst) ); // dst
-			AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcSrcDst.dst.GetRegisterIndex(), (const debuggableFullSwizzle)aliasedInstruction->srcSrcSrcDst.src1.GetSwizzle() ) ); // dest (as src0 for the ADD)
-			if (dstAliasesSrc2)
-			{
-				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterToken(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, (const debuggableFullSwizzle)aliasedInstruction->srcSrcSrcDst.src2.GetSwizzle(), (const debuggableSourceModifierType)aliasedInstruction->srcSrcSrcDst.src2.GetSourceModifiers() ) ); // temp (as src1 for the ADD)
+				// ADD dst, dst, tmp/src2
+				AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_ADD) ); // ADD
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, CopyExistingDestParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcSrcDst.dst) ); // dst
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcSrcDst.dst.GetRegisterIndex(), (const debuggableFullSwizzle)aliasedInstruction->srcSrcSrcDst.src1.GetSwizzle() ) ); // dest (as src0 for the ADD)
+				if (dstAliasesSrc2)
+				{
+					AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterToken(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, (const debuggableFullSwizzle)aliasedInstruction->srcSrcSrcDst.src2.GetSwizzle(), (const debuggableSourceModifierType)aliasedInstruction->srcSrcSrcDst.src2.GetSourceModifiers() ) ); // temp (as src1 for the ADD)
+				}
+				else
+				{
+					AppendNewTokenToTokenStream(outDecomposedInstructionStream, CopyExistingSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcSrcDst.src2) ); // src2 (as src1 for the ADD)
+				}
 			}
-			else
+			else // Non-read/writeable dst register case:
 			{
+				if (dstAliasesSrc2)
+				{
+#ifdef _DEBUG
+					__debugbreak(); // Error: Should never be in a place where src2 and dst are both non-readable registers!
+#endif
+					result = ShaderCompile_ERR_IllegalInstruction;
+					if (!(inCompileOptions & SCOption_IgnoreShaderCompileErrors) )
+					{
+						return result;
+					}
+				}
+
+				// MUL tmp, src0, src1
+				AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_MUL) ); // MUL
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, (const writeMaskType)aliasedInstruction->srcSrcSrcDst.dst.GetWriteMask() ) ); // temp
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, CopyExistingSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcSrcDst.src0) ); // src0
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, CopyExistingSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcSrcDst.src1) ); // src1
+
+				// ADD dst, tmp, src2
+				AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_ADD) ); // ADD
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, CopyExistingDestParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcSrcDst.dst) ); // dst
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterToken(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, _NoSwizzleXYZW) ); // temp (as src0 for the ADD)
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, CopyExistingSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcSrcDst.src2) ); // src2 (as src1 for the ADD)
 			}
 			break;
@@ -950,69 +990,116 @@ const ShaderCompileResultCode DecomposeShaderInstructions(const ShaderInfo& inDX
 		case _D3DSIO_LRP:
 		{
 			// LRP dst, src0, src1, src2 ->
-			// If no aliasing:
+			// If no aliasing and dst is a read/write register:
 			// ADD dst, src1, -src2
 			// MUL dst, dst, src0
 			// ADD dst, dst, src2
-			// If aliasing:
+			// If aliasing and dst is a read/write register::
 			// MOV tmp, dst
 			// ADD dst, src1, -src2
 			// MUL dst, dst, tmp/src0
 			// ADD dst, dst, tmp/src2
+			// If dst is not a readable register:
+			// ADD tmp, src1, -src2
+			// MUL tmp, tmp, src0
+			// ADD dst, tmp, src2
 
+			const D3DSHADER_PARAM_REGISTER_TYPE dstRegType = aliasedInstruction->srcSrcSrcDst.dst.GetRegisterType();
+			registerPermissions dstRegPermissions = NotAvailable;
+			unsigned short dstRegTypeMaxCount = 0;
+			GetRegisterPermissionsAndCount(inDXShaderInfo, dstRegType, dstRegPermissions, dstRegTypeMaxCount);
+			const bool dstIsReadWrite = (dstRegPermissions == ReadWrite);
 			const bool dstAliasesSrc0 = (aliasedInstruction->srcSrcSrcDst.dst.GetRegisterIndex() == aliasedInstruction->srcSrcSrcDst.src0.GetRegisterIndex() ) &&
 				(aliasedInstruction->srcSrcSrcDst.dst.GetRegisterType() == aliasedInstruction->srcSrcSrcDst.src0.GetRegisterType() );
 			const bool dstAliasesSrc2 = (aliasedInstruction->srcSrcSrcDst.dst.GetRegisterIndex() == aliasedInstruction->srcSrcSrcDst.src2.GetRegisterIndex() ) &&
 				(aliasedInstruction->srcSrcSrcDst.dst.GetRegisterType() == aliasedInstruction->srcSrcSrcDst.src2.GetRegisterType() );
 
-			if (dstAliasesSrc0 || dstAliasesSrc2)
+			if (dstIsReadWrite) // RW dst case:
 			{
-				// MOV tmp, src0/src2
+				if (dstAliasesSrc0 || dstAliasesSrc2)
+				{
+					// MOV tmp, src0/src2
+					AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
+					AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_MOV) ); // MOV
+					AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, WM_XYZW) ); // temp.xyzw
+					if (dstAliasesSrc0)
+					{
+						AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcSrcDst.src0.GetRegisterType(), aliasedInstruction->srcSrcSrcDst.src0.GetRegisterIndex(), _NoSwizzleRGBA) ); // src0 (as src0 for the MOV)
+					}
+					else
+					{
+						AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcSrcDst.src2.GetRegisterType(), aliasedInstruction->srcSrcSrcDst.src2.GetRegisterIndex(), _NoSwizzleRGBA) ); // src2 (as src0 for the MOV)
+					}
+				}
+
+				// ADD dst, src1, -src2
 				AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
-				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_MOV) ); // MOV
-				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, WM_XYZW) ); // temp.xyzw
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_ADD) ); // ADD
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, CopyExistingDestParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcSrcDst.dst) ); // dst
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, CopyExistingSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcSrcDst.src1) ); // src1
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcSrcDst.src2.GetRegisterType(), aliasedInstruction->srcSrcSrcDst.src2.GetRegisterIndex(), (const debuggableFullSwizzle)aliasedInstruction->srcSrcSrcDst.src2.GetSwizzle(), ApplyNegateToSourceMod(aliasedInstruction->srcSrcSrcDst.src2.srcParameter.sourceModifier) ) ); // -src2
+
+				// MUL dst, dst, src0
+				AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_MUL) ); // MUL
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, CopyExistingDestParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcSrcDst.dst) ); // dst
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenNoSwizzle(inDXShaderInfo, aliasedInstruction->srcSrcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcSrcDst.dst.GetRegisterIndex() ) ); // dst
 				if (dstAliasesSrc0)
 				{
-					AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcSrcDst.src0.GetRegisterType(), aliasedInstruction->srcSrcSrcDst.src0.GetRegisterIndex(), _NoSwizzleRGBA) ); // src0 (as src0 for the MOV)
+					AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterToken(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, (const debuggableFullSwizzle)aliasedInstruction->srcSrcSrcDst.src0.GetChannelSwizzleXYZW(), (const debuggableSourceModifierType)aliasedInstruction->srcSrcSrcDst.src0.GetSourceModifiers() ) ); // tmp (as src1)
 				}
 				else
 				{
-					AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcSrcDst.src2.GetRegisterType(), aliasedInstruction->srcSrcSrcDst.src2.GetRegisterIndex(), _NoSwizzleRGBA) ); // src2 (as src0 for the MOV)
+					AppendNewTokenToTokenStream(outDecomposedInstructionStream, CopyExistingSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcSrcDst.src0) ); // src0
+				}
+
+				// ADD dst, dst, src2
+				AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_ADD) ); // ADD
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, CopyExistingDestParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcSrcDst.dst) ); // dst
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenNoSwizzle(inDXShaderInfo, aliasedInstruction->srcSrcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcSrcDst.dst.GetRegisterIndex() ) ); // dst
+				if (dstAliasesSrc2)
+				{
+					AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterToken(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, (const debuggableFullSwizzle)aliasedInstruction->srcSrcSrcDst.src2.GetChannelSwizzleXYZW(), (const debuggableSourceModifierType)aliasedInstruction->srcSrcSrcDst.src2.GetSourceModifiers() ) ); // tmp (as src2)
+				}
+				else
+				{
+					AppendNewTokenToTokenStream(outDecomposedInstructionStream, CopyExistingSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcSrcDst.src2) ); // src2
 				}
 			}
-
-			// ADD dst, src1, -src2
-			AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
-			AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_ADD) ); // ADD
-			AppendNewTokenToTokenStream(outDecomposedInstructionStream, CopyExistingDestParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcSrcDst.dst) ); // dst
-			AppendNewTokenToTokenStream(outDecomposedInstructionStream, CopyExistingSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcSrcDst.src1) ); // src1
-			AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcSrcDst.src2.GetRegisterType(), aliasedInstruction->srcSrcSrcDst.src2.GetRegisterIndex(), (const debuggableFullSwizzle)aliasedInstruction->srcSrcSrcDst.src2.GetSwizzle(), ApplyNegateToSourceMod(aliasedInstruction->srcSrcSrcDst.src2.srcParameter.sourceModifier) ) ); // -src2
-
-			// MUL dst, dst, src0
-			AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
-			AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_MUL) ); // MUL
-			AppendNewTokenToTokenStream(outDecomposedInstructionStream, CopyExistingDestParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcSrcDst.dst) ); // dst
-			AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenNoSwizzle(inDXShaderInfo, aliasedInstruction->srcSrcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcSrcDst.dst.GetRegisterIndex() ) ); // dst
-			if (dstAliasesSrc0)
+			else // Non-read/writeable dst register case:
 			{
-				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterToken(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, (const debuggableFullSwizzle)aliasedInstruction->srcSrcSrcDst.src0.GetChannelSwizzleXYZW(), (const debuggableSourceModifierType)aliasedInstruction->srcSrcSrcDst.src0.GetSourceModifiers() ) ); // tmp (as src1)
-			}
-			else
-			{
+				if (dstAliasesSrc0 || dstAliasesSrc2)
+				{
+#ifdef _DEBUG
+					__debugbreak(); // Error: Should never be in a place where (src0 or src2) and dst are both non-readable registers!
+#endif
+					result = ShaderCompile_ERR_IllegalInstruction;
+					if (!(inCompileOptions & SCOption_IgnoreShaderCompileErrors) )
+					{
+						return result;
+					}
+				}
+
+				// ADD tmp, src1, -src2
+				AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_ADD) ); // ADD
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, (const writeMaskType)aliasedInstruction->srcSrcSrcDst.dst.GetWriteMask() ) ); // temp
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, CopyExistingSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcSrcDst.src1) ); // src1
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcSrcDst.src2.GetRegisterType(), aliasedInstruction->srcSrcSrcDst.src2.GetRegisterIndex(), (const debuggableFullSwizzle)aliasedInstruction->srcSrcSrcDst.src2.GetSwizzle(), ApplyNegateToSourceMod(aliasedInstruction->srcSrcSrcDst.src2.srcParameter.sourceModifier) ) ); // -src2
+
+				// MUL tmp, tmp, src0
+				AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_MUL) ); // MUL
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, (const writeMaskType)aliasedInstruction->srcSrcSrcDst.dst.GetWriteMask() ) ); // temp
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterToken(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, _NoSwizzleXYZW) ); // temp
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, CopyExistingSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcSrcDst.src0) ); // src0
-			}
 
-			// ADD dst, dst, src2
-			AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
-			AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_ADD) ); // ADD
-			AppendNewTokenToTokenStream(outDecomposedInstructionStream, CopyExistingDestParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcSrcDst.dst) ); // dst
-			AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenNoSwizzle(inDXShaderInfo, aliasedInstruction->srcSrcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcSrcDst.dst.GetRegisterIndex() ) ); // dst
-			if (dstAliasesSrc2)
-			{
-				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterToken(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, (const debuggableFullSwizzle)aliasedInstruction->srcSrcSrcDst.src2.GetChannelSwizzleXYZW(), (const debuggableSourceModifierType)aliasedInstruction->srcSrcSrcDst.src2.GetSourceModifiers() ) ); // tmp (as src2)
-			}
-			else
-			{
+				// ADD dst, tmp, src2
+				AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_ADD) ); // ADD
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, CopyExistingDestParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcSrcDst.dst) ); // dst
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterToken(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, _NoSwizzleXYZW) ); // temp
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, CopyExistingSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcSrcDst.src2) ); // src2
 			}
 			break;
@@ -1020,21 +1107,21 @@ const ShaderCompileResultCode DecomposeShaderInstructions(const ShaderInfo& inDX
 		case _D3DSIO_M4x4:
 			// M4x4 dst, src0, src1 ->
 			// MUL temp.xyzw, src0.xyzw, src1.xyzw // If write mask .x
-			// ADD dst.x, temp.x, temp.y
-			// ADD dst.x, dst.x, temp.z
-			// ADD dst.x, dst.x, temp.w
+			// ADD temp.x, temp.x, temp.y
+			// ADD temp.x, temp.x, temp.z
+			// ADD dst.x, temp.x, temp.w
 			// MUL temp.xyzw, src0.xyzw, src1+1.xyzw // If write mask .y
-			// ADD dst.y, temp.x, temp.y
-			// ADD dst.y, dst.y, temp.z
-			// ADD dst.y, dst.y, temp.w
+			// ADD temp.x, temp.x, temp.y
+			// ADD temp.x, temp.x, temp.z
+			// ADD dst.y, temp.x, temp.w
 			// MUL temp.xyzw, src0.xyzw, src1+2.xyzw // If write mask .z
-			// ADD dst.z, temp.x, temp.y
-			// ADD dst.z, dst.z, temp.z
-			// ADD dst.z, dst.z, temp.w
+			// ADD temp.x, temp.x, temp.y
+			// ADD temp.x, temp.x, temp.z
+			// ADD dst.z, temp.x, temp.w
 			// MUL temp.xyzw, src0.xyzw, src1+3.xyzw // If write mask .w
-			// ADD dst.w, temp.x, temp.y
-			// ADD dst.w, dst.w, temp.z
-			// ADD dst.w, dst.w, temp.w
+			// ADD temp.x, temp.x, temp.y
+			// ADD temp.x, temp.x, temp.z
+			// ADD dst.w, temp.x, temp.w
 
 			if (aliasedInstruction->srcSrcDst.dst.GetWriteMask() & WM_X) // If write mask .x
 			{
@@ -1045,25 +1132,25 @@ const ShaderCompileResultCode DecomposeShaderInstructions(const ShaderInfo& inDX
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, CopyExistingSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.src0) ); // src0
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, CopyExistingSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.src1) ); // src1
 
-				// ADD dst.x, temp.x, temp.y
+				// ADD temp.x, temp.x, temp.y
 				AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_ADD) ); // ADD
-				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcDst.dst.GetRegisterIndex(), WM_X) ); // dst.x
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, WM_X) ); // temp.x
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceX) ); // temp.x
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceY) ); // temp.y
 
-				// ADD dst.x, dst.x, temp.z
+				// ADD temp.x, temp.x, temp.z
 				AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_ADD) ); // ADD
-				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcDst.dst.GetRegisterIndex(), WM_X, (const resultModifierType)aliasedInstruction->srcSrcDst.dst.GetResultModifier(), aliasedInstruction->srcSrcDst.dst.GetResultShiftScale() ) ); // dst.x
-				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, aliasedInstruction->srcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcDst.dst.GetRegisterIndex(), sourceY) ); // dst.x
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, WM_X) ); // temp.x
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceX) ); // temp.x
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceZ) ); // temp.z
 
-				// ADD dst.x, dst.x, temp.w
+				// ADD dst.x, temp.x, temp.w
 				AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_ADD) ); // ADD
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcDst.dst.GetRegisterIndex(), WM_X, (const resultModifierType)aliasedInstruction->srcSrcDst.dst.GetResultModifier(), aliasedInstruction->srcSrcDst.dst.GetResultShiftScale() ) ); // dst.x
-				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, aliasedInstruction->srcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcDst.dst.GetRegisterIndex(), sourceY) ); // dst.x
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceX) ); // temp.x
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceW) ); // temp.w
 			}
 
@@ -1076,25 +1163,25 @@ const ShaderCompileResultCode DecomposeShaderInstructions(const ShaderInfo& inDX
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, CopyExistingSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.src0) ); // src0
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.src1.GetRegisterType(), aliasedInstruction->srcSrcDst.src1.GetRegisterIndex() + 1, (const debuggableFullSwizzle)aliasedInstruction->srcSrcDst.src1.GetChannelSwizzleXYZW(), (const debuggableSourceModifierType)aliasedInstruction->srcSrcDst.src1.GetSourceModifiers() ) ); // src1+1.xyzw
 
-				// ADD dst.y, temp.x, temp.y
+				// ADD temp.x, temp.x, temp.y
 				AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_ADD) ); // ADD
-				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcDst.dst.GetRegisterIndex(), WM_Y) ); // dst.y
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, WM_X) ); // temp.x
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceX) ); // temp.x
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceY) ); // temp.y
 
-				// ADD dst.y, dst.y, temp.z
+				// ADD temp.x, temp.x, temp.z
 				AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_ADD) ); // ADD
-				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcDst.dst.GetRegisterIndex(), WM_Y, (const resultModifierType)aliasedInstruction->srcSrcDst.dst.GetResultModifier(), aliasedInstruction->srcSrcDst.dst.GetResultShiftScale() ) ); // dst.y
-				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, aliasedInstruction->srcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcDst.dst.GetRegisterIndex(), sourceY) ); // dst.y
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, WM_X) ); // temp.x
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceX) ); // temp.x
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceZ) ); // temp.z
 
-				// ADD dst.y, dst.y, temp.w
+				// ADD dst.y, temp.x, temp.w
 				AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_ADD) ); // ADD
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcDst.dst.GetRegisterIndex(), WM_Y, (const resultModifierType)aliasedInstruction->srcSrcDst.dst.GetResultModifier(), aliasedInstruction->srcSrcDst.dst.GetResultShiftScale() ) ); // dst.y
-				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, aliasedInstruction->srcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcDst.dst.GetRegisterIndex(), sourceY) ); // dst.y
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceX) ); // temp.x
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceW) ); // temp.w
 			}
 
@@ -1107,25 +1194,25 @@ const ShaderCompileResultCode DecomposeShaderInstructions(const ShaderInfo& inDX
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, CopyExistingSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.src0) ); // src0
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.src1.GetRegisterType(), aliasedInstruction->srcSrcDst.src1.GetRegisterIndex() + 2, (const debuggableFullSwizzle)aliasedInstruction->srcSrcDst.src1.GetChannelSwizzleXYZW(), (const debuggableSourceModifierType)aliasedInstruction->srcSrcDst.src1.GetSourceModifiers() ) ); // src1+2.xyzw
 
-				// ADD dst.z, temp.x, temp.y
+				// ADD temp.x, temp.x, temp.y
 				AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_ADD) ); // ADD
-				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcDst.dst.GetRegisterIndex(), WM_Z) ); // dst.z
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, WM_X) ); // temp.x
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceX) ); // temp.x
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceY) ); // temp.y
 
-				// ADD dst.z, dst.z, temp.z
+				// ADD temp.x, temp.x, temp.z
 				AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_ADD) ); // ADD
-				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcDst.dst.GetRegisterIndex(), WM_Z, (const resultModifierType)aliasedInstruction->srcSrcDst.dst.GetResultModifier(), aliasedInstruction->srcSrcDst.dst.GetResultShiftScale() ) ); // dst.z
-				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, aliasedInstruction->srcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcDst.dst.GetRegisterIndex(), sourceZ) ); // dst.z
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, WM_X) ); // temp.x
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceX) ); // temp.x
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceZ) ); // temp.z
 
-				// ADD dst.z, dst.z, temp.w
+				// ADD dst.z, temp.x, temp.w
 				AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_ADD) ); // ADD
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcDst.dst.GetRegisterIndex(), WM_Z, (const resultModifierType)aliasedInstruction->srcSrcDst.dst.GetResultModifier(), aliasedInstruction->srcSrcDst.dst.GetResultShiftScale() ) ); // dst.z
-				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, aliasedInstruction->srcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcDst.dst.GetRegisterIndex(), sourceZ) ); // dst.z
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceX) ); // temp.x
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceW) ); // temp.w
 			}
 
@@ -1138,42 +1225,42 @@ const ShaderCompileResultCode DecomposeShaderInstructions(const ShaderInfo& inDX
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, CopyExistingSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.src0) ); // src0
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.src1.GetRegisterType(), aliasedInstruction->srcSrcDst.src1.GetRegisterIndex() + 3, (const debuggableFullSwizzle)aliasedInstruction->srcSrcDst.src1.GetChannelSwizzleXYZW(), (const debuggableSourceModifierType)aliasedInstruction->srcSrcDst.src1.GetSourceModifiers() ) ); // src1+3.xyzw
 
-				// ADD dst.w, temp.x, temp.y
+				// ADD temp.x, temp.x, temp.y
 				AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_ADD) ); // ADD
-				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcDst.dst.GetRegisterIndex(), WM_W) ); // dst.w
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, WM_X) ); // temp.x
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceX) ); // temp.x
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceY) ); // temp.y
 
-				// ADD dst.w, dst.w, temp.z
+				// ADD temp.x, temp.x, temp.z
 				AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_ADD) ); // ADD
-				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcDst.dst.GetRegisterIndex(), WM_W, (const resultModifierType)aliasedInstruction->srcSrcDst.dst.GetResultModifier(), aliasedInstruction->srcSrcDst.dst.GetResultShiftScale() ) ); // dst.w
-				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, aliasedInstruction->srcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcDst.dst.GetRegisterIndex(), sourceW) ); // dst.w
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, WM_X) ); // temp.x
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceX) ); // temp.x
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceZ) ); // temp.z
 
-				// ADD dst.w, dst.w, temp.w
+				// ADD dst.w, temp.x, temp.w
 				AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_ADD) ); // ADD
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcDst.dst.GetRegisterIndex(), WM_W, (const resultModifierType)aliasedInstruction->srcSrcDst.dst.GetResultModifier(), aliasedInstruction->srcSrcDst.dst.GetResultShiftScale() ) ); // dst.w
-				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, aliasedInstruction->srcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcDst.dst.GetRegisterIndex(), sourceW) ); // dst.w
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceX) ); // temp.x
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceW) ); // temp.w
 			}
 			break;
 		case _D3DSIO_M4x3:
 			// M4x3 dst, src0, src1 ->
 			// MUL temp.xyzw, src0.xyzw, src1.xyzw // If write mask .x
-			// ADD dst.x, temp.x, temp.y
-			// ADD dst.x, dst.x, temp.z
-			// ADD dst.x, dst.x, temp.w
+			// ADD temp.x, temp.x, temp.y
+			// ADD temp.x, temp.x, temp.z
+			// ADD dst.x, temp.x, temp.w
 			// MUL temp.xyzw, src0.xyzw, src1+1.xyzw // If write mask .y
-			// ADD dst.y, temp.x, temp.y
-			// ADD dst.y, dst.y, temp.z
-			// ADD dst.y, dst.y, temp.w
+			// ADD temp.x, temp.x, temp.y
+			// ADD temp.x, temp.x, temp.z
+			// ADD dst.y, temp.x, temp.w
 			// MUL temp.xyzw, src0.xyzw, src1+2.xyzw // If write mask .z
-			// ADD dst.z, temp.x, temp.y
-			// ADD dst.z, dst.z, temp.z
-			// ADD dst.z, dst.z, temp.w
+			// ADD temp.x, temp.x, temp.y
+			// ADD temp.x, temp.x, temp.z
+			// ADD dst.z, temp.x, temp.w
 
 			if (aliasedInstruction->srcSrcDst.dst.GetWriteMask() & WM_X) // If write mask .x
 			{
@@ -1184,25 +1271,25 @@ const ShaderCompileResultCode DecomposeShaderInstructions(const ShaderInfo& inDX
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, CopyExistingSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.src0) ); // src0
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, CopyExistingSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.src1) ); // src1
 
-				// ADD dst.x, temp.x, temp.y
+				// ADD temp.x, temp.x, temp.y
 				AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_ADD) ); // ADD
-				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcDst.dst.GetRegisterIndex(), WM_X) ); // dst.x
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, WM_X) ); // temp.x
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceX) ); // temp.x
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceY) ); // temp.y
 
-				// ADD dst.x, dst.x, temp.z
+				// ADD temp.x, temp.x, temp.z
 				AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_ADD) ); // ADD
-				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcDst.dst.GetRegisterIndex(), WM_X, (const resultModifierType)aliasedInstruction->srcSrcDst.dst.GetResultModifier(), aliasedInstruction->srcSrcDst.dst.GetResultShiftScale() ) ); // dst.x
-				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, aliasedInstruction->srcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcDst.dst.GetRegisterIndex(), sourceY) ); // dst.x
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, WM_X) ); // temp.x
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceX) ); // temp.x
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceZ) ); // temp.z
 
-				// ADD dst.x, dst.x, temp.w
+				// ADD dst.x, temp.x, temp.w
 				AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_ADD) ); // ADD
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcDst.dst.GetRegisterIndex(), WM_X, (const resultModifierType)aliasedInstruction->srcSrcDst.dst.GetResultModifier(), aliasedInstruction->srcSrcDst.dst.GetResultShiftScale() ) ); // dst.x
-				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, aliasedInstruction->srcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcDst.dst.GetRegisterIndex(), sourceY) ); // dst.x
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceX) ); // temp.x
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceW) ); // temp.w
 			}
 
@@ -1215,25 +1302,25 @@ const ShaderCompileResultCode DecomposeShaderInstructions(const ShaderInfo& inDX
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, CopyExistingSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.src0) ); // src0
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.src1.GetRegisterType(), aliasedInstruction->srcSrcDst.src1.GetRegisterIndex() + 1, (const debuggableFullSwizzle)aliasedInstruction->srcSrcDst.src1.GetChannelSwizzleXYZW(), (const debuggableSourceModifierType)aliasedInstruction->srcSrcDst.src1.GetSourceModifiers() ) ); // src1+1.xyzw
 
-				// ADD dst.y, temp.x, temp.y
+				// ADD temp.x, temp.x, temp.y
 				AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_ADD) ); // ADD
-				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcDst.dst.GetRegisterIndex(), WM_Y) ); // dst.y
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, WM_X) ); // temp.x
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceX) ); // temp.x
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceY) ); // temp.y
 
-				// ADD dst.y, dst.y, temp.z
+				// ADD temp.x, temp.x, temp.z
 				AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_ADD) ); // ADD
-				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcDst.dst.GetRegisterIndex(), WM_Y, (const resultModifierType)aliasedInstruction->srcSrcDst.dst.GetResultModifier(), aliasedInstruction->srcSrcDst.dst.GetResultShiftScale() ) ); // dst.y
-				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, aliasedInstruction->srcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcDst.dst.GetRegisterIndex(), sourceY) ); // dst.y
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, WM_X) ); // temp.x
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceX) ); // temp.x
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceZ) ); // temp.z
 
-				// ADD dst.y, dst.y, temp.w
+				// ADD dst.y, temp.x, temp.w
 				AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_ADD) ); // ADD
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcDst.dst.GetRegisterIndex(), WM_Y, (const resultModifierType)aliasedInstruction->srcSrcDst.dst.GetResultModifier(), aliasedInstruction->srcSrcDst.dst.GetResultShiftScale() ) ); // dst.y
-				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, aliasedInstruction->srcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcDst.dst.GetRegisterIndex(), sourceY) ); // dst.y
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceX) ); // temp.x
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceW) ); // temp.w
 			}
 
@@ -1246,25 +1333,25 @@ const ShaderCompileResultCode DecomposeShaderInstructions(const ShaderInfo& inDX
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, CopyExistingSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.src0) ); // src0
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.src1.GetRegisterType(), aliasedInstruction->srcSrcDst.src1.GetRegisterIndex() + 2, (const debuggableFullSwizzle)aliasedInstruction->srcSrcDst.src1.GetChannelSwizzleXYZW(), (const debuggableSourceModifierType)aliasedInstruction->srcSrcDst.src1.GetSourceModifiers() ) ); // src1+2.xyzw
 
-				// ADD dst.z, temp.x, temp.y
+				// ADD temp.x, temp.x, temp.y
 				AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_ADD) ); // ADD
-				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcDst.dst.GetRegisterIndex(), WM_Z) ); // dst.z
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, WM_X) ); // temp.x
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceX) ); // temp.x
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceY) ); // temp.y
 
-				// ADD dst.z, dst.z, temp.z
+				// ADD temp.x, temp.x, temp.z
 				AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_ADD) ); // ADD
-				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcDst.dst.GetRegisterIndex(), WM_Z, (const resultModifierType)aliasedInstruction->srcSrcDst.dst.GetResultModifier(), aliasedInstruction->srcSrcDst.dst.GetResultShiftScale() ) ); // dst.z
-				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, aliasedInstruction->srcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcDst.dst.GetRegisterIndex(), sourceZ) ); // dst.z
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, WM_X) ); // temp.x
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceX) ); // temp.x
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceZ) ); // temp.z
 
-				// ADD dst.z, dst.z, temp.w
+				// ADD dst.z, temp.x, temp.w
 				AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_ADD) ); // ADD
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcDst.dst.GetRegisterIndex(), WM_Z, (const resultModifierType)aliasedInstruction->srcSrcDst.dst.GetResultModifier(), aliasedInstruction->srcSrcDst.dst.GetResultShiftScale() ) ); // dst.z
-				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, aliasedInstruction->srcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcDst.dst.GetRegisterIndex(), sourceZ) ); // dst.z
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceX) ); // temp.x
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceW) ); // temp.w
 			}
 
@@ -1272,17 +1359,17 @@ const ShaderCompileResultCode DecomposeShaderInstructions(const ShaderInfo& inDX
 		case _D3DSIO_M3x4:
 			// M3x4 dst, src0, src1 ->
 			// MUL temp.xyz, src0.xyz, src1.xyz // If write mask .x
-			// ADD dst.x, temp.x, temp.y
-			// ADD dst.x, temp.z
+			// ADD temp.w, temp.x, temp.y
+			// ADD dst.x, temp.w, temp.z
 			// MUL temp.xyz, src0.xyz, src1+1.xyz // If write mask .y
-			// ADD dst.y, temp.x, temp.y
-			// ADD dst.y, temp.z
+			// ADD temp.w, temp.x, temp.y
+			// ADD dst.y, temp.w, temp.z
 			// MUL temp.xyz, src0.xyz, src1+2.xyz // If write mask .z
-			// ADD dst.z, temp.x, temp.y
-			// ADD dst.z, temp.z
+			// ADD temp.w, temp.x, temp.y
+			// ADD dst.z, temp.w, temp.z
 			// MUL temp.xyz, src0.xyz, src1+3.xyz // If write mask .w
-			// ADD dst.w, temp.x, temp.y
-			// ADD dst.w, dst.w, temp.z
+			// ADD temp.w, temp.x, temp.y
+			// ADD dst.w, temp.w, temp.z
 
 			if (aliasedInstruction->srcSrcDst.dst.GetWriteMask() & WM_X) // If write mask .x
 			{
@@ -1293,18 +1380,18 @@ const ShaderCompileResultCode DecomposeShaderInstructions(const ShaderInfo& inDX
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, CopyExistingSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.src0) ); // src0
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, CopyExistingSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.src1) ); // src1
 
-				// ADD dst.x, temp.x, temp.y
+				// ADD temp.w, temp.x, temp.y
 				AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_ADD) ); // ADD
-				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcDst.dst.GetRegisterIndex(), WM_X) ); // dst.x
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, WM_W) ); // temp.w
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceX) ); // temp.x
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceY) ); // temp.y
 
-				// ADD dst.x, dst.x, temp.z
+				// ADD dst.x, temp.w, temp.z
 				AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_ADD) ); // ADD
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcDst.dst.GetRegisterIndex(), WM_X, (const resultModifierType)aliasedInstruction->srcSrcDst.dst.GetResultModifier(), aliasedInstruction->srcSrcDst.dst.GetResultShiftScale() ) ); // dst.x
-				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, aliasedInstruction->srcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcDst.dst.GetRegisterIndex(), sourceY) ); // dst.y
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceW) ); // temp.w
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceZ) ); // temp.z
 			}
 			if (aliasedInstruction->srcSrcDst.dst.GetWriteMask() & WM_Y) // If write mask .y
@@ -1316,18 +1403,18 @@ const ShaderCompileResultCode DecomposeShaderInstructions(const ShaderInfo& inDX
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, CopyExistingSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.src0) ); // src0
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.src1.GetRegisterType(), aliasedInstruction->srcSrcDst.src1.GetRegisterIndex() + 1, (const debuggableFullSwizzle)aliasedInstruction->srcSrcDst.src1.GetChannelSwizzleXYZW(), (const debuggableSourceModifierType)aliasedInstruction->srcSrcDst.src1.GetSourceModifiers() ) ); // src1+1.xyz
 
-				// ADD dst.y, temp.x, temp.y
+				// ADD temp.w, temp.x, temp.y
 				AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_ADD) ); // ADD
-				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcDst.dst.GetRegisterIndex(), WM_Y) ); // dst.y
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, WM_W) ); // temp.w
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceX) ); // temp.x
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceY) ); // temp.y
 
-				// ADD dst.y, dst.y, temp.z
+				// ADD dst.y, temp.w, temp.z
 				AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_ADD) ); // ADD
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcDst.dst.GetRegisterIndex(), WM_Y, (const resultModifierType)aliasedInstruction->srcSrcDst.dst.GetResultModifier(), aliasedInstruction->srcSrcDst.dst.GetResultShiftScale() ) ); // dst.y
-				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, aliasedInstruction->srcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcDst.dst.GetRegisterIndex(), sourceY) ); // dst.y
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceW) ); // temp.w
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceZ) ); // temp.z
 			}
 			if (aliasedInstruction->srcSrcDst.dst.GetWriteMask() & WM_Z) // If write mask .z
@@ -1339,18 +1426,18 @@ const ShaderCompileResultCode DecomposeShaderInstructions(const ShaderInfo& inDX
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, CopyExistingSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.src0) ); // src0
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.src1.GetRegisterType(), aliasedInstruction->srcSrcDst.src1.GetRegisterIndex() + 2, (const debuggableFullSwizzle)aliasedInstruction->srcSrcDst.src1.GetChannelSwizzleXYZW(), (const debuggableSourceModifierType)aliasedInstruction->srcSrcDst.src1.GetSourceModifiers() ) ); // src1+2.xyz
 
-				// ADD dst.z, temp.x, temp.y
+				// ADD temp.w, temp.x, temp.y
 				AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_ADD) ); // ADD
-				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcDst.dst.GetRegisterIndex(), WM_Z) ); // dst.z
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, WM_W) ); // temp.w
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceX) ); // temp.x
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceY) ); // temp.y
 
-				// ADD dst.z, dst.z, temp.z
+				// ADD dst.z, temp.w, temp.z
 				AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_ADD) ); // ADD
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcDst.dst.GetRegisterIndex(), WM_Z, (const resultModifierType)aliasedInstruction->srcSrcDst.dst.GetResultModifier(), aliasedInstruction->srcSrcDst.dst.GetResultShiftScale() ) ); // dst.z
-				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, aliasedInstruction->srcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcDst.dst.GetRegisterIndex(), sourceZ) ); // dst.z
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceW) ); // temp.w
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceZ) ); // temp.z
 			}
 			if (aliasedInstruction->srcSrcDst.dst.GetWriteMask() & WM_W) // If write mask .w
@@ -1362,32 +1449,32 @@ const ShaderCompileResultCode DecomposeShaderInstructions(const ShaderInfo& inDX
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, CopyExistingSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.src0) ); // src0
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.src1.GetRegisterType(), aliasedInstruction->srcSrcDst.src1.GetRegisterIndex() + 3, (const debuggableFullSwizzle)aliasedInstruction->srcSrcDst.src1.GetChannelSwizzleXYZW(), (const debuggableSourceModifierType)aliasedInstruction->srcSrcDst.src1.GetSourceModifiers() ) ); // src1+3.xyz
 
-				// ADD dst.w, temp.x, temp.y
+				// ADD temp.w, temp.x, temp.y
 				AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_ADD) ); // ADD
-				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcDst.dst.GetRegisterIndex(), WM_W) ); // dst.w
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, WM_W) ); // temp.w
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceX) ); // temp.x
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceY) ); // temp.y
 
-				// ADD dst.w, dst.w, temp.z
+				// ADD dst.w, temp.w, temp.z
 				AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_ADD) ); // ADD
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcDst.dst.GetRegisterIndex(), WM_W, (const resultModifierType)aliasedInstruction->srcSrcDst.dst.GetResultModifier(), aliasedInstruction->srcSrcDst.dst.GetResultShiftScale() ) ); // dst.w
-				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, aliasedInstruction->srcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcDst.dst.GetRegisterIndex(), sourceW) ); // dst.w
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceW) ); // temp.w
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceZ) ); // temp.z
 			}
 			break;
 		case _D3DSIO_M3x3:
 			// M3x3 dst, src0, src1 ->
 			// MUL temp.xyz, src0.xyz, src1.xyz // If write mask .x
-			// ADD dst.x, temp.x, temp.y
-			// ADD dst.x, dst.x, temp.z
+			// ADD temp.w, temp.x, temp.y
+			// ADD dst.x, temp.w, temp.z
 			// MUL temp.xyz, src0.xyz, src1+1.xyz // If write mask .y
-			// ADD dst.y, temp.x, temp.y
-			// ADD dst.y, dst.y, temp.z
+			// ADD temp.w, temp.x, temp.y
+			// ADD dst.y, temp.w, temp.z
 			// MUL temp.xyz, src0.xyz, src1+2.xyz // If write mask .z
-			// ADD dst.z, temp.x, temp.y
-			// ADD dst.z, dst.z, temp.z
+			// ADD temp.w, temp.x, temp.y
+			// ADD dst.z, temp.w, temp.z
 			
 			if (aliasedInstruction->srcSrcDst.dst.GetWriteMask() & WM_X) // If write mask .x
 			{
@@ -1398,18 +1485,18 @@ const ShaderCompileResultCode DecomposeShaderInstructions(const ShaderInfo& inDX
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, CopyExistingSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.src0) ); // src0
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, CopyExistingSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.src1) ); // src1
 
-				// ADD dst.x, temp.x, temp.y
+				// ADD temp.w, temp.x, temp.y
 				AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_ADD) ); // ADD
-				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcDst.dst.GetRegisterIndex(), WM_X) ); // dst.x
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, WM_W) ); // temp.w
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceX) ); // temp.x
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceY) ); // temp.y
 
-				// ADD dst.x, dst.x, temp.z
+				// ADD dst.x, temp.w, temp.z
 				AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_ADD) ); // ADD
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcDst.dst.GetRegisterIndex(), WM_X, (const resultModifierType)aliasedInstruction->srcSrcDst.dst.GetResultModifier(), aliasedInstruction->srcSrcDst.dst.GetResultShiftScale() ) ); // dst.x
-				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, aliasedInstruction->srcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcDst.dst.GetRegisterIndex(), sourceY) ); // dst.y
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceW) ); // temp.w
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceZ) ); // temp.z
 			}
 			if (aliasedInstruction->srcSrcDst.dst.GetWriteMask() & WM_Y) // If write mask .y
@@ -1421,18 +1508,18 @@ const ShaderCompileResultCode DecomposeShaderInstructions(const ShaderInfo& inDX
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, CopyExistingSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.src0) ); // src0
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.src1.GetRegisterType(), aliasedInstruction->srcSrcDst.src1.GetRegisterIndex() + 1, (const debuggableFullSwizzle)aliasedInstruction->srcSrcDst.src1.GetChannelSwizzleXYZW(), (const debuggableSourceModifierType)aliasedInstruction->srcSrcDst.src1.GetSourceModifiers() ) ); // src1+1.xyz
 
-				// ADD dst.y, temp.x, temp.y
+				// ADD temp.w, temp.x, temp.y
 				AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_ADD) ); // ADD
-				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcDst.dst.GetRegisterIndex(), WM_Y) ); // dst.y
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, WM_W) ); // temp.w
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceX) ); // temp.x
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceY) ); // temp.y
 
-				// ADD dst.y, dst.y, temp.z
+				// ADD dst.y, temp.w, temp.z
 				AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_ADD) ); // ADD
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcDst.dst.GetRegisterIndex(), WM_Y, (const resultModifierType)aliasedInstruction->srcSrcDst.dst.GetResultModifier(), aliasedInstruction->srcSrcDst.dst.GetResultShiftScale() ) ); // dst.y
-				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, aliasedInstruction->srcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcDst.dst.GetRegisterIndex(), sourceY) ); // dst.y
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceW) ); // temp.w
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceZ) ); // temp.z
 			}
 			if (aliasedInstruction->srcSrcDst.dst.GetWriteMask() & WM_Z) // If write mask .z
@@ -1444,29 +1531,29 @@ const ShaderCompileResultCode DecomposeShaderInstructions(const ShaderInfo& inDX
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, CopyExistingSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.src0) ); // src0
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.src1.GetRegisterType(), aliasedInstruction->srcSrcDst.src1.GetRegisterIndex() + 2, (const debuggableFullSwizzle)aliasedInstruction->srcSrcDst.src1.GetChannelSwizzleXYZW(), (const debuggableSourceModifierType)aliasedInstruction->srcSrcDst.src1.GetSourceModifiers() ) ); // src1+2.xyz
 
-				// ADD dst.z, temp.x, temp.y
+				// ADD temp.w, temp.x, temp.y
 				AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_ADD) ); // ADD
-				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcDst.dst.GetRegisterIndex(), WM_Z) ); // dst.z
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, WM_W) ); // temp.w
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceX) ); // temp.x
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceY) ); // temp.y
 
-				// ADD dst.z, dst.z, temp.z
+				// ADD dst.z, temp.w, temp.z
 				AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_ADD) ); // ADD
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcDst.dst.GetRegisterIndex(), WM_Z, (const resultModifierType)aliasedInstruction->srcSrcDst.dst.GetResultModifier(), aliasedInstruction->srcSrcDst.dst.GetResultShiftScale() ) ); // dst.z
-				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, aliasedInstruction->srcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcDst.dst.GetRegisterIndex(), sourceZ) ); // dst.z
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceW) ); // temp.w
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceZ) ); // temp.z
 			}
 			break;
 		case _D3DSIO_M3x2:
 			// M3x2 dst, src0, src1 ->
 			// MUL temp.xyz, src0.xyz, src1.xyz // If write mask .x
-			// ADD dst.x, temp.x, temp.y
-			// ADD dst.x, dst.x, temp.z
+			// ADD temp.w, temp.x, temp.y
+			// ADD dst.x, temp.w, temp.z
 			// MUL temp.xyz, src0.xyz, src1+1.xyz // If write mask .y
-			// ADD dst.y, temp.x, temp.y
-			// ADD dst.y, dst.y, temp.z
+			// ADD temp.w, temp.x, temp.y
+			// ADD dst.y, temp.w, temp.z
 
 			if (aliasedInstruction->srcSrcDst.dst.GetWriteMask() & WM_X) // If write mask .x
 			{
@@ -1477,18 +1564,18 @@ const ShaderCompileResultCode DecomposeShaderInstructions(const ShaderInfo& inDX
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, CopyExistingSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.src0) ); // src0
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, CopyExistingSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.src1) ); // src1
 
-				// ADD dst.x, temp.x, temp.y
+				// ADD temp.w, temp.x, temp.y
 				AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_ADD) ); // ADD
-				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcDst.dst.GetRegisterIndex(), WM_X) ); // dst.x
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, WM_W) ); // temp.w
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceX) ); // temp.x
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceY) ); // temp.y
 
-				// ADD dst.x, dst.x, temp.z
+				// ADD dst.x, temp.w, temp.z
 				AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_ADD) ); // ADD
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcDst.dst.GetRegisterIndex(), WM_X, (const resultModifierType)aliasedInstruction->srcSrcDst.dst.GetResultModifier(), aliasedInstruction->srcSrcDst.dst.GetResultShiftScale() ) ); // dst.x
-				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, aliasedInstruction->srcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcDst.dst.GetRegisterIndex(), sourceY) ); // dst.y
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceW) ); // temp.w
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceZ) ); // temp.z
 			}
 			if (aliasedInstruction->srcSrcDst.dst.GetWriteMask() & WM_Y) // If write mask .y
@@ -1500,28 +1587,40 @@ const ShaderCompileResultCode DecomposeShaderInstructions(const ShaderInfo& inDX
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, CopyExistingSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.src0) ); // src0
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.src1.GetRegisterType(), aliasedInstruction->srcSrcDst.src1.GetRegisterIndex() + 1, (const debuggableFullSwizzle)aliasedInstruction->srcSrcDst.src1.GetChannelSwizzleXYZW(), (const debuggableSourceModifierType)aliasedInstruction->srcSrcDst.src1.GetSourceModifiers() ) ); // src1+1.xyz
 
-				// ADD dst.y, temp.x, temp.y
+				// ADD temp.w, temp.x, temp.y
 				AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_ADD) ); // ADD
-				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcDst.dst.GetRegisterIndex(), WM_Y) ); // dst.y
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, WM_W) ); // temp.w
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceX) ); // temp.x
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceY) ); // temp.y
 
-				// ADD dst.y, dst.y, temp.z
+				// ADD dst.y, temp.w, temp.z
 				AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_ADD) ); // ADD
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcDst.dst.GetRegisterIndex(), WM_Y, (const resultModifierType)aliasedInstruction->srcSrcDst.dst.GetResultModifier(), aliasedInstruction->srcSrcDst.dst.GetResultShiftScale() ) ); // dst.y
-				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, aliasedInstruction->srcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcDst.dst.GetRegisterIndex(), sourceY) ); // dst.y
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceW) ); // temp.w
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceZ) ); // temp.z
 			}
 			break;
 		case _D3DSIO_POW:
 		{
 			// POW dst, src0, src1 ->
+			// If dst is a read/write register:
 			// LOG dst.x, src0_abs.replicateswizzle
 			// MUL dst.x, dst.x, src1.replicateswizzle
 			// EXP dst.x, dst.x
 			// MOV dst.yzw, dst.xxx
+			// If dst is not a read/write register:
+			// LOG tmp.x, src0_abs.replicateswizzle
+			// MUL tmp.x, tmp.x, src1.replicateswizzle
+			// EXP tmp.x, tmp.x
+			// MOV dst.xyzw, tmp.xxxx
+
+			const D3DSHADER_PARAM_REGISTER_TYPE dstRegType = aliasedInstruction->srcSrcSrcDst.dst.GetRegisterType();
+			registerPermissions dstRegPermissions = NotAvailable;
+			unsigned short dstRegTypeMaxCount = 0;
+			GetRegisterPermissionsAndCount(inDXShaderInfo, dstRegType, dstRegPermissions, dstRegTypeMaxCount);
+			const bool dstIsReadWrite = (dstRegPermissions == ReadWrite);
 
 			const debuggableSwizzleChannel dstReplicateSwizzle = (const debuggableSwizzleChannel)GetFirstWriteChannelIndex(aliasedInstruction->srcSrcDst.dst);
 			const writeMaskType firstWriteMaskChannelIndex = (const writeMaskType)(1 << dstReplicateSwizzle);
@@ -1531,32 +1630,73 @@ const ShaderCompileResultCode DecomposeShaderInstructions(const ShaderInfo& inDX
 			const srcParameterToken dstFirstSrcReg = AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, aliasedInstruction->srcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcDst.dst.GetRegisterIndex(), dstReplicateSwizzle); // dst.first (as a source parameter)
 			const writeMaskType finalMovWriteMask = (const writeMaskType)(aliasedInstruction->srcSrcDst.dst.GetWriteMask() & (~firstWriteMaskChannelIndex) );
 			
-			// LOG dst.x, src0_abs.replicateswizzle
-			AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
-			AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_LOG) ); // LOG
-			AppendNewTokenToTokenStream(outDecomposedInstructionStream, dstFirstReg); // dst.first
-			AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, aliasedInstruction->srcSrcDst.src0.GetRegisterType(), aliasedInstruction->srcSrcDst.src0.GetRegisterIndex(), src0replicateSwizzle, SM_Abs) ); // src0_abs.replicateswizzle
-
-			// MUL dst.x, dst.x, src1.replicateswizzle
-			AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
-			AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_MUL) ); // MUL
-			AppendNewTokenToTokenStream(outDecomposedInstructionStream, dstFirstReg); // dst.first
-			AppendNewTokenToTokenStream(outDecomposedInstructionStream, dstFirstSrcReg); // dst.first (as a source parameter)
-			AppendNewTokenToTokenStream(outDecomposedInstructionStream, CopyExistingSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.src1) ); // src1.replicateswizzle
-
-			// EXP dst.x, dst.x
-			AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
-			AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_EXP) ); // EXP
-			AppendNewTokenToTokenStream(outDecomposedInstructionStream, dstFirstReg); // dst.first
-			AppendNewTokenToTokenStream(outDecomposedInstructionStream, dstFirstSrcReg); // dst.first (as a source parameter)
-
-			if (finalMovWriteMask > WM_None)
+			if (dstIsReadWrite) // Dst is read/write register case:
 			{
-				// MOV dst.yzw, dst.xxx
+				// LOG dst.x, src0_abs.replicateswizzle
 				AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
-				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_MOV) ); // MOV
-				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcDst.dst.GetRegisterIndex(), finalMovWriteMask) ); // dst.writemask
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_LOG) ); // LOG
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, dstFirstReg); // dst.first
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, aliasedInstruction->srcSrcDst.src0.GetRegisterType(), aliasedInstruction->srcSrcDst.src0.GetRegisterIndex(), src0replicateSwizzle, SM_Abs) ); // src0_abs.replicateswizzle
+
+				// MUL dst.x, dst.x, src1.replicateswizzle
+				AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_MUL) ); // MUL
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, dstFirstReg); // dst.first
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, dstFirstSrcReg); // dst.first (as a source parameter)
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, CopyExistingSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.src1) ); // src1.replicateswizzle
+
+				// EXP dst.x, dst.x
+				AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_EXP) ); // EXP
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, dstFirstReg); // dst.first
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, dstFirstSrcReg); // dst.first (as a source parameter)
+
+				if (finalMovWriteMask > WM_None)
+				{
+					// MOV dst.yzw, dst.xxx
+					AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
+					AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_MOV) ); // MOV
+					AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcDst.dst.GetRegisterIndex(), finalMovWriteMask) ); // dst.writemask
+					AppendNewTokenToTokenStream(outDecomposedInstructionStream, dstFirstSrcReg); // dst.first (as a source parameter)
+				}
+			}
+			else
+			{
+				// LOG tmp.x, src0_abs.replicateswizzle
+				AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_LOG) ); // LOG
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, WM_X) ); // temp.x
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, aliasedInstruction->srcSrcDst.src0.GetRegisterType(), aliasedInstruction->srcSrcDst.src0.GetRegisterIndex(), src0replicateSwizzle, SM_Abs) ); // src0_abs.replicateswizzle
+
+				// MUL tmp.x, tmp.x, src1.replicateswizzle
+				AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_MUL) ); // MUL
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, WM_X) ); // temp.x
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceX) ); // temp.x (as a source parameter)
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, CopyExistingSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.src1) ); // src1.replicateswizzle
+
+				if (finalMovWriteMask > WM_None)
+				{
+					// EXP tmp.x, tmp.x
+					AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
+					AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_EXP) ); // EXP
+					AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, WM_X) ); // temp.x
+					AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceX) ); // temp.x (as a source parameter)
+
+					// MOV dst.xyzw, tmp.xxxx
+					AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
+					AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_MOV) ); // MOV
+					AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleDestParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcDst.dst.GetRegisterIndex(), finalMovWriteMask) ); // dst.writemask
+					AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceX) ); // temp.x (as a source parameter)
+				}
+				else
+				{
+					// EXP dst.x, tmp.x
+					AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
+					AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_EXP) ); // EXP
+					AppendNewTokenToTokenStream(outDecomposedInstructionStream, dstFirstReg); // dst.first
+					AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, sourceX) ); // temp.x (as a source parameter)
+				}
 			}
 			break;
 		}

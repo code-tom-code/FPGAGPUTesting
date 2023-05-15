@@ -8,6 +8,8 @@ use IEEE.NUMERIC_STD.ALL;
 -- Include our packet definition file so that we can use the texChannelMUX and eTexFormat enums type defined in there
 library work;
 use work.PacketType.all;
+use work.PixelPipeline_Types.all;
+use work.TexSampleState.all;
 
 entity TexSample is
 	Port ( clk : in STD_LOGIC;
@@ -30,6 +32,13 @@ entity TexSample is
         MEM_TexSampReadResponsesFIFO_rd_en : out STD_LOGIC := '0';
 	-- Memory Controller FIFO interface end
 
+	-- Texture Sampler State Block interface begin
+		STATE_StateBitsAtDrawID : in STD_LOGIC_VECTOR(TEX_SAMPLER_STATE_SIZE_BITS-1 downto 0);
+		STATE_NextDrawID : in STD_LOGIC_VECTOR(15 downto 0);
+		STATE_StateIsValid : in STD_LOGIC;
+		STATE_ConsumeStateSlot : out STD_LOGIC := '0';
+	-- Texture Sampler State Block interface end
+
 	-- Texture cache BRAM interfaces begin
 		TexCache_addra : out STD_LOGIC_VECTOR(13 downto 0) := (others => '0');
 		TexCache_dina : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
@@ -40,20 +49,6 @@ entity TexSample is
 
 	-- Command Processor block interface begin
 		CMD_TexSampleIsIdle : out STD_LOGIC := '0';
-
-		CMD_LoadTexCacheBeginSignal : in STD_LOGIC;
-		CMD_LoadTexCacheAckSignal : out STD_LOGIC := '0';
-		CMD_LoadTexCacheAddr : in STD_LOGIC_VECTOR(29 downto 0);
-		CMD_LoadTexCacheFormat : in STD_LOGIC_VECTOR(2 downto 0);
-		CMD_LoadTexCacheTexelCount : in STD_LOGIC_VECTOR(15 downto 0);
-		CMD_LoadTexCacheTexelWidth : in STD_LOGIC_VECTOR(2 downto 0); -- Since these are all known to be powers of 2, we can simply use log2(x) here instead of the actual resolution to save bits
-		CMD_LoadTexCacheTexelHeight : in STD_LOGIC_VECTOR(2 downto 0); -- Value of 0=1x1, 1=2x2, 2=4x4, 3=8x8, 4=16x16, 5=32x32, 6=64x64, 7=128x128
-
-		CMD_SetTextureStateBeginSignal : in STD_LOGIC;
-		CMD_SetTextureStateAckSignal : out STD_LOGIC := '0';
-		CMD_SetTextureStateUseBilinear : in STD_LOGIC;
-		CMD_SetTextureStateCombinerModeColor : in STD_LOGIC_VECTOR(2 downto 0);
-		CMD_SetTextureStateCombinerModeAlpha : in STD_LOGIC_VECTOR(2 downto 0);
 	-- Command Processor block interface end
 
 	-- ROP FIFO begin
@@ -67,6 +62,7 @@ entity TexSample is
 		STAT_CyclesSpentWorking : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 		STAT_CyclesWaitingForOutput : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 		STAT_CyclesWaitingCacheLoad : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		STAT_CurrentDrawEventID : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
 	-- Stats interface end
 
 	-- Debug signals
@@ -110,51 +106,49 @@ ATTRIBUTE X_INTERFACE_INFO of TexCache_addra: SIGNAL is "xilinx.com:interface:br
 
 type texSampleStateType is 
 (
-	init, -- 0
-	waitingForRead, -- 1
+	waitingForRead, -- 0
     
 	-- Tex sample entry points (one for point-sampling and the other for bilinear)
-	texSample_point_address, -- 2
-	texSample_point_read, -- 3
-	texSample_point_read2, -- 4
-	texSample_point_read3, -- 5
-	texSample_bilinear_readTL, -- 6
-	texSample_bilinear_readTR, -- 7
-	texSample_bilinear_readBL, -- 8
-	texSample_bilinear_readBR, -- 9
-	texSample_bilinear_waitReadsComplete1, -- 10
-	texSample_bilinear_waitReadsComplete2, -- 11
-	texSample_bilinear_waitReadsComplete3, -- 12
+	texSample_point_address, -- 1
+	texSample_point_read, -- 2
+	texSample_point_read2, -- 3
+	texSample_point_read3, -- 4
+	texSample_bilinear_readTL, -- 5
+	texSample_bilinear_readTR, -- 6
+	texSample_bilinear_readBL, -- 7
+	texSample_bilinear_readBR, -- 8
+	texSample_bilinear_waitReadsComplete1, -- 9
+	texSample_bilinear_waitReadsComplete2, -- 10
+	texSample_bilinear_waitReadsComplete3, -- 11
 
 	-- These stages are used for bilinear interpolation only
-	bilinear_xMinMax, -- 13
-	bilinear_xDelta, -- 14
-	bilinear_xMultiply, -- 15
-	bilinear_xCombine, -- 16
-	bilinear_yMinMax, -- 17
-	bilinear_yDelta, -- 18
-	bilinear_yMultiply, -- 19
-	bilinear_yCombine, -- 20
+	bilinear_xMinMax, -- 12
+	bilinear_xDelta, -- 13
+	bilinear_xMultiply, -- 14
+	bilinear_xCombine, -- 15
+	bilinear_yMinMax, -- 16
+	bilinear_yDelta, -- 17
+	bilinear_yMultiply, -- 18
+	bilinear_yCombine, -- 19
 
 	-- These latter stages are once again shared by both point and bilinear sampling:
-	swizzleTexColors, -- 21
-	modulateTexWithVertexColor, -- 22
-	setupOutput, -- 23
-	waitingForWrite, -- 24
+	swizzleTexColors, -- 20
+	modulateTexWithVertexColor, -- 21
+	setupOutput, -- 22
+	waitingForWrite, -- 23
 
-	setTextureState, -- 25
-	loadTextureState, -- 26
-	loadTextureState_memRequest, -- 27
-	loadTextureState_memResponse, -- 28
-	loadTextureState_cacheLine -- 29
+	loadTextureState_memRequest, -- 24
+	loadTextureState_memResponse, -- 25
+	loadTextureState_cacheLine, -- 26
+	loadNullTextureState -- 27
 );
 
-signal currentState : texSampleStateType := init;
+signal currentState : texSampleStateType := waitingForRead;
 
 signal texX : unsigned(7 downto 0) := (others => '0');
 signal texY : unsigned(7 downto 0) := (others => '0');
-signal texWidth : unsigned(2 downto 0) := (others => '0');
-signal texHeight : unsigned(2 downto 0) := (others => '0');
+signal texWidth : unsigned(2 downto 0) := (others => '0'); -- Since these are all known to be powers of 2, we can simply use log2(x) here instead of the actual resolution to save bits
+signal texHeight : unsigned(2 downto 0) := (others => '0'); -- Value of 0=1x1, 1=2x2, 2=4x4, 3=8x8, 4=16x16, 5=32x32, 6=64x64, 7=128x128
 signal texFormat : eTexFormat := eTexFmtA8R8G8B8;
 signal texCacheAddress : STD_LOGIC_VECTOR(13 downto 0) := (others => '0');
 signal texCacheEnable : STD_LOGIC := '0';
@@ -177,8 +171,9 @@ signal alphaCombinerMode : eCombinerMode := cbm_textureModulateVertexColor;
 
 signal interpBitsX : STD_LOGIC_VECTOR(7 downto 0) := (others => '0');
 signal interpBitsY : STD_LOGIC_VECTOR(7 downto 0) := (others => '0');
-signal storedPixelX : STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
-signal storedPixelY : STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
+signal storedPixelX : unsigned(15 downto 0) := (others => '0');
+signal storedPixelY : unsigned(15 downto 0) := (others => '0');
+signal currentDrawEventID : unsigned(15 downto 0) := (others => '0');
 signal storedVertColorRGBA : STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 signal outColorRegR : STD_LOGIC_VECTOR(7 downto 0) := (others => '0'); -- Default the color to (0, 0, 0, 1) (opaque black)
 signal outColorRegG : STD_LOGIC_VECTOR(7 downto 0) := (others => '0');
@@ -515,6 +510,7 @@ DBG_TexCache_addra <= texCacheAddress;
 	process(clk)
 	begin
 		if (rising_edge(clk) ) then
+			STAT_CurrentDrawEventID <= std_logic_vector(currentDrawEventID);
 			case currentState is
 				when waitingForRead =>
 					statCyclesIdle <= statCyclesIdle + 1;
@@ -522,7 +518,7 @@ DBG_TexCache_addra <= texCacheAddress;
 				when waitingForWrite =>
 					statCyclesWaitingForOutput <= statCyclesWaitingForOutput + 1;
 
-				when loadTextureState | loadTextureState_memRequest | loadTextureState_memResponse | loadTextureState_cacheLine =>
+				when loadTextureState_memRequest | loadTextureState_memResponse | loadTextureState_cacheLine =>
 					statCyclesWaitingForCacheLoad <= statCyclesWaitingForCacheLoad + 1;
 
 				when others =>
@@ -545,45 +541,68 @@ DBG_TexCache_addra <= texCacheAddress;
 	begin
 		if (rising_edge(clk) ) then
 			cmdTexSampleIsIdle <= '0';
+			INTERP_InFIFO_rd_en <= '0';
+			STATE_ConsumeStateSlot <= '0';
 
 			case currentState is
-				when init =>
-					currentState <= waitingForRead;
-
 				when waitingForRead =>
 					ROP_OutFIFO_wr_en <= '0'; -- Deassert after one cycle
-					INTERP_InFIFO_rd_en <= '0';
-					if (INTERP_InFIFO_empty = '0') then
+
+					storedVertColorRGBA <= INTERP_InFIFO_rd_data(95 downto 64);
+					tempShiftTexcoord := resize(unsigned(INTERP_InFIFO_rd_data(47 downto 32) ), tempShiftTexcoord'length) srl GetTexDimensionShift(texWidth);
+					texX <= tempShiftTexcoord(15 downto 8);
+					interpBitsX <= std_logic_vector(tempShiftTexcoord(7 downto 0) );
+					tempShiftTexcoord := resize(unsigned(INTERP_InFIFO_rd_data(63 downto 48) ), tempShiftTexcoord'length) srl GetTexDimensionShift(texHeight);
+					texY <= tempShiftTexcoord(15 downto 8);
+					interpBitsY <= std_logic_vector(tempShiftTexcoord(7 downto 0) );
+					storedPixelX <= unsigned(INTERP_InFIFO_rd_data(15 downto 0) );
+					storedPixelY <= unsigned(INTERP_InFIFO_rd_data(31 downto 16) );
+
+					if (STATE_StateIsValid = '1' and currentDrawEventID = unsigned(STATE_NextDrawID) ) then
+						STATE_ConsumeStateSlot <= '1';
+
+						bilinearModeEnabled <= DeserializeBitsToStruct(STATE_StateBitsAtDrawID).UseBilinearFiltering;
+						outputMUXR <= DeserializeBitsToStruct(STATE_StateBitsAtDrawID).ChannelSwizzleR;
+						outputMUXG <= DeserializeBitsToStruct(STATE_StateBitsAtDrawID).ChannelSwizzleG;
+						outputMUXB <= DeserializeBitsToStruct(STATE_StateBitsAtDrawID).ChannelSwizzleB;
+						outputMUXA <= DeserializeBitsToStruct(STATE_StateBitsAtDrawID).ChannelSwizzleA;
+						texWidth <= DeserializeBitsToStruct(STATE_StateBitsAtDrawID).TextureWidthLog2;
+						texHeight <= DeserializeBitsToStruct(STATE_StateBitsAtDrawID).TextureHeightLog2;
+						colorCombinerMode <= DeserializeBitsToStruct(STATE_StateBitsAtDrawID).ColorCombinerMode;
+						alphaCombinerMode <= DeserializeBitsToStruct(STATE_StateBitsAtDrawID).AlphaCombinerMode;
+						loadTexCacheReadAddr <= DeserializeBitsToStruct(STATE_StateBitsAtDrawID).TextureBaseAddr;
+						texCacheReadTexelsCount <= DeserializeBitsToStruct(STATE_StateBitsAtDrawID).TotalTexelCount;
+						texFormat <= DeserializeBitsToStruct(STATE_StateBitsAtDrawID).TextureFormat;
+						texCacheAddress <= (others => '0');
+						if (DeserializeBitsToStruct(STATE_StateBitsAtDrawID).TotalTexelCount = 0) then
+							currentState <= loadNullTextureState;
+						else
+							currentState <= loadTextureState_memRequest;
+						end if;
+					elsif (INTERP_InFIFO_empty = '0') then
 						INTERP_InFIFO_rd_en <= '1';
 
-						storedVertColorRGBA <= INTERP_InFIFO_rd_data(95 downto 64);
-						tempShiftTexcoord := resize(unsigned(INTERP_InFIFO_rd_data(47 downto 32) ), tempShiftTexcoord'length) srl GetTexDimensionShift(texWidth);
-						texX <= tempShiftTexcoord(15 downto 8);
-						interpBitsX <= std_logic_vector(tempShiftTexcoord(7 downto 0) );
-						tempShiftTexcoord := resize(unsigned(INTERP_InFIFO_rd_data(63 downto 48) ), tempShiftTexcoord'length) srl GetTexDimensionShift(texHeight);
-						texY <= tempShiftTexcoord(15 downto 8);
-						interpBitsY <= std_logic_vector(tempShiftTexcoord(7 downto 0) );
-						storedPixelX <= INTERP_InFIFO_rd_data(15 downto 0);
-						storedPixelY <= INTERP_InFIFO_rd_data(31 downto 16);
-
-						if (bilinearModeEnabled = '0') then
-							currentState <= texSample_point_address;
+						if (IsSpecialPixelMessage(unsigned(INTERP_InFIFO_rd_data(15 downto 0) ) ) ) then
+							if (INTERP_InFIFO_rd_data(eSpecialPixelCodeBits'pos(SetNewDrawEventID) ) = '1') then
+								currentDrawEventID <= unsigned(INTERP_InFIFO_rd_data(31 downto 16) );
+								currentState <= waitingForWrite;
+							end if;
+							if (INTERP_InFIFO_rd_data(eSpecialPixelCodeBits'pos(TerminateCurrentDrawEventID) ) = '1') then
+								currentState <= waitingForWrite;
+							end if;
 						else
-							currentState <= texSample_bilinear_readTL;
+							if (bilinearModeEnabled = '0') then
+								currentState <= texSample_point_address;
+							else
+								currentState <= texSample_bilinear_readTL;
+							end if;
 						end if;
-					elsif (CMD_SetTextureStateBeginSignal = '1') then
-						CMD_SetTextureStateAckSignal <= '1';
-						currentState <= setTextureState;
-					elsif (CMD_LoadTexCacheBeginSignal = '1') then
-						CMD_LoadTexCacheAckSignal <= '1';
-						currentState <= loadTextureState;
 					else
 						cmdTexSampleIsIdle <= '1';
 						currentState <= waitingForRead;
 					end if;
 
 				when texSample_point_address =>
-					INTERP_InFIFO_rd_en <= '0'; -- Deassert after one clock cycle
 					texCacheEnable <= '1';
 					texCacheWriteEnable <= (others => '0');
 					texCacheAddress <= STD_LOGIC_VECTOR( (resize(texY, texCacheAddress'length) sll GetTexDimensionMultiplier(texWidth) ) + texX);
@@ -607,8 +626,6 @@ DBG_TexCache_addra <= texCacheAddress;
 					-- TOMTODO: We don't need to spend 12 cycles doing bilinear taps from the texture cache, we can
 					-- use pipelining to do the same sampling with 6 or 7 cycles instead!
 				when texSample_bilinear_readTL =>
-					INTERP_InFIFO_rd_en <= '0'; -- Deassert after one clock cycle
-
 					-- Bilinear interpolation needs to do more than just one sample
 					texCacheAddress <= STD_LOGIC_VECTOR( (resize(texY, texCacheAddress'length) sll GetTexDimensionMultiplier(texWidth) ) + texX);
 					texCacheEnable <= '1';
@@ -819,32 +836,11 @@ DBG_TexCache_addra <= texCacheAddress;
 				when waitingForWrite =>
 					if (ROP_OutFIFO_full = '0') then
 						ROP_OutFIFO_wr_en <= '1';
-						ROP_OutFIFO_wr_data <= std_logic_vector(PackOutputData(unsigned(storedPixelX), unsigned(storedPixelY), unsigned(ROP_outR), unsigned(ROP_outG), unsigned(ROP_outB), unsigned(ROP_outA) ) );
+						ROP_OutFIFO_wr_data <= std_logic_vector(PackOutputData(storedPixelX, storedPixelY, unsigned(ROP_outR), unsigned(ROP_outG), unsigned(ROP_outB), unsigned(ROP_outA) ) );
 						currentState <= waitingForRead;
 					else
 						ROP_OutFIFO_wr_en <= '0';
 					end if;
-
-				when setTextureState =>
-					CMD_SetTextureStateAckSignal <= '0'; -- Deassert after one clock cycle
-					bilinearModeEnabled <= CMD_SetTextureStateUseBilinear;
-					outputMUXR <= texChannelMUX'val(to_integer(unsigned(CMD_LoadTexCacheAddr(2 downto 0) ) ) );
-					outputMUXG <= texChannelMUX'val(to_integer(unsigned(CMD_LoadTexCacheAddr(6 downto 4) ) ) );
-					outputMUXB <= texChannelMUX'val(to_integer(unsigned(CMD_LoadTexCacheAddr(10 downto 8) ) ) );
-					outputMUXA <= texChannelMUX'val(to_integer(unsigned(CMD_LoadTexCacheAddr(14 downto 12) ) ) );
-					texWidth <= unsigned(CMD_LoadTexCacheTexelWidth);
-					texHeight <= unsigned(CMD_LoadTexCacheTexelHeight);
-					colorCombinerMode <= eCombinerMode'val(to_integer(unsigned(CMD_SetTextureStateCombinerModeColor) ) );
-					alphaCombinerMode <= eCombinerMode'val(to_integer(unsigned(CMD_SetTextureStateCombinerModeAlpha) ) );
-					currentState <= waitingForRead;
-
-				when loadTextureState =>
-					CMD_LoadTexCacheAckSignal <= '0'; -- Deassert after one clock cycle
-					loadTexCacheReadAddr <= unsigned(CMD_LoadTexCacheAddr);
-					texCacheReadTexelsCount <= unsigned(CMD_LoadTexCacheTexelCount);
-					texFormat <= eTexFormat'val(to_integer(unsigned(CMD_LoadTexCacheFormat) ) );
-					texCacheAddress <= (others => '0');
-					currentState <= loadTextureState_memRequest;
 
 				when loadTextureState_memRequest =>
 					if (MEM_TexSampReadRequestsFIFO_full = '0') then
@@ -889,6 +885,9 @@ DBG_TexCache_addra <= texCacheAddress;
 					elsif (cacheLineReadIters = to_unsigned(1, 5) ) then
 						currentState <= loadTextureState_memRequest;
 					end if;
+
+				when loadNullTextureState =>
+					currentState <= waitingForRead; -- Just go back to the waiting for read state
 			end case;
 		end if;
 	end process;

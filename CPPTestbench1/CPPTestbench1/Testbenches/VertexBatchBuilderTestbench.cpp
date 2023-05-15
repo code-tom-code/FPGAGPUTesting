@@ -9,11 +9,11 @@ static bool enablePrints = false;
 
 enum VBBState
 {
-	initState, // 0
-	readyState, // 1
-	fillBatch, // 2
-	startupState, // 3
-	comparitorState, // 4
+	readyState, // 0
+	fillBatch, // 1
+	startupState, // 2
+	comparitorState, // 3
+	comparitorState2, // 4
 	batchInsertState, // 5
 	finishAndSubmitBatch, // 6
 	finishAndSubmitBatch2, // 7

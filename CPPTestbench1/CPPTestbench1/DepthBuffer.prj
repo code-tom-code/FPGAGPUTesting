@@ -2,4 +2,4 @@
 # List other files here
 vhdl xil_defaultlib  \
 "hdl_src/PacketType.vhd" \
-"hdl_src/DepthBuffer.vhd" \
+"hdl_src/PixelPipeline/DepthBuffer.vhd" \

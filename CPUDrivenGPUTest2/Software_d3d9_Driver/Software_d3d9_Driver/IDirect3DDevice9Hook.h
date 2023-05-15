@@ -597,6 +597,21 @@ struct CachedViewport
 		memset(this, 0, sizeof(*this) );
 	}
 
+	// This one is a solution from StackOverflow to find the next lowest power of 2:
+	static uint32_t previous_power_of_two(uint32_t x)
+	{
+		if (x == 0) 
+		{
+			return 0;
+		}
+		x |= (x >> 1);
+		x |= (x >> 2);
+		x |= (x >> 4);
+		x |= (x >> 8);
+		x |= (x >> 16);
+		return x - (x >> 1);
+	}
+
 	inline void RecomputeCache()
 	{
 		halfWidthF = viewport.Width * 0.5f;
@@ -606,6 +621,14 @@ struct CachedViewport
 		fWidth = (const float)(viewport.Width - 1);
 		fHeight = (const float)(viewport.Height - 1);
 		zScale = viewport.MaxZ - viewport.MinZ;
+
+		// Round down to the next lowest integer to ensure that we always have enough slack outside the guard band for clipping floating point imprecision
+		fGuardBandWidthScale = (const float)previous_power_of_two( (const int)( (8192 - 2) / halfWidthF - 0.5f) );
+		if (fGuardBandWidthScale < 1.0f)
+			fGuardBandWidthScale = 1.0f;
+		fGuardBandHeightScale = (const float)previous_power_of_two( (const int)( (8192 - 2) / halfHeightF - 0.5f) );
+		if (fGuardBandHeightScale < 1.0f)
+			fGuardBandHeightScale = 1.0f;
 	}
 
 	D3DVIEWPORT9 viewport;
@@ -616,6 +639,11 @@ struct CachedViewport
 	float fWidth;
 	float fHeight;
 	float zScale;
+
+	// These guard band scales should always be greater than 1 (unless guard band clipping is disabled, in which case they should be exactly 1.0f). They determine
+	// how many times larger than the viewport size the clipping space should be.
+	float fGuardBandWidthScale;
+	float fGuardBandHeightScale;
 };
 
 struct scissorRectStruct
@@ -1112,11 +1140,6 @@ public:
 	inline const DeviceState& GetCurrentHookState(void) const
 	{ 
 		return currentState;
-	}
-
-	inline const DWORD OcclusionQuery_GetNumPixelsPassedZTest(void) const
-	{
-		return numPixelsPassedZTest;
 	}
 
 	// Called after device creation or Reset()

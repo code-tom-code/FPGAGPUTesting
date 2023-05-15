@@ -14,6 +14,7 @@ use work.FloatALU_Types.all;
 use work.FloatCommon.all;
 use work.ClipTypes.all;
 use work.ClipCommon.all;
+use work.InputAssemblerState.all;
 
 entity InputAssembler2 is
 	Port (clk : in STD_LOGIC;
@@ -43,6 +44,7 @@ entity InputAssembler2 is
 		CLIP_v0ClipCodes : out STD_LOGIC_VECTOR(10 downto 0) := (others => '0');
 		CLIP_v1ClipCodes : out STD_LOGIC_VECTOR(10 downto 0) := (others => '0');
 		CLIP_v2ClipCodes : out STD_LOGIC_VECTOR(10 downto 0) := (others => '0');
+		CLIP_CurrentDrawEventID : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
 		CLIP_AABBTriOverlapsViewport : out STD_LOGIC := '0';
 		CLIP_readyForNewTri : in STD_LOGIC;
 		CLIP_newTriBegin : out STD_LOGIC := '0';
@@ -58,18 +60,18 @@ entity InputAssembler2 is
 		VERTOUT_FIFO_rd_data : in STD_LOGIC_VECTOR(319 downto 0);
 		VERTOUT_FIFO_rd_en : out STD_LOGIC := '0';
 		INDEXOUT_FIFO_empty : in STD_LOGIC;
-		INDEXOUT_FIFO_rd_data : in STD_LOGIC_VECTOR(255 downto 0);
+		INDEXOUT_FIFO_rd_data : in STD_LOGIC_VECTOR(271 downto 0);
 		INDEXOUT_FIFO_rd_en : out STD_LOGIC := '0';
 	-- Vertex Batch Output (VBO) interfaces end
 
+	-- Input Assembler State Block interface begin
+		STATE_StateBitsAtDrawID : in STD_LOGIC_VECTOR(INPUT_ASSEMBLER_STATE_SIZE_BITS-1 downto 0);
+		STATE_NextDrawID : in STD_LOGIC_VECTOR(15 downto 0);
+		STATE_StateIsValid : in STD_LOGIC;
+		STATE_ConsumeStateSlot : out STD_LOGIC := '0';
+	-- Input Assembler State Block interface end
+
 	-- Command processor interfaces begin
-		CMD_DrawReady : out STD_LOGIC := '0';
-
-		CMD_SetStateReady : out STD_LOGIC := '0';
-		CMD_SetStateEnable : in STD_LOGIC;
-		CMD_StateCullMode : in STD_LOGIC_VECTOR(1 downto 0);
-		CMD_StatePrimTopology : in STD_LOGIC_VECTOR(2 downto 0);
-
 		CMD_IA_Idle : out STD_LOGIC := '0'; -- Signal to let the command processor know that we are idle (have no work to do)
 	-- Command processor interfaces end
 
@@ -78,6 +80,7 @@ entity InputAssembler2 is
 		STAT_CyclesSpentWorking : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 		STAT_CyclesLoadingDataToCache : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 		STAT_CyclesWaitingForOutput : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		STAT_CurrentDrawEventID : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
 	-- Stats interface end
 
 	-- Debug signals
@@ -211,6 +214,7 @@ signal currentIndexData : indexBatchArray := (others => (others => '0') );
 
 signal cullState : eCullMode := CM_CullCCW;
 signal primTopologyState : ePrimTopology := PRIMTOP_TriangleList;
+signal currentDrawEventID : unsigned(15 downto 0) := (others => '0');
 
 -- Primitive number that resets to 0 at the start of each new vertex batch
 signal SV_PrimitiveID : unsigned(6 downto 0) := (others => '0');
@@ -223,9 +227,9 @@ signal indicesUsedPerBatch : unsigned(6 downto 0) := (others => '0');
 
 signal vertexIDPerBatch : unsigned(4 downto 0) := (others => '0');
 
--- These signals are tied directly to output ports:
 signal drawReady : std_logic := '0';
-signal setStateReady : std_logic := '0';
+
+-- These signals are tied directly to output ports:
 signal IAIsIdle : std_logic := '0';
 signal newTriBegin : std_logic := '0';
 signal wholeTriangleAABBIntersectsViewport : std_logic := '0';
@@ -242,8 +246,6 @@ instIA2_AABB2DOverlapViewport : AABB2DOverlapViewport port map (inv0x => std_log
 	inv2x => std_logic_vector(currentTri.v2.pos.vx), inv2y => std_logic_vector(currentTri.v2.pos.vy),
 	outWholeTriangleAABBIntersectsViewport => wholeTriangleAABBIntersectsViewport);
 
-CMD_DrawReady <= drawReady;
-CMD_SetStateReady <= setStateReady;
 CMD_IA_Idle <= IAIsIdle;
 CLIP_newTriBegin <= newTriBegin;
 CLIP_AABBTriOverlapsViewport <= wholeTriangleAABBIntersectsViewport;
@@ -259,6 +261,7 @@ DBG_IA_VertexIDPerBatch <= std_logic_vector(vertexIDPerBatch(3 downto 0) );
 	process(clk)
 	begin
 		if (rising_edge(clk) ) then
+			STAT_CurrentDrawEventID <= std_logic_vector(currentDrawEventID);
 			case currentState is
 				when IAstate_readyIdleState =>
 					statCyclesIdle <= statCyclesIdle + 1;
@@ -285,50 +288,24 @@ DBG_IA_VertexIDPerBatch <= std_logic_vector(vertexIDPerBatch(3 downto 0) );
 
 					SV_PrimitiveID <= (others => '0'); -- Reset the primitive ID as we are done with our previous draw call
 
-					if (setStateReady = '1' and CMD_SetStateEnable = '0' and drawReady = '1' and VBO_Pushed = '0') then
+					if (drawReady = '1' and VBO_Pushed = '0') then
 						IAIsIdle <= '1';
 					end if;
 
-					-- Wait for the load or draw signals:
-					if (CMD_SetStateEnable = '1' and setStateReady = '1') then
-						setStateReady <= '0';
-						VBO_Ready <= '0';
-						cullState <= eCullMode'val(to_integer(unsigned(CMD_StateCullMode) ) );
-						case (ePrimTopology'val(to_integer(unsigned(CMD_StatePrimTopology) ) ) ) is
-							when PRIMTOP_PointList =>
-								primTopologyState <= PRIMTOP_PointList;
-							when PRIMTOP_LineList =>
-								primTopologyState <= PRIMTOP_LineList;
-							when PRIMTOP_LineStrip =>
-								primTopologyState <= PRIMTOP_LineStrip;
-							when PRIMTOP_TriangleStrip =>
-								primTopologyState <= PRIMTOP_TriangleStrip;
-							when PRIMTOP_TriangleFan =>
-								primTopologyState <= PRIMTOP_TriangleFan;
-							when PRIMTOP_ScreenAlignedQuad =>
-								primTopologyState <= PRIMTOP_ScreenAlignedQuad;
-							when others => --when PRIMTOP_TriangleList =>
-								primTopologyState <= PRIMTOP_TriangleList;
-						end case;
-						currentState <= IAstate_readyIdleState;
-					elsif (VBO_Pushed = '1' and drawReady = '1') then
-						setStateReady <= '0';
+					vertexIDPerBatch <= (others => '0');
+					verticesUsedPerBatch <= unsigned(VBO_NumVertices);
+					indicesUsedPerBatch <= unsigned(VBO_NumIndices);
+					currentDrawIsIndexed <= VBO_IsIndexedDrawCall;
+
+					-- Wait for the draw signal:
+					if (VBO_Pushed = '1' and drawReady = '1') then
 						drawReady <= '0';
 						VBO_Ready <= '0';
-						vertexIDPerBatch <= (others => '0');
-						verticesUsedPerBatch <= unsigned(VBO_NumVertices);
-						indicesUsedPerBatch <= unsigned(VBO_NumIndices);
-						currentDrawIsIndexed <= VBO_IsIndexedDrawCall;
-						if (cullState = CM_CullBoth) then
-							-- Do nothing! Skip the whole draw call because we're culling everything today!
-						else
-							currentState <= IAState_readIndexData;
-						end if;
+						currentState <= IAState_readIndexData;
 					else
 						-- Set our "ready" and "idle" signals (this *is* called the ready-idle state, after all...):
 						VBO_Ready <= '1';
 						drawReady <= '1';
-						setStateReady <= '1';
 						currentState <= IAstate_readyIdleState;
 					end if;
 
@@ -336,11 +313,21 @@ DBG_IA_VertexIDPerBatch <= std_logic_vector(vertexIDPerBatch(3 downto 0) );
 					for i in 0 to 63 loop
 						currentIndexData(i) <= unsigned(INDEXOUT_FIFO_rd_data( (i + 1) * 4 - 1 downto i * 4) );
 					end loop;
+					currentDrawEventID <= unsigned(INDEXOUT_FIFO_rd_data(271 downto 256) );
+
+					if (STATE_StateIsValid = '1' and STATE_NextDrawID = INDEXOUT_FIFO_rd_data(271 downto 256) ) then
+						STATE_ConsumeStateSlot <= '1';
+
+						cullState <= DeserializeBitsToStruct(STATE_StateBitsAtDrawID).CullMode;
+						primTopologyState <= DeserializeBitsToStruct(STATE_StateBitsAtDrawID).PrimTopology;
+					end if;
+
 					INDEXOUT_FIFO_rd_en <= '1';
 					currentState <= IAState_readVertexData;
 
 				when IAState_readVertexData =>
 					INDEXOUT_FIFO_rd_en <= '0'; -- Deassert after one clock cycle
+					STATE_ConsumeStateSlot <= '0'; -- Deassert after one clock cycle
 
 					currentVertexData(to_integer(vertexIDPerBatch) ) <= UnpackVertexDataFromBuffer(unsigned(VERTOUT_FIFO_rd_data) );
 
@@ -370,6 +357,7 @@ DBG_IA_VertexIDPerBatch <= std_logic_vector(vertexIDPerBatch(3 downto 0) );
 					CLIP_vertColor0_RGBA <= std_logic_vector(currentTri.v0.color.a) & std_logic_vector(currentTri.v0.color.b) & std_logic_vector(currentTri.v0.color.g) & std_logic_vector(currentTri.v0.color.r);
 
 					CLIP_v0ClipCodes <= currentTri.v0.clipCodes;
+					CLIP_CurrentDrawEventID <= std_logic_vector(currentDrawEventID);
 
 					-- Swizzle our output triangles from (0, 1, 2) to (0, 2, 1) if we're doing CW culling instead of CCW culling:
 					if (cullState = CM_CullCW) then
@@ -442,6 +430,7 @@ DBG_IA_VertexIDPerBatch <= std_logic_vector(vertexIDPerBatch(3 downto 0) );
 					CLIP_vertColor0_RGBA <= std_logic_vector(currentTri.v0.color.a) & std_logic_vector(currentTri.v0.color.b) & std_logic_vector(currentTri.v0.color.g) & std_logic_vector(currentTri.v0.color.r);
 
 					CLIP_v0ClipCodes <= currentTri.v0.clipCodes;
+					CLIP_CurrentDrawEventID <= std_logic_vector(currentDrawEventID);
 
 					CLIP_v1PosX <= std_logic_vector(currentTri.v2.pos.vx);
 					CLIP_v1PosY <= std_logic_vector(currentTri.v2.pos.vy);

@@ -97,7 +97,8 @@ enum clipper_state_t : uint8_t
 	clip_finishOrNextPlane, // 73
 	clip_sendToNextStage, // 74
 	clip_popNextChildTriangle0, // 75
-	clip_popNextChildTriangle1 // 76
+	clip_popNextChildTriangle1, // 76
+	clip_sendNewDrawEventID // 77
 };
 
 static const char* const clipperStateStrings[] =
@@ -1784,7 +1785,7 @@ const int RunTestsClipUnit(Xsi::Loader& loader, RenderWindow* renderWindow)
 	{
 		__debugbreak();
 	}
-	unsigned minClipListSize = HDLSimClippedOutputTris.size() < clippedOutputTris.size() ? HDLSimClippedOutputTris.size() : clippedOutputTris.size();
+	unsigned minClipListSize = HDLSimClippedOutputTris.size() < clippedOutputTris.size() ? (const unsigned)HDLSimClippedOutputTris.size() : (const unsigned)clippedOutputTris.size();
 	for (unsigned x = 0; x < minClipListSize; ++x)
 	{
 		const triSetupInput& hdlSimClippedTri = HDLSimClippedOutputTris[x];
@@ -1904,7 +1905,7 @@ const int RunTestsClipUnit(Xsi::Loader& loader, RenderWindow* renderWindow)
 	{
 		__debugbreak();
 	}
-	minClipListSize = HDLSimClippedOutputTris.size() < clippedOutputTris.size() ? HDLSimClippedOutputTris.size() : clippedOutputTris.size();
+	minClipListSize = HDLSimClippedOutputTris.size() < clippedOutputTris.size() ? (const unsigned)HDLSimClippedOutputTris.size() : (const unsigned)clippedOutputTris.size();
 	for (unsigned x = 0; x < minClipListSize; ++x)
 	{
 		const triSetupInput& hdlSimClippedTri = HDLSimClippedOutputTris[x];
@@ -2003,7 +2004,7 @@ const int RunTestsClipUnit(Xsi::Loader& loader, RenderWindow* renderWindow)
 	{
 		__debugbreak();
 	}
-	minClipListSize = HDLSimClippedOutputTris.size() < clippedOutputTris.size() ? HDLSimClippedOutputTris.size() : clippedOutputTris.size();
+	minClipListSize = HDLSimClippedOutputTris.size() < clippedOutputTris.size() ? (const unsigned)HDLSimClippedOutputTris.size() : (const unsigned)clippedOutputTris.size();
 	for (unsigned x = 0; x < minClipListSize; ++x)
 	{
 		const triSetupInput& hdlSimClippedTri = HDLSimClippedOutputTris[x];

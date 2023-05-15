@@ -40,7 +40,7 @@ if { [string first $scripts_vivado_version $current_vivado_version] == -1 } {
 
 # The design that will be created by this Tcl script contains the following 
 # module references:
-# AttrInterpFloatALU, AttrInterpolator, StandaloneFloatALU_ADD, StandaloneFloatALU_ADD, StandaloneFloatALU_MUL, StandaloneFloatALU_MUL, StandaloneFloatALU_SPEC, ClearBlock, ClipUnit, CommandProcessor, DepthBuffer, DepthInterpFloatALU, DepthInterpolator, IndexBufferCache, InputAssembler2, ROP, Rasterizer, ResetN_UntilClockLocked, StatsCollector, StandaloneFloatALU_ADD, StandaloneFloatALU_CNV, StandaloneFloatALU_MUL, StandaloneFloatALU_SPEC, TexSample, TriSetup, TriWorkCache, VertexBatchBuilder, MemoryController, CDC_Command_Scanout, ScanOut, dvid, obuf_outputs, PacketProcessor, ConstantBuffer, FloatALU, FloatALU, FloatALU, FloatALU, ShaderCore, UNORM8ToFloat, VertexStreamCache, GPRQuad2
+# AttrInterpFloatALU, StateBlock, AttrInterpolator, StandaloneFloatALU_ADD, StandaloneFloatALU_ADD, StandaloneFloatALU_MUL, StandaloneFloatALU_MUL, StandaloneFloatALU_SPEC, ClearBlock, StateBlock, ClipUnit, CommandProcessor, DepthBuffer, DepthInterpFloatALU, DepthInterpolator, IndexBufferCache, InputAssembler2, StateBlock, StateBlock, ROP, Rasterizer, ResetN_UntilClockLocked, StatsCollector, StandaloneFloatALU_ADD, StandaloneFloatALU_CNV, StandaloneFloatALU_MUL, StandaloneFloatALU_SPEC, StateBlock, TexSample, TriSetup, TriWorkCache, VertexBatchBuilder, MemoryController, CDC_Command_Scanout, ScanOut, dvid, obuf_outputs, PacketProcessor, ConstantBuffer, FloatALU, FloatALU, FloatALU, FloatALU, ShaderCore, UNORM8ToFloat, VertexStreamCache, GPRQuad2
 
 # Please add the sources of those modules before sourcing this Tcl script.
 
@@ -446,6 +446,7 @@ proc create_hier_cell_ShaderCoreSystem { parentCell nameHier } {
   create_bd_pin -dir O -from 31 -to 0 CB_WriteInData
   create_bd_pin -dir O CB_WriteMode
   create_bd_pin -dir I -from 2 -to 0 CMD_InCommand_0
+  create_bd_pin -dir O CMD_IsIdle
   create_bd_pin -dir O CMD_IsReadyForCommand_0
   create_bd_pin -dir I -from 29 -to 0 CMD_LoadProgramAddr_0
   create_bd_pin -dir I -from 15 -to 0 CMD_LoadProgramLen_0
@@ -497,6 +498,7 @@ proc create_hier_cell_ShaderCoreSystem { parentCell nameHier } {
   create_bd_pin -dir O -from 31 -to 0 OUT_RESULT
   create_bd_pin -dir O -from 31 -to 0 OUT_RESULT1
   create_bd_pin -dir O -from 31 -to 0 OUT_RESULT2
+  create_bd_pin -dir O -from 15 -to 0 STAT_CurrentDrawEventID
   create_bd_pin -dir O -from 31 -to 0 STAT_CyclesExecShaderCode
   create_bd_pin -dir O -from 31 -to 0 STAT_CyclesIdle
   create_bd_pin -dir O -from 31 -to 0 STAT_CyclesSpentWorking
@@ -507,6 +509,8 @@ proc create_hier_cell_ShaderCoreSystem { parentCell nameHier } {
   create_bd_pin -dir O -from 4 -to 0 VBO_NumVertices
   create_bd_pin -dir O VBO_Pushed_0
   create_bd_pin -dir I VBO_Ready_0
+  create_bd_pin -dir I VERTBATCH_FIFO_empty
+  create_bd_pin -dir O VERTBATCH_FIFO_rd_en
   create_bd_pin -dir O -from 21 -to 0 VSC_ReadDWORDAddr
   create_bd_pin -dir O -from 31 -to 0 VSC_ReadData
   create_bd_pin -dir O VSC_ReadReady
@@ -693,6 +697,7 @@ proc create_hier_cell_ShaderCoreSystem { parentCell nameHier } {
   connect_bd_net -net ShaderCore_0_CB_RegIndex [get_bd_pins CB_RegIndex] [get_bd_pins ConstantBuffer_0/regIndex] [get_bd_pins ShaderCore_0/CB_RegIndex]
   connect_bd_net -net ShaderCore_0_CB_WriteInData [get_bd_pins CB_WriteInData] [get_bd_pins ConstantBuffer_0/writeInData] [get_bd_pins ShaderCore_0/CB_WriteInData]
   connect_bd_net -net ShaderCore_0_CB_WriteMode [get_bd_pins CB_WriteMode] [get_bd_pins ConstantBuffer_0/writeMode] [get_bd_pins ShaderCore_0/CB_WriteMode]
+  connect_bd_net -net ShaderCore_0_CMD_IsIdle [get_bd_pins CMD_IsIdle] [get_bd_pins ShaderCore_0/CMD_IsIdle]
   connect_bd_net -net ShaderCore_0_CMD_IsReadyForCommand [get_bd_pins CMD_IsReadyForCommand_0] [get_bd_pins ShaderCore_0/CMD_IsReadyForCommand]
   connect_bd_net -net ShaderCore_0_DBG_ActiveLanesBitmask [get_bd_pins DBG_ActiveLanesBitmask] [get_bd_pins ShaderCore_0/DBG_ActiveLanesBitmask]
   connect_bd_net -net ShaderCore_0_DBG_CurrentDWORD [get_bd_pins DBG_CurrentDWORD] [get_bd_pins ShaderCore_0/DBG_CurrentDWORD]
@@ -723,6 +728,7 @@ proc create_hier_cell_ShaderCoreSystem { parentCell nameHier } {
   connect_bd_net -net ShaderCore_0_ICache_Enable [get_bd_pins InstructionCache/ena] [get_bd_pins ShaderCore_0/ICache_Enable]
   connect_bd_net -net ShaderCore_0_ICache_WriteData [get_bd_pins InstructionCache/dina] [get_bd_pins ShaderCore_0/ICache_WriteData]
   connect_bd_net -net ShaderCore_0_ICache_WriteMode [get_bd_pins InstructionCache/wea] [get_bd_pins ShaderCore_0/ICache_WriteMode]
+  connect_bd_net -net ShaderCore_0_STAT_CurrentDrawEventID [get_bd_pins STAT_CurrentDrawEventID] [get_bd_pins ShaderCore_0/STAT_CurrentDrawEventID]
   connect_bd_net -net ShaderCore_0_STAT_CyclesExecShaderCode [get_bd_pins STAT_CyclesExecShaderCode] [get_bd_pins ShaderCore_0/STAT_CyclesExecShaderCode]
   connect_bd_net -net ShaderCore_0_STAT_CyclesIdle [get_bd_pins STAT_CyclesIdle] [get_bd_pins ShaderCore_0/STAT_CyclesIdle]
   connect_bd_net -net ShaderCore_0_STAT_CyclesSpentWorking [get_bd_pins STAT_CyclesSpentWorking] [get_bd_pins ShaderCore_0/STAT_CyclesSpentWorking]
@@ -733,6 +739,7 @@ proc create_hier_cell_ShaderCoreSystem { parentCell nameHier } {
   connect_bd_net -net ShaderCore_0_VBO_NumIndices [get_bd_pins VBO_NumIndices] [get_bd_pins ShaderCore_0/VBO_NumIndices]
   connect_bd_net -net ShaderCore_0_VBO_NumVertices [get_bd_pins VBO_NumVertices] [get_bd_pins ShaderCore_0/VBO_NumVertices]
   connect_bd_net -net ShaderCore_0_VBO_Pushed [get_bd_pins VBO_Pushed_0] [get_bd_pins ShaderCore_0/VBO_Pushed]
+  connect_bd_net -net ShaderCore_0_VERTBATCH_FIFO_rd_en [get_bd_pins VERTBATCH_FIFO_rd_en] [get_bd_pins ShaderCore_0/VERTBATCH_FIFO_rd_en]
   connect_bd_net -net ShaderCore_0_VSC_InvalidateCache [get_bd_pins ShaderCore_0/VSC_InvalidateCache] [get_bd_pins VertexStreamCache_0/VSC_InvalidateCache]
   connect_bd_net -net ShaderCore_0_VSC_ReadDWORDAddr [get_bd_pins VSC_ReadDWORDAddr] [get_bd_pins ShaderCore_0/VSC_ReadDWORDAddr] [get_bd_pins VertexStreamCache_0/VSC_ReadDWORDAddr]
   connect_bd_net -net ShaderCore_0_VSC_ReadEnable [get_bd_pins ShaderCore_0/VSC_ReadEnable] [get_bd_pins VertexStreamCache_0/VSC_ReadEnable]
@@ -747,6 +754,7 @@ proc create_hier_cell_ShaderCoreSystem { parentCell nameHier } {
   connect_bd_net -net VBB_Done_0_1 [get_bd_pins VBB_Done_0] [get_bd_pins ShaderCore_0/VBB_Done]
   connect_bd_net -net VBO_Ready_0_1 [get_bd_pins VBO_Ready_0] [get_bd_pins ShaderCore_0/VBO_Ready]
   connect_bd_net -net VB_Cache_douta [get_bd_pins douta] [get_bd_pins VB_Cache/douta] [get_bd_pins VertexStreamCache_0/VertexCache_douta]
+  connect_bd_net -net VERTBATCH_FIFO_empty_1 [get_bd_pins VERTBATCH_FIFO_empty] [get_bd_pins ShaderCore_0/VERTBATCH_FIFO_empty]
   connect_bd_net -net VertexStreamCache_0_DBG_State [get_bd_pins DBG_State] [get_bd_pins VertexStreamCache_0/DBG_State]
   connect_bd_net -net VertexStreamCache_0_VSC_ReadData [get_bd_pins VSC_ReadData] [get_bd_pins ShaderCore_0/VSC_ReadData] [get_bd_pins VertexStreamCache_0/VSC_ReadData]
   connect_bd_net -net VertexStreamCache_0_VSC_ReadReady [get_bd_pins VSC_ReadReady] [get_bd_pins ShaderCore_0/VSC_ReadReady] [get_bd_pins VertexStreamCache_0/VSC_ReadReady]
@@ -1833,6 +1841,20 @@ proc create_root_design { parentCell } {
      return 1
    }
   
+  # Create instance: AttrInterpStateBlock, and set properties
+  set block_name StateBlock
+  set block_cell_name AttrInterpStateBlock
+  if { [catch {set AttrInterpStateBlock [create_bd_cell -type module -reference $block_name $block_cell_name] } errmsg] } {
+     catch {common::send_msg_id "BD_TCL-105" "ERROR" "Unable to add referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
+     return 1
+   } elseif { $AttrInterpStateBlock eq "" } {
+     catch {common::send_msg_id "BD_TCL-106" "ERROR" "Unable to referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
+     return 1
+   }
+    set_property -dict [ list \
+   CONFIG.StateBitsCount {7} \
+ ] $AttrInterpStateBlock
+
   # Create instance: AttrInterpolator_0, and set properties
   set block_name AttrInterpolator
   set block_cell_name AttrInterpolator_0
@@ -1910,6 +1932,20 @@ proc create_root_design { parentCell } {
      return 1
    }
   
+  # Create instance: ClipUnitStateBlock, and set properties
+  set block_name StateBlock
+  set block_cell_name ClipUnitStateBlock
+  if { [catch {set ClipUnitStateBlock [create_bd_cell -type module -reference $block_name $block_cell_name] } errmsg] } {
+     catch {common::send_msg_id "BD_TCL-105" "ERROR" "Unable to add referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
+     return 1
+   } elseif { $ClipUnitStateBlock eq "" } {
+     catch {common::send_msg_id "BD_TCL-106" "ERROR" "Unable to referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
+     return 1
+   }
+    set_property -dict [ list \
+   CONFIG.StateBitsCount {10} \
+ ] $ClipUnitStateBlock
+
   # Create instance: ClipUnit_0, and set properties
   set block_name ClipUnit
   set block_cell_name ClipUnit_0
@@ -2049,7 +2085,7 @@ proc create_root_design { parentCell } {
    CONFIG.C_PROBE11_WIDTH {6} \
    CONFIG.C_PROBE12_WIDTH {4} \
    CONFIG.C_PROBE13_WIDTH {9} \
-   CONFIG.C_PROBE14_WIDTH {528} \
+   CONFIG.C_PROBE14_WIDTH {544} \
    CONFIG.C_PROBE15_WIDTH {32} \
    CONFIG.C_PROBE16_WIDTH {30} \
    CONFIG.C_PROBE17_WIDTH {32} \
@@ -2065,7 +2101,7 @@ proc create_root_design { parentCell } {
    CONFIG.C_PROBE26_WIDTH {32} \
    CONFIG.C_PROBE27_WIDTH {5} \
    CONFIG.C_PROBE28_WIDTH {32} \
-   CONFIG.C_PROBE29_WIDTH {256} \
+   CONFIG.C_PROBE29_WIDTH {272} \
    CONFIG.C_PROBE2_TYPE {0} \
    CONFIG.C_PROBE2_WIDTH {32} \
    CONFIG.C_PROBE30_WIDTH {32} \
@@ -2111,18 +2147,30 @@ proc create_root_design { parentCell } {
   set_property -dict [ list \
    CONFIG.C_ENABLE_ILA_AXI_MON {false} \
    CONFIG.C_MONITOR_TYPE {Native} \
-   CONFIG.C_NUM_OF_PROBES {7} \
+   CONFIG.C_NUM_OF_PROBES {23} \
    CONFIG.C_PROBE0_WIDTH {6} \
-   CONFIG.C_PROBE10_WIDTH {1} \
+   CONFIG.C_PROBE10_WIDTH {16} \
+   CONFIG.C_PROBE11_WIDTH {16} \
+   CONFIG.C_PROBE12_WIDTH {16} \
+   CONFIG.C_PROBE13_WIDTH {16} \
+   CONFIG.C_PROBE14_WIDTH {16} \
+   CONFIG.C_PROBE15_WIDTH {16} \
+   CONFIG.C_PROBE16_WIDTH {16} \
+   CONFIG.C_PROBE17_WIDTH {16} \
+   CONFIG.C_PROBE18_WIDTH {16} \
+   CONFIG.C_PROBE19_WIDTH {16} \
    CONFIG.C_PROBE1_WIDTH {64} \
+   CONFIG.C_PROBE20_WIDTH {16} \
+   CONFIG.C_PROBE21_WIDTH {16} \
+   CONFIG.C_PROBE22_WIDTH {16} \
    CONFIG.C_PROBE2_WIDTH {32} \
    CONFIG.C_PROBE3_WIDTH {14} \
-   CONFIG.C_PROBE4_WIDTH {3} \
-   CONFIG.C_PROBE5_WIDTH {3} \
-   CONFIG.C_PROBE6_WIDTH {3} \
-   CONFIG.C_PROBE7_WIDTH {1} \
-   CONFIG.C_PROBE8_WIDTH {1} \
-   CONFIG.C_PROBE9_WIDTH {1} \
+   CONFIG.C_PROBE4_WIDTH {16} \
+   CONFIG.C_PROBE5_WIDTH {16} \
+   CONFIG.C_PROBE6_WIDTH {1} \
+   CONFIG.C_PROBE7_WIDTH {2} \
+   CONFIG.C_PROBE8_WIDTH {2} \
+   CONFIG.C_PROBE9_WIDTH {4} \
  ] $ILA_TexSampler
 
   # Create instance: ILA_TriSetup, and set properties
@@ -2167,7 +2215,7 @@ proc create_root_design { parentCell } {
    CONFIG.C_PROBE43_WIDTH {4} \
    CONFIG.C_PROBE44_WIDTH {12} \
    CONFIG.C_PROBE45_WIDTH {320} \
-   CONFIG.C_PROBE46_WIDTH {256} \
+   CONFIG.C_PROBE46_WIDTH {272} \
    CONFIG.C_PROBE47_WIDTH {8} \
    CONFIG.C_PROBE48_WIDTH {4} \
    CONFIG.C_PROBE49_WIDTH {3} \
@@ -2211,8 +2259,36 @@ proc create_root_design { parentCell } {
      return 1
    }
   
+  # Create instance: InputAssemblerStateBlock, and set properties
+  set block_name StateBlock
+  set block_cell_name InputAssemblerStateBlock
+  if { [catch {set InputAssemblerStateBlock [create_bd_cell -type module -reference $block_name $block_cell_name] } errmsg] } {
+     catch {common::send_msg_id "BD_TCL-105" "ERROR" "Unable to add referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
+     return 1
+   } elseif { $InputAssemblerStateBlock eq "" } {
+     catch {common::send_msg_id "BD_TCL-106" "ERROR" "Unable to referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
+     return 1
+   }
+    set_property -dict [ list \
+   CONFIG.StateBitsCount {5} \
+ ] $InputAssemblerStateBlock
+
   # Create instance: MemorySystem
   create_hier_cell_MemorySystem [current_bd_instance .] MemorySystem
+
+  # Create instance: ROPStateBlock, and set properties
+  set block_name StateBlock
+  set block_cell_name ROPStateBlock
+  if { [catch {set ROPStateBlock [create_bd_cell -type module -reference $block_name $block_cell_name] } errmsg] } {
+     catch {common::send_msg_id "BD_TCL-105" "ERROR" "Unable to add referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
+     return 1
+   } elseif { $ROPStateBlock eq "" } {
+     catch {common::send_msg_id "BD_TCL-106" "ERROR" "Unable to referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
+     return 1
+   }
+    set_property -dict [ list \
+   CONFIG.StateBitsCount {101} \
+ ] $ROPStateBlock
 
   # Create instance: ROP_0, and set properties
   set block_name ROP
@@ -2371,6 +2447,20 @@ proc create_root_design { parentCell } {
      return 1
    }
   
+  # Create instance: TexSampleStateBlock, and set properties
+  set block_name StateBlock
+  set block_cell_name TexSampleStateBlock
+  if { [catch {set TexSampleStateBlock [create_bd_cell -type module -reference $block_name $block_cell_name] } errmsg] } {
+     catch {common::send_msg_id "BD_TCL-105" "ERROR" "Unable to add referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
+     return 1
+   } elseif { $TexSampleStateBlock eq "" } {
+     catch {common::send_msg_id "BD_TCL-106" "ERROR" "Unable to referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
+     return 1
+   }
+    set_property -dict [ list \
+   CONFIG.StateBitsCount {74} \
+ ] $TexSampleStateBlock
+
   # Create instance: TexSample_0, and set properties
   set block_name TexSample
   set block_cell_name TexSample_0
@@ -2454,9 +2544,9 @@ proc create_root_design { parentCell } {
    CONFIG.Full_Threshold_Assert_Value_wrch {1023} \
    CONFIG.Full_Threshold_Negate_Value {510} \
    CONFIG.INTERFACE_TYPE {Native} \
-   CONFIG.Input_Data_Width {528} \
+   CONFIG.Input_Data_Width {544} \
    CONFIG.Input_Depth {512} \
-   CONFIG.Output_Data_Width {528} \
+   CONFIG.Output_Data_Width {544} \
    CONFIG.Output_Depth {512} \
    CONFIG.Performance_Options {First_Word_Fall_Through} \
    CONFIG.Read_Data_Count_Width {9} \
@@ -2492,9 +2582,9 @@ proc create_root_design { parentCell } {
    CONFIG.Empty_Threshold_Negate_Value {5} \
    CONFIG.Full_Threshold_Assert_Value {511} \
    CONFIG.Full_Threshold_Negate_Value {510} \
-   CONFIG.Input_Data_Width {256} \
+   CONFIG.Input_Data_Width {272} \
    CONFIG.Input_Depth {512} \
-   CONFIG.Output_Data_Width {256} \
+   CONFIG.Output_Data_Width {272} \
    CONFIG.Output_Depth {512} \
    CONFIG.Performance_Options {First_Word_Fall_Through} \
    CONFIG.Read_Data_Count_Width {9} \
@@ -2529,13 +2619,15 @@ proc create_root_design { parentCell } {
    CONFIG.C_PROBE11_TYPE {0} \
    CONFIG.C_PROBE11_WIDTH {1} \
    CONFIG.C_PROBE12_TYPE {0} \
-   CONFIG.C_PROBE12_WIDTH {1} \
+   CONFIG.C_PROBE12_WIDTH {16} \
    CONFIG.C_PROBE13_TYPE {0} \
    CONFIG.C_PROBE13_WIDTH {4} \
    CONFIG.C_PROBE14_TYPE {0} \
    CONFIG.C_PROBE14_WIDTH {4} \
    CONFIG.C_PROBE15_TYPE {0} \
+   CONFIG.C_PROBE15_WIDTH {16} \
    CONFIG.C_PROBE16_TYPE {0} \
+   CONFIG.C_PROBE16_WIDTH {3} \
    CONFIG.C_PROBE17_TYPE {0} \
    CONFIG.C_PROBE18_TYPE {0} \
    CONFIG.C_PROBE19_TYPE {0} \
@@ -2557,7 +2649,7 @@ proc create_root_design { parentCell } {
    CONFIG.C_PROBE27_TYPE {0} \
    CONFIG.C_PROBE27_WIDTH {4} \
    CONFIG.C_PROBE28_TYPE {0} \
-   CONFIG.C_PROBE28_WIDTH {12} \
+   CONFIG.C_PROBE28_WIDTH {13} \
    CONFIG.C_PROBE29_TYPE {0} \
    CONFIG.C_PROBE29_WIDTH {16} \
    CONFIG.C_PROBE2_TYPE {0} \
@@ -2584,6 +2676,7 @@ proc create_root_design { parentCell } {
    CONFIG.C_PROBE43_WIDTH {32} \
    CONFIG.C_PROBE44_WIDTH {20} \
    CONFIG.C_PROBE45_WIDTH {16} \
+   CONFIG.C_PROBE46_WIDTH {1} \
    CONFIG.C_PROBE4_TYPE {0} \
    CONFIG.C_PROBE4_WIDTH {6} \
    CONFIG.C_PROBE5_TYPE {0} \
@@ -2670,12 +2763,6 @@ proc create_root_design { parentCell } {
    CONFIG.CONST_WIDTH {16} \
  ] $xlconstant_2
 
-  # Create instance: xlconstant_3, and set properties
-  set xlconstant_3 [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant:1.1 xlconstant_3 ]
-  set_property -dict [ list \
-   CONFIG.CONST_VAL {0} \
- ] $xlconstant_3
-
   # Create instance: xlconstant_4, and set properties
   set xlconstant_4 [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant:1.1 xlconstant_4 ]
   set_property -dict [ list \
@@ -2749,6 +2836,8 @@ proc create_root_design { parentCell } {
   connect_bd_net -net AttrInterpolator_0_FPU_ICNV_GO [get_bd_pins AttrInterpFloatALU_0/ICNV_GO] [get_bd_pins AttrInterpolator_0/FPU_ICNV_GO]
   connect_bd_net -net AttrInterpolator_0_FPU_IMUL_GO [get_bd_pins AttrInterpFloatALU_0/IMUL_GO] [get_bd_pins AttrInterpolator_0/FPU_IMUL_GO]
   connect_bd_net -net AttrInterpolator_0_FPU_Mode [get_bd_pins AttrInterpFloatALU_0/IN_MODE] [get_bd_pins AttrInterpolator_0/FPU_Mode]
+  connect_bd_net -net AttrInterpolator_0_STATE_ConsumeStateSlot [get_bd_pins AttrInterpStateBlock/STAGE_ConsumeStateSlot] [get_bd_pins AttrInterpolator_0/STATE_ConsumeStateSlot]
+  connect_bd_net -net AttrInterpolator_0_STAT_CurrentDrawEventID [get_bd_pins AttrInterpolator_0/STAT_CurrentDrawEventID] [get_bd_pins ILA_TexSampler/probe15] [get_bd_pins StatsCollector_0/INTERP_CurrentDrawEventID]
   connect_bd_net -net AttrInterpolator_0_STAT_CyclesIdle [get_bd_pins AttrInterpolator_0/STAT_CyclesIdle] [get_bd_pins StatsCollector_0/INTERP_CyclesIdle]
   connect_bd_net -net AttrInterpolator_0_STAT_CyclesSpentWorking [get_bd_pins AttrInterpolator_0/STAT_CyclesSpentWorking] [get_bd_pins StatsCollector_0/INTERP_CyclesSpentWorking]
   connect_bd_net -net AttrInterpolator_0_STAT_CyclesWaitingForOutput [get_bd_pins AttrInterpolator_0/STAT_CyclesWaitingForOutput] [get_bd_pins StatsCollector_0/INTERP_CyclesWaitingForOutput]
@@ -2797,9 +2886,12 @@ proc create_root_design { parentCell } {
   connect_bd_net -net ClipUnit_0_FPU_Rcp0_A [get_bd_pins CLIP_FPU_SPEC_0/IN_A] [get_bd_pins ClipUnit_0/FPU_Rcp0_A]
   connect_bd_net -net ClipUnit_0_FPU_Rcp0_ISPEC_GO [get_bd_pins CLIP_FPU_SPEC_0/ISPEC_GO] [get_bd_pins ClipUnit_0/FPU_Rcp0_ISPEC_GO]
   connect_bd_net -net ClipUnit_0_IA_outPreviousStageIsReady [get_bd_pins ClipUnit_0/IA_outPreviousStageIsReady] [get_bd_pins InputAssembler2_0/CLIP_readyForNewTri]
+  connect_bd_net -net ClipUnit_0_STATE_ConsumeStateSlot [get_bd_pins ClipUnitStateBlock/STAGE_ConsumeStateSlot] [get_bd_pins ClipUnit_0/STATE_ConsumeStateSlot]
+  connect_bd_net -net ClipUnit_0_STAT_CurrentDrawEventID [get_bd_pins ClipUnit_0/STAT_CurrentDrawEventID] [get_bd_pins ILA_TexSampler/probe19] [get_bd_pins StatsCollector_0/CLIP_CurrentDrawEventID]
   connect_bd_net -net ClipUnit_0_STAT_CyclesIdle [get_bd_pins ClipUnit_0/STAT_CyclesIdle] [get_bd_pins StatsCollector_0/CLIP_CyclesIdle]
   connect_bd_net -net ClipUnit_0_STAT_CyclesSpentWorking [get_bd_pins ClipUnit_0/STAT_CyclesSpentWorking] [get_bd_pins StatsCollector_0/CLIP_CyclesSpentWorking]
   connect_bd_net -net ClipUnit_0_STAT_CyclesWaitingForOutput [get_bd_pins ClipUnit_0/STAT_CyclesWaitingForOutput] [get_bd_pins StatsCollector_0/CLIP_CyclesWaitingForOutput]
+  connect_bd_net -net ClipUnit_0_TRISETUP_CurrentDrawEventID [get_bd_pins ClipUnit_0/TRISETUP_CurrentDrawEventID] [get_bd_pins TriSetup_0/CLIP_CurrentDrawEventID]
   connect_bd_net -net ClipUnit_0_TRISETUP_outNextStageIsValid [get_bd_pins ClipUnit_0/TRISETUP_outNextStageIsValid] [get_bd_pins TriSetup_0/CLIP_newTriBegin]
   connect_bd_net -net ClipUnit_0_TRISETUP_outv0rgba [get_bd_pins ClipUnit_0/TRISETUP_outv0rgba] [get_bd_pins TriSetup_0/CLIP_v0_in_RGBA]
   connect_bd_net -net ClipUnit_0_TRISETUP_outv0tx [get_bd_pins ClipUnit_0/TRISETUP_outv0tx] [get_bd_pins TriSetup_0/CLIP_t0_in_x]
@@ -2826,6 +2918,11 @@ proc create_root_design { parentCell } {
   connect_bd_net -net CommandProcessor_0_CLEAR_ClearBlockBeginSignal [get_bd_pins ClearBlock_0/CMD_ClearBlockBeginSignal] [get_bd_pins CommandProcessor_0/CLEAR_ClearBlockBeginSignal]
   connect_bd_net -net CommandProcessor_0_CLEAR_ClearColorRGBA [get_bd_pins ClearBlock_0/CMD_ClearColorRGBA] [get_bd_pins CommandProcessor_0/CLEAR_ClearColorRGBA]
   connect_bd_net -net CommandProcessor_0_CLEAR_ClearDRAMLineCount [get_bd_pins ClearBlock_0/CMD_ClearDRAMLineCount] [get_bd_pins CommandProcessor_0/CLEAR_ClearDRAMLineCount]
+  connect_bd_net -net CommandProcessor_0_CLIP_EndFrameReset [get_bd_pins ClipUnitStateBlock/CMD_EndFrameReset] [get_bd_pins CommandProcessor_0/CLIP_EndFrameReset]
+  connect_bd_net -net CommandProcessor_0_CLIP_NewStateBits [get_bd_pins ClipUnitStateBlock/CMD_NewStateBits] [get_bd_pins CommandProcessor_0/CLIP_NewStateBits]
+  connect_bd_net -net CommandProcessor_0_CLIP_NewStateDrawEventID [get_bd_pins ClipUnitStateBlock/CMD_NewStateDrawEventID] [get_bd_pins CommandProcessor_0/CLIP_NewStateDrawEventID]
+  connect_bd_net -net CommandProcessor_0_CLIP_SetNewState [get_bd_pins ClipUnitStateBlock/CMD_SetNewState] [get_bd_pins CommandProcessor_0/CLIP_SetNewState]
+  connect_bd_net -net CommandProcessor_0_DBG_CurrentDrawGeneration [get_bd_pins CommandProcessor_0/DBG_CurrentDrawGeneration] [get_bd_pins ila_333_250/probe15]
   connect_bd_net -net CommandProcessor_0_DBG_IdleSignalsVector [get_bd_pins CommandProcessor_0/DBG_IdleSignalsVector] [get_bd_pins ila_333_250/probe28]
   connect_bd_net -net CommandProcessor_0_DBG_LAST_IN_PACKET [get_bd_pins CommandProcessor_0/DBG_LAST_IN_PACKET] [get_bd_pins ila_333_250/probe1]
   connect_bd_net -net CommandProcessor_0_DBG_LAST_OUT_PACKET [get_bd_pins CommandProcessor_0/DBG_LAST_OUT_PACKET] [get_bd_pins ila_333_250/probe2]
@@ -2836,22 +2933,21 @@ proc create_root_design { parentCell } {
   connect_bd_net -net CommandProcessor_0_DEPTH_DepthFunction [get_bd_pins CommandProcessor_0/DEPTH_DepthFunction] [get_bd_pins DepthBuffer_0/CMD_DepthFunction]
   connect_bd_net -net CommandProcessor_0_DEPTH_DepthWriteEnable [get_bd_pins CommandProcessor_0/DEPTH_DepthWriteEnable] [get_bd_pins DepthBuffer_0/CMD_DepthWriteEnable]
   connect_bd_net -net CommandProcessor_0_DEPTH_SetDepthParams [get_bd_pins CommandProcessor_0/DEPTH_SetDepthParams] [get_bd_pins DepthBuffer_0/CMD_SetDepthParams]
-  connect_bd_net -net CommandProcessor_0_IA_SetStateEnable [get_bd_pins CommandProcessor_0/IA_SetStateEnable] [get_bd_pins InputAssembler2_0/CMD_SetStateEnable]
-  connect_bd_net -net CommandProcessor_0_IA_StateCullMode [get_bd_pins CommandProcessor_0/IA_StateCullMode] [get_bd_pins InputAssembler2_0/CMD_StateCullMode]
-  connect_bd_net -net CommandProcessor_0_IA_StatePrimTopology [get_bd_pins CommandProcessor_0/IA_StatePrimTopology] [get_bd_pins InputAssembler2_0/CMD_StatePrimTopology]
+  connect_bd_net -net CommandProcessor_0_IA_EndFrameReset [get_bd_pins CommandProcessor_0/IA_EndFrameReset] [get_bd_pins InputAssemblerStateBlock/CMD_EndFrameReset]
+  connect_bd_net -net CommandProcessor_0_IA_NewStateBits [get_bd_pins CommandProcessor_0/IA_NewStateBits] [get_bd_pins InputAssemblerStateBlock/CMD_NewStateBits]
+  connect_bd_net -net CommandProcessor_0_IA_NewStateDrawEventID [get_bd_pins CommandProcessor_0/IA_NewStateDrawEventID] [get_bd_pins InputAssemblerStateBlock/CMD_NewStateDrawEventID]
+  connect_bd_net -net CommandProcessor_0_IA_SetNewState [get_bd_pins CommandProcessor_0/IA_SetNewState] [get_bd_pins InputAssemblerStateBlock/CMD_SetNewState]
+  connect_bd_net -net CommandProcessor_0_INTERP_EndFrameReset [get_bd_pins AttrInterpStateBlock/CMD_EndFrameReset] [get_bd_pins CommandProcessor_0/INTERP_EndFrameReset]
+  connect_bd_net -net CommandProcessor_0_INTERP_NewStateBits [get_bd_pins AttrInterpStateBlock/CMD_NewStateBits] [get_bd_pins CommandProcessor_0/INTERP_NewStateBits]
+  connect_bd_net -net CommandProcessor_0_INTERP_NewStateDrawEventID [get_bd_pins AttrInterpStateBlock/CMD_NewStateDrawEventID] [get_bd_pins CommandProcessor_0/INTERP_NewStateDrawEventID]
+  connect_bd_net -net CommandProcessor_0_INTERP_SetNewState [get_bd_pins AttrInterpStateBlock/CMD_SetNewState] [get_bd_pins CommandProcessor_0/INTERP_SetNewState]
   connect_bd_net -net CommandProcessor_0_ROP_ClearSignal [get_bd_pins CommandProcessor_0/ROP_ClearSignal] [get_bd_pins ROP_0/CMD_ClearSignal]
+  connect_bd_net -net CommandProcessor_0_ROP_EndFrameReset [get_bd_pins CommandProcessor_0/ROP_EndFrameReset] [get_bd_pins ROPStateBlock/CMD_EndFrameReset]
   connect_bd_net -net CommandProcessor_0_ROP_FlushCacheSignal [get_bd_pins CommandProcessor_0/ROP_FlushCacheSignal] [get_bd_pins ROP_0/CMD_FlushCacheSignal]
-  connect_bd_net -net CommandProcessor_0_ROP_SetAlphaBlendEnable [get_bd_pins CommandProcessor_0/ROP_SetAlphaBlendEnable] [get_bd_pins ROP_0/CMD_SetAlphaBlendEnable]
-  connect_bd_net -net CommandProcessor_0_ROP_SetAlphaBlendFactor [get_bd_pins CommandProcessor_0/ROP_SetAlphaBlendFactor] [get_bd_pins ROP_0/CMD_SetAlphaBlendFactor]
-  connect_bd_net -net CommandProcessor_0_ROP_SetAlphaBlendStateBlock [get_bd_pins CommandProcessor_0/ROP_SetAlphaBlendStateBlock] [get_bd_pins ROP_0/CMD_SetAlphaBlendStateBlock]
-  connect_bd_net -net CommandProcessor_0_ROP_SetAlphaTestEnabled [get_bd_pins CommandProcessor_0/ROP_SetAlphaTestEnabled] [get_bd_pins ROP_0/CMD_SetAlphaTestEnabled]
-  connect_bd_net -net CommandProcessor_0_ROP_SetAlphaTestFunc [get_bd_pins CommandProcessor_0/ROP_SetAlphaTestFunc] [get_bd_pins ROP_0/CMD_SetAlphaTestFunc]
-  connect_bd_net -net CommandProcessor_0_ROP_SetAlphaTestRefVal [get_bd_pins CommandProcessor_0/ROP_SetAlphaTestRefVal] [get_bd_pins ROP_0/CMD_SetAlphaTestRefVal]
-  connect_bd_net -net CommandProcessor_0_ROP_SetBaseAddrAndAlphaTestSignal [get_bd_pins CommandProcessor_0/ROP_SetBaseAddrAndAlphaTestSignal] [get_bd_pins ROP_0/CMD_SetBaseAddrAndAlphaTestSignal]
-  connect_bd_net -net CommandProcessor_0_ROP_SetBlendStateSignal [get_bd_pins CommandProcessor_0/ROP_SetBlendStateSignal] [get_bd_pins ROP_0/CMD_SetBlendStateSignal]
+  connect_bd_net -net CommandProcessor_0_ROP_NewStateBits [get_bd_pins CommandProcessor_0/ROP_NewStateBits] [get_bd_pins ROPStateBlock/CMD_NewStateBits]
+  connect_bd_net -net CommandProcessor_0_ROP_NewStateDrawEventID [get_bd_pins CommandProcessor_0/ROP_NewStateDrawEventID] [get_bd_pins ROPStateBlock/CMD_NewStateDrawEventID]
   connect_bd_net -net CommandProcessor_0_ROP_SetClearColor [get_bd_pins CommandProcessor_0/ROP_SetClearColor] [get_bd_pins ROP_0/CMD_SetClearColor]
-  connect_bd_net -net CommandProcessor_0_ROP_SetRenderTargetBaseAddr [get_bd_pins CommandProcessor_0/ROP_SetRenderTargetBaseAddr] [get_bd_pins ROP_0/CMD_SetRenderTargetBaseAddr]
-  connect_bd_net -net CommandProcessor_0_ROP_SetWriteMask [get_bd_pins CommandProcessor_0/ROP_SetWriteMask] [get_bd_pins ROP_0/CMD_SetWriteMask]
+  connect_bd_net -net CommandProcessor_0_ROP_SetNewState [get_bd_pins CommandProcessor_0/ROP_SetNewState] [get_bd_pins ROPStateBlock/CMD_SetNewState]
   connect_bd_net -net CommandProcessor_0_SCANOUT_InvertOutputColor [get_bd_pins CommandProcessor_0/SCANOUT_InvertOutputColor] [get_bd_pins ScanoutSystem/CMD_InvertOutputColor]
   connect_bd_net -net CommandProcessor_0_SCANOUT_OutputColorChannels [get_bd_pins CommandProcessor_0/SCANOUT_OutputColorChannels] [get_bd_pins ScanoutSystem/CMD_OutputColorChannels]
   connect_bd_net -net CommandProcessor_0_SCANOUT_RenderTargetBaseAddr [get_bd_pins CommandProcessor_0/SCANOUT_RenderTargetBaseAddr] [get_bd_pins ScanoutSystem/CMD_BaseRenderTargetAddr]
@@ -2861,16 +2957,10 @@ proc create_root_design { parentCell } {
   connect_bd_net -net CommandProcessor_0_STAT_CyclesSpentWorking [get_bd_pins CommandProcessor_0/STAT_CyclesSpentWorking] [get_bd_pins StatsCollector_0/CMD_CyclesSpentWorking]
   connect_bd_net -net CommandProcessor_0_STAT_PresentSignal [get_bd_pins CommandProcessor_0/STAT_PresentSignal] [get_bd_pins StatsCollector_0/CMD_PresentSignal]
   connect_bd_net -net CommandProcessor_0_STAT_WriteFrameStatsAddress [get_bd_pins CommandProcessor_0/STAT_WriteFrameStatsAddress] [get_bd_pins StatsCollector_0/CMD_WriteFrameStatsAddress]
-  connect_bd_net -net CommandProcessor_0_TEXSAMP_LoadTexCacheAddr [get_bd_pins CommandProcessor_0/TEXSAMP_LoadTexCacheAddr] [get_bd_pins TexSample_0/CMD_LoadTexCacheAddr]
-  connect_bd_net -net CommandProcessor_0_TEXSAMP_LoadTexCacheBeginSignal [get_bd_pins CommandProcessor_0/TEXSAMP_LoadTexCacheBeginSignal] [get_bd_pins TexSample_0/CMD_LoadTexCacheBeginSignal] [get_bd_pins ila_333_250/probe16]
-  connect_bd_net -net CommandProcessor_0_TEXSAMP_LoadTexCacheFormat [get_bd_pins CommandProcessor_0/TEXSAMP_LoadTexCacheFormat] [get_bd_pins ILA_TexSampler/probe6] [get_bd_pins TexSample_0/CMD_LoadTexCacheFormat]
-  connect_bd_net -net CommandProcessor_0_TEXSAMP_LoadTexCacheTexelCount [get_bd_pins CommandProcessor_0/TEXSAMP_LoadTexCacheTexelCount] [get_bd_pins TexSample_0/CMD_LoadTexCacheTexelCount]
-  connect_bd_net -net CommandProcessor_0_TEXSAMP_LoadTexCacheTexelHeight [get_bd_pins CommandProcessor_0/TEXSAMP_LoadTexCacheTexelHeight] [get_bd_pins ILA_TexSampler/probe5] [get_bd_pins TexSample_0/CMD_LoadTexCacheTexelHeight]
-  connect_bd_net -net CommandProcessor_0_TEXSAMP_LoadTexCacheTexelWidth [get_bd_pins CommandProcessor_0/TEXSAMP_LoadTexCacheTexelWidth] [get_bd_pins ILA_TexSampler/probe4] [get_bd_pins TexSample_0/CMD_LoadTexCacheTexelWidth]
-  connect_bd_net -net CommandProcessor_0_TEXSAMP_SetTextureStateBeginSignal [get_bd_pins CommandProcessor_0/TEXSAMP_SetTextureStateBeginSignal] [get_bd_pins TexSample_0/CMD_SetTextureStateBeginSignal]
-  connect_bd_net -net CommandProcessor_0_TEXSAMP_SetTextureStateCombinerModeAlpha [get_bd_pins CommandProcessor_0/TEXSAMP_SetTextureStateCombinerModeAlpha] [get_bd_pins TexSample_0/CMD_SetTextureStateCombinerModeAlpha]
-  connect_bd_net -net CommandProcessor_0_TEXSAMP_SetTextureStateCombinerModeColor [get_bd_pins CommandProcessor_0/TEXSAMP_SetTextureStateCombinerModeColor] [get_bd_pins TexSample_0/CMD_SetTextureStateCombinerModeColor]
-  connect_bd_net -net CommandProcessor_0_TEXSAMP_SetTextureStateUseBilinear [get_bd_pins CommandProcessor_0/TEXSAMP_SetTextureStateUseBilinear] [get_bd_pins TexSample_0/CMD_SetTextureStateUseBilinear]
+  connect_bd_net -net CommandProcessor_0_TEXSAMP_EndFrameReset [get_bd_pins CommandProcessor_0/TEXSAMP_EndFrameReset] [get_bd_pins TexSampleStateBlock/CMD_EndFrameReset]
+  connect_bd_net -net CommandProcessor_0_TEXSAMP_NewStateBits [get_bd_pins CommandProcessor_0/TEXSAMP_NewStateBits] [get_bd_pins TexSampleStateBlock/CMD_NewStateBits]
+  connect_bd_net -net CommandProcessor_0_TEXSAMP_NewStateDrawEventID [get_bd_pins CommandProcessor_0/TEXSAMP_NewStateDrawEventID] [get_bd_pins TexSampleStateBlock/CMD_NewStateDrawEventID]
+  connect_bd_net -net CommandProcessor_0_TEXSAMP_SetNewState [get_bd_pins CommandProcessor_0/TEXSAMP_SetNewState] [get_bd_pins TexSampleStateBlock/CMD_SetNewState] [get_bd_pins ila_333_250/probe17]
   connect_bd_net -net CommandProcessor_0_TRISETUP_SetViewportParams [get_bd_pins CommandProcessor_0/TRISETUP_SetViewportParams] [get_bd_pins TriSetup_0/CMD_SetViewportParams]
   connect_bd_net -net CommandProcessor_0_TRISETUP_ViewportParams0 [get_bd_pins CommandProcessor_0/TRISETUP_ViewportParams0] [get_bd_pins TriSetup_0/CMD_ViewportParams0]
   connect_bd_net -net CommandProcessor_0_TRISETUP_ViewportParams1 [get_bd_pins CommandProcessor_0/TRISETUP_ViewportParams1] [get_bd_pins TriSetup_0/CMD_ViewportParams1]
@@ -2878,6 +2968,7 @@ proc create_root_design { parentCell } {
   connect_bd_net -net CommandProcessor_0_VBB_CommandArg1 [get_bd_pins CommandProcessor_0/VBB_CommandArg1] [get_bd_pins VertexBatchBuilder_0/CMD_CommandArg1] [get_bd_pins ila_333_250/probe44]
   connect_bd_net -net CommandProcessor_0_VBB_CommandArg2 [get_bd_pins CommandProcessor_0/VBB_CommandArg2] [get_bd_pins VertexBatchBuilder_0/CMD_CommandArg2] [get_bd_pins ila_333_250/probe45]
   connect_bd_net -net CommandProcessor_0_VBB_CommandArgType [get_bd_pins CommandProcessor_0/VBB_CommandArgType] [get_bd_pins VertexBatchBuilder_0/CMD_CommandArgType] [get_bd_pins ila_333_250/probe42]
+  connect_bd_net -net CommandProcessor_0_VBB_NewDrawEventID [get_bd_pins CommandProcessor_0/VBB_NewDrawEventID] [get_bd_pins VertexBatchBuilder_0/CMD_NewDrawEventID]
   connect_bd_net -net CommandProcessor_0_VBB_SendCommand [get_bd_pins CommandProcessor_0/VBB_SendCommand] [get_bd_pins VertexBatchBuilder_0/CMD_SendCommand]
   connect_bd_net -net DepthBuffer_0_CMD_DepthIsIdle [get_bd_pins CommandProcessor_0/CMD_Depth_Idle] [get_bd_pins DepthBuffer_0/CMD_DepthIsIdle] [get_bd_pins ILA_AttrInterpolator/probe30]
   connect_bd_net -net DepthBuffer_0_RAST_DepthTestEnabled [get_bd_pins DepthBuffer_0/RAST_DepthTestEnabled] [get_bd_pins DepthInterpolator_0/DEPTH_DepthTestEnabled]
@@ -2916,6 +3007,8 @@ proc create_root_design { parentCell } {
   connect_bd_net -net DepthInterpolator_0_FPU_IMUL_GO [get_bd_pins DepthInterpFloatALU_0/IMUL_GO] [get_bd_pins DepthInterpolator_0/FPU_IMUL_GO]
   connect_bd_net -net DepthInterpolator_0_FPU_ISPEC_GO [get_bd_pins DepthInterpFloatALU_0/ISPEC_GO] [get_bd_pins DepthInterpolator_0/FPU_ISPEC_GO]
   connect_bd_net -net DepthInterpolator_0_FPU_Mode [get_bd_pins DepthInterpFloatALU_0/IN_MODE] [get_bd_pins DepthInterpolator_0/FPU_Mode]
+  connect_bd_net -net DepthInterpolator_0_RASTOUT_FIFO_rd_en [get_bd_pins DepthInterpolator_0/RASTOUT_FIFO_rd_en] [get_bd_pins rast_out_fifo/rd_en]
+  connect_bd_net -net DepthInterpolator_0_STAT_CurrentDrawEventID [get_bd_pins DepthInterpolator_0/STAT_CurrentDrawEventID] [get_bd_pins ILA_TexSampler/probe16] [get_bd_pins StatsCollector_0/DINTERP_CurrentDrawEventID]
   connect_bd_net -net DepthInterpolator_0_STAT_CyclesIdle [get_bd_pins DepthInterpolator_0/STAT_CyclesIdle] [get_bd_pins StatsCollector_0/DINTERP_CyclesIdle]
   connect_bd_net -net DepthInterpolator_0_STAT_CyclesSpentWorking [get_bd_pins DepthInterpolator_0/STAT_CyclesSpentWorking] [get_bd_pins StatsCollector_0/DINTERP_CyclesSpentWorking]
   connect_bd_net -net DepthInterpolator_0_STAT_CyclesWaitingForOutput [get_bd_pins DepthInterpolator_0/STAT_CyclesWaitingForOutput] [get_bd_pins StatsCollector_0/DINTERP_CyclesWaitingForOutput]
@@ -2924,6 +3017,7 @@ proc create_root_design { parentCell } {
   connect_bd_net -net IndexBufferCache_0_VBB_ReadData [get_bd_pins ILA_IA/probe17] [get_bd_pins IndexBufferCache_0/VBB_ReadData] [get_bd_pins VertexBatchBuilder_0/IBC_ReadData]
   connect_bd_net -net IndexBufferCache_0_VBB_ReadReady [get_bd_pins IndexBufferCache_0/VBB_ReadReady] [get_bd_pins VertexBatchBuilder_0/IBC_ReadReady]
   connect_bd_net -net InputAssembler2_0_CLIP_AABBTriOverlapsViewport [get_bd_pins ClipUnit_0/IA_inWholeTriangleAABBIntersectsViewport] [get_bd_pins InputAssembler2_0/CLIP_AABBTriOverlapsViewport]
+  connect_bd_net -net InputAssembler2_0_CLIP_CurrentDrawEventID [get_bd_pins ClipUnit_0/IA_CurrentDrawEventID] [get_bd_pins InputAssembler2_0/CLIP_CurrentDrawEventID] [get_bd_pins StatsCollector_0/IA_CurrentDrawEventID]
   connect_bd_net -net InputAssembler2_0_CLIP_newTriBegin [get_bd_pins ClipUnit_0/IA_inPreviousStageIsValid] [get_bd_pins InputAssembler2_0/CLIP_newTriBegin]
   connect_bd_net -net InputAssembler2_0_CLIP_tex0_X [get_bd_pins ClipUnit_0/IA_inv0tx] [get_bd_pins InputAssembler2_0/CLIP_tex0_X]
   connect_bd_net -net InputAssembler2_0_CLIP_tex0_Y [get_bd_pins ClipUnit_0/IA_inv0ty] [get_bd_pins InputAssembler2_0/CLIP_tex0_Y]
@@ -2949,16 +3043,21 @@ proc create_root_design { parentCell } {
   connect_bd_net -net InputAssembler2_0_CLIP_vertColor0_RGBA [get_bd_pins ClipUnit_0/IA_inv0rgba] [get_bd_pins InputAssembler2_0/CLIP_vertColor0_RGBA]
   connect_bd_net -net InputAssembler2_0_CLIP_vertColor1_RGBA [get_bd_pins ClipUnit_0/IA_inv1rgba] [get_bd_pins InputAssembler2_0/CLIP_vertColor1_RGBA]
   connect_bd_net -net InputAssembler2_0_CLIP_vertColor2_RGBA [get_bd_pins ClipUnit_0/IA_inv2rgba] [get_bd_pins InputAssembler2_0/CLIP_vertColor2_RGBA]
-  connect_bd_net -net InputAssembler2_0_CMD_DrawReady [get_bd_pins CommandProcessor_0/IA_DrawReady] [get_bd_pins InputAssembler2_0/CMD_DrawReady]
   connect_bd_net -net InputAssembler2_0_CMD_IA_Idle [get_bd_pins CommandProcessor_0/CMD_IA_Idle] [get_bd_pins InputAssembler2_0/CMD_IA_Idle]
-  connect_bd_net -net InputAssembler2_0_CMD_SetStateReady [get_bd_pins CommandProcessor_0/IA_SetStateReady] [get_bd_pins InputAssembler2_0/CMD_SetStateReady]
   connect_bd_net -net InputAssembler2_0_DBG_IA_CurrentTriIndices [get_bd_pins ILA_TriSetup/probe44] [get_bd_pins InputAssembler2_0/DBG_IA_CurrentTriIndices]
   connect_bd_net -net InputAssembler2_0_DBG_IA_State [get_bd_pins ILA_TriSetup/probe42] [get_bd_pins InputAssembler2_0/DBG_IA_State]
   connect_bd_net -net InputAssembler2_0_DBG_IA_VertexIDPerBatch [get_bd_pins ILA_TriSetup/probe43] [get_bd_pins InputAssembler2_0/DBG_IA_VertexIDPerBatch]
+  connect_bd_net -net InputAssembler2_0_STATE_ConsumeStateSlot [get_bd_pins InputAssembler2_0/STATE_ConsumeStateSlot] [get_bd_pins InputAssemblerStateBlock/STAGE_ConsumeStateSlot]
+  connect_bd_net -net InputAssembler2_0_STAT_CurrentDrawEventID [get_bd_pins ILA_TexSampler/probe20] [get_bd_pins InputAssembler2_0/STAT_CurrentDrawEventID]
   connect_bd_net -net InputAssembler2_0_STAT_CyclesIdle [get_bd_pins InputAssembler2_0/STAT_CyclesIdle] [get_bd_pins StatsCollector_0/IA_CyclesIdle]
   connect_bd_net -net InputAssembler2_0_STAT_CyclesLoadingDataToCache [get_bd_pins InputAssembler2_0/STAT_CyclesLoadingDataToCache] [get_bd_pins StatsCollector_0/IA_CyclesLoadingDataToCache]
   connect_bd_net -net InputAssembler2_0_STAT_CyclesSpentWorking [get_bd_pins InputAssembler2_0/STAT_CyclesSpentWorking] [get_bd_pins StatsCollector_0/IA_CyclesSpentWorking]
   connect_bd_net -net InputAssembler2_0_STAT_CyclesWaitingForOutput [get_bd_pins InputAssembler2_0/STAT_CyclesWaitingForOutput] [get_bd_pins StatsCollector_0/IA_CyclesWaitingForOutput]
+  connect_bd_net -net InputAssembler2_0_VERTOUT_FIFO_rd_en [get_bd_pins InputAssembler2_0/VERTOUT_FIFO_rd_en] [get_bd_pins VBO_FIFO/rd_en]
+  connect_bd_net -net InputAssemblerStateBlock_CMD_NumFreeSlots [get_bd_pins CommandProcessor_0/IA_NumFreeSlots] [get_bd_pins InputAssemblerStateBlock/CMD_NumFreeSlots]
+  connect_bd_net -net InputAssemblerStateBlock_STAGE_NextDrawID [get_bd_pins InputAssembler2_0/STATE_NextDrawID] [get_bd_pins InputAssemblerStateBlock/STAGE_NextDrawID]
+  connect_bd_net -net InputAssemblerStateBlock_STAGE_StateBitsAtDrawID [get_bd_pins InputAssembler2_0/STATE_StateBitsAtDrawID] [get_bd_pins InputAssemblerStateBlock/STAGE_StateBitsAtDrawID]
+  connect_bd_net -net InputAssemblerStateBlock_STAGE_StateIsValid [get_bd_pins InputAssembler2_0/STATE_StateIsValid] [get_bd_pins InputAssemblerStateBlock/STAGE_StateIsValid]
   connect_bd_net -net MemorySystem_CMD_MemoryControllerIsIdle [get_bd_pins CommandProcessor_0/CMD_MemController_Idle] [get_bd_pins MemorySystem/CMD_MemoryControllerIsIdle]
   connect_bd_net -net MemorySystem_DBG_LastReadAddress [get_bd_pins MemorySystem/DBG_LastReadAddress] [get_bd_pins ila_333_250/probe26]
   connect_bd_net -net MemorySystem_DBG_LastReadMemoryClientIndex [get_bd_pins MemorySystem/DBG_LastReadMemoryClientIndex] [get_bd_pins ila_333_250/probe27]
@@ -2985,20 +3084,28 @@ proc create_root_design { parentCell } {
   connect_bd_net -net MemorySystem_STAT_MemWriteCyclesIdle [get_bd_pins MemorySystem/STAT_MemWriteCyclesIdle] [get_bd_pins StatsCollector_0/MEM_WriteCyclesIdle]
   connect_bd_net -net MemorySystem_STAT_MemWriteCyclesSpentWorking [get_bd_pins MemorySystem/STAT_MemWriteCyclesSpentWorking] [get_bd_pins StatsCollector_0/MEM_WriteCyclesSpentWorking]
   connect_bd_net -net Net [get_bd_pins DepthBuffer_0/URAM_doutb] [get_bd_pins DepthBuffer_URAM/doutb] [get_bd_pins ILA_AttrInterpolator/probe17]
+  connect_bd_net -net ROPStateBlock_CMD_NumFreeSlots [get_bd_pins CommandProcessor_0/ROP_NumFreeSlots] [get_bd_pins ROPStateBlock/CMD_NumFreeSlots]
+  connect_bd_net -net ROPStateBlock_STAGE_NextDrawID [get_bd_pins ROPStateBlock/STAGE_NextDrawID] [get_bd_pins ROP_0/STATE_NextDrawID]
+  connect_bd_net -net ROPStateBlock_STAGE_StateBitsAtDrawID [get_bd_pins ROPStateBlock/STAGE_StateBitsAtDrawID] [get_bd_pins ROP_0/STATE_StateBitsAtDrawID]
+  connect_bd_net -net ROPStateBlock_STAGE_StateIsValid [get_bd_pins ROPStateBlock/STAGE_StateIsValid] [get_bd_pins ROP_0/STATE_StateIsValid]
   connect_bd_net -net ROP_0_CMD_ClearSignalAck [get_bd_pins CommandProcessor_0/ROP_ClearSignalAck] [get_bd_pins ROP_0/CMD_ClearSignalAck]
   connect_bd_net -net ROP_0_CMD_FlushCacheAck [get_bd_pins CommandProcessor_0/ROP_FlushCacheAck] [get_bd_pins ROP_0/CMD_FlushCacheAck]
   connect_bd_net -net ROP_0_CMD_ROPIsIdle [get_bd_pins CommandProcessor_0/CMD_ROP_Idle] [get_bd_pins ROP_0/CMD_ROPIsIdle]
-  connect_bd_net -net ROP_0_CMD_SetBaseAddrAndAlphaTestSignalAck [get_bd_pins CommandProcessor_0/ROP_SetBaseAddrAndAlphaTestSignalAck] [get_bd_pins ROP_0/CMD_SetBaseAddrAndAlphaTestSignalAck]
-  connect_bd_net -net ROP_0_CMD_SetBlendStateSigAck [get_bd_pins CommandProcessor_0/ROP_SetBlendStateSigAck] [get_bd_pins ROP_0/CMD_SetBlendStateSigAck]
   connect_bd_net -net ROP_0_DBG_CurrentPixelAddr [get_bd_pins ROP_0/DBG_CurrentPixelAddr] [get_bd_pins ila_333_250/probe35]
   connect_bd_net -net ROP_0_DBG_ROP_State [get_bd_pins ROP_0/DBG_ROP_State] [get_bd_pins ila_333_250/probe9]
   connect_bd_net -net ROP_0_DBG_ReadRequestFIFOFull [get_bd_pins ROP_0/DBG_ReadRequestFIFOFull] [get_bd_pins ila_333_250/probe36]
+  connect_bd_net -net ROP_0_STATE_ConsumeStateSlot [get_bd_pins ROPStateBlock/STAGE_ConsumeStateSlot] [get_bd_pins ROP_0/STATE_ConsumeStateSlot]
   connect_bd_net -net ROP_0_STAT_CountCacheHits [get_bd_pins ROP_0/STAT_CountCacheHits] [get_bd_pins StatsCollector_0/ROP_CountCacheHits]
   connect_bd_net -net ROP_0_STAT_CountCacheMisses [get_bd_pins ROP_0/STAT_CountCacheMisses] [get_bd_pins StatsCollector_0/ROP_CountCacheMisses]
+  connect_bd_net -net ROP_0_STAT_CountPixelsPassed [get_bd_pins CommandProcessor_0/ROP_STAT_CountPixelsPassed] [get_bd_pins ROP_0/STAT_CountPixelsPassed]
+  connect_bd_net -net ROP_0_STAT_CurrentDrawEventID [get_bd_pins CommandProcessor_0/ROP_STAT_CurrentDrawEventID] [get_bd_pins ILA_TexSampler/probe14] [get_bd_pins ROP_0/STAT_CurrentDrawEventID] [get_bd_pins StatsCollector_0/ROP_CurrentDrawEventID] [get_bd_pins ila_333_250/probe12]
   connect_bd_net -net ROP_0_STAT_CyclesIdle [get_bd_pins ROP_0/STAT_CyclesIdle] [get_bd_pins StatsCollector_0/ROP_CyclesIdle]
   connect_bd_net -net ROP_0_STAT_CyclesSpentWorking [get_bd_pins ROP_0/STAT_CyclesSpentWorking] [get_bd_pins StatsCollector_0/ROP_CyclesSpentWorking]
   connect_bd_net -net ROP_0_STAT_CyclesWaitingForMemoryRead [get_bd_pins ROP_0/STAT_CyclesWaitingForMemoryRead] [get_bd_pins StatsCollector_0/ROP_CyclesWaitingForMemoryRead]
   connect_bd_net -net ROP_0_STAT_CyclesWaitingForOutput [get_bd_pins ROP_0/STAT_CyclesWaitingForOutput] [get_bd_pins StatsCollector_0/ROP_CyclesWaitingForOutput]
+  connect_bd_net -net ROP_0_TEXSAMP_InFIFO_rd_en [get_bd_pins ROP_0/TEXSAMP_InFIFO_rd_en] [get_bd_pins ROP_FIFO/rd_en]
+  connect_bd_net -net ROP_FIFO_dout [get_bd_pins ROP_0/TEXSAMP_InFIFO_rd_data] [get_bd_pins ROP_FIFO/dout]
+  connect_bd_net -net ROP_FIFO_empty [get_bd_pins CommandProcessor_0/CMD_FIFO_EMPTY_ROP] [get_bd_pins ROP_0/TEXSAMP_InFIFO_empty] [get_bd_pins ROP_FIFO/empty]
   connect_bd_net -net Rasterizer_0_CMD_Rasterizer_Idle [get_bd_pins CommandProcessor_0/CMD_Rasterizer_Idle] [get_bd_pins Rasterizer_0/CMD_Rasterizer_Idle]
   connect_bd_net -net Rasterizer_0_DBG_MaxX [get_bd_pins Rasterizer_0/DBG_MaxX] [get_bd_pins ila_333_250/probe32]
   connect_bd_net -net Rasterizer_0_DBG_MaxY [get_bd_pins Rasterizer_0/DBG_MaxY] [get_bd_pins ila_333_250/probe34]
@@ -3007,6 +3114,7 @@ proc create_root_design { parentCell } {
   connect_bd_net -net Rasterizer_0_DBG_PixelXPos [get_bd_pins Rasterizer_0/DBG_PixelXPos] [get_bd_pins ila_333_250/probe29]
   connect_bd_net -net Rasterizer_0_DBG_PixelYPos [get_bd_pins Rasterizer_0/DBG_PixelYPos] [get_bd_pins ila_333_250/probe30]
   connect_bd_net -net Rasterizer_0_DBG_Rasterizer_State [get_bd_pins Rasterizer_0/DBG_Rasterizer_State] [get_bd_pins ila_333_250/probe6]
+  connect_bd_net -net Rasterizer_0_STAT_CurrentDrawEventID [get_bd_pins ILA_TexSampler/probe17] [get_bd_pins Rasterizer_0/STAT_CurrentDrawEventID] [get_bd_pins StatsCollector_0/RAST_CurrentDrawEventID]
   connect_bd_net -net Rasterizer_0_STAT_CyclesIdle [get_bd_pins Rasterizer_0/STAT_CyclesIdle] [get_bd_pins StatsCollector_0/RAST_CyclesIdle]
   connect_bd_net -net Rasterizer_0_STAT_CyclesSpentWorking [get_bd_pins Rasterizer_0/STAT_CyclesSpentWorking] [get_bd_pins StatsCollector_0/RAST_CyclesSpentWorking]
   connect_bd_net -net Rasterizer_0_STAT_CyclesWaitingForOutput [get_bd_pins Rasterizer_0/STAT_CyclesWaitingForOutput] [get_bd_pins StatsCollector_0/RAST_CyclesWaitingForOutput]
@@ -3047,6 +3155,7 @@ proc create_root_design { parentCell } {
   connect_bd_net -net ShaderCoreSystem_CB_RegIndex [get_bd_pins ILA_IA/probe46] [get_bd_pins ShaderCoreSystem/CB_RegIndex]
   connect_bd_net -net ShaderCoreSystem_CB_WriteInData [get_bd_pins ILA_IA/probe59] [get_bd_pins ShaderCoreSystem/CB_WriteInData]
   connect_bd_net -net ShaderCoreSystem_CB_WriteMode [get_bd_pins ILA_IA/probe58] [get_bd_pins ShaderCoreSystem/CB_WriteMode]
+  connect_bd_net -net ShaderCoreSystem_CMD_IsIdle [get_bd_pins CommandProcessor_0/CMD_VS_Idle] [get_bd_pins ShaderCoreSystem/CMD_IsIdle]
   connect_bd_net -net ShaderCoreSystem_CMD_IsReadyForCommand_0 [get_bd_pins CommandProcessor_0/SHADER_IsReadyForCommand] [get_bd_pins ShaderCoreSystem/CMD_IsReadyForCommand_0]
   connect_bd_net -net ShaderCoreSystem_DBG_ActiveLanesBitmask [get_bd_pins ILA_IA/probe61] [get_bd_pins ShaderCoreSystem/DBG_ActiveLanesBitmask]
   connect_bd_net -net ShaderCoreSystem_DBG_CurrentDWORD [get_bd_pins ILA_IA/probe63] [get_bd_pins ShaderCoreSystem/DBG_CurrentDWORD]
@@ -3082,6 +3191,7 @@ proc create_root_design { parentCell } {
   connect_bd_net -net ShaderCoreSystem_OUT_RESULT [get_bd_pins ILA_IA/probe44] [get_bd_pins ShaderCoreSystem/OUT_RESULT]
   connect_bd_net -net ShaderCoreSystem_OUT_RESULT1 [get_bd_pins ILA_IA/probe30] [get_bd_pins ShaderCoreSystem/OUT_RESULT1]
   connect_bd_net -net ShaderCoreSystem_OUT_RESULT2 [get_bd_pins ILA_IA/probe10] [get_bd_pins ShaderCoreSystem/OUT_RESULT2]
+  connect_bd_net -net ShaderCoreSystem_STAT_CurrentDrawEventID [get_bd_pins ILA_TexSampler/probe21] [get_bd_pins ShaderCoreSystem/STAT_CurrentDrawEventID] [get_bd_pins StatsCollector_0/VSHADER_CurrentDrawEventID]
   connect_bd_net -net ShaderCoreSystem_STAT_CyclesExecShaderCode [get_bd_pins ShaderCoreSystem/STAT_CyclesExecShaderCode] [get_bd_pins StatsCollector_0/VSHADER_CyclesExecShaderCode]
   connect_bd_net -net ShaderCoreSystem_STAT_CyclesIdle [get_bd_pins ShaderCoreSystem/STAT_CyclesIdle] [get_bd_pins StatsCollector_0/VSHADER_CyclesIdle]
   connect_bd_net -net ShaderCoreSystem_STAT_CyclesSpentWorking [get_bd_pins ShaderCoreSystem/STAT_CyclesSpentWorking] [get_bd_pins StatsCollector_0/VSHADER_CyclesSpentWorking]
@@ -3090,6 +3200,7 @@ proc create_root_design { parentCell } {
   connect_bd_net -net ShaderCoreSystem_VBO_NumIndices [get_bd_pins ILA_IA/probe32] [get_bd_pins InputAssembler2_0/VBO_NumIndices] [get_bd_pins ShaderCoreSystem/VBO_NumIndices]
   connect_bd_net -net ShaderCoreSystem_VBO_NumVertices [get_bd_pins ILA_IA/probe27] [get_bd_pins InputAssembler2_0/VBO_NumVertices] [get_bd_pins ShaderCoreSystem/VBO_NumVertices]
   connect_bd_net -net ShaderCoreSystem_VBO_Pushed_0 [get_bd_pins InputAssembler2_0/VBO_Pushed] [get_bd_pins ShaderCoreSystem/VBO_Pushed_0]
+  connect_bd_net -net ShaderCoreSystem_VERTBATCH_FIFO_rd_en [get_bd_pins ShaderCoreSystem/VERTBATCH_FIFO_rd_en] [get_bd_pins VBB_FIFO/rd_en]
   connect_bd_net -net ShaderCoreSystem_VSC_ReadDWORDAddr [get_bd_pins ILA_IA/probe18] [get_bd_pins ShaderCoreSystem/VSC_ReadDWORDAddr]
   connect_bd_net -net ShaderCoreSystem_VSC_ReadData [get_bd_pins ILA_IA/probe15] [get_bd_pins ShaderCoreSystem/VSC_ReadData]
   connect_bd_net -net ShaderCoreSystem_VSC_ReadReady [get_bd_pins ILA_IA/probe21] [get_bd_pins ShaderCoreSystem/VSC_ReadReady]
@@ -3109,15 +3220,37 @@ proc create_root_design { parentCell } {
   connect_bd_net -net StandaloneFloatALU_M_1_OMUL [get_bd_pins CLIP_FPU_MUL_1/OMUL] [get_bd_pins ClipUnit_0/FPU_Mul1_OUT]
   connect_bd_net -net StandaloneFloatALU_S_0_OSPEC [get_bd_pins TRISETUP_FPU_SPEC/OSPEC] [get_bd_pins TriSetup_0/FPU_SPEC_OUT]
   connect_bd_net -net StandaloneFloatALU_S_0_OSPEC1 [get_bd_pins CLIP_FPU_SPEC_0/OSPEC] [get_bd_pins ClipUnit_0/FPU_Rcp0_OUT]
+  connect_bd_net -net StateBlock_0_CMD_NumFreeSlots [get_bd_pins CommandProcessor_0/TEXSAMP_NumFreeSlots] [get_bd_pins TexSampleStateBlock/CMD_NumFreeSlots] [get_bd_pins ila_333_250/probe16]
+  connect_bd_net -net StateBlock_0_CMD_NumFreeSlots1 [get_bd_pins ClipUnitStateBlock/CMD_NumFreeSlots] [get_bd_pins CommandProcessor_0/CLIP_NumFreeSlots]
+  connect_bd_net -net StateBlock_0_DBG_CurrentReadSlotIndex [get_bd_pins ILA_TexSampler/probe7] [get_bd_pins TexSampleStateBlock/DBG_CurrentReadSlotIndex]
+  connect_bd_net -net StateBlock_0_DBG_CurrentWriteSlotIndex [get_bd_pins ILA_TexSampler/probe8] [get_bd_pins TexSampleStateBlock/DBG_CurrentWriteSlotIndex]
+  connect_bd_net -net StateBlock_0_DBG_Slot0 [get_bd_pins ILA_TexSampler/probe10] [get_bd_pins TexSampleStateBlock/DBG_Slot0]
+  connect_bd_net -net StateBlock_0_DBG_Slot1 [get_bd_pins ILA_TexSampler/probe11] [get_bd_pins TexSampleStateBlock/DBG_Slot1]
+  connect_bd_net -net StateBlock_0_DBG_Slot2 [get_bd_pins ILA_TexSampler/probe12] [get_bd_pins TexSampleStateBlock/DBG_Slot2]
+  connect_bd_net -net StateBlock_0_DBG_Slot3 [get_bd_pins ILA_TexSampler/probe13] [get_bd_pins TexSampleStateBlock/DBG_Slot3]
+  connect_bd_net -net StateBlock_0_DBG_SlotsValid [get_bd_pins ILA_TexSampler/probe9] [get_bd_pins TexSampleStateBlock/DBG_SlotsValid]
+  connect_bd_net -net StateBlock_0_STAGE_NextDrawID [get_bd_pins ILA_TexSampler/probe5] [get_bd_pins TexSampleStateBlock/STAGE_NextDrawID] [get_bd_pins TexSample_0/STATE_NextDrawID]
+  connect_bd_net -net StateBlock_0_STAGE_NextDrawID1 [get_bd_pins ClipUnitStateBlock/STAGE_NextDrawID] [get_bd_pins ClipUnit_0/STATE_NextDrawID]
+  connect_bd_net -net StateBlock_0_STAGE_StateBitsAtDrawID [get_bd_pins TexSampleStateBlock/STAGE_StateBitsAtDrawID] [get_bd_pins TexSample_0/STATE_StateBitsAtDrawID]
+  connect_bd_net -net StateBlock_0_STAGE_StateBitsAtDrawID1 [get_bd_pins ClipUnitStateBlock/STAGE_StateBitsAtDrawID] [get_bd_pins ClipUnit_0/STATE_StateBitsAtDrawID]
+  connect_bd_net -net StateBlock_0_STAGE_StateIsValid [get_bd_pins TexSampleStateBlock/STAGE_StateIsValid] [get_bd_pins TexSample_0/STATE_StateIsValid]
+  connect_bd_net -net StateBlock_0_STAGE_StateIsValid1 [get_bd_pins ClipUnitStateBlock/STAGE_StateIsValid] [get_bd_pins ClipUnit_0/STATE_StateIsValid]
+  connect_bd_net -net StateBlock_1_CMD_NumFreeSlots [get_bd_pins AttrInterpStateBlock/CMD_NumFreeSlots] [get_bd_pins CommandProcessor_0/INTERP_NumFreeSlots]
+  connect_bd_net -net StateBlock_1_STAGE_NextDrawID [get_bd_pins AttrInterpStateBlock/STAGE_NextDrawID] [get_bd_pins AttrInterpolator_0/STATE_NextDrawID]
+  connect_bd_net -net StateBlock_1_STAGE_StateBitsAtDrawID [get_bd_pins AttrInterpStateBlock/STAGE_StateBitsAtDrawID] [get_bd_pins AttrInterpolator_0/STATE_StateBitsAtDrawID]
+  connect_bd_net -net StateBlock_1_STAGE_StateIsValid [get_bd_pins AttrInterpStateBlock/STAGE_StateIsValid] [get_bd_pins AttrInterpolator_0/STATE_StateIsValid]
   connect_bd_net -net StatsCollector_0_CMD_StatsSaveComplete [get_bd_pins CommandProcessor_0/STAT_StatsSaveComplete] [get_bd_pins StatsCollector_0/CMD_StatsSaveComplete]
   connect_bd_net -net StatsCollector_0_DBG_CurrentState [get_bd_pins StatsCollector_0/DBG_CurrentState] [get_bd_pins ila_333_250/probe38]
-  connect_bd_net -net TexSample_0_CMD_LoadTexCacheAckSignal [get_bd_pins CommandProcessor_0/TEXSAMP_LoadTexCacheAckSignal] [get_bd_pins TexSample_0/CMD_LoadTexCacheAckSignal] [get_bd_pins ila_333_250/probe17]
-  connect_bd_net -net TexSample_0_CMD_SetTextureStateAckSignal [get_bd_pins CommandProcessor_0/TEXSAMP_SetTextureStateAckSignal] [get_bd_pins TexSample_0/CMD_SetTextureStateAckSignal]
+  connect_bd_net -net TEXSAMP_FIFO_dout [get_bd_pins TEXSAMP_FIFO/dout] [get_bd_pins TexSample_0/INTERP_InFIFO_rd_data]
+  connect_bd_net -net TEXSAMP_FIFO_empty [get_bd_pins CommandProcessor_0/CMD_FIFO_EMPTY_TEXSAMP] [get_bd_pins TEXSAMP_FIFO/empty] [get_bd_pins TexSample_0/INTERP_InFIFO_empty]
   connect_bd_net -net TexSample_0_CMD_TexSampleIsIdle [get_bd_pins CommandProcessor_0/CMD_TexSampler_Idle] [get_bd_pins TexSample_0/CMD_TexSampleIsIdle]
   connect_bd_net -net TexSample_0_DBG_TexCache_addra [get_bd_pins ILA_TexSampler/probe3] [get_bd_pins TexSample_0/DBG_TexCache_addra]
   connect_bd_net -net TexSample_0_DBG_TexCache_dina [get_bd_pins ILA_TexSampler/probe2] [get_bd_pins TexSample_0/DBG_TexCache_dina]
   connect_bd_net -net TexSample_0_DBG_TexSample_State [get_bd_pins ILA_TexSampler/probe0] [get_bd_pins TexSample_0/DBG_TexSample_State] [get_bd_pins ila_333_250/probe8]
+  connect_bd_net -net TexSample_0_INTERP_InFIFO_rd_en [get_bd_pins TEXSAMP_FIFO/rd_en] [get_bd_pins TexSample_0/INTERP_InFIFO_rd_en]
   connect_bd_net -net TexSample_0_ROP_OutFIFO_wr_data [get_bd_pins ILA_TexSampler/probe1] [get_bd_pins ROP_FIFO/din] [get_bd_pins TexSample_0/ROP_OutFIFO_wr_data]
+  connect_bd_net -net TexSample_0_STATE_ConsumeStateSlot [get_bd_pins ILA_TexSampler/probe6] [get_bd_pins TexSampleStateBlock/STAGE_ConsumeStateSlot] [get_bd_pins TexSample_0/STATE_ConsumeStateSlot]
+  connect_bd_net -net TexSample_0_STAT_CurrentDrawEventID [get_bd_pins ILA_TexSampler/probe4] [get_bd_pins StatsCollector_0/TEXSAMP_CurrentDrawEventID] [get_bd_pins TexSample_0/STAT_CurrentDrawEventID]
   connect_bd_net -net TexSample_0_STAT_CyclesIdle [get_bd_pins StatsCollector_0/TEXSAMP_CyclesIdle] [get_bd_pins TexSample_0/STAT_CyclesIdle]
   connect_bd_net -net TexSample_0_STAT_CyclesSpentWorking [get_bd_pins StatsCollector_0/TEXSAMP_CyclesSpentWorking] [get_bd_pins TexSample_0/STAT_CyclesSpentWorking]
   connect_bd_net -net TexSample_0_STAT_CyclesWaitingCacheLoad [get_bd_pins StatsCollector_0/TEXSAMP_CyclesWaitingCacheLoad] [get_bd_pins TexSample_0/STAT_CyclesWaitingCacheLoad]
@@ -3147,6 +3280,7 @@ proc create_root_design { parentCell } {
   connect_bd_net -net TriSetup_0_FPU_MUL_GO [get_bd_pins TRISETUP_FPU_MUL/IMUL_GO] [get_bd_pins TriSetup_0/FPU_MUL_GO]
   connect_bd_net -net TriSetup_0_FPU_SPEC_A [get_bd_pins TRISETUP_FPU_SPEC/IN_A] [get_bd_pins TriSetup_0/FPU_SPEC_A]
   connect_bd_net -net TriSetup_0_FPU_SPEC_GO [get_bd_pins TRISETUP_FPU_SPEC/ISPEC_GO] [get_bd_pins TriSetup_0/FPU_SPEC_GO]
+  connect_bd_net -net TriSetup_0_RAST_CurrentDrawEventID [get_bd_pins Rasterizer_0/TRISETUP_CurrentDrawEventID] [get_bd_pins TriSetup_0/RAST_CurrentDrawEventID]
   connect_bd_net -net TriSetup_0_RAST_outBarycentricInverse [get_bd_pins ILA_TriSetup/probe0] [get_bd_pins Rasterizer_0/TRISETUP_inBarycentricInverse] [get_bd_pins TriSetup_0/RAST_outBarycentricInverse]
   connect_bd_net -net TriSetup_0_RAST_outBarycentricXDeltaA [get_bd_pins ILA_TriSetup/probe23] [get_bd_pins Rasterizer_0/TRISETUP_inBarycentricXDeltaA] [get_bd_pins TriSetup_0/RAST_outBarycentricXDeltaA]
   connect_bd_net -net TriSetup_0_RAST_outBarycentricXDeltaB [get_bd_pins ILA_TriSetup/probe24] [get_bd_pins Rasterizer_0/TRISETUP_inBarycentricXDeltaB] [get_bd_pins TriSetup_0/RAST_outBarycentricXDeltaB]
@@ -3180,6 +3314,7 @@ proc create_root_design { parentCell } {
   connect_bd_net -net TriSetup_0_RAST_v20_out_Z [get_bd_pins ILA_TriSetup/probe3] [get_bd_pins Rasterizer_0/TRISETUP_inZ20] [get_bd_pins TriSetup_0/RAST_v20_out_Z]
   connect_bd_net -net TriSetup_0_RAST_v20_out_colorRGBA [get_bd_pins ILA_TriSetup/probe12] [get_bd_pins Rasterizer_0/TRISETUP_inVertColor20] [get_bd_pins TriSetup_0/RAST_v20_out_colorRGBA]
   connect_bd_net -net TriSetup_0_RAST_v20_out_invW [get_bd_pins Rasterizer_0/TRISETUP_inInvW20] [get_bd_pins TriSetup_0/RAST_v20_out_invW]
+  connect_bd_net -net TriSetup_0_STAT_CurrentDrawEventID [get_bd_pins ILA_TexSampler/probe18] [get_bd_pins StatsCollector_0/TRISETUP_CurrentDrawEventID] [get_bd_pins TriSetup_0/STAT_CurrentDrawEventID]
   connect_bd_net -net TriSetup_0_STAT_CyclesIdle [get_bd_pins StatsCollector_0/TRISETUP_CyclesIdle] [get_bd_pins TriSetup_0/STAT_CyclesIdle]
   connect_bd_net -net TriSetup_0_STAT_CyclesSpentWorking [get_bd_pins StatsCollector_0/TRISETUP_CyclesSpentWorking] [get_bd_pins TriSetup_0/STAT_CyclesSpentWorking]
   connect_bd_net -net TriSetup_0_STAT_CyclesWaitingForOutput [get_bd_pins StatsCollector_0/TRISETUP_CyclesWaitingForOutput] [get_bd_pins TriSetup_0/STAT_CyclesWaitingForOutput]
@@ -3202,7 +3337,9 @@ proc create_root_design { parentCell } {
   connect_bd_net -net TriWorkCache_0_INTERP_outZ20 [get_bd_pins DepthInterpolator_0/TRICACHE_inZ20] [get_bd_pins TriWorkCache_0/INTERP_outZ20]
   connect_bd_net -net TriWorkCache_0_RAST_NewTriSlotIndex [get_bd_pins Rasterizer_0/TRICACHE_NewTriSlotIndex] [get_bd_pins TriWorkCache_0/RAST_NewTriSlotIndex]
   connect_bd_net -net TriWorkCache_0_RAST_NewTriSlotIndexValid [get_bd_pins Rasterizer_0/TRICACHE_NewTriSlotIndexValid] [get_bd_pins TriWorkCache_0/RAST_NewTriSlotIndexValid]
+  connect_bd_net -net VBB_FIFO_empty [get_bd_pins CommandProcessor_0/CMD_FIFO_EMPTY_VBB] [get_bd_pins ShaderCoreSystem/VERTBATCH_FIFO_empty] [get_bd_pins VBB_FIFO/empty]
   connect_bd_net -net VBO_FIFO_dout [get_bd_pins ILA_IA/probe9] [get_bd_pins ILA_TriSetup/probe45] [get_bd_pins InputAssembler2_0/VERTOUT_FIFO_rd_data] [get_bd_pins VBO_FIFO/dout]
+  connect_bd_net -net VBO_FIFO_empty [get_bd_pins CommandProcessor_0/CMD_FIFO_EMPTY_VS] [get_bd_pins InputAssembler2_0/VERTOUT_FIFO_empty] [get_bd_pins VBO_FIFO/empty]
   connect_bd_net -net VBO_INDEX_FIFO_dout [get_bd_pins ILA_IA/probe29] [get_bd_pins ILA_TriSetup/probe46] [get_bd_pins InputAssembler2_0/INDEXOUT_FIFO_rd_data] [get_bd_pins VBO_INDEX_FIFO/dout]
   connect_bd_net -net VBO_Ready_0_1 [get_bd_pins InputAssembler2_0/VBO_Ready] [get_bd_pins ShaderCoreSystem/VBO_Ready_0]
   connect_bd_net -net VertexBatchBuilder_0_CMD_ReadyState [get_bd_pins CommandProcessor_0/VBB_ReadyState] [get_bd_pins VertexBatchBuilder_0/CMD_ReadyState]
@@ -3214,10 +3351,16 @@ proc create_root_design { parentCell } {
   connect_bd_net -net VertexBatchBuilder_0_IBC_ReadAddr [get_bd_pins ILA_IA/probe16] [get_bd_pins IndexBufferCache_0/VBB_ReadAddr] [get_bd_pins VertexBatchBuilder_0/IBC_ReadAddr]
   connect_bd_net -net VertexBatchBuilder_0_IBC_ReadEnable [get_bd_pins IndexBufferCache_0/VBB_ReadEnable] [get_bd_pins VertexBatchBuilder_0/IBC_ReadEnable]
   connect_bd_net -net VertexBatchBuilder_0_SHADER_Done [get_bd_pins ShaderCoreSystem/VBB_Done_0] [get_bd_pins VertexBatchBuilder_0/SHADER_Done]
+  connect_bd_net -net VertexBatchBuilder_0_STAT_CurrentDrawEventID [get_bd_pins ILA_TexSampler/probe22] [get_bd_pins StatsCollector_0/VBB_CurrentDrawEventID] [get_bd_pins VertexBatchBuilder_0/STAT_CurrentDrawEventID]
+  connect_bd_net -net VertexBatchBuilder_0_STAT_CyclesIdle [get_bd_pins StatsCollector_0/VBB_CyclesIdle] [get_bd_pins VertexBatchBuilder_0/STAT_CyclesIdle]
+  connect_bd_net -net VertexBatchBuilder_0_STAT_CyclesSpentWorking [get_bd_pins StatsCollector_0/VBB_CyclesSpentWorking] [get_bd_pins VertexBatchBuilder_0/STAT_CyclesSpentWorking]
+  connect_bd_net -net VertexBatchBuilder_0_STAT_CyclesWaitingForOutput [get_bd_pins StatsCollector_0/VBB_CyclesWaitingForOutput] [get_bd_pins VertexBatchBuilder_0/STAT_CyclesWaitingForOutput]
   connect_bd_net -net ddr4_0_addn_ui_clkout1 [get_bd_pins MemorySystem/addn_ui_clkout1] [get_bd_pins ScanoutSystem/clk_in1] [get_bd_pins SerialPacketSystem/s_axi_aclk] [get_bd_pins proc_sys_reset_0/slowest_sync_clk]
-  connect_bd_net -net ddr4_0_c0_ddr4_ui_clk [get_bd_pins AttrInterpFloatALU_0/clk] [get_bd_pins AttrInterpolator_0/clk] [get_bd_pins CLIP_FPU_ADD_0/clk] [get_bd_pins CLIP_FPU_ADD_1/clk] [get_bd_pins CLIP_FPU_MUL_0/clk] [get_bd_pins CLIP_FPU_MUL_1/clk] [get_bd_pins CLIP_FPU_SPEC_0/clk] [get_bd_pins ClearBlock_0/clk] [get_bd_pins ClipUnit_0/clk] [get_bd_pins CommandProcessor_0/clk] [get_bd_pins DepthBuffer_0/clk] [get_bd_pins DepthInterpFloatALU_0/clk] [get_bd_pins DepthInterpolator_0/clk] [get_bd_pins ILA_AttrInterpolator/clk] [get_bd_pins ILA_IA/clk] [get_bd_pins ILA_TexSampler/clk] [get_bd_pins ILA_TriSetup/clk] [get_bd_pins IndexBufferCache_0/clk] [get_bd_pins InputAssembler2_0/clk] [get_bd_pins MemorySystem/c0_ddr4_ui_clk] [get_bd_pins ROP_0/clk] [get_bd_pins ROP_FIFO/clk] [get_bd_pins Rasterizer_0/clk] [get_bd_pins ScanoutSystem/cmd_clk] [get_bd_pins SerialPacketSystem/rd_clk] [get_bd_pins ShaderCoreSystem/clk_0] [get_bd_pins StatsCollector_0/clk] [get_bd_pins TEXSAMP_FIFO/clk] [get_bd_pins TRISETUP_FPU_ADD/clk] [get_bd_pins TRISETUP_FPU_CNV/clk] [get_bd_pins TRISETUP_FPU_MUL/clk] [get_bd_pins TRISETUP_FPU_SPEC/clk] [get_bd_pins TexSample_0/clk] [get_bd_pins TextureCache_128x128x32bits/clka] [get_bd_pins TriSetup_0/clk] [get_bd_pins TriWorkCache_0/clk] [get_bd_pins VBB_FIFO/clk] [get_bd_pins VBO_FIFO/clk] [get_bd_pins VBO_INDEX_FIFO/clk] [get_bd_pins VertexBatchBuilder_0/clk] [get_bd_pins ila_333_250/clk] [get_bd_pins rast_out_fifo/clk] [get_bd_pins vio_0/clk]
+  connect_bd_net -net ddr4_0_c0_ddr4_ui_clk [get_bd_pins AttrInterpFloatALU_0/clk] [get_bd_pins AttrInterpStateBlock/clk] [get_bd_pins AttrInterpolator_0/clk] [get_bd_pins CLIP_FPU_ADD_0/clk] [get_bd_pins CLIP_FPU_ADD_1/clk] [get_bd_pins CLIP_FPU_MUL_0/clk] [get_bd_pins CLIP_FPU_MUL_1/clk] [get_bd_pins CLIP_FPU_SPEC_0/clk] [get_bd_pins ClearBlock_0/clk] [get_bd_pins ClipUnitStateBlock/clk] [get_bd_pins ClipUnit_0/clk] [get_bd_pins CommandProcessor_0/clk] [get_bd_pins DepthBuffer_0/clk] [get_bd_pins DepthInterpFloatALU_0/clk] [get_bd_pins DepthInterpolator_0/clk] [get_bd_pins ILA_AttrInterpolator/clk] [get_bd_pins ILA_IA/clk] [get_bd_pins ILA_TexSampler/clk] [get_bd_pins ILA_TriSetup/clk] [get_bd_pins IndexBufferCache_0/clk] [get_bd_pins InputAssembler2_0/clk] [get_bd_pins InputAssemblerStateBlock/clk] [get_bd_pins MemorySystem/c0_ddr4_ui_clk] [get_bd_pins ROPStateBlock/clk] [get_bd_pins ROP_0/clk] [get_bd_pins ROP_FIFO/clk] [get_bd_pins Rasterizer_0/clk] [get_bd_pins ScanoutSystem/cmd_clk] [get_bd_pins SerialPacketSystem/rd_clk] [get_bd_pins ShaderCoreSystem/clk_0] [get_bd_pins StatsCollector_0/clk] [get_bd_pins TEXSAMP_FIFO/clk] [get_bd_pins TRISETUP_FPU_ADD/clk] [get_bd_pins TRISETUP_FPU_CNV/clk] [get_bd_pins TRISETUP_FPU_MUL/clk] [get_bd_pins TRISETUP_FPU_SPEC/clk] [get_bd_pins TexSampleStateBlock/clk] [get_bd_pins TexSample_0/clk] [get_bd_pins TextureCache_128x128x32bits/clka] [get_bd_pins TriSetup_0/clk] [get_bd_pins TriWorkCache_0/clk] [get_bd_pins VBB_FIFO/clk] [get_bd_pins VBO_FIFO/clk] [get_bd_pins VBO_INDEX_FIFO/clk] [get_bd_pins VertexBatchBuilder_0/clk] [get_bd_pins ila_333_250/clk] [get_bd_pins rast_out_fifo/clk] [get_bd_pins vio_0/clk]
   connect_bd_net -net fifo_generator_0_dout [get_bd_pins ILA_IA/probe14] [get_bd_pins ShaderCoreSystem/VERTBATCH_FIFO_0_rd_data] [get_bd_pins VBB_FIFO/dout]
   connect_bd_net -net placeholder_texcfg_dout [get_bd_pins TriSetup_0/TEXCFG_nointerpolation] [get_bd_pins placeholder_texcfg/dout]
+  connect_bd_net -net rast_out_fifo_dout [get_bd_pins DepthInterpolator_0/RASTOUT_FIFO_rd_data] [get_bd_pins rast_out_fifo/dout]
+  connect_bd_net -net rast_out_fifo_empty [get_bd_pins CommandProcessor_0/CMD_FIFO_EMPTY_RASTOUT] [get_bd_pins DepthInterpolator_0/RASTOUT_FIFO_empty] [get_bd_pins rast_out_fifo/empty]
   connect_bd_net -net rd_clk_1 [get_bd_pins MemorySystem/rd_clk] [get_bd_pins ScanoutSystem/clk_out1]
   connect_bd_net -net reset_1 [get_bd_ports reset] [get_bd_pins MemorySystem/reset] [get_bd_pins ResetN_UntilClockLoc_0/reset] [get_bd_pins ScanoutSystem/reset] [get_bd_pins SerialPacketSystem/reset] [get_bd_pins proc_sys_reset_0/ext_reset_in]
   connect_bd_net -net vio_0_probe_out0 [get_bd_pins ClipUnit_0/DBG_DisableClipping] [get_bd_pins vio_0/probe_out0]
@@ -3226,9 +3369,8 @@ proc create_root_design { parentCell } {
   connect_bd_net -net xlconstant_1_dout [get_bd_pins ila_333_250/probe37] [get_bd_pins xlconstant_1/dout]
   connect_bd_net -net xlconstant_2_dout [get_bd_pins ILA_IA/probe0] [get_bd_pins ILA_IA/probe1] [get_bd_pins ILA_IA/probe6] [get_bd_pins ILA_IA/probe7] [get_bd_pins ILA_IA/probe8] [get_bd_pins xlconstant_2/dout]
   connect_bd_net -net xlconstant_3_dout [get_bd_pins DepthBuffer_AlwaysEnable/dout] [get_bd_pins DepthBuffer_URAM/regceb]
-  connect_bd_net -net xlconstant_3_dout1 [get_bd_pins AttrInterpolator_0/CMD_UseFlatShading] [get_bd_pins xlconstant_3/dout]
   connect_bd_net -net xlconstant_4_dout [get_bd_pins ILA_AttrInterpolator/probe1] [get_bd_pins ILA_AttrInterpolator/probe2] [get_bd_pins ILA_AttrInterpolator/probe3] [get_bd_pins ILA_AttrInterpolator/probe4] [get_bd_pins ILA_AttrInterpolator/probe7] [get_bd_pins ILA_AttrInterpolator/probe13] [get_bd_pins xlconstant_4/dout]
-  connect_bd_net -net xlconstant_5_dout [get_bd_pins ila_333_250/probe11] [get_bd_pins ila_333_250/probe12] [get_bd_pins ila_333_250/probe15] [get_bd_pins xlconstant_5/dout]
+  connect_bd_net -net xlconstant_5_dout [get_bd_pins ila_333_250/probe11] [get_bd_pins xlconstant_5/dout]
   connect_bd_net -net xlconstant_6_dout [get_bd_pins VertexBatchBuilder_0/DBG_UseConstantOutput] [get_bd_pins xlconstant_6/dout]
   connect_bd_net -net xlconstant_7_dout [get_bd_pins TextureCache_128x128x32bits/regcea] [get_bd_pins xlconstant_7/dout]
 

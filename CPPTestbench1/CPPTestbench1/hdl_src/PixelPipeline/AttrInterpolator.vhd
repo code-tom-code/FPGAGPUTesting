@@ -6,19 +6,18 @@ use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
 
 use work.FloatALU_Types.all;
+use work.PixelPipeline_Types.all;
+use work.PacketType.all;
+use work.AttrInterpolatorState.all;
 
 entity AttrInterpolator is
 	Port ( clk : in STD_LOGIC;
 
-	-- Command Processor interface begin
-		CMD_UseFlatShading : in STD_LOGIC;
-	-- Command Processor interface end
-
 	-- Depth Interpolator interface begin
 		DINTERP_ReadyForNewPixel : out STD_LOGIC := '0';
 		DINTERP_NewPixelValid : in STD_LOGIC;
-		DINTERP_PosX : in STD_LOGIC_VECTOR(9 downto 0);
-		DINTERP_PosY : in STD_LOGIC_VECTOR(9 downto 0);
+		DINTERP_PosX : in STD_LOGIC_VECTOR(15 downto 0);
+		DINTERP_PosY : in STD_LOGIC_VECTOR(15 downto 0);
 		DINTERP_TX0 : in STD_LOGIC_VECTOR(31 downto 0);
 		DINTERP_TX10 : in STD_LOGIC_VECTOR(31 downto 0);
 		DINTERP_TX20 : in STD_LOGIC_VECTOR(31 downto 0);
@@ -53,6 +52,13 @@ entity AttrInterpolator is
         TEXSAMP_OutFIFO_wr_en : out STD_LOGIC := '0';
 	-- Texture Sampler FIFO interface end
 
+	-- Attribute Interpolator State Block interface begin
+		STATE_StateBitsAtDrawID : in STD_LOGIC_VECTOR(ATTR_INTERPOLATOR_STATE_SIZE_BITS-1 downto 0);
+		STATE_NextDrawID : in STD_LOGIC_VECTOR(15 downto 0);
+		STATE_StateIsValid : in STD_LOGIC;
+		STATE_ConsumeStateSlot : out STD_LOGIC := '0';
+	-- Attribute Interpolator State Block interface end
+
 	-- Command Processor interface begin
 		CMD_IsIdle : out STD_LOGIC := '0';
 	-- Command Processor interface end
@@ -61,6 +67,7 @@ entity AttrInterpolator is
 		STAT_CyclesIdle : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 		STAT_CyclesSpentWorking : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 		STAT_CyclesWaitingForOutput : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		STAT_CurrentDrawEventID : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
 	-- Stats interface end
 
 	-- Debug signals
@@ -172,11 +179,14 @@ signal currentState : attrInterpStateType := waitingForRead;
 
 signal storedPixelX : unsigned(15 downto 0) := (others => '0');
 signal storedPixelY : unsigned(15 downto 0) := (others => '0');
+signal currentDrawEventID : unsigned(15 downto 0) := (others => '0');
 
 signal pixelW : f32 := (others => '0'); -- float32 format (0.0f to 1.0f) pixel W value
 signal normalizedBarycentricB : f32 := (others => '0'); -- float32 format
 signal normalizedBarycentricC : f32 := (others => '0'); -- float32 format
 signal useFlatShading : std_logic := '0';
+signal texcoord0AddressingModeU : eTexcoordAddressingMode := TAM_Wrap; -- Default to wrap mode.
+signal texcoord0AddressingModeV : eTexcoordAddressingMode := TAM_Wrap; -- Default to wrap mode.
 
 signal unpackedVertex0 : VertexFloatData := DefaultVertexFloatData;
 signal unpackedVertex10 : VertexFloatData := DefaultVertexFloatData;
@@ -233,6 +243,7 @@ DBG_RastBarycentricC <= std_logic_vector(normalizedBarycentricC);
 	process(clk)
 	begin
 		if (rising_edge(clk) ) then
+			STAT_CurrentDrawEventID <= std_logic_vector(currentDrawEventID);
 			case currentState is
 				when waitingForRead =>
 					statCyclesIdle <= statCyclesIdle + 1;
@@ -250,46 +261,61 @@ DBG_RastBarycentricC <= std_logic_vector(normalizedBarycentricC);
 	begin
 		if (rising_edge(clk) ) then
 			CMD_IsIdle <= '0';
+			STATE_ConsumeStateSlot <= '0';
 
 			case currentState is
 				when waitingForRead =>
 					readyForNewPixel <= '0';
 
+					storedPixelX <= unsigned(DINTERP_PosX);
+					storedPixelY <= unsigned(DINTERP_PosY);
+					unpackedVertex0.tx <= f32(DINTERP_TX0);
+					unpackedVertex0.ty <= f32(DINTERP_TY0);
+					unpackedVertex10.tx <= f32(DINTERP_TX10);
+					unpackedVertex10.ty <= f32(DINTERP_TY10);
+					unpackedVertex20.tx <= f32(DINTERP_TX20);
+					unpackedVertex20.ty <= f32(DINTERP_TY20);
+					unpackedVertex0.color_r <= f32(DINTERP_VC0(31 downto 0) );
+					unpackedVertex0.color_g <= f32(DINTERP_VC0(63 downto 32) );
+					unpackedVertex0.color_b <= f32(DINTERP_VC0(95 downto 64) );
+					unpackedVertex0.color_a <= f32(DINTERP_VC0(127 downto 96) );
+					unpackedVertex10.color_r <= f32(DINTERP_VC10(31 downto 0) );
+					unpackedVertex10.color_g <= f32(DINTERP_VC10(63 downto 32) );
+					unpackedVertex10.color_b <= f32(DINTERP_VC10(95 downto 64) );
+					unpackedVertex10.color_a <= f32(DINTERP_VC10(127 downto 96) );
+					unpackedVertex20.color_r <= f32(DINTERP_VC20(31 downto 0) );
+					unpackedVertex20.color_g <= f32(DINTERP_VC20(63 downto 32) );
+					unpackedVertex20.color_b <= f32(DINTERP_VC20(95 downto 64) );
+					unpackedVertex20.color_a <= f32(DINTERP_VC20(127 downto 96) );
+					normalizedBarycentricB <= f32(DINTERP_NormalizedBarycentricB);
+					normalizedBarycentricC <= f32(DINTERP_NormalizedBarycentricC);
+					pixelW <= f32(DINTERP_OutPixelW);
+
 					TEXSAMP_OutFIFO_wr_en <= '0'; -- Deassert after one clock cycle
-					if (DINTERP_NewPixelValid = '1' and readyForNewPixel = '1') then
+
+					if (STATE_StateIsValid = '1' and currentDrawEventID = unsigned(STATE_NextDrawID) ) then
+						STATE_ConsumeStateSlot <= '1';
+
+						useFlatShading <= DeserializeBitsToStruct(STATE_StateBitsAtDrawID).UseFlatShadingColors;
+						texcoord0AddressingModeU <= DeserializeBitsToStruct(STATE_StateBitsAtDrawID).Texcoord0AddressingModeU;
+						texcoord0AddressingModeV <= DeserializeBitsToStruct(STATE_StateBitsAtDrawID).Texcoord0AddressingModeV;
+					elsif (DINTERP_NewPixelValid = '1' and readyForNewPixel = '1') then
 						readyForNewPixel <= '0';
 
-						storedPixelX <= "000000" & unsigned(DINTERP_PosX);
-						storedPixelY <= "000000" & unsigned(DINTERP_PosY);
-						unpackedVertex0.tx <= f32(DINTERP_TX0);
-						unpackedVertex0.ty <= f32(DINTERP_TY0);
-						unpackedVertex10.tx <= f32(DINTERP_TX10);
-						unpackedVertex10.ty <= f32(DINTERP_TY10);
-						unpackedVertex20.tx <= f32(DINTERP_TX20);
-						unpackedVertex20.ty <= f32(DINTERP_TY20);
-						unpackedVertex0.color_r <= f32(DINTERP_VC0(31 downto 0) );
-						unpackedVertex0.color_g <= f32(DINTERP_VC0(63 downto 32) );
-						unpackedVertex0.color_b <= f32(DINTERP_VC0(95 downto 64) );
-						unpackedVertex0.color_a <= f32(DINTERP_VC0(127 downto 96) );
-						unpackedVertex10.color_r <= f32(DINTERP_VC10(31 downto 0) );
-						unpackedVertex10.color_g <= f32(DINTERP_VC10(63 downto 32) );
-						unpackedVertex10.color_b <= f32(DINTERP_VC10(95 downto 64) );
-						unpackedVertex10.color_a <= f32(DINTERP_VC10(127 downto 96) );
-						unpackedVertex20.color_r <= f32(DINTERP_VC20(31 downto 0) );
-						unpackedVertex20.color_g <= f32(DINTERP_VC20(63 downto 32) );
-						unpackedVertex20.color_b <= f32(DINTERP_VC20(95 downto 64) );
-						unpackedVertex20.color_a <= f32(DINTERP_VC20(127 downto 96) );
-						normalizedBarycentricB <= f32(DINTERP_NormalizedBarycentricB);
-						normalizedBarycentricC <= f32(DINTERP_NormalizedBarycentricC);
-						pixelW <= f32(DINTERP_OutPixelW);
-
-						-- Sample our async command processor signal when we start a new pixel
-						useFlatShading <= CMD_UseFlatShading;
-
-						if (CMD_UseFlatShading = '1') then -- If we're doing flat shading then we should skip all of this interpolation math
-							currentState <= compressOutput0;
+						if (IsSpecialPixelMessage(unsigned(DINTERP_PosX) ) ) then
+							if (DINTERP_PosX(eSpecialPixelCodeBits'pos(SetNewDrawEventID) ) = '1') then
+								currentDrawEventID <= unsigned(DINTERP_PosY);
+								currentState <= waitingForWrite;
+							end if;
+							if (DINTERP_PosX(eSpecialPixelCodeBits'pos(TerminateCurrentDrawEventID) ) = '1') then
+								currentState <= waitingForWrite;
+							end if;
 						else
-							currentState <= multBarycentricsAndAttr0;
+							if (useFlatShading = '1') then -- If we're doing flat shading then we should skip all of this interpolation math
+								currentState <= compressOutput0;
+							else
+								currentState <= multBarycentricsAndAttr0;
+							end if;
 						end if;
 					else
 						if (readyForNewPixel = '1') then
@@ -571,7 +597,19 @@ DBG_RastBarycentricC <= std_logic_vector(normalizedBarycentricC);
 
 				when multiplyPixelW11 =>
 					unpackedVertex0.color_a <= f32(FPU_OUT);
-					currentState <= compressOutput0;
+					if (texcoord0AddressingModeU = TAM_Clamp) then
+						wrappedTexcoordTX <= SaturateFloat(unpackedVertex0.tx);
+					end if;
+
+					if (texcoord0AddressingModeV = TAM_Clamp) then
+						wrappedTexcoordTY <= SaturateFloat(unpackedVertex0.ty);
+					end if;
+
+					if (texcoord0AddressingModeU = TAM_Clamp and texcoord0AddressingModeV = TAM_Clamp) then
+						currentState <= compressOutput2;
+					else
+						currentState <= compressOutput0;
+					end if;
 
 				when compressOutput0 =>
 					FPU_A <= std_logic_vector(unpackedVertex0.tx);
@@ -598,14 +636,18 @@ DBG_RastBarycentricC <= std_logic_vector(normalizedBarycentricC);
 					currentState <= compressOutput4;
 
 				when compressOutput4 =>
-					wrappedTexcoordTX <= f32(FPU_OUT);
+					if (texcoord0AddressingModeU = TAM_Wrap) then
+						wrappedTexcoordTX <= f32(FPU_OUT);
+					end if;
 					FPU_A <= std_logic_vector(SaturateFloat(unpackedVertex0.color_b) );
 					FPU_Mode <= std_logic_vector(to_unsigned(eConvertMode'pos(F_to_UNORM8), 3) );
 					FPU_ICNV_GO <= '1';
 					currentState <= compressOutput5;
 
 				when compressOutput5 =>
-					wrappedTexcoordTY <= f32(FPU_OUT);
+					if (texcoord0AddressingModeV = TAM_Wrap) then
+						wrappedTexcoordTY <= f32(FPU_OUT);
+					end if;
 					FPU_A <= std_logic_vector(SaturateFloat(unpackedVertex0.color_a) );
 					FPU_Mode <= std_logic_vector(to_unsigned(eConvertMode'pos(F_to_UNORM8), 3) );
 					FPU_ICNV_GO <= '1';

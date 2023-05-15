@@ -31,7 +31,19 @@
     <Filter Include="HDL\HDMI">
       <UniqueIdentifier>{9a48f601-1a6a-493f-94cd-04c5f5edb8d4}</UniqueIdentifier>
     </Filter>
-    <Filter Include="HDL\Clipping">
+    <Filter Include="HDL\PixelPipeline">
+      <UniqueIdentifier>{5e972a0d-de7b-40b9-8180-459668ff5164}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="HDL\RenderState">
+      <UniqueIdentifier>{62087843-4f27-4e5c-ba27-420a21e56fdc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\Project Files">
+      <UniqueIdentifier>{56520698-8d3e-45f8-a0a2-5dac82addc25}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="HDL\VertexPipeline">
+      <UniqueIdentifier>{5f75c68f-176f-4f12-b53e-dd0cb0c5d30a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="HDL\VertexPipeline\Clipping">
       <UniqueIdentifier>{0bfdf831-34ad-441a-a053-a44e71a9a485}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -94,6 +106,9 @@
       <Filter>Source Files\Testbenches</Filter>
     </ClCompile>
     <ClCompile Include="Testbenches\ClipUnitTestbench.cpp">
+      <Filter>Source Files\Testbenches</Filter>
+    </ClCompile>
+    <ClCompile Include="Testbenches\StateBlockTestbench.cpp">
       <Filter>Source Files\Testbenches</Filter>
     </ClCompile>
   </ItemGroup>
@@ -176,6 +191,9 @@
     <ClInclude Include="ClipTestData.h">
       <Filter>Header Files\Testbenches</Filter>
     </ClInclude>
+    <ClInclude Include="Testbenches\StateBlockTestbench.h">
+      <Filter>Header Files\Testbenches</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="rebuild_xsim.bat">
@@ -184,77 +202,17 @@
     <None Include="xsim.dir\AttrInterpolator\xsimk.dll">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="FloatALU.prj">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="ShaderCore.prj">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="hdl_src\ConstantBuffer.vhd">
-      <Filter>HDL</Filter>
-    </None>
     <None Include="hdl_src\FloatALU.vhd">
-      <Filter>HDL</Filter>
-    </None>
-    <None Include="hdl_src\GPRQuad.vhd">
-      <Filter>HDL</Filter>
-    </None>
-    <None Include="hdl_src\IndexBufferCache.vhd">
-      <Filter>HDL</Filter>
-    </None>
-    <None Include="hdl_src\ShaderCore.vhd">
       <Filter>HDL</Filter>
     </None>
     <None Include="hdl_src\UNORM8ToFloat.vhd">
       <Filter>HDL</Filter>
     </None>
-    <None Include="hdl_src\VertexBatchBuilder.vhd">
-      <Filter>HDL</Filter>
-    </None>
-    <None Include="hdl_src\VertexStreamCache.vhd">
-      <Filter>HDL</Filter>
-    </None>
-    <None Include="AttrInterpolator.prj">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="ConstantBuffer.prj">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="GPRQuad.prj">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="IndexBufferCache.prj">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="Reciprocal.prj">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="UNORM8ToFloat.prj">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="VertexBatchBuilder.prj">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="VertexStreamCache.prj">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="hdl_src\InputAssembler2.vhd">
-      <Filter>HDL</Filter>
-    </None>
-    <None Include="InputAssembler2.prj">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="hdl_src\MemoryController.vhd">
       <Filter>HDL</Filter>
     </None>
-    <None Include="MemoryController.prj">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="hdl_src\CommandProcessor.vhd">
       <Filter>HDL</Filter>
-    </None>
-    <None Include="CommandProcessor.prj">
-      <Filter>Resource Files</Filter>
     </None>
     <None Include="hdl_src\PacketType.vhd">
       <Filter>HDL</Filter>
@@ -265,59 +223,8 @@
     <None Include="hdl_src\FloatALU_Types.vhd">
       <Filter>HDL</Filter>
     </None>
-    <None Include="hdl_src\GPRQuad2.vhd">
-      <Filter>HDL</Filter>
-    </None>
-    <None Include="hdl_src\IndexBufferCacheTestbench.vhd">
-      <Filter>HDL</Filter>
-    </None>
     <None Include="hdl_src\CDC_Command_Scanout.vhd">
       <Filter>HDL</Filter>
-    </None>
-    <None Include="hdl_src\DepthBuffer.vhd">
-      <Filter>HDL</Filter>
-    </None>
-    <None Include="DepthBuffer.prj">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="hdl_src\TriSetup.vhd">
-      <Filter>HDL</Filter>
-    </None>
-    <None Include="TriSetup.prj">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="hdl_src\Rasterizer.vhd">
-      <Filter>HDL</Filter>
-    </None>
-    <None Include="Rasterizer.prj">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="hdl_src\DepthInterpolator.vhd">
-      <Filter>HDL</Filter>
-    </None>
-    <None Include="DepthInterpolator.prj">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="hdl_src\TriWorkCache.vhd">
-      <Filter>HDL</Filter>
-    </None>
-    <None Include="hdl_src\AttrInterpolator.vhd">
-      <Filter>HDL</Filter>
-    </None>
-    <None Include="hdl_src\TexSample.vhd">
-      <Filter>HDL</Filter>
-    </None>
-    <None Include="TexSample.prj">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="TriWorkCache.prj">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="hdl_src\ROP.vhd">
-      <Filter>HDL</Filter>
-    </None>
-    <None Include="ROP.prj">
-      <Filter>Resource Files</Filter>
     </None>
     <None Include="hdl_src\EthernetController2.vhd">
       <Filter>HDL</Filter>
@@ -325,26 +232,14 @@
     <None Include="hdl_src\EthernetController3.vhd">
       <Filter>HDL</Filter>
     </None>
-    <None Include="EthernetController3.prj">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="StatsCollector.prj">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="hdl_src\EthernetMDIOController.vhd">
       <Filter>HDL</Filter>
     </None>
     <None Include="hdl_src\EthernetCRC32.vhd">
       <Filter>HDL</Filter>
     </None>
-    <None Include="EthernetCRC32.prj">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="hdl_src\NetProtoPacketProcessor.vhd">
       <Filter>HDL</Filter>
-    </None>
-    <None Include="NetProtoPacketProcessor.prj">
-      <Filter>Resource Files</Filter>
     </None>
     <None Include="hdl_src\Network\NetProtoHelpers_ARP.vhd">
       <Filter>HDL\Network</Filter>
@@ -373,9 +268,6 @@
     <None Include="hdl_src\FloatALU\FloatCommon.vhd">
       <Filter>HDL\FloatALU</Filter>
     </None>
-    <None Include="HDMIScanout.prj">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="hdl_src\HDMI\dvid.vhd">
       <Filter>HDL\HDMI</Filter>
     </None>
@@ -388,20 +280,176 @@
     <None Include="hdl_src\HDMI\TDMS_encoder.vhd">
       <Filter>HDL\HDMI</Filter>
     </None>
+    <None Include="hdl_src\PixelPipeline\AttrInterpolator.vhd">
+      <Filter>HDL\PixelPipeline</Filter>
+    </None>
+    <None Include="hdl_src\PixelPipeline\DepthBuffer.vhd">
+      <Filter>HDL\PixelPipeline</Filter>
+    </None>
+    <None Include="hdl_src\PixelPipeline\DepthInterpolator.vhd">
+      <Filter>HDL\PixelPipeline</Filter>
+    </None>
+    <None Include="hdl_src\PixelPipeline\PixelPipeline_Types.vhd">
+      <Filter>HDL\PixelPipeline</Filter>
+    </None>
+    <None Include="hdl_src\PixelPipeline\Rasterizer.vhd">
+      <Filter>HDL\PixelPipeline</Filter>
+    </None>
+    <None Include="hdl_src\PixelPipeline\ROP.vhd">
+      <Filter>HDL\PixelPipeline</Filter>
+    </None>
+    <None Include="hdl_src\PixelPipeline\TexSample.vhd">
+      <Filter>HDL\PixelPipeline</Filter>
+    </None>
+    <None Include="hdl_src\PixelPipeline\TriWorkCache.vhd">
+      <Filter>HDL\PixelPipeline</Filter>
+    </None>
+    <None Include="hdl_src\StatsCollector.vhd">
+      <Filter>HDL</Filter>
+    </None>
+    <None Include="hdl_src\StateBlock.vhd">
+      <Filter>HDL</Filter>
+    </None>
+    <None Include="hdl_src\RenderState\TexSampleState.vhd">
+      <Filter>HDL\RenderState</Filter>
+    </None>
+    <None Include="hdl_src\StatsEventsTracker.vhd">
+      <Filter>HDL</Filter>
+    </None>
+    <None Include="AttrInterpolator.prj">
+      <Filter>Resource Files\Project Files</Filter>
+    </None>
     <None Include="ClipUnit.prj">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\Project Files</Filter>
     </None>
-    <None Include="hdl_src\Clipping\AABB2DOverlapViewport.vhd">
-      <Filter>HDL\Clipping</Filter>
+    <None Include="CommandProcessor.prj">
+      <Filter>Resource Files\Project Files</Filter>
     </None>
-    <None Include="hdl_src\Clipping\ClipCommon.vhd">
-      <Filter>HDL\Clipping</Filter>
+    <None Include="ConstantBuffer.prj">
+      <Filter>Resource Files\Project Files</Filter>
     </None>
-    <None Include="hdl_src\Clipping\ClipTypes.vhd">
-      <Filter>HDL\Clipping</Filter>
+    <None Include="DepthBuffer.prj">
+      <Filter>Resource Files\Project Files</Filter>
     </None>
-    <None Include="hdl_src\Clipping\ClipUnit.vhd">
-      <Filter>HDL\Clipping</Filter>
+    <None Include="DepthInterpolator.prj">
+      <Filter>Resource Files\Project Files</Filter>
+    </None>
+    <None Include="EthernetController3.prj">
+      <Filter>Resource Files\Project Files</Filter>
+    </None>
+    <None Include="EthernetCRC32.prj">
+      <Filter>Resource Files\Project Files</Filter>
+    </None>
+    <None Include="FloatALU.prj">
+      <Filter>Resource Files\Project Files</Filter>
+    </None>
+    <None Include="GPRQuad.prj">
+      <Filter>Resource Files\Project Files</Filter>
+    </None>
+    <None Include="HDMIScanout.prj">
+      <Filter>Resource Files\Project Files</Filter>
+    </None>
+    <None Include="IndexBufferCache.prj">
+      <Filter>Resource Files\Project Files</Filter>
+    </None>
+    <None Include="InputAssembler2.prj">
+      <Filter>Resource Files\Project Files</Filter>
+    </None>
+    <None Include="MemoryController.prj">
+      <Filter>Resource Files\Project Files</Filter>
+    </None>
+    <None Include="NetProtoPacketProcessor.prj">
+      <Filter>Resource Files\Project Files</Filter>
+    </None>
+    <None Include="Rasterizer.prj">
+      <Filter>Resource Files\Project Files</Filter>
+    </None>
+    <None Include="Reciprocal.prj">
+      <Filter>Resource Files\Project Files</Filter>
+    </None>
+    <None Include="ROP.prj">
+      <Filter>Resource Files\Project Files</Filter>
+    </None>
+    <None Include="ShaderCore.prj">
+      <Filter>Resource Files\Project Files</Filter>
+    </None>
+    <None Include="StateBlock.prj">
+      <Filter>Resource Files\Project Files</Filter>
+    </None>
+    <None Include="StatsCollector.prj">
+      <Filter>Resource Files\Project Files</Filter>
+    </None>
+    <None Include="TexSample.prj">
+      <Filter>Resource Files\Project Files</Filter>
+    </None>
+    <None Include="TriSetup.prj">
+      <Filter>Resource Files\Project Files</Filter>
+    </None>
+    <None Include="TriWorkCache.prj">
+      <Filter>Resource Files\Project Files</Filter>
+    </None>
+    <None Include="UNORM8ToFloat.prj">
+      <Filter>Resource Files\Project Files</Filter>
+    </None>
+    <None Include="VertexBatchBuilder.prj">
+      <Filter>Resource Files\Project Files</Filter>
+    </None>
+    <None Include="VertexStreamCache.prj">
+      <Filter>Resource Files\Project Files</Filter>
+    </None>
+    <None Include="hdl_src\RenderState\AttrInterpolatorState.vhd">
+      <Filter>HDL\RenderState</Filter>
+    </None>
+    <None Include="hdl_src\RenderState\InputAssemblerState.vhd">
+      <Filter>HDL\RenderState</Filter>
+    </None>
+    <None Include="hdl_src\VertexPipeline\ConstantBuffer.vhd">
+      <Filter>HDL\VertexPipeline</Filter>
+    </None>
+    <None Include="hdl_src\VertexPipeline\GPRQuad.vhd">
+      <Filter>HDL\VertexPipeline</Filter>
+    </None>
+    <None Include="hdl_src\VertexPipeline\GPRQuad2.vhd">
+      <Filter>HDL\VertexPipeline</Filter>
+    </None>
+    <None Include="hdl_src\VertexPipeline\IndexBufferCache.vhd">
+      <Filter>HDL\VertexPipeline</Filter>
+    </None>
+    <None Include="hdl_src\VertexPipeline\IndexBufferCacheTestbench.vhd">
+      <Filter>HDL\VertexPipeline</Filter>
+    </None>
+    <None Include="hdl_src\VertexPipeline\InputAssembler2.vhd">
+      <Filter>HDL\VertexPipeline</Filter>
+    </None>
+    <None Include="hdl_src\VertexPipeline\ShaderCore.vhd">
+      <Filter>HDL\VertexPipeline</Filter>
+    </None>
+    <None Include="hdl_src\VertexPipeline\TriSetup.vhd">
+      <Filter>HDL\VertexPipeline</Filter>
+    </None>
+    <None Include="hdl_src\VertexPipeline\VertexBatchBuilder.vhd">
+      <Filter>HDL\VertexPipeline</Filter>
+    </None>
+    <None Include="hdl_src\VertexPipeline\VertexStreamCache.vhd">
+      <Filter>HDL\VertexPipeline</Filter>
+    </None>
+    <None Include="hdl_src\VertexPipeline\Clipping\AABB2DOverlapViewport.vhd">
+      <Filter>HDL\VertexPipeline\Clipping</Filter>
+    </None>
+    <None Include="hdl_src\VertexPipeline\Clipping\ClipCommon.vhd">
+      <Filter>HDL\VertexPipeline\Clipping</Filter>
+    </None>
+    <None Include="hdl_src\VertexPipeline\Clipping\ClipTypes.vhd">
+      <Filter>HDL\VertexPipeline\Clipping</Filter>
+    </None>
+    <None Include="hdl_src\VertexPipeline\Clipping\ClipUnit.vhd">
+      <Filter>HDL\VertexPipeline\Clipping</Filter>
+    </None>
+    <None Include="hdl_src\RenderState\ClipUnitState.vhd">
+      <Filter>HDL\RenderState</Filter>
+    </None>
+    <None Include="hdl_src\RenderState\ROPState.vhd">
+      <Filter>HDL\RenderState</Filter>
     </None>
   </ItemGroup>
 </Project>

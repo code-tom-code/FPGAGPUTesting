@@ -49,6 +49,13 @@ package PacketType is
 		PT_DEBUGSHADERNEXTDRAWCALL, -- 26
 		PT_SETDEPTHSTATE, -- 27
 		PT_SETBLENDSTATE, -- 28
+		PT_CONNBROADCAST, -- 29
+		PT_CONNREQUEST, -- 30
+		PT_CONNRESPONSE, -- 31
+		PT_SESSIONCOMBOPACKET, -- 32
+		PT_DISCONNECT, -- 33
+		PT_SETCLIPSTATE, -- 34
+		PT_ISSUEQUERY, -- 35
 
 		PT_MAX_PACKET_TYPES -- Must always be last!
 	);
@@ -91,8 +98,17 @@ package PacketType is
 	(
 		CM_CullCCW, -- 0
 		CM_CullCW, -- 1
-		CM_CullNone, -- 2
-		CM_CullBoth -- 3
+		CM_CullNone -- 2
+	);
+
+	-- Be sure that if the C++ side enum changes to update this here too!
+	type eTexcoordAddressingMode is
+	(
+		TAM_Wrap, -- 0
+		TAM_Clamp, -- 1
+		TAM_Mirror, -- 2
+		TAM_BorderColor, -- 3
+		TAM_MirrorOnce -- 4
 	);
 
 	-- Be sure that if the C++ side enum changes to update this here too!
@@ -169,6 +185,45 @@ package PacketType is
 		eTexFmtX1R5G5B5, -- 5
 
 		eTexFmtNumFormats -- This must always be last!
+	);
+
+	type eQueryType is
+	(
+		eQTEvent, -- 0
+		eQTOcclusion, -- 1
+		eQTBinaryOcclusion, -- 2
+		eQTTimestamp -- 3
+	);
+
+	-- Blend mode types available for the RGB channels:
+	type blendModeRGB is
+	(
+		blendRGB_0, -- 0
+		blendRGB_srcColor, -- 1
+		blendRGB_srcAlpha, -- 2
+		blendRGB_destAlpha, -- 3
+		blendRGB_destColor, -- 4
+		blendRGB_srcAlphaSat, -- 5
+		blendRGB_blendFactor -- 6
+	);
+
+	-- Blend mode types available for the alpha channel:
+	type blendModeA is
+	(
+		blendA_0, -- 0
+		blendA_srcAlpha, -- 1
+		blendA_destAlpha, -- 2
+		blendA_blendFactor -- 3
+	);
+
+	-- Blend ops (available for both RGB and Alpha channels):
+	type blendOp is
+	(
+		bop_add, -- 0
+		bop_subtract, -- 1
+		bop_revsubtract, -- 2
+		bop_min, -- 3
+		bop_max -- 4
 	);
 
 	-- Computes the packet checksum byte

@@ -2,4 +2,9 @@
 # List other files here
 vhdl xil_defaultlib  \
 "hdl_src/PacketType.vhd" \
+"hdl_src/RenderState/InputAssemblerState.vhd" \
+"hdl_src/RenderState/ClipUnitState.vhd" \
+"hdl_src/RenderState/AttrInterpolatorState.vhd" \
+"hdl_src/RenderState/TexSampleState.vhd" \
+"hdl_src/RenderState/ROPState.vhd" \
 "hdl_src/CommandProcessor.vhd" \

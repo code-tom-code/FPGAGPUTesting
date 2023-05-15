@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
-<EDKSYSTEM EDWVERSION="1.2" TIMESTAMP="Thu Apr 27 21:19:42 2023" VIVADOVERSION="2018.1_AR73068">
+<EDKSYSTEM EDWVERSION="1.2" TIMESTAMP="Fri May 12 23:24:25 2023" VIVADOVERSION="2018.1_AR73068">
 
   <SYSTEMINFO ARCH="kintexuplus" BOARD="xilinx.com:kcu116:part0:1.3" DEVICE="xcku5p" NAME="design_1" PACKAGE="ffvb676" SPEEDGRADE="-2"/>
 
@@ -175,6 +175,74 @@
       </PORTS>
       <BUSINTERFACES/>
     </MODULE>
+    <MODULE FULLNAME="/AttrInterpStateBlock" HWVERSION="1.0" INSTANCE="AttrInterpStateBlock" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="StateBlock" VLNV="xilinx.com:module_ref:StateBlock:1.0">
+      <DOCUMENTS/>
+      <PARAMETERS>
+        <PARAMETER NAME="StateBitsCount" VALUE="7"/>
+        <PARAMETER NAME="Component_Name" VALUE="design_1_StateBlock_1_0"/>
+        <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
+      </PARAMETERS>
+      <PORTS>
+        <PORT CLKFREQUENCY="333250000" DIR="I" NAME="clk" SIGIS="clk" SIGNAME="MemorySystem_ddr4_0_c0_ddr4_ui_clk">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="MemorySystem_ddr4_0" PORT="c0_ddr4_ui_clk"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="CMD_SetNewState" SIGIS="undef" SIGNAME="CommandProcessor_0_INTERP_SetNewState">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="INTERP_SetNewState"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="CMD_EndFrameReset" SIGIS="undef" SIGNAME="CommandProcessor_0_INTERP_EndFrameReset">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="INTERP_EndFrameReset"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="2" NAME="CMD_NumFreeSlots" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpStateBlock_CMD_NumFreeSlots">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="INTERP_NumFreeSlots"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="6" NAME="CMD_NewStateBits" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_INTERP_NewStateBits">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="INTERP_NewStateBits"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="15" NAME="CMD_NewStateDrawEventID" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_INTERP_NewStateDrawEventID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="INTERP_NewStateDrawEventID"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="6" NAME="STAGE_StateBitsAtDrawID" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpStateBlock_STAGE_StateBitsAtDrawID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="STATE_StateBitsAtDrawID"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="15" NAME="STAGE_NextDrawID" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpStateBlock_STAGE_NextDrawID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="STATE_NextDrawID"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="STAGE_StateIsValid" SIGIS="undef" SIGNAME="AttrInterpStateBlock_STAGE_StateIsValid">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="STATE_StateIsValid"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="STAGE_ConsumeStateSlot" SIGIS="undef" SIGNAME="AttrInterpolator_0_STATE_ConsumeStateSlot">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="STATE_ConsumeStateSlot"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="3" NAME="DBG_SlotsValid" RIGHT="0" SIGIS="undef"/>
+        <PORT DIR="O" LEFT="1" NAME="DBG_CurrentReadSlotIndex" RIGHT="0" SIGIS="undef"/>
+        <PORT DIR="O" LEFT="1" NAME="DBG_CurrentWriteSlotIndex" RIGHT="0" SIGIS="undef"/>
+        <PORT DIR="O" LEFT="15" NAME="DBG_Slot0" RIGHT="0" SIGIS="undef"/>
+        <PORT DIR="O" LEFT="15" NAME="DBG_Slot1" RIGHT="0" SIGIS="undef"/>
+        <PORT DIR="O" LEFT="15" NAME="DBG_Slot2" RIGHT="0" SIGIS="undef"/>
+        <PORT DIR="O" LEFT="15" NAME="DBG_Slot3" RIGHT="0" SIGIS="undef"/>
+      </PORTS>
+      <BUSINTERFACES/>
+    </MODULE>
     <MODULE FULLNAME="/AttrInterpolator_0" HWVERSION="1.0" INSTANCE="AttrInterpolator_0" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="AttrInterpolator" VLNV="xilinx.com:module_ref:AttrInterpolator:1.0">
       <DOCUMENTS/>
       <PARAMETERS>
@@ -187,11 +255,6 @@
             <CONNECTION INSTANCE="MemorySystem_ddr4_0" PORT="c0_ddr4_ui_clk"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" NAME="CMD_UseFlatShading" SIGIS="undef" SIGNAME="xlconstant_3_dout">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="xlconstant_3" PORT="dout"/>
-          </CONNECTIONS>
-        </PORT>
         <PORT DIR="O" NAME="DINTERP_ReadyForNewPixel" SIGIS="undef" SIGNAME="AttrInterpolator_0_DINTERP_ReadyForNewPixel">
           <CONNECTIONS>
             <CONNECTION INSTANCE="DepthInterpolator_0" PORT="ATTR_ReadyForNewPixel"/>
@@ -202,12 +265,12 @@
             <CONNECTION INSTANCE="DepthInterpolator_0" PORT="ATTR_NewPixelValid"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="9" NAME="DINTERP_PosX" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_PosX">
+        <PORT DIR="I" LEFT="15" NAME="DINTERP_PosX" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_PosX">
           <CONNECTIONS>
             <CONNECTION INSTANCE="DepthInterpolator_0" PORT="ATTR_PosX"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="9" NAME="DINTERP_PosY" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_PosY">
+        <PORT DIR="I" LEFT="15" NAME="DINTERP_PosY" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_PosY">
           <CONNECTIONS>
             <CONNECTION INSTANCE="DepthInterpolator_0" PORT="ATTR_PosY"/>
           </CONNECTIONS>
@@ -332,6 +395,26 @@
             <CONNECTION INSTANCE="TEXSAMP_FIFO" PORT="wr_en"/>
           </CONNECTIONS>
         </PORT>
+        <PORT DIR="I" LEFT="6" NAME="STATE_StateBitsAtDrawID" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpStateBlock_STAGE_StateBitsAtDrawID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="AttrInterpStateBlock" PORT="STAGE_StateBitsAtDrawID"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="15" NAME="STATE_NextDrawID" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpStateBlock_STAGE_NextDrawID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="AttrInterpStateBlock" PORT="STAGE_NextDrawID"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="STATE_StateIsValid" SIGIS="undef" SIGNAME="AttrInterpStateBlock_STAGE_StateIsValid">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="AttrInterpStateBlock" PORT="STAGE_StateIsValid"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="STATE_ConsumeStateSlot" SIGIS="undef" SIGNAME="AttrInterpolator_0_STATE_ConsumeStateSlot">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="AttrInterpStateBlock" PORT="STAGE_ConsumeStateSlot"/>
+          </CONNECTIONS>
+        </PORT>
         <PORT DIR="O" NAME="CMD_IsIdle" SIGIS="undef" SIGNAME="AttrInterpolator_0_CMD_IsIdle">
           <CONNECTIONS>
             <CONNECTION INSTANCE="CommandProcessor_0" PORT="CMD_AttrInterpolator_Idle"/>
@@ -350,6 +433,12 @@
         <PORT DIR="O" LEFT="31" NAME="STAT_CyclesWaitingForOutput" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_STAT_CyclesWaitingForOutput">
           <CONNECTIONS>
             <CONNECTION INSTANCE="StatsCollector_0" PORT="INTERP_CyclesWaitingForOutput"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="15" NAME="STAT_CurrentDrawEventID" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_STAT_CurrentDrawEventID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ILA_TexSampler" PORT="probe15"/>
+            <CONNECTION INSTANCE="StatsCollector_0" PORT="INTERP_CurrentDrawEventID"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="6" NAME="DBG_AttrInterpolator_State" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_DBG_AttrInterpolator_State">
@@ -622,6 +711,74 @@
         </BUSINTERFACE>
       </BUSINTERFACES>
     </MODULE>
+    <MODULE FULLNAME="/ClipUnitStateBlock" HWVERSION="1.0" INSTANCE="ClipUnitStateBlock" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="StateBlock" VLNV="xilinx.com:module_ref:StateBlock:1.0">
+      <DOCUMENTS/>
+      <PARAMETERS>
+        <PARAMETER NAME="StateBitsCount" VALUE="10"/>
+        <PARAMETER NAME="Component_Name" VALUE="design_1_StateBlock_0_1"/>
+        <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
+      </PARAMETERS>
+      <PORTS>
+        <PORT CLKFREQUENCY="333250000" DIR="I" NAME="clk" SIGIS="clk" SIGNAME="MemorySystem_ddr4_0_c0_ddr4_ui_clk">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="MemorySystem_ddr4_0" PORT="c0_ddr4_ui_clk"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="CMD_SetNewState" SIGIS="undef" SIGNAME="CommandProcessor_0_CLIP_SetNewState">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="CLIP_SetNewState"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="CMD_EndFrameReset" SIGIS="undef" SIGNAME="CommandProcessor_0_CLIP_EndFrameReset">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="CLIP_EndFrameReset"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="2" NAME="CMD_NumFreeSlots" RIGHT="0" SIGIS="undef" SIGNAME="ClipUnitStateBlock_CMD_NumFreeSlots">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="CLIP_NumFreeSlots"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="9" NAME="CMD_NewStateBits" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_CLIP_NewStateBits">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="CLIP_NewStateBits"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="15" NAME="CMD_NewStateDrawEventID" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_CLIP_NewStateDrawEventID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="CLIP_NewStateDrawEventID"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="9" NAME="STAGE_StateBitsAtDrawID" RIGHT="0" SIGIS="undef" SIGNAME="ClipUnitStateBlock_STAGE_StateBitsAtDrawID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ClipUnit_0" PORT="STATE_StateBitsAtDrawID"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="15" NAME="STAGE_NextDrawID" RIGHT="0" SIGIS="undef" SIGNAME="ClipUnitStateBlock_STAGE_NextDrawID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ClipUnit_0" PORT="STATE_NextDrawID"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="STAGE_StateIsValid" SIGIS="undef" SIGNAME="ClipUnitStateBlock_STAGE_StateIsValid">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ClipUnit_0" PORT="STATE_StateIsValid"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="STAGE_ConsumeStateSlot" SIGIS="undef" SIGNAME="ClipUnit_0_STATE_ConsumeStateSlot">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ClipUnit_0" PORT="STATE_ConsumeStateSlot"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="3" NAME="DBG_SlotsValid" RIGHT="0" SIGIS="undef"/>
+        <PORT DIR="O" LEFT="1" NAME="DBG_CurrentReadSlotIndex" RIGHT="0" SIGIS="undef"/>
+        <PORT DIR="O" LEFT="1" NAME="DBG_CurrentWriteSlotIndex" RIGHT="0" SIGIS="undef"/>
+        <PORT DIR="O" LEFT="15" NAME="DBG_Slot0" RIGHT="0" SIGIS="undef"/>
+        <PORT DIR="O" LEFT="15" NAME="DBG_Slot1" RIGHT="0" SIGIS="undef"/>
+        <PORT DIR="O" LEFT="15" NAME="DBG_Slot2" RIGHT="0" SIGIS="undef"/>
+        <PORT DIR="O" LEFT="15" NAME="DBG_Slot3" RIGHT="0" SIGIS="undef"/>
+      </PORTS>
+      <BUSINTERFACES/>
+    </MODULE>
     <MODULE FULLNAME="/ClipUnit_0" HWVERSION="1.0" INSTANCE="ClipUnit_0" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="ClipUnit" VLNV="xilinx.com:module_ref:ClipUnit:1.0">
       <DOCUMENTS/>
       <PARAMETERS>
@@ -774,6 +931,11 @@
             <CONNECTION INSTANCE="InputAssembler2_0" PORT="CLIP_v2ClipCodes"/>
           </CONNECTIONS>
         </PORT>
+        <PORT DIR="I" LEFT="15" NAME="IA_CurrentDrawEventID" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_CLIP_CurrentDrawEventID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="InputAssembler2_0" PORT="CLIP_CurrentDrawEventID"/>
+          </CONNECTIONS>
+        </PORT>
         <PORT DIR="I" NAME="IA_inWholeTriangleAABBIntersectsViewport" SIGIS="undef" SIGNAME="InputAssembler2_0_CLIP_AABBTriOverlapsViewport">
           <CONNECTIONS>
             <CONNECTION INSTANCE="InputAssembler2_0" PORT="CLIP_AABBTriOverlapsViewport"/>
@@ -884,6 +1046,11 @@
             <CONNECTION INSTANCE="TriSetup_0" PORT="CLIP_t2_in_y"/>
           </CONNECTIONS>
         </PORT>
+        <PORT DIR="O" LEFT="15" NAME="TRISETUP_CurrentDrawEventID" RIGHT="0" SIGIS="undef" SIGNAME="ClipUnit_0_TRISETUP_CurrentDrawEventID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriSetup_0" PORT="CLIP_CurrentDrawEventID"/>
+          </CONNECTIONS>
+        </PORT>
         <PORT DIR="O" LEFT="31" NAME="FPU_Add0_A" RIGHT="0" SIGIS="undef" SIGNAME="ClipUnit_0_FPU_Add0_A">
           <CONNECTIONS>
             <CONNECTION INSTANCE="CLIP_FPU_ADD_0" PORT="IN_A"/>
@@ -979,6 +1146,26 @@
             <CONNECTION INSTANCE="CLIP_FPU_SPEC_0" PORT="OSPEC"/>
           </CONNECTIONS>
         </PORT>
+        <PORT DIR="I" LEFT="9" NAME="STATE_StateBitsAtDrawID" RIGHT="0" SIGIS="undef" SIGNAME="ClipUnitStateBlock_STAGE_StateBitsAtDrawID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ClipUnitStateBlock" PORT="STAGE_StateBitsAtDrawID"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="15" NAME="STATE_NextDrawID" RIGHT="0" SIGIS="undef" SIGNAME="ClipUnitStateBlock_STAGE_NextDrawID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ClipUnitStateBlock" PORT="STAGE_NextDrawID"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="STATE_StateIsValid" SIGIS="undef" SIGNAME="ClipUnitStateBlock_STAGE_StateIsValid">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ClipUnitStateBlock" PORT="STAGE_StateIsValid"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="STATE_ConsumeStateSlot" SIGIS="undef" SIGNAME="ClipUnit_0_STATE_ConsumeStateSlot">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ClipUnitStateBlock" PORT="STAGE_ConsumeStateSlot"/>
+          </CONNECTIONS>
+        </PORT>
         <PORT DIR="O" NAME="CMD_IsIdle" SIGIS="undef" SIGNAME="ClipUnit_0_CMD_IsIdle">
           <CONNECTIONS>
             <CONNECTION INSTANCE="CommandProcessor_0" PORT="CMD_Clip_Idle"/>
@@ -997,6 +1184,12 @@
         <PORT DIR="O" LEFT="31" NAME="STAT_CyclesWaitingForOutput" RIGHT="0" SIGIS="undef" SIGNAME="ClipUnit_0_STAT_CyclesWaitingForOutput">
           <CONNECTIONS>
             <CONNECTION INSTANCE="StatsCollector_0" PORT="CLIP_CyclesWaitingForOutput"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="15" NAME="STAT_CurrentDrawEventID" RIGHT="0" SIGIS="undef" SIGNAME="ClipUnit_0_STAT_CurrentDrawEventID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ILA_TexSampler" PORT="probe19"/>
+            <CONNECTION INSTANCE="StatsCollector_0" PORT="CLIP_CurrentDrawEventID"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="I" NAME="DBG_DisableClipping" SIGIS="undef" SIGNAME="vio_0_probe_out0">
@@ -1176,6 +1369,11 @@
             <CONNECTION INSTANCE="MemorySystem_CommandProcWriteRequestsFIFO" PORT="wr_en"/>
           </CONNECTIONS>
         </PORT>
+        <PORT DIR="I" NAME="CMD_VS_Idle" SIGIS="undef" SIGNAME="ShaderCoreSystem_ShaderCore_0_CMD_IsIdle">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ShaderCoreSystem_ShaderCore_0" PORT="CMD_IsIdle"/>
+          </CONNECTIONS>
+        </PORT>
         <PORT DIR="I" NAME="CMD_IA_Idle" SIGIS="undef" SIGNAME="InputAssembler2_0_CMD_IA_Idle">
           <CONNECTIONS>
             <CONNECTION INSTANCE="InputAssembler2_0" PORT="CMD_IA_Idle"/>
@@ -1234,6 +1432,31 @@
         <PORT DIR="I" NAME="CMD_VSync" SIGIS="undef" SIGNAME="ScanoutSystem_CDC_Command_Scanout_0_CMD_VSync">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ScanoutSystem_CDC_Command_Scanout_0" PORT="CMD_VSync"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="CMD_FIFO_EMPTY_VBB" SIGIS="undef" SIGNAME="VBB_FIFO_empty">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="VBB_FIFO" PORT="empty"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="CMD_FIFO_EMPTY_VS" SIGIS="undef" SIGNAME="VBO_FIFO_empty">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="VBO_FIFO" PORT="empty"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="CMD_FIFO_EMPTY_RASTOUT" SIGIS="undef" SIGNAME="rast_out_fifo_empty">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="rast_out_fifo" PORT="empty"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="CMD_FIFO_EMPTY_TEXSAMP" SIGIS="undef" SIGNAME="TEXSAMP_FIFO_empty">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TEXSAMP_FIFO" PORT="empty"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="CMD_FIFO_EMPTY_ROP" SIGIS="undef" SIGNAME="ROP_FIFO_empty">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ROP_FIFO" PORT="empty"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="I" NAME="SHADER_IsReadyForCommand" SIGIS="undef" SIGNAME="ShaderCoreSystem_ShaderCore_0_CMD_IsReadyForCommand">
@@ -1317,29 +1540,29 @@
             <CONNECTION INSTANCE="ShaderCoreSystem_ShaderCore_0" PORT="DBG_ReadRegisterOutData"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" NAME="IA_DrawReady" SIGIS="undef" SIGNAME="InputAssembler2_0_CMD_DrawReady">
+        <PORT DIR="O" NAME="IA_SetNewState" SIGIS="undef" SIGNAME="CommandProcessor_0_IA_SetNewState">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="InputAssembler2_0" PORT="CMD_DrawReady"/>
+            <CONNECTION INSTANCE="InputAssemblerStateBlock" PORT="CMD_SetNewState"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" NAME="IA_SetStateReady" SIGIS="undef" SIGNAME="InputAssembler2_0_CMD_SetStateReady">
+        <PORT DIR="O" NAME="IA_EndFrameReset" SIGIS="undef" SIGNAME="CommandProcessor_0_IA_EndFrameReset">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="InputAssembler2_0" PORT="CMD_SetStateReady"/>
+            <CONNECTION INSTANCE="InputAssemblerStateBlock" PORT="CMD_EndFrameReset"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" NAME="IA_SetStateEnable" SIGIS="undef" SIGNAME="CommandProcessor_0_IA_SetStateEnable">
+        <PORT DIR="I" LEFT="2" NAME="IA_NumFreeSlots" RIGHT="0" SIGIS="undef" SIGNAME="InputAssemblerStateBlock_CMD_NumFreeSlots">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="InputAssembler2_0" PORT="CMD_SetStateEnable"/>
+            <CONNECTION INSTANCE="InputAssemblerStateBlock" PORT="CMD_NumFreeSlots"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="1" NAME="IA_StateCullMode" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_IA_StateCullMode">
+        <PORT DIR="O" LEFT="4" NAME="IA_NewStateBits" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_IA_NewStateBits">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="InputAssembler2_0" PORT="CMD_StateCullMode"/>
+            <CONNECTION INSTANCE="InputAssemblerStateBlock" PORT="CMD_NewStateBits"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="2" NAME="IA_StatePrimTopology" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_IA_StatePrimTopology">
+        <PORT DIR="O" LEFT="15" NAME="IA_NewStateDrawEventID" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_IA_NewStateDrawEventID">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="InputAssembler2_0" PORT="CMD_StatePrimTopology"/>
+            <CONNECTION INSTANCE="InputAssemblerStateBlock" PORT="CMD_NewStateDrawEventID"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="1" NAME="TRISETUP_SetViewportParams" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_TRISETUP_SetViewportParams">
@@ -1380,6 +1603,11 @@
             <CONNECTION INSTANCE="VertexBatchBuilder_0" PORT="CMD_CommandArg2"/>
           </CONNECTIONS>
         </PORT>
+        <PORT DIR="O" LEFT="15" NAME="VBB_NewDrawEventID" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_VBB_NewDrawEventID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="VertexBatchBuilder_0" PORT="CMD_NewDrawEventID"/>
+          </CONNECTIONS>
+        </PORT>
         <PORT DIR="O" LEFT="2" NAME="VBB_CommandArgType" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_VBB_CommandArgType">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ila_333_250" PORT="probe42"/>
@@ -1389,6 +1617,31 @@
         <PORT DIR="I" NAME="VBB_ReadyState" SIGIS="undef" SIGNAME="VertexBatchBuilder_0_CMD_ReadyState">
           <CONNECTIONS>
             <CONNECTION INSTANCE="VertexBatchBuilder_0" PORT="CMD_ReadyState"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="CLIP_SetNewState" SIGIS="undef" SIGNAME="CommandProcessor_0_CLIP_SetNewState">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ClipUnitStateBlock" PORT="CMD_SetNewState"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="CLIP_EndFrameReset" SIGIS="undef" SIGNAME="CommandProcessor_0_CLIP_EndFrameReset">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ClipUnitStateBlock" PORT="CMD_EndFrameReset"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="2" NAME="CLIP_NumFreeSlots" RIGHT="0" SIGIS="undef" SIGNAME="ClipUnitStateBlock_CMD_NumFreeSlots">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ClipUnitStateBlock" PORT="CMD_NumFreeSlots"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="9" NAME="CLIP_NewStateBits" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_CLIP_NewStateBits">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ClipUnitStateBlock" PORT="CMD_NewStateBits"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="15" NAME="CLIP_NewStateDrawEventID" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_CLIP_NewStateDrawEventID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ClipUnitStateBlock" PORT="CMD_NewStateDrawEventID"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" NAME="DEPTH_ClearDepthBuffer" SIGIS="undef" SIGNAME="CommandProcessor_0_DEPTH_ClearDepthBuffer">
@@ -1416,78 +1669,55 @@
             <CONNECTION INSTANCE="DepthBuffer_0" PORT="CMD_SetDepthParams"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" NAME="TEXSAMP_LoadTexCacheBeginSignal" SIGIS="undef" SIGNAME="CommandProcessor_0_TEXSAMP_LoadTexCacheBeginSignal">
+        <PORT DIR="O" NAME="INTERP_SetNewState" SIGIS="undef" SIGNAME="CommandProcessor_0_INTERP_SetNewState">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TexSample_0" PORT="CMD_LoadTexCacheBeginSignal"/>
-            <CONNECTION INSTANCE="ila_333_250" PORT="probe16"/>
+            <CONNECTION INSTANCE="AttrInterpStateBlock" PORT="CMD_SetNewState"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" NAME="TEXSAMP_LoadTexCacheAckSignal" SIGIS="undef" SIGNAME="TexSample_0_CMD_LoadTexCacheAckSignal">
+        <PORT DIR="O" NAME="INTERP_EndFrameReset" SIGIS="undef" SIGNAME="CommandProcessor_0_INTERP_EndFrameReset">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TexSample_0" PORT="CMD_LoadTexCacheAckSignal"/>
+            <CONNECTION INSTANCE="AttrInterpStateBlock" PORT="CMD_EndFrameReset"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="29" NAME="TEXSAMP_LoadTexCacheAddr" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_TEXSAMP_LoadTexCacheAddr">
+        <PORT DIR="I" LEFT="2" NAME="INTERP_NumFreeSlots" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpStateBlock_CMD_NumFreeSlots">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TexSample_0" PORT="CMD_LoadTexCacheAddr"/>
+            <CONNECTION INSTANCE="AttrInterpStateBlock" PORT="CMD_NumFreeSlots"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="2" NAME="TEXSAMP_LoadTexCacheFormat" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_TEXSAMP_LoadTexCacheFormat">
+        <PORT DIR="O" LEFT="6" NAME="INTERP_NewStateBits" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_INTERP_NewStateBits">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="ILA_TexSampler" PORT="probe6"/>
-            <CONNECTION INSTANCE="TexSample_0" PORT="CMD_LoadTexCacheFormat"/>
+            <CONNECTION INSTANCE="AttrInterpStateBlock" PORT="CMD_NewStateBits"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="15" NAME="TEXSAMP_LoadTexCacheTexelCount" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_TEXSAMP_LoadTexCacheTexelCount">
+        <PORT DIR="O" LEFT="15" NAME="INTERP_NewStateDrawEventID" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_INTERP_NewStateDrawEventID">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TexSample_0" PORT="CMD_LoadTexCacheTexelCount"/>
+            <CONNECTION INSTANCE="AttrInterpStateBlock" PORT="CMD_NewStateDrawEventID"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="2" NAME="TEXSAMP_LoadTexCacheTexelWidth" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_TEXSAMP_LoadTexCacheTexelWidth">
+        <PORT DIR="O" NAME="TEXSAMP_SetNewState" SIGIS="undef" SIGNAME="CommandProcessor_0_TEXSAMP_SetNewState">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="ILA_TexSampler" PORT="probe4"/>
-            <CONNECTION INSTANCE="TexSample_0" PORT="CMD_LoadTexCacheTexelWidth"/>
+            <CONNECTION INSTANCE="ila_333_250" PORT="probe17"/>
+            <CONNECTION INSTANCE="TexSampleStateBlock" PORT="CMD_SetNewState"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="2" NAME="TEXSAMP_LoadTexCacheTexelHeight" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_TEXSAMP_LoadTexCacheTexelHeight">
+        <PORT DIR="O" NAME="TEXSAMP_EndFrameReset" SIGIS="undef" SIGNAME="CommandProcessor_0_TEXSAMP_EndFrameReset">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="ILA_TexSampler" PORT="probe5"/>
-            <CONNECTION INSTANCE="TexSample_0" PORT="CMD_LoadTexCacheTexelHeight"/>
+            <CONNECTION INSTANCE="TexSampleStateBlock" PORT="CMD_EndFrameReset"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" NAME="TEXSAMP_SetTextureStateBeginSignal" SIGIS="undef" SIGNAME="CommandProcessor_0_TEXSAMP_SetTextureStateBeginSignal">
+        <PORT DIR="I" LEFT="2" NAME="TEXSAMP_NumFreeSlots" RIGHT="0" SIGIS="undef" SIGNAME="TexSampleStateBlock_CMD_NumFreeSlots">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TexSample_0" PORT="CMD_SetTextureStateBeginSignal"/>
+            <CONNECTION INSTANCE="TexSampleStateBlock" PORT="CMD_NumFreeSlots"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" NAME="TEXSAMP_SetTextureStateAckSignal" SIGIS="undef" SIGNAME="TexSample_0_CMD_SetTextureStateAckSignal">
+        <PORT DIR="O" LEFT="73" NAME="TEXSAMP_NewStateBits" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_TEXSAMP_NewStateBits">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TexSample_0" PORT="CMD_SetTextureStateAckSignal"/>
+            <CONNECTION INSTANCE="TexSampleStateBlock" PORT="CMD_NewStateBits"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" NAME="TEXSAMP_SetTextureStateUseBilinear" SIGIS="undef" SIGNAME="CommandProcessor_0_TEXSAMP_SetTextureStateUseBilinear">
+        <PORT DIR="O" LEFT="15" NAME="TEXSAMP_NewStateDrawEventID" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_TEXSAMP_NewStateDrawEventID">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TexSample_0" PORT="CMD_SetTextureStateUseBilinear"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="O" LEFT="2" NAME="TEXSAMP_SetTextureStateCombinerModeColor" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_TEXSAMP_SetTextureStateCombinerModeColor">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="TexSample_0" PORT="CMD_SetTextureStateCombinerModeColor"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="O" LEFT="2" NAME="TEXSAMP_SetTextureStateCombinerModeAlpha" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_TEXSAMP_SetTextureStateCombinerModeAlpha">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="TexSample_0" PORT="CMD_SetTextureStateCombinerModeAlpha"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="O" NAME="ROP_SetBaseAddrAndAlphaTestSignal" SIGIS="undef" SIGNAME="CommandProcessor_0_ROP_SetBaseAddrAndAlphaTestSignal">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="ROP_0" PORT="CMD_SetBaseAddrAndAlphaTestSignal"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" NAME="ROP_SetBaseAddrAndAlphaTestSignalAck" SIGIS="undef" SIGNAME="ROP_0_CMD_SetBaseAddrAndAlphaTestSignalAck">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="ROP_0" PORT="CMD_SetBaseAddrAndAlphaTestSignalAck"/>
+            <CONNECTION INSTANCE="TexSampleStateBlock" PORT="CMD_NewStateDrawEventID"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="31" NAME="ROP_SetClearColor" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_ROP_SetClearColor">
@@ -1515,54 +1745,39 @@
             <CONNECTION INSTANCE="ROP_0" PORT="CMD_FlushCacheAck"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="29" NAME="ROP_SetRenderTargetBaseAddr" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_ROP_SetRenderTargetBaseAddr">
+        <PORT DIR="I" LEFT="31" NAME="ROP_STAT_CountPixelsPassed" RIGHT="0" SIGIS="undef" SIGNAME="ROP_0_STAT_CountPixelsPassed">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="ROP_0" PORT="CMD_SetRenderTargetBaseAddr"/>
+            <CONNECTION INSTANCE="ROP_0" PORT="STAT_CountPixelsPassed"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="3" NAME="ROP_SetWriteMask" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_ROP_SetWriteMask">
+        <PORT DIR="I" LEFT="15" NAME="ROP_STAT_CurrentDrawEventID" RIGHT="0" SIGIS="undef" SIGNAME="ROP_0_STAT_CurrentDrawEventID">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="ROP_0" PORT="CMD_SetWriteMask"/>
+            <CONNECTION INSTANCE="ROP_0" PORT="STAT_CurrentDrawEventID"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" NAME="ROP_SetAlphaTestEnabled" SIGIS="undef" SIGNAME="CommandProcessor_0_ROP_SetAlphaTestEnabled">
+        <PORT DIR="O" NAME="ROP_SetNewState" SIGIS="undef" SIGNAME="CommandProcessor_0_ROP_SetNewState">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="ROP_0" PORT="CMD_SetAlphaTestEnabled"/>
+            <CONNECTION INSTANCE="ROPStateBlock" PORT="CMD_SetNewState"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="7" NAME="ROP_SetAlphaTestRefVal" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_ROP_SetAlphaTestRefVal">
+        <PORT DIR="O" NAME="ROP_EndFrameReset" SIGIS="undef" SIGNAME="CommandProcessor_0_ROP_EndFrameReset">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="ROP_0" PORT="CMD_SetAlphaTestRefVal"/>
+            <CONNECTION INSTANCE="ROPStateBlock" PORT="CMD_EndFrameReset"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="2" NAME="ROP_SetAlphaTestFunc" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_ROP_SetAlphaTestFunc">
+        <PORT DIR="I" LEFT="2" NAME="ROP_NumFreeSlots" RIGHT="0" SIGIS="undef" SIGNAME="ROPStateBlock_CMD_NumFreeSlots">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="ROP_0" PORT="CMD_SetAlphaTestFunc"/>
+            <CONNECTION INSTANCE="ROPStateBlock" PORT="CMD_NumFreeSlots"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" NAME="ROP_SetBlendStateSignal" SIGIS="undef" SIGNAME="CommandProcessor_0_ROP_SetBlendStateSignal">
+        <PORT DIR="O" LEFT="100" NAME="ROP_NewStateBits" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_ROP_NewStateBits">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="ROP_0" PORT="CMD_SetBlendStateSignal"/>
+            <CONNECTION INSTANCE="ROPStateBlock" PORT="CMD_NewStateBits"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" NAME="ROP_SetBlendStateSigAck" SIGIS="undef" SIGNAME="ROP_0_CMD_SetBlendStateSigAck">
+        <PORT DIR="O" LEFT="15" NAME="ROP_NewStateDrawEventID" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_ROP_NewStateDrawEventID">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="ROP_0" PORT="CMD_SetBlendStateSigAck"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="O" NAME="ROP_SetAlphaBlendEnable" SIGIS="undef" SIGNAME="CommandProcessor_0_ROP_SetAlphaBlendEnable">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="ROP_0" PORT="CMD_SetAlphaBlendEnable"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="O" LEFT="31" NAME="ROP_SetAlphaBlendFactor" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_ROP_SetAlphaBlendFactor">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="ROP_0" PORT="CMD_SetAlphaBlendFactor"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="O" LEFT="21" NAME="ROP_SetAlphaBlendStateBlock" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_ROP_SetAlphaBlendStateBlock">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="ROP_0" PORT="CMD_SetAlphaBlendStateBlock"/>
+            <CONNECTION INSTANCE="ROPStateBlock" PORT="CMD_NewStateDrawEventID"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="29" NAME="SCANOUT_RenderTargetBaseAddr" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_SCANOUT_RenderTargetBaseAddr">
@@ -1652,9 +1867,14 @@
         </PORT>
         <PORT DIR="O" LEFT="31" NAME="DBG_LAST_WRITE_ADDR" RIGHT="0" SIGIS="undef"/>
         <PORT DIR="O" LEFT="255" NAME="DBG_LAST_WRITE_DATA" RIGHT="0" SIGIS="undef"/>
-        <PORT DIR="O" LEFT="11" NAME="DBG_IdleSignalsVector" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_DBG_IdleSignalsVector">
+        <PORT DIR="O" LEFT="12" NAME="DBG_IdleSignalsVector" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_DBG_IdleSignalsVector">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ila_333_250" PORT="probe28"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="15" NAME="DBG_CurrentDrawGeneration" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_DBG_CurrentDrawGeneration">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ila_333_250" PORT="probe15"/>
           </CONNECTIONS>
         </PORT>
       </PORTS>
@@ -2292,17 +2512,22 @@
             <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_SignalSlotComplete"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="95" NAME="RASTOUT_FIFO_rd_data" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_RASTOUT_FIFO_rd_data">
+        <PORT DIR="I" LEFT="95" NAME="RASTOUT_FIFO_rd_data" RIGHT="0" SIGIS="undef" SIGNAME="rast_out_fifo_dout">
           <CONNECTIONS>
+            <CONNECTION INSTANCE="rast_out_fifo" PORT="dout"/>
             <CONNECTION INSTANCE="rast_out_fifo" PORT="dout"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" NAME="RASTOUT_FIFO_empty" SIGIS="undef" SIGNAME="DepthInterpolator_0_RASTOUT_FIFO_empty">
+        <PORT DIR="I" NAME="RASTOUT_FIFO_empty" SIGIS="undef" SIGNAME="rast_out_fifo_empty">
           <CONNECTIONS>
+            <CONNECTION INSTANCE="rast_out_fifo" PORT="empty"/>
             <CONNECTION INSTANCE="rast_out_fifo" PORT="empty"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" NAME="RASTOUT_FIFO_rd_en" SIGIS="undef" SIGNAME="DepthInterpolator_0_RASTOUT_FIFO_rd_en">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="rast_out_fifo" PORT="rd_en"/>
+          </CONNECTIONS>
           <CONNECTIONS>
             <CONNECTION INSTANCE="rast_out_fifo" PORT="rd_en"/>
           </CONNECTIONS>
@@ -2397,12 +2622,12 @@
             <CONNECTION INSTANCE="AttrInterpolator_0" PORT="DINTERP_NewPixelValid"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="9" NAME="ATTR_PosX" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_PosX">
+        <PORT DIR="O" LEFT="15" NAME="ATTR_PosX" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_PosX">
           <CONNECTIONS>
             <CONNECTION INSTANCE="AttrInterpolator_0" PORT="DINTERP_PosX"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="9" NAME="ATTR_PosY" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_PosY">
+        <PORT DIR="O" LEFT="15" NAME="ATTR_PosY" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_ATTR_PosY">
           <CONNECTIONS>
             <CONNECTION INSTANCE="AttrInterpolator_0" PORT="DINTERP_PosY"/>
           </CONNECTIONS>
@@ -2491,6 +2716,12 @@
         <PORT DIR="O" LEFT="31" NAME="STAT_CyclesWaitingForOutput" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_STAT_CyclesWaitingForOutput">
           <CONNECTIONS>
             <CONNECTION INSTANCE="StatsCollector_0" PORT="DINTERP_CyclesWaitingForOutput"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="15" NAME="STAT_CurrentDrawEventID" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_STAT_CurrentDrawEventID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ILA_TexSampler" PORT="probe16"/>
+            <CONNECTION INSTANCE="StatsCollector_0" PORT="DINTERP_CurrentDrawEventID"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="6" NAME="DBG_DepthInterpolator_State" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_DBG_DepthInterpolator_State">
@@ -5878,7 +6109,7 @@
         <PARAMETER NAME="C_PROBE11_WIDTH" VALUE="6"/>
         <PARAMETER NAME="C_PROBE12_WIDTH" VALUE="4"/>
         <PARAMETER NAME="C_PROBE13_WIDTH" VALUE="9"/>
-        <PARAMETER NAME="C_PROBE14_WIDTH" VALUE="528"/>
+        <PARAMETER NAME="C_PROBE14_WIDTH" VALUE="544"/>
         <PARAMETER NAME="C_PROBE15_WIDTH" VALUE="32"/>
         <PARAMETER NAME="C_PROBE16_WIDTH" VALUE="30"/>
         <PARAMETER NAME="C_PROBE17_WIDTH" VALUE="32"/>
@@ -5893,7 +6124,7 @@
         <PARAMETER NAME="C_PROBE26_WIDTH" VALUE="32"/>
         <PARAMETER NAME="C_PROBE27_WIDTH" VALUE="5"/>
         <PARAMETER NAME="C_PROBE28_WIDTH" VALUE="32"/>
-        <PARAMETER NAME="C_PROBE29_WIDTH" VALUE="256"/>
+        <PARAMETER NAME="C_PROBE29_WIDTH" VALUE="272"/>
         <PARAMETER NAME="C_PROBE30_WIDTH" VALUE="32"/>
         <PARAMETER NAME="C_PROBE31_WIDTH" VALUE="128"/>
         <PARAMETER NAME="C_PROBE32_WIDTH" VALUE="7"/>
@@ -9035,7 +9266,7 @@
             <CONNECTION INSTANCE="ShaderCoreSystem_ShaderCore_0" PORT="DBG_InstructionPointer"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="527" NAME="probe14" RIGHT="0" SIGIS="undef" SIGNAME="VBB_FIFO_dout">
+        <PORT DIR="I" LEFT="543" NAME="probe14" RIGHT="0" SIGIS="undef" SIGNAME="VBB_FIFO_dout">
           <CONNECTIONS>
             <CONNECTION INSTANCE="VBB_FIFO" PORT="dout"/>
           </CONNECTIONS>
@@ -9110,7 +9341,7 @@
             <CONNECTION INSTANCE="ShaderCoreSystem_ShaderCore_0" PORT="FPU1_IN_B"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="255" NAME="probe29" RIGHT="0" SIGIS="undef" SIGNAME="VBO_INDEX_FIFO_dout">
+        <PORT DIR="I" LEFT="271" NAME="probe29" RIGHT="0" SIGIS="undef" SIGNAME="VBO_INDEX_FIFO_dout">
           <CONNECTIONS>
             <CONNECTION INSTANCE="VBO_INDEX_FIFO" PORT="dout"/>
           </CONNECTIONS>
@@ -9308,7 +9539,7 @@
         <PARAMETER NAME="C_SLOT_0_AXI_PROTOCOL" VALUE="AXI4"/>
         <PARAMETER NAME="C_NUM_MONITOR_SLOTS" VALUE="1"/>
         <PARAMETER NAME="C_ENABLE_ILA_AXI_MON" VALUE="0"/>
-        <PARAMETER NAME="C_NUM_OF_PROBES" VALUE="7"/>
+        <PARAMETER NAME="C_NUM_OF_PROBES" VALUE="23"/>
         <PARAMETER NAME="C_DATA_DEPTH" VALUE="1024"/>
         <PARAMETER NAME="C_MAJOR_VERSION" VALUE="2018"/>
         <PARAMETER NAME="C_MINOR_VERSION" VALUE="1"/>
@@ -9323,38 +9554,38 @@
         <PARAMETER NAME="C_RAM_STYLE" VALUE="SUBCORE"/>
         <PARAMETER NAME="C_TRIGOUT_EN" VALUE="0"/>
         <PARAMETER NAME="C_TRIGIN_EN" VALUE="0"/>
-        <PARAMETER NAME="C_SLOT_0_AXIS_TUSER_WIDTH" VALUE="3"/>
-        <PARAMETER NAME="C_SLOT_0_AXIS_TDEST_WIDTH" VALUE="1"/>
-        <PARAMETER NAME="C_SLOT_0_AXIS_TID_WIDTH" VALUE="1"/>
-        <PARAMETER NAME="C_SLOT_0_AXI_ID_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_SLOT_0_AXIS_TUSER_WIDTH" VALUE="16"/>
+        <PARAMETER NAME="C_SLOT_0_AXIS_TDEST_WIDTH" VALUE="2"/>
+        <PARAMETER NAME="C_SLOT_0_AXIS_TID_WIDTH" VALUE="2"/>
+        <PARAMETER NAME="C_SLOT_0_AXI_ID_WIDTH" VALUE="16"/>
         <PARAMETER NAME="C_SLOT_0_AXI_ARUSER_WIDTH" VALUE="1"/>
         <PARAMETER NAME="C_SLOT_0_AXI_RUSER_WIDTH" VALUE="1"/>
         <PARAMETER NAME="C_SLOT_0_AXI_AWUSER_WIDTH" VALUE="1"/>
         <PARAMETER NAME="C_SLOT_0_AXI_WUSER_WIDTH" VALUE="1"/>
-        <PARAMETER NAME="C_SLOT_0_AXI_BUSER_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_SLOT_0_AXI_BUSER_WIDTH" VALUE="16"/>
         <PARAMETER NAME="C_PROBE0_WIDTH" VALUE="6"/>
         <PARAMETER NAME="C_PROBE1_WIDTH" VALUE="64"/>
         <PARAMETER NAME="C_PROBE2_WIDTH" VALUE="32"/>
         <PARAMETER NAME="C_PROBE3_WIDTH" VALUE="14"/>
-        <PARAMETER NAME="C_PROBE4_WIDTH" VALUE="3"/>
-        <PARAMETER NAME="C_PROBE5_WIDTH" VALUE="3"/>
-        <PARAMETER NAME="C_PROBE6_WIDTH" VALUE="3"/>
-        <PARAMETER NAME="C_PROBE7_WIDTH" VALUE="1"/>
-        <PARAMETER NAME="C_PROBE8_WIDTH" VALUE="1"/>
-        <PARAMETER NAME="C_PROBE9_WIDTH" VALUE="1"/>
-        <PARAMETER NAME="C_PROBE10_WIDTH" VALUE="1"/>
-        <PARAMETER NAME="C_PROBE11_WIDTH" VALUE="1"/>
-        <PARAMETER NAME="C_PROBE12_WIDTH" VALUE="1"/>
-        <PARAMETER NAME="C_PROBE13_WIDTH" VALUE="1"/>
-        <PARAMETER NAME="C_PROBE14_WIDTH" VALUE="1"/>
-        <PARAMETER NAME="C_PROBE15_WIDTH" VALUE="1"/>
-        <PARAMETER NAME="C_PROBE16_WIDTH" VALUE="1"/>
-        <PARAMETER NAME="C_PROBE17_WIDTH" VALUE="1"/>
-        <PARAMETER NAME="C_PROBE18_WIDTH" VALUE="1"/>
-        <PARAMETER NAME="C_PROBE19_WIDTH" VALUE="1"/>
-        <PARAMETER NAME="C_PROBE20_WIDTH" VALUE="1"/>
-        <PARAMETER NAME="C_PROBE21_WIDTH" VALUE="1"/>
-        <PARAMETER NAME="C_PROBE22_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_PROBE4_WIDTH" VALUE="16"/>
+        <PARAMETER NAME="C_PROBE5_WIDTH" VALUE="16"/>
+        <PARAMETER NAME="C_PROBE6_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_PROBE7_WIDTH" VALUE="2"/>
+        <PARAMETER NAME="C_PROBE8_WIDTH" VALUE="2"/>
+        <PARAMETER NAME="C_PROBE9_WIDTH" VALUE="4"/>
+        <PARAMETER NAME="C_PROBE10_WIDTH" VALUE="16"/>
+        <PARAMETER NAME="C_PROBE11_WIDTH" VALUE="16"/>
+        <PARAMETER NAME="C_PROBE12_WIDTH" VALUE="16"/>
+        <PARAMETER NAME="C_PROBE13_WIDTH" VALUE="16"/>
+        <PARAMETER NAME="C_PROBE14_WIDTH" VALUE="16"/>
+        <PARAMETER NAME="C_PROBE15_WIDTH" VALUE="16"/>
+        <PARAMETER NAME="C_PROBE16_WIDTH" VALUE="16"/>
+        <PARAMETER NAME="C_PROBE17_WIDTH" VALUE="16"/>
+        <PARAMETER NAME="C_PROBE18_WIDTH" VALUE="16"/>
+        <PARAMETER NAME="C_PROBE19_WIDTH" VALUE="16"/>
+        <PARAMETER NAME="C_PROBE20_WIDTH" VALUE="16"/>
+        <PARAMETER NAME="C_PROBE21_WIDTH" VALUE="16"/>
+        <PARAMETER NAME="C_PROBE22_WIDTH" VALUE="16"/>
         <PARAMETER NAME="C_PROBE23_WIDTH" VALUE="1"/>
         <PARAMETER NAME="C_PROBE24_WIDTH" VALUE="1"/>
         <PARAMETER NAME="C_PROBE25_WIDTH" VALUE="1"/>
@@ -12453,19 +12684,99 @@
             <CONNECTION INSTANCE="TexSample_0" PORT="DBG_TexCache_addra"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="2" NAME="probe4" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_TEXSAMP_LoadTexCacheTexelWidth">
+        <PORT DIR="I" LEFT="15" NAME="probe4" RIGHT="0" SIGIS="undef" SIGNAME="TexSample_0_STAT_CurrentDrawEventID">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="TEXSAMP_LoadTexCacheTexelWidth"/>
+            <CONNECTION INSTANCE="TexSample_0" PORT="STAT_CurrentDrawEventID"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="2" NAME="probe5" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_TEXSAMP_LoadTexCacheTexelHeight">
+        <PORT DIR="I" LEFT="15" NAME="probe5" RIGHT="0" SIGIS="undef" SIGNAME="TexSampleStateBlock_STAGE_NextDrawID">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="TEXSAMP_LoadTexCacheTexelHeight"/>
+            <CONNECTION INSTANCE="TexSampleStateBlock" PORT="STAGE_NextDrawID"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="2" NAME="probe6" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_TEXSAMP_LoadTexCacheFormat">
+        <PORT DIR="I" LEFT="0" NAME="probe6" RIGHT="0" SIGIS="undef" SIGNAME="TexSample_0_STATE_ConsumeStateSlot">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="TEXSAMP_LoadTexCacheFormat"/>
+            <CONNECTION INSTANCE="TexSample_0" PORT="STATE_ConsumeStateSlot"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="1" NAME="probe7" RIGHT="0" SIGIS="undef" SIGNAME="TexSampleStateBlock_DBG_CurrentReadSlotIndex">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TexSampleStateBlock" PORT="DBG_CurrentReadSlotIndex"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="1" NAME="probe8" RIGHT="0" SIGIS="undef" SIGNAME="TexSampleStateBlock_DBG_CurrentWriteSlotIndex">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TexSampleStateBlock" PORT="DBG_CurrentWriteSlotIndex"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="3" NAME="probe9" RIGHT="0" SIGIS="undef" SIGNAME="TexSampleStateBlock_DBG_SlotsValid">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TexSampleStateBlock" PORT="DBG_SlotsValid"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="15" NAME="probe10" RIGHT="0" SIGIS="undef" SIGNAME="TexSampleStateBlock_DBG_Slot0">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TexSampleStateBlock" PORT="DBG_Slot0"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="15" NAME="probe11" RIGHT="0" SIGIS="undef" SIGNAME="TexSampleStateBlock_DBG_Slot1">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TexSampleStateBlock" PORT="DBG_Slot1"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="15" NAME="probe12" RIGHT="0" SIGIS="undef" SIGNAME="TexSampleStateBlock_DBG_Slot2">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TexSampleStateBlock" PORT="DBG_Slot2"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="15" NAME="probe13" RIGHT="0" SIGIS="undef" SIGNAME="TexSampleStateBlock_DBG_Slot3">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TexSampleStateBlock" PORT="DBG_Slot3"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="15" NAME="probe14" RIGHT="0" SIGIS="undef" SIGNAME="ROP_0_STAT_CurrentDrawEventID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ROP_0" PORT="STAT_CurrentDrawEventID"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="15" NAME="probe15" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_STAT_CurrentDrawEventID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="STAT_CurrentDrawEventID"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="15" NAME="probe16" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_STAT_CurrentDrawEventID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="STAT_CurrentDrawEventID"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="15" NAME="probe17" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_STAT_CurrentDrawEventID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="Rasterizer_0" PORT="STAT_CurrentDrawEventID"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="15" NAME="probe18" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_STAT_CurrentDrawEventID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriSetup_0" PORT="STAT_CurrentDrawEventID"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="15" NAME="probe19" RIGHT="0" SIGIS="undef" SIGNAME="ClipUnit_0_STAT_CurrentDrawEventID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ClipUnit_0" PORT="STAT_CurrentDrawEventID"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="15" NAME="probe20" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_STAT_CurrentDrawEventID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="InputAssembler2_0" PORT="STAT_CurrentDrawEventID"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="15" NAME="probe21" RIGHT="0" SIGIS="undef" SIGNAME="ShaderCoreSystem_ShaderCore_0_STAT_CurrentDrawEventID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ShaderCoreSystem_ShaderCore_0" PORT="STAT_CurrentDrawEventID"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="15" NAME="probe22" RIGHT="0" SIGIS="undef" SIGNAME="VertexBatchBuilder_0_STAT_CurrentDrawEventID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="VertexBatchBuilder_0" PORT="STAT_CurrentDrawEventID"/>
           </CONNECTIONS>
         </PORT>
       </PORTS>
@@ -12561,7 +12872,7 @@
         <PARAMETER NAME="C_PROBE43_WIDTH" VALUE="4"/>
         <PARAMETER NAME="C_PROBE44_WIDTH" VALUE="12"/>
         <PARAMETER NAME="C_PROBE45_WIDTH" VALUE="320"/>
-        <PARAMETER NAME="C_PROBE46_WIDTH" VALUE="256"/>
+        <PARAMETER NAME="C_PROBE46_WIDTH" VALUE="272"/>
         <PARAMETER NAME="C_PROBE47_WIDTH" VALUE="8"/>
         <PARAMETER NAME="C_PROBE48_WIDTH" VALUE="4"/>
         <PARAMETER NAME="C_PROBE49_WIDTH" VALUE="3"/>
@@ -15846,7 +16157,7 @@
             <CONNECTION INSTANCE="VBO_FIFO" PORT="dout"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="255" NAME="probe46" RIGHT="0" SIGIS="undef" SIGNAME="VBO_INDEX_FIFO_dout">
+        <PORT DIR="I" LEFT="271" NAME="probe46" RIGHT="0" SIGIS="undef" SIGNAME="VBO_INDEX_FIFO_dout">
           <CONNECTIONS>
             <CONNECTION INSTANCE="VBO_INDEX_FIFO" PORT="dout"/>
           </CONNECTIONS>
@@ -16140,6 +16451,12 @@
             <CONNECTION INSTANCE="ClipUnit_0" PORT="IA_inv2ClipOutcodes"/>
           </CONNECTIONS>
         </PORT>
+        <PORT DIR="O" LEFT="15" NAME="CLIP_CurrentDrawEventID" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_CLIP_CurrentDrawEventID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="StatsCollector_0" PORT="IA_CurrentDrawEventID"/>
+            <CONNECTION INSTANCE="ClipUnit_0" PORT="IA_CurrentDrawEventID"/>
+          </CONNECTIONS>
+        </PORT>
         <PORT DIR="O" NAME="CLIP_AABBTriOverlapsViewport" SIGIS="undef" SIGNAME="InputAssembler2_0_CLIP_AABBTriOverlapsViewport">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ClipUnit_0" PORT="IA_inWholeTriangleAABBIntersectsViewport"/>
@@ -16180,8 +16497,9 @@
             <CONNECTION INSTANCE="ShaderCoreSystem_ShaderCore_0" PORT="VBO_Ready"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" NAME="VERTOUT_FIFO_empty" SIGIS="undef" SIGNAME="InputAssembler2_0_VERTOUT_FIFO_empty">
+        <PORT DIR="I" NAME="VERTOUT_FIFO_empty" SIGIS="undef" SIGNAME="VBO_FIFO_empty">
           <CONNECTIONS>
+            <CONNECTION INSTANCE="VBO_FIFO" PORT="empty"/>
             <CONNECTION INSTANCE="VBO_FIFO" PORT="empty"/>
           </CONNECTIONS>
         </PORT>
@@ -16195,13 +16513,16 @@
           <CONNECTIONS>
             <CONNECTION INSTANCE="VBO_FIFO" PORT="rd_en"/>
           </CONNECTIONS>
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="VBO_FIFO" PORT="rd_en"/>
+          </CONNECTIONS>
         </PORT>
         <PORT DIR="I" NAME="INDEXOUT_FIFO_empty" SIGIS="undef" SIGNAME="InputAssembler2_0_INDEXOUT_FIFO_empty">
           <CONNECTIONS>
             <CONNECTION INSTANCE="VBO_INDEX_FIFO" PORT="empty"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="255" NAME="INDEXOUT_FIFO_rd_data" RIGHT="0" SIGIS="undef" SIGNAME="VBO_INDEX_FIFO_dout">
+        <PORT DIR="I" LEFT="271" NAME="INDEXOUT_FIFO_rd_data" RIGHT="0" SIGIS="undef" SIGNAME="VBO_INDEX_FIFO_dout">
           <CONNECTIONS>
             <CONNECTION INSTANCE="VBO_INDEX_FIFO" PORT="dout"/>
             <CONNECTION INSTANCE="VBO_INDEX_FIFO" PORT="dout"/>
@@ -16212,29 +16533,24 @@
             <CONNECTION INSTANCE="VBO_INDEX_FIFO" PORT="rd_en"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" NAME="CMD_DrawReady" SIGIS="undef" SIGNAME="InputAssembler2_0_CMD_DrawReady">
+        <PORT DIR="I" LEFT="4" NAME="STATE_StateBitsAtDrawID" RIGHT="0" SIGIS="undef" SIGNAME="InputAssemblerStateBlock_STAGE_StateBitsAtDrawID">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="IA_DrawReady"/>
+            <CONNECTION INSTANCE="InputAssemblerStateBlock" PORT="STAGE_StateBitsAtDrawID"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" NAME="CMD_SetStateReady" SIGIS="undef" SIGNAME="InputAssembler2_0_CMD_SetStateReady">
+        <PORT DIR="I" LEFT="15" NAME="STATE_NextDrawID" RIGHT="0" SIGIS="undef" SIGNAME="InputAssemblerStateBlock_STAGE_NextDrawID">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="IA_SetStateReady"/>
+            <CONNECTION INSTANCE="InputAssemblerStateBlock" PORT="STAGE_NextDrawID"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" NAME="CMD_SetStateEnable" SIGIS="undef" SIGNAME="CommandProcessor_0_IA_SetStateEnable">
+        <PORT DIR="I" NAME="STATE_StateIsValid" SIGIS="undef" SIGNAME="InputAssemblerStateBlock_STAGE_StateIsValid">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="IA_SetStateEnable"/>
+            <CONNECTION INSTANCE="InputAssemblerStateBlock" PORT="STAGE_StateIsValid"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="1" NAME="CMD_StateCullMode" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_IA_StateCullMode">
+        <PORT DIR="O" NAME="STATE_ConsumeStateSlot" SIGIS="undef" SIGNAME="InputAssembler2_0_STATE_ConsumeStateSlot">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="IA_StateCullMode"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" LEFT="2" NAME="CMD_StatePrimTopology" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_IA_StatePrimTopology">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="IA_StatePrimTopology"/>
+            <CONNECTION INSTANCE="InputAssemblerStateBlock" PORT="STAGE_ConsumeStateSlot"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" NAME="CMD_IA_Idle" SIGIS="undef" SIGNAME="InputAssembler2_0_CMD_IA_Idle">
@@ -16260,6 +16576,11 @@
         <PORT DIR="O" LEFT="31" NAME="STAT_CyclesWaitingForOutput" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_STAT_CyclesWaitingForOutput">
           <CONNECTIONS>
             <CONNECTION INSTANCE="StatsCollector_0" PORT="IA_CyclesWaitingForOutput"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="15" NAME="STAT_CurrentDrawEventID" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_STAT_CurrentDrawEventID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ILA_TexSampler" PORT="probe20"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="5" NAME="DBG_IA_State" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_DBG_IA_State">
@@ -16294,6 +16615,74 @@
           </PORTMAPS>
         </BUSINTERFACE>
       </BUSINTERFACES>
+    </MODULE>
+    <MODULE FULLNAME="/InputAssemblerStateBlock" HWVERSION="1.0" INSTANCE="InputAssemblerStateBlock" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="StateBlock" VLNV="xilinx.com:module_ref:StateBlock:1.0">
+      <DOCUMENTS/>
+      <PARAMETERS>
+        <PARAMETER NAME="StateBitsCount" VALUE="5"/>
+        <PARAMETER NAME="Component_Name" VALUE="design_1_StateBlock_2_0"/>
+        <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
+      </PARAMETERS>
+      <PORTS>
+        <PORT CLKFREQUENCY="333250000" DIR="I" NAME="clk" SIGIS="clk" SIGNAME="MemorySystem_ddr4_0_c0_ddr4_ui_clk">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="MemorySystem_ddr4_0" PORT="c0_ddr4_ui_clk"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="CMD_SetNewState" SIGIS="undef" SIGNAME="CommandProcessor_0_IA_SetNewState">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="IA_SetNewState"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="CMD_EndFrameReset" SIGIS="undef" SIGNAME="CommandProcessor_0_IA_EndFrameReset">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="IA_EndFrameReset"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="2" NAME="CMD_NumFreeSlots" RIGHT="0" SIGIS="undef" SIGNAME="InputAssemblerStateBlock_CMD_NumFreeSlots">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="IA_NumFreeSlots"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="4" NAME="CMD_NewStateBits" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_IA_NewStateBits">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="IA_NewStateBits"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="15" NAME="CMD_NewStateDrawEventID" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_IA_NewStateDrawEventID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="IA_NewStateDrawEventID"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="4" NAME="STAGE_StateBitsAtDrawID" RIGHT="0" SIGIS="undef" SIGNAME="InputAssemblerStateBlock_STAGE_StateBitsAtDrawID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="InputAssembler2_0" PORT="STATE_StateBitsAtDrawID"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="15" NAME="STAGE_NextDrawID" RIGHT="0" SIGIS="undef" SIGNAME="InputAssemblerStateBlock_STAGE_NextDrawID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="InputAssembler2_0" PORT="STATE_NextDrawID"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="STAGE_StateIsValid" SIGIS="undef" SIGNAME="InputAssemblerStateBlock_STAGE_StateIsValid">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="InputAssembler2_0" PORT="STATE_StateIsValid"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="STAGE_ConsumeStateSlot" SIGIS="undef" SIGNAME="InputAssembler2_0_STATE_ConsumeStateSlot">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="InputAssembler2_0" PORT="STATE_ConsumeStateSlot"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="3" NAME="DBG_SlotsValid" RIGHT="0" SIGIS="undef"/>
+        <PORT DIR="O" LEFT="1" NAME="DBG_CurrentReadSlotIndex" RIGHT="0" SIGIS="undef"/>
+        <PORT DIR="O" LEFT="1" NAME="DBG_CurrentWriteSlotIndex" RIGHT="0" SIGIS="undef"/>
+        <PORT DIR="O" LEFT="15" NAME="DBG_Slot0" RIGHT="0" SIGIS="undef"/>
+        <PORT DIR="O" LEFT="15" NAME="DBG_Slot1" RIGHT="0" SIGIS="undef"/>
+        <PORT DIR="O" LEFT="15" NAME="DBG_Slot2" RIGHT="0" SIGIS="undef"/>
+        <PORT DIR="O" LEFT="15" NAME="DBG_Slot3" RIGHT="0" SIGIS="undef"/>
+      </PORTS>
+      <BUSINTERFACES/>
     </MODULE>
     <MODULE FULLNAME="/MemorySystem/ClearBlockWriteRequestsFIFO" HWVERSION="13.2" INSTANCE="MemorySystem_ClearBlockWriteRequestsFIFO" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="fifo_generator" VLNV="xilinx.com:ip:fifo_generator:13.2">
       <DOCUMENTS>
@@ -27060,16 +27449,9 @@
             <CONNECTION INSTANCE="VBO_FIFO" PORT="clk"/>
             <CONNECTION INSTANCE="ClearBlock_0" PORT="clk"/>
             <CONNECTION INSTANCE="VBO_INDEX_FIFO" PORT="clk"/>
-            <CONNECTION INSTANCE="VertexBatchBuilder_0" PORT="clk"/>
             <CONNECTION INSTANCE="ROP_FIFO" PORT="clk"/>
             <CONNECTION INSTANCE="TEXSAMP_FIFO" PORT="clk"/>
-            <CONNECTION INSTANCE="ROP_0" PORT="clk"/>
-            <CONNECTION INSTANCE="IndexBufferCache_0" PORT="clk"/>
-            <CONNECTION INSTANCE="StatsCollector_0" PORT="clk"/>
             <CONNECTION INSTANCE="vio_0" PORT="clk"/>
-            <CONNECTION INSTANCE="DepthBuffer_0" PORT="clk"/>
-            <CONNECTION INSTANCE="TexSample_0" PORT="clk"/>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="clk"/>
             <CONNECTION INSTANCE="AttrInterpFloatALU_0" PORT="clk"/>
             <CONNECTION INSTANCE="TRISETUP_FPU_ADD" PORT="clk"/>
             <CONNECTION INSTANCE="CLIP_FPU_ADD_0" PORT="clk"/>
@@ -27081,26 +27463,38 @@
             <CONNECTION INSTANCE="CLIP_FPU_SPEC_0" PORT="clk"/>
             <CONNECTION INSTANCE="DepthInterpFloatALU_0" PORT="clk"/>
             <CONNECTION INSTANCE="TRISETUP_FPU_CNV" PORT="clk"/>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="clk"/>
-            <CONNECTION INSTANCE="InputAssembler2_0" PORT="clk"/>
-            <CONNECTION INSTANCE="TriSetup_0" PORT="clk"/>
-            <CONNECTION INSTANCE="Rasterizer_0" PORT="clk"/>
             <CONNECTION INSTANCE="TriWorkCache_0" PORT="clk"/>
+            <CONNECTION INSTANCE="Rasterizer_0" PORT="clk"/>
             <CONNECTION INSTANCE="DepthInterpolator_0" PORT="clk"/>
+            <CONNECTION INSTANCE="TexSampleStateBlock" PORT="clk"/>
+            <CONNECTION INSTANCE="AttrInterpStateBlock" PORT="clk"/>
+            <CONNECTION INSTANCE="InputAssemblerStateBlock" PORT="clk"/>
+            <CONNECTION INSTANCE="StatsCollector_0" PORT="clk"/>
+            <CONNECTION INSTANCE="TriSetup_0" PORT="clk"/>
+            <CONNECTION INSTANCE="IndexBufferCache_0" PORT="clk"/>
+            <CONNECTION INSTANCE="ClipUnitStateBlock" PORT="clk"/>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="clk"/>
+            <CONNECTION INSTANCE="DepthBuffer_0" PORT="clk"/>
+            <CONNECTION INSTANCE="InputAssembler2_0" PORT="clk"/>
+            <CONNECTION INSTANCE="VertexBatchBuilder_0" PORT="clk"/>
+            <CONNECTION INSTANCE="ROPStateBlock" PORT="clk"/>
+            <CONNECTION INSTANCE="TexSample_0" PORT="clk"/>
+            <CONNECTION INSTANCE="ROP_0" PORT="clk"/>
+            <CONNECTION INSTANCE="ClipUnit_0" PORT="clk"/>
             <CONNECTION INSTANCE="SerialPacketSystem_ValidIncomingPacketsFIFO" PORT="rd_clk"/>
             <CONNECTION INSTANCE="SerialPacketSystem_ReturnOutputPacketsFIFO" PORT="wr_clk"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_InstructionCache" PORT="clka"/>
-            <CONNECTION INSTANCE="ShaderCoreSystem_ConstantBuffer_0" PORT="clk"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_UNORM8ToFloat_0" PORT="clk"/>
-            <CONNECTION INSTANCE="ShaderCoreSystem_VertexStreamCache_0" PORT="clk"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_FloatALU_0" PORT="clk"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_FloatALU_1" PORT="clk"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_FloatALU_2" PORT="clk"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_FloatALU_3" PORT="clk"/>
-            <CONNECTION INSTANCE="ShaderCoreSystem_ShaderCore_0" PORT="clk"/>
+            <CONNECTION INSTANCE="ShaderCoreSystem_VertexStreamCache_0" PORT="clk"/>
+            <CONNECTION INSTANCE="ShaderCoreSystem_ConstantBuffer_0" PORT="clk"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_GPRQuadSystem_GPRQuad2_0" PORT="clk"/>
+            <CONNECTION INSTANCE="ShaderCoreSystem_ShaderCore_0" PORT="clk"/>
             <CONNECTION INSTANCE="ScanoutSystem_CDC_Command_Scanout_0" PORT="cmd_clk"/>
-            <CONNECTION INSTANCE="ClipUnit_0" PORT="clk"/>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="clk"/>
             <CONNECTION INSTANCE="MemorySystem_ScanoutReadRequestsFIFO" PORT="rd_clk"/>
             <CONNECTION INSTANCE="MemorySystem_ZStencilReadRequestsFIFO" PORT="rd_clk"/>
             <CONNECTION INSTANCE="MemorySystem_ZStencilReadRequestsFIFO" PORT="wr_clk"/>
@@ -27506,6 +27900,74 @@
       </PORTS>
       <BUSINTERFACES/>
     </MODULE>
+    <MODULE FULLNAME="/ROPStateBlock" HWVERSION="1.0" INSTANCE="ROPStateBlock" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="StateBlock" VLNV="xilinx.com:module_ref:StateBlock:1.0">
+      <DOCUMENTS/>
+      <PARAMETERS>
+        <PARAMETER NAME="StateBitsCount" VALUE="101"/>
+        <PARAMETER NAME="Component_Name" VALUE="design_1_StateBlock_0_2"/>
+        <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
+      </PARAMETERS>
+      <PORTS>
+        <PORT CLKFREQUENCY="333250000" DIR="I" NAME="clk" SIGIS="clk" SIGNAME="MemorySystem_ddr4_0_c0_ddr4_ui_clk">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="MemorySystem_ddr4_0" PORT="c0_ddr4_ui_clk"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="CMD_SetNewState" SIGIS="undef" SIGNAME="CommandProcessor_0_ROP_SetNewState">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="ROP_SetNewState"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="CMD_EndFrameReset" SIGIS="undef" SIGNAME="CommandProcessor_0_ROP_EndFrameReset">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="ROP_EndFrameReset"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="2" NAME="CMD_NumFreeSlots" RIGHT="0" SIGIS="undef" SIGNAME="ROPStateBlock_CMD_NumFreeSlots">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="ROP_NumFreeSlots"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="100" NAME="CMD_NewStateBits" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_ROP_NewStateBits">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="ROP_NewStateBits"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="15" NAME="CMD_NewStateDrawEventID" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_ROP_NewStateDrawEventID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="ROP_NewStateDrawEventID"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="100" NAME="STAGE_StateBitsAtDrawID" RIGHT="0" SIGIS="undef" SIGNAME="ROPStateBlock_STAGE_StateBitsAtDrawID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ROP_0" PORT="STATE_StateBitsAtDrawID"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="15" NAME="STAGE_NextDrawID" RIGHT="0" SIGIS="undef" SIGNAME="ROPStateBlock_STAGE_NextDrawID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ROP_0" PORT="STATE_NextDrawID"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="STAGE_StateIsValid" SIGIS="undef" SIGNAME="ROPStateBlock_STAGE_StateIsValid">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ROP_0" PORT="STATE_StateIsValid"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="STAGE_ConsumeStateSlot" SIGIS="undef" SIGNAME="ROP_0_STATE_ConsumeStateSlot">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ROP_0" PORT="STATE_ConsumeStateSlot"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="3" NAME="DBG_SlotsValid" RIGHT="0" SIGIS="undef"/>
+        <PORT DIR="O" LEFT="1" NAME="DBG_CurrentReadSlotIndex" RIGHT="0" SIGIS="undef"/>
+        <PORT DIR="O" LEFT="1" NAME="DBG_CurrentWriteSlotIndex" RIGHT="0" SIGIS="undef"/>
+        <PORT DIR="O" LEFT="15" NAME="DBG_Slot0" RIGHT="0" SIGIS="undef"/>
+        <PORT DIR="O" LEFT="15" NAME="DBG_Slot1" RIGHT="0" SIGIS="undef"/>
+        <PORT DIR="O" LEFT="15" NAME="DBG_Slot2" RIGHT="0" SIGIS="undef"/>
+        <PORT DIR="O" LEFT="15" NAME="DBG_Slot3" RIGHT="0" SIGIS="undef"/>
+      </PORTS>
+      <BUSINTERFACES/>
+    </MODULE>
     <MODULE FULLNAME="/ROP_0" HWVERSION="1.0" INSTANCE="ROP_0" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="ROP" VLNV="xilinx.com:module_ref:ROP:1.0">
       <DOCUMENTS/>
       <PARAMETERS>
@@ -27593,77 +28055,42 @@
             <CONNECTION INSTANCE="CommandProcessor_0" PORT="CMD_ROP_Idle"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" NAME="CMD_SetBaseAddrAndAlphaTestSignal" SIGIS="undef" SIGNAME="CommandProcessor_0_ROP_SetBaseAddrAndAlphaTestSignal">
+        <PORT DIR="I" LEFT="100" NAME="STATE_StateBitsAtDrawID" RIGHT="0" SIGIS="undef" SIGNAME="ROPStateBlock_STAGE_StateBitsAtDrawID">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="ROP_SetBaseAddrAndAlphaTestSignal"/>
+            <CONNECTION INSTANCE="ROPStateBlock" PORT="STAGE_StateBitsAtDrawID"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" NAME="CMD_SetBaseAddrAndAlphaTestSignalAck" SIGIS="undef" SIGNAME="ROP_0_CMD_SetBaseAddrAndAlphaTestSignalAck">
+        <PORT DIR="I" LEFT="15" NAME="STATE_NextDrawID" RIGHT="0" SIGIS="undef" SIGNAME="ROPStateBlock_STAGE_NextDrawID">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="ROP_SetBaseAddrAndAlphaTestSignalAck"/>
+            <CONNECTION INSTANCE="ROPStateBlock" PORT="STAGE_NextDrawID"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="29" NAME="CMD_SetRenderTargetBaseAddr" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_ROP_SetRenderTargetBaseAddr">
+        <PORT DIR="I" NAME="STATE_StateIsValid" SIGIS="undef" SIGNAME="ROPStateBlock_STAGE_StateIsValid">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="ROP_SetRenderTargetBaseAddr"/>
+            <CONNECTION INSTANCE="ROPStateBlock" PORT="STAGE_StateIsValid"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="3" NAME="CMD_SetWriteMask" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_ROP_SetWriteMask">
+        <PORT DIR="O" NAME="STATE_ConsumeStateSlot" SIGIS="undef" SIGNAME="ROP_0_STATE_ConsumeStateSlot">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="ROP_SetWriteMask"/>
+            <CONNECTION INSTANCE="ROPStateBlock" PORT="STAGE_ConsumeStateSlot"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" NAME="CMD_SetAlphaTestEnabled" SIGIS="undef" SIGNAME="CommandProcessor_0_ROP_SetAlphaTestEnabled">
+        <PORT DIR="I" LEFT="63" NAME="TEXSAMP_InFIFO_rd_data" RIGHT="0" SIGIS="undef" SIGNAME="ROP_FIFO_dout">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="ROP_SetAlphaTestEnabled"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" LEFT="7" NAME="CMD_SetAlphaTestRefVal" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_ROP_SetAlphaTestRefVal">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="ROP_SetAlphaTestRefVal"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" LEFT="2" NAME="CMD_SetAlphaTestFunc" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_ROP_SetAlphaTestFunc">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="ROP_SetAlphaTestFunc"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" NAME="CMD_SetBlendStateSignal" SIGIS="undef" SIGNAME="CommandProcessor_0_ROP_SetBlendStateSignal">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="ROP_SetBlendStateSignal"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="O" NAME="CMD_SetBlendStateSigAck" SIGIS="undef" SIGNAME="ROP_0_CMD_SetBlendStateSigAck">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="ROP_SetBlendStateSigAck"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" NAME="CMD_SetAlphaBlendEnable" SIGIS="undef" SIGNAME="CommandProcessor_0_ROP_SetAlphaBlendEnable">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="ROP_SetAlphaBlendEnable"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" LEFT="31" NAME="CMD_SetAlphaBlendFactor" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_ROP_SetAlphaBlendFactor">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="ROP_SetAlphaBlendFactor"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" LEFT="21" NAME="CMD_SetAlphaBlendStateBlock" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_ROP_SetAlphaBlendStateBlock">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="ROP_SetAlphaBlendStateBlock"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" LEFT="63" NAME="TEXSAMP_InFIFO_rd_data" RIGHT="0" SIGIS="undef" SIGNAME="ROP_0_TEXSAMP_InFIFO_rd_data">
-          <CONNECTIONS>
+            <CONNECTION INSTANCE="ROP_FIFO" PORT="dout"/>
             <CONNECTION INSTANCE="ROP_FIFO" PORT="dout"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" NAME="TEXSAMP_InFIFO_empty" SIGIS="undef" SIGNAME="ROP_0_TEXSAMP_InFIFO_empty">
+        <PORT DIR="I" NAME="TEXSAMP_InFIFO_empty" SIGIS="undef" SIGNAME="ROP_FIFO_empty">
           <CONNECTIONS>
+            <CONNECTION INSTANCE="ROP_FIFO" PORT="empty"/>
             <CONNECTION INSTANCE="ROP_FIFO" PORT="empty"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" NAME="TEXSAMP_InFIFO_rd_en" SIGIS="undef" SIGNAME="ROP_0_TEXSAMP_InFIFO_rd_en">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ROP_FIFO" PORT="rd_en"/>
+          </CONNECTIONS>
           <CONNECTIONS>
             <CONNECTION INSTANCE="ROP_FIFO" PORT="rd_en"/>
           </CONNECTIONS>
@@ -27696,6 +28123,19 @@
         <PORT DIR="O" LEFT="31" NAME="STAT_CountCacheMisses" RIGHT="0" SIGIS="undef" SIGNAME="ROP_0_STAT_CountCacheMisses">
           <CONNECTIONS>
             <CONNECTION INSTANCE="StatsCollector_0" PORT="ROP_CountCacheMisses"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="15" NAME="STAT_CurrentDrawEventID" RIGHT="0" SIGIS="undef" SIGNAME="ROP_0_STAT_CurrentDrawEventID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ILA_TexSampler" PORT="probe14"/>
+            <CONNECTION INSTANCE="StatsCollector_0" PORT="ROP_CurrentDrawEventID"/>
+            <CONNECTION INSTANCE="ila_333_250" PORT="probe12"/>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="ROP_STAT_CurrentDrawEventID"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="31" NAME="STAT_CountPixelsPassed" RIGHT="0" SIGIS="undef" SIGNAME="ROP_0_STAT_CountPixelsPassed">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="ROP_STAT_CountPixelsPassed"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="4" NAME="DBG_ROP_State" RIGHT="0" SIGIS="undef" SIGNAME="ROP_0_DBG_ROP_State">
@@ -28149,9 +28589,13 @@
           <CONNECTIONS>
             <CONNECTION INSTANCE="ROP_0" PORT="TEXSAMP_InFIFO_rd_en"/>
           </CONNECTIONS>
-        </PORT>
-        <PORT DIR="O" LEFT="63" NAME="dout" RIGHT="0" SIGIS="undef" SIGNAME="ROP_0_TEXSAMP_InFIFO_rd_data">
           <CONNECTIONS>
+            <CONNECTION INSTANCE="ROP_0" PORT="TEXSAMP_InFIFO_rd_en"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="63" NAME="dout" RIGHT="0" SIGIS="undef" SIGNAME="ROP_FIFO_dout">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ROP_0" PORT="TEXSAMP_InFIFO_rd_data"/>
             <CONNECTION INSTANCE="ROP_0" PORT="TEXSAMP_InFIFO_rd_data"/>
           </CONNECTIONS>
         </PORT>
@@ -28160,9 +28604,11 @@
             <CONNECTION INSTANCE="TexSample_0" PORT="ROP_OutFIFO_full"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" NAME="empty" SIGIS="undef" SIGNAME="ROP_0_TEXSAMP_InFIFO_empty">
+        <PORT DIR="O" NAME="empty" SIGIS="undef" SIGNAME="ROP_FIFO_empty">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ROP_0" PORT="TEXSAMP_InFIFO_empty"/>
+            <CONNECTION INSTANCE="ROP_0" PORT="TEXSAMP_InFIFO_empty"/>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="CMD_FIFO_EMPTY_ROP"/>
           </CONNECTIONS>
         </PORT>
       </PORTS>
@@ -28203,6 +28649,11 @@
         <PORT DIR="O" NAME="TRISETUP_readyForNewTri" SIGIS="undef" SIGNAME="Rasterizer_0_TRISETUP_readyForNewTri">
           <CONNECTIONS>
             <CONNECTION INSTANCE="TriSetup_0" PORT="RAST_readyForTriSetupData"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="15" NAME="TRISETUP_CurrentDrawEventID" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_CurrentDrawEventID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriSetup_0" PORT="RAST_CurrentDrawEventID"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="I" LEFT="15" NAME="TRISETUP_inMinX" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_outMinX">
@@ -28520,6 +28971,12 @@
             <CONNECTION INSTANCE="StatsCollector_0" PORT="RAST_CyclesWaitingForTriWorkCache"/>
           </CONNECTIONS>
         </PORT>
+        <PORT DIR="O" LEFT="15" NAME="STAT_CurrentDrawEventID" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_STAT_CurrentDrawEventID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ILA_TexSampler" PORT="probe17"/>
+            <CONNECTION INSTANCE="StatsCollector_0" PORT="RAST_CurrentDrawEventID"/>
+          </CONNECTIONS>
+        </PORT>
         <PORT DIR="O" LEFT="3" NAME="DBG_Rasterizer_State" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_DBG_Rasterizer_State">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ila_333_250" PORT="probe6"/>
@@ -28589,10 +29046,10 @@
         </PORT>
         <PORT DIR="O" NAME="resetn" SIGIS="rst" SIGNAME="ResetN_UntilClockLoc_0_resetn">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="resetn"/>
             <CONNECTION INSTANCE="MemorySystem_MemoryController_0" PORT="M_AXI_ARESETN"/>
             <CONNECTION INSTANCE="SerialPacketSystem_axi_uartlite_0" PORT="s_axi_aresetn"/>
             <CONNECTION INSTANCE="SerialPacketSystem_PacketProcessor_0" PORT="M_AXI_ARESETN"/>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="resetn"/>
           </CONNECTIONS>
         </PORT>
       </PORTS>
@@ -37589,6 +38046,11 @@
             <CONNECTION INSTANCE="MemorySystem_ddr4_0" PORT="c0_ddr4_ui_clk"/>
           </CONNECTIONS>
         </PORT>
+        <PORT DIR="O" NAME="CMD_IsIdle" SIGIS="undef" SIGNAME="ShaderCoreSystem_ShaderCore_0_CMD_IsIdle">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="CMD_VS_Idle"/>
+          </CONNECTIONS>
+        </PORT>
         <PORT DIR="O" NAME="CMD_IsReadyForCommand" SIGIS="undef" SIGNAME="ShaderCoreSystem_ShaderCore_0_CMD_IsReadyForCommand">
           <CONNECTIONS>
             <CONNECTION INSTANCE="CommandProcessor_0" PORT="SHADER_IsReadyForCommand"/>
@@ -37659,17 +38121,21 @@
             <CONNECTION INSTANCE="VertexBatchBuilder_0" PORT="SHADER_Done"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" NAME="VERTBATCH_FIFO_empty" SIGIS="undef" SIGNAME="ShaderCoreSystem_ShaderCore_0_VERTBATCH_FIFO_empty">
+        <PORT DIR="I" NAME="VERTBATCH_FIFO_empty" SIGIS="undef" SIGNAME="VBB_FIFO_empty">
           <CONNECTIONS>
+            <CONNECTION INSTANCE="VBB_FIFO" PORT="empty"/>
             <CONNECTION INSTANCE="VBB_FIFO" PORT="empty"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="527" NAME="VERTBATCH_FIFO_rd_data" RIGHT="0" SIGIS="undef" SIGNAME="ShaderCoreSystem_ShaderCore_0_VERTBATCH_FIFO_rd_data">
+        <PORT DIR="I" LEFT="543" NAME="VERTBATCH_FIFO_rd_data" RIGHT="0" SIGIS="undef" SIGNAME="ShaderCoreSystem_ShaderCore_0_VERTBATCH_FIFO_rd_data">
           <CONNECTIONS>
             <CONNECTION INSTANCE="VBB_FIFO" PORT="dout"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" NAME="VERTBATCH_FIFO_rd_en" SIGIS="undef" SIGNAME="ShaderCoreSystem_ShaderCore_0_VERTBATCH_FIFO_rd_en">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="VBB_FIFO" PORT="rd_en"/>
+          </CONNECTIONS>
           <CONNECTIONS>
             <CONNECTION INSTANCE="VBB_FIFO" PORT="rd_en"/>
           </CONNECTIONS>
@@ -37721,7 +38187,7 @@
             <CONNECTION INSTANCE="VBO_INDEX_FIFO" PORT="full"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="255" NAME="INDEXOUT_FIFO_wr_data" RIGHT="0" SIGIS="undef" SIGNAME="ShaderCoreSystem_ShaderCore_0_INDEXOUT_FIFO_wr_data">
+        <PORT DIR="O" LEFT="271" NAME="INDEXOUT_FIFO_wr_data" RIGHT="0" SIGIS="undef" SIGNAME="ShaderCoreSystem_ShaderCore_0_INDEXOUT_FIFO_wr_data">
           <CONNECTIONS>
             <CONNECTION INSTANCE="VBO_INDEX_FIFO" PORT="din"/>
           </CONNECTIONS>
@@ -38118,6 +38584,12 @@
         <PORT DIR="O" LEFT="31" NAME="STAT_CyclesWaitingForOutput" RIGHT="0" SIGIS="undef" SIGNAME="ShaderCoreSystem_ShaderCore_0_STAT_CyclesWaitingForOutput">
           <CONNECTIONS>
             <CONNECTION INSTANCE="StatsCollector_0" PORT="VSHADER_CyclesWaitingForOutput"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="15" NAME="STAT_CurrentDrawEventID" RIGHT="0" SIGIS="undef" SIGNAME="ShaderCoreSystem_ShaderCore_0_STAT_CurrentDrawEventID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ILA_TexSampler" PORT="probe21"/>
+            <CONNECTION INSTANCE="StatsCollector_0" PORT="VSHADER_CurrentDrawEventID"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="5" NAME="DBG_CurrentState" RIGHT="0" SIGIS="undef" SIGNAME="ShaderCoreSystem_ShaderCore_0_DBG_CurrentState">
@@ -38672,6 +39144,26 @@
             <CONNECTION INSTANCE="MemorySystem_StatsWriteRequestsFIFO" PORT="wr_en"/>
           </CONNECTIONS>
         </PORT>
+        <PORT DIR="I" LEFT="31" NAME="VBB_CyclesIdle" RIGHT="0" SIGIS="undef" SIGNAME="VertexBatchBuilder_0_STAT_CyclesIdle">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="VertexBatchBuilder_0" PORT="STAT_CyclesIdle"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="31" NAME="VBB_CyclesSpentWorking" RIGHT="0" SIGIS="undef" SIGNAME="VertexBatchBuilder_0_STAT_CyclesSpentWorking">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="VertexBatchBuilder_0" PORT="STAT_CyclesSpentWorking"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="31" NAME="VBB_CyclesWaitingForOutput" RIGHT="0" SIGIS="undef" SIGNAME="VertexBatchBuilder_0_STAT_CyclesWaitingForOutput">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="VertexBatchBuilder_0" PORT="STAT_CyclesWaitingForOutput"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="15" NAME="VBB_CurrentDrawEventID" RIGHT="0" SIGIS="undef" SIGNAME="VertexBatchBuilder_0_STAT_CurrentDrawEventID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="VertexBatchBuilder_0" PORT="STAT_CurrentDrawEventID"/>
+          </CONNECTIONS>
+        </PORT>
         <PORT DIR="I" LEFT="31" NAME="VSHADER_CyclesIdle" RIGHT="0" SIGIS="undef" SIGNAME="ShaderCoreSystem_ShaderCore_0_STAT_CyclesIdle">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ShaderCoreSystem_ShaderCore_0" PORT="STAT_CyclesIdle"/>
@@ -38690,6 +39182,11 @@
         <PORT DIR="I" LEFT="31" NAME="VSHADER_CyclesWaitingForOutput" RIGHT="0" SIGIS="undef" SIGNAME="ShaderCoreSystem_ShaderCore_0_STAT_CyclesWaitingForOutput">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ShaderCoreSystem_ShaderCore_0" PORT="STAT_CyclesWaitingForOutput"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="15" NAME="VSHADER_CurrentDrawEventID" RIGHT="0" SIGIS="undef" SIGNAME="ShaderCoreSystem_ShaderCore_0_STAT_CurrentDrawEventID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ShaderCoreSystem_ShaderCore_0" PORT="STAT_CurrentDrawEventID"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="I" LEFT="31" NAME="IA_CyclesIdle" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_STAT_CyclesIdle">
@@ -38712,6 +39209,11 @@
             <CONNECTION INSTANCE="InputAssembler2_0" PORT="STAT_CyclesWaitingForOutput"/>
           </CONNECTIONS>
         </PORT>
+        <PORT DIR="I" LEFT="15" NAME="IA_CurrentDrawEventID" RIGHT="0" SIGIS="undef" SIGNAME="InputAssembler2_0_CLIP_CurrentDrawEventID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="InputAssembler2_0" PORT="CLIP_CurrentDrawEventID"/>
+          </CONNECTIONS>
+        </PORT>
         <PORT DIR="I" LEFT="31" NAME="CLIP_CyclesIdle" RIGHT="0" SIGIS="undef" SIGNAME="ClipUnit_0_STAT_CyclesIdle">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ClipUnit_0" PORT="STAT_CyclesIdle"/>
@@ -38727,6 +39229,11 @@
             <CONNECTION INSTANCE="ClipUnit_0" PORT="STAT_CyclesWaitingForOutput"/>
           </CONNECTIONS>
         </PORT>
+        <PORT DIR="I" LEFT="15" NAME="CLIP_CurrentDrawEventID" RIGHT="0" SIGIS="undef" SIGNAME="ClipUnit_0_STAT_CurrentDrawEventID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ClipUnit_0" PORT="STAT_CurrentDrawEventID"/>
+          </CONNECTIONS>
+        </PORT>
         <PORT DIR="I" LEFT="31" NAME="TRISETUP_CyclesIdle" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_STAT_CyclesIdle">
           <CONNECTIONS>
             <CONNECTION INSTANCE="TriSetup_0" PORT="STAT_CyclesIdle"/>
@@ -38740,6 +39247,11 @@
         <PORT DIR="I" LEFT="31" NAME="TRISETUP_CyclesWaitingForOutput" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_STAT_CyclesWaitingForOutput">
           <CONNECTIONS>
             <CONNECTION INSTANCE="TriSetup_0" PORT="STAT_CyclesWaitingForOutput"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="15" NAME="TRISETUP_CurrentDrawEventID" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_STAT_CurrentDrawEventID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriSetup_0" PORT="STAT_CurrentDrawEventID"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="I" LEFT="31" NAME="RAST_CyclesIdle" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_STAT_CyclesIdle">
@@ -38762,6 +39274,11 @@
             <CONNECTION INSTANCE="Rasterizer_0" PORT="STAT_CyclesWaitingForTriWorkCache"/>
           </CONNECTIONS>
         </PORT>
+        <PORT DIR="I" LEFT="15" NAME="RAST_CurrentDrawEventID" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_STAT_CurrentDrawEventID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="Rasterizer_0" PORT="STAT_CurrentDrawEventID"/>
+          </CONNECTIONS>
+        </PORT>
         <PORT DIR="I" LEFT="31" NAME="DINTERP_CyclesIdle" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_STAT_CyclesIdle">
           <CONNECTIONS>
             <CONNECTION INSTANCE="DepthInterpolator_0" PORT="STAT_CyclesIdle"/>
@@ -38777,6 +39294,11 @@
             <CONNECTION INSTANCE="DepthInterpolator_0" PORT="STAT_CyclesWaitingForOutput"/>
           </CONNECTIONS>
         </PORT>
+        <PORT DIR="I" LEFT="15" NAME="DINTERP_CurrentDrawEventID" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_STAT_CurrentDrawEventID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="STAT_CurrentDrawEventID"/>
+          </CONNECTIONS>
+        </PORT>
         <PORT DIR="I" LEFT="31" NAME="INTERP_CyclesIdle" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_STAT_CyclesIdle">
           <CONNECTIONS>
             <CONNECTION INSTANCE="AttrInterpolator_0" PORT="STAT_CyclesIdle"/>
@@ -38790,6 +39312,11 @@
         <PORT DIR="I" LEFT="31" NAME="INTERP_CyclesWaitingForOutput" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_STAT_CyclesWaitingForOutput">
           <CONNECTIONS>
             <CONNECTION INSTANCE="AttrInterpolator_0" PORT="STAT_CyclesWaitingForOutput"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="15" NAME="INTERP_CurrentDrawEventID" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_STAT_CurrentDrawEventID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="STAT_CurrentDrawEventID"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="I" LEFT="31" NAME="TEXSAMP_CyclesIdle" RIGHT="0" SIGIS="undef" SIGNAME="TexSample_0_STAT_CyclesIdle">
@@ -38810,6 +39337,11 @@
         <PORT DIR="I" LEFT="31" NAME="TEXSAMP_CyclesWaitingCacheLoad" RIGHT="0" SIGIS="undef" SIGNAME="TexSample_0_STAT_CyclesWaitingCacheLoad">
           <CONNECTIONS>
             <CONNECTION INSTANCE="TexSample_0" PORT="STAT_CyclesWaitingCacheLoad"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="15" NAME="TEXSAMP_CurrentDrawEventID" RIGHT="0" SIGIS="undef" SIGNAME="TexSample_0_STAT_CurrentDrawEventID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TexSample_0" PORT="STAT_CurrentDrawEventID"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="I" LEFT="31" NAME="ROP_CyclesIdle" RIGHT="0" SIGIS="undef" SIGNAME="ROP_0_STAT_CyclesIdle">
@@ -38840,6 +39372,11 @@
         <PORT DIR="I" LEFT="31" NAME="ROP_CountCacheMisses" RIGHT="0" SIGIS="undef" SIGNAME="ROP_0_STAT_CountCacheMisses">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ROP_0" PORT="STAT_CountCacheMisses"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="15" NAME="ROP_CurrentDrawEventID" RIGHT="0" SIGIS="undef" SIGNAME="ROP_0_STAT_CurrentDrawEventID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ROP_0" PORT="STAT_CurrentDrawEventID"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="I" LEFT="31" NAME="CMD_CyclesIdle" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_STAT_CyclesIdle">
@@ -39313,12 +39850,16 @@
             <CONNECTION INSTANCE="AttrInterpolator_0" PORT="TEXSAMP_OutFIFO_wr_en"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" NAME="rd_en" SIGIS="undef" SIGNAME="TEXSAMP_FIFO_rd_en">
+        <PORT DIR="I" NAME="rd_en" SIGIS="undef" SIGNAME="TexSample_0_INTERP_InFIFO_rd_en">
           <CONNECTIONS>
+            <CONNECTION INSTANCE="TexSample_0" PORT="INTERP_InFIFO_rd_en"/>
             <CONNECTION INSTANCE="TexSample_0" PORT="INTERP_InFIFO_rd_en"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="95" NAME="dout" RIGHT="0" SIGIS="undef" SIGNAME="TEXSAMP_FIFO_dout">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TexSample_0" PORT="INTERP_InFIFO_rd_data"/>
+          </CONNECTIONS>
           <CONNECTIONS>
             <CONNECTION INSTANCE="TexSample_0" PORT="INTERP_InFIFO_rd_data"/>
           </CONNECTIONS>
@@ -39329,6 +39870,10 @@
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" NAME="empty" SIGIS="undef" SIGNAME="TEXSAMP_FIFO_empty">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TexSample_0" PORT="INTERP_InFIFO_empty"/>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="CMD_FIFO_EMPTY_TEXSAMP"/>
+          </CONNECTIONS>
           <CONNECTIONS>
             <CONNECTION INSTANCE="TexSample_0" PORT="INTERP_InFIFO_empty"/>
           </CONNECTIONS>
@@ -39486,6 +40031,104 @@
       </PORTS>
       <BUSINTERFACES/>
     </MODULE>
+    <MODULE FULLNAME="/TexSampleStateBlock" HWVERSION="1.0" INSTANCE="TexSampleStateBlock" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="StateBlock" VLNV="xilinx.com:module_ref:StateBlock:1.0">
+      <DOCUMENTS/>
+      <PARAMETERS>
+        <PARAMETER NAME="StateBitsCount" VALUE="74"/>
+        <PARAMETER NAME="Component_Name" VALUE="design_1_StateBlock_0_0"/>
+        <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
+      </PARAMETERS>
+      <PORTS>
+        <PORT CLKFREQUENCY="333250000" DIR="I" NAME="clk" SIGIS="clk" SIGNAME="MemorySystem_ddr4_0_c0_ddr4_ui_clk">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="MemorySystem_ddr4_0" PORT="c0_ddr4_ui_clk"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="CMD_SetNewState" SIGIS="undef" SIGNAME="CommandProcessor_0_TEXSAMP_SetNewState">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="TEXSAMP_SetNewState"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="CMD_EndFrameReset" SIGIS="undef" SIGNAME="CommandProcessor_0_TEXSAMP_EndFrameReset">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="TEXSAMP_EndFrameReset"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="2" NAME="CMD_NumFreeSlots" RIGHT="0" SIGIS="undef" SIGNAME="TexSampleStateBlock_CMD_NumFreeSlots">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ila_333_250" PORT="probe16"/>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="TEXSAMP_NumFreeSlots"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="73" NAME="CMD_NewStateBits" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_TEXSAMP_NewStateBits">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="TEXSAMP_NewStateBits"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="15" NAME="CMD_NewStateDrawEventID" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_TEXSAMP_NewStateDrawEventID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="TEXSAMP_NewStateDrawEventID"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="73" NAME="STAGE_StateBitsAtDrawID" RIGHT="0" SIGIS="undef" SIGNAME="TexSampleStateBlock_STAGE_StateBitsAtDrawID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TexSample_0" PORT="STATE_StateBitsAtDrawID"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="15" NAME="STAGE_NextDrawID" RIGHT="0" SIGIS="undef" SIGNAME="TexSampleStateBlock_STAGE_NextDrawID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ILA_TexSampler" PORT="probe5"/>
+            <CONNECTION INSTANCE="TexSample_0" PORT="STATE_NextDrawID"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="STAGE_StateIsValid" SIGIS="undef" SIGNAME="TexSampleStateBlock_STAGE_StateIsValid">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TexSample_0" PORT="STATE_StateIsValid"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="STAGE_ConsumeStateSlot" SIGIS="undef" SIGNAME="TexSample_0_STATE_ConsumeStateSlot">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TexSample_0" PORT="STATE_ConsumeStateSlot"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="3" NAME="DBG_SlotsValid" RIGHT="0" SIGIS="undef" SIGNAME="TexSampleStateBlock_DBG_SlotsValid">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ILA_TexSampler" PORT="probe9"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="1" NAME="DBG_CurrentReadSlotIndex" RIGHT="0" SIGIS="undef" SIGNAME="TexSampleStateBlock_DBG_CurrentReadSlotIndex">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ILA_TexSampler" PORT="probe7"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="1" NAME="DBG_CurrentWriteSlotIndex" RIGHT="0" SIGIS="undef" SIGNAME="TexSampleStateBlock_DBG_CurrentWriteSlotIndex">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ILA_TexSampler" PORT="probe8"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="15" NAME="DBG_Slot0" RIGHT="0" SIGIS="undef" SIGNAME="TexSampleStateBlock_DBG_Slot0">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ILA_TexSampler" PORT="probe10"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="15" NAME="DBG_Slot1" RIGHT="0" SIGIS="undef" SIGNAME="TexSampleStateBlock_DBG_Slot1">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ILA_TexSampler" PORT="probe11"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="15" NAME="DBG_Slot2" RIGHT="0" SIGIS="undef" SIGNAME="TexSampleStateBlock_DBG_Slot2">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ILA_TexSampler" PORT="probe12"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="15" NAME="DBG_Slot3" RIGHT="0" SIGIS="undef" SIGNAME="TexSampleStateBlock_DBG_Slot3">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ILA_TexSampler" PORT="probe13"/>
+          </CONNECTIONS>
+        </PORT>
+      </PORTS>
+      <BUSINTERFACES/>
+    </MODULE>
     <MODULE FULLNAME="/TexSample_0" HWVERSION="1.0" INSTANCE="TexSample_0" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="TexSample" VLNV="xilinx.com:module_ref:TexSample:1.0">
       <DOCUMENTS/>
       <PARAMETERS>
@@ -39502,14 +40145,21 @@
           <CONNECTIONS>
             <CONNECTION INSTANCE="TEXSAMP_FIFO" PORT="dout"/>
           </CONNECTIONS>
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TEXSAMP_FIFO" PORT="dout"/>
+          </CONNECTIONS>
         </PORT>
         <PORT DIR="I" NAME="INTERP_InFIFO_empty" SIGIS="undef" SIGNAME="TEXSAMP_FIFO_empty">
           <CONNECTIONS>
             <CONNECTION INSTANCE="TEXSAMP_FIFO" PORT="empty"/>
           </CONNECTIONS>
-        </PORT>
-        <PORT DIR="O" NAME="INTERP_InFIFO_rd_en" SIGIS="undef" SIGNAME="TEXSAMP_FIFO_rd_en">
           <CONNECTIONS>
+            <CONNECTION INSTANCE="TEXSAMP_FIFO" PORT="empty"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="INTERP_InFIFO_rd_en" SIGIS="undef" SIGNAME="TexSample_0_INTERP_InFIFO_rd_en">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TEXSAMP_FIFO" PORT="rd_en"/>
             <CONNECTION INSTANCE="TEXSAMP_FIFO" PORT="rd_en"/>
           </CONNECTIONS>
         </PORT>
@@ -39543,6 +40193,27 @@
             <CONNECTION INSTANCE="MemorySystem_TexFetchReadResponsesFIFO" PORT="rd_en"/>
           </CONNECTIONS>
         </PORT>
+        <PORT DIR="I" LEFT="73" NAME="STATE_StateBitsAtDrawID" RIGHT="0" SIGIS="undef" SIGNAME="TexSampleStateBlock_STAGE_StateBitsAtDrawID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TexSampleStateBlock" PORT="STAGE_StateBitsAtDrawID"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="15" NAME="STATE_NextDrawID" RIGHT="0" SIGIS="undef" SIGNAME="TexSampleStateBlock_STAGE_NextDrawID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TexSampleStateBlock" PORT="STAGE_NextDrawID"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="STATE_StateIsValid" SIGIS="undef" SIGNAME="TexSampleStateBlock_STAGE_StateIsValid">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TexSampleStateBlock" PORT="STAGE_StateIsValid"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="STATE_ConsumeStateSlot" SIGIS="undef" SIGNAME="TexSample_0_STATE_ConsumeStateSlot">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ILA_TexSampler" PORT="probe6"/>
+            <CONNECTION INSTANCE="TexSampleStateBlock" PORT="STAGE_ConsumeStateSlot"/>
+          </CONNECTIONS>
+        </PORT>
         <PORT DIR="O" LEFT="13" NAME="TexCache_addra" RIGHT="0" SIGIS="undef" SIGNAME="TexSample_0_TexCache_addra">
           <CONNECTIONS>
             <CONNECTION INSTANCE="TextureCache_128x128x32bits" PORT="addra"/>
@@ -39571,67 +40242,6 @@
         <PORT DIR="O" NAME="CMD_TexSampleIsIdle" SIGIS="undef" SIGNAME="TexSample_0_CMD_TexSampleIsIdle">
           <CONNECTIONS>
             <CONNECTION INSTANCE="CommandProcessor_0" PORT="CMD_TexSampler_Idle"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" NAME="CMD_LoadTexCacheBeginSignal" SIGIS="undef" SIGNAME="CommandProcessor_0_TEXSAMP_LoadTexCacheBeginSignal">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="TEXSAMP_LoadTexCacheBeginSignal"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="O" NAME="CMD_LoadTexCacheAckSignal" SIGIS="undef" SIGNAME="TexSample_0_CMD_LoadTexCacheAckSignal">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="ila_333_250" PORT="probe17"/>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="TEXSAMP_LoadTexCacheAckSignal"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" LEFT="29" NAME="CMD_LoadTexCacheAddr" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_TEXSAMP_LoadTexCacheAddr">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="TEXSAMP_LoadTexCacheAddr"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" LEFT="2" NAME="CMD_LoadTexCacheFormat" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_TEXSAMP_LoadTexCacheFormat">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="TEXSAMP_LoadTexCacheFormat"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" LEFT="15" NAME="CMD_LoadTexCacheTexelCount" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_TEXSAMP_LoadTexCacheTexelCount">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="TEXSAMP_LoadTexCacheTexelCount"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" LEFT="2" NAME="CMD_LoadTexCacheTexelWidth" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_TEXSAMP_LoadTexCacheTexelWidth">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="TEXSAMP_LoadTexCacheTexelWidth"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" LEFT="2" NAME="CMD_LoadTexCacheTexelHeight" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_TEXSAMP_LoadTexCacheTexelHeight">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="TEXSAMP_LoadTexCacheTexelHeight"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" NAME="CMD_SetTextureStateBeginSignal" SIGIS="undef" SIGNAME="CommandProcessor_0_TEXSAMP_SetTextureStateBeginSignal">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="TEXSAMP_SetTextureStateBeginSignal"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="O" NAME="CMD_SetTextureStateAckSignal" SIGIS="undef" SIGNAME="TexSample_0_CMD_SetTextureStateAckSignal">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="TEXSAMP_SetTextureStateAckSignal"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" NAME="CMD_SetTextureStateUseBilinear" SIGIS="undef" SIGNAME="CommandProcessor_0_TEXSAMP_SetTextureStateUseBilinear">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="TEXSAMP_SetTextureStateUseBilinear"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" LEFT="2" NAME="CMD_SetTextureStateCombinerModeColor" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_TEXSAMP_SetTextureStateCombinerModeColor">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="TEXSAMP_SetTextureStateCombinerModeColor"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" LEFT="2" NAME="CMD_SetTextureStateCombinerModeAlpha" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_TEXSAMP_SetTextureStateCombinerModeAlpha">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="TEXSAMP_SetTextureStateCombinerModeAlpha"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="63" NAME="ROP_OutFIFO_wr_data" RIGHT="0" SIGIS="undef" SIGNAME="TexSample_0_ROP_OutFIFO_wr_data">
@@ -39669,6 +40279,12 @@
         <PORT DIR="O" LEFT="31" NAME="STAT_CyclesWaitingCacheLoad" RIGHT="0" SIGIS="undef" SIGNAME="TexSample_0_STAT_CyclesWaitingCacheLoad">
           <CONNECTIONS>
             <CONNECTION INSTANCE="StatsCollector_0" PORT="TEXSAMP_CyclesWaitingCacheLoad"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="15" NAME="STAT_CurrentDrawEventID" RIGHT="0" SIGIS="undef" SIGNAME="TexSample_0_STAT_CurrentDrawEventID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ILA_TexSampler" PORT="probe4"/>
+            <CONNECTION INSTANCE="StatsCollector_0" PORT="TEXSAMP_CurrentDrawEventID"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="5" NAME="DBG_TexSample_State" RIGHT="0" SIGIS="undef" SIGNAME="TexSample_0_DBG_TexSample_State">
@@ -40056,6 +40672,11 @@
             <CONNECTION INSTANCE="ClipUnit_0" PORT="TRISETUP_outv2rgba"/>
           </CONNECTIONS>
         </PORT>
+        <PORT DIR="I" LEFT="15" NAME="CLIP_CurrentDrawEventID" RIGHT="0" SIGIS="undef" SIGNAME="ClipUnit_0_TRISETUP_CurrentDrawEventID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ClipUnit_0" PORT="TRISETUP_CurrentDrawEventID"/>
+          </CONNECTIONS>
+        </PORT>
         <PORT DIR="I" NAME="CLIP_newTriBegin" SIGIS="undef" SIGNAME="ClipUnit_0_TRISETUP_outNextStageIsValid">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ClipUnit_0" PORT="TRISETUP_outNextStageIsValid"/>
@@ -40260,6 +40881,11 @@
             <CONNECTION INSTANCE="Rasterizer_0" PORT="TRISETUP_inBarycentricYDeltaC"/>
           </CONNECTIONS>
         </PORT>
+        <PORT DIR="O" LEFT="15" NAME="RAST_CurrentDrawEventID" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_RAST_CurrentDrawEventID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="Rasterizer_0" PORT="TRISETUP_CurrentDrawEventID"/>
+          </CONNECTIONS>
+        </PORT>
         <PORT DIR="I" NAME="RAST_readyForTriSetupData" SIGIS="undef" SIGNAME="Rasterizer_0_TRISETUP_readyForNewTri">
           <CONNECTIONS>
             <CONNECTION INSTANCE="Rasterizer_0" PORT="TRISETUP_readyForNewTri"/>
@@ -40379,6 +41005,12 @@
         <PORT DIR="O" LEFT="31" NAME="STAT_CyclesWaitingForOutput" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_STAT_CyclesWaitingForOutput">
           <CONNECTIONS>
             <CONNECTION INSTANCE="StatsCollector_0" PORT="TRISETUP_CyclesWaitingForOutput"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="15" NAME="STAT_CurrentDrawEventID" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_STAT_CurrentDrawEventID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ILA_TexSampler" PORT="probe18"/>
+            <CONNECTION INSTANCE="StatsCollector_0" PORT="TRISETUP_CurrentDrawEventID"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="7" NAME="DBG_TriSetup_State" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_DBG_TriSetup_State">
@@ -40689,9 +41321,9 @@
         <PARAMETER NAME="C_COUNT_TYPE" VALUE="0"/>
         <PARAMETER NAME="C_DATA_COUNT_WIDTH" VALUE="9"/>
         <PARAMETER NAME="C_DEFAULT_VALUE" VALUE="BlankString"/>
-        <PARAMETER NAME="C_DIN_WIDTH" VALUE="528"/>
+        <PARAMETER NAME="C_DIN_WIDTH" VALUE="544"/>
         <PARAMETER NAME="C_DOUT_RST_VAL" VALUE="0"/>
-        <PARAMETER NAME="C_DOUT_WIDTH" VALUE="528"/>
+        <PARAMETER NAME="C_DOUT_WIDTH" VALUE="544"/>
         <PARAMETER NAME="C_ENABLE_RLOCS" VALUE="0"/>
         <PARAMETER NAME="C_FAMILY" VALUE="kintexuplus"/>
         <PARAMETER NAME="C_FULL_FLAGS_RST_VAL" VALUE="0"/>
@@ -40893,9 +41525,9 @@
         <PARAMETER NAME="INTERFACE_TYPE" VALUE="Native"/>
         <PARAMETER NAME="Performance_Options" VALUE="First_Word_Fall_Through"/>
         <PARAMETER NAME="asymmetric_port_width" VALUE="false"/>
-        <PARAMETER NAME="Input_Data_Width" VALUE="528"/>
+        <PARAMETER NAME="Input_Data_Width" VALUE="544"/>
         <PARAMETER NAME="Input_Depth" VALUE="512"/>
-        <PARAMETER NAME="Output_Data_Width" VALUE="528"/>
+        <PARAMETER NAME="Output_Data_Width" VALUE="544"/>
         <PARAMETER NAME="Output_Depth" VALUE="512"/>
         <PARAMETER NAME="Enable_ECC" VALUE="false"/>
         <PARAMETER NAME="Use_Embedded_Registers" VALUE="false"/>
@@ -41062,7 +41694,7 @@
           </CONNECTIONS>
         </PORT>
         <PORT DIR="I" NAME="srst" SIGIS="undef"/>
-        <PORT DIR="I" LEFT="527" NAME="din" RIGHT="0" SIGIS="undef" SIGNAME="VBB_FIFO_din">
+        <PORT DIR="I" LEFT="543" NAME="din" RIGHT="0" SIGIS="undef" SIGNAME="VBB_FIFO_din">
           <CONNECTIONS>
             <CONNECTION INSTANCE="VertexBatchBuilder_0" PORT="VERTBATCH_FIFO_wr_data"/>
           </CONNECTIONS>
@@ -41076,8 +41708,11 @@
           <CONNECTIONS>
             <CONNECTION INSTANCE="ShaderCoreSystem_ShaderCore_0" PORT="VERTBATCH_FIFO_rd_en"/>
           </CONNECTIONS>
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ShaderCoreSystem_ShaderCore_0" PORT="VERTBATCH_FIFO_rd_en"/>
+          </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="527" NAME="dout" RIGHT="0" SIGIS="undef" SIGNAME="VBB_FIFO_dout">
+        <PORT DIR="O" LEFT="543" NAME="dout" RIGHT="0" SIGIS="undef" SIGNAME="VBB_FIFO_dout">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ShaderCoreSystem_ShaderCore_0" PORT="VERTBATCH_FIFO_rd_data"/>
             <CONNECTION INSTANCE="ILA_IA" PORT="probe14"/>
@@ -41088,9 +41723,11 @@
             <CONNECTION INSTANCE="VertexBatchBuilder_0" PORT="VERTBATCH_FIFO_full"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" NAME="empty" SIGIS="undef" SIGNAME="ShaderCoreSystem_ShaderCore_0_VERTBATCH_FIFO_empty">
+        <PORT DIR="O" NAME="empty" SIGIS="undef" SIGNAME="VBB_FIFO_empty">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ShaderCoreSystem_ShaderCore_0" PORT="VERTBATCH_FIFO_empty"/>
+            <CONNECTION INSTANCE="ShaderCoreSystem_ShaderCore_0" PORT="VERTBATCH_FIFO_empty"/>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="CMD_FIFO_EMPTY_VBB"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" NAME="wr_rst_busy" SIGIS="undef"/>
@@ -41510,6 +42147,9 @@
           <CONNECTIONS>
             <CONNECTION INSTANCE="InputAssembler2_0" PORT="VERTOUT_FIFO_rd_en"/>
           </CONNECTIONS>
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="InputAssembler2_0" PORT="VERTOUT_FIFO_rd_en"/>
+          </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="319" NAME="dout" RIGHT="0" SIGIS="undef" SIGNAME="VBO_FIFO_dout">
           <CONNECTIONS>
@@ -41524,9 +42164,11 @@
             <CONNECTION INSTANCE="ShaderCoreSystem_ShaderCore_0" PORT="VERTOUT_FIFO_full"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" NAME="empty" SIGIS="undef" SIGNAME="InputAssembler2_0_VERTOUT_FIFO_empty">
+        <PORT DIR="O" NAME="empty" SIGIS="undef" SIGNAME="VBO_FIFO_empty">
           <CONNECTIONS>
             <CONNECTION INSTANCE="InputAssembler2_0" PORT="VERTOUT_FIFO_empty"/>
+            <CONNECTION INSTANCE="InputAssembler2_0" PORT="VERTOUT_FIFO_empty"/>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="CMD_FIFO_EMPTY_VS"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" NAME="wr_rst_busy" SIGIS="undef"/>
@@ -41559,9 +42201,9 @@
         <PARAMETER NAME="C_COUNT_TYPE" VALUE="0"/>
         <PARAMETER NAME="C_DATA_COUNT_WIDTH" VALUE="9"/>
         <PARAMETER NAME="C_DEFAULT_VALUE" VALUE="BlankString"/>
-        <PARAMETER NAME="C_DIN_WIDTH" VALUE="256"/>
+        <PARAMETER NAME="C_DIN_WIDTH" VALUE="272"/>
         <PARAMETER NAME="C_DOUT_RST_VAL" VALUE="0"/>
-        <PARAMETER NAME="C_DOUT_WIDTH" VALUE="256"/>
+        <PARAMETER NAME="C_DOUT_WIDTH" VALUE="272"/>
         <PARAMETER NAME="C_ENABLE_RLOCS" VALUE="0"/>
         <PARAMETER NAME="C_FAMILY" VALUE="kintexuplus"/>
         <PARAMETER NAME="C_FULL_FLAGS_RST_VAL" VALUE="0"/>
@@ -41763,9 +42405,9 @@
         <PARAMETER NAME="INTERFACE_TYPE" VALUE="Native"/>
         <PARAMETER NAME="Performance_Options" VALUE="First_Word_Fall_Through"/>
         <PARAMETER NAME="asymmetric_port_width" VALUE="false"/>
-        <PARAMETER NAME="Input_Data_Width" VALUE="256"/>
+        <PARAMETER NAME="Input_Data_Width" VALUE="272"/>
         <PARAMETER NAME="Input_Depth" VALUE="512"/>
-        <PARAMETER NAME="Output_Data_Width" VALUE="256"/>
+        <PARAMETER NAME="Output_Data_Width" VALUE="272"/>
         <PARAMETER NAME="Output_Depth" VALUE="512"/>
         <PARAMETER NAME="Enable_ECC" VALUE="false"/>
         <PARAMETER NAME="Use_Embedded_Registers" VALUE="false"/>
@@ -41932,7 +42574,7 @@
           </CONNECTIONS>
         </PORT>
         <PORT DIR="I" NAME="srst" SIGIS="undef"/>
-        <PORT DIR="I" LEFT="255" NAME="din" RIGHT="0" SIGIS="undef" SIGNAME="ShaderCoreSystem_ShaderCore_0_INDEXOUT_FIFO_wr_data">
+        <PORT DIR="I" LEFT="271" NAME="din" RIGHT="0" SIGIS="undef" SIGNAME="ShaderCoreSystem_ShaderCore_0_INDEXOUT_FIFO_wr_data">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ShaderCoreSystem_ShaderCore_0" PORT="INDEXOUT_FIFO_wr_data"/>
           </CONNECTIONS>
@@ -41947,7 +42589,7 @@
             <CONNECTION INSTANCE="InputAssembler2_0" PORT="INDEXOUT_FIFO_rd_en"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="255" NAME="dout" RIGHT="0" SIGIS="undef" SIGNAME="VBO_INDEX_FIFO_dout">
+        <PORT DIR="O" LEFT="271" NAME="dout" RIGHT="0" SIGIS="undef" SIGNAME="VBO_INDEX_FIFO_dout">
           <CONNECTIONS>
             <CONNECTION INSTANCE="InputAssembler2_0" PORT="INDEXOUT_FIFO_rd_data"/>
             <CONNECTION INSTANCE="ILA_IA" PORT="probe29"/>
@@ -42017,6 +42659,11 @@
             <CONNECTION INSTANCE="CommandProcessor_0" PORT="VBB_CommandArg2"/>
           </CONNECTIONS>
         </PORT>
+        <PORT DIR="I" LEFT="15" NAME="CMD_NewDrawEventID" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_VBB_NewDrawEventID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="VBB_NewDrawEventID"/>
+          </CONNECTIONS>
+        </PORT>
         <PORT DIR="I" LEFT="2" NAME="CMD_CommandArgType" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_VBB_CommandArgType">
           <CONNECTIONS>
             <CONNECTION INSTANCE="CommandProcessor_0" PORT="VBB_CommandArgType"/>
@@ -42063,7 +42710,7 @@
             <CONNECTION INSTANCE="VBB_FIFO" PORT="full"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="527" NAME="VERTBATCH_FIFO_wr_data" RIGHT="0" SIGIS="undef" SIGNAME="VBB_FIFO_din">
+        <PORT DIR="O" LEFT="543" NAME="VERTBATCH_FIFO_wr_data" RIGHT="0" SIGIS="undef" SIGNAME="VBB_FIFO_din">
           <CONNECTIONS>
             <CONNECTION INSTANCE="VBB_FIFO" PORT="din"/>
           </CONNECTIONS>
@@ -42071,6 +42718,27 @@
         <PORT DIR="O" NAME="VERTBATCH_FIFO_wr_en" SIGIS="undef" SIGNAME="VBB_FIFO_wr_en">
           <CONNECTIONS>
             <CONNECTION INSTANCE="VBB_FIFO" PORT="wr_en"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="31" NAME="STAT_CyclesIdle" RIGHT="0" SIGIS="undef" SIGNAME="VertexBatchBuilder_0_STAT_CyclesIdle">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="StatsCollector_0" PORT="VBB_CyclesIdle"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="31" NAME="STAT_CyclesSpentWorking" RIGHT="0" SIGIS="undef" SIGNAME="VertexBatchBuilder_0_STAT_CyclesSpentWorking">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="StatsCollector_0" PORT="VBB_CyclesSpentWorking"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="31" NAME="STAT_CyclesWaitingForOutput" RIGHT="0" SIGIS="undef" SIGNAME="VertexBatchBuilder_0_STAT_CyclesWaitingForOutput">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="StatsCollector_0" PORT="VBB_CyclesWaitingForOutput"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="15" NAME="STAT_CurrentDrawEventID" RIGHT="0" SIGIS="undef" SIGNAME="VertexBatchBuilder_0_STAT_CurrentDrawEventID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ILA_TexSampler" PORT="probe22"/>
+            <CONNECTION INSTANCE="StatsCollector_0" PORT="VBB_CurrentDrawEventID"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="I" NAME="DBG_UseConstantOutput" SIGIS="undef" SIGNAME="xlconstant_6_dout">
@@ -42187,11 +42855,11 @@
         <PARAMETER NAME="C_PROBE9_WIDTH" VALUE="5"/>
         <PARAMETER NAME="C_PROBE10_WIDTH" VALUE="4"/>
         <PARAMETER NAME="C_PROBE11_WIDTH" VALUE="1"/>
-        <PARAMETER NAME="C_PROBE12_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_PROBE12_WIDTH" VALUE="16"/>
         <PARAMETER NAME="C_PROBE13_WIDTH" VALUE="4"/>
         <PARAMETER NAME="C_PROBE14_WIDTH" VALUE="4"/>
-        <PARAMETER NAME="C_PROBE15_WIDTH" VALUE="1"/>
-        <PARAMETER NAME="C_PROBE16_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_PROBE15_WIDTH" VALUE="16"/>
+        <PARAMETER NAME="C_PROBE16_WIDTH" VALUE="3"/>
         <PARAMETER NAME="C_PROBE17_WIDTH" VALUE="1"/>
         <PARAMETER NAME="C_PROBE18_WIDTH" VALUE="1"/>
         <PARAMETER NAME="C_PROBE19_WIDTH" VALUE="1"/>
@@ -42203,7 +42871,7 @@
         <PARAMETER NAME="C_PROBE25_WIDTH" VALUE="4"/>
         <PARAMETER NAME="C_PROBE26_WIDTH" VALUE="30"/>
         <PARAMETER NAME="C_PROBE27_WIDTH" VALUE="4"/>
-        <PARAMETER NAME="C_PROBE28_WIDTH" VALUE="12"/>
+        <PARAMETER NAME="C_PROBE28_WIDTH" VALUE="13"/>
         <PARAMETER NAME="C_PROBE29_WIDTH" VALUE="16"/>
         <PARAMETER NAME="C_PROBE30_WIDTH" VALUE="16"/>
         <PARAMETER NAME="C_PROBE31_WIDTH" VALUE="16"/>
@@ -45336,9 +46004,9 @@
             <CONNECTION INSTANCE="xlconstant_5" PORT="dout"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="0" NAME="probe12" RIGHT="0" SIGIS="undef" SIGNAME="xlconstant_5_dout">
+        <PORT DIR="I" LEFT="15" NAME="probe12" RIGHT="0" SIGIS="undef" SIGNAME="ROP_0_STAT_CurrentDrawEventID">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="xlconstant_5" PORT="dout"/>
+            <CONNECTION INSTANCE="ROP_0" PORT="STAT_CurrentDrawEventID"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="I" LEFT="3" NAME="probe13" RIGHT="0" SIGIS="undef" SIGNAME="MemorySystem_MemoryController_0_DBG_ReadControlState">
@@ -45351,19 +46019,19 @@
             <CONNECTION INSTANCE="MemorySystem_MemoryController_0" PORT="DBG_WriteControlState"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="0" NAME="probe15" RIGHT="0" SIGIS="undef" SIGNAME="xlconstant_5_dout">
+        <PORT DIR="I" LEFT="15" NAME="probe15" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_DBG_CurrentDrawGeneration">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="xlconstant_5" PORT="dout"/>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="DBG_CurrentDrawGeneration"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="0" NAME="probe16" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_TEXSAMP_LoadTexCacheBeginSignal">
+        <PORT DIR="I" LEFT="2" NAME="probe16" RIGHT="0" SIGIS="undef" SIGNAME="TexSampleStateBlock_CMD_NumFreeSlots">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="TEXSAMP_LoadTexCacheBeginSignal"/>
+            <CONNECTION INSTANCE="TexSampleStateBlock" PORT="CMD_NumFreeSlots"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="0" NAME="probe17" RIGHT="0" SIGIS="undef" SIGNAME="TexSample_0_CMD_LoadTexCacheAckSignal">
+        <PORT DIR="I" LEFT="0" NAME="probe17" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_TEXSAMP_SetNewState">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TexSample_0" PORT="CMD_LoadTexCacheAckSignal"/>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="TEXSAMP_SetNewState"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="I" LEFT="0" NAME="probe18" RIGHT="0" SIGIS="undef" SIGNAME="MemorySystem_MemoryController_0_DBG_ScanoutReadRequests_Empty">
@@ -45416,7 +46084,7 @@
             <CONNECTION INSTANCE="MemorySystem_MemoryController_0" PORT="DBG_LastReadMemoryClientIndex"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="11" NAME="probe28" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_DBG_IdleSignalsVector">
+        <PORT DIR="I" LEFT="12" NAME="probe28" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_DBG_IdleSignalsVector">
           <CONNECTIONS>
             <CONNECTION INSTANCE="CommandProcessor_0" PORT="DBG_IdleSignalsVector"/>
           </CONNECTIONS>
@@ -45963,9 +46631,13 @@
           <CONNECTIONS>
             <CONNECTION INSTANCE="DepthInterpolator_0" PORT="RASTOUT_FIFO_rd_en"/>
           </CONNECTIONS>
-        </PORT>
-        <PORT DIR="O" LEFT="95" NAME="dout" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_RASTOUT_FIFO_rd_data">
           <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="RASTOUT_FIFO_rd_en"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="95" NAME="dout" RIGHT="0" SIGIS="undef" SIGNAME="rast_out_fifo_dout">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="RASTOUT_FIFO_rd_data"/>
             <CONNECTION INSTANCE="DepthInterpolator_0" PORT="RASTOUT_FIFO_rd_data"/>
           </CONNECTIONS>
         </PORT>
@@ -45979,9 +46651,11 @@
             <CONNECTION INSTANCE="Rasterizer_0" PORT="RASTOUT_FIFO_almost_full"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" NAME="empty" SIGIS="undef" SIGNAME="DepthInterpolator_0_RASTOUT_FIFO_empty">
+        <PORT DIR="O" NAME="empty" SIGIS="undef" SIGNAME="rast_out_fifo_empty">
           <CONNECTIONS>
             <CONNECTION INSTANCE="DepthInterpolator_0" PORT="RASTOUT_FIFO_empty"/>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="RASTOUT_FIFO_empty"/>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="CMD_FIFO_EMPTY_RASTOUT"/>
           </CONNECTIONS>
         </PORT>
       </PORTS>
@@ -46870,23 +47544,6 @@
       </PORTS>
       <BUSINTERFACES/>
     </MODULE>
-    <MODULE FULLNAME="/xlconstant_3" HWVERSION="1.1" INSTANCE="xlconstant_3" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="xlconstant" VLNV="xilinx.com:ip:xlconstant:1.1">
-      <DOCUMENTS/>
-      <PARAMETERS>
-        <PARAMETER NAME="CONST_WIDTH" VALUE="1"/>
-        <PARAMETER NAME="CONST_VAL" VALUE="0x0"/>
-        <PARAMETER NAME="Component_Name" VALUE="design_1_xlconstant_3_1"/>
-        <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
-      </PARAMETERS>
-      <PORTS>
-        <PORT DIR="O" LEFT="0" NAME="dout" RIGHT="0" SIGIS="undef" SIGNAME="xlconstant_3_dout">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="CMD_UseFlatShading"/>
-          </CONNECTIONS>
-        </PORT>
-      </PORTS>
-      <BUSINTERFACES/>
-    </MODULE>
     <MODULE FULLNAME="/xlconstant_4" HWVERSION="1.1" INSTANCE="xlconstant_4" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="xlconstant" VLNV="xilinx.com:ip:xlconstant:1.1">
       <DOCUMENTS/>
       <PARAMETERS>
@@ -46920,8 +47577,6 @@
       <PORTS>
         <PORT DIR="O" LEFT="0" NAME="dout" RIGHT="0" SIGIS="undef" SIGNAME="xlconstant_5_dout">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="ila_333_250" PORT="probe15"/>
-            <CONNECTION INSTANCE="ila_333_250" PORT="probe12"/>
             <CONNECTION INSTANCE="ila_333_250" PORT="probe11"/>
           </CONNECTIONS>
         </PORT>

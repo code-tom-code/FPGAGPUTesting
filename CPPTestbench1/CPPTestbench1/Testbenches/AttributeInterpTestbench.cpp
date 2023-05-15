@@ -211,10 +211,6 @@ const int RunTestsAttributeInterp(Xsi::Loader& loader)
 
 	std_logic_port clk(PD_IN, loader, "clk");
 
-// Command Processor interface begin
-	std_logic_port CMD_UseFlatShading(PD_IN, loader, "CMD_UseFlatShading");
-// Command Processor interface end
-
 // Depth Interpolator interface begin
 	std_logic_port DINTERP_ReadyForNewPixel(PD_OUT, loader, "DINTERP_ReadyForNewPixel");
 	std_logic_port DINTERP_NewPixelValid(PD_IN, loader, "DINTERP_NewPixelValid");
@@ -269,7 +265,6 @@ const int RunTestsAttributeInterp(Xsi::Loader& loader)
 	for (unsigned startupCycle = 0; startupCycle < 100; ++startupCycle)
 	{
 		scoped_timestep time(loader, clk, 100);
-		CMD_UseFlatShading = false;
 		FPU_OUT = 0.0f;
 		DINTERP_NewPixelValid = false;
 		TEXSAMP_OutFIFO_full = false;

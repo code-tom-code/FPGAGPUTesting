@@ -4,7 +4,8 @@ vhdl xil_defaultlib  \
 "hdl_src/PacketType.vhd" \
 "hdl_src/FloatALU_Types.vhd" \
 "hdl_src/FloatALU/FloatCommon.vhd" \
-"hdl_src/Clipping/ClipTypes.vhd" \
-"hdl_src/Clipping/ClipCommon.vhd" \
-"hdl_src/Clipping/AABB2DOverlapViewport.vhd" \
-"hdl_src/InputAssembler2.vhd" \
+"hdl_src/VertexPipeline/Clipping/ClipTypes.vhd" \
+"hdl_src/VertexPipeline/Clipping/ClipCommon.vhd" \
+"hdl_src/VertexPipeline/Clipping/AABB2DOverlapViewport.vhd" \
+"hdl_src/RenderState/InputAssemblerState.vhd" \
+"hdl_src/VertexPipeline/InputAssembler2.vhd" \

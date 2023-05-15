@@ -21,41 +21,54 @@ entity StatsCollector is
 	-- Memory Controller FIFO interface end
 
 	-- Stats interface begin
+		VBB_CyclesIdle : in STD_LOGIC_VECTOR(31 downto 0);
+		VBB_CyclesSpentWorking : in STD_LOGIC_VECTOR(31 downto 0);
+		VBB_CyclesWaitingForOutput : in STD_LOGIC_VECTOR(31 downto 0);
+		VBB_CurrentDrawEventID : in STD_LOGIC_VECTOR(15 downto 0);
+
 		VSHADER_CyclesIdle : in STD_LOGIC_VECTOR(31 downto 0);
 		VSHADER_CyclesSpentWorking : in STD_LOGIC_VECTOR(31 downto 0);
 		VSHADER_CyclesExecShaderCode : in STD_LOGIC_VECTOR(31 downto 0);
 		VSHADER_CyclesWaitingForOutput : in STD_LOGIC_VECTOR(31 downto 0);
+		VSHADER_CurrentDrawEventID : in STD_LOGIC_VECTOR(15 downto 0);
 
 		IA_CyclesIdle : in STD_LOGIC_VECTOR(31 downto 0);
 		IA_CyclesSpentWorking : in STD_LOGIC_VECTOR(31 downto 0);
 		IA_CyclesLoadingDataToCache : in STD_LOGIC_VECTOR(31 downto 0);
 		IA_CyclesWaitingForOutput : in STD_LOGIC_VECTOR(31 downto 0);
+		IA_CurrentDrawEventID : in STD_LOGIC_VECTOR(15 downto 0);
 
 		CLIP_CyclesIdle : in STD_LOGIC_VECTOR(31 downto 0);
 		CLIP_CyclesSpentWorking : in STD_LOGIC_VECTOR(31 downto 0);
 		CLIP_CyclesWaitingForOutput : in STD_LOGIC_VECTOR(31 downto 0);
+		CLIP_CurrentDrawEventID : in STD_LOGIC_VECTOR(15 downto 0);
 
 		TRISETUP_CyclesIdle : in STD_LOGIC_VECTOR(31 downto 0);
 		TRISETUP_CyclesSpentWorking : in STD_LOGIC_VECTOR(31 downto 0);
 		TRISETUP_CyclesWaitingForOutput : in STD_LOGIC_VECTOR(31 downto 0);
+		TRISETUP_CurrentDrawEventID : in STD_LOGIC_VECTOR(15 downto 0);
 
 		RAST_CyclesIdle : in STD_LOGIC_VECTOR(31 downto 0);
 		RAST_CyclesSpentWorking : in STD_LOGIC_VECTOR(31 downto 0);
 		RAST_CyclesWaitingForOutput : in STD_LOGIC_VECTOR(31 downto 0);
 		RAST_CyclesWaitingForTriWorkCache : in STD_LOGIC_VECTOR(31 downto 0);
+		RAST_CurrentDrawEventID : in STD_LOGIC_VECTOR(15 downto 0);
 
 		DINTERP_CyclesIdle : in STD_LOGIC_VECTOR(31 downto 0);
 		DINTERP_CyclesSpentWorking : in STD_LOGIC_VECTOR(31 downto 0);
 		DINTERP_CyclesWaitingForOutput : in STD_LOGIC_VECTOR(31 downto 0);
+		DINTERP_CurrentDrawEventID : in STD_LOGIC_VECTOR(15 downto 0);
 
 		INTERP_CyclesIdle : in STD_LOGIC_VECTOR(31 downto 0);
 		INTERP_CyclesSpentWorking : in STD_LOGIC_VECTOR(31 downto 0);
 		INTERP_CyclesWaitingForOutput : in STD_LOGIC_VECTOR(31 downto 0);
+		INTERP_CurrentDrawEventID : in STD_LOGIC_VECTOR(15 downto 0);
 
 		TEXSAMP_CyclesIdle : in STD_LOGIC_VECTOR(31 downto 0);
 		TEXSAMP_CyclesSpentWorking : in STD_LOGIC_VECTOR(31 downto 0);
 		TEXSAMP_CyclesWaitingForOutput : in STD_LOGIC_VECTOR(31 downto 0);
 		TEXSAMP_CyclesWaitingCacheLoad : in STD_LOGIC_VECTOR(31 downto 0);
+		TEXSAMP_CurrentDrawEventID : in STD_LOGIC_VECTOR(15 downto 0);
 
 		ROP_CyclesIdle : in STD_LOGIC_VECTOR(31 downto 0);
 		ROP_CyclesSpentWorking : in STD_LOGIC_VECTOR(31 downto 0);
@@ -63,6 +76,7 @@ entity StatsCollector is
 		ROP_CyclesWaitingForMemoryRead : in STD_LOGIC_VECTOR(31 downto 0);
 		ROP_CountCacheHits : in STD_LOGIC_VECTOR(31 downto 0);
 		ROP_CountCacheMisses : in STD_LOGIC_VECTOR(31 downto 0);
+		ROP_CurrentDrawEventID : in STD_LOGIC_VECTOR(15 downto 0);
 
 		CMD_CyclesIdle : in STD_LOGIC_VECTOR(31 downto 0);
 		CMD_CyclesSpentWorking : in STD_LOGIC_VECTOR(31 downto 0);
@@ -98,15 +112,15 @@ ATTRIBUTE X_INTERFACE_INFO of MEM_StatsWriteRequestsFIFO_full: SIGNAL is "xilinx
 
 type StatsCollectorStateType is 
 (
-	init, -- 0
-	waitingForCommand, -- 1
-	endFrameCapture, -- 2
-	saveStatsToMem0, -- 3
-	saveStatsToMem1, -- 4
-	saveStatsToMem2, -- 5
-	saveStatsToMem3, -- 6
-	saveStatsToMem4, -- 7
-	saveStatsToMem5, -- 8
+	waitingForCommand, -- 0
+	endFrameCapture, -- 1
+	saveStatsToMem0, -- 2
+	saveStatsToMem1, -- 3
+	saveStatsToMem2, -- 4
+	saveStatsToMem3, -- 5
+	saveStatsToMem4, -- 6
+	saveStatsToMem5, -- 7
+	saveStatsToMem6, -- 8
 	startFrameCapture, -- 9
 	startFrameCapture2 -- 10
 );
@@ -116,10 +130,14 @@ subtype CycleCounter is unsigned(31 downto 0);
 subtype CounterStat is unsigned(31 downto 0);
 
 type FrameCaptureCycleCounters is record
+	VertBatchBuilderCyclesIdle : CycleCounter;
+	VertBatchBuilderCyclesWorking : CycleCounter;
+	VertBatchBuilderCyclesWaitingForOutput : CycleCounter;
+
 	VShaderCyclesIdle : CycleCounter;
 	VShaderCyclesWorking : CycleCounter;
-	VShaderCyclesExecShaderCode : CycleCounter;
 	VShaderCyclesWaitingForOutput : CycleCounter;
+	VShaderCyclesExecShaderCode : CycleCounter;
 	
 	IACyclesIdle : CycleCounter;
 	IACyclesWorking : CycleCounter;
@@ -181,7 +199,10 @@ type FrameCaptureCounterStats is record
 	MemWriteCounterNumTransactions : CounterStat;
 end record FrameCaptureCounterStats;
 
-signal currentState : StatsCollectorStateType := init;
+signal currentState : StatsCollectorStateType := waitingForCommand;
+
+signal currentTimestamp : unsigned(31 downto 0) := (others => '0');
+signal eventsFlushAllWrites : std_logic := '0';
 
 signal startFrameTimeCounters : FrameCaptureCycleCounters := (others => (others => '0') );
 signal startFrameCounterStats : FrameCaptureCounterStats := (others => (others => '0') );
@@ -193,6 +214,22 @@ signal memoryWriteAddress : unsigned(29 downto 0) := (others => '0');
 signal memoryWriteDWORDEnables : unsigned(7 downto 0) := (others => '1');
 signal memoryWriteOutgoingData : unsigned(255 downto 0) := (others => '0');
 signal memoryWriteEnable : std_logic := '0';
+
+signal eventsDataVBB : std_logic_vector(255 downto 0) := (others => '0');
+signal eventsDataVSHADER : std_logic_vector(255 downto 0) := (others => '0');
+signal eventsDataIA : std_logic_vector(255 downto 0) := (others => '0');
+signal eventsDataCLIP : std_logic_vector(255 downto 0) := (others => '0');
+signal eventsDataTRISETUP : std_logic_vector(255 downto 0) := (others => '0');
+signal eventsDataRAST : std_logic_vector(255 downto 0) := (others => '0');
+signal eventsDataDINTERP : std_logic_vector(255 downto 0) := (others => '0');
+signal eventsDataINTERP : std_logic_vector(255 downto 0) := (others => '0');
+signal eventsDataTEXSAMPLE : std_logic_vector(255 downto 0) := (others => '0');
+signal eventsDataROP : std_logic_vector(255 downto 0) := (others => '0');
+
+signal eventsWriteIsReady : std_logic_vector(9 downto 0) := (others => '0');
+signal eventsAckWrite : std_logic_vector(9 downto 0) := (others => '0');
+signal eventsCurrentWriteOrderNibble : unsigned(15 downto 0) := (others => '0');
+signal eventsCurrentWriteOrderSize : unsigned(1 downto 0) := (others => '0');
 
 constant constUint0 : unsigned(31 downto 0) := (others => '0');
 
@@ -213,10 +250,14 @@ end function;
 
 procedure CaptureFrameCounters(signal timeCounters : out FrameCaptureCycleCounters; signal counterStats : out FrameCaptureCounterStats) is
 begin
+	timeCounters.VertBatchBuilderCyclesIdle <= unsigned(VBB_CyclesIdle);
+	timeCounters.VertBatchBuilderCyclesWorking <= unsigned(VBB_CyclesSpentWorking);
+	timeCounters.VertBatchBuilderCyclesWaitingForOutput <= unsigned(VBB_CyclesWaitingForOutput);
+
 	timeCounters.VShaderCyclesIdle <= unsigned(VSHADER_CyclesIdle);
 	timeCounters.VShaderCyclesWorking <= unsigned(VSHADER_CyclesSpentWorking);
-	timeCounters.VShaderCyclesExecShaderCode <= unsigned(VSHADER_CyclesExecShaderCode);
 	timeCounters.VShaderCyclesWaitingForOutput <= unsigned(VSHADER_CyclesWaitingForOutput);
+	timeCounters.VShaderCyclesExecShaderCode <= unsigned(VSHADER_CyclesExecShaderCode);
 
 	timeCounters.IACyclesIdle <= unsigned(IA_CyclesIdle);
 	timeCounters.IACyclesWorking <= unsigned(IA_CyclesSpentWorking);
@@ -283,12 +324,18 @@ DBG_CurrentState <= std_logic_vector(to_unsigned(StatsCollectorStateType'pos(cur
 	process(clk)
 	begin
 		if (rising_edge(clk) ) then
-			case currentState is
-				when init =>
-					memoryWriteEnable <= '0';
-					currentState <= waitingForCommand;
+			currentTimestamp <= currentTimestamp + 1;
+		end if;
+	end process;
 
+	process(clk)
+	begin
+		if (rising_edge(clk) ) then
+			case currentState is
 				when waitingForCommand =>
+					eventsAckWrite <= (others => '0');
+					memoryWriteEnable <= '0';
+
 					if (CMD_PresentSignal = '1') then
 						memoryWriteAddress <= unsigned(CMD_WriteFrameStatsAddress);
 						currentState <= endFrameCapture;
@@ -362,8 +409,8 @@ DBG_CurrentState <= std_logic_vector(to_unsigned(StatsCollectorStateType'pos(cur
 							endFrameTimeCounters.MemControllerWriteCyclesWorking, startFrameTimeCounters.MemControllerWriteCyclesWorking,
 							endFrameTimeCounters.VShaderCyclesIdle, startFrameTimeCounters.VShaderCyclesIdle,
 							endFrameTimeCounters.VShaderCyclesWorking, startFrameTimeCounters.VShaderCyclesWorking,
-							endFrameTimeCounters.VShaderCyclesExecShaderCode, startFrameTimeCounters.VShaderCyclesExecShaderCode,
-							endFrameTimeCounters.VShaderCyclesWaitingForOutput, startFrameTimeCounters.VShaderCyclesWaitingForOutput);
+							endFrameTimeCounters.VShaderCyclesWaitingForOutput, startFrameTimeCounters.VShaderCyclesWaitingForOutput,
+							endFrameTimeCounters.VShaderCyclesExecShaderCode, startFrameTimeCounters.VShaderCyclesExecShaderCode);
 						currentState <= saveStatsToMem4;
 					else
 						memoryWriteEnable <= '0';
@@ -400,6 +447,24 @@ DBG_CurrentState <= std_logic_vector(to_unsigned(StatsCollectorStateType'pos(cur
 							endFrameTimeCounters.ClipCyclesIdle, startFrameTimeCounters.ClipCyclesIdle,
 							endFrameTimeCounters.ClipCyclesWorking, startFrameTimeCounters.ClipCyclesWorking,
 							endFrameTimeCounters.ClipCyclesWaitingForOutput, startFrameTimeCounters.ClipCyclesWaitingForOutput,
+							constUint0, constUint0);
+						currentState <= saveStatsToMem6;
+					else
+						memoryWriteEnable <= '0';
+					end if;
+
+				when saveStatsToMem6 =>
+					if (MEM_StatsWriteRequestsFIFO_full = '0') then
+						memoryWriteEnable <= '1';
+						memoryWriteAddress <= memoryWriteAddress + 32;
+						memoryWriteDWORDEnables <= (others => '1');
+						memoryWriteOutgoingData <= ComputeWriteStatsData(endFrameTimeCounters.VertBatchBuilderCyclesIdle, startFrameTimeCounters.VertBatchBuilderCyclesIdle,
+							endFrameTimeCounters.VertBatchBuilderCyclesWorking, startFrameTimeCounters.VertBatchBuilderCyclesWorking,
+							endFrameTimeCounters.VertBatchBuilderCyclesWaitingForOutput, startFrameTimeCounters.VertBatchBuilderCyclesWaitingForOutput,
+							constUint0, constUint0,
+							constUint0, constUint0,
+							constUint0, constUint0,
+							constUint0, constUint0,
 							constUint0, constUint0);
 						CMD_StatsSaveComplete <= '1'; -- Signal to the CommandProcessor who is waiting on us to finish writing out stats that we are done
 						currentState <= startFrameCapture;

@@ -5,9 +5,9 @@
 class IDirect3DQuery9Hook : public IDirect3DQuery9
 {
 public:
-	IDirect3DQuery9Hook(LPDIRECT3DQUERY9 _realObject, IDirect3DDevice9Hook* _parentDevice) : realObject(_realObject), parentDevice(_parentDevice), refCount(1), queryType( (const D3DQUERYTYPE)0),
-		occlusionQueryStartPixelsPassed_Begin(0), occlusionQueryStartPixelsPassed_End(0)
+	IDirect3DQuery9Hook(LPDIRECT3DQUERY9 _realObject, IDirect3DDevice9Hook* _parentDevice) : realObject(_realObject), parentDevice(_parentDevice), refCount(1), deviceQueryAlloc(NULL), queryType( (const D3DQUERYTYPE)0), queryState(nonIssued)
 	{
+		memset(&queryData, 0, sizeof(queryData) );
 	}
 
 	inline LPDIRECT3DQUERY9 GetUnderlyingQuery(void) const
@@ -41,8 +41,37 @@ protected:
 	IDirect3DDevice9Hook* parentDevice;
 	unsigned __int64 refCount;
 
+	gpuvoid* deviceQueryAlloc;
+
+	enum queryStateType
+	{
+		nonIssued = 0,
+		issueBegin,
+		issueEnd,
+	} queryState;
+
 	D3DQUERYTYPE queryType;
 
-	DWORD occlusionQueryStartPixelsPassed_Begin;
-	DWORD occlusionQueryStartPixelsPassed_End;
+	union QueryUnionType
+	{
+		BOOL eventQueryData;
+		DWORD occlusionQueryData;
+		D3DDEVINFO_VCACHE vcacheQueryData;
+		D3DDEVINFO_RESOURCEMANAGER resourceManagerQueryData;
+		D3DDEVINFO_D3DVERTEXSTATS vertexStatsQueryData;
+		UINT64 timestampQueryData;
+		BOOL timestampDisjointQueryData;
+		UINT64 timestampFreqQueryData;
+		D3DDEVINFO_D3D9PIPELINETIMINGS pipelineTimingsQueryData;
+		D3DDEVINFO_D3D9INTERFACETIMINGS interfaceTimingsQueryData;
+		D3DDEVINFO_D3D9STAGETIMINGS vertexTimingsQueryData;
+		D3DDEVINFO_D3D9STAGETIMINGS pixelTimingsQueryData;
+		D3DDEVINFO_D3D9BANDWIDTHTIMINGS bandwidthTimingsQueryData;
+		D3DDEVINFO_D3D9CACHEUTILIZATION cacheUtilizationQueryData;
+		D3DMEMORYPRESSURE memoryPressureQueryData;
+	} queryData;
+
+#ifdef _DEBUG
+	char debugObjectName[64] = {0};
+#endif
 };

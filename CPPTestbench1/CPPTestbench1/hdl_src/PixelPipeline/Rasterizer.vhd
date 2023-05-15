@@ -5,12 +5,16 @@ use IEEE.STD_LOGIC_1164.ALL;
 -- arithmetic functions with Signed or Unsigned values
 use IEEE.NUMERIC_STD.ALL;
 
+use work.PixelPipeline_Types.all;
+
 entity Rasterizer is
 	Port ( clk : in STD_LOGIC;
 
 	-- Triangle Setup interface begin
 		TRISETUP_newTriBegin : in STD_LOGIC;
 		TRISETUP_readyForNewTri : out STD_LOGIC := '0';
+
+		TRISETUP_CurrentDrawEventID : in STD_LOGIC_VECTOR(15 downto 0);
 
 		TRISETUP_inMinX : in STD_LOGIC_VECTOR(15 downto 0);
 		TRISETUP_inMaxX : in STD_LOGIC_VECTOR(15 downto 0);
@@ -97,6 +101,7 @@ entity Rasterizer is
 		STAT_CyclesSpentWorking : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 		STAT_CyclesWaitingForOutput : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 		STAT_CyclesWaitingForTriWorkCache : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		STAT_CurrentDrawEventID : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
 	-- Stats interface end
 
 	-- Debug signals
@@ -134,7 +139,9 @@ ATTRIBUTE X_INTERFACE_INFO of RASTOUT_FIFO_almost_full: SIGNAL is "xilinx.com:in
 		triRasterize_waitForWriteComplete, -- 2
 		triRasterize_allocateNewTriCacheSlot, -- 3
 		triRasterize_sendSetNewTriSlotCommand, -- 4
-		triRasterize_sendFinishTriCommand -- 5
+		triRasterize_sendFinishTriCommand, -- 5
+		triRasterize_sendFinishDrawEventCommand, -- 6
+		triRasterize_sendSetNewDrawEventCommand -- 7
 		);
 
 type vertexTexcoord is record
@@ -209,6 +216,8 @@ signal barycentricInverse : unsigned(31 downto 0) := (others => '0');
 
 signal pixelXPos : unsigned(15 downto 0) := (others => '0'); -- stores values from 0 to 64k, but we only need from 0 to 800
 signal pixelYPos : unsigned(15 downto 0) := (others => '0'); -- stores values from 0 to 64k, but we only need from 0 to 525
+signal previousDrawEventID : unsigned(15 downto 0) := (others => '0');
+signal currentDrawEventID : unsigned(15 downto 0) := (others => '0');
 
 signal currentState : state_t := triRasterize_waitForTriData;
 
@@ -258,11 +267,12 @@ DBG_MaxY <= std_logic_vector(maxY);
 	process(clk)
 	begin
 		if (rising_edge(clk) ) then
+			STAT_CurrentDrawEventID <= std_logic_vector(currentDrawEventID);
 			case currentState is
 				when triRasterize_waitForTriData =>
 					statCyclesIdle <= statCyclesIdle + 1;
 
-				when triRasterize_waitForWriteComplete | triRasterize_sendSetNewTriSlotCommand | triRasterize_sendFinishTriCommand =>
+				when triRasterize_waitForWriteComplete | triRasterize_sendSetNewTriSlotCommand | triRasterize_sendFinishTriCommand | triRasterize_sendFinishDrawEventCommand | triRasterize_sendSetNewDrawEventCommand =>
 					statCyclesWaitingForOutput <= statCyclesWaitingForOutput + 1;
 
 				when triRasterize_allocateNewTriCacheSlot =>
@@ -290,68 +300,76 @@ DBG_MaxY <= std_logic_vector(maxY);
 						CMD_Rasterizer_Idle <= '1'; -- Waiting for more than one cycle in a row means that we're idle
 					end if;
 
+					-- Read in all of our variables from Triangle Setup so that TriSetup can move on to processing the next triangle and
+					-- so that we can work on rasterizing our triangles purely from internal registers alone
+					pixelXPos <= unsigned(TRISETUP_inMinX);
+					pixelYPos <= unsigned(TRISETUP_inMinY);
+					minX <= unsigned(TRISETUP_inMinX);
+					maxX <= unsigned(TRISETUP_inMaxX);
+					minY <= unsigned(TRISETUP_inMinY);
+					maxY <= unsigned(TRISETUP_inMaxY);
+					isTopLeftEdgeA <= TRISETUP_inIsTopLeftEdgeA;
+					isTopLeftEdgeB <= TRISETUP_inIsTopLeftEdgeB;
+					isTopLeftEdgeC <= TRISETUP_inIsTopLeftEdgeC;
+					barycentricRowResetA <= signed(TRISETUP_inInitialBarycentricRowResetA);
+					barycentricRowResetB <= signed(TRISETUP_inInitialBarycentricRowResetB);
+					barycentricRowResetC <= signed(TRISETUP_inInitialBarycentricRowResetC);
+					barycentricXDeltaA <= signed(TRISETUP_inBarycentricXDeltaA);
+					barycentricXDeltaB <= signed(TRISETUP_inBarycentricXDeltaB);
+					barycentricXDeltaC <= signed(TRISETUP_inBarycentricXDeltaC);
+					barycentricYDeltaA <= signed(TRISETUP_inBarycentricYDeltaA);
+					barycentricYDeltaB <= signed(TRISETUP_inBarycentricYDeltaB);
+					barycentricYDeltaC <= signed(TRISETUP_inBarycentricYDeltaC);
+					barycentricInverse <= unsigned(TRISETUP_inBarycentricInverse);
+
+					vertDataA.texcoord.tx <= unsigned(TRISETUP_inTX0);
+					vertDataA.texcoord.ty <= unsigned(TRISETUP_inTY0);
+					vertDataA.color.r <= unsigned(TRISETUP_inVertColor0(31 downto 0) );
+					vertDataA.color.g <= unsigned(TRISETUP_inVertColor0(63 downto 32) );
+					vertDataA.color.b <= unsigned(TRISETUP_inVertColor0(95 downto 64) );
+					vertDataA.color.a <= unsigned(TRISETUP_inVertColor0(127 downto 96) );
+					vertDataA.Z <= unsigned(TRISETUP_inZ0);
+					vertDataA.invW <= unsigned(TRISETUP_inInvW0);
+
+					vertDataB.texcoord.tx <= unsigned(TRISETUP_inTX10);
+					vertDataB.texcoord.ty <= unsigned(TRISETUP_inTY10);
+					vertDataB.color.r <= unsigned(TRISETUP_inVertColor10(31 downto 0) );
+					vertDataB.color.g <= unsigned(TRISETUP_inVertColor10(63 downto 32) );
+					vertDataB.color.b <= unsigned(TRISETUP_inVertColor10(95 downto 64) );
+					vertDataB.color.a <= unsigned(TRISETUP_inVertColor10(127 downto 96) );
+					vertDataB.Z <= unsigned(TRISETUP_inZ10);
+					vertDataB.invW <= unsigned(TRISETUP_inInvW10);
+
+					vertDataC.texcoord.tx <= unsigned(TRISETUP_inTX20);
+					vertDataC.texcoord.ty <= unsigned(TRISETUP_inTY20);
+					vertDataC.color.r <= unsigned(TRISETUP_inVertColor20(31 downto 0) );
+					vertDataC.color.g <= unsigned(TRISETUP_inVertColor20(63 downto 32) );
+					vertDataC.color.b <= unsigned(TRISETUP_inVertColor20(95 downto 64) );
+					vertDataC.color.a <= unsigned(TRISETUP_inVertColor20(127 downto 96) );
+					vertDataC.Z <= unsigned(TRISETUP_inZ20);
+					vertDataC.invW <= unsigned(TRISETUP_inInvW20);
+
+					-- Set the initial values of our barycentric coordinates to the starting row reset values:
+					barycentricA <= signed(TRISETUP_inInitialBarycentricRowResetA) + resize(signed(TRISETUP_inBarycentricXDeltaA), barycentricA'length);
+					barycentricB <= signed(TRISETUP_inInitialBarycentricRowResetB) + resize(signed(TRISETUP_inBarycentricXDeltaB), barycentricB'length);
+					barycentricC <= signed(TRISETUP_inInitialBarycentricRowResetC) + resize(signed(TRISETUP_inBarycentricXDeltaC), barycentricC'length);
+
 					if (TRISETUP_newTriBegin = '1' and readyForNewTri = '1') then
-						pixelXPos <= unsigned(TRISETUP_inMinX);
-						pixelYPos <= unsigned(TRISETUP_inMinY);
-
 						fifoWriteEnable <= '0';
-
-						-- Read in all of our variables from Triangle Setup so that TriSetup can move on to processing the next triangle and
-						-- so that we can work on rasterizing our triangles purely from internal registers alone
-						minX <= unsigned(TRISETUP_inMinX);
-						maxX <= unsigned(TRISETUP_inMaxX);
-						minY <= unsigned(TRISETUP_inMinY);
-						maxY <= unsigned(TRISETUP_inMaxY);
-						isTopLeftEdgeA <= TRISETUP_inIsTopLeftEdgeA;
-						isTopLeftEdgeB <= TRISETUP_inIsTopLeftEdgeB;
-						isTopLeftEdgeC <= TRISETUP_inIsTopLeftEdgeC;
-						barycentricRowResetA <= signed(TRISETUP_inInitialBarycentricRowResetA);
-						barycentricRowResetB <= signed(TRISETUP_inInitialBarycentricRowResetB);
-						barycentricRowResetC <= signed(TRISETUP_inInitialBarycentricRowResetC);
-						barycentricXDeltaA <= signed(TRISETUP_inBarycentricXDeltaA);
-						barycentricXDeltaB <= signed(TRISETUP_inBarycentricXDeltaB);
-						barycentricXDeltaC <= signed(TRISETUP_inBarycentricXDeltaC);
-						barycentricYDeltaA <= signed(TRISETUP_inBarycentricYDeltaA);
-						barycentricYDeltaB <= signed(TRISETUP_inBarycentricYDeltaB);
-						barycentricYDeltaC <= signed(TRISETUP_inBarycentricYDeltaC);
-						barycentricInverse <= unsigned(TRISETUP_inBarycentricInverse);
-
-						vertDataA.texcoord.tx <= unsigned(TRISETUP_inTX0);
-						vertDataA.texcoord.ty <= unsigned(TRISETUP_inTY0);
-						vertDataA.color.r <= unsigned(TRISETUP_inVertColor0(31 downto 0) );
-						vertDataA.color.g <= unsigned(TRISETUP_inVertColor0(63 downto 32) );
-						vertDataA.color.b <= unsigned(TRISETUP_inVertColor0(95 downto 64) );
-						vertDataA.color.a <= unsigned(TRISETUP_inVertColor0(127 downto 96) );
-						vertDataA.Z <= unsigned(TRISETUP_inZ0);
-						vertDataA.invW <= unsigned(TRISETUP_inInvW0);
-
-						vertDataB.texcoord.tx <= unsigned(TRISETUP_inTX10);
-						vertDataB.texcoord.ty <= unsigned(TRISETUP_inTY10);
-						vertDataB.color.r <= unsigned(TRISETUP_inVertColor10(31 downto 0) );
-						vertDataB.color.g <= unsigned(TRISETUP_inVertColor10(63 downto 32) );
-						vertDataB.color.b <= unsigned(TRISETUP_inVertColor10(95 downto 64) );
-						vertDataB.color.a <= unsigned(TRISETUP_inVertColor10(127 downto 96) );
-						vertDataB.Z <= unsigned(TRISETUP_inZ10);
-						vertDataB.invW <= unsigned(TRISETUP_inInvW10);
-
-						vertDataC.texcoord.tx <= unsigned(TRISETUP_inTX20);
-						vertDataC.texcoord.ty <= unsigned(TRISETUP_inTY20);
-						vertDataC.color.r <= unsigned(TRISETUP_inVertColor20(31 downto 0) );
-						vertDataC.color.g <= unsigned(TRISETUP_inVertColor20(63 downto 32) );
-						vertDataC.color.b <= unsigned(TRISETUP_inVertColor20(95 downto 64) );
-						vertDataC.color.a <= unsigned(TRISETUP_inVertColor20(127 downto 96) );
-						vertDataC.Z <= unsigned(TRISETUP_inZ20);
-						vertDataC.invW <= unsigned(TRISETUP_inInvW20);
-
-						-- Set the initial values of our barycentric coordinates to the starting row reset values:
-						barycentricA <= signed(TRISETUP_inInitialBarycentricRowResetA) + resize(signed(TRISETUP_inBarycentricXDeltaA), barycentricA'length);
-						barycentricB <= signed(TRISETUP_inInitialBarycentricRowResetB) + resize(signed(TRISETUP_inBarycentricXDeltaB), barycentricB'length);
-						barycentricC <= signed(TRISETUP_inInitialBarycentricRowResetC) + resize(signed(TRISETUP_inBarycentricXDeltaC), barycentricC'length);
 
 						hasWrittenPixelsForThisTriangle <= '0';
 
 						readyForNewTri <= '0';
-						currentState <= triRasterize_mainLoop;
+
+						if (currentDrawEventID = unsigned(TRISETUP_CurrentDrawEventID) ) then
+							currentState <= triRasterize_mainLoop;
+						elsif (currentDrawEventID /= X"0000") then
+							currentState <= triRasterize_sendFinishDrawEventCommand;
+						else
+							currentState <= triRasterize_sendSetNewDrawEventCommand;
+						end if;
+						previousDrawEventID <= currentDrawEventID;
+						currentDrawEventID <= unsigned(TRISETUP_CurrentDrawEventID);
 					else
 						readyForNewTri <= '1';
 					end if;
@@ -465,7 +483,7 @@ DBG_MaxY <= std_logic_vector(maxY);
 				when triRasterize_sendSetNewTriSlotCommand =>
 					if (RASTOUT_FIFO_full = '0' and RASTOUT_FIFO_almost_full = '0') then
 						fifoWriteEnable <= '1';
-						fifoWriteData <= "0000000000000" & std_logic_vector(currentTriangleAllocatedSlot) & x"FFFE" & -- FFFE means "set this new triangle slot"
+						fifoWriteData <= "0000000000000" & std_logic_vector(currentTriangleAllocatedSlot) & std_logic_vector(PixelMsg_SetNewPrimSlot) &
 							x"00000000" & x"00000000";
 
 						currentState <= triRasterize_waitForWriteComplete;
@@ -476,10 +494,32 @@ DBG_MaxY <= std_logic_vector(maxY);
 				when triRasterize_sendFinishTriCommand =>
 					if (RASTOUT_FIFO_full = '0' and RASTOUT_FIFO_almost_full = '0') then
 						fifoWriteEnable <= '1';
-						fifoWriteData <= "0000000000000" & std_logic_vector(currentTriangleAllocatedSlot) & x"FFFF" & -- FFFF means "finish this triangle"
+						fifoWriteData <= "0000000000000" & std_logic_vector(currentTriangleAllocatedSlot) & std_logic_vector(PixelMsg_TermCurrentPrimSlot) &
 							x"00000000" & x"00000000";
 
 						currentState <= triRasterize_waitForTriData;
+					else
+						fifoWriteEnable <= '0';
+					end if;
+
+				when triRasterize_sendFinishDrawEventCommand =>
+					if (RASTOUT_FIFO_full = '0' and RASTOUT_FIFO_almost_full = '0') then
+						fifoWriteEnable <= '1';
+						fifoWriteData <= std_logic_vector(previousDrawEventID) & std_logic_vector(PixelMsg_TermCurrentDrawEventID) &
+							x"00000000" & x"00000000";
+
+						currentState <= triRasterize_sendSetNewDrawEventCommand;
+					else
+						fifoWriteEnable <= '0';
+					end if;
+
+				when triRasterize_sendSetNewDrawEventCommand =>
+					if (RASTOUT_FIFO_full = '0' and RASTOUT_FIFO_almost_full = '0') then
+						fifoWriteEnable <= '1';
+						fifoWriteData <= std_logic_vector(currentDrawEventID) & std_logic_vector(PixelMsg_SetNewDrawEventID) &
+							x"00000000" & x"00000000";
+
+						currentState <= triRasterize_mainLoop;
 					else
 						fifoWriteEnable <= '0';
 					end if;

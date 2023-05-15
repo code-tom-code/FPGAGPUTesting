@@ -1,5 +1,62 @@
 #pragma once
 
+enum eSpecialPixelCodeBits
+{
+	SetNewPrimSlot, // 0
+	TerminateCurrentPrimSlot, // 1
+	SetNewDrawEventID, // 2
+	TerminateCurrentDrawEventID, // 3
+	Unused4, // 4
+	Unused5, // 5
+	Unused6, // 6
+	Unused7, // 7
+	Unused8, // 8
+	Unused9, // 9
+	Unused10, // 10
+	Unused11, // 11
+	Unused12, // 12
+	Unused13, // 13
+	Unused14, // 14
+	SpecialCodeBit // 15
+};
+
+const unsigned short PixelMsg_SetNewPrimSlot = 0x8001;
+const unsigned short PixelMsg_TermCurrentPrimSlot = 0x8002;
+const unsigned short PixelMsg_SetNewDrawEventID = 0x8004;
+const unsigned short PixelMsg_TermCurrentDrawEventID = 0x8008;
+
+inline const bool IsSpecialCodePixel(const signed short pixelCoord)
+{
+	const unsigned short uPixelCoord = (const unsigned short)pixelCoord;
+	return (uPixelCoord & (1 << SpecialCodeBit) ) != 0;
+}
+
+inline const eSpecialPixelCodeBits GetPixelSpecialCode(const signed short pixelCoord)
+{
+#ifdef _DEBUG
+	if (!IsSpecialCodePixel(pixelCoord) )
+	{
+		__debugbreak(); // Only call this on pixels that are already known to have the special code bit set!
+	}
+#endif
+
+	if (pixelCoord & (1 << SetNewPrimSlot) )
+		return SetNewPrimSlot;
+	else if (pixelCoord & (1 << TerminateCurrentPrimSlot) )
+		return TerminateCurrentPrimSlot;
+	else if (pixelCoord & (1 << SetNewDrawEventID) )
+		return SetNewDrawEventID;
+	else if (pixelCoord & (1 << TerminateCurrentDrawEventID) )
+		return TerminateCurrentDrawEventID;
+	else
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Should never be here! Invalid/unknown pixel special code!
+#endif
+		return Unused14;
+	}
+}
+
 inline bool FloatCompareEpsilon(const float a, const float b, const float epsilon)
 {
 	return fabs(a - b) <= epsilon;

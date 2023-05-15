@@ -5286,17 +5286,23 @@ void IDirect3DDevice9Hook::DeviceSetCurrentState(const D3DPRIMITIVETYPE primType
 	// Set the IA state:
 	baseDevice->DeviceSetIAState(cullMode, primTopology, sct_CutDisabled, indexFormat, currentIB ? currentIB->GetGPUBytes() : NULL);
 
-	// Set the alpha-testing, render target, and depth states:
+	// Set the depth states:
 	const bool zEnable = currentState.currentRenderStates.renderStatesUnion.namedStates.zEnable != D3DZB_FALSE;
 	const bool zWriteEnable = currentState.currentRenderStates.renderStatesUnion.namedStates.zWriteEnable ? true : false;
+	const D3DCMPFUNC zCmpFunc = currentState.currentRenderStates.renderStatesUnion.namedStates.zFunc;
+	baseDevice->DeviceSetDepthState(forceDisableDepth ? false : zEnable, zWriteEnable, ConvertToDeviceCmpFunc(zCmpFunc) );
+
+	// Set the clipper state:
+	const bool depthClipEnable = zEnable;
+	const bool useOpenGLNearZClip = false;
+	const float guardBandXScale = currentState.cachedViewport.fGuardBandWidthScale;
+	const float guardBandYScale = currentState.cachedViewport.fGuardBandHeightScale;
+	baseDevice->DeviceSetClipState(depthClipEnable, useOpenGLNearZClip, guardBandXScale, guardBandYScale);
+
+	// Set the alpha-testing, render target, and blend states:
 	const bool alphaTestEnable = currentState.currentRenderStates.renderStatesUnion.namedStates.alphaTestEnable ? true : false;
 	const BYTE alphaTestRefVal = (const BYTE)(currentState.currentRenderStates.renderStatesUnion.namedStates.alphaRef & 0xFF);
 	const D3DCMPFUNC alphaTestCmpFunc = currentState.currentRenderStates.renderStatesUnion.namedStates.alphaFunc;
-	const D3DCMPFUNC zCmpFunc = currentState.currentRenderStates.renderStatesUnion.namedStates.zFunc;
-	baseDevice->DeviceSetRenderTargetAlphaTestState(deviceBackbuffer, eWriteMask, alphaTestEnable, alphaTestRefVal, ConvertToDeviceCmpFunc(alphaTestCmpFunc) );
-	baseDevice->DeviceSetDepthState(forceDisableDepth ? false : zEnable, zWriteEnable, ConvertToDeviceCmpFunc(zCmpFunc) );
-
-	// Set the blend states:
 	const bool alphaBlendEnable = currentState.currentRenderStates.renderStatesUnion.namedStates.alphaBlendEnable ? true : false;
 	const bool separateAlphaBlendEnable = currentState.currentRenderStates.renderStatesUnion.namedStates.separateAlphaBlendEnable ? true : false;
 	const D3DBLEND srcColorBlend = currentState.currentRenderStates.renderStatesUnion.namedStates.srcBlend;
@@ -5306,7 +5312,8 @@ void IDirect3DDevice9Hook::DeviceSetCurrentState(const D3DPRIMITIVETYPE primType
 	const D3DBLENDOP colorBlendOp = currentState.currentRenderStates.renderStatesUnion.namedStates.blendOp;
 	const D3DBLENDOP alphaBlendOp = separateAlphaBlendEnable ? currentState.currentRenderStates.renderStatesUnion.namedStates.blendOpAlpha : colorBlendOp;
 	const D3DCOLOR blendFactorARGB = currentState.currentRenderStates.renderStatesUnion.namedStates.blendFactor;
-	baseDevice->DeviceSetBlendState(alphaBlendEnable, srcColorBlend, destColorBlend, colorBlendOp, srcAlphaBlend, destAlphaBlend, alphaBlendOp, blendFactorARGB);
+	baseDevice->DeviceSetROPState(deviceBackbuffer, eWriteMask, alphaTestEnable, alphaTestRefVal, ConvertToDeviceCmpFunc(alphaTestCmpFunc),
+		alphaBlendEnable, srcColorBlend, destColorBlend, colorBlendOp, srcAlphaBlend, destAlphaBlend, alphaBlendOp, blendFactorARGB);
 
 	// Do some soft-conversions from texture stage states to combiner modes:
 	combinerMode cbModeColor = cbm_textureModulateVertexColor;
@@ -5464,16 +5471,16 @@ void IDirect3DDevice9Hook::DeviceSetCurrentState(const D3DPRIMITIVETYPE primType
 			deviceFormat = eTexFmtX1R5G5B5;
 			break;
 		}
-		baseDevice->DeviceSetTextureState(reducedDimensions & 0xFFFF, reducedDimensions >> 16, useBilinear ? TF_bilinearFilter : TF_pointFilter, rChannel, gChannel, bChannel, aChannel, cbModeColor, cbModeAlpha);
+
+		surface0hook->UpdateSurfaceToGPUIfDirty();
 
 		// Note that this set texture call can be expensive, it causes the command processor to wait on the texture unit to be idle before it flushes the texture cache and
 		// reloads the new texture from DRAM!
-		surface0hook->UpdateSurfaceToGPUIfDirty();
-		baseDevice->DeviceSetTexture(surface0hook->GetDeviceSurfaceBytes(), deviceFormat, reducedDimensions & 0xFFFF, reducedDimensions >> 16);
+		baseDevice->DeviceSetTextureState(reducedDimensions & 0xFFFF, reducedDimensions >> 16, useBilinear ? TF_bilinearFilter : TF_pointFilter, rChannel, gChannel, bChannel, aChannel, cbModeColor, cbModeAlpha, surface0hook->GetDeviceSurfaceBytes(), deviceFormat);
 	}
 	else
 	{
-		baseDevice->DeviceSetTextureState(1, 1, TF_pointFilter, tcm_1, tcm_1, tcm_1, tcm_1, cbModeColor, cbModeAlpha); // No texture? D3D9's fixed function pipeline defaults to using a 1x1 white texture in that case
+		baseDevice->DeviceSetNullTextureState(TF_pointFilter, tcm_1, tcm_1, tcm_1, tcm_1, cbModeColor, cbModeAlpha); // No texture? D3D9's fixed function pipeline defaults to using a 1x1 white texture in that case
 	}
 }
 
@@ -5632,6 +5639,9 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawIndexed
 		DbgPrint("Warning: Uncached pixel shader detected");
 	}
 #endif
+
+	// For debugging purposes only - add a wait for idle before each draw call:
+	// baseDevice->DeviceWaitForIdle( (const waitForDeviceIdleCommand::waitForDeviceSubsystem)(waitForDeviceIdleCommand::waitForIAIdle | waitForDeviceIdleCommand::waitForClipIdle) );
 
 	{
 		GPUCommandList newRecordingCommandList;
@@ -11146,6 +11156,10 @@ void IDirect3DDevice9Hook::InitializeState(const D3DPRESENT_PARAMETERS& d3dpp, c
 	const D3DCMPFUNC alphaTestCmpFunc = D3DCMP_ALWAYS;
 	const D3DCMPFUNC zCmpFunc = D3DCMP_ALWAYS;
 	const bool alphaBlendEnable = false;
+	const bool depthClipEnable = true;
+	const bool useOpenGLNearZClip = false;
+	const float guardBandXScale = 16.0f;
+	const float guardBandYScale = 32.0f;
 	const D3DBLEND srcColorBlend = D3DBLEND_ONE;
 	const D3DBLEND destColorBlend = D3DBLEND_ZERO;
 	const D3DBLENDOP colorBlendOp = D3DBLENDOP_ADD;
@@ -11153,12 +11167,16 @@ void IDirect3DDevice9Hook::InitializeState(const D3DPRESENT_PARAMETERS& d3dpp, c
 	const D3DBLEND destAlphaBlend = D3DBLEND_ZERO;
 	const D3DBLENDOP alphaBlendOp = D3DBLENDOP_ADD;
 	const D3DCOLOR blendFactorARGB = D3DCOLOR_ARGB(255, 255, 255, 255);
-	baseDevice->DeviceSetRenderTargetAlphaTestState(backbufferSurfaceHook->GetDeviceSurfaceBytes(), wm_writeAll, alphaTestEnable, alphaTestRefVal, ConvertToDeviceCmpFunc(alphaTestCmpFunc) );
-	baseDevice->DeviceSetBlendState(alphaBlendEnable, srcColorBlend, destColorBlend, colorBlendOp, srcAlphaBlend, destAlphaBlend, alphaBlendOp, blendFactorARGB);
+	baseDevice->DeviceSetROPState(backbufferSurfaceHook->GetDeviceSurfaceBytes(), wm_writeAll, alphaTestEnable, alphaTestRefVal, ConvertToDeviceCmpFunc(alphaTestCmpFunc),
+			alphaBlendEnable, srcColorBlend, destColorBlend, colorBlendOp, srcAlphaBlend, destAlphaBlend, alphaBlendOp, blendFactorARGB);
 	baseDevice->DeviceClearRendertarget(backbufferSurfaceHook->GetDeviceSurfaceBytes(), D3DCOLOR_ARGB(255, 0, 0, 0) ); // Perform initial device clear so that our backbuffer doesn't start out as garbage
-	baseDevice->DeviceSetTextureState(128, 128, TF_bilinearFilter, tcm_r, tcm_g, tcm_b, tcm_a, cbm_textureModulateVertexColor, cbm_textureModulateVertexColor);
+	baseDevice->DeviceSetNullTextureState(TF_bilinearFilter, tcm_r, tcm_g, tcm_b, tcm_a, cbm_textureModulateVertexColor, cbm_textureModulateVertexColor);
+	baseDevice->DeviceSetClipState(depthClipEnable, useOpenGLNearZClip, guardBandXScale, guardBandYScale);
 	baseDevice->DeviceSetDepthState(forceDisableDepth ? false : zEnable, zWriteEnable, ConvertToDeviceCmpFunc(zCmpFunc) );
 	baseDevice->DeviceClearDepthStencil(currentState.currentDepthStencil ? currentState.currentDepthStencil->GetDeviceSurfaceBytes() : NULL, clearDepth, clearStencil, clearZValue, clearStencilValue);
+
+	// Force an end-frame event to clear out any state that may have been hanging around if we didn't shut down cleanly last time:
+	baseDevice->DeviceEndFrame();
 
 #ifdef MULTITHREAD_SHADING
 	MAX_NUM_JOBS = d3dpp.BackBufferWidth * d3dpp.BackBufferHeight * NUM_JOBS_PER_PIXEL;

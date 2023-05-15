@@ -8,6 +8,8 @@ use IEEE.NUMERIC_STD.ALL;
 -- Include our packet definition file so that we can use the eCmpFunc enum type defined in there
 library work;
 use work.PacketType.all;
+use work.PixelPipeline_Types.all;
+use work.ROPState.all;
 
 entity ROP is
 	Port ( clk : in STD_LOGIC;
@@ -38,21 +40,14 @@ entity ROP is
 		CMD_FlushCacheAck : out STD_LOGIC := '0';
 
 		CMD_ROPIsIdle : out STD_LOGIC := '0';
-
-		CMD_SetBaseAddrAndAlphaTestSignal : in STD_LOGIC;
-		CMD_SetBaseAddrAndAlphaTestSignalAck : out STD_LOGIC := '0';
-		CMD_SetRenderTargetBaseAddr : in STD_LOGIC_VECTOR(29 downto 0);
-		CMD_SetWriteMask : in STD_LOGIC_VECTOR(3 downto 0);
-		CMD_SetAlphaTestEnabled : in STD_LOGIC;
-		CMD_SetAlphaTestRefVal : in STD_LOGIC_VECTOR(7 downto 0);
-		CMD_SetAlphaTestFunc : in STD_LOGIC_VECTOR(2 downto 0);
-
-		CMD_SetBlendStateSignal : in STD_LOGIC;
-		CMD_SetBlendStateSigAck : out STD_LOGIC := '0';
-		CMD_SetAlphaBlendEnable : in STD_LOGIC;
-		CMD_SetAlphaBlendFactor : in STD_LOGIC_VECTOR(31 downto 0);
-		CMD_SetAlphaBlendStateBlock : in STD_LOGIC_VECTOR(21 downto 0);
 	-- Command Processor block interface end
+
+	-- ROP State Block interface begin
+		STATE_StateBitsAtDrawID : in STD_LOGIC_VECTOR(ROP_STATE_SIZE_BITS-1 downto 0);
+		STATE_NextDrawID : in STD_LOGIC_VECTOR(15 downto 0);
+		STATE_StateIsValid : in STD_LOGIC;
+		STATE_ConsumeStateSlot : out STD_LOGIC := '0';
+	-- ROP State Block interface end
 
 	-- Texture Sampler FIFO interface begin
 		TEXSAMP_InFIFO_rd_data : in STD_LOGIC_VECTOR(63 downto 0); -- 8 bytes of input data per pixel to the ROP unit
@@ -67,6 +62,8 @@ entity ROP is
 		STAT_CyclesWaitingForMemoryRead : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 		STAT_CountCacheHits : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 		STAT_CountCacheMisses : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		STAT_CurrentDrawEventID : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
+		STAT_CountPixelsPassed : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 	-- Stats interface end
 
 	-- Debug signals
@@ -109,7 +106,6 @@ ATTRIBUTE X_INTERFACE_INFO of TEXSAMP_InFIFO_empty: SIGNAL is "xilinx.com:interf
 
 type ROPStateType is 
 (
-	init, -- 0
 	waitingForPixelData, -- 1
 
 	doAlphaTest, -- 2
@@ -123,42 +119,9 @@ type ROPStateType is
 	blendPixel2, -- 10
 	writePixel, -- 11
 
-	setNewAlphaTestAndRenderTargetState, -- 12
-	setNewBlendState, -- 13
 	setNewClear, -- 14
 	manualFlushFullCache, -- 15
 	manualFlushFullCacheFinish -- 16
-);
-
--- Blend mode types available for the RGB channels:
-type blendModeRGB is
-(
-	blendRGB_0, -- 0
-	blendRGB_srcColor, -- 1
-	blendRGB_srcAlpha, -- 2
-	blendRGB_destAlpha, -- 3
-	blendRGB_destColor, -- 4
-	blendRGB_srcAlphaSat, -- 5
-	blendRGB_blendFactor -- 6
-);
-
--- Blend mode types available for the alpha challen:
-type blendModeA is
-(
-	blendA_0, -- 0
-	blendA_srcAlpha, -- 1
-	blendA_destAlpha, -- 2
-	blendA_blendFactor -- 3
-);
-
--- Blend ops (available for both RGB and Alpha channels):
-type blendOp is
-(
-	bop_add, -- 0
-	bop_subtract, -- 1
-	bop_revsubtract, -- 2
-	bop_min, -- 3
-	bop_max -- 4
 );
 
 type blendStateBlock is record
@@ -220,15 +183,14 @@ constant DefaultROPCacheEntry : ROPCacheEntryType := (cacheAddrBase => (others =
 
 type ROPCacheEntries is array(3 downto 0) of ROPCacheEntryType;
 
-signal currentState : ROPStateType := init;
-signal setAlphaTestAndRenderTargetStateAck : std_logic := '0';
-signal setBlendStateAck : std_logic := '0';
+signal currentState : ROPStateType := waitingForPixelData;
 signal clearSignalAck : std_logic := '0';
 signal flushCacheCommandAck : std_logic := '0';
 signal isIdleSig : std_logic := '0';
 
 signal currentPixelX : unsigned(15 downto 0) := (others => '0');
 signal currentPixelY : unsigned(15 downto 0) := (others => '0');
+signal currentDrawEventID : unsigned(15 downto 0) := (others => '0');
 signal incomingPixelRGBA : unsigned(31 downto 0) := x"FF000000";
 signal baseRenderTargetAddress : unsigned(29 downto 0) := (others => '0');
 signal currentPixelAddress : unsigned(29 downto 0) := (others => '0');
@@ -248,6 +210,7 @@ type clearedBlocksArray is array(59 downto 0) of STD_LOGIC_VECTOR(79 downto 0);
 signal clearedBlocksBits : clearedBlocksArray := (others => (others => '0') );
 signal currentClearRow : unsigned(5 downto 0) := (others => '0');
 signal flushCachesLineIndex : unsigned(1 downto 0) := (others => '0');
+signal currentOcclusionQueryCount : unsigned(31 downto 0) := (others => '0');
 
 signal ROPCache : ROPCacheEntries := (0 => DefaultROPCacheEntry,
 	1 => (cacheAddrBase => (others => '0'), cacheData => (others => '0'), cacheAge => "01", cacheValidWriteDWORDs => (others => '0') ),
@@ -859,8 +822,6 @@ end procedure;
 
 begin
 
-CMD_SetBaseAddrAndAlphaTestSignalAck <= setAlphaTestAndRenderTargetStateAck;
-CMD_SetBlendStateSigAck <= setBlendStateAck;
 CMD_ClearSignalAck <= clearSignalAck;
 CMD_FlushCacheAck <= flushCacheCommandAck;
 CMD_ROPIsIdle <= '1' when (isIdleSig = '1' and TEXSAMP_InFIFO_empty = '1') else '0';
@@ -872,6 +833,8 @@ STAT_CyclesWaitingForOutput <= std_logic_vector(statCyclesWaitingForOutput);
 STAT_CyclesWaitingForMemoryRead <= std_logic_vector(statCyclesWaitingForMemRead);
 STAT_CountCacheHits <= std_logic_vector(statCountCacheHits);
 STAT_CountCacheMisses <= std_logic_vector(statCountCacheMisses);
+STAT_CurrentDrawEventID <= std_logic_vector(currentDrawEventID);
+STAT_CountPixelsPassed <= std_logic_vector(currentOcclusionQueryCount);
 
 DBG_ROP_State <= std_logic_vector(to_unsigned(ROPStateType'pos(currentState), 5) );
 DBG_CurrentPixelAddr <= std_logic_vector(currentPixelAddress);
@@ -906,54 +869,79 @@ DBG_CurrentCacheLineDirtyFlags <= std_logic_vector(ROPCache(to_integer(currently
 	process(clk)
 	begin
 		if (rising_edge(clk) ) then
+			STATE_ConsumeStateSlot <= '0';
+			isIdleSig <= '0';
+			TEXSAMP_InFIFO_rd_en <= '0';
+			clearSignalAck <= '0';
+			flushCacheCommandAck <= '0';
+
 			case currentState is
-				when init =>
-					MEM_ROPReadRequestsFIFO_wr_en <= '0';
-					MEM_ROPReadResponsesFIFO_rd_en <= '0';
-					MEM_ROPWriteRequestsFIFO_wr_en <= '0';
-					setAlphaTestAndRenderTargetStateAck <= '0';
-					setBlendStateAck <= '0';
-					isIdleSig <= '0';
-
-					currentState <= waitingForPixelData;
-
 				when waitingForPixelData =>
 					MEM_ROPWriteRequestsFIFO_wr_en <= '0'; -- Deassert after one clock cycle
-					setAlphaTestAndRenderTargetStateAck <= '0'; -- Deassert after one clock cycle
-					setBlendStateAck <= '0'; -- Deassert after one clock cycle
-					clearSignalAck <= '0'; -- Deassert after one clock cycle
-					flushCacheCommandAck <= '0'; -- Deassert after one clock cycle
-					TEXSAMP_InFIFO_rd_en <= '0';
-					if (CMD_FlushCacheSignal = '1') then
-						isIdleSig <= '0';
+
+					currentPixelX <= unsigned(TEXSAMP_InFIFO_rd_data(15 downto 0) );
+					currentPixelY <= unsigned(TEXSAMP_InFIFO_rd_data(31 downto 16) );
+					incomingPixelRGBA <= unsigned(TEXSAMP_InFIFO_rd_data(63 downto 56) ) & unsigned(TEXSAMP_InFIFO_rd_data(55 downto 48) ) & unsigned(TEXSAMP_InFIFO_rd_data(47 downto 40) ) & unsigned(TEXSAMP_InFIFO_rd_data(39 downto 32) );
+
+					if (STATE_StateIsValid = '1' and currentDrawEventID = unsigned(STATE_NextDrawID) ) then
+						STATE_ConsumeStateSlot <= '1';
+
+						baseRenderTargetAddress <= DeserializeBitsToStruct(STATE_StateBitsAtDrawID).RenderTargetBaseAddress;
+						writeMask <= DeserializeBitsToStruct(STATE_StateBitsAtDrawID).ColorWriteMask;
+
+						-- Set our new alpha test states:
+						currentAlphaTestState.alphaTestEnable <= DeserializeBitsToStruct(STATE_StateBitsAtDrawID).AlphaTestEnabled;
+						currentAlphaTestState.alphaTestRefVal <= DeserializeBitsToStruct(STATE_StateBitsAtDrawID).AlphaTestRefValue;
+						currentAlphaTestState.alphaTestFunc <= DeserializeBitsToStruct(STATE_StateBitsAtDrawID).AlphaTestCompareFunc;
+
+						-- Set our new alpha blend states:
+						currentBlendState.blendEnable <= DeserializeBitsToStruct(STATE_StateBitsAtDrawID).AlphaBlendEnable;
+
+						currentBlendState.blendModeSrcRGB <= DeserializeBitsToStruct(STATE_StateBitsAtDrawID).AlphaBlendConfigBlock.blendModeSrcRGB;
+						currentBlendState.blendModeSrcRGBInvert <= DeserializeBitsToStruct(STATE_StateBitsAtDrawID).AlphaBlendConfigBlock.blendModeSrcRGBInvert;
+						currentBlendState.blendModeDestRGB <= DeserializeBitsToStruct(STATE_StateBitsAtDrawID).AlphaBlendConfigBlock.blendModeDestRGB;
+						currentBlendState.blendModeDestRGBInvert <= DeserializeBitsToStruct(STATE_StateBitsAtDrawID).AlphaBlendConfigBlock.blendModeDestRGBInvert;
+						currentBlendState.blendOpRGB <= DeserializeBitsToStruct(STATE_StateBitsAtDrawID).AlphaBlendConfigBlock.blendOpRGB;
+
+						currentBlendState.blendModeSrcA <= DeserializeBitsToStruct(STATE_StateBitsAtDrawID).AlphaBlendConfigBlock.blendModeSrcA;
+						currentBlendState.blendModeSrcAInvert <= DeserializeBitsToStruct(STATE_StateBitsAtDrawID).AlphaBlendConfigBlock.blendModeSrcAInvert;
+						currentBlendState.blendModeDestA <= DeserializeBitsToStruct(STATE_StateBitsAtDrawID).AlphaBlendConfigBlock.blendModeDestA;
+						currentBlendState.blendModeDestAInvert <= DeserializeBitsToStruct(STATE_StateBitsAtDrawID).AlphaBlendConfigBlock.blendModeDestAInvert;
+						currentBlendState.blendOpA <= DeserializeBitsToStruct(STATE_StateBitsAtDrawID).AlphaBlendConfigBlock.blendOpA;
+
+						currentBlendState.blendFactorRGB <= DeserializeBitsToStruct(STATE_StateBitsAtDrawID).BlendFactorRGBA(23 downto 0);
+						currentBlendState.blendFactorA <= DeserializeBitsToStruct(STATE_StateBitsAtDrawID).BlendFactorRGBA(31 downto 24);
+						currentBlendState.invBlendFactorRGB <= (not DeserializeBitsToStruct(STATE_StateBitsAtDrawID).BlendFactorRGBA(23 downto 0) );
+						currentBlendState.invBlendFactorA <= (not DeserializeBitsToStruct(STATE_StateBitsAtDrawID).BlendFactorRGBA(31 downto 24) );
+
+						currentBlendState.needsLoadSrcColor <= DeserializeBitsToStruct(STATE_StateBitsAtDrawID).AlphaBlendConfigBlock.needsLoadSrcColor;
+						currentBlendState.needsLoadDestColor <= DeserializeBitsToStruct(STATE_StateBitsAtDrawID).AlphaBlendConfigBlock.needsLoadDestColor;
+					elsif (CMD_FlushCacheSignal = '1') then
 						flushCachesLineIndex <= (others => '0');
 						currentState <= manualFlushFullCache;
-					elsif (CMD_SetBaseAddrAndAlphaTestSignal = '1') then
-						isIdleSig <= '0';
-						currentState <= setNewAlphaTestAndRenderTargetState;
-					elsif (CMD_SetBlendStateSignal = '1') then
-						isIdleSig <= '0';
-						currentState <= setNewBlendState;
 					elsif (CMD_ClearSignal = '1') then
-						isIdleSig <= '0';
 						currentState <= setNewClear;
 					elsif (TEXSAMP_InFIFO_empty = '0') then
 						TEXSAMP_InFIFO_rd_en <= '1';
-						currentPixelX <= unsigned(TEXSAMP_InFIFO_rd_data(15 downto 0) );
-						currentPixelY <= unsigned(TEXSAMP_InFIFO_rd_data(31 downto 16) );
-						incomingPixelRGBA <= unsigned(TEXSAMP_InFIFO_rd_data(63 downto 56) ) & unsigned(TEXSAMP_InFIFO_rd_data(55 downto 48) ) & unsigned(TEXSAMP_InFIFO_rd_data(47 downto 40) ) & unsigned(TEXSAMP_InFIFO_rd_data(39 downto 32) );
-						isIdleSig <= '0';
-						if (currentAlphaTestState.alphaTestEnable = '1') then
-							currentState <= doAlphaTest;
+
+						if (IsSpecialPixelMessage(unsigned(TEXSAMP_InFIFO_rd_data(15 downto 0) ) ) ) then
+							if (TEXSAMP_InFIFO_rd_data(eSpecialPixelCodeBits'pos(SetNewDrawEventID) ) = '1') then
+								currentDrawEventID <= unsigned(TEXSAMP_InFIFO_rd_data(31 downto 16) );
+							end if;
+							if (TEXSAMP_InFIFO_rd_data(eSpecialPixelCodeBits'pos(TerminateCurrentDrawEventID) ) = '1') then
+							end if;
 						else
-							currentState <= calcPixelAddress; -- Skip the alpha test if it's not enabled
+							if (currentAlphaTestState.alphaTestEnable = '1') then
+								currentState <= doAlphaTest;
+							else
+								currentState <= calcPixelAddress; -- Skip the alpha test if it's not enabled
+							end if;
 						end if;
 					else
 						isIdleSig <= '1';
 					end if;
 
 				when doAlphaTest =>
-					TEXSAMP_InFIFO_rd_en <= '0'; -- Deassert after one clock cycle
 					if (AlphaTest(incomingPixelRGBA(31 downto 24), currentAlphaTestState.alphaTestRefVal, currentAlphaTestState.alphaTestFunc) = '1') then
 						currentState <= calcPixelAddress; -- We passed the alpha test, continue drawing this pixel!
 					else
@@ -961,7 +949,9 @@ DBG_CurrentCacheLineDirtyFlags <= std_logic_vector(ROPCache(to_integer(currently
 					end if;
 
 				when calcPixelAddress =>
-					TEXSAMP_InFIFO_rd_en <= '0'; -- Deassert after one clock cycle
+					-- This pixel has now survived the depth, stencil, and alpha-tests and should now be counted as contributing to our occlusion query.
+					currentOcclusionQueryCount <= currentOcclusionQueryCount + 1;
+
 					currentPixelAddress <= ( (MultBy640(currentPixelY) + resize(currentPixelX, currentPixelAddress'length) ) sll 2) + baseRenderTargetAddress; -- sll 2 because sizeof(RGBAPixel) == 4
 					currentState <= checkCache;
 
@@ -1091,47 +1081,6 @@ DBG_CurrentCacheLineDirtyFlags <= std_logic_vector(ROPCache(to_integer(currently
 							ROPCache(to_integer(currentlyUsingCacheEntry) ).cacheData(32*1-1 downto 32*0) <= ApplyWriteMask(previousPixelBackbufferRGBA, blendedOutputRGBA, writeMask);
 							ROPCache(to_integer(currentlyUsingCacheEntry) ).cacheValidWriteDWORDs(0) <= (GetIsCacheLineDirty(previousPixelBackbufferRGBA, blendedOutputRGBA, writeMask, currentBlendState) or ROPCache(to_integer(currentlyUsingCacheEntry) ).cacheValidWriteDWORDs(0) );
 					end case;
-					currentState <= waitingForPixelData;
-
-				when setNewAlphaTestAndRenderTargetState =>
-					baseRenderTargetAddress <= unsigned(CMD_SetRenderTargetBaseAddr);
-					writeMask <= unsigned(CMD_SetWriteMask);
-
-					-- Set our new alpha test states:
-					currentAlphaTestState.alphaTestEnable <= CMD_SetAlphaTestEnabled;
-					currentAlphaTestState.alphaTestRefVal <= unsigned(CMD_SetAlphaTestRefVal);
-					currentAlphaTestState.alphaTestFunc <= eCmpFunc'val(to_integer(unsigned(CMD_SetAlphaTestFunc) ) );
-
-					setAlphaTestAndRenderTargetStateAck <= '1'; -- Signal an ack for our new alpha test state and render target address
-
-					currentState <= waitingForPixelData;
-
-				when setNewBlendState =>
-
-					currentBlendState.blendEnable <= CMD_SetAlphaBlendEnable;
-
-					currentBlendState.blendModeSrcRGB <= blendModeRGB'val(to_integer(unsigned(CMD_SetAlphaBlendStateBlock(2 downto 0) ) ) );
-					currentBlendState.blendModeSrcRGBInvert <= CMD_SetAlphaBlendStateBlock(3);
-					currentBlendState.blendModeDestRGB <= blendModeRGB'val(to_integer(unsigned(CMD_SetAlphaBlendStateBlock(6 downto 4) ) ) );
-					currentBlendState.blendModeDestRGBInvert <= CMD_SetAlphaBlendStateBlock(7);
-					currentBlendState.blendOpRGB <= blendOp'val(to_integer(unsigned(CMD_SetAlphaBlendStateBlock(10 downto 8) ) ) );
-
-					currentBlendState.blendModeSrcA <= blendModeA'val(to_integer(unsigned(CMD_SetAlphaBlendStateBlock(12 downto 11) ) ) );
-					currentBlendState.blendModeSrcAInvert <= CMD_SetAlphaBlendStateBlock(13);
-					currentBlendState.blendModeDestA <= blendModeA'val(to_integer(unsigned(CMD_SetAlphaBlendStateBlock(15 downto 14) ) ) );
-					currentBlendState.blendModeDestAInvert <= CMD_SetAlphaBlendStateBlock(16);
-					currentBlendState.blendOpA <= blendOp'val(to_integer(unsigned(CMD_SetAlphaBlendStateBlock(19 downto 17) ) ) );
-
-					currentBlendState.blendFactorRGB <= unsigned(CMD_SetAlphaBlendFactor(23 downto 0) );
-					currentBlendState.blendFactorA <= unsigned(CMD_SetAlphaBlendFactor(31 downto 24) );
-					currentBlendState.invBlendFactorRGB <= (not unsigned(CMD_SetAlphaBlendFactor(23 downto 0) ) );
-					currentBlendState.invBlendFactorA <= (not unsigned(CMD_SetAlphaBlendFactor(31 downto 24) ) );
-
-					currentBlendState.needsLoadSrcColor <= CMD_SetAlphaBlendStateBlock(20);
-					currentBlendState.needsLoadDestColor <= CMD_SetAlphaBlendStateBlock(21);
-					
-					setBlendStateAck <= '1'; -- Signal an ack for our new blend state
-
 					currentState <= waitingForPixelData;
 
 				when setNewClear =>

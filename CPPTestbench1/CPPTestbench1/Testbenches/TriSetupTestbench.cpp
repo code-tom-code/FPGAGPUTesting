@@ -145,7 +145,8 @@ enum triSetupState
 	triSetup_waitForDeltasCompletion4, // 83
 
 	// Finally, send our setup tri result data to the rasterizer
-	triSetup_broadcastOutput // 84
+	triSetup_broadcastOutput, // 84
+	triSetup_broadcastNewDrawEventEmptyTriangle // 85
 };
 
 static const char* const TriSetupStateToString[] =

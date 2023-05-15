@@ -87,7 +87,7 @@ enum eCullMode : unsigned char
 	cullCCW = 0,
 	cullCW = 1,
 	cullNone = 2,
-	cullBoth = 3,
+	// cullBoth = 3, // Removed, no longer supported.
 
 	eCullMode_NUM_CULL_MODES // This must always be last
 };
@@ -215,6 +215,14 @@ enum combinerMode : unsigned char
 	cbm_textureModulateVertexColor = 6,
 
 	cbm_MAX_NUM_COMBINER_MODES // This must always be last!
+};
+
+enum eQueryType : unsigned char
+{
+	eQTEvent = 0,
+	eQTOcclusion = 1,
+	eQTBinaryOcclusion = 2,
+	eQTTimestamp = 3
 };
 
 #pragma pack(pop) // End pragma pack 1 region

@@ -226,6 +226,13 @@ package PacketType is
 		bop_max -- 4
 	);
 
+	type eDepthFormat is
+	(
+		eDepthFmtD24,
+		eDepthFmtD16,
+		eDepthFmtD15
+	);
+
 	-- Computes the packet checksum byte
 	pure function ComputePacketChecksum(packetMagicHeader : STD_LOGIC_VECTOR(7 downto 0);
 										packetTypeByte : STD_LOGIC_VECTOR(7 downto 0);

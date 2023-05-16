@@ -7,6 +7,7 @@ library work;
 use work.PacketType.all;
 use work.InputAssemblerState.all;
 use work.ClipUnitState.all;
+use work.DepthInterpolatorState.all;
 use work.AttrInterpolatorState.all;
 use work.TexSampleState.all;
 use work.ROPState.all;
@@ -69,6 +70,8 @@ entity CommandProcessor is
 		CMD_ClearBlock_Idle : in STD_LOGIC;
 		CMD_MemController_Idle : in STD_LOGIC;
 		CMD_VSync : in STD_LOGIC;
+
+		-- Empty signals from the various systems' FIFO's:
 		CMD_FIFO_EMPTY_VBB : in STD_LOGIC;
 		CMD_FIFO_EMPTY_VS : in STD_LOGIC;
 		CMD_FIFO_EMPTY_RASTOUT : in STD_LOGIC;
@@ -127,12 +130,17 @@ entity CommandProcessor is
 		CLIP_NewStateDrawEventID : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
 	-- Clip Unit state interfaces end
 
+	-- Depth Interpolator state interfaces begin
+		DINTERP_SetNewState : out STD_LOGIC := '0';
+		DINTERP_EndFrameReset : out STD_LOGIC := '0';
+		DINTERP_NumFreeSlots : in STD_LOGIC_VECTOR(2 downto 0);
+		DINTERP_NewStateBits : out STD_LOGIC_VECTOR(DEPTH_INTERPOLATOR_STATE_SIZE_BITS-1 downto 0) := (others => '0');
+		DINTERP_NewStateDrawEventID : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
+	-- Depth Interpolator state interfaces end
+
 	-- Depth Buffer interfaces begin
 		DEPTH_ClearDepthBuffer : out STD_LOGIC := '0';
 		DEPTH_ClearDepthValue : out STD_LOGIC_VECTOR(23 downto 0) := (others => '0');
-		DEPTH_DepthWriteEnable : out STD_LOGIC := '0';
-		DEPTH_DepthFunction : out STD_LOGIC_VECTOR(2 downto 0) := (others => '0');
-		DEPTH_SetDepthParams : out STD_LOGIC := '0';
 	-- Depth Buffer interfaces end
 	
 	-- Attribute Interpolator state interfaces begin
@@ -534,13 +542,14 @@ begin
 						-- Deassert these signals after one clock cycle
 						SHADER_InCommand <= std_logic_vector(to_unsigned(eShaderCMDPacket'pos(DoNothingCommand), 3) );
 						VBB_SendCommand <= std_logic_vector(to_unsigned(eVBB_CMDPacket'pos(NoCommand), 2) );
-						DEPTH_SetDepthParams <= '0';
 						DEPTH_ClearDepthBuffer <= '0';
 						CommandProcReadResponsesFIFO_rd_en <= '0';
 						IA_SetNewState <= '0';
 						IA_EndFrameReset <= '0';
 						CLIP_SetNewState <= '0';
 						CLIP_EndFrameReset <= '0';
+						DINTERP_SetNewState <= '0';
+						DINTERP_EndFrameReset <= '0';
 						INTERP_SetNewState <= '0';
 						INTERP_EndFrameReset <= '0';
 						TEXSAMP_SetNewState <= '0';
@@ -971,6 +980,7 @@ begin
 						currentDrawStateGeneration <= X"0001";
 						IA_EndFrameReset <= '1';
 						CLIP_EndFrameReset <= '1';
+						DINTERP_EndFrameReset <= '1';
 						INTERP_EndFrameReset <= '1';
 						TEXSAMP_EndFrameReset <= '1';
 						ROP_EndFrameReset <= '1';
@@ -1189,15 +1199,16 @@ begin
 
 					when SET_DEPTH_STATE =>
 						hasUpdatedDrawState <= '1';
-						if (DepthBufferIdleSig = '1' and CMD_Depth_Idle = '1') then
-							DEPTH_SetDepthParams <= '1';
-							DEPTH_DepthFunction <= std_logic_vector(localIncomingPacket.payload0(2 downto 0) );
-							DEPTH_DepthWriteEnable <= localIncomingPacket.payload0(8);
+						
+						DINTERP_NewStateBits <= std_logic_vector(localIncomingPacket.payload1(7 downto 0) ) & std_logic_vector(localIncomingPacket.payload0(31 downto 0) );
+						DINTERP_NewStateDrawEventID <= std_logic_vector(currentDrawStateGeneration);
+						if (unsigned(DINTERP_NumFreeSlots) /= 0) then
+							DINTERP_SetNewState <= '1';
 							mst_packet_state <= READ_NEXT_PACKET_FROM_FIFO;
 						end if;
 
 					when INITIATE_DEPTH_BUFFER_CLEAR =>
-						if (DepthBufferIdleSig = '1' and CMD_Depth_Idle = '1') then
+						if (CMD_Depth_Idle = '1' and ( (CombinedIdleSignals and FullPipeSyncIdleFlags) = FullPipeSyncIdleFlags) ) then
 							DEPTH_ClearDepthBuffer <= '1';
 							DEPTH_ClearDepthValue <= '1' & std_logic_vector(localIncomingPacket.payload0(22 downto 0) );
 

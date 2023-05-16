@@ -14,6 +14,7 @@ typedef enum _D3DPRIMITIVETYPE D3DPRIMITIVETYPE;
 
 typedef enum _D3DCMPFUNC D3DCMPFUNC;
 const eCmpFunc ConvertToDeviceCmpFunc(const D3DCMPFUNC cmpFunc);
+const eDepthFormat ConvertToDeviceDepthFormat(const D3DFORMAT zFormat);
 
 struct CachedVertexStream
 {
@@ -127,6 +128,21 @@ struct TextureBlock
 	combinerMode deviceCachedCombinerModeAlpha = cbm_MAX_NUM_COMBINER_MODES;
 };
 
+struct DepthStateBlock
+{
+	bool deviceCachedZEnabled = false;
+	bool deviceCachedZWriteEnabled = false;
+	bool deviceColorWritesEnabled = false;
+	eCmpFunc deviceCachedDepthTestCmpFunc = cmp_MAX_CMP_FUNCS;
+	float deviceDepthBias = 0.0f;
+	eDepthFormat deviceDepthFormat = eDepthFmtD24;
+
+	const bool operator==(const DepthStateBlock& rhs) const
+	{
+		return memcmp(this, &rhs, sizeof(*this) ) == 0;
+	}
+};
+
 struct GPUDeviceState
 {
 	const gpuvoid* deviceCachedScanoutBuffer = nullptr;
@@ -143,16 +159,14 @@ struct GPUDeviceState
 	setScanoutPointerCommand::eDisplayChannelSwizzle deviceScanoutSwizzleG = setScanoutPointerCommand::dcs_green;
 	setScanoutPointerCommand::eDisplayChannelSwizzle deviceScanoutSwizzleB = setScanoutPointerCommand::dcs_blue;
 	bool deviceCachedScanoutEnabled = false;
-	bool deviceCachedZEnabled = false;
-	bool deviceCachedZWriteEnabled = false;
 	bool deviceCachedScanoutInvertColors = false;
 	bool deviceCachedDepthClipEnable = true;
 	bool deviceCachedOpenGLNearZClipMode = false;
 	unsigned deviceCachedGuardBandXScale = 4;
 	unsigned deviceCachedGuardBandYScale = 5;
-	eCmpFunc deviceCachedDepthTestCmpFunc = cmp_MAX_CMP_FUNCS;
 	CachedVertexStream deviceCachedVertexStreams[GPU_MAX_NUM_VERTEX_STREAMS];
 	float4 deviceCachedConstantRegisters[GPU_SHADER_MAX_NUM_CONSTANT_FLOAT_REG];
+	DepthStateBlock deviceCachedDepthState;
 	TextureBlock deviceCachedTextureState;
 	ROPBlock deviceCachedROPState;
 
@@ -198,7 +212,7 @@ __declspec(align(16) ) struct IBaseGPUDevice
 		const D3DBLEND srcAlphaBlend, const D3DBLEND destAlphaBlend, const D3DBLENDOP alphaBlendOp, const D3DCOLOR blendFactorARGB);
 
 	HRESULT __stdcall DeviceSetClipState(const bool depthClipEnabled, const bool useOpenGLNearZClip, const float guardBandXScale, const float guardBandYScale);
-	HRESULT __stdcall DeviceSetDepthState(const bool zEnabled, const bool zWriteEnabled, const eCmpFunc zTestCmpFunc);
+	HRESULT __stdcall DeviceSetDepthState(const bool zEnabled, const bool zWriteEnabled, const bool colorWriteEnabled, const eCmpFunc zTestCmpFunc, const eDepthFormat zFormat, const float depthBias);
 
 	HRESULT __stdcall DeviceSetIAState(const eCullMode cullMode, const ePrimTopology primTopology, const eStripCutType stripCut, const eIndexFormat indexFormat, const gpuvoid* const indexBufferBaseAddr);
 

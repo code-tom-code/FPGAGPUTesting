@@ -100,7 +100,10 @@ enum depthInterpStateType
 	sendPixelForAttrInterpolation, // 63
 
 	setNewPrimitiveSlot, // 64
-	signalPrimitiveComplete // 65
+	signalPrimitiveComplete, // 65
+	signalNewDrawEventID, // 66
+	signalTerminateDrawEventID, // 67
+	setDepthState // 68
 };
 
 void EmulateDepthInterpCPU(const triSetupOutput& triSetupData, const std::vector<rasterizedPixelData>& rasterizedPixels, std::vector<depthInterpOutputData>& outDepthInterpData)

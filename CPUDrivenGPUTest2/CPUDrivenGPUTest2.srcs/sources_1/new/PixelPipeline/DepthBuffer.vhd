@@ -20,14 +20,17 @@ entity DepthBuffer is
 		RAST_InPixelDepth : in STD_LOGIC_VECTOR(23 downto 0);
 	-- Per-pixel input data end
 
+	-- State config data begin
+		RAST_SetDepthParams : in STD_LOGIC;
+		RAST_DepthWriteEnable : in STD_LOGIC;
+		RAST_DepthFunction : in STD_LOGIC_VECTOR(2 downto 0);
+		RAST_DepthIsIdle : out STD_LOGIC := '0';
+	-- State config data end
+
 	-- Per-pixel output data begin
 		RAST_PixelPassedDepthTest : out STD_LOGIC := '0';
 		RAST_PixelFailedDepthTest : out STD_LOGIC := '0';
 	-- Per-pixel output data end
-
-	-- State output begin
-		RAST_DepthTestEnabled : out STD_LOGIC := '1';
-	-- State output end
 
 	-- URAM Interface begin
 		URAM_addra : out STD_LOGIC_VECTOR(17 downto 0) := (others => '0');
@@ -45,9 +48,6 @@ entity DepthBuffer is
 	-- Command Processor interface begin
 		CMD_ClearDepthBuffer : in STD_LOGIC;
 		CMD_ClearDepthValue : in STD_LOGIC_VECTOR(23 downto 0);
-		CMD_DepthWriteEnable : in STD_LOGIC;
-		CMD_DepthFunction : in STD_LOGIC_VECTOR(2 downto 0);
-		CMD_SetDepthParams : in STD_LOGIC;
 		CMD_DepthIsIdle : out STD_LOGIC := '0';
 	-- Command Processor interface end
 
@@ -145,30 +145,12 @@ architecture Behavioral of DepthBuffer is
 		return '1';
 	end function;
 
-	pure function IsDepthTestEnabled(clearModeRunning : std_logic; depthCompareFunc : eCmpFunc; depthWriteEnable : std_logic) return std_logic is
-	begin
-		if (clearModeRunning = '1') then
-			return '0'; -- Disable using the depth buffer block while the clear is running
-		elsif (depthWriteEnable = '1') then
-			return '1'; -- If depth write is enabled, then we must enable the use of the depth buffer block
-		else
-			case depthCompareFunc is
-				when cmp_always => 
-					return '0'; -- If we have depth test on, depth write off and we're set to D3DCMP_ALWAYS then skip the depth buffer block entirely
-				when others =>
-					return '1'; -- Otherwise, use the depth buffer block
-			end case;
-		end if;
-	end function;
-
 begin
 	STAT_PixelsPassedDepthTest <= std_logic_vector(pixelsPassedDepthTest);
 	STAT_PixelsFailedDepthTest <= std_logic_vector(pixelsFailedDepthTest);
 
 	URAM_clka <= clk;
 	URAM_clkb <= clk;
-
-	RAST_DepthTestEnabled <= IsDepthTestEnabled(clearModeEnable, currentDepthCompareFunc, depthWriteEnable);
 
 	setParamsProcess : process(clk)
 	begin
@@ -181,11 +163,13 @@ begin
 				end if;
 
 				CMD_DepthIsIdle <= '0';
+				RAST_DepthIsIdle <= '0';
 			else
-				if (CMD_SetDepthParams = '1') then
-					currentDepthCompareFunc <= eCmpFunc'val(to_integer(unsigned(CMD_DepthFunction) ) );
-					depthWriteEnable <= CMD_DepthWriteEnable;
+				if (RAST_SetDepthParams = '1') then
+					currentDepthCompareFunc <= eCmpFunc'val(to_integer(unsigned(RAST_DepthFunction) ) );
+					depthWriteEnable <= RAST_DepthWriteEnable;
 					CMD_DepthIsIdle <= '0';
+					RAST_DepthIsIdle <= '0';
 				elsif (CMD_ClearDepthBuffer = '1') then
 					clearModeEnable <= '1';
 					clearDepthValue <= unsigned(CMD_ClearDepthValue);
@@ -199,8 +183,10 @@ begin
 					depthWriteEnable <= '1';
 
 					CMD_DepthIsIdle <= '0';
+					RAST_DepthIsIdle <= '0';
 				else
 					CMD_DepthIsIdle <= DepthBufferBlockIsIdle(depthPipeline) and not RAST_PixelReady;
+					RAST_DepthIsIdle <= DepthBufferBlockIsIdle(depthPipeline) and not RAST_PixelReady;
 				end if;
 			end if;
 		end if;

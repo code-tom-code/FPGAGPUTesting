@@ -56,7 +56,7 @@ int main(const unsigned argc, const char* const argv[])
 	AddDllDirectory(simengine_libpath);
 	SetDefaultDllDirectories(LOAD_LIBRARY_SEARCH_APPLICATION_DIR | LOAD_LIBRARY_SEARCH_DEFAULT_DIRS | LOAD_LIBRARY_SEARCH_SYSTEM32 | LOAD_LIBRARY_SEARCH_USER_DIRS);
 	InitClipPlanes();
-
+	
 	int status = S_OK;
 
 	renderWindow = new RenderWindow();

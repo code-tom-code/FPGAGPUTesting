@@ -191,6 +191,13 @@ enum eCmpFunc : unsigned char
 	cmp_MAX_CMP_FUNCS // This must always be last!
 };
 
+enum eDepthFormat : unsigned char
+{
+	eDepthFmtD24 = 0,
+	eDepthFmtD16 = 1,
+	eDepthFmtD15 = 2
+};
+
 // These are meant to be OR'd together to form a complete render target write mask
 enum eBlendMask : unsigned char
 {

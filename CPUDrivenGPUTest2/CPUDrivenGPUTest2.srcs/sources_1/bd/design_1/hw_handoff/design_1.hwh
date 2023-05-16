@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
-<EDKSYSTEM EDWVERSION="1.2" TIMESTAMP="Fri May 12 23:24:25 2023" VIVADOVERSION="2018.1_AR73068">
+<EDKSYSTEM EDWVERSION="1.2" TIMESTAMP="Mon May 15 20:24:30 2023" VIVADOVERSION="2018.1_AR73068">
 
   <SYSTEMINFO ARCH="kintexuplus" BOARD="xilinx.com:kcu116:part0:1.3" DEVICE="xcku5p" NAME="design_1" PACKAGE="ffvb676" SPEEDGRADE="-2"/>
 
@@ -1644,6 +1644,31 @@
             <CONNECTION INSTANCE="ClipUnitStateBlock" PORT="CMD_NewStateDrawEventID"/>
           </CONNECTIONS>
         </PORT>
+        <PORT DIR="O" NAME="DINTERP_SetNewState" SIGIS="undef" SIGNAME="CommandProcessor_0_DINTERP_SetNewState">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthInterpStateBlock" PORT="CMD_SetNewState"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="DINTERP_EndFrameReset" SIGIS="undef" SIGNAME="CommandProcessor_0_DINTERP_EndFrameReset">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthInterpStateBlock" PORT="CMD_EndFrameReset"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="2" NAME="DINTERP_NumFreeSlots" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpStateBlock_CMD_NumFreeSlots">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthInterpStateBlock" PORT="CMD_NumFreeSlots"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="39" NAME="DINTERP_NewStateBits" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_DINTERP_NewStateBits">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthInterpStateBlock" PORT="CMD_NewStateBits"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="15" NAME="DINTERP_NewStateDrawEventID" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_DINTERP_NewStateDrawEventID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthInterpStateBlock" PORT="CMD_NewStateDrawEventID"/>
+          </CONNECTIONS>
+        </PORT>
         <PORT DIR="O" NAME="DEPTH_ClearDepthBuffer" SIGIS="undef" SIGNAME="CommandProcessor_0_DEPTH_ClearDepthBuffer">
           <CONNECTIONS>
             <CONNECTION INSTANCE="DepthBuffer_0" PORT="CMD_ClearDepthBuffer"/>
@@ -1652,21 +1677,6 @@
         <PORT DIR="O" LEFT="23" NAME="DEPTH_ClearDepthValue" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_DEPTH_ClearDepthValue">
           <CONNECTIONS>
             <CONNECTION INSTANCE="DepthBuffer_0" PORT="CMD_ClearDepthValue"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="O" NAME="DEPTH_DepthWriteEnable" SIGIS="undef" SIGNAME="CommandProcessor_0_DEPTH_DepthWriteEnable">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="DepthBuffer_0" PORT="CMD_DepthWriteEnable"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="O" LEFT="2" NAME="DEPTH_DepthFunction" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_DEPTH_DepthFunction">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="DepthBuffer_0" PORT="CMD_DepthFunction"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="O" NAME="DEPTH_SetDepthParams" SIGIS="undef" SIGNAME="CommandProcessor_0_DEPTH_SetDepthParams">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="DepthBuffer_0" PORT="CMD_SetDepthParams"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" NAME="INTERP_SetNewState" SIGIS="undef" SIGNAME="CommandProcessor_0_INTERP_SetNewState">
@@ -1949,6 +1959,26 @@
             <CONNECTION INSTANCE="DepthInterpolator_0" PORT="DEPTH_OutPixelDepth"/>
           </CONNECTIONS>
         </PORT>
+        <PORT DIR="I" NAME="RAST_SetDepthParams" SIGIS="undef" SIGNAME="DepthInterpolator_0_DEPTH_SetDepthParams">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="DEPTH_SetDepthParams"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="RAST_DepthWriteEnable" SIGIS="undef" SIGNAME="DepthInterpolator_0_DEPTH_DepthWriteEnable">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="DEPTH_DepthWriteEnable"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="2" NAME="RAST_DepthFunction" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_DEPTH_DepthFunction">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="DEPTH_DepthFunction"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="RAST_DepthIsIdle" SIGIS="undef" SIGNAME="DepthBuffer_0_RAST_DepthIsIdle">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="DEPTH_DepthIsIdle"/>
+          </CONNECTIONS>
+        </PORT>
         <PORT DIR="O" NAME="RAST_PixelPassedDepthTest" SIGIS="undef" SIGNAME="DepthBuffer_0_RAST_PixelPassedDepthTest">
           <CONNECTIONS>
             <CONNECTION INSTANCE="DepthInterpolator_0" PORT="DEPTH_PixelPassedDepthTest"/>
@@ -1957,11 +1987,6 @@
         <PORT DIR="O" NAME="RAST_PixelFailedDepthTest" SIGIS="undef" SIGNAME="DepthBuffer_0_RAST_PixelFailedDepthTest">
           <CONNECTIONS>
             <CONNECTION INSTANCE="DepthInterpolator_0" PORT="DEPTH_PixelFailedDepthTest"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="O" NAME="RAST_DepthTestEnabled" SIGIS="undef" SIGNAME="DepthBuffer_0_RAST_DepthTestEnabled">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="DEPTH_DepthTestEnabled"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="17" NAME="URAM_addra" RIGHT="0" SIGIS="undef" SIGNAME="DepthBuffer_0_URAM_addra">
@@ -2034,21 +2059,6 @@
         <PORT DIR="I" LEFT="23" NAME="CMD_ClearDepthValue" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_DEPTH_ClearDepthValue">
           <CONNECTIONS>
             <CONNECTION INSTANCE="CommandProcessor_0" PORT="DEPTH_ClearDepthValue"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" NAME="CMD_DepthWriteEnable" SIGIS="undef" SIGNAME="CommandProcessor_0_DEPTH_DepthWriteEnable">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="DEPTH_DepthWriteEnable"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" LEFT="2" NAME="CMD_DepthFunction" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_DEPTH_DepthFunction">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="DEPTH_DepthFunction"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" NAME="CMD_SetDepthParams" SIGIS="undef" SIGNAME="CommandProcessor_0_DEPTH_SetDepthParams">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="DEPTH_SetDepthParams"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" NAME="CMD_DepthIsIdle" SIGIS="undef" SIGNAME="DepthBuffer_0_CMD_DepthIsIdle">
@@ -2410,6 +2420,74 @@
       </PORTS>
       <BUSINTERFACES/>
     </MODULE>
+    <MODULE FULLNAME="/DepthInterpStateBlock" HWVERSION="1.0" INSTANCE="DepthInterpStateBlock" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="StateBlock" VLNV="xilinx.com:module_ref:StateBlock:1.0">
+      <DOCUMENTS/>
+      <PARAMETERS>
+        <PARAMETER NAME="StateBitsCount" VALUE="40"/>
+        <PARAMETER NAME="Component_Name" VALUE="design_1_StateBlock_0_3"/>
+        <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
+      </PARAMETERS>
+      <PORTS>
+        <PORT CLKFREQUENCY="333250000" DIR="I" NAME="clk" SIGIS="clk" SIGNAME="MemorySystem_ddr4_0_c0_ddr4_ui_clk">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="MemorySystem_ddr4_0" PORT="c0_ddr4_ui_clk"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="CMD_SetNewState" SIGIS="undef" SIGNAME="CommandProcessor_0_DINTERP_SetNewState">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="DINTERP_SetNewState"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="CMD_EndFrameReset" SIGIS="undef" SIGNAME="CommandProcessor_0_DINTERP_EndFrameReset">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="DINTERP_EndFrameReset"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="2" NAME="CMD_NumFreeSlots" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpStateBlock_CMD_NumFreeSlots">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="DINTERP_NumFreeSlots"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="39" NAME="CMD_NewStateBits" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_DINTERP_NewStateBits">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="DINTERP_NewStateBits"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="15" NAME="CMD_NewStateDrawEventID" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_DINTERP_NewStateDrawEventID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="DINTERP_NewStateDrawEventID"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="39" NAME="STAGE_StateBitsAtDrawID" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpStateBlock_STAGE_StateBitsAtDrawID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="STATE_StateBitsAtDrawID"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="15" NAME="STAGE_NextDrawID" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpStateBlock_STAGE_NextDrawID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="STATE_NextDrawID"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="STAGE_StateIsValid" SIGIS="undef" SIGNAME="DepthInterpStateBlock_STAGE_StateIsValid">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="STATE_StateIsValid"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="STAGE_ConsumeStateSlot" SIGIS="undef" SIGNAME="DepthInterpolator_0_STATE_ConsumeStateSlot">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="STATE_ConsumeStateSlot"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="3" NAME="DBG_SlotsValid" RIGHT="0" SIGIS="undef"/>
+        <PORT DIR="O" LEFT="1" NAME="DBG_CurrentReadSlotIndex" RIGHT="0" SIGIS="undef"/>
+        <PORT DIR="O" LEFT="1" NAME="DBG_CurrentWriteSlotIndex" RIGHT="0" SIGIS="undef"/>
+        <PORT DIR="O" LEFT="15" NAME="DBG_Slot0" RIGHT="0" SIGIS="undef"/>
+        <PORT DIR="O" LEFT="15" NAME="DBG_Slot1" RIGHT="0" SIGIS="undef"/>
+        <PORT DIR="O" LEFT="15" NAME="DBG_Slot2" RIGHT="0" SIGIS="undef"/>
+        <PORT DIR="O" LEFT="15" NAME="DBG_Slot3" RIGHT="0" SIGIS="undef"/>
+      </PORTS>
+      <BUSINTERFACES/>
+    </MODULE>
     <MODULE FULLNAME="/DepthInterpolator_0" HWVERSION="1.0" INSTANCE="DepthInterpolator_0" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="DepthInterpolator" VLNV="xilinx.com:module_ref:DepthInterpolator:1.0">
       <DOCUMENTS/>
       <PARAMETERS>
@@ -2532,6 +2610,26 @@
             <CONNECTION INSTANCE="rast_out_fifo" PORT="rd_en"/>
           </CONNECTIONS>
         </PORT>
+        <PORT DIR="I" LEFT="39" NAME="STATE_StateBitsAtDrawID" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpStateBlock_STAGE_StateBitsAtDrawID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthInterpStateBlock" PORT="STAGE_StateBitsAtDrawID"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="15" NAME="STATE_NextDrawID" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpStateBlock_STAGE_NextDrawID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthInterpStateBlock" PORT="STAGE_NextDrawID"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="STATE_StateIsValid" SIGIS="undef" SIGNAME="DepthInterpStateBlock_STAGE_StateIsValid">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthInterpStateBlock" PORT="STAGE_StateIsValid"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="STATE_ConsumeStateSlot" SIGIS="undef" SIGNAME="DepthInterpolator_0_STATE_ConsumeStateSlot">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthInterpStateBlock" PORT="STAGE_ConsumeStateSlot"/>
+          </CONNECTIONS>
+        </PORT>
         <PORT DIR="O" LEFT="31" NAME="FPU_A" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_FPU_A">
           <CONNECTIONS>
             <CONNECTION INSTANCE="DepthInterpFloatALU_0" PORT="IN_A"/>
@@ -2607,9 +2705,24 @@
             <CONNECTION INSTANCE="DepthBuffer_0" PORT="RAST_PixelFailedDepthTest"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" NAME="DEPTH_DepthTestEnabled" SIGIS="undef" SIGNAME="DepthBuffer_0_RAST_DepthTestEnabled">
+        <PORT DIR="O" NAME="DEPTH_SetDepthParams" SIGIS="undef" SIGNAME="DepthInterpolator_0_DEPTH_SetDepthParams">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="DepthBuffer_0" PORT="RAST_DepthTestEnabled"/>
+            <CONNECTION INSTANCE="DepthBuffer_0" PORT="RAST_SetDepthParams"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="DEPTH_DepthWriteEnable" SIGIS="undef" SIGNAME="DepthInterpolator_0_DEPTH_DepthWriteEnable">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthBuffer_0" PORT="RAST_DepthWriteEnable"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="2" NAME="DEPTH_DepthFunction" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_DEPTH_DepthFunction">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthBuffer_0" PORT="RAST_DepthFunction"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="DEPTH_DepthIsIdle" SIGIS="undef" SIGNAME="DepthBuffer_0_RAST_DepthIsIdle">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DepthBuffer_0" PORT="RAST_DepthIsIdle"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="I" NAME="ATTR_ReadyForNewPixel" SIGIS="undef" SIGNAME="AttrInterpolator_0_DINTERP_ReadyForNewPixel">
@@ -27465,7 +27578,6 @@
             <CONNECTION INSTANCE="TRISETUP_FPU_CNV" PORT="clk"/>
             <CONNECTION INSTANCE="TriWorkCache_0" PORT="clk"/>
             <CONNECTION INSTANCE="Rasterizer_0" PORT="clk"/>
-            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="clk"/>
             <CONNECTION INSTANCE="TexSampleStateBlock" PORT="clk"/>
             <CONNECTION INSTANCE="AttrInterpStateBlock" PORT="clk"/>
             <CONNECTION INSTANCE="InputAssemblerStateBlock" PORT="clk"/>
@@ -27473,13 +27585,7 @@
             <CONNECTION INSTANCE="TriSetup_0" PORT="clk"/>
             <CONNECTION INSTANCE="IndexBufferCache_0" PORT="clk"/>
             <CONNECTION INSTANCE="ClipUnitStateBlock" PORT="clk"/>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="clk"/>
-            <CONNECTION INSTANCE="DepthBuffer_0" PORT="clk"/>
-            <CONNECTION INSTANCE="InputAssembler2_0" PORT="clk"/>
-            <CONNECTION INSTANCE="VertexBatchBuilder_0" PORT="clk"/>
             <CONNECTION INSTANCE="ROPStateBlock" PORT="clk"/>
-            <CONNECTION INSTANCE="TexSample_0" PORT="clk"/>
-            <CONNECTION INSTANCE="ROP_0" PORT="clk"/>
             <CONNECTION INSTANCE="ClipUnit_0" PORT="clk"/>
             <CONNECTION INSTANCE="SerialPacketSystem_ValidIncomingPacketsFIFO" PORT="rd_clk"/>
             <CONNECTION INSTANCE="SerialPacketSystem_ReturnOutputPacketsFIFO" PORT="wr_clk"/>
@@ -27494,7 +27600,15 @@
             <CONNECTION INSTANCE="ShaderCoreSystem_GPRQuadSystem_GPRQuad2_0" PORT="clk"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_ShaderCore_0" PORT="clk"/>
             <CONNECTION INSTANCE="ScanoutSystem_CDC_Command_Scanout_0" PORT="cmd_clk"/>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="clk"/>
             <CONNECTION INSTANCE="CommandProcessor_0" PORT="clk"/>
+            <CONNECTION INSTANCE="DepthBuffer_0" PORT="clk"/>
+            <CONNECTION INSTANCE="InputAssembler2_0" PORT="clk"/>
+            <CONNECTION INSTANCE="ROP_0" PORT="clk"/>
+            <CONNECTION INSTANCE="TexSample_0" PORT="clk"/>
+            <CONNECTION INSTANCE="VertexBatchBuilder_0" PORT="clk"/>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="clk"/>
+            <CONNECTION INSTANCE="DepthInterpStateBlock" PORT="clk"/>
             <CONNECTION INSTANCE="MemorySystem_ScanoutReadRequestsFIFO" PORT="rd_clk"/>
             <CONNECTION INSTANCE="MemorySystem_ZStencilReadRequestsFIFO" PORT="rd_clk"/>
             <CONNECTION INSTANCE="MemorySystem_ZStencilReadRequestsFIFO" PORT="wr_clk"/>
@@ -28607,8 +28721,8 @@
         <PORT DIR="O" NAME="empty" SIGIS="undef" SIGNAME="ROP_FIFO_empty">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ROP_0" PORT="TEXSAMP_InFIFO_empty"/>
-            <CONNECTION INSTANCE="ROP_0" PORT="TEXSAMP_InFIFO_empty"/>
             <CONNECTION INSTANCE="CommandProcessor_0" PORT="CMD_FIFO_EMPTY_ROP"/>
+            <CONNECTION INSTANCE="ROP_0" PORT="TEXSAMP_InFIFO_empty"/>
           </CONNECTIONS>
         </PORT>
       </PORTS>
@@ -39871,8 +39985,8 @@
         </PORT>
         <PORT DIR="O" NAME="empty" SIGIS="undef" SIGNAME="TEXSAMP_FIFO_empty">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TexSample_0" PORT="INTERP_InFIFO_empty"/>
             <CONNECTION INSTANCE="CommandProcessor_0" PORT="CMD_FIFO_EMPTY_TEXSAMP"/>
+            <CONNECTION INSTANCE="TexSample_0" PORT="INTERP_InFIFO_empty"/>
           </CONNECTIONS>
           <CONNECTIONS>
             <CONNECTION INSTANCE="TexSample_0" PORT="INTERP_InFIFO_empty"/>
@@ -42167,8 +42281,8 @@
         <PORT DIR="O" NAME="empty" SIGIS="undef" SIGNAME="VBO_FIFO_empty">
           <CONNECTIONS>
             <CONNECTION INSTANCE="InputAssembler2_0" PORT="VERTOUT_FIFO_empty"/>
-            <CONNECTION INSTANCE="InputAssembler2_0" PORT="VERTOUT_FIFO_empty"/>
             <CONNECTION INSTANCE="CommandProcessor_0" PORT="CMD_FIFO_EMPTY_VS"/>
+            <CONNECTION INSTANCE="InputAssembler2_0" PORT="VERTOUT_FIFO_empty"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" NAME="wr_rst_busy" SIGIS="undef"/>
@@ -46654,8 +46768,8 @@
         <PORT DIR="O" NAME="empty" SIGIS="undef" SIGNAME="rast_out_fifo_empty">
           <CONNECTIONS>
             <CONNECTION INSTANCE="DepthInterpolator_0" PORT="RASTOUT_FIFO_empty"/>
-            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="RASTOUT_FIFO_empty"/>
             <CONNECTION INSTANCE="CommandProcessor_0" PORT="CMD_FIFO_EMPTY_RASTOUT"/>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="RASTOUT_FIFO_empty"/>
           </CONNECTIONS>
         </PORT>
       </PORTS>

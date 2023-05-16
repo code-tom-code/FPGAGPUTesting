@@ -5,9 +5,11 @@ use IEEE.STD_LOGIC_1164.ALL;
 -- arithmetic functions with Signed or Unsigned values
 use IEEE.NUMERIC_STD.ALL;
 
+use work.PacketType.all;
 use work.FloatALU_Types.all;
 use work.FloatCommon.all;
 use work.PixelPipeline_Types.all;
+use work.DepthInterpolatorState.all;
 
 entity DepthInterpolator is
 	Port ( clk : in STD_LOGIC;
@@ -40,6 +42,13 @@ entity DepthInterpolator is
 		RASTOUT_FIFO_rd_en : out STD_LOGIC := '0';
 	-- Rasterizer Output per-pixel interface end
 
+	-- Depth Interpolator State Block interface begin
+		STATE_StateBitsAtDrawID : in STD_LOGIC_VECTOR(DEPTH_INTERPOLATOR_STATE_SIZE_BITS-1 downto 0);
+		STATE_NextDrawID : in STD_LOGIC_VECTOR(15 downto 0);
+		STATE_StateIsValid : in STD_LOGIC;
+		STATE_ConsumeStateSlot : out STD_LOGIC := '0';
+	-- Depth Interpolator State Block interface end
+
 	-- FPU interfaces begin
 		FPU_A : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 		FPU_B : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
@@ -61,7 +70,11 @@ entity DepthInterpolator is
 		DEPTH_OutPixelDepth : out STD_LOGIC_VECTOR(23 downto 0) := (others => '0');
 		DEPTH_PixelPassedDepthTest : in STD_LOGIC;
 		DEPTH_PixelFailedDepthTest : in STD_LOGIC;
-		DEPTH_DepthTestEnabled : in STD_LOGIC;
+
+		DEPTH_SetDepthParams : out STD_LOGIC := '0';
+		DEPTH_DepthWriteEnable : out STD_LOGIC := '0';
+		DEPTH_DepthFunction : out STD_LOGIC_VECTOR(2 downto 0) := (others => '0');
+		DEPTH_DepthIsIdle : in STD_LOGIC;
 	-- Depth Buffer interface end
 
 	-- Attribute Interpolator interface begin
@@ -202,7 +215,8 @@ type depthInterpStateType is
 	setNewPrimitiveSlot, -- 64
 	signalPrimitiveComplete, -- 65
 	signalNewDrawEventID, -- 66
-	signalTerminateDrawEventID -- 67
+	signalTerminateDrawEventID, -- 67
+	setDepthState -- 68
 );
 
 pure function Int32toUint32(intVal : signed(31 downto 0); signBit : std_logic) return unsigned is
@@ -259,6 +273,8 @@ begin
 end function;
 
 signal currentState : depthInterpStateType := waitingForRead;
+
+signal currentDepthState : sDepthInterpolatorState := DEFAULT_DEPTH_INTERPOLATOR_STATE;
 
 signal newPixelValid : std_logic := '0';
 
@@ -349,6 +365,8 @@ DBG_RastBarycentricC <= std_logic_vector(storedDbgBarycentricC);
 	begin
 		if (rising_edge(clk) ) then
 			CMD_IsIdle <= '0';
+			STATE_ConsumeStateSlot <= '0';
+			DEPTH_SetDepthParams <= '0';
 
 			case currentState is
 				when waitingForRead =>
@@ -384,7 +402,12 @@ DBG_RastBarycentricC <= std_logic_vector(storedDbgBarycentricC);
 					storedColorRGBA10 <= unsigned(TRICACHE_inColorRGBA10);
 					storedColorRGBA20 <= unsigned(TRICACHE_inColorRGBA20);
 
-					if (RASTOUT_FIFO_empty = '0') then
+					if (STATE_StateIsValid = '1' and currentDrawEventID = unsigned(STATE_NextDrawID) ) then
+						STATE_ConsumeStateSlot <= '1';
+
+						currentDepthState <= DeserializeBitsToStruct(STATE_StateBitsAtDrawID);
+						currentState <= setDepthState;
+					elsif (RASTOUT_FIFO_empty = '0') then
 						if (IsSpecialPixelMessage(GetPixelCoordinateX(unsigned(RASTOUT_FIFO_rd_data) ) ) ) then
 							if (tempPixelX(eSpecialPixelCodeBits'pos(TerminateCurrentPrimSlot) ) = '1') then -- "terminate primitive slot"
 								currentState <= signalPrimitiveComplete;
@@ -625,7 +648,7 @@ DBG_RastBarycentricC <= std_logic_vector(storedDbgBarycentricC);
 					FPU_A <= std_logic_vector(pixelDepth);
 					FPU_Mode <= std_logic_vector(to_unsigned(eConvertMode'pos(F_to_U24_RoundNearestEven), 3) );
 					FPU_ICNV_GO <= '1';
-					if (DEPTH_DepthTestEnabled = '1') then
+					if (currentDepthState.DepthTestEnable = '1') then
 						currentState <= depthTestState0;
 					else
 						currentState <= sendPixelForAttrInterpolation;
@@ -671,7 +694,7 @@ DBG_RastBarycentricC <= std_logic_vector(storedDbgBarycentricC);
 					currentState <= depthTestState10;
 
 				when depthTestState10 =>
-					if (DEPTH_PixelPassedDepthTest = '1') then
+					if (DEPTH_PixelPassedDepthTest = '1' and currentDepthState.ColorWritesEnabled = '1') then
 						currentState <= sendPixelForAttrInterpolation;
 					else
 						currentState <= waitingForRead; -- We failed the depth test, kill this pixel!
@@ -735,6 +758,14 @@ DBG_RastBarycentricC <= std_logic_vector(storedDbgBarycentricC);
 						currentState <= waitingForRead;
 					else
 						newPixelValid <= '1';
+					end if;
+
+				when setDepthState =>
+					if (DEPTH_DepthIsIdle = '1') then -- Wait for the depth block to fully drain its pipeline before we change its state
+						DEPTH_SetDepthParams <= '1';
+						DEPTH_DepthWriteEnable <= currentDepthState.DepthWriteEnable;
+						DEPTH_DepthFunction <= std_logic_vector(to_unsigned(eCmpFunc'pos(currentDepthState.DepthCompareFunction), 3) );
+						currentState <= waitingForRead;
 					end if;
 
 			end case;

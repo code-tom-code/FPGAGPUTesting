@@ -5287,10 +5287,13 @@ void IDirect3DDevice9Hook::DeviceSetCurrentState(const D3DPRIMITIVETYPE primType
 	baseDevice->DeviceSetIAState(cullMode, primTopology, sct_CutDisabled, indexFormat, currentIB ? currentIB->GetGPUBytes() : NULL);
 
 	// Set the depth states:
-	const bool zEnable = currentState.currentRenderStates.renderStatesUnion.namedStates.zEnable != D3DZB_FALSE;
-	const bool zWriteEnable = currentState.currentRenderStates.renderStatesUnion.namedStates.zWriteEnable ? true : false;
+	const bool zEnable = currentState.currentRenderStates.renderStatesUnion.namedStates.zEnable != D3DZB_FALSE && currentState.currentDepthStencil != NULL;
+	const bool zWriteEnable = (currentState.currentRenderStates.renderStatesUnion.namedStates.zWriteEnable && currentState.currentDepthStencil != NULL) ? true : false;
+	const bool colorWritesEnabled = currentState.currentRenderStates.renderStatesUnion.namedStates.colorWriteEnable != 0 && currentState.currentRenderTargets[0] != NULL;
 	const D3DCMPFUNC zCmpFunc = currentState.currentRenderStates.renderStatesUnion.namedStates.zFunc;
-	baseDevice->DeviceSetDepthState(forceDisableDepth ? false : zEnable, zWriteEnable, ConvertToDeviceCmpFunc(zCmpFunc) );
+	const float depthBias = currentState.currentRenderStates.renderStatesUnion.namedStates.depthBias;
+	const eDepthFormat depthFormat = currentState.currentDepthStencil ? ConvertToDeviceDepthFormat(currentState.currentDepthStencil->GetInternalFormat() ) : ConvertToDeviceDepthFormat(D3DFMT_D24X8);
+	baseDevice->DeviceSetDepthState(forceDisableDepth ? false : zEnable, zWriteEnable, colorWritesEnabled, ConvertToDeviceCmpFunc(zCmpFunc), depthFormat, depthBias);
 
 	// Set the clipper state:
 	const bool depthClipEnable = zEnable;
@@ -11150,6 +11153,7 @@ void IDirect3DDevice9Hook::InitializeState(const D3DPRESENT_PARAMETERS& d3dpp, c
 	const bool alphaTestEnable = false;
 	const bool clearDepth = true;
 	const bool clearStencil = true;
+	const D3DFORMAT defaultZFormat = D3DFMT_D24S8;
 	const float clearZValue = 1.0f;
 	const BYTE clearStencilValue = 0x00;
 	const BYTE alphaTestRefVal = 0x00;
@@ -11158,8 +11162,10 @@ void IDirect3DDevice9Hook::InitializeState(const D3DPRESENT_PARAMETERS& d3dpp, c
 	const bool alphaBlendEnable = false;
 	const bool depthClipEnable = true;
 	const bool useOpenGLNearZClip = false;
+	const bool colorWritesEnabled = true;
 	const float guardBandXScale = 16.0f;
 	const float guardBandYScale = 32.0f;
+	const float defaultDepthBias = 0.0f;
 	const D3DBLEND srcColorBlend = D3DBLEND_ONE;
 	const D3DBLEND destColorBlend = D3DBLEND_ZERO;
 	const D3DBLENDOP colorBlendOp = D3DBLENDOP_ADD;
@@ -11172,7 +11178,7 @@ void IDirect3DDevice9Hook::InitializeState(const D3DPRESENT_PARAMETERS& d3dpp, c
 	baseDevice->DeviceClearRendertarget(backbufferSurfaceHook->GetDeviceSurfaceBytes(), D3DCOLOR_ARGB(255, 0, 0, 0) ); // Perform initial device clear so that our backbuffer doesn't start out as garbage
 	baseDevice->DeviceSetNullTextureState(TF_bilinearFilter, tcm_r, tcm_g, tcm_b, tcm_a, cbm_textureModulateVertexColor, cbm_textureModulateVertexColor);
 	baseDevice->DeviceSetClipState(depthClipEnable, useOpenGLNearZClip, guardBandXScale, guardBandYScale);
-	baseDevice->DeviceSetDepthState(forceDisableDepth ? false : zEnable, zWriteEnable, ConvertToDeviceCmpFunc(zCmpFunc) );
+	baseDevice->DeviceSetDepthState(forceDisableDepth ? false : zEnable, zWriteEnable, colorWritesEnabled, ConvertToDeviceCmpFunc(zCmpFunc), ConvertToDeviceDepthFormat(defaultZFormat), defaultDepthBias);
 	baseDevice->DeviceClearDepthStencil(currentState.currentDepthStencil ? currentState.currentDepthStencil->GetDeviceSurfaceBytes() : NULL, clearDepth, clearStencil, clearZValue, clearStencilValue);
 
 	// Force an end-frame event to clear out any state that may have been hanging around if we didn't shut down cleanly last time:

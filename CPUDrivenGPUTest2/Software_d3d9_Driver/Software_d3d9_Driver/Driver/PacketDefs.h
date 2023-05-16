@@ -997,17 +997,24 @@ struct debugShaderNextDrawCallCommand : command
 // This configures the depth buffer state corresponding to the D3D9 render states D3DRS_ZWRITE and D3DRS_ZFUNC.
 struct setDepthStateCommand : command
 {
-	setDepthStateCommand() : command(PT_SETDEPTHSTATE)
+	setDepthStateCommand() : command(PT_SETDEPTHSTATE),
+		DepthTestEnable(TRUE), DepthWriteEnable(TRUE), zFunc(cmp_lessequal),
+		DepthBiasLowBits(0x00000000), DepthBiasHighBits(0x00),
+		ColorWritesEnabled(FALSE), DepthFormat(eDepthFmtD24), unused1(0x00000000)
 	{
 	}
 
 	// Payload 0:
-	eCmpFunc zFunc = cmp_lessequal; // 7 downto 0
-	bool zWriteEnable = true; // 15 downto 8
-	unsigned short unused0 = 0; // 31 downto 16
+	DWORD DepthTestEnable : 1; // 0
+	DWORD DepthWriteEnable : 1; // 1
+	DWORD zFunc : 3; // 4 downto 2
+	DWORD DepthBiasLowBits : 27; // 31 downto 5
 
 	// Payload 1:
-	DWORD unused1 = 0x00000000; // 31 downto 0
+	DWORD DepthBiasHighBits : 5; // 4 downto 0
+	DWORD ColorWritesEnabled : 1; // 5
+	DWORD DepthFormat : 2; // 7 downto 6
+	DWORD unused1 : 24; // 31 downto 8
 };
 
 // This configures the clipper state

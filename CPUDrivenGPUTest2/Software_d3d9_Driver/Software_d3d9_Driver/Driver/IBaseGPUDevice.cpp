@@ -28,6 +28,28 @@ const eCmpFunc ConvertToDeviceCmpFunc(const D3DCMPFUNC cmpFunc)
 	return (const eCmpFunc)(cmpFunc - 1);
 }
 
+const eDepthFormat ConvertToDeviceDepthFormat(const D3DFORMAT zFormat)
+{
+	switch (zFormat)
+	{
+	case D3DFMT_D24S8:
+	case D3DFMT_D24X8:
+	case D3DFMT_D24X4S4:
+	case D3DFMT_D24FS8:
+		return eDepthFmtD24;
+	case D3DFMT_D16:
+	case D3DFMT_D16_LOCKABLE:
+		return eDepthFmtD16;
+	case D3DFMT_D15S1:
+		return eDepthFmtD15;
+	default:
+#ifdef _DEBUG
+		__debugbreak();
+#endif
+		return eDepthFmtD24;
+	}
+}
+
 // TODO: Include address alignment in this validation also
 static const bool ValidateAddress(const gpuvoid* const deviceMemoryPtr)
 {
@@ -705,7 +727,7 @@ HRESULT __stdcall IBaseGPUDevice::DeviceSetClipState(const bool depthClipEnabled
 	return hRet;
 }
 
-HRESULT __stdcall IBaseGPUDevice::DeviceSetDepthState(const bool zEnabled, const bool zWriteEnabled, const eCmpFunc zTestCmpFunc)
+HRESULT __stdcall IBaseGPUDevice::DeviceSetDepthState(const bool zEnabled, const bool zWriteEnabled, const bool colorWriteEnabled, const eCmpFunc zTestCmpFunc, const eDepthFormat zFormat, const float depthBias)
 {
 	if (zTestCmpFunc >= cmp_MAX_CMP_FUNCS)
 	{
@@ -715,21 +737,35 @@ HRESULT __stdcall IBaseGPUDevice::DeviceSetDepthState(const bool zEnabled, const
 		return E_INVALIDARG;
 	}
 
-	if (DoCacheDeviceState() && currentCachedState.deviceCachedZEnabled == zEnabled && currentCachedState.deviceCachedZWriteEnabled == zWriteEnabled && currentCachedState.deviceCachedDepthTestCmpFunc == zTestCmpFunc)
+	DepthStateBlock newDepthState;
+	newDepthState.deviceCachedZEnabled = zEnabled;
+	newDepthState.deviceCachedZWriteEnabled = zWriteEnabled;
+	newDepthState.deviceColorWritesEnabled = colorWriteEnabled;
+	newDepthState.deviceCachedDepthTestCmpFunc = zTestCmpFunc;
+	newDepthState.deviceDepthBias = depthBias;
+	newDepthState.deviceDepthFormat = zFormat;
+
+	if (DoCacheDeviceState() && currentCachedState.deviceCachedDepthState == newDepthState)
 		return S_OK;
 
 	setDepthStateCommand setDepthState;
 
+	setDepthState.DepthTestEnable = zEnabled;
 	if (zEnabled)
 	{
-		setDepthState.zWriteEnable = zWriteEnabled;
+		setDepthState.DepthWriteEnable = zWriteEnabled;
 		setDepthState.zFunc = zTestCmpFunc;
 	}
 	else
 	{
-		setDepthState.zWriteEnable = false;
+		setDepthState.DepthWriteEnable = false;
 		setDepthState.zFunc = cmp_always;
 	}
+	setDepthState.DepthFormat = zFormat;
+	const unsigned long ulDepthBias = *(const unsigned long* const)&depthBias;
+	setDepthState.DepthBiasLowBits = ulDepthBias & ( (1 << 27) - 1);
+	setDepthState.DepthBiasHighBits = ulDepthBias >> 27;
+	setDepthState.ColorWritesEnabled = colorWriteEnabled;
 
 	setDepthState.checksum = command::ComputeChecksum(&setDepthState, sizeof(setDepthState) );
 #ifdef _DEBUG
@@ -741,9 +777,7 @@ HRESULT __stdcall IBaseGPUDevice::DeviceSetDepthState(const bool zEnabled, const
 	const HRESULT hRet = SendOrStorePacket(&setDepthState);
 	if (SUCCEEDED(hRet) && DoCacheDeviceState() )
 	{
-		currentCachedState.deviceCachedZEnabled = zEnabled;
-		currentCachedState.deviceCachedZWriteEnabled = zWriteEnabled;
-		currentCachedState.deviceCachedDepthTestCmpFunc = zTestCmpFunc;
+		currentCachedState.deviceCachedDepthState = newDepthState;
 	}
 	if (FAILED(hRet) )
 		return hRet;

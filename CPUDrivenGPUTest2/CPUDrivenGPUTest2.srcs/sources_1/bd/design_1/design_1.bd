@@ -325,7 +325,7 @@
           <spirit:configurableElementValue spirit:referenceId="C_PROBE46_WIDTH">1</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="C_PROBE45_WIDTH">16</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="C_PROBE44_WIDTH">20</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="C_PROBE43_WIDTH">32</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="C_PROBE43_WIDTH">24</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="C_PROBE42_WIDTH">3</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="C_PROBE41_WIDTH">8</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="C_PROBE40_WIDTH">6</spirit:configurableElementValue>
@@ -822,14 +822,6 @@
         </spirit:configurableElementValues>
       </spirit:componentInstance>
       <spirit:componentInstance>
-        <spirit:instanceName>xlconstant_1</spirit:instanceName>
-        <spirit:componentRef spirit:library="ip" spirit:name="xlconstant" spirit:vendor="xilinx.com" spirit:version="1.1"/>
-        <spirit:configurableElementValues>
-          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_xlconstant_1_0</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="CONST_VAL">0</spirit:configurableElementValue>
-        </spirit:configurableElementValues>
-      </spirit:componentInstance>
-      <spirit:componentInstance>
         <spirit:instanceName>xlconstant_5</spirit:instanceName>
         <spirit:componentRef spirit:library="ip" spirit:name="xlconstant" spirit:vendor="xilinx.com" spirit:version="1.1"/>
         <spirit:configurableElementValues>
@@ -1145,17 +1137,6 @@
         </spirit:configurableElementValues>
       </spirit:componentInstance>
       <spirit:componentInstance>
-        <spirit:instanceName>VertexBatchBuilder_0</spirit:instanceName>
-        <spirit:componentRef spirit:library="module_ref" spirit:name="VertexBatchBuilder" spirit:vendor="xilinx.com" spirit:version="1.0"/>
-        <spirit:configurableElementValues>
-          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_VertexBatchBuilder_0_0</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">VertexBatchBuilder</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
-        </spirit:configurableElementValues>
-      </spirit:componentInstance>
-      <spirit:componentInstance>
         <spirit:instanceName>DepthInterpolator_0</spirit:instanceName>
         <spirit:componentRef spirit:library="module_ref" spirit:name="DepthInterpolator" spirit:vendor="xilinx.com" spirit:version="1.0"/>
         <spirit:configurableElementValues>
@@ -1191,6 +1172,17 @@
         </spirit:configurableElementValues>
       </spirit:componentInstance>
       <spirit:componentInstance>
+        <spirit:instanceName>TriSetup_0</spirit:instanceName>
+        <spirit:componentRef spirit:library="module_ref" spirit:name="TriSetup" spirit:vendor="xilinx.com" spirit:version="1.0"/>
+        <spirit:configurableElementValues>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_TriSetup_0_0</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">TriSetup</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
+        </spirit:configurableElementValues>
+      </spirit:componentInstance>
+      <spirit:componentInstance>
         <spirit:instanceName>CommandProcessor_0</spirit:instanceName>
         <spirit:componentRef spirit:library="module_ref" spirit:name="CommandProcessor" spirit:vendor="xilinx.com" spirit:version="1.0"/>
         <spirit:configurableElementValues>
@@ -1202,14 +1194,35 @@
         </spirit:configurableElementValues>
       </spirit:componentInstance>
       <spirit:componentInstance>
-        <spirit:instanceName>TriSetup_0</spirit:instanceName>
-        <spirit:componentRef spirit:library="module_ref" spirit:name="TriSetup" spirit:vendor="xilinx.com" spirit:version="1.0"/>
+        <spirit:instanceName>VertexBatchBuilder_0</spirit:instanceName>
+        <spirit:componentRef spirit:library="module_ref" spirit:name="VertexBatchBuilder" spirit:vendor="xilinx.com" spirit:version="1.0"/>
         <spirit:configurableElementValues>
-          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_TriSetup_0_0</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">TriSetup</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_VertexBatchBuilder_0_0</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">VertexBatchBuilder</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
+        </spirit:configurableElementValues>
+      </spirit:componentInstance>
+      <spirit:componentInstance>
+        <spirit:instanceName>VBB_StateBlock</spirit:instanceName>
+        <spirit:componentRef spirit:library="module_ref" spirit:name="StateBlock" spirit:vendor="xilinx.com" spirit:version="1.0"/>
+        <spirit:configurableElementValues>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_StateBlock_0_5</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="StateBitsCount">35</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">StateBlock</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
+        </spirit:configurableElementValues>
+      </spirit:componentInstance>
+      <spirit:componentInstance>
+        <spirit:instanceName>xlconstant_1</spirit:instanceName>
+        <spirit:componentRef spirit:library="ip" spirit:name="xlconstant" spirit:vendor="xilinx.com" spirit:version="1.1"/>
+        <spirit:configurableElementValues>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_xlconstant_1_1</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="CONST_WIDTH">3</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="CONST_VAL">0</spirit:configurableElementValue>
         </spirit:configurableElementValues>
       </spirit:componentInstance>
     </spirit:componentInstances>
@@ -1393,9 +1406,9 @@
       <spirit:adHocConnection>
         <spirit:name>ResetN_UntilClockLoc_0_resetn</spirit:name>
         <spirit:internalPortReference spirit:componentRef="ResetN_UntilClockLoc_0" spirit:portRef="resetn"/>
-        <spirit:internalPortReference spirit:componentRef="CommandProcessor_0" spirit:portRef="resetn"/>
         <spirit:internalPortReference spirit:componentRef="MemorySystem" spirit:portRef="M_AXI_ARESETN"/>
         <spirit:internalPortReference spirit:componentRef="SerialPacketSystem" spirit:portRef="s_axi_aresetn"/>
+        <spirit:internalPortReference spirit:componentRef="CommandProcessor_0" spirit:portRef="resetn"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>CommandProcessor_0_DBG_PACKETSTATE</spirit:name>
@@ -1452,15 +1465,16 @@
         <spirit:internalPortReference spirit:componentRef="InputAssembler2_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="ROP_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="TexSample_0" spirit:portRef="clk"/>
-        <spirit:internalPortReference spirit:componentRef="VertexBatchBuilder_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="DepthInterpolator_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="DepthInterpStateBlock" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="TriSetupStateBlock" spirit:portRef="clk"/>
-        <spirit:internalPortReference spirit:componentRef="CommandProcessor_0" spirit:portRef="clk"/>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="SerialPacketSystem" spirit:portRef="rd_clk"/>
         <spirit:internalPortReference spirit:componentRef="ShaderCoreSystem" spirit:portRef="clk_0"/>
         <spirit:internalPortReference spirit:componentRef="ScanoutSystem" spirit:portRef="cmd_clk"/>
-        <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="clk"/>
+        <spirit:internalPortReference spirit:componentRef="CommandProcessor_0" spirit:portRef="clk"/>
+        <spirit:internalPortReference spirit:componentRef="VertexBatchBuilder_0" spirit:portRef="clk"/>
+        <spirit:internalPortReference spirit:componentRef="VBB_StateBlock" spirit:portRef="clk"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>xlconstant_0_dout</spirit:name>
@@ -2264,12 +2278,6 @@
         <spirit:internalPortReference spirit:componentRef="CommandProcessor_0" spirit:portRef="VBB_CommandArg1"/>
         <spirit:internalPortReference spirit:componentRef="ila_333_250" spirit:portRef="probe44"/>
         <spirit:internalPortReference spirit:componentRef="VertexBatchBuilder_0" spirit:portRef="CMD_CommandArg1"/>
-      </spirit:adHocConnection>
-      <spirit:adHocConnection>
-        <spirit:name>CommandProcessor_0_VBB_CommandArgType</spirit:name>
-        <spirit:internalPortReference spirit:componentRef="CommandProcessor_0" spirit:portRef="VBB_CommandArgType"/>
-        <spirit:internalPortReference spirit:componentRef="ila_333_250" spirit:portRef="probe42"/>
-        <spirit:internalPortReference spirit:componentRef="VertexBatchBuilder_0" spirit:portRef="CMD_CommandArgType"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>VertexBatchBuilder_0_CMD_ReadyState</spirit:name>
@@ -3197,11 +3205,6 @@
         <spirit:internalPortReference spirit:componentRef="ILA_AttrInterpolator" spirit:portRef="probe13"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
-        <spirit:name>xlconstant_1_dout</spirit:name>
-        <spirit:internalPortReference spirit:componentRef="xlconstant_1" spirit:portRef="dout"/>
-        <spirit:internalPortReference spirit:componentRef="ila_333_250" spirit:portRef="probe37"/>
-      </spirit:adHocConnection>
-      <spirit:adHocConnection>
         <spirit:name>AttrInterpFloatALU_0_OUT_RESULT</spirit:name>
         <spirit:internalPortReference spirit:componentRef="AttrInterpFloatALU_0" spirit:portRef="OUT_RESULT"/>
         <spirit:internalPortReference spirit:componentRef="ILA_AttrInterpolator" spirit:portRef="probe16"/>
@@ -3216,6 +3219,7 @@
         <spirit:name>xlconstant_5_dout</spirit:name>
         <spirit:internalPortReference spirit:componentRef="xlconstant_5" spirit:portRef="dout"/>
         <spirit:internalPortReference spirit:componentRef="ila_333_250" spirit:portRef="probe11"/>
+        <spirit:internalPortReference spirit:componentRef="ila_333_250" spirit:portRef="probe37"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>xlconstant_6_dout</spirit:name>
@@ -4184,8 +4188,8 @@
       <spirit:adHocConnection>
         <spirit:name>VBB_FIFO_empty</spirit:name>
         <spirit:internalPortReference spirit:componentRef="VBB_FIFO" spirit:portRef="empty"/>
-        <spirit:internalPortReference spirit:componentRef="CommandProcessor_0" spirit:portRef="CMD_FIFO_EMPTY_VBB"/>
         <spirit:internalPortReference spirit:componentRef="ShaderCoreSystem" spirit:portRef="VERTBATCH_FIFO_empty"/>
+        <spirit:internalPortReference spirit:componentRef="CommandProcessor_0" spirit:portRef="CMD_FIFO_EMPTY_VBB"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>InputAssembler2_0_VERTOUT_FIFO_rd_en</spirit:name>
@@ -4355,6 +4359,56 @@
         <spirit:name>CommandProcessor_0_TRISETUP_NewStateDrawEventID</spirit:name>
         <spirit:internalPortReference spirit:componentRef="CommandProcessor_0" spirit:portRef="TRISETUP_NewStateDrawEventID"/>
         <spirit:internalPortReference spirit:componentRef="TriSetupStateBlock" spirit:portRef="CMD_NewStateDrawEventID"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>VBB_StateBlock_STAGE_StateBitsAtDrawID</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="VBB_StateBlock" spirit:portRef="STAGE_StateBitsAtDrawID"/>
+        <spirit:internalPortReference spirit:componentRef="VertexBatchBuilder_0" spirit:portRef="STATE_StateBitsAtDrawID"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>VBB_StateBlock_STAGE_NextDrawID</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="VBB_StateBlock" spirit:portRef="STAGE_NextDrawID"/>
+        <spirit:internalPortReference spirit:componentRef="VertexBatchBuilder_0" spirit:portRef="STATE_NextDrawID"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>VBB_StateBlock_STAGE_StateIsValid</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="VBB_StateBlock" spirit:portRef="STAGE_StateIsValid"/>
+        <spirit:internalPortReference spirit:componentRef="VertexBatchBuilder_0" spirit:portRef="STATE_StateIsValid"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>VertexBatchBuilder_0_STATE_ConsumeStateSlot</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="VertexBatchBuilder_0" spirit:portRef="STATE_ConsumeStateSlot"/>
+        <spirit:internalPortReference spirit:componentRef="VBB_StateBlock" spirit:portRef="STAGE_ConsumeStateSlot"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>CommandProcessor_0_VBB_SetNewState</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="CommandProcessor_0" spirit:portRef="VBB_SetNewState"/>
+        <spirit:internalPortReference spirit:componentRef="VBB_StateBlock" spirit:portRef="CMD_SetNewState"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>CommandProcessor_0_VBB_EndFrameReset</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="CommandProcessor_0" spirit:portRef="VBB_EndFrameReset"/>
+        <spirit:internalPortReference spirit:componentRef="VBB_StateBlock" spirit:portRef="CMD_EndFrameReset"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>CommandProcessor_0_VBB_NewStateBits</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="CommandProcessor_0" spirit:portRef="VBB_NewStateBits"/>
+        <spirit:internalPortReference spirit:componentRef="VBB_StateBlock" spirit:portRef="CMD_NewStateBits"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>CommandProcessor_0_VBB_NewStateDrawEventID</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="CommandProcessor_0" spirit:portRef="VBB_NewStateDrawEventID"/>
+        <spirit:internalPortReference spirit:componentRef="VBB_StateBlock" spirit:portRef="CMD_NewStateDrawEventID"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>VBB_StateBlock_CMD_NumFreeSlots</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="VBB_StateBlock" spirit:portRef="CMD_NumFreeSlots"/>
+        <spirit:internalPortReference spirit:componentRef="CommandProcessor_0" spirit:portRef="VBB_NumFreeSlots"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>xlconstant_1_dout</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="xlconstant_1" spirit:portRef="dout"/>
+        <spirit:internalPortReference spirit:componentRef="ila_333_250" spirit:portRef="probe42"/>
       </spirit:adHocConnection>
     </spirit:adHocConnections>
     <spirit:hierConnections>

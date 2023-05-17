@@ -2,4 +2,5 @@
 # List other files here
 vhdl xil_defaultlib  \
 "hdl_src/PacketType.vhd" \
+"hdl_src/RenderState/VertexBatchBuilderState.vhd" \
 "hdl_src/VertexPipeline/VertexBatchBuilder.vhd" \

@@ -36,7 +36,7 @@ struct command
 		PT_LOADSHADERINSTRUCTIONS = 20,
 		PT_SETSHADERCONSTANT = 21,
 		PT_SETVERTEXSTREAMDATA = 22,
-		PT_SETINDEXBUFFER = 23,
+		PT_UNUSED23 = 23,
 		PT_SETSHADERCONSTANTSPECIAL = 24,
 		PT_SETSHADERSTARTADDRESS = 25,
 		PT_DEBUGSHADERNEXTDRAWCALL = 26,
@@ -531,7 +531,7 @@ struct setScanoutPointerCommand : command
 	eDisplayMode displayMode = dm_default; // 31 downto 24
 };
 
-// This configures the IA and the posttransform index cache in the Input Assembler
+// This configures the IA and the Vertex Batch Builder
 struct setIAStateCommand : command
 {
 	setIAStateCommand() : command(PT_SETIASTATE),
@@ -948,23 +948,6 @@ struct setVertexStreamDataCommand : command
 
 // This configures the index buffer address and type for the pretransformed index cache in the Vertex Batch Builder.
 // This packet might be safe to elide in case we're issuing a non-indexed draw call.
-struct setIndexBufferCommand : command
-{
-	setIndexBufferCommand() : command(PT_SETINDEXBUFFER),
-		indexBufferAddress(0x00000000), indexType(0)
-	{
-	}
-
-	// Payload 0:
-	DWORD indexBufferAddress : 30; // Must be DRAM-line-aligned (evenly divisible by 32) // 29 downto 0
-	DWORD indexType : 2; // INDEX16 = 0, INDEX32 = 1, INDEX8 = 2, UNUSED = 3 // 31 downto 30
-
-	// Payload 1:
-	DWORD unused2 = 0x00000000; // 31 downto 0
-};
-
-// This configures the index buffer address and type for the pretransformed index cache in the Vertex Batch Builder.
-// This packet might be safe to elide in case we're issuing a non-indexed draw call.
 struct setShaderStartAddressCommand : command
 {
 	setShaderStartAddressCommand() : command(PT_SETSHADERSTARTADDRESS),
@@ -1126,7 +1109,6 @@ static_assert(sizeof(genericCommand) == sizeof(doNothingCommand) &&
 	sizeof(genericCommand) == sizeof(loadShaderInstructionsCommand) && 
 	sizeof(genericCommand) == sizeof(setShaderConstantCommand) && 
 	sizeof(genericCommand) == sizeof(setVertexStreamDataCommand) && 
-	sizeof(genericCommand) == sizeof(setIndexBufferCommand) && 
 	sizeof(genericCommand) == sizeof(setShaderConstantSpecialCommand) &&
 	sizeof(genericCommand) == sizeof(setShaderStartAddressCommand) &&
 	sizeof(genericCommand) == sizeof(debugShaderNextDrawCallCommand) && 

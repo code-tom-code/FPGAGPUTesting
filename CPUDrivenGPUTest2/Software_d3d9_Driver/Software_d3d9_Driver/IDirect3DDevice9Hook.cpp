@@ -4619,26 +4619,6 @@ const bool IDirect3DDevice9Hook::CreateOrUseCachedCommandList(GPUCommandList& ne
 	return true;
 }
 
-void IDirect3DDevice9Hook::DeviceLoadIndexBuffer(const IDirect3DIndexBuffer9Hook* const currentIB)
-{
-	if (!currentIB)
-	{
-#ifdef _DEBUG
-		__debugbreak();
-#endif
-		return;
-	}
-	const unsigned numIndices = currentIB->GetInternalLength() / (currentIB->GetFormat() == D3DFMT_INDEX32 ? sizeof(DWORD) : sizeof(USHORT) );
-	if (numIndices == 0)
-	{
-#ifdef _DEBUG
-		__debugbreak();
-#endif
-		return;
-	}
-	baseDevice->DeviceSetIndexBuffer(currentIB->GetGPUBytes(), numIndices, currentIB->GetFormat() == D3DFMT_INDEX32 ? ibfmt_index32 : ibfmt_index16);
-}
-
 template <typename T>
 const bool AllVectorElementsEqual(const std::vector<T>& testVector)
 {
@@ -5284,7 +5264,7 @@ void IDirect3DDevice9Hook::DeviceSetCurrentState(const D3DPRIMITIVETYPE primType
 	}
 
 	// Set the IA state:
-	baseDevice->DeviceSetIAState(cullMode, primTopology, sct_CutDisabled, indexFormat, currentIB ? currentIB->GetGPUBytes() : NULL);
+	baseDevice->DeviceSetIAState(cullMode, primTopology, sct_CutDisabled, indexFormat, currentIB ? currentIB->GetInternalLength() : 0, currentIB ? currentIB->GetGPUBytes() : NULL);
 
 	// Set the depth states:
 	const bool zEnable = currentState.currentRenderStates.renderStatesUnion.namedStates.zEnable != D3DZB_FALSE && currentState.currentDepthStencil != NULL;
@@ -5679,7 +5659,6 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawIndexed
 		GPUCommandList newRecordingCommandList;
 		baseDevice->BeginRecordingCommandList(&newRecordingCommandList);
 
-		DeviceLoadIndexBuffer(currentState.currentIndexBuffer); // Set our index buffer (only needed for DrawIndexedX() calls)
 		DeviceSetCurrentState(PrimitiveType, currentState.currentIndexBuffer); // Update the device state
 
 		DeviceSetVertexShader(); // Set our current vertex shader on the device (has the side effect of overwriting the 0th stream source register, so make sure to call this before DeviceSetVertexStreamsAndDecl() )

@@ -6,6 +6,7 @@ use IEEE.NUMERIC_STD.ALL;
 library work;
 use work.PacketType.all;
 use work.FloatALU_Types.all;
+use work.VertexBatchBuilderState.all;
 use work.InputAssemblerState.all;
 use work.ClipUnitState.all;
 use work.TriSetupState.all;
@@ -110,13 +111,20 @@ entity CommandProcessor is
 
 	-- Vertex Batch Builder interfaces begin
 		VBB_SendCommand : out STD_LOGIC_VECTOR(1 downto 0) := (others => '0');
-		VBB_CommandArg0 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0'); -- Used for our index buffer address (SetIndexBuffer), as well as our primitive count (DrawPrimitive/DrawIndexedPrimitive)
+		VBB_CommandArg0 : out STD_LOGIC_VECTOR(23 downto 0) := (others => '0'); -- Used for our primitive count (DrawPrimitive/DrawIndexedPrimitive)
 		VBB_CommandArg1 : out STD_LOGIC_VECTOR(19 downto 0) := (others => '0'); -- Used for our uint StartIndex
-		VBB_CommandArg2 : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0'); -- Used for our signed short BaseVertexIndex
+		VBB_CommandArg2 : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0'); -- Used for our signed short BaseVertexIndex (DrawIndexedPrimitive only)
 		VBB_NewDrawEventID : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0'); -- Used for keeping track of draw calls and draw states
-		VBB_CommandArgType : out STD_LOGIC_VECTOR(2 downto 0) := (others => '0'); -- Transmits our PrimitiveType
 		VBB_ReadyState : in STD_LOGIC;
 	-- Vertex Batch Builder interfaces end
+
+	-- Vertex Batch Builder state interfaces begin
+		VBB_SetNewState : out STD_LOGIC := '0';
+		VBB_EndFrameReset : out STD_LOGIC := '0';
+		VBB_NumFreeSlots : in STD_LOGIC_VECTOR(2 downto 0);
+		VBB_NewStateBits : out STD_LOGIC_VECTOR(VERTEX_BATCH_BUILDER_STATE_SIZE_BITS-1 downto 0) := (others => '0');
+		VBB_NewStateDrawEventID : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
+	-- Vertex Batch Builder state interfaces end
 
 	-- Clip Unit state interfaces begin
 		CLIP_SetNewState : out STD_LOGIC := '0';
@@ -305,7 +313,7 @@ architecture Behavioral of CommandProcessor is
 						SET_SHADER_CONSTANT_WAIT_FOR_SEND_HIGH_REGISTER, -- 38
 						SET_SHADER_CONSTANT_WAIT_FOR_SEND_HIGH_REGISTER_COOLDOWN, -- 39
 						SET_VERTEX_STREAM_DATA, -- 40
-						SET_INDEX_BUFFER, -- 41
+						UNUSED41, -- 41
 						SET_SHADER_CONSTANT_SPECIAL, -- 42
 						SET_SHADER_START_ADDRESS, -- 43
 
@@ -325,7 +333,8 @@ architecture Behavioral of CommandProcessor is
 						SET_VIEWPORT_PARAMS0, -- 54
 						SET_VIEWPORT_PARAMS1, -- 55
 						SET_SCISSOR_RECT, -- 56
-						PUSH_NEW_TRISETUP_STATE -- 57
+						PUSH_NEW_TRISETUP_STATE, -- 57
+						SET_VBB_STATE -- 58
 						);
 
 	type commandListExecState is record
@@ -554,6 +563,8 @@ begin
 						VBB_SendCommand <= std_logic_vector(to_unsigned(eVBB_CMDPacket'pos(NoCommand), 2) );
 						DEPTH_ClearDepthBuffer <= '0';
 						CommandProcReadResponsesFIFO_rd_en <= '0';
+						VBB_SetNewState <= '0';
+						VBB_EndFrameReset <= '0';
 						IA_SetNewState <= '0';
 						IA_EndFrameReset <= '0';
 						CLIP_SetNewState <= '0';
@@ -657,9 +668,6 @@ begin
 
 							when PT_SETVERTEXSTREAMDATA =>
 								mst_packet_state <= SET_VERTEX_STREAM_DATA;
-
-							when PT_SETINDEXBUFFER =>
-								mst_packet_state <= SET_INDEX_BUFFER;
 
 							when PT_SETSHADERCONSTANTSPECIAL =>
 								mst_packet_state <= SET_SHADER_CONSTANT_SPECIAL;
@@ -905,14 +913,13 @@ begin
 								VBB_SendCommand <= std_logic_vector(to_unsigned(eVBB_CMDPacket'pos(DrawPrimitive), 2) );
 								VBB_CommandArg2 <= (others => '0');
 							end if;
-							VBB_CommandArg0 <= "00000000" & std_logic_vector(localIncomingPacket.payload0(23 downto 0) );
+							VBB_CommandArg0 <= std_logic_vector(localIncomingPacket.payload0(23 downto 0) );
 							VBB_CommandArg1 <= std_logic_vector(localIncomingPacket.payload0(31 downto 25) ) & std_logic_vector(localIncomingPacket.payload1(12 downto 0) );
 							VBB_NewDrawEventID <= std_logic_vector(currentDrawStateGeneration);
 							if (hasUpdatedDrawState = '1') then
 								currentDrawStateGeneration <= currentDrawStateGeneration + 1;
 								hasUpdatedDrawState <= '0';
 							end if;
-							VBB_CommandArgType <= std_logic_vector(localIncomingPacket.payload1(31 downto 29) );
 							mst_packet_state <= DRAW_COMMAND2;
 						end if;
 
@@ -945,7 +952,7 @@ begin
 
 						if (unsigned(IA_NumFreeSlots) /= 0) then
 							IA_SetNewState <= '1';
-							mst_packet_state <= READ_NEXT_PACKET_FROM_FIFO;
+							mst_packet_state <= SET_VBB_STATE;
 						end if;
 
 					when ISSUE_CLEARBLOCK =>
@@ -990,6 +997,7 @@ begin
 						-- Reset our "has state changed" flag, and also reset our current draw event ID:
 						hasUpdatedDrawState <= '0';
 						currentDrawStateGeneration <= X"0001";
+						VBB_EndFrameReset <= '1';
 						IA_EndFrameReset <= '1';
 						CLIP_EndFrameReset <= '1';
 						TRISETUP_EndFrameReset <= '1';
@@ -1156,15 +1164,6 @@ begin
 							mst_packet_state <= READ_NEXT_PACKET_FROM_FIFO;
 						end if;
 
-					when SET_INDEX_BUFFER =>
-						CommandProcReadResponsesFIFO_rd_en <= '0'; -- Deassert after one clock cycle
-						hasUpdatedDrawState <= '1';
-						if (VBB_ReadyState = '1') then
-							VBB_SendCommand <= std_logic_vector(to_unsigned(eVBB_CMDPacket'pos(SetIndexBuffer), 2) );
-							VBB_CommandArg0 <= std_logic_vector(localIncomingPacket.payload0);
-							mst_packet_state <= READ_NEXT_PACKET_FROM_FIFO;
-						end if;
-
 					when SET_SHADER_START_ADDRESS =>
 						hasUpdatedDrawState <= '1';
 						shaderStartAddress <= localIncomingPacket.payload0(8 downto 0);
@@ -1317,6 +1316,20 @@ begin
 							TRISETUP_SetNewState <= '1';
 							mst_packet_state <= READ_NEXT_PACKET_FROM_FIFO;
 						end if;
+
+					when SET_VBB_STATE =>
+						VBB_NewStateBits <= SerializeStructToBits(MakeStructFromMembers(localIncomingPacket.payload1(29 downto 0), 
+							eIndexFormat'val(to_integer(unsigned(localIncomingPacket.payload0(25 downto 24) ) ) ),
+							ePrimTopology'val(to_integer(unsigned(localIncomingPacket.payload0(10 downto 8) ) ) ) ) );
+						VBB_NewStateDrawEventID <= std_logic_vector(currentDrawStateGeneration);
+
+						if (unsigned(VBB_NumFreeSlots) /= 0) then
+							VBB_SetNewState <= '1';
+							mst_packet_state <= READ_NEXT_PACKET_FROM_FIFO;
+						end if;
+
+					when UNUSED41 => -- Do nothing. We should reuse this case at some point.
+						mst_packet_state <= READ_NEXT_PACKET_FROM_FIFO;
 
 				end case;
 			end if;

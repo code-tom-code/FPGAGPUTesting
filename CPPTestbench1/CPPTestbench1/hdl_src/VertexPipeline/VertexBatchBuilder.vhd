@@ -6,25 +6,25 @@ use IEEE.STD_LOGIC_1164.ALL;
 -- arithmetic functions with Signed or Unsigned values
 use IEEE.NUMERIC_STD.ALL;
 
--- Include our packet types library so we have access to the command processor enum from there
+-- Include our packet types library so we have access to the command processor enums from there
 library work;
 use work.PacketType.all;
+use work.VertexBatchBuilderState.all;
 
 entity VertexBatchBuilder is
-    Port (clk : in STD_LOGIC;	
+    Port (clk : in STD_LOGIC;
 
 		-- Commands from command processor to VertexBatchBuilder are:
-		-- - SetIndexBuffer(uint32 addr, uint2 format) (format can either be: INDEX8, INDEX16, or INDEX32)
-		-- - DrawPrimitive(uint32 numPrimsToRender, uint16 startingVertex, uint3 primType)
-		-- - DrawIndexedPrimitive(uint32 numPrimsToRender, uint20 startingVertex, int16 BaseVertexIndex, uint3 primType)
+		-- - SetNewDrawID(uint16 newDrawID)
+		-- - DrawPrimitive(uint32 numPrimsToRender, uint16 startingVertex)
+		-- - DrawIndexedPrimitive(uint32 numPrimsToRender, uint20 startingVertex, int16 BaseVertexIndex)
 
 	-- Command processor interfaces begin
 		CMD_SendCommand : in STD_LOGIC_VECTOR(1 downto 0);
-		CMD_CommandArg0 : in STD_LOGIC_VECTOR(31 downto 0); -- Used for our index buffer address (SetIndexBuffer), as well as our primitive count (DrawPrimitive/DrawIndexedPrimitive)
+		CMD_CommandArg0 : in STD_LOGIC_VECTOR(23 downto 0); -- Used for our primitive count (DrawPrimitive/DrawIndexedPrimitive)
 		CMD_CommandArg1 : in STD_LOGIC_VECTOR(19 downto 0); -- Used for our uint StartIndex
-		CMD_CommandArg2 : in STD_LOGIC_VECTOR(15 downto 0); -- Used for our signed short BaseVertexIndex
+		CMD_CommandArg2 : in STD_LOGIC_VECTOR(15 downto 0); -- Used for our signed short BaseVertexIndex (DrawIndexedPrimitive only)
 		CMD_NewDrawEventID : in STD_LOGIC_VECTOR(15 downto 0); -- Used for keeping track of draw calls and draw states
-		CMD_CommandArgType : in STD_LOGIC_VECTOR(2 downto 0); -- Transmits our PrimitiveType
 		CMD_ReadyState : out STD_LOGIC := '0';
 	-- Command processor interfaces end
 
@@ -39,6 +39,13 @@ entity VertexBatchBuilder is
 	-- Shader Core interface begin
 		SHADER_Done : out STD_LOGIC := '0'; -- Set to '1' when we're done with our draw call and there are no more batches left
 	-- Shader Core interface end
+
+	-- Vertex Batch Builder State Block interface begin
+		STATE_StateBitsAtDrawID : in STD_LOGIC_VECTOR(VERTEX_BATCH_BUILDER_STATE_SIZE_BITS-1 downto 0);
+		STATE_NextDrawID : in STD_LOGIC_VECTOR(15 downto 0);
+		STATE_StateIsValid : in STD_LOGIC;
+		STATE_ConsumeStateSlot : out STD_LOGIC := '0';
+	-- Vertex Batch Builder State Block interface end
 
 	-- Vertex Batch FIFO interface begin
 		VERTBATCH_FIFO_full : in STD_LOGIC;
@@ -84,37 +91,16 @@ type eVertexBatchBuilderState is
 (
 	readyState, -- 0
 	fillBatch, -- 1
-	startupState, -- 2
-	comparitorState, -- 3
-	comparitorState2, -- 4
-	batchInsertState, -- 5
-	finishAndSubmitBatch, -- 6
-	finishAndSubmitBatch2, -- 7
-	submitBatch, -- 8
-	finishCooldown, -- 9
-	fillBatch_constantOut -- 10
-);
-
-type eIndexFormat is
-(
-	index16, -- 0
-	index32, -- 1
-	index8 -- 2
-);
-
-type ePrimTopology is
-(
-	pointList, -- 0
-
-	lineList, -- 1
-	lineStrip, -- 2
-
-	triList, -- 3
-	triStrip, -- 4
-	triFan, -- 5
-
-	-- This is not yet implemented:
-	quadList -- 6
+	startupState0, -- 2
+	startupState1, -- 3
+	comparitorState, -- 4
+	comparitorState2, -- 5
+	batchInsertState, -- 6
+	finishAndSubmitBatch, -- 7
+	finishAndSubmitBatch2, -- 8
+	submitBatch, -- 9
+	finishCooldown, -- 10
+	fillBatch_constantOut -- 11
 );
 
 type VertexBatchType is array (15 downto 0) of unsigned(15 downto 0);
@@ -145,11 +131,11 @@ type DrawCallParams is record
 	indexFormat : eIndexFormat;
 end record DrawCallParams;
 
-constant DefaultDrawCallParams : DrawCallParams := (remainingPrimCount => (others => '0'), primTopology => triList, isIndexedDraw => '0', indexBufferPtr => (others => '0'), BaseVertexIndex => (others => '0'), startIndex => (others => '0'), primIsEven => '1', isFirstPolygon => '1', indexFormat => index16);
+constant DefaultDrawCallParams : DrawCallParams := (remainingPrimCount => (others => '0'), primTopology => PRIMTOP_TriangleList, isIndexedDraw => '0', indexBufferPtr => (others => '0'), BaseVertexIndex => (others => '0'), startIndex => (others => '0'), primIsEven => '1', isFirstPolygon => '1', indexFormat => IBFMT_Index16);
 
 pure function TrimIndexValueToIndexFormat(indexData : unsigned(31 downto 0); indexFormat : eIndexFormat) return unsigned is
 begin
-	if (indexFormat = index8) then
+	if (indexFormat = IBFMT_Index8) then
 		return "00000000" & indexData(7 downto 0);
 	else -- For now just treat all other index formats as being index16 because all of our subsequent systems that we pass the vertex batches to expect 16 bit indices
 		return indexData(15 downto 0);
@@ -184,11 +170,11 @@ procedure IncrementIndexBufferPointerByIndexFormat(signal indexBufferPointer : i
 	signal indexBufferFormat : in eIndexFormat) is
 begin
 	case indexBufferFormat is
-		when index8 =>
+		when IBFMT_Index8 =>
 			indexBufferPointer <= indexBufferPointer + 1;
-		when index16 =>
+		when IBFMT_Index16 =>
 			indexBufferPointer <= indexBufferPointer + 2;
-		when index32 =>
+		when others => --when IBFMT_Index32 =>
 			indexBufferPointer <= indexBufferPointer + 4;
 	end case;
 end procedure;
@@ -199,11 +185,11 @@ procedure IncrementIndexBufferPointerByIndexFormatOffset(signal newIndexBufferPo
 	signal indexBufferFormat : in eIndexFormat) is
 begin
 	case indexBufferFormat is
-		when index8 =>
+		when IBFMT_Index8 =>
 			newIndexBufferPointer <= existingIndexBufferPointer + startIndex;
-		when index16 =>
+		when IBFMT_Index16 =>
 			newIndexBufferPointer <= existingIndexBufferPointer + (startIndex & "0");
-		when index32 =>
+		when others => --when IBFMT_Index32 =>
 			newIndexBufferPointer <= existingIndexBufferPointer + (startIndex & "00");
 	end case;
 end procedure;
@@ -251,13 +237,13 @@ end function;
 pure function GetNumIndicesPerLine(idxFmt : eIndexFormat) return integer is
 begin
 	case idxFmt is
-		when index16 =>
+		when IBFMT_Index16 =>
 			return 16;
-		when index32 =>
+		when IBFMT_Index32 =>
 			return 8;
-		when index8 =>
+		when IBFMT_Index8 =>
 			return 32;
-		when others =>
+		when others => -- when IBFMT_NoIndices =>
 			return 0;
 	end case;
 end function;
@@ -265,32 +251,27 @@ end function;
 pure function GetIndexValueMasked(rawIndexDWORD : unsigned(31 downto 0); idxFmt : eIndexFormat) return unsigned is
 begin
 	case idxFmt is
-		when index16 =>
+		when IBFMT_Index16 =>
 			return rawIndexDWORD(15 downto 0);
-		when index32 =>
+		when IBFMT_Index32 =>
 			return rawIndexDWORD(15 downto 0);
-		when index8 =>
+		when IBFMT_Index8 =>
 			return X"00" & rawIndexDWORD(7 downto 0);
-		when others =>
+		when others => -- when IBFMT_NoIndices =>
 			return X"0000";
 	end case;
-end function;
-
-pure function GetPrimitiveToplogyFromUnsigned(value : unsigned(2 downto 0) ) return ePrimTopology is
-begin
-	return ePrimTopology'val(to_integer(value) );
 end function;
 
 pure function IndexIDToIndexAddress(indexID : unsigned(31 downto 0); IBBaseAddr : unsigned(29 downto 0); IBFormat : eIndexFormat ) return unsigned is
 begin
 	case IBFormat is
-		when index16 =>
+		when IBFMT_Index16 =>
 			return IBBaseAddr + (indexID sll 1); -- Multiply by 2
-		when index32 =>
+		when IBFMT_Index32 =>
 			return IBBaseAddr + (indexID sll 2); -- Multiply by 4
-		when index8 =>
+		when IBFMT_Index8 =>
 			return IBBaseAddr + indexID; -- Multiply by 1
-		when others =>
+		when others => -- when IBFMT_NoIndices =>
 			return "00" & IBBaseAddr;
 	end case;
 end function;
@@ -313,14 +294,14 @@ end function;
 pure function NewPrimFitsIntoVertexBatch(currentVertBatchLength : unsigned(4 downto 0); vertsMatchInBatch : STD_LOGIC_VECTOR(2 downto 0); currentPrimTopology : ePrimTopology) return boolean is
 begin
 	case currentPrimTopology is
-		when pointList =>
+		when PRIMTOP_PointList =>
 			if (vertsMatchInBatch(0) = '0') then
 				return (currentVertBatchLength <= 15);
 			else
 				return true;
 			end if;
 
-		when lineList | lineStrip =>
+		when PRIMTOP_LineList | PRIMTOP_LineStrip =>
 			case vertsMatchInBatch(1 downto 0) is
 				when "00" =>
 					return (currentVertBatchLength <= 14);
@@ -330,7 +311,7 @@ begin
 					return true;
 			end case;
 
-		when others => -- triList | triStrip | triFan =>
+		when others => -- PRIMTOP_TriangleList | PRIMTOP_TriangleStrip | PRIMTOP_TriangleFan =>
 			case vertsMatchInBatch is
 				when "000" =>
 					return (currentVertBatchLength <= 13);
@@ -347,13 +328,13 @@ end function;
 pure function NewPrimFitsIntoIndexBatch(currentIndexBatchLength : unsigned (6 downto 0); currentPrimTopology : ePrimTopology) return boolean is
 begin
 	case currentPrimTopology is
-		when pointList =>
+		when PRIMTOP_PointList =>
 			return (currentIndexBatchLength <= 63);
 
-		when lineList | lineStrip =>
+		when PRIMTOP_LineList | PRIMTOP_LineStrip =>
 			return (currentIndexBatchLength <= 62);
 
-		when others => -- triList | triStrip | triFan =>
+		when others => -- PRIMTOP_TriangleList | PRIMTOP_TriangleStrip | PRIMTOP_TriangleFan =>
 			return (currentIndexBatchLength <= 61);
 	end case;
 end function;
@@ -368,6 +349,7 @@ signal PrimitiveIndicesQueue : PrimitiveIndicesQueueStruct := (WritePointer => (
 signal PrimitiveIndicesQueue_ReadPointer : unsigned(3 downto 0) := (others => '0');
 signal newDrawCallSignal : std_logic := '0';
 signal newDrawCallParams : DrawCallParams := DefaultDrawCallParams;
+signal currentDrawState : sVertexBatchBuilderState := DEFAULT_VERTEX_BATCH_BUILDER_STATE;
 
 -- Input state for the comparitor process
 signal currentPoppedPrim : PrimitiveIndices := (others => (others => '1') ); -- Read by the comparitor processor, written to by the main VBB process
@@ -392,8 +374,6 @@ signal currentIndexBatch : IndexBatchType := (others => (others => '1') );
 signal currentBatchLength : unsigned(4 downto 0) := to_unsigned(0, 5); -- How many vertices do we currently have in our vertex batch?
 signal currentIndexBatchLength : unsigned(6 downto 0) := to_unsigned(0, 7); -- How many indices do we currently have in our index batch?
 signal leftoverPrimitiveNextBatch : std_logic := '0'; -- Do we have an extra primitive left over to be the start of next batch?
-signal savedIndexBufferAddr : unsigned(29 downto 0) := (others => '0');
-signal savedIndexBufferFmt : eIndexFormat := index16;
 
 -- The current state for the Index Generator Process
 signal currentPrimVertex : unsigned(2 downto 0) := (others => '0'); -- The current primitive index (0, 1 or 2) using one-hot format ("001", "010", and "100")
@@ -453,12 +433,12 @@ begin
 
 		-- Compute whether our three new polygon vertices exist in the current batch or not:
 		vertsExistInBatch(0) <= IsValueInCurrentBatch(currentBatch, currentBatchLength, currentPoppedPrim.indexA);
-		if (ePrimTopology'pos(newDrawCallParams.primTopology) >= ePrimTopology'pos(lineList) ) then
+		if (ePrimTopology'pos(newDrawCallParams.primTopology) >= ePrimTopology'pos(PRIMTOP_LineList) ) then
 			vertsExistInBatch(1) <= IsValueInCurrentBatch(currentBatch, currentBatchLength, currentPoppedPrim.indexB);
 		else
 			vertsExistInBatch(1) <= '1';
 		end if;
-		if (ePrimTopology'pos(newDrawCallParams.primTopology) >= ePrimTopology'pos(triList) ) then
+		if (ePrimTopology'pos(newDrawCallParams.primTopology) >= ePrimTopology'pos(PRIMTOP_TriangleList) ) then
 			vertsExistInBatch(2) <= IsValueInCurrentBatch(currentBatch, currentBatchLength, currentPoppedPrim.indexC);
 		else
 			vertsExistInBatch(2) <= '1';
@@ -511,7 +491,7 @@ begin
 				if (IBC_ReadReady = '1') then
 					cooldownState <= '1';
 					case currentDrawCallParams.primTopology is
-						when pointList =>
+						when PRIMTOP_PointList =>
 							workPrim.indexA := TrimIndexValueToIndexFormat(unsigned(IBC_ReadData), currentDrawCallParams.indexFormat);
 							workPrim.indexA := unsigned(signed(workPrim.indexA) + currentDrawCallParams.BaseVertexIndex); -- Apply our BaseVertexIndex
 							IncrementIndexBufferPointerByIndexFormat(currentIndexBufferAddr, currentDrawCallParams.indexFormat);
@@ -519,7 +499,7 @@ begin
 							-- Point Lists have no index-based degeneracy case, so there's nothing to test here
 							QueuePushNewWriteEntry(PrimitiveIndicesQueue, workPrim);
 
-						when lineList =>
+						when PRIMTOP_LineList =>
 							case currentPrimVertex is
 								when "001" =>
 									workPrim.indexA := TrimIndexValueToIndexFormat(unsigned(IBC_ReadData), currentDrawCallParams.indexFormat);
@@ -537,7 +517,7 @@ begin
 									end if;
 							end case;
 
-						when lineStrip =>
+						when PRIMTOP_LineStrip =>
 							case currentPrimVertex is
 								when "001" =>
 									workPrim.indexA := TrimIndexValueToIndexFormat(unsigned(IBC_ReadData), currentDrawCallParams.indexFormat);
@@ -556,7 +536,7 @@ begin
 									workPrim.indexA := workPrim.indexB;
 							end case;
 
-						when triList =>
+						when PRIMTOP_TriangleList =>
 							case currentPrimVertex is
 								when "001" =>
 									workPrim.indexA := TrimIndexValueToIndexFormat(unsigned(IBC_ReadData), currentDrawCallParams.indexFormat);
@@ -579,7 +559,7 @@ begin
 									end if;
 							end case;
 
-						when triStrip =>
+						when PRIMTOP_TriangleStrip =>
 							case currentPrimVertex is
 								when "001" =>
 									workPrim.indexA := TrimIndexValueToIndexFormat(unsigned(IBC_ReadData), currentDrawCallParams.indexFormat);
@@ -611,7 +591,7 @@ begin
 									end if;
 							end case;
 
-						when triFan =>
+						when PRIMTOP_TriangleFan =>
 							case currentPrimVertex is
 								when "001" =>
 									workPrim.indexA := TrimIndexValueToIndexFormat(unsigned(IBC_ReadData), currentDrawCallParams.indexFormat);
@@ -646,23 +626,23 @@ begin
 				QueuePushNewWriteEntry(PrimitiveIndicesQueue, workPrim);
 
 				case currentDrawCallParams.primTopology is
-					when pointList =>
+					when PRIMTOP_PointList =>
 						workPrim.indexA := workPrim.indexA + 1;
 
-					when lineList =>
+					when PRIMTOP_LineList =>
 						workPrim.indexA := workPrim.indexB + 1;
 						workPrim.indexB := workPrim.indexB + 2;
 
-					when lineStrip =>
+					when PRIMTOP_LineStrip =>
 						workPrim.indexA := workPrim.indexB;
 						workPrim.indexB := workPrim.indexB + 1;
 
-					when triList =>
+					when PRIMTOP_TriangleList =>
 						workPrim.indexA := workPrim.indexC + 1;
 						workPrim.indexB := workPrim.indexC + 2;
 						workPrim.indexC := workPrim.indexC + 3;
 
-					when triStrip =>
+					when PRIMTOP_TriangleStrip =>
 						if (currentDrawCallParams.primIsEven = '1') then
 							workPrim.indexA := workPrim.indexC;
 							currentDrawCallParams.primIsEven <= '0';
@@ -672,7 +652,7 @@ begin
 						end if;
 						workPrim.indexC := workPrim.indexC + 1;
 
-					when triFan =>
+					when PRIMTOP_TriangleFan =>
 						workPrim.indexA := workPrim.indexA;
 						workPrim.indexB := workPrim.indexC;
 						workPrim.indexC := workPrim.indexC + 1;
@@ -707,6 +687,7 @@ end process IndexGeneratorProcess;
 MainVertexBatchBuilderProcess : process(clk)
 begin
 	if (rising_edge(clk) ) then
+		STATE_ConsumeStateSlot <= '0';
 		case currentState is
 			when readyState =>
 				VERTBATCH_FIFO_wr_en <= '0';
@@ -714,48 +695,52 @@ begin
 				newDrawCallSignal <= '0';
 				IBC_InvalidateIndexCache <= '0';
 				case (eVBB_CMDPacket'val(to_integer(unsigned(CMD_SendCommand) ) ) ) is
-					when SetIndexBuffer =>
-						savedIndexBufferAddr <= unsigned(CMD_CommandArg0(29 downto 0) );
-						savedIndexBufferFmt <= eIndexFormat'val(to_integer(unsigned(CMD_CommandArg0(31 downto 30) ) ) );
+					when DrawPrimitive | DrawIndexedPrimitive =>
+						currentDrawEventID <= unsigned(CMD_NewDrawEventID);
+						if (STATE_NextDrawID = CMD_NewDrawEventID and STATE_StateIsValid = '1') then
+							currentDrawState <= DeserializeBitsToStruct(STATE_StateBitsAtDrawID);
+							STATE_ConsumeStateSlot <= '1';
+						end if;
+
+						SHADER_Done <= '0';
+						currentState <= startupState0;
+					when others =>
+						-- Do nothing
+				end case;
+
+			when startupState0 =>
+				case (eVBB_CMDPacket'val(to_integer(unsigned(CMD_SendCommand) ) ) ) is
 					when DrawPrimitive =>
 						newDrawCallParams.remainingPrimCount <= unsigned(CMD_CommandArg0(23 downto 0) );
-						newDrawCallParams.primTopology <= GetPrimitiveToplogyFromUnsigned(unsigned(CMD_CommandArgType) );
+						newDrawCallParams.primTopology <= currentDrawState.PrimitiveTopology;
 						newDrawCallParams.isIndexedDraw <= '0';
 						newDrawCallParams.indexBufferPtr <= (others => '0');
 						newDrawCallParams.BaseVertexIndex <= (others => '0'); -- DrawPrimitive() doesn't use the BaseVertexIndex param
 						newDrawCallParams.startIndex <= unsigned(CMD_CommandArg1);
 						newDrawCallParams.primIsEven <= '1';
 						newDrawCallParams.isFirstPolygon <= '1';
-						newDrawCallParams.indexFormat <= index16;
-						currentDrawEventID <= unsigned(CMD_NewDrawEventID);
+						newDrawCallParams.indexFormat <= IBFMT_Index16;
 						currentBatchLength <= (others => '0');
 						currentIndexBatchLength <= (others => '0');
-						SHADER_Done <= '0';
 						newDrawCallSignal <= '1'; -- Signal the IndexGeneratorProcess to start generating indices for us!
-
-						currentState <= startupState;
-					when DrawIndexedPrimitive =>
+					when others => --when DrawIndexedPrimitive =>
 						newDrawCallParams.remainingPrimCount <= unsigned(CMD_CommandArg0(23 downto 0) );
-						newDrawCallParams.primTopology <= GetPrimitiveToplogyFromUnsigned(unsigned(CMD_CommandArgType) );
+						newDrawCallParams.primTopology <= currentDrawState.PrimitiveTopology;
 						newDrawCallParams.isIndexedDraw <= '1';
-						newDrawCallParams.indexBufferPtr <= savedIndexBufferAddr;
+						newDrawCallParams.indexBufferPtr <= currentDrawState.IndexBufferBaseAddr;
 						newDrawCallParams.BaseVertexIndex <= signed(CMD_CommandArg2);
 						newDrawCallParams.startIndex <= unsigned(CMD_CommandArg1);
 						newDrawCallParams.primIsEven <= '1';
 						newDrawCallParams.isFirstPolygon <= '1';
-						newDrawCallParams.indexFormat <= savedIndexBufferFmt;
-						currentDrawEventID <= unsigned(CMD_NewDrawEventID);
+						newDrawCallParams.indexFormat <= currentDrawState.IndexFormat;
 						currentBatchLength <= (others => '0');
 						currentIndexBatchLength <= (others => '0');
-						SHADER_Done <= '0';
 						newDrawCallSignal <= '1'; -- Signal the IndexGeneratorProcess to start generating indices for us!
 						IBC_InvalidateIndexCache <= '1'; -- Signal the IndexBufferCache to invalidate its cache for this new draw call
-
-						currentState <= startupState;
-					when others =>
 				end case;
+				currentState <= startupState1;
 
-			when startupState =>
+			when startupState1 =>
 				IBC_InvalidateIndexCache <= '0';
 				if (DBG_UseConstantOutput = '1' and newDrawCallParams.isIndexedDraw = '1') then
 					currentState <= fillBatch_constantOut;
@@ -854,11 +839,11 @@ begin
 					end case;
 
 					case newDrawCallParams.primTopology is
-						when pointList =>
+						when PRIMTOP_PointList =>
 							currentIndexBatchLength <= currentIndexBatchLength + 1;
-						when lineList | lineStrip =>
+						when PRIMTOP_LineList | PRIMTOP_LineStrip =>
 							currentIndexBatchLength <= currentIndexBatchLength + 2;
-						when others => -- when triList | triStrip | triFan =>
+						when others => -- when PRIMTOP_TriangleList | PRIMTOP_TriangleStrip | PRIMTOP_TriangleFan =>
 							currentIndexBatchLength <= currentIndexBatchLength + 3;
 					end case;
 
@@ -926,16 +911,16 @@ begin
 					else
 						leftoverPrimitiveNextBatch <= '0'; -- Clear our leftover flag
 						case newDrawCallParams.primTopology is
-							when pointList =>
+							when PRIMTOP_PointList =>
 								currentBatch(0) <= currentPoppedPrim.indexA;
 								currentBatchLength <= to_unsigned(1, 5);
 								currentIndexBatchLength <= to_unsigned(1, 7);
-							when lineList | lineStrip =>
+							when PRIMTOP_LineList | PRIMTOP_LineStrip =>
 								currentBatch(0) <= currentPoppedPrim.indexA;
 								currentBatch(1) <= currentPoppedPrim.indexB;
 								currentBatchLength <= to_unsigned(2, 5);
 								currentIndexBatchLength <= to_unsigned(2, 7);
-							when others => -- when triList | triStrip | triFan =>
+							when others => -- when PRIMTOP_TriangleList | PRIMTOP_TriangleStrip | PRIMTOP_TriangleFan =>
 								currentBatch(0) <= currentPoppedPrim.indexA;
 								currentBatch(1) <= currentPoppedPrim.indexB;
 								currentBatch(2) <= currentPoppedPrim.indexC;

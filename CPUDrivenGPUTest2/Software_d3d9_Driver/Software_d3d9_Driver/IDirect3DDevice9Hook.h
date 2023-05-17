@@ -1100,8 +1100,6 @@ public:
 	// Returns true if this is a fresh allocation, or false if it is a reused identically matching buffer
 	const bool CreateOrUseCachedCommandList(GPUCommandList& newCommandList, std::vector<GPUCommandList>& cachedDeviceCommandLists);
 
-	void DeviceLoadIndexBuffer(const IDirect3DIndexBuffer9Hook* const currentIB);
-
 	const float4 GetDeviceViewportConstantF() const;
 
 	void DeviceSetVertexShader(const bool forceLoadVertexShader = false);

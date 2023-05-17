@@ -195,6 +195,7 @@
     <ClCompile Include="Testbenches\DepthInterpTestbench.cpp" />
     <ClCompile Include="Testbenches\EthernetTestbench.cpp" />
     <ClCompile Include="Testbenches\FloatALUTestbench.cpp" />
+    <ClCompile Include="Testbenches\FloatALU_InterpolatorTestbench.cpp" />
     <ClCompile Include="Testbenches\HDMIScanoutTestbench.cpp" />
     <ClCompile Include="Testbenches\IndexBufferCacheTestbench.cpp" />
     <ClCompile Include="Testbenches\InputAssemblerTestbench.cpp" />
@@ -219,6 +220,7 @@
     <ClInclude Include="Testbenches\DepthInterpTestbench.h" />
     <ClInclude Include="Testbenches\EthernetTestbench.h" />
     <ClInclude Include="Testbenches\FloatALUTestbench.h" />
+    <ClInclude Include="Testbenches\FloatALU_InterpolatorTestbench.h" />
     <ClInclude Include="Testbenches\HDMIScanoutTestbench.h" />
     <ClInclude Include="Testbenches\IndexBufferCacheTestbench.h" />
     <ClInclude Include="Testbenches\InputAssemblerTestbench.h" />
@@ -248,6 +250,7 @@
     <None Include="EthernetController3.prj" />
     <None Include="EthernetCRC32.prj" />
     <None Include="FloatALU.prj" />
+    <None Include="FloatALU_Interpolator.prj" />
     <None Include="GPRQuad.prj" />
     <None Include="hdl_src\CDC_Command_Scanout.vhd" />
     <None Include="hdl_src\CommandProcessor.vhd" />
@@ -283,9 +286,12 @@
     <None Include="hdl_src\PixelPipeline\TriWorkCache.vhd" />
     <None Include="hdl_src\RenderState\AttrInterpolatorState.vhd" />
     <None Include="hdl_src\RenderState\ClipUnitState.vhd" />
+    <None Include="hdl_src\RenderState\DepthInterpolatorState.vhd" />
     <None Include="hdl_src\RenderState\InputAssemblerState.vhd" />
     <None Include="hdl_src\RenderState\ROPState.vhd" />
     <None Include="hdl_src\RenderState\TexSampleState.vhd" />
+    <None Include="hdl_src\RenderState\TriSetupState.vhd" />
+    <None Include="hdl_src\RenderState\VertexBatchBuilderState.vhd" />
     <None Include="hdl_src\StateBlock.vhd" />
     <None Include="hdl_src\StatsCollector.vhd" />
     <None Include="hdl_src\StatsEventsTracker.vhd" />

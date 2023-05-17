@@ -43,7 +43,7 @@ package PacketType is
 		PT_LOADSHADERINSTRUCTIONS, -- 20
 		PT_SETSHADERCONSTANT, -- 21
 		PT_SETVERTEXSTREAMDATA, -- 22
-		PT_SETINDEXBUFFER, -- 23
+		PT_UNUSED23, -- 23
 		PT_SETSHADERCONSTANTSPECIAL, -- 24
 		PT_SETSHADERSTARTADDRESS, -- 25
 		PT_DEBUGSHADERNEXTDRAWCALL, -- 26
@@ -56,6 +56,9 @@ package PacketType is
 		PT_DISCONNECT, -- 33
 		PT_SETCLIPSTATE, -- 34
 		PT_ISSUEQUERY, -- 35
+		PT_SETVIEWPORTPARAMS0, -- 36
+		PT_SETVIEWPORTPARAMS1, -- 37
+		PT_SETSCISSORRECT, -- 38
 
 		PT_MAX_PACKET_TYPES -- Must always be last!
 	);
@@ -74,9 +77,8 @@ package PacketType is
 	type eVBB_CMDPacket is
 	(
 		NoCommand, -- 0
-		SetIndexBuffer, -- 1
-		DrawPrimitive, -- 2
-		DrawIndexedPrimitive -- 3
+		DrawPrimitive, -- 1
+		DrawIndexedPrimitive -- 2
 	);
 
 	-- Be sure that if the C++ side enum changes to update this here too!

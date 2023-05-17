@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
-<EDKSYSTEM EDWVERSION="1.2" TIMESTAMP="Tue May 16 20:05:19 2023" VIVADOVERSION="2018.1_AR73068">
+<EDKSYSTEM EDWVERSION="1.2" TIMESTAMP="Tue May 16 23:19:19 2023" VIVADOVERSION="2018.1_AR73068">
 
   <SYSTEMINFO ARCH="kintexuplus" BOARD="xilinx.com:kcu116:part0:1.3" DEVICE="xcku5p" NAME="design_1" PACKAGE="ffvb676" SPEEDGRADE="-2"/>
 
@@ -1570,7 +1570,7 @@
             <CONNECTION INSTANCE="VertexBatchBuilder_0" PORT="CMD_SendCommand"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="31" NAME="VBB_CommandArg0" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_VBB_CommandArg0">
+        <PORT DIR="O" LEFT="23" NAME="VBB_CommandArg0" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_VBB_CommandArg0">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ila_333_250" PORT="probe43"/>
             <CONNECTION INSTANCE="VertexBatchBuilder_0" PORT="CMD_CommandArg0"/>
@@ -1593,15 +1593,34 @@
             <CONNECTION INSTANCE="VertexBatchBuilder_0" PORT="CMD_NewDrawEventID"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="2" NAME="VBB_CommandArgType" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_VBB_CommandArgType">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="ila_333_250" PORT="probe42"/>
-            <CONNECTION INSTANCE="VertexBatchBuilder_0" PORT="CMD_CommandArgType"/>
-          </CONNECTIONS>
-        </PORT>
         <PORT DIR="I" NAME="VBB_ReadyState" SIGIS="undef" SIGNAME="VertexBatchBuilder_0_CMD_ReadyState">
           <CONNECTIONS>
             <CONNECTION INSTANCE="VertexBatchBuilder_0" PORT="CMD_ReadyState"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="VBB_SetNewState" SIGIS="undef" SIGNAME="CommandProcessor_0_VBB_SetNewState">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="VBB_StateBlock" PORT="CMD_SetNewState"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="VBB_EndFrameReset" SIGIS="undef" SIGNAME="CommandProcessor_0_VBB_EndFrameReset">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="VBB_StateBlock" PORT="CMD_EndFrameReset"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="2" NAME="VBB_NumFreeSlots" RIGHT="0" SIGIS="undef" SIGNAME="VBB_StateBlock_CMD_NumFreeSlots">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="VBB_StateBlock" PORT="CMD_NumFreeSlots"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="34" NAME="VBB_NewStateBits" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_VBB_NewStateBits">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="VBB_StateBlock" PORT="CMD_NewStateBits"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="15" NAME="VBB_NewStateDrawEventID" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_VBB_NewStateDrawEventID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="VBB_StateBlock" PORT="CMD_NewStateDrawEventID"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" NAME="CLIP_SetNewState" SIGIS="undef" SIGNAME="CommandProcessor_0_CLIP_SetNewState">
@@ -27601,11 +27620,10 @@
             <CONNECTION INSTANCE="InputAssembler2_0" PORT="clk"/>
             <CONNECTION INSTANCE="ROP_0" PORT="clk"/>
             <CONNECTION INSTANCE="TexSample_0" PORT="clk"/>
-            <CONNECTION INSTANCE="VertexBatchBuilder_0" PORT="clk"/>
             <CONNECTION INSTANCE="DepthInterpolator_0" PORT="clk"/>
             <CONNECTION INSTANCE="DepthInterpStateBlock" PORT="clk"/>
             <CONNECTION INSTANCE="TriSetupStateBlock" PORT="clk"/>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="clk"/>
+            <CONNECTION INSTANCE="TriSetup_0" PORT="clk"/>
             <CONNECTION INSTANCE="SerialPacketSystem_ValidIncomingPacketsFIFO" PORT="rd_clk"/>
             <CONNECTION INSTANCE="SerialPacketSystem_ReturnOutputPacketsFIFO" PORT="wr_clk"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_InstructionCache" PORT="clka"/>
@@ -27619,7 +27637,9 @@
             <CONNECTION INSTANCE="ShaderCoreSystem_ShaderCore_0" PORT="clk"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_GPRQuadSystem_GPRQuad2_0" PORT="clk"/>
             <CONNECTION INSTANCE="ScanoutSystem_CDC_Command_Scanout_0" PORT="cmd_clk"/>
-            <CONNECTION INSTANCE="TriSetup_0" PORT="clk"/>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="clk"/>
+            <CONNECTION INSTANCE="VertexBatchBuilder_0" PORT="clk"/>
+            <CONNECTION INSTANCE="VBB_StateBlock" PORT="clk"/>
             <CONNECTION INSTANCE="MemorySystem_ScanoutReadRequestsFIFO" PORT="rd_clk"/>
             <CONNECTION INSTANCE="MemorySystem_ZStencilReadRequestsFIFO" PORT="rd_clk"/>
             <CONNECTION INSTANCE="MemorySystem_ZStencilReadRequestsFIFO" PORT="wr_clk"/>
@@ -29171,10 +29191,10 @@
         </PORT>
         <PORT DIR="O" NAME="resetn" SIGIS="rst" SIGNAME="ResetN_UntilClockLoc_0_resetn">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="resetn"/>
             <CONNECTION INSTANCE="MemorySystem_MemoryController_0" PORT="M_AXI_ARESETN"/>
             <CONNECTION INSTANCE="SerialPacketSystem_axi_uartlite_0" PORT="s_axi_aresetn"/>
             <CONNECTION INSTANCE="SerialPacketSystem_PacketProcessor_0" PORT="M_AXI_ARESETN"/>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="resetn"/>
           </CONNECTIONS>
         </PORT>
       </PORTS>
@@ -41922,8 +41942,8 @@
         <PORT DIR="O" NAME="empty" SIGIS="undef" SIGNAME="VBB_FIFO_empty">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ShaderCoreSystem_ShaderCore_0" PORT="VERTBATCH_FIFO_empty"/>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="CMD_FIFO_EMPTY_VBB"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_ShaderCore_0" PORT="VERTBATCH_FIFO_empty"/>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="CMD_FIFO_EMPTY_VBB"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" NAME="wr_rst_busy" SIGIS="undef"/>
@@ -41945,6 +41965,74 @@
           </PORTMAPS>
         </BUSINTERFACE>
       </BUSINTERFACES>
+    </MODULE>
+    <MODULE FULLNAME="/VBB_StateBlock" HWVERSION="1.0" INSTANCE="VBB_StateBlock" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="StateBlock" VLNV="xilinx.com:module_ref:StateBlock:1.0">
+      <DOCUMENTS/>
+      <PARAMETERS>
+        <PARAMETER NAME="StateBitsCount" VALUE="35"/>
+        <PARAMETER NAME="Component_Name" VALUE="design_1_StateBlock_0_5"/>
+        <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
+      </PARAMETERS>
+      <PORTS>
+        <PORT CLKFREQUENCY="333250000" DIR="I" NAME="clk" SIGIS="clk" SIGNAME="MemorySystem_ddr4_0_c0_ddr4_ui_clk">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="MemorySystem_ddr4_0" PORT="c0_ddr4_ui_clk"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="CMD_SetNewState" SIGIS="undef" SIGNAME="CommandProcessor_0_VBB_SetNewState">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="VBB_SetNewState"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="CMD_EndFrameReset" SIGIS="undef" SIGNAME="CommandProcessor_0_VBB_EndFrameReset">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="VBB_EndFrameReset"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="2" NAME="CMD_NumFreeSlots" RIGHT="0" SIGIS="undef" SIGNAME="VBB_StateBlock_CMD_NumFreeSlots">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="VBB_NumFreeSlots"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="34" NAME="CMD_NewStateBits" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_VBB_NewStateBits">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="VBB_NewStateBits"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="15" NAME="CMD_NewStateDrawEventID" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_VBB_NewStateDrawEventID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="VBB_NewStateDrawEventID"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="34" NAME="STAGE_StateBitsAtDrawID" RIGHT="0" SIGIS="undef" SIGNAME="VBB_StateBlock_STAGE_StateBitsAtDrawID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="VertexBatchBuilder_0" PORT="STATE_StateBitsAtDrawID"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="15" NAME="STAGE_NextDrawID" RIGHT="0" SIGIS="undef" SIGNAME="VBB_StateBlock_STAGE_NextDrawID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="VertexBatchBuilder_0" PORT="STATE_NextDrawID"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="STAGE_StateIsValid" SIGIS="undef" SIGNAME="VBB_StateBlock_STAGE_StateIsValid">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="VertexBatchBuilder_0" PORT="STATE_StateIsValid"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="STAGE_ConsumeStateSlot" SIGIS="undef" SIGNAME="VertexBatchBuilder_0_STATE_ConsumeStateSlot">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="VertexBatchBuilder_0" PORT="STATE_ConsumeStateSlot"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="3" NAME="DBG_SlotsValid" RIGHT="0" SIGIS="undef"/>
+        <PORT DIR="O" LEFT="1" NAME="DBG_CurrentReadSlotIndex" RIGHT="0" SIGIS="undef"/>
+        <PORT DIR="O" LEFT="1" NAME="DBG_CurrentWriteSlotIndex" RIGHT="0" SIGIS="undef"/>
+        <PORT DIR="O" LEFT="15" NAME="DBG_Slot0" RIGHT="0" SIGIS="undef"/>
+        <PORT DIR="O" LEFT="15" NAME="DBG_Slot1" RIGHT="0" SIGIS="undef"/>
+        <PORT DIR="O" LEFT="15" NAME="DBG_Slot2" RIGHT="0" SIGIS="undef"/>
+        <PORT DIR="O" LEFT="15" NAME="DBG_Slot3" RIGHT="0" SIGIS="undef"/>
+      </PORTS>
+      <BUSINTERFACES/>
     </MODULE>
     <MODULE FULLNAME="/VBO_FIFO" HWVERSION="13.2" INSTANCE="VBO_FIFO" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="fifo_generator" VLNV="xilinx.com:ip:fifo_generator:13.2">
       <DOCUMENTS>
@@ -42840,7 +42928,7 @@
             <CONNECTION INSTANCE="CommandProcessor_0" PORT="VBB_SendCommand"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="CMD_CommandArg0" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_VBB_CommandArg0">
+        <PORT DIR="I" LEFT="23" NAME="CMD_CommandArg0" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_VBB_CommandArg0">
           <CONNECTIONS>
             <CONNECTION INSTANCE="CommandProcessor_0" PORT="VBB_CommandArg0"/>
           </CONNECTIONS>
@@ -42858,11 +42946,6 @@
         <PORT DIR="I" LEFT="15" NAME="CMD_NewDrawEventID" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_VBB_NewDrawEventID">
           <CONNECTIONS>
             <CONNECTION INSTANCE="CommandProcessor_0" PORT="VBB_NewDrawEventID"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" LEFT="2" NAME="CMD_CommandArgType" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_VBB_CommandArgType">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="VBB_CommandArgType"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" NAME="CMD_ReadyState" SIGIS="undef" SIGNAME="VertexBatchBuilder_0_CMD_ReadyState">
@@ -42899,6 +42982,26 @@
         <PORT DIR="O" NAME="SHADER_Done" SIGIS="undef" SIGNAME="VertexBatchBuilder_0_SHADER_Done">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ShaderCoreSystem_ShaderCore_0" PORT="VBB_Done"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="34" NAME="STATE_StateBitsAtDrawID" RIGHT="0" SIGIS="undef" SIGNAME="VBB_StateBlock_STAGE_StateBitsAtDrawID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="VBB_StateBlock" PORT="STAGE_StateBitsAtDrawID"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="15" NAME="STATE_NextDrawID" RIGHT="0" SIGIS="undef" SIGNAME="VBB_StateBlock_STAGE_NextDrawID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="VBB_StateBlock" PORT="STAGE_NextDrawID"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="STATE_StateIsValid" SIGIS="undef" SIGNAME="VBB_StateBlock_STAGE_StateIsValid">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="VBB_StateBlock" PORT="STAGE_StateIsValid"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="STATE_ConsumeStateSlot" SIGIS="undef" SIGNAME="VertexBatchBuilder_0_STATE_ConsumeStateSlot">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="VBB_StateBlock" PORT="STAGE_ConsumeStateSlot"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="I" NAME="VERTBATCH_FIFO_full" SIGIS="undef" SIGNAME="VBB_FIFO_full">
@@ -43037,7 +43140,7 @@
         <PARAMETER NAME="C_SLOT_0_AXI_ARUSER_WIDTH" VALUE="30"/>
         <PARAMETER NAME="C_SLOT_0_AXI_RUSER_WIDTH" VALUE="8"/>
         <PARAMETER NAME="C_SLOT_0_AXI_AWUSER_WIDTH" VALUE="8"/>
-        <PARAMETER NAME="C_SLOT_0_AXI_WUSER_WIDTH" VALUE="32"/>
+        <PARAMETER NAME="C_SLOT_0_AXI_WUSER_WIDTH" VALUE="24"/>
         <PARAMETER NAME="C_SLOT_0_AXI_BUSER_WIDTH" VALUE="30"/>
         <PARAMETER NAME="C_PROBE0_WIDTH" VALUE="8"/>
         <PARAMETER NAME="C_PROBE1_WIDTH" VALUE="88"/>
@@ -43082,7 +43185,7 @@
         <PARAMETER NAME="C_PROBE40_WIDTH" VALUE="6"/>
         <PARAMETER NAME="C_PROBE41_WIDTH" VALUE="8"/>
         <PARAMETER NAME="C_PROBE42_WIDTH" VALUE="3"/>
-        <PARAMETER NAME="C_PROBE43_WIDTH" VALUE="32"/>
+        <PARAMETER NAME="C_PROBE43_WIDTH" VALUE="24"/>
         <PARAMETER NAME="C_PROBE44_WIDTH" VALUE="20"/>
         <PARAMETER NAME="C_PROBE45_WIDTH" VALUE="16"/>
         <PARAMETER NAME="C_PROBE46_WIDTH" VALUE="1"/>
@@ -46325,9 +46428,9 @@
             <CONNECTION INSTANCE="ROP_0" PORT="DBG_ReadRequestFIFOFull"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="0" NAME="probe37" RIGHT="0" SIGIS="undef" SIGNAME="xlconstant_1_dout">
+        <PORT DIR="I" LEFT="0" NAME="probe37" RIGHT="0" SIGIS="undef" SIGNAME="xlconstant_5_dout">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="xlconstant_1" PORT="dout"/>
+            <CONNECTION INSTANCE="xlconstant_5" PORT="dout"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="I" LEFT="3" NAME="probe38" RIGHT="0" SIGIS="undef" SIGNAME="StatsCollector_0_DBG_CurrentState">
@@ -46350,12 +46453,12 @@
             <CONNECTION INSTANCE="MemorySystem_MemoryController_0" PORT="DBG_ReadResponsesFullBitmask"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="2" NAME="probe42" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_VBB_CommandArgType">
+        <PORT DIR="I" LEFT="2" NAME="probe42" RIGHT="0" SIGIS="undef" SIGNAME="xlconstant_1_dout">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="VBB_CommandArgType"/>
+            <CONNECTION INSTANCE="xlconstant_1" PORT="dout"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="probe43" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_VBB_CommandArg0">
+        <PORT DIR="I" LEFT="23" NAME="probe43" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_VBB_CommandArg0">
           <CONNECTIONS>
             <CONNECTION INSTANCE="CommandProcessor_0" PORT="VBB_CommandArg0"/>
           </CONNECTIONS>
@@ -47705,15 +47808,15 @@
     <MODULE FULLNAME="/xlconstant_1" HWVERSION="1.1" INSTANCE="xlconstant_1" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="xlconstant" VLNV="xilinx.com:ip:xlconstant:1.1">
       <DOCUMENTS/>
       <PARAMETERS>
-        <PARAMETER NAME="CONST_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="CONST_WIDTH" VALUE="3"/>
         <PARAMETER NAME="CONST_VAL" VALUE="0x0"/>
-        <PARAMETER NAME="Component_Name" VALUE="design_1_xlconstant_1_0"/>
+        <PARAMETER NAME="Component_Name" VALUE="design_1_xlconstant_1_1"/>
         <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
       </PARAMETERS>
       <PORTS>
-        <PORT DIR="O" LEFT="0" NAME="dout" RIGHT="0" SIGIS="undef" SIGNAME="xlconstant_1_dout">
+        <PORT DIR="O" LEFT="2" NAME="dout" RIGHT="0" SIGIS="undef" SIGNAME="xlconstant_1_dout">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="ila_333_250" PORT="probe37"/>
+            <CONNECTION INSTANCE="ila_333_250" PORT="probe42"/>
           </CONNECTIONS>
         </PORT>
       </PORTS>
@@ -47774,6 +47877,7 @@
         <PORT DIR="O" LEFT="0" NAME="dout" RIGHT="0" SIGIS="undef" SIGNAME="xlconstant_5_dout">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ila_333_250" PORT="probe11"/>
+            <CONNECTION INSTANCE="ila_333_250" PORT="probe37"/>
           </CONNECTIONS>
         </PORT>
       </PORTS>

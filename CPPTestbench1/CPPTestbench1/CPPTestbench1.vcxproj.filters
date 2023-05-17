@@ -111,6 +111,9 @@
     <ClCompile Include="Testbenches\StateBlockTestbench.cpp">
       <Filter>Source Files\Testbenches</Filter>
     </ClCompile>
+    <ClCompile Include="Testbenches\FloatALU_InterpolatorTestbench.cpp">
+      <Filter>Source Files\Testbenches</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="xsi_loader.h">
@@ -192,6 +195,9 @@
       <Filter>Header Files\Testbenches</Filter>
     </ClInclude>
     <ClInclude Include="Testbenches\StateBlockTestbench.h">
+      <Filter>Header Files\Testbenches</Filter>
+    </ClInclude>
+    <ClInclude Include="Testbenches\FloatALU_InterpolatorTestbench.h">
       <Filter>Header Files\Testbenches</Filter>
     </ClInclude>
   </ItemGroup>
@@ -450,6 +456,18 @@
     </None>
     <None Include="hdl_src\RenderState\ROPState.vhd">
       <Filter>HDL\RenderState</Filter>
+    </None>
+    <None Include="hdl_src\RenderState\DepthInterpolatorState.vhd">
+      <Filter>HDL\RenderState</Filter>
+    </None>
+    <None Include="hdl_src\RenderState\TriSetupState.vhd">
+      <Filter>HDL\RenderState</Filter>
+    </None>
+    <None Include="hdl_src\RenderState\VertexBatchBuilderState.vhd">
+      <Filter>HDL\RenderState</Filter>
+    </None>
+    <None Include="FloatALU_Interpolator.prj">
+      <Filter>Resource Files\Project Files</Filter>
     </None>
   </ItemGroup>
 </Project>

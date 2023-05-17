@@ -873,7 +873,7 @@ HRESULT __stdcall IBaseGPUDevice::DeviceSetDepthState(const bool zEnabled, const
 	return hRet;
 }
 
-HRESULT __stdcall IBaseGPUDevice::DeviceSetIAState(const eCullMode cullMode, const ePrimTopology primTopology, const eStripCutType stripCut, const eIndexFormat indexFormat, const gpuvoid* const indexBufferBaseAddr)
+HRESULT __stdcall IBaseGPUDevice::DeviceSetIAState(const eCullMode cullMode, const ePrimTopology primTopology, const eStripCutType stripCut, const eIndexFormat indexFormat, const unsigned indexBufferLengthBytes, const gpuvoid* const indexBufferBaseAddr)
 {
 	if (cullMode >= eCullMode_NUM_CULL_MODES)
 	{
@@ -913,6 +913,46 @@ HRESULT __stdcall IBaseGPUDevice::DeviceSetIAState(const eCullMode cullMode, con
 		__debugbreak();
 #endif
 		return E_INVALIDARG; // Can only use strip cuts when rendering using indexed draw calls
+	}
+
+	if (indexBufferBaseAddr != NULL)
+	{
+		if (indexFormat == ibfmt_noIndices)
+		{
+#ifdef _DEBUG
+			__debugbreak();
+#endif
+			return E_INVALIDARG;
+		}
+
+		if (!ValidateAddress(indexBufferBaseAddr) )
+			return E_INVALIDARG;
+
+		if (indexBufferLengthBytes == 0)
+		{
+#ifdef _DEBUG
+			__debugbreak();
+#endif
+			return E_INVALIDARG;
+		}
+
+		if (!ValidateMemoryRangeExistsInsideAllocation(indexBufferBaseAddr, indexBufferLengthBytes) )
+		{
+#ifdef _DEBUG
+			__debugbreak();
+#endif
+			return E_INVALIDARG;
+		}
+	}
+	else
+	{
+		if (indexFormat != ibfmt_noIndices)
+		{
+#ifdef _DEBUG
+			__debugbreak();
+#endif
+			return E_INVALIDARG;
+		}
 	}
 
 	if (DoCacheDeviceState() && cullMode == currentCachedState.deviceCachedCullMode && primTopology == currentCachedState.deviceCachedPrimTop && stripCut == currentCachedState.deviceCachedStripCut 
@@ -1132,70 +1172,6 @@ HRESULT __stdcall IBaseGPUDevice::DeviceIssueQuery(const gpuvoid* const queryAdd
 	}
 #endif
 	const HRESULT hRet = SendOrStorePacket(&issueQuery);
-	if (FAILED(hRet) )
-		return hRet;
-	
-	if (DoSyncEveryCall() )
-		return DeviceWaitForIdle();
-	return hRet;
-}
-
-HRESULT __stdcall IBaseGPUDevice::DeviceSetIndexBuffer(const gpuvoid* const indexBufferMemory, const unsigned indexBuffer16LengthIndices, const eIndexFormat indexFormat)
-{
-	if (!ValidateAddress(indexBufferMemory) )
-		return E_INVALIDARG;
-
-	if (indexBuffer16LengthIndices == 0)
-	{
-#ifdef _DEBUG
-		__debugbreak();
-#endif
-		return E_INVALIDARG;
-	}
-
-	if (!ValidateMemoryRangeExistsInsideAllocation(indexBufferMemory, indexBuffer16LengthIndices * sizeof(USHORT) ) )
-	{
-#ifdef _DEBUG
-		__debugbreak();
-#endif
-		return E_INVALIDARG;
-	}
-
-	if (DoCacheDeviceState() && currentCachedState.deviceSetIndexBuffer == indexBufferMemory) // TODO: DO we actually want to cache this? What if we have a dynamic index buffer?
-		return S_OK;
-
-	setIndexBufferCommand setIndexBufferData;
-	setIndexBufferData.indexBufferAddress = (const DWORD)indexBufferMemory;
-	switch (indexFormat)
-	{
-	default:
-#ifdef _DEBUG
-		__debugbreak(); // Unknown enum input!
-#endif
-	case ibfmt_noIndices:
-	case ibfmt_index16:
-		setIndexBufferData.indexType = 0;
-		break;
-	case ibfmt_index32:
-		setIndexBufferData.indexType = 1;
-		break;
-	case ibfmt_index8:
-		setIndexBufferData.indexType = 2;
-		break;
-	}
-
-	setIndexBufferData.checksum = command::ComputeChecksum(&setIndexBufferData, sizeof(setIndexBufferData) );
-#ifdef _DEBUG
-	if (!command::IsValidPacket(&setIndexBufferData, sizeof(setIndexBufferData) ) )
-	{
-		__debugbreak();
-	}
-#endif
-	const HRESULT hRet = SendOrStorePacket(&setIndexBufferData);
-	if (SUCCEEDED(hRet) && DoCacheDeviceState() )
-	{
-		currentCachedState.deviceSetIndexBuffer = indexBufferMemory;
-	}
 	if (FAILED(hRet) )
 		return hRet;
 	
@@ -2287,7 +2263,6 @@ const bool IBaseGPUDevice::PacketIsValidForRecording(const command::ePacketType 
 	case command::PT_LOADSHADERINSTRUCTIONS:
 	case command::PT_SETSHADERCONSTANT:
 	case command::PT_SETVERTEXSTREAMDATA:
-	case command::PT_SETINDEXBUFFER:
 	case command::PT_SETSHADERCONSTANTSPECIAL:
 	case command::PT_SETSHADERSTARTADDRESS:
 	case command::PT_SETDEPTHSTATE:
@@ -2305,6 +2280,7 @@ const bool IBaseGPUDevice::PacketIsValidForRecording(const command::ePacketType 
 	// Disallow all of the packet types that return data or read back data from the GPU to the CPU, since when executing a recorded command list
 	// there won't be anybody listening to acknowledge that data:
 	case command::PT_REMOVED7: // Don't allow removed packets in our recorded command buffers
+	case command::PT_UNUSED23: // Don't allow removed packets in our recorded command buffers
 	case command::PT_READMEM:
 	case command::PT_READMEMRESPONSE:
 	case command::PT_WAITFORDEVICEIDLE:

@@ -5,8 +5,10 @@ use IEEE.NUMERIC_STD.ALL;
 -- Include our packet types library so we can access all of the shared enums and struct definitions in there
 library work;
 use work.PacketType.all;
+use work.FloatALU_Types.all;
 use work.InputAssemblerState.all;
 use work.ClipUnitState.all;
+use work.TriSetupState.all;
 use work.DepthInterpolatorState.all;
 use work.AttrInterpolatorState.all;
 use work.TexSampleState.all;
@@ -106,12 +108,6 @@ entity CommandProcessor is
 		IA_NewStateDrawEventID : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
 	-- Input Assembler state interfaces end
 
-	-- Triangle Setup interfaces begin
-		TRISETUP_SetViewportParams : out STD_LOGIC_VECTOR(1 downto 0) := (others => '0');
-		TRISETUP_ViewportParams0 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-		TRISETUP_ViewportParams1 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-	-- Triangle Setup interfaces end
-
 	-- Vertex Batch Builder interfaces begin
 		VBB_SendCommand : out STD_LOGIC_VECTOR(1 downto 0) := (others => '0');
 		VBB_CommandArg0 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0'); -- Used for our index buffer address (SetIndexBuffer), as well as our primitive count (DrawPrimitive/DrawIndexedPrimitive)
@@ -129,6 +125,14 @@ entity CommandProcessor is
 		CLIP_NewStateBits : out STD_LOGIC_VECTOR(CLIP_UNIT_STATE_SIZE_BITS-1 downto 0) := (others => '0');
 		CLIP_NewStateDrawEventID : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
 	-- Clip Unit state interfaces end
+
+	-- Triangle Setup state interfaces begin
+		TRISETUP_SetNewState : out STD_LOGIC := '0';
+		TRISETUP_EndFrameReset : out STD_LOGIC := '0';
+		TRISETUP_NumFreeSlots : in STD_LOGIC_VECTOR(2 downto 0);
+		TRISETUP_NewStateBits : out STD_LOGIC_VECTOR(TRI_SETUP_STATE_SIZE_BITS-1 downto 0) := (others => '0');
+		TRISETUP_NewStateDrawEventID : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
+	-- Triangle Setup state interfaces end
 
 	-- Depth Interpolator state interfaces begin
 		DINTERP_SetNewState : out STD_LOGIC := '0';
@@ -316,7 +320,12 @@ architecture Behavioral of CommandProcessor is
 						SET_BLEND_STATE, -- 50
 						PUSH_NEW_ROP_STATE, -- 51
 						SET_CLIP_STATE, -- 52
-						ISSUE_QUERY_STATE -- 53
+						ISSUE_QUERY_STATE, -- 53
+
+						SET_VIEWPORT_PARAMS0, -- 54
+						SET_VIEWPORT_PARAMS1, -- 55
+						SET_SCISSOR_RECT, -- 56
+						PUSH_NEW_TRISETUP_STATE -- 57
 						);
 
 	type commandListExecState is record
@@ -398,6 +407,7 @@ architecture Behavioral of CommandProcessor is
 	signal VSyncResolvedSig : STD_LOGIC := '0';
 
 	-- Current states for the various stages of the pipeline:
+	signal CurrentTriSetupState : sTriSetupState := DEFAULT_TRI_SETUP_STATE;
 	signal CurrentTexSamplerState : sTexSamplerState := DEFAULT_TEX_SAMPLER_STATE;
 	signal CurrentROPState : sROPState := DEFAULT_ROP_STATE;
 	
@@ -548,6 +558,8 @@ begin
 						IA_EndFrameReset <= '0';
 						CLIP_SetNewState <= '0';
 						CLIP_EndFrameReset <= '0';
+						TRISETUP_SetNewState <= '0';
+						TRISETUP_EndFrameReset <= '0';
 						DINTERP_SetNewState <= '0';
 						DINTERP_EndFrameReset <= '0';
 						INTERP_SetNewState <= '0';
@@ -980,6 +992,7 @@ begin
 						currentDrawStateGeneration <= X"0001";
 						IA_EndFrameReset <= '1';
 						CLIP_EndFrameReset <= '1';
+						TRISETUP_EndFrameReset <= '1';
 						DINTERP_EndFrameReset <= '1';
 						INTERP_EndFrameReset <= '1';
 						TEXSAMP_EndFrameReset <= '1';
@@ -1271,6 +1284,37 @@ begin
 								end case;
 							end if;
 
+							mst_packet_state <= READ_NEXT_PACKET_FROM_FIFO;
+						end if;
+
+					when SET_VIEWPORT_PARAMS0 =>
+						hasUpdatedDrawState <= '1';
+
+						CurrentTriSetupState.ViewportHalfWidth <= f32(localIncomingPacket.payload0);
+						CurrentTriSetupState.ViewportHalfHeight <= f32(localIncomingPacket.payload1);
+						mst_packet_state <= READ_NEXT_PACKET_FROM_FIFO;
+
+					when SET_VIEWPORT_PARAMS1 =>
+						hasUpdatedDrawState <= '1';
+
+						CurrentTriSetupState.ViewportZScale <= f32(localIncomingPacket.payload0);
+						CurrentTriSetupState.ViewportZOffset <= f32(localIncomingPacket.payload1);
+						mst_packet_state <= READ_NEXT_PACKET_FROM_FIFO;
+
+					when SET_SCISSOR_RECT =>
+						hasUpdatedDrawState <= '1';
+
+						CurrentTriSetupState.ScissorLeft <= unsigned(localIncomingPacket.payload0(15 downto 0) );
+						CurrentTriSetupState.ScissorRight <= unsigned(localIncomingPacket.payload0(31 downto 16) );
+						CurrentTriSetupState.ScissorTop <= unsigned(localIncomingPacket.payload1(15 downto 0) );
+						CurrentTriSetupState.ScissorBottom <= unsigned(localIncomingPacket.payload1(31 downto 16) );
+						mst_packet_state <= PUSH_NEW_TRISETUP_STATE;
+
+					when PUSH_NEW_TRISETUP_STATE =>
+						TRISETUP_NewStateBits <= SerializeStructToBits(CurrentTriSetupState);
+						TRISETUP_NewStateDrawEventID <= std_logic_vector(currentDrawStateGeneration);
+						if (unsigned(TRISETUP_NumFreeSlots) /= 0) then
+							TRISETUP_SetNewState <= '1';
 							mst_packet_state <= READ_NEXT_PACKET_FROM_FIFO;
 						end if;
 

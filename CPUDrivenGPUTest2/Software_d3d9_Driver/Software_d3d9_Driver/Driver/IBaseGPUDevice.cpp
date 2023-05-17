@@ -674,6 +674,92 @@ static inline const unsigned GetLog2ExactFloat(const float f)
 	return ret;
 }
 
+HRESULT __stdcall IBaseGPUDevice::DeviceSetTriSetupState(const float viewportHalfWidth, const float viewportHalfHeight, const float viewportZScale, const float viewportZOffset,
+	const unsigned short scissorRectLeft, const unsigned short scissorRectRight, const unsigned short scissorRectTop, const unsigned short scissorRectBottom)
+{
+	if (viewportHalfWidth < 0.5f || viewportHalfHeight < 0.5f)
+	{
+#ifdef _DEBUG
+		__debugbreak();
+#endif
+		return E_INVALIDARG;
+	}
+
+	if (scissorRectLeft > scissorRectRight || scissorRectTop > scissorRectBottom)
+	{
+#ifdef _DEBUG
+		__debugbreak();
+#endif
+		return E_INVALIDARG;
+	}
+
+	TriangleSetupStateBlock newTriSetupState;
+	newTriSetupState.deviceCachedViewportHalfWidth = viewportHalfWidth;
+	newTriSetupState.deviceCachedViewportHalfHeight = viewportHalfHeight;
+	newTriSetupState.deviceCachedViewportZScale = viewportZScale;
+	newTriSetupState.deviceCachedViewportZOffset = viewportZOffset;
+	newTriSetupState.deviceCachedScissorLeft = scissorRectLeft;
+	newTriSetupState.deviceCachedScissorRight = scissorRectRight;
+	newTriSetupState.deviceCachedScissorTop = scissorRectTop;
+	newTriSetupState.deviceCachedScissorBottom = scissorRectBottom;
+
+	if (DoCacheDeviceState() && currentCachedState.deviceCachedTriSetupState == newTriSetupState)
+		return S_OK;
+
+	setViewportState0Command setViewport0;
+	setViewport0.viewportHalfWidth = viewportHalfWidth;
+	setViewport0.viewportHalfHeight = viewportHalfHeight;
+	setViewport0.checksum = command::ComputeChecksum(&setViewport0, sizeof(setViewport0) );
+#ifdef _DEBUG
+	if (!command::IsValidPacket(&setViewport0, sizeof(setViewport0) ) )
+	{
+		__debugbreak();
+	}
+#endif
+
+	setViewportState1Command setViewport1;
+	setViewport1.viewportZScale = viewportZScale;
+	setViewport1.viewportZOffset = viewportZOffset;
+	setViewport1.checksum = command::ComputeChecksum(&setViewport1, sizeof(setViewport1) );
+#ifdef _DEBUG
+	if (!command::IsValidPacket(&setViewport1, sizeof(setViewport1) ) )
+	{
+		__debugbreak();
+	}
+#endif
+
+	setScissorRectCommand setScissorRect;
+	setScissorRect.scissorLeft = scissorRectLeft;
+	setScissorRect.scissorRight = scissorRectRight;
+	setScissorRect.scissorTop = scissorRectTop;
+	setScissorRect.scissorBottom = scissorRectBottom;
+	setScissorRect.checksum = command::ComputeChecksum(&setScissorRect, sizeof(setScissorRect) );
+#ifdef _DEBUG
+	if (!command::IsValidPacket(&setScissorRect, sizeof(setScissorRect) ) )
+	{
+		__debugbreak();
+	}
+#endif
+
+	const HRESULT hRetViewport0 = SendOrStorePacket(&setViewport0);
+	const HRESULT hRetViewport1 = SendOrStorePacket(&setViewport1);
+	const HRESULT hRetScissorRect = SendOrStorePacket(&setScissorRect);
+	if (SUCCEEDED(hRetViewport0) && SUCCEEDED(hRetViewport1) && SUCCEEDED(hRetScissorRect) && DoCacheDeviceState() )
+	{
+		currentCachedState.deviceCachedTriSetupState = newTriSetupState;
+	}
+	if (FAILED(hRetViewport0) )
+		return hRetViewport0;
+	if (FAILED(hRetViewport1) )
+		return hRetViewport1;
+	if (FAILED(hRetScissorRect) )
+		return hRetScissorRect;
+	
+	if (DoSyncEveryCall() )
+		return DeviceWaitForIdle();
+	return hRetViewport0;
+}
+
 HRESULT __stdcall IBaseGPUDevice::DeviceSetClipState(const bool depthClipEnabled, const bool useOpenGLNearZClip, const float guardBandXScale, const float guardBandYScale)
 {
 	if (guardBandXScale < 1.0f || guardBandXScale > 32768.0f || guardBandYScale < 1.0f || guardBandYScale > 32768.0f)
@@ -2208,6 +2294,9 @@ const bool IBaseGPUDevice::PacketIsValidForRecording(const command::ePacketType 
 	case command::PT_SETBLENDSTATE:
 	case command::PT_SETCLIPSTATE:
 	case command::PT_ISSUEQUERY:
+	case command::PT_SETVIEWPORTPARAMS0:
+	case command::PT_SETVIEWPORTPARAMS1:
+	case command::PT_SETSCISSORRECT:
 		return true;
 	default:
 #ifdef _DEBUG
@@ -2226,7 +2315,7 @@ const bool IBaseGPUDevice::PacketIsValidForRecording(const command::ePacketType 
 	case command::PT_DEBUGSHADERNEXTDRAWCALL:
 		return false;
 	}
-	static_assert(command::PT_MAX_PACKET_TYPES == 36, "Reminder: Need to update this switch statement with new cases when adding new packets!");
+	static_assert(command::PT_MAX_PACKET_TYPES == 39, "Reminder: Need to update this switch statement with new cases when adding new packets!");
 }
 
 HRESULT IBaseGPUDevice::SendOrStorePacket(const command* const sendPacket)

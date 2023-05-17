@@ -49,6 +49,9 @@ struct command
 		PT_DISCONNECT = 33,
 		PT_SETCLIPSTATE = 34,
 		PT_ISSUEQUERY = 35,
+		PT_SETVIEWPORTPARAMS0 = 36,
+		PT_SETVIEWPORTPARAMS1 = 37,
+		PT_SETSCISSORRECT = 38,
 
 		PT_MAX_PACKET_TYPES // This must always be last
 	};
@@ -1056,6 +1059,50 @@ struct issueQueryCommand : command
 	unsigned unused1 : 2; // 31 downto 30
 };
 
+// This configures part of the triangle setup state
+struct setViewportState0Command : command
+{
+	setViewportState0Command() : command(PT_SETVIEWPORTPARAMS0)
+	{
+	}
+
+	// Payload 0:
+	float viewportHalfWidth = 640.0f / 2.0f; // 31 downto 0
+
+	// Payload 1:
+	float viewportHalfHeight = 480.0f / 2.0f; // 31 downto 0
+};
+
+// This configures part of the triangle setup state
+struct setViewportState1Command : command
+{
+	setViewportState1Command() : command(PT_SETVIEWPORTPARAMS1)
+	{
+	}
+
+	// Payload 0:
+	float viewportZScale = 1.0f; // 31 downto 0
+
+	// Payload 1:
+	float viewportZOffset = 0.0f; // 31 downto 0
+};
+
+// This configures the final part of the triangle setup state and pushes the new triangle setup state off to the TriSetup unit
+struct setScissorRectCommand : command
+{
+	setScissorRectCommand() : command(PT_SETSCISSORRECT)
+	{
+	}
+
+	// Payload 0:
+	USHORT scissorLeft = 0u; // 15 downto 0
+	USHORT scissorRight = 640u; // 31 downto 16
+
+	// Payload 1:
+	USHORT scissorTop = 0u; // 15 downto 0
+	USHORT scissorBottom = 480u; // 31 downto 16
+};
+
 // TODO: One day implement variable-sized packets and then this can go away
 static_assert(sizeof(genericCommand) == sizeof(doNothingCommand) &&
 	sizeof(genericCommand) == sizeof(writeMemCommand) &&
@@ -1087,6 +1134,9 @@ static_assert(sizeof(genericCommand) == sizeof(doNothingCommand) &&
 	sizeof(genericCommand) == sizeof(setBlendStateCommand) &&
 	sizeof(genericCommand) == sizeof(setClipperStateCommand) &&
 	sizeof(genericCommand) == sizeof(issueQueryCommand) &&
+	sizeof(genericCommand) == sizeof(setViewportState0Command) &&
+	sizeof(genericCommand) == sizeof(setViewportState1Command) &&
+	sizeof(genericCommand) == sizeof(setScissorRectCommand) &&
 	sizeof(genericCommand) == 11, "Error: Unexpected struct size!");
 
 #pragma pack(pop) // End pragma pack 1 region

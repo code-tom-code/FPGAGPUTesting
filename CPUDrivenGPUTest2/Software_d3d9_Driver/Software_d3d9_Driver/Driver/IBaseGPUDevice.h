@@ -143,6 +143,23 @@ struct DepthStateBlock
 	}
 };
 
+struct TriangleSetupStateBlock
+{
+	float deviceCachedViewportHalfWidth = 0.0f;
+	float deviceCachedViewportHalfHeight = 0.0f;
+	float deviceCachedViewportZScale = 0.0f;
+	float deviceCachedViewportZOffset = 0.0f;
+	unsigned short deviceCachedScissorLeft = 0xFFFF;
+	unsigned short deviceCachedScissorRight = 0xFFFF;
+	unsigned short deviceCachedScissorTop = 0xFFFF;
+	unsigned short deviceCachedScissorBottom = 0xFFFF;
+
+	const bool operator==(const TriangleSetupStateBlock& rhs) const
+	{
+		return memcmp(this, &rhs, sizeof(*this) ) == 0;
+	}
+};
+
 struct GPUDeviceState
 {
 	const gpuvoid* deviceCachedScanoutBuffer = nullptr;
@@ -166,6 +183,7 @@ struct GPUDeviceState
 	unsigned deviceCachedGuardBandYScale = 5;
 	CachedVertexStream deviceCachedVertexStreams[GPU_MAX_NUM_VERTEX_STREAMS];
 	float4 deviceCachedConstantRegisters[GPU_SHADER_MAX_NUM_CONSTANT_FLOAT_REG];
+	TriangleSetupStateBlock deviceCachedTriSetupState;
 	DepthStateBlock deviceCachedDepthState;
 	TextureBlock deviceCachedTextureState;
 	ROPBlock deviceCachedROPState;
@@ -211,6 +229,8 @@ __declspec(align(16) ) struct IBaseGPUDevice
 		const bool alphaBlendingEnabled, const D3DBLEND srcColorBlend, const D3DBLEND destColorBlend, const D3DBLENDOP colorBlendOp, 
 		const D3DBLEND srcAlphaBlend, const D3DBLEND destAlphaBlend, const D3DBLENDOP alphaBlendOp, const D3DCOLOR blendFactorARGB);
 
+	HRESULT __stdcall DeviceSetTriSetupState(const float viewportHalfWidth, const float viewportHalfHeight, const float viewportZScale, const float viewportZOffset,
+		const unsigned short scissorRectLeft, const unsigned short scissorRectRight, const unsigned short scissorRectTop, const unsigned short scissorRectBottom);
 	HRESULT __stdcall DeviceSetClipState(const bool depthClipEnabled, const bool useOpenGLNearZClip, const float guardBandXScale, const float guardBandYScale);
 	HRESULT __stdcall DeviceSetDepthState(const bool zEnabled, const bool zWriteEnabled, const bool colorWriteEnabled, const eCmpFunc zTestCmpFunc, const eDepthFormat zFormat, const float depthBias);
 

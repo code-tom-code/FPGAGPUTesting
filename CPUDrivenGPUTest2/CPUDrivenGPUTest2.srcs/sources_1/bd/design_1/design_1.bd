@@ -1044,17 +1044,6 @@
         </spirit:configurableElementValues>
       </spirit:componentInstance>
       <spirit:componentInstance>
-        <spirit:instanceName>TriSetup_0</spirit:instanceName>
-        <spirit:componentRef spirit:library="module_ref" spirit:name="TriSetup" spirit:vendor="xilinx.com" spirit:version="1.0"/>
-        <spirit:configurableElementValues>
-          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_TriSetup_0_0</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">TriSetup</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
-        </spirit:configurableElementValues>
-      </spirit:componentInstance>
-      <spirit:componentInstance>
         <spirit:instanceName>IndexBufferCache_0</spirit:instanceName>
         <spirit:componentRef spirit:library="module_ref" spirit:name="IndexBufferCache" spirit:vendor="xilinx.com" spirit:version="1.0"/>
         <spirit:configurableElementValues>
@@ -1106,17 +1095,6 @@
         <spirit:configurableElementValues>
           <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_AttrInterpolator_0_0</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="bd:referenceName">AttrInterpolator</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
-        </spirit:configurableElementValues>
-      </spirit:componentInstance>
-      <spirit:componentInstance>
-        <spirit:instanceName>CommandProcessor_0</spirit:instanceName>
-        <spirit:componentRef spirit:library="module_ref" spirit:name="CommandProcessor" spirit:vendor="xilinx.com" spirit:version="1.0"/>
-        <spirit:configurableElementValues>
-          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_CommandProcessor_0_0</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">CommandProcessor</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
@@ -1195,6 +1173,40 @@
           <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_StateBlock_0_3</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="StateBitsCount">40</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="bd:referenceName">StateBlock</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
+        </spirit:configurableElementValues>
+      </spirit:componentInstance>
+      <spirit:componentInstance>
+        <spirit:instanceName>TriSetupStateBlock</spirit:instanceName>
+        <spirit:componentRef spirit:library="module_ref" spirit:name="StateBlock" spirit:vendor="xilinx.com" spirit:version="1.0"/>
+        <spirit:configurableElementValues>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_StateBlock_0_4</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="StateBitsCount">192</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">StateBlock</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
+        </spirit:configurableElementValues>
+      </spirit:componentInstance>
+      <spirit:componentInstance>
+        <spirit:instanceName>CommandProcessor_0</spirit:instanceName>
+        <spirit:componentRef spirit:library="module_ref" spirit:name="CommandProcessor" spirit:vendor="xilinx.com" spirit:version="1.0"/>
+        <spirit:configurableElementValues>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_CommandProcessor_0_0</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">CommandProcessor</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
+        </spirit:configurableElementValues>
+      </spirit:componentInstance>
+      <spirit:componentInstance>
+        <spirit:instanceName>TriSetup_0</spirit:instanceName>
+        <spirit:componentRef spirit:library="module_ref" spirit:name="TriSetup" spirit:vendor="xilinx.com" spirit:version="1.0"/>
+        <spirit:configurableElementValues>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_TriSetup_0_0</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">TriSetup</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
@@ -1381,9 +1393,9 @@
       <spirit:adHocConnection>
         <spirit:name>ResetN_UntilClockLoc_0_resetn</spirit:name>
         <spirit:internalPortReference spirit:componentRef="ResetN_UntilClockLoc_0" spirit:portRef="resetn"/>
+        <spirit:internalPortReference spirit:componentRef="CommandProcessor_0" spirit:portRef="resetn"/>
         <spirit:internalPortReference spirit:componentRef="MemorySystem" spirit:portRef="M_AXI_ARESETN"/>
         <spirit:internalPortReference spirit:componentRef="SerialPacketSystem" spirit:portRef="s_axi_aresetn"/>
-        <spirit:internalPortReference spirit:componentRef="CommandProcessor_0" spirit:portRef="resetn"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>CommandProcessor_0_DBG_PACKETSTATE</spirit:name>
@@ -1431,16 +1443,11 @@
         <spirit:internalPortReference spirit:componentRef="AttrInterpStateBlock" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="InputAssemblerStateBlock" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="StatsCollector_0" spirit:portRef="clk"/>
-        <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="IndexBufferCache_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="ClipUnitStateBlock" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="ROPStateBlock" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="ClipUnit_0" spirit:portRef="clk"/>
-        <spirit:internalPortReference spirit:componentRef="SerialPacketSystem" spirit:portRef="rd_clk"/>
-        <spirit:internalPortReference spirit:componentRef="ShaderCoreSystem" spirit:portRef="clk_0"/>
-        <spirit:internalPortReference spirit:componentRef="ScanoutSystem" spirit:portRef="cmd_clk"/>
         <spirit:internalPortReference spirit:componentRef="AttrInterpolator_0" spirit:portRef="clk"/>
-        <spirit:internalPortReference spirit:componentRef="CommandProcessor_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="DepthBuffer_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="InputAssembler2_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="ROP_0" spirit:portRef="clk"/>
@@ -1448,6 +1455,12 @@
         <spirit:internalPortReference spirit:componentRef="VertexBatchBuilder_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="DepthInterpolator_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="DepthInterpStateBlock" spirit:portRef="clk"/>
+        <spirit:internalPortReference spirit:componentRef="TriSetupStateBlock" spirit:portRef="clk"/>
+        <spirit:internalPortReference spirit:componentRef="CommandProcessor_0" spirit:portRef="clk"/>
+        <spirit:internalPortReference spirit:componentRef="SerialPacketSystem" spirit:portRef="rd_clk"/>
+        <spirit:internalPortReference spirit:componentRef="ShaderCoreSystem" spirit:portRef="clk_0"/>
+        <spirit:internalPortReference spirit:componentRef="ScanoutSystem" spirit:portRef="cmd_clk"/>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="clk"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>xlconstant_0_dout</spirit:name>
@@ -2708,15 +2721,6 @@
         <spirit:internalPortReference spirit:componentRef="DepthBuffer_0" spirit:portRef="CMD_ClearDepthValue"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
-        <spirit:name>CommandProcessor_0_DEPTH_DepthWriteEnable</spirit:name>
-      </spirit:adHocConnection>
-      <spirit:adHocConnection>
-        <spirit:name>CommandProcessor_0_DEPTH_DepthFunction</spirit:name>
-      </spirit:adHocConnection>
-      <spirit:adHocConnection>
-        <spirit:name>CommandProcessor_0_DEPTH_SetDepthParams</spirit:name>
-      </spirit:adHocConnection>
-      <spirit:adHocConnection>
         <spirit:name>xlconstant_7_dout</spirit:name>
         <spirit:internalPortReference spirit:componentRef="xlconstant_7" spirit:portRef="dout"/>
         <spirit:internalPortReference spirit:componentRef="TextureCache_128x128x32bits" spirit:portRef="regcea"/>
@@ -2850,9 +2854,6 @@
         <spirit:name>DepthBuffer_0_RAST_PixelFailedDepthTest</spirit:name>
         <spirit:internalPortReference spirit:componentRef="DepthBuffer_0" spirit:portRef="RAST_PixelFailedDepthTest"/>
         <spirit:internalPortReference spirit:componentRef="DepthInterpolator_0" spirit:portRef="DEPTH_PixelFailedDepthTest"/>
-      </spirit:adHocConnection>
-      <spirit:adHocConnection>
-        <spirit:name>DepthBuffer_0_RAST_DepthTestEnabled</spirit:name>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>AttrInterpolator_0_DINTERP_ReadyForNewPixel</spirit:name>
@@ -3495,21 +3496,6 @@
         <spirit:name>TriSetup_0_CMD_TriSetupIsIdle</spirit:name>
         <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="CMD_TriSetupIsIdle"/>
         <spirit:internalPortReference spirit:componentRef="CommandProcessor_0" spirit:portRef="CMD_TriSetup_Idle"/>
-      </spirit:adHocConnection>
-      <spirit:adHocConnection>
-        <spirit:name>CommandProcessor_0_TRISETUP_SetViewportParams</spirit:name>
-        <spirit:internalPortReference spirit:componentRef="CommandProcessor_0" spirit:portRef="TRISETUP_SetViewportParams"/>
-        <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="CMD_SetViewportParams"/>
-      </spirit:adHocConnection>
-      <spirit:adHocConnection>
-        <spirit:name>CommandProcessor_0_TRISETUP_ViewportParams0</spirit:name>
-        <spirit:internalPortReference spirit:componentRef="CommandProcessor_0" spirit:portRef="TRISETUP_ViewportParams0"/>
-        <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="CMD_ViewportParams0"/>
-      </spirit:adHocConnection>
-      <spirit:adHocConnection>
-        <spirit:name>CommandProcessor_0_TRISETUP_ViewportParams1</spirit:name>
-        <spirit:internalPortReference spirit:componentRef="CommandProcessor_0" spirit:portRef="TRISETUP_ViewportParams1"/>
-        <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="CMD_ViewportParams1"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>ClipUnit_0_CMD_IsIdle</spirit:name>
@@ -4198,8 +4184,8 @@
       <spirit:adHocConnection>
         <spirit:name>VBB_FIFO_empty</spirit:name>
         <spirit:internalPortReference spirit:componentRef="VBB_FIFO" spirit:portRef="empty"/>
-        <spirit:internalPortReference spirit:componentRef="ShaderCoreSystem" spirit:portRef="VERTBATCH_FIFO_empty"/>
         <spirit:internalPortReference spirit:componentRef="CommandProcessor_0" spirit:portRef="CMD_FIFO_EMPTY_VBB"/>
+        <spirit:internalPortReference spirit:componentRef="ShaderCoreSystem" spirit:portRef="VERTBATCH_FIFO_empty"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>InputAssembler2_0_VERTOUT_FIFO_rd_en</spirit:name>
@@ -4209,8 +4195,8 @@
       <spirit:adHocConnection>
         <spirit:name>VBO_FIFO_empty</spirit:name>
         <spirit:internalPortReference spirit:componentRef="VBO_FIFO" spirit:portRef="empty"/>
-        <spirit:internalPortReference spirit:componentRef="CommandProcessor_0" spirit:portRef="CMD_FIFO_EMPTY_VS"/>
         <spirit:internalPortReference spirit:componentRef="InputAssembler2_0" spirit:portRef="VERTOUT_FIFO_empty"/>
+        <spirit:internalPortReference spirit:componentRef="CommandProcessor_0" spirit:portRef="CMD_FIFO_EMPTY_VS"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>rast_out_fifo_dout</spirit:name>
@@ -4225,8 +4211,8 @@
       <spirit:adHocConnection>
         <spirit:name>rast_out_fifo_empty</spirit:name>
         <spirit:internalPortReference spirit:componentRef="rast_out_fifo" spirit:portRef="empty"/>
-        <spirit:internalPortReference spirit:componentRef="CommandProcessor_0" spirit:portRef="CMD_FIFO_EMPTY_RASTOUT"/>
         <spirit:internalPortReference spirit:componentRef="DepthInterpolator_0" spirit:portRef="RASTOUT_FIFO_empty"/>
+        <spirit:internalPortReference spirit:componentRef="CommandProcessor_0" spirit:portRef="CMD_FIFO_EMPTY_RASTOUT"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>TEXSAMP_FIFO_dout</spirit:name>
@@ -4241,8 +4227,8 @@
       <spirit:adHocConnection>
         <spirit:name>TEXSAMP_FIFO_empty</spirit:name>
         <spirit:internalPortReference spirit:componentRef="TEXSAMP_FIFO" spirit:portRef="empty"/>
-        <spirit:internalPortReference spirit:componentRef="CommandProcessor_0" spirit:portRef="CMD_FIFO_EMPTY_TEXSAMP"/>
         <spirit:internalPortReference spirit:componentRef="TexSample_0" spirit:portRef="INTERP_InFIFO_empty"/>
+        <spirit:internalPortReference spirit:componentRef="CommandProcessor_0" spirit:portRef="CMD_FIFO_EMPTY_TEXSAMP"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>ROP_FIFO_dout</spirit:name>
@@ -4252,8 +4238,8 @@
       <spirit:adHocConnection>
         <spirit:name>ROP_FIFO_empty</spirit:name>
         <spirit:internalPortReference spirit:componentRef="ROP_FIFO" spirit:portRef="empty"/>
-        <spirit:internalPortReference spirit:componentRef="CommandProcessor_0" spirit:portRef="CMD_FIFO_EMPTY_ROP"/>
         <spirit:internalPortReference spirit:componentRef="ROP_0" spirit:portRef="TEXSAMP_InFIFO_empty"/>
+        <spirit:internalPortReference spirit:componentRef="CommandProcessor_0" spirit:portRef="CMD_FIFO_EMPTY_ROP"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>ROP_0_TEXSAMP_InFIFO_rd_en</spirit:name>
@@ -4324,6 +4310,51 @@
         <spirit:name>DepthInterpStateBlock_CMD_NumFreeSlots</spirit:name>
         <spirit:internalPortReference spirit:componentRef="DepthInterpStateBlock" spirit:portRef="CMD_NumFreeSlots"/>
         <spirit:internalPortReference spirit:componentRef="CommandProcessor_0" spirit:portRef="DINTERP_NumFreeSlots"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriSetup_0_STATE_ConsumeStateSlot</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="STATE_ConsumeStateSlot"/>
+        <spirit:internalPortReference spirit:componentRef="TriSetupStateBlock" spirit:portRef="STAGE_ConsumeStateSlot"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriSetupStateBlock_STAGE_StateBitsAtDrawID</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriSetupStateBlock" spirit:portRef="STAGE_StateBitsAtDrawID"/>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="STATE_StateBitsAtDrawID"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriSetupStateBlock_STAGE_NextDrawID</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriSetupStateBlock" spirit:portRef="STAGE_NextDrawID"/>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="STATE_NextDrawID"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriSetupStateBlock_STAGE_StateIsValid</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriSetupStateBlock" spirit:portRef="STAGE_StateIsValid"/>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="STATE_StateIsValid"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TriSetupStateBlock_CMD_NumFreeSlots</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TriSetupStateBlock" spirit:portRef="CMD_NumFreeSlots"/>
+        <spirit:internalPortReference spirit:componentRef="CommandProcessor_0" spirit:portRef="TRISETUP_NumFreeSlots"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>CommandProcessor_0_TRISETUP_SetNewState</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="CommandProcessor_0" spirit:portRef="TRISETUP_SetNewState"/>
+        <spirit:internalPortReference spirit:componentRef="TriSetupStateBlock" spirit:portRef="CMD_SetNewState"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>CommandProcessor_0_TRISETUP_EndFrameReset</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="CommandProcessor_0" spirit:portRef="TRISETUP_EndFrameReset"/>
+        <spirit:internalPortReference spirit:componentRef="TriSetupStateBlock" spirit:portRef="CMD_EndFrameReset"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>CommandProcessor_0_TRISETUP_NewStateBits</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="CommandProcessor_0" spirit:portRef="TRISETUP_NewStateBits"/>
+        <spirit:internalPortReference spirit:componentRef="TriSetupStateBlock" spirit:portRef="CMD_NewStateBits"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>CommandProcessor_0_TRISETUP_NewStateDrawEventID</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="CommandProcessor_0" spirit:portRef="TRISETUP_NewStateDrawEventID"/>
+        <spirit:internalPortReference spirit:componentRef="TriSetupStateBlock" spirit:portRef="CMD_NewStateDrawEventID"/>
       </spirit:adHocConnection>
     </spirit:adHocConnections>
     <spirit:hierConnections>
@@ -5300,8 +5331,8 @@
         <spirit:internalPortReference spirit:componentRef="FloatALU_3" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="VertexStreamCache_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="ConstantBuffer_0" spirit:portRef="clk"/>
-        <spirit:internalPortReference spirit:componentRef="GPRQuadSystem" spirit:portRef="clk_0"/>
         <spirit:internalPortReference spirit:componentRef="ShaderCore_0" spirit:portRef="clk"/>
+        <spirit:internalPortReference spirit:componentRef="GPRQuadSystem" spirit:portRef="clk_0"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>ConstantBuffer_0_readOutData</spirit:name>

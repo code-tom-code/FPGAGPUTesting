@@ -6,6 +6,7 @@ use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
 
 use work.FloatALU_Types.all;
+use work.TriSetupState.all;
 
 entity TriSetup is
 	Port ( clk : in STD_LOGIC;
@@ -110,11 +111,15 @@ entity TriSetup is
 		FPU_SPEC_GO : out STD_LOGIC := '0';
 	-- FPU interfaces end
 
+	-- Triangle Setup State Block interface begin
+		STATE_StateBitsAtDrawID : in STD_LOGIC_VECTOR(TRI_SETUP_STATE_SIZE_BITS-1 downto 0);
+		STATE_NextDrawID : in STD_LOGIC_VECTOR(15 downto 0);
+		STATE_StateIsValid : in STD_LOGIC;
+		STATE_ConsumeStateSlot : out STD_LOGIC := '0';
+	-- Triangle Setup State Block interface end
+
 	-- Command processor interface begin
 		CMD_TriSetupIsIdle : out STD_LOGIC := '0';
-		CMD_SetViewportParams : in STD_LOGIC_VECTOR(1 downto 0);
-		CMD_ViewportParams0 : in STD_LOGIC_VECTOR(31 downto 0);
-		CMD_ViewportParams1 : in STD_LOGIC_VECTOR(31 downto 0);
 	-- Command processor interface end
 
 	-- Stats interface begin
@@ -142,8 +147,6 @@ entity TriSetup is
 		DBG_RightProd0 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 		DBG_RightProd1 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 		DBG_RightProd2 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-		DBG_LeftFirstTermInner1 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-		DBG_LeftSecondTermInner1 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 		DBG_TwiceTriArea : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0')
 		);
 end TriSetup;
@@ -385,11 +388,8 @@ signal v0_store_RGBA : vertexColor;
 signal v1_store_RGBA : vertexColor;
 signal v2_store_RGBA : vertexColor;
 
--- Viewport dimensions:
-signal VIEWPORT_HALF_WIDTH : f32 := X"43A00000"; -- This is 320.0f
-signal VIEWPORT_HALF_HEIGHT : f32 := X"43700000"; -- This is 240.0f
-signal VIEWPORT_Z_SCALE : f32 := X"3F800000"; -- This is 1.0f
-signal VIEWPORT_Z_OFFSET : f32 := X"00000000"; -- This is 0.0f
+-- Current state block:
+signal currentStateBlock : sTriSetupState := DEFAULT_TRI_SETUP_STATE;
 
 -- Internal signals
 signal readyForNextTriSig : STD_LOGIC := '1';
@@ -501,7 +501,7 @@ STAT_CyclesSpentWorking <= std_logic_vector(statCyclesWorking);
 STAT_CyclesWaitingForOutput <= std_logic_vector(statCyclesWaitingForOutput);
 
 -- Skip performing our Z-offset addition stages (saves 3 cycles per triangle) if our Z-Offset is 0, which it most commonly is
-skipZOffset <= '1' when VIEWPORT_Z_OFFSET(30 downto 23) = "00000000" else '0';
+skipZOffset <= '1' when currentStateBlock.ViewportZOffset(30 downto 23) = "00000000" else '0';
 
 DBG_TriSetup_State <= std_logic_vector(to_unsigned(trisetup_state_t'pos(currentState), 8) );
 DBG_MinX <= std_logic_vector(minX);
@@ -520,8 +520,6 @@ DBG_LeftProd2 <= std_logic_vector(resize(leftProduct2, 32) );
 DBG_RightProd0 <= std_logic_vector(resize(rightProduct0, 32) );
 DBG_RightProd1 <= std_logic_vector(resize(rightProduct1, 32) );
 DBG_RightProd2 <= std_logic_vector(resize(rightProduct2, 32) );
-DBG_LeftFirstTermInner1 <= std_logic_vector(leftFirstTermInner1);
-DBG_LeftSecondTermInner1 <= std_logic_vector(leftSecondTermInner1);
 DBG_TwiceTriArea <= std_logic_vector(twiceTriangleArea);
 
 	process(clk)
@@ -543,20 +541,9 @@ DBG_TwiceTriArea <= std_logic_vector(twiceTriangleArea);
 
 	process(clk)
 	begin
-		if (rising_edge(clk) ) then
-			if (CMD_SetViewportParams = "01") then -- Set viewport half-width and half-height
-				VIEWPORT_HALF_WIDTH <= f32(CMD_ViewportParams0);
-				VIEWPORT_HALF_HEIGHT <= f32(CMD_ViewportParams1);
-			elsif (CMD_SetViewportParams = "10") then
-				VIEWPORT_Z_SCALE <= f32(CMD_ViewportParams0);
-				VIEWPORT_Z_OFFSET <= f32(CMD_ViewportParams1);
-			end if;
-		end if;
-	end process;
+		if (rising_edge(clk) ) then                       
+			STATE_ConsumeStateSlot <= '0';
 
-	process(clk)
-	begin
-		if (rising_edge(clk) ) then                        
 			case currentState is
 				-- Load new triangle data
 				when triSetup_waitForTriData =>
@@ -614,6 +601,12 @@ DBG_TwiceTriArea <= std_logic_vector(twiceTriangleArea);
 				-- Triangle setup code
 
 				when triSetup_NAN_INF_ZeroW_Cull =>
+					if (unsigned(STATE_NextDrawID) = currentDrawEventID and STATE_StateIsValid = '1') then
+						STATE_ConsumeStateSlot <= '1';
+
+						currentStateBlock <= DeserializeBitsToStruct(STATE_StateBitsAtDrawID);
+					end if;
+
 					if (ShouldCullTriBadVertex(v0_xPosFloat, v0_yPosFloat, v0_zPosFloat, v0_wPosFloat) or ShouldCullTriBadVertex(v1_xPosFloat, v1_yPosFloat, v1_zPosFloat, v1_wPosFloat) or ShouldCullTriBadVertex(v2_xPosFloat, v2_yPosFloat, v2_zPosFloat, v2_wPosFloat) ) then
 						stats_totalTrianglesINF_NAN_ZeroWVertCulled <= stats_totalTrianglesINF_NAN_ZeroWVertCulled + 1;
 						if (hasBroadcastStartForDrawID = '1') then
@@ -646,7 +639,7 @@ DBG_TwiceTriArea <= std_logic_vector(twiceTriangleArea);
 					FPU_SPEC_GO <= '1';
 
 					FPU_MUL_A <= std_logic_vector(v0_xPosFloat);
-					FPU_MUL_B <= std_logic_vector(VIEWPORT_HALF_WIDTH);
+					FPU_MUL_B <= std_logic_vector(currentStateBlock.ViewportHalfWidth);
 					FPU_MUL_GO <= '1';
 					currentState <= triSetup_InvWSubmitRcpW1;
 
@@ -666,7 +659,7 @@ DBG_TwiceTriArea <= std_logic_vector(twiceTriangleArea);
 					FPU_SPEC_GO <= '0';
 
 					FPU_MUL_A <= std_logic_vector(v0_yPosFloat);
-					FPU_MUL_B <= std_logic_vector(NegateFloat(VIEWPORT_HALF_HEIGHT) );
+					FPU_MUL_B <= std_logic_vector(NegateFloat(currentStateBlock.ViewportHalfHeight) );
 					currentState <= triSetup_InvWWait1;
 
 				when triSetup_InvWWait1 => -- 7 -- mul y1 * -VIEWPORT_HALF_HEIGHT
@@ -679,7 +672,7 @@ DBG_TwiceTriArea <= std_logic_vector(twiceTriangleArea);
 
 				when triSetup_InvWWait3 => -- 9 -- mul z0 * zScale
 					FPU_MUL_A <= std_logic_vector(v0_zPosFloat);
-					FPU_MUL_B <= std_logic_vector(VIEWPORT_Z_SCALE);
+					FPU_MUL_B <= std_logic_vector(currentStateBlock.ViewportZScale);
 
 					v0_xPosFloat <= f32(FPU_MUL_OUT);
 					currentState <= triSetup_InvWWait4;
@@ -764,7 +757,7 @@ DBG_TwiceTriArea <= std_logic_vector(twiceTriangleArea);
 					FPU_MUL_B <= std_logic_vector(v0_store_invW);
 
 					FPU_ADD_A <= FPU_MUL_OUT;
-					FPU_ADD_B <= std_logic_vector(VIEWPORT_HALF_WIDTH);
+					FPU_ADD_B <= std_logic_vector(currentStateBlock.ViewportHalfWidth);
 					FPU_ADD_GO <= '1';
 
 					v0_xPosFloat <= f32(FPU_MUL_OUT);
@@ -793,7 +786,7 @@ DBG_TwiceTriArea <= std_logic_vector(twiceTriangleArea);
 					FPU_MUL_B <= std_logic_vector(v0_store_invW);
 
 					FPU_ADD_A <= FPU_MUL_OUT;
-					FPU_ADD_B <= std_logic_vector(VIEWPORT_HALF_HEIGHT);
+					FPU_ADD_B <= std_logic_vector(currentStateBlock.ViewportHalfHeight);
 
 					v0_yPosFloat <= f32(FPU_MUL_OUT);
 					currentState <= triSetup_InvWMultG0;
@@ -824,7 +817,7 @@ DBG_TwiceTriArea <= std_logic_vector(twiceTriangleArea);
 
 				when triSetup_InvWAddZ0 => -- 30 -- add z0 + zOffset
 					FPU_ADD_A <= FPU_MUL_OUT;
-					FPU_ADD_B <= std_logic_vector(VIEWPORT_Z_OFFSET);
+					FPU_ADD_B <= std_logic_vector(currentStateBlock.ViewportZOffset);
 
 					FPU_MUL_GO <= '0';
 

@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
-<EDKSYSTEM EDWVERSION="1.2" TIMESTAMP="Mon May 15 20:24:30 2023" VIVADOVERSION="2018.1_AR73068">
+<EDKSYSTEM EDWVERSION="1.2" TIMESTAMP="Tue May 16 20:05:19 2023" VIVADOVERSION="2018.1_AR73068">
 
   <SYSTEMINFO ARCH="kintexuplus" BOARD="xilinx.com:kcu116:part0:1.3" DEVICE="xcku5p" NAME="design_1" PACKAGE="ffvb676" SPEEDGRADE="-2"/>
 
@@ -1565,21 +1565,6 @@
             <CONNECTION INSTANCE="InputAssemblerStateBlock" PORT="CMD_NewStateDrawEventID"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="1" NAME="TRISETUP_SetViewportParams" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_TRISETUP_SetViewportParams">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="TriSetup_0" PORT="CMD_SetViewportParams"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="O" LEFT="31" NAME="TRISETUP_ViewportParams0" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_TRISETUP_ViewportParams0">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="TriSetup_0" PORT="CMD_ViewportParams0"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="O" LEFT="31" NAME="TRISETUP_ViewportParams1" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_TRISETUP_ViewportParams1">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="TriSetup_0" PORT="CMD_ViewportParams1"/>
-          </CONNECTIONS>
-        </PORT>
         <PORT DIR="O" LEFT="1" NAME="VBB_SendCommand" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_VBB_SendCommand">
           <CONNECTIONS>
             <CONNECTION INSTANCE="VertexBatchBuilder_0" PORT="CMD_SendCommand"/>
@@ -1642,6 +1627,31 @@
         <PORT DIR="O" LEFT="15" NAME="CLIP_NewStateDrawEventID" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_CLIP_NewStateDrawEventID">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ClipUnitStateBlock" PORT="CMD_NewStateDrawEventID"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="TRISETUP_SetNewState" SIGIS="undef" SIGNAME="CommandProcessor_0_TRISETUP_SetNewState">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriSetupStateBlock" PORT="CMD_SetNewState"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="TRISETUP_EndFrameReset" SIGIS="undef" SIGNAME="CommandProcessor_0_TRISETUP_EndFrameReset">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriSetupStateBlock" PORT="CMD_EndFrameReset"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="2" NAME="TRISETUP_NumFreeSlots" RIGHT="0" SIGIS="undef" SIGNAME="TriSetupStateBlock_CMD_NumFreeSlots">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriSetupStateBlock" PORT="CMD_NumFreeSlots"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="191" NAME="TRISETUP_NewStateBits" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_TRISETUP_NewStateBits">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriSetupStateBlock" PORT="CMD_NewStateBits"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="15" NAME="TRISETUP_NewStateDrawEventID" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_TRISETUP_NewStateDrawEventID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriSetupStateBlock" PORT="CMD_NewStateDrawEventID"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" NAME="DINTERP_SetNewState" SIGIS="undef" SIGNAME="CommandProcessor_0_DINTERP_SetNewState">
@@ -27582,11 +27592,20 @@
             <CONNECTION INSTANCE="AttrInterpStateBlock" PORT="clk"/>
             <CONNECTION INSTANCE="InputAssemblerStateBlock" PORT="clk"/>
             <CONNECTION INSTANCE="StatsCollector_0" PORT="clk"/>
-            <CONNECTION INSTANCE="TriSetup_0" PORT="clk"/>
             <CONNECTION INSTANCE="IndexBufferCache_0" PORT="clk"/>
             <CONNECTION INSTANCE="ClipUnitStateBlock" PORT="clk"/>
             <CONNECTION INSTANCE="ROPStateBlock" PORT="clk"/>
             <CONNECTION INSTANCE="ClipUnit_0" PORT="clk"/>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="clk"/>
+            <CONNECTION INSTANCE="DepthBuffer_0" PORT="clk"/>
+            <CONNECTION INSTANCE="InputAssembler2_0" PORT="clk"/>
+            <CONNECTION INSTANCE="ROP_0" PORT="clk"/>
+            <CONNECTION INSTANCE="TexSample_0" PORT="clk"/>
+            <CONNECTION INSTANCE="VertexBatchBuilder_0" PORT="clk"/>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="clk"/>
+            <CONNECTION INSTANCE="DepthInterpStateBlock" PORT="clk"/>
+            <CONNECTION INSTANCE="TriSetupStateBlock" PORT="clk"/>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="clk"/>
             <CONNECTION INSTANCE="SerialPacketSystem_ValidIncomingPacketsFIFO" PORT="rd_clk"/>
             <CONNECTION INSTANCE="SerialPacketSystem_ReturnOutputPacketsFIFO" PORT="wr_clk"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_InstructionCache" PORT="clka"/>
@@ -27597,18 +27616,10 @@
             <CONNECTION INSTANCE="ShaderCoreSystem_FloatALU_3" PORT="clk"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_VertexStreamCache_0" PORT="clk"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_ConstantBuffer_0" PORT="clk"/>
-            <CONNECTION INSTANCE="ShaderCoreSystem_GPRQuadSystem_GPRQuad2_0" PORT="clk"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_ShaderCore_0" PORT="clk"/>
+            <CONNECTION INSTANCE="ShaderCoreSystem_GPRQuadSystem_GPRQuad2_0" PORT="clk"/>
             <CONNECTION INSTANCE="ScanoutSystem_CDC_Command_Scanout_0" PORT="cmd_clk"/>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="clk"/>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="clk"/>
-            <CONNECTION INSTANCE="DepthBuffer_0" PORT="clk"/>
-            <CONNECTION INSTANCE="InputAssembler2_0" PORT="clk"/>
-            <CONNECTION INSTANCE="ROP_0" PORT="clk"/>
-            <CONNECTION INSTANCE="TexSample_0" PORT="clk"/>
-            <CONNECTION INSTANCE="VertexBatchBuilder_0" PORT="clk"/>
-            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="clk"/>
-            <CONNECTION INSTANCE="DepthInterpStateBlock" PORT="clk"/>
+            <CONNECTION INSTANCE="TriSetup_0" PORT="clk"/>
             <CONNECTION INSTANCE="MemorySystem_ScanoutReadRequestsFIFO" PORT="rd_clk"/>
             <CONNECTION INSTANCE="MemorySystem_ZStencilReadRequestsFIFO" PORT="rd_clk"/>
             <CONNECTION INSTANCE="MemorySystem_ZStencilReadRequestsFIFO" PORT="wr_clk"/>
@@ -28721,8 +28732,8 @@
         <PORT DIR="O" NAME="empty" SIGIS="undef" SIGNAME="ROP_FIFO_empty">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ROP_0" PORT="TEXSAMP_InFIFO_empty"/>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="CMD_FIFO_EMPTY_ROP"/>
             <CONNECTION INSTANCE="ROP_0" PORT="TEXSAMP_InFIFO_empty"/>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="CMD_FIFO_EMPTY_ROP"/>
           </CONNECTIONS>
         </PORT>
       </PORTS>
@@ -29160,10 +29171,10 @@
         </PORT>
         <PORT DIR="O" NAME="resetn" SIGIS="rst" SIGNAME="ResetN_UntilClockLoc_0_resetn">
           <CONNECTIONS>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="resetn"/>
             <CONNECTION INSTANCE="MemorySystem_MemoryController_0" PORT="M_AXI_ARESETN"/>
             <CONNECTION INSTANCE="SerialPacketSystem_axi_uartlite_0" PORT="s_axi_aresetn"/>
             <CONNECTION INSTANCE="SerialPacketSystem_PacketProcessor_0" PORT="M_AXI_ARESETN"/>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="resetn"/>
           </CONNECTIONS>
         </PORT>
       </PORTS>
@@ -39985,8 +39996,8 @@
         </PORT>
         <PORT DIR="O" NAME="empty" SIGIS="undef" SIGNAME="TEXSAMP_FIFO_empty">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="CMD_FIFO_EMPTY_TEXSAMP"/>
             <CONNECTION INSTANCE="TexSample_0" PORT="INTERP_InFIFO_empty"/>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="CMD_FIFO_EMPTY_TEXSAMP"/>
           </CONNECTIONS>
           <CONNECTIONS>
             <CONNECTION INSTANCE="TexSample_0" PORT="INTERP_InFIFO_empty"/>
@@ -40669,6 +40680,74 @@
         </BUSINTERFACE>
       </BUSINTERFACES>
     </MODULE>
+    <MODULE FULLNAME="/TriSetupStateBlock" HWVERSION="1.0" INSTANCE="TriSetupStateBlock" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="StateBlock" VLNV="xilinx.com:module_ref:StateBlock:1.0">
+      <DOCUMENTS/>
+      <PARAMETERS>
+        <PARAMETER NAME="StateBitsCount" VALUE="192"/>
+        <PARAMETER NAME="Component_Name" VALUE="design_1_StateBlock_0_4"/>
+        <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
+      </PARAMETERS>
+      <PORTS>
+        <PORT CLKFREQUENCY="333250000" DIR="I" NAME="clk" SIGIS="clk" SIGNAME="MemorySystem_ddr4_0_c0_ddr4_ui_clk">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="MemorySystem_ddr4_0" PORT="c0_ddr4_ui_clk"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="CMD_SetNewState" SIGIS="undef" SIGNAME="CommandProcessor_0_TRISETUP_SetNewState">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="TRISETUP_SetNewState"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="CMD_EndFrameReset" SIGIS="undef" SIGNAME="CommandProcessor_0_TRISETUP_EndFrameReset">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="TRISETUP_EndFrameReset"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="2" NAME="CMD_NumFreeSlots" RIGHT="0" SIGIS="undef" SIGNAME="TriSetupStateBlock_CMD_NumFreeSlots">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="TRISETUP_NumFreeSlots"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="191" NAME="CMD_NewStateBits" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_TRISETUP_NewStateBits">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="TRISETUP_NewStateBits"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="15" NAME="CMD_NewStateDrawEventID" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_TRISETUP_NewStateDrawEventID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="TRISETUP_NewStateDrawEventID"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="191" NAME="STAGE_StateBitsAtDrawID" RIGHT="0" SIGIS="undef" SIGNAME="TriSetupStateBlock_STAGE_StateBitsAtDrawID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriSetup_0" PORT="STATE_StateBitsAtDrawID"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="15" NAME="STAGE_NextDrawID" RIGHT="0" SIGIS="undef" SIGNAME="TriSetupStateBlock_STAGE_NextDrawID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriSetup_0" PORT="STATE_NextDrawID"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="STAGE_StateIsValid" SIGIS="undef" SIGNAME="TriSetupStateBlock_STAGE_StateIsValid">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriSetup_0" PORT="STATE_StateIsValid"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="STAGE_ConsumeStateSlot" SIGIS="undef" SIGNAME="TriSetup_0_STATE_ConsumeStateSlot">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriSetup_0" PORT="STATE_ConsumeStateSlot"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="3" NAME="DBG_SlotsValid" RIGHT="0" SIGIS="undef"/>
+        <PORT DIR="O" LEFT="1" NAME="DBG_CurrentReadSlotIndex" RIGHT="0" SIGIS="undef"/>
+        <PORT DIR="O" LEFT="1" NAME="DBG_CurrentWriteSlotIndex" RIGHT="0" SIGIS="undef"/>
+        <PORT DIR="O" LEFT="15" NAME="DBG_Slot0" RIGHT="0" SIGIS="undef"/>
+        <PORT DIR="O" LEFT="15" NAME="DBG_Slot1" RIGHT="0" SIGIS="undef"/>
+        <PORT DIR="O" LEFT="15" NAME="DBG_Slot2" RIGHT="0" SIGIS="undef"/>
+        <PORT DIR="O" LEFT="15" NAME="DBG_Slot3" RIGHT="0" SIGIS="undef"/>
+      </PORTS>
+      <BUSINTERFACES/>
+    </MODULE>
     <MODULE FULLNAME="/TriSetup_0" HWVERSION="1.0" INSTANCE="TriSetup_0" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="TriSetup" VLNV="xilinx.com:module_ref:TriSetup:1.0">
       <DOCUMENTS/>
       <PARAMETERS>
@@ -41086,24 +41165,29 @@
             <CONNECTION INSTANCE="TRISETUP_FPU_SPEC" PORT="ISPEC_GO"/>
           </CONNECTIONS>
         </PORT>
+        <PORT DIR="I" LEFT="191" NAME="STATE_StateBitsAtDrawID" RIGHT="0" SIGIS="undef" SIGNAME="TriSetupStateBlock_STAGE_StateBitsAtDrawID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriSetupStateBlock" PORT="STAGE_StateBitsAtDrawID"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="15" NAME="STATE_NextDrawID" RIGHT="0" SIGIS="undef" SIGNAME="TriSetupStateBlock_STAGE_NextDrawID">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriSetupStateBlock" PORT="STAGE_NextDrawID"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="STATE_StateIsValid" SIGIS="undef" SIGNAME="TriSetupStateBlock_STAGE_StateIsValid">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriSetupStateBlock" PORT="STAGE_StateIsValid"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="STATE_ConsumeStateSlot" SIGIS="undef" SIGNAME="TriSetup_0_STATE_ConsumeStateSlot">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriSetupStateBlock" PORT="STAGE_ConsumeStateSlot"/>
+          </CONNECTIONS>
+        </PORT>
         <PORT DIR="O" NAME="CMD_TriSetupIsIdle" SIGIS="undef" SIGNAME="TriSetup_0_CMD_TriSetupIsIdle">
           <CONNECTIONS>
             <CONNECTION INSTANCE="CommandProcessor_0" PORT="CMD_TriSetup_Idle"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" LEFT="1" NAME="CMD_SetViewportParams" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_TRISETUP_SetViewportParams">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="TRISETUP_SetViewportParams"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" LEFT="31" NAME="CMD_ViewportParams0" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_TRISETUP_ViewportParams0">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="TRISETUP_ViewportParams0"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" LEFT="31" NAME="CMD_ViewportParams1" RIGHT="0" SIGIS="undef" SIGNAME="CommandProcessor_0_TRISETUP_ViewportParams1">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="TRISETUP_ViewportParams1"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="31" NAME="STAT_CyclesIdle" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_STAT_CyclesIdle">
@@ -41189,8 +41273,6 @@
         <PORT DIR="O" LEFT="31" NAME="DBG_RightProd0" RIGHT="0" SIGIS="undef"/>
         <PORT DIR="O" LEFT="31" NAME="DBG_RightProd1" RIGHT="0" SIGIS="undef"/>
         <PORT DIR="O" LEFT="31" NAME="DBG_RightProd2" RIGHT="0" SIGIS="undef"/>
-        <PORT DIR="O" LEFT="31" NAME="DBG_LeftFirstTermInner1" RIGHT="0" SIGIS="undef"/>
-        <PORT DIR="O" LEFT="31" NAME="DBG_LeftSecondTermInner1" RIGHT="0" SIGIS="undef"/>
         <PORT DIR="O" LEFT="31" NAME="DBG_TwiceTriArea" RIGHT="0" SIGIS="undef" SIGNAME="TriSetup_0_DBG_TwiceTriArea">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ILA_TriSetup" PORT="probe41"/>
@@ -41840,8 +41922,8 @@
         <PORT DIR="O" NAME="empty" SIGIS="undef" SIGNAME="VBB_FIFO_empty">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ShaderCoreSystem_ShaderCore_0" PORT="VERTBATCH_FIFO_empty"/>
-            <CONNECTION INSTANCE="ShaderCoreSystem_ShaderCore_0" PORT="VERTBATCH_FIFO_empty"/>
             <CONNECTION INSTANCE="CommandProcessor_0" PORT="CMD_FIFO_EMPTY_VBB"/>
+            <CONNECTION INSTANCE="ShaderCoreSystem_ShaderCore_0" PORT="VERTBATCH_FIFO_empty"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" NAME="wr_rst_busy" SIGIS="undef"/>
@@ -42281,8 +42363,8 @@
         <PORT DIR="O" NAME="empty" SIGIS="undef" SIGNAME="VBO_FIFO_empty">
           <CONNECTIONS>
             <CONNECTION INSTANCE="InputAssembler2_0" PORT="VERTOUT_FIFO_empty"/>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="CMD_FIFO_EMPTY_VS"/>
             <CONNECTION INSTANCE="InputAssembler2_0" PORT="VERTOUT_FIFO_empty"/>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="CMD_FIFO_EMPTY_VS"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" NAME="wr_rst_busy" SIGIS="undef"/>
@@ -46768,8 +46850,8 @@
         <PORT DIR="O" NAME="empty" SIGIS="undef" SIGNAME="rast_out_fifo_empty">
           <CONNECTIONS>
             <CONNECTION INSTANCE="DepthInterpolator_0" PORT="RASTOUT_FIFO_empty"/>
-            <CONNECTION INSTANCE="CommandProcessor_0" PORT="CMD_FIFO_EMPTY_RASTOUT"/>
             <CONNECTION INSTANCE="DepthInterpolator_0" PORT="RASTOUT_FIFO_empty"/>
+            <CONNECTION INSTANCE="CommandProcessor_0" PORT="CMD_FIFO_EMPTY_RASTOUT"/>
           </CONNECTIONS>
         </PORT>
       </PORTS>

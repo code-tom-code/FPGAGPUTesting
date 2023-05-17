@@ -5302,6 +5302,35 @@ void IDirect3DDevice9Hook::DeviceSetCurrentState(const D3DPRIMITIVETYPE primType
 	const float guardBandYScale = currentState.cachedViewport.fGuardBandHeightScale;
 	baseDevice->DeviceSetClipState(depthClipEnable, useOpenGLNearZClip, guardBandXScale, guardBandYScale);
 
+	// Set the viewport/scissor rect states:
+	const float viewportHalfWidth = currentState.cachedViewport.halfWidthF;
+	const float viewportHalfHeight = currentState.cachedViewport.halfHeightF;
+	const float viewportZScale = currentState.cachedViewport.zScale;
+	const float viewportZOffset = currentState.cachedViewport.viewport.MinZ;
+#ifdef _DEBUG
+	if (currentState.currentScissorRect.scissorRect.left < 0 || currentState.currentScissorRect.scissorRect.left > 0xFFFF)
+	{
+		__debugbreak(); // Scissor rect out of range!
+	}
+	if (currentState.currentScissorRect.scissorRect.right < 0 || currentState.currentScissorRect.scissorRect.right > 0xFFFF)
+	{
+		__debugbreak(); // Scissor rect out of range!
+	}
+	if (currentState.currentScissorRect.scissorRect.top < 0 || currentState.currentScissorRect.scissorRect.top > 0xFFFF)
+	{
+		__debugbreak(); // Scissor rect out of range!
+	}
+	if (currentState.currentScissorRect.scissorRect.bottom < 0 || currentState.currentScissorRect.scissorRect.bottom > 0xFFFF)
+	{
+		__debugbreak(); // Scissor rect out of range!
+	}
+#endif
+	const unsigned short scissorLeft = (const unsigned short)currentState.currentScissorRect.scissorRect.left;
+	const unsigned short scissorRight = (const unsigned short)currentState.currentScissorRect.scissorRect.right;
+	const unsigned short scissorTop = (const unsigned short)currentState.currentScissorRect.scissorRect.top;
+	const unsigned short scissorBottom = (const unsigned short)currentState.currentScissorRect.scissorRect.bottom;
+	baseDevice->DeviceSetTriSetupState(viewportHalfWidth, viewportHalfHeight, viewportZScale, viewportZOffset, scissorLeft, scissorRight, scissorTop, scissorBottom);
+
 	// Set the alpha-testing, render target, and blend states:
 	const bool alphaTestEnable = currentState.currentRenderStates.renderStatesUnion.namedStates.alphaTestEnable ? true : false;
 	const BYTE alphaTestRefVal = (const BYTE)(currentState.currentRenderStates.renderStatesUnion.namedStates.alphaRef & 0xFF);
@@ -11173,11 +11202,20 @@ void IDirect3DDevice9Hook::InitializeState(const D3DPRESENT_PARAMETERS& d3dpp, c
 	const D3DBLEND destAlphaBlend = D3DBLEND_ZERO;
 	const D3DBLENDOP alphaBlendOp = D3DBLENDOP_ADD;
 	const D3DCOLOR blendFactorARGB = D3DCOLOR_ARGB(255, 255, 255, 255);
+	const float viewportHalfWidth = 640.0f / 2.0f;
+	const float viewportHalfHeight = 480.0f / 2.0f;
+	const float viewportZScale = 1.0f;
+	const float viewportZOffset = 0.0f;
+	const unsigned short scissorLeft = 0;
+	const unsigned short scissorRight = 640;
+	const unsigned short scissorTop = 0;
+	const unsigned short scissorBottom = 480;
 	baseDevice->DeviceSetROPState(backbufferSurfaceHook->GetDeviceSurfaceBytes(), wm_writeAll, alphaTestEnable, alphaTestRefVal, ConvertToDeviceCmpFunc(alphaTestCmpFunc),
 			alphaBlendEnable, srcColorBlend, destColorBlend, colorBlendOp, srcAlphaBlend, destAlphaBlend, alphaBlendOp, blendFactorARGB);
 	baseDevice->DeviceClearRendertarget(backbufferSurfaceHook->GetDeviceSurfaceBytes(), D3DCOLOR_ARGB(255, 0, 0, 0) ); // Perform initial device clear so that our backbuffer doesn't start out as garbage
 	baseDevice->DeviceSetNullTextureState(TF_bilinearFilter, tcm_r, tcm_g, tcm_b, tcm_a, cbm_textureModulateVertexColor, cbm_textureModulateVertexColor);
 	baseDevice->DeviceSetClipState(depthClipEnable, useOpenGLNearZClip, guardBandXScale, guardBandYScale);
+	baseDevice->DeviceSetTriSetupState(viewportHalfWidth, viewportHalfHeight, viewportZScale, viewportZOffset, scissorLeft, scissorRight, scissorTop, scissorBottom);
 	baseDevice->DeviceSetDepthState(forceDisableDepth ? false : zEnable, zWriteEnable, colorWritesEnabled, ConvertToDeviceCmpFunc(zCmpFunc), ConvertToDeviceDepthFormat(defaultZFormat), defaultDepthBias);
 	baseDevice->DeviceClearDepthStencil(currentState.currentDepthStencil ? currentState.currentDepthStencil->GetDeviceSurfaceBytes() : NULL, clearDepth, clearStencil, clearZValue, clearStencilValue);
 

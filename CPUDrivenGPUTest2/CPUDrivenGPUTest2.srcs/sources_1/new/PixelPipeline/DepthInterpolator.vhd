@@ -77,24 +77,11 @@ entity DepthInterpolator is
 		DEPTH_DepthIsIdle : in STD_LOGIC;
 	-- Depth Buffer interface end
 
-	-- Attribute Interpolator interface begin
-		ATTR_ReadyForNewPixel : in STD_LOGIC;
-		ATTR_NewPixelValid : out STD_LOGIC := '0';
-		ATTR_PosX : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
-		ATTR_PosY : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
-		ATTR_TX0 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-		ATTR_TX10 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-		ATTR_TX20 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-		ATTR_TY0 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-		ATTR_TY10 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-		ATTR_TY20 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-		ATTR_VC0 : out STD_LOGIC_VECTOR(127 downto 0) := (others => '0');
-		ATTR_VC10 : out STD_LOGIC_VECTOR(127 downto 0) := (others => '0');
-		ATTR_VC20 : out STD_LOGIC_VECTOR(127 downto 0) := (others => '0');
-		ATTR_NormalizedBarycentricB : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-		ATTR_NormalizedBarycentricC : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-		ATTR_OutPixelW : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-	-- Attribute Interpolator interface end
+	-- Attribute Interpolator FIFO interface begin
+		ATTR_FIFO_wr_data : out STD_LOGIC_VECTOR(INTERPOLATOR_DATA_BITS-1 downto 0) := (others => '0');
+		ATTR_FIFO_wr_en : out STD_LOGIC := '0';
+		ATTR_FIFO_full : in STD_LOGIC;
+	-- Attribute Interpolator FIFO interface end
 
 	-- Command Processor interface begin
 		CMD_IsIdle : out STD_LOGIC := '0';
@@ -105,6 +92,7 @@ entity DepthInterpolator is
 		STAT_CyclesSpentWorking : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 		STAT_CyclesWaitingForOutput : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 		STAT_CurrentDrawEventID : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
+		STAT_DepthOnlyPixelsPassed : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 	-- Stats interface end
 
 	-- Debug signals
@@ -126,6 +114,10 @@ ATTRIBUTE X_INTERFACE_PARAMETER of clk: SIGNAL is "FREQ_HZ 333250000";
 ATTRIBUTE X_INTERFACE_INFO of RASTOUT_FIFO_rd_data: SIGNAL is "xilinx.com:interface:fifo_read:1.0 RASTOUT_FIFO RD_DATA";
 ATTRIBUTE X_INTERFACE_INFO of RASTOUT_FIFO_rd_en: SIGNAL is "xilinx.com:interface:fifo_read:1.0 RASTOUT_FIFO RD_EN";
 ATTRIBUTE X_INTERFACE_INFO of RASTOUT_FIFO_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 RASTOUT_FIFO EMPTY";
+
+ATTRIBUTE X_INTERFACE_INFO of ATTR_FIFO_wr_data: SIGNAL is "xilinx.com:interface:fifo_write:1.0 ATTR_FIFO WR_DATA";
+ATTRIBUTE X_INTERFACE_INFO of ATTR_FIFO_wr_en: SIGNAL is "xilinx.com:interface:fifo_write:1.0 ATTR_FIFO WR_EN";
+ATTRIBUTE X_INTERFACE_INFO of ATTR_FIFO_full: SIGNAL is "xilinx.com:interface:fifo_write:1.0 ATTR_FIFO FULL";
 
 constant noperspective : STD_LOGIC := '1';
 
@@ -276,8 +268,6 @@ signal currentState : depthInterpStateType := waitingForRead;
 
 signal currentDepthState : sDepthInterpolatorState := DEFAULT_DEPTH_INTERPOLATOR_STATE;
 
-signal newPixelValid : std_logic := '0';
-
 signal storedPixelX : unsigned(15 downto 0) := (others => '0');
 signal storedPixelY : unsigned(15 downto 0) := (others => '0');
 signal currentDrawEventID : unsigned(15 downto 0) := (others => '0');
@@ -301,6 +291,7 @@ signal tempInvWDP3C : f32 := (others => '0'); -- float32 format of (1/w2 * norma
 signal pixelDepth : f32 := (others => '0'); -- float32 format (0.0f to 1.0f) pixel depth value
 signal pixelW : f32 := (others => '0'); -- float32 format (0.0f to 1.0f) pixel W value
 signal pixelDepthU24 : unsigned(23 downto 0) := (others => '0');
+signal depthOnlyPixelsPassed : unsigned(31 downto 0) := (others => '0');
 
 signal storedBarycentricInverse : f32 := (others => '0'); -- float32 format (this is 1.0f / twiceTriangleArea)
 signal storedZ0 : f32 := (others => '0'); -- float32 format (this is z0)
@@ -331,11 +322,11 @@ signal statCyclesWaitingForOutput : unsigned(31 downto 0) := (others => '0');
 begin
 
 RASTOUT_FIFO_rd_en <= readFromFifo;
-ATTR_NewPixelValid <= newPixelValid;
 
 STAT_CyclesIdle <= std_logic_vector(statCyclesIdle);
 STAT_CyclesSpentWorking <= std_logic_vector(statCyclesWorking);
 STAT_CyclesWaitingForOutput <= std_logic_vector(statCyclesWaitingForOutput);
+STAT_DepthOnlyPixelsPassed <= std_logic_vector(depthOnlyPixelsPassed);
 
 DBG_DepthInterpolator_State <= std_logic_vector(to_unsigned(depthInterpStateType'pos(currentState), 7) );
 DBG_RastBarycentricB <= std_logic_vector(storedDbgBarycentricB);
@@ -367,10 +358,10 @@ DBG_RastBarycentricC <= std_logic_vector(storedDbgBarycentricC);
 			CMD_IsIdle <= '0';
 			STATE_ConsumeStateSlot <= '0';
 			DEPTH_SetDepthParams <= '0';
+			ATTR_FIFO_wr_en <= '0';
 
 			case currentState is
 				when waitingForRead =>
-					newPixelValid <= '0'; -- Deassert after one clock cycle
 					TRICACHE_SignalSlotComplete <= '0'; -- Deassert after one clock cycle
 					DEPTH_PixelReady <= '0';
 
@@ -696,33 +687,25 @@ DBG_RastBarycentricC <= std_logic_vector(storedDbgBarycentricC);
 				when depthTestState10 =>
 					if (DEPTH_PixelPassedDepthTest = '1' and currentDepthState.ColorWritesEnabled = '1') then
 						currentState <= sendPixelForAttrInterpolation;
+					elsif (DEPTH_PixelPassedDepthTest = '1') then
+						depthOnlyPixelsPassed <= depthOnlyPixelsPassed + 1;
+						currentState <= waitingForRead;
 					else
 						currentState <= waitingForRead; -- We failed the depth test, kill this pixel!
 					end if;
 
 				when sendPixelForAttrInterpolation =>
 					FPU_ICNV_GO <= '0';
-					ATTR_PosX <= std_logic_vector(storedPixelX);
-					ATTR_PosY <= std_logic_vector(storedPixelY);
-					ATTR_TX0 <= std_logic_vector(storedTX0);
-					ATTR_TX10 <= std_logic_vector(storedTX10);
-					ATTR_TX20 <= std_logic_vector(storedTX20);
-					ATTR_TY0 <= std_logic_vector(storedTY0);
-					ATTR_TY10 <= std_logic_vector(storedTY10);
-					ATTR_TY20 <= std_logic_vector(storedTY20);
-					ATTR_VC0 <= std_logic_vector(storedColorRGBA0);
-					ATTR_VC10 <= std_logic_vector(storedColorRGBA10);
-					ATTR_VC20 <= std_logic_vector(storedColorRGBA20);
-					ATTR_NormalizedBarycentricB <= std_logic_vector(normalizedBarycentricB);
-					ATTR_NormalizedBarycentricC <= std_logic_vector(normalizedBarycentricC);
-					ATTR_OutPixelW <= std_logic_vector(pixelW);
 
-					if (ATTR_ReadyForNewPixel = '1' and newPixelValid = '1') then
-						newPixelValid <= '0';
-
+					ATTR_FIFO_wr_data <= SerializeAttributeData(MakeStructFromMembers(storedPixelX, storedPixelY,
+						storedTX0, storedTX10, storedTX20,
+						storedTY0, storedTY10, storedTY20,
+						storedColorRGBA0, storedColorRGBA10, storedColorRGBA20,
+						normalizedBarycentricB, normalizedBarycentricC,
+						pixelW) );
+					if (ATTR_FIFO_full = '0') then
+						ATTR_FIFO_wr_en <= '1';
 						currentState <= waitingForRead;
-					else
-						newPixelValid <= '1';
 					end if;
 
 				when setNewPrimitiveSlot =>
@@ -738,26 +721,22 @@ DBG_RastBarycentricC <= std_logic_vector(storedDbgBarycentricC);
 
 				when signalNewDrawEventID =>
 					readFromFifo <= '0'; -- Stop reading from the FIFO after one cycle in order to not pull more than one item off of the queue
-					ATTR_PosX <= std_logic_vector(PixelMsg_SetNewDrawEventID);
-					ATTR_PosY <= std_logic_vector(currentDrawEventID);
-					if (ATTR_ReadyForNewPixel = '1' and newPixelValid = '1') then
-						newPixelValid <= '0';
 
+					ATTR_FIFO_wr_data <= X"000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000" & 
+						std_logic_vector(currentDrawEventID) & std_logic_vector(PixelMsg_SetNewDrawEventID);
+					if (ATTR_FIFO_full = '0') then
+						ATTR_FIFO_wr_en <= '1';
 						currentState <= waitingForRead;
-					else
-						newPixelValid <= '1';
 					end if;
 
 				when signalTerminateDrawEventID =>
 					readFromFifo <= '0'; -- Stop reading from the FIFO after one cycle in order to not pull more than one item off of the queue
-					ATTR_PosX <= std_logic_vector(PixelMsg_TermCurrentDrawEventID);
-					ATTR_PosY <= std_logic_vector(currentDrawEventID);
-					if (ATTR_ReadyForNewPixel = '1' and newPixelValid = '1') then
-						newPixelValid <= '0';
 
+					ATTR_FIFO_wr_data <= X"000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000" & 
+						std_logic_vector(currentDrawEventID) & std_logic_vector(PixelMsg_TermCurrentDrawEventID);
+					if (ATTR_FIFO_full = '0') then
+						ATTR_FIFO_wr_en <= '1';
 						currentState <= waitingForRead;
-					else
-						newPixelValid <= '1';
 					end if;
 
 				when setDepthState =>

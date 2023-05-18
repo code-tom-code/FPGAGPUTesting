@@ -13,24 +13,11 @@ use work.AttrInterpolatorState.all;
 entity AttrInterpolator is
 	Port ( clk : in STD_LOGIC;
 
-	-- Depth Interpolator interface begin
-		DINTERP_ReadyForNewPixel : out STD_LOGIC := '0';
-		DINTERP_NewPixelValid : in STD_LOGIC;
-		DINTERP_PosX : in STD_LOGIC_VECTOR(15 downto 0);
-		DINTERP_PosY : in STD_LOGIC_VECTOR(15 downto 0);
-		DINTERP_TX0 : in STD_LOGIC_VECTOR(31 downto 0);
-		DINTERP_TX10 : in STD_LOGIC_VECTOR(31 downto 0);
-		DINTERP_TX20 : in STD_LOGIC_VECTOR(31 downto 0);
-		DINTERP_TY0 : in STD_LOGIC_VECTOR(31 downto 0);
-		DINTERP_TY10 : in STD_LOGIC_VECTOR(31 downto 0);
-		DINTERP_TY20 : in STD_LOGIC_VECTOR(31 downto 0);
-		DINTERP_VC0 : in STD_LOGIC_VECTOR(127 downto 0);
-		DINTERP_VC10 : in STD_LOGIC_VECTOR(127 downto 0);
-		DINTERP_VC20 : in STD_LOGIC_VECTOR(127 downto 0);
-		DINTERP_NormalizedBarycentricB : in STD_LOGIC_VECTOR(31 downto 0);
-		DINTERP_NormalizedBarycentricC : in STD_LOGIC_VECTOR(31 downto 0);
-		DINTERP_OutPixelW : in STD_LOGIC_VECTOR(31 downto 0);
-	-- Depth Interpolator interface end
+	-- Depth Interpolator FIFO interface begin
+		DINTERP_FIFO_rd_data : in STD_LOGIC_VECTOR(INTERPOLATOR_DATA_BITS-1 downto 0);
+        DINTERP_FIFO_empty : in STD_LOGIC;
+        DINTERP_FIFO_rd_en : out STD_LOGIC := '0';
+	-- Depth Interpolator FIFO interface end
 
 	-- FPU interfaces begin
 		FPU_A : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
@@ -88,6 +75,10 @@ ATTRIBUTE X_INTERFACE_PARAMETER of clk: SIGNAL is "FREQ_HZ 333250000";
 ATTRIBUTE X_INTERFACE_INFO of TEXSAMP_OutFIFO_wr_data: SIGNAL is "xilinx.com:interface:fifo_write:1.0 TEXSAMP_OUT_FIFO WR_DATA";
 ATTRIBUTE X_INTERFACE_INFO of TEXSAMP_OutFIFO_wr_en: SIGNAL is "xilinx.com:interface:fifo_write:1.0 TEXSAMP_OUT_FIFO WR_EN";
 ATTRIBUTE X_INTERFACE_INFO of TEXSAMP_OutFIFO_full: SIGNAL is "xilinx.com:interface:fifo_write:1.0 TEXSAMP_OUT_FIFO FULL";
+
+ATTRIBUTE X_INTERFACE_INFO of DINTERP_FIFO_rd_data: SIGNAL is "xilinx.com:interface:fifo_read:1.0 ATTR_FIFO RD_DATA";
+ATTRIBUTE X_INTERFACE_INFO of DINTERP_FIFO_rd_en: SIGNAL is "xilinx.com:interface:fifo_read:1.0 ATTR_FIFO RD_EN";
+ATTRIBUTE X_INTERFACE_INFO of DINTERP_FIFO_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 ATTR_FIFO EMPTY";
 
 constant flatshading : STD_LOGIC := '0';
 
@@ -230,8 +221,6 @@ end function;
 
 begin
 
-DINTERP_ReadyForNewPixel <= readyForNewPixel;
-
 STAT_CyclesIdle <= std_logic_vector(statCyclesIdle);
 STAT_CyclesSpentWorking <= std_logic_vector(statCyclesWorking);
 STAT_CyclesWaitingForOutput <= std_logic_vector(statCyclesWaitingForOutput);
@@ -262,34 +251,35 @@ DBG_RastBarycentricC <= std_logic_vector(normalizedBarycentricC);
 		if (rising_edge(clk) ) then
 			CMD_IsIdle <= '0';
 			STATE_ConsumeStateSlot <= '0';
+			DINTERP_FIFO_rd_en <= '0';
 
 			case currentState is
 				when waitingForRead =>
 					readyForNewPixel <= '0';
 
-					storedPixelX <= unsigned(DINTERP_PosX);
-					storedPixelY <= unsigned(DINTERP_PosY);
-					unpackedVertex0.tx <= f32(DINTERP_TX0);
-					unpackedVertex0.ty <= f32(DINTERP_TY0);
-					unpackedVertex10.tx <= f32(DINTERP_TX10);
-					unpackedVertex10.ty <= f32(DINTERP_TY10);
-					unpackedVertex20.tx <= f32(DINTERP_TX20);
-					unpackedVertex20.ty <= f32(DINTERP_TY20);
-					unpackedVertex0.color_r <= f32(DINTERP_VC0(31 downto 0) );
-					unpackedVertex0.color_g <= f32(DINTERP_VC0(63 downto 32) );
-					unpackedVertex0.color_b <= f32(DINTERP_VC0(95 downto 64) );
-					unpackedVertex0.color_a <= f32(DINTERP_VC0(127 downto 96) );
-					unpackedVertex10.color_r <= f32(DINTERP_VC10(31 downto 0) );
-					unpackedVertex10.color_g <= f32(DINTERP_VC10(63 downto 32) );
-					unpackedVertex10.color_b <= f32(DINTERP_VC10(95 downto 64) );
-					unpackedVertex10.color_a <= f32(DINTERP_VC10(127 downto 96) );
-					unpackedVertex20.color_r <= f32(DINTERP_VC20(31 downto 0) );
-					unpackedVertex20.color_g <= f32(DINTERP_VC20(63 downto 32) );
-					unpackedVertex20.color_b <= f32(DINTERP_VC20(95 downto 64) );
-					unpackedVertex20.color_a <= f32(DINTERP_VC20(127 downto 96) );
-					normalizedBarycentricB <= f32(DINTERP_NormalizedBarycentricB);
-					normalizedBarycentricC <= f32(DINTERP_NormalizedBarycentricC);
-					pixelW <= f32(DINTERP_OutPixelW);
+					storedPixelX <= DeserializeAttributeData(DINTERP_FIFO_rd_data).PosX;
+					storedPixelY <= DeserializeAttributeData(DINTERP_FIFO_rd_data).PosY;
+					unpackedVertex0.tx <= DeserializeAttributeData(DINTERP_FIFO_rd_data).TX0;
+					unpackedVertex0.ty <= DeserializeAttributeData(DINTERP_FIFO_rd_data).TY0;
+					unpackedVertex10.tx <= DeserializeAttributeData(DINTERP_FIFO_rd_data).TX10;
+					unpackedVertex10.ty <= DeserializeAttributeData(DINTERP_FIFO_rd_data).TY10;
+					unpackedVertex20.tx <= DeserializeAttributeData(DINTERP_FIFO_rd_data).TX20;
+					unpackedVertex20.ty <= DeserializeAttributeData(DINTERP_FIFO_rd_data).TY20;
+					unpackedVertex0.color_r <= f32(DeserializeAttributeData(DINTERP_FIFO_rd_data).VC0(31 downto 0) );
+					unpackedVertex0.color_g <= f32(DeserializeAttributeData(DINTERP_FIFO_rd_data).VC0(63 downto 32) );
+					unpackedVertex0.color_b <= f32(DeserializeAttributeData(DINTERP_FIFO_rd_data).VC0(95 downto 64) );
+					unpackedVertex0.color_a <= f32(DeserializeAttributeData(DINTERP_FIFO_rd_data).VC0(127 downto 96) );
+					unpackedVertex10.color_r <= f32(DeserializeAttributeData(DINTERP_FIFO_rd_data).VC10(31 downto 0) );
+					unpackedVertex10.color_g <= f32(DeserializeAttributeData(DINTERP_FIFO_rd_data).VC10(63 downto 32) );
+					unpackedVertex10.color_b <= f32(DeserializeAttributeData(DINTERP_FIFO_rd_data).VC10(95 downto 64) );
+					unpackedVertex10.color_a <= f32(DeserializeAttributeData(DINTERP_FIFO_rd_data).VC10(127 downto 96) );
+					unpackedVertex20.color_r <= f32(DeserializeAttributeData(DINTERP_FIFO_rd_data).VC20(31 downto 0) );
+					unpackedVertex20.color_g <= f32(DeserializeAttributeData(DINTERP_FIFO_rd_data).VC20(63 downto 32) );
+					unpackedVertex20.color_b <= f32(DeserializeAttributeData(DINTERP_FIFO_rd_data).VC20(95 downto 64) );
+					unpackedVertex20.color_a <= f32(DeserializeAttributeData(DINTERP_FIFO_rd_data).VC20(127 downto 96) );
+					normalizedBarycentricB <= DeserializeAttributeData(DINTERP_FIFO_rd_data).NormalizedBarycentricB;
+					normalizedBarycentricC <= DeserializeAttributeData(DINTERP_FIFO_rd_data).NormalizedBarycentricC;
+					pixelW <= DeserializeAttributeData(DINTERP_FIFO_rd_data).InterpolatedPixelW;
 
 					TEXSAMP_OutFIFO_wr_en <= '0'; -- Deassert after one clock cycle
 
@@ -299,15 +289,16 @@ DBG_RastBarycentricC <= std_logic_vector(normalizedBarycentricC);
 						useFlatShading <= DeserializeBitsToStruct(STATE_StateBitsAtDrawID).UseFlatShadingColors;
 						texcoord0AddressingModeU <= DeserializeBitsToStruct(STATE_StateBitsAtDrawID).Texcoord0AddressingModeU;
 						texcoord0AddressingModeV <= DeserializeBitsToStruct(STATE_StateBitsAtDrawID).Texcoord0AddressingModeV;
-					elsif (DINTERP_NewPixelValid = '1' and readyForNewPixel = '1') then
+					elsif (DINTERP_FIFO_empty = '0' and readyForNewPixel = '1') then
 						readyForNewPixel <= '0';
+						DINTERP_FIFO_rd_en <= '1';
 
-						if (IsSpecialPixelMessage(unsigned(DINTERP_PosX) ) ) then
-							if (DINTERP_PosX(eSpecialPixelCodeBits'pos(SetNewDrawEventID) ) = '1') then
-								currentDrawEventID <= unsigned(DINTERP_PosY);
+						if (IsSpecialPixelMessage(DeserializeAttributeData(DINTERP_FIFO_rd_data).PosX) ) then
+							if (DeserializeAttributeData(DINTERP_FIFO_rd_data).PosX(eSpecialPixelCodeBits'pos(SetNewDrawEventID) ) = '1') then
+								currentDrawEventID <= unsigned(DeserializeAttributeData(DINTERP_FIFO_rd_data).PosY);
 								currentState <= waitingForWrite;
 							end if;
-							if (DINTERP_PosX(eSpecialPixelCodeBits'pos(TerminateCurrentDrawEventID) ) = '1') then
+							if (DeserializeAttributeData(DINTERP_FIFO_rd_data).PosX(eSpecialPixelCodeBits'pos(TerminateCurrentDrawEventID) ) = '1') then
 								currentState <= waitingForWrite;
 							end if;
 						else

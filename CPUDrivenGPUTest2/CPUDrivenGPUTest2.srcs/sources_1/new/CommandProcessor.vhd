@@ -78,6 +78,7 @@ entity CommandProcessor is
 		CMD_FIFO_EMPTY_VBB : in STD_LOGIC;
 		CMD_FIFO_EMPTY_VS : in STD_LOGIC;
 		CMD_FIFO_EMPTY_RASTOUT : in STD_LOGIC;
+		CMD_FIFO_EMPTY_ATTR : in STD_LOGIC;
 		CMD_FIFO_EMPTY_TEXSAMP : in STD_LOGIC;
 		CMD_FIFO_EMPTY_ROP : in STD_LOGIC;
 	-- Idle signals from the various systems end
@@ -141,6 +142,10 @@ entity CommandProcessor is
 		TRISETUP_NewStateBits : out STD_LOGIC_VECTOR(TRI_SETUP_STATE_SIZE_BITS-1 downto 0) := (others => '0');
 		TRISETUP_NewStateDrawEventID : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
 	-- Triangle Setup state interfaces end
+
+	-- Depth Interpolator interfaces begin
+		DINTERP_STAT_CountDepthOnlyPixelsPassed : in STD_LOGIC_VECTOR(31 downto 0);
+	-- Depth Interpolator interfaces end
 
 	-- Depth Interpolator state interfaces begin
 		DINTERP_SetNewState : out STD_LOGIC := '0';
@@ -447,6 +452,11 @@ architecture Behavioral of CommandProcessor is
 		end if;
 	end function;
 
+	pure function CombineOcclusionCounters(depthOnlyPixelsPassed : unsigned(31 downto 0); colorPixelsPassed : unsigned(31 downto 0) ) return unsigned is
+	begin
+		return depthOnlyPixelsPassed + colorPixelsPassed;
+	end function;
+
 	pure function DecodeSpecialConstantBitsToFloat32(specialConstantBits : unsigned(6 downto 0) ) return unsigned is
 	begin
 		return DecodeSpecialConstantToFloat32(specialConstantBits(0), specialConstantBits(1), specialConstantBits(2), specialConstantBits(6 downto 3) );
@@ -504,7 +514,7 @@ begin
 			RasterizerIdleSig <= CMD_Rasterizer_Idle;
 			DepthInterpolatorIdleSig <= CMD_DepthInterpolator_Idle and CMD_FIFO_EMPTY_RASTOUT;
 			DepthBufferIdleSig <= CMD_Depth_Idle;
-			AttrInterpolatorIdleSig <= CMD_AttrInterpolator_Idle;
+			AttrInterpolatorIdleSig <= CMD_AttrInterpolator_Idle and CMD_FIFO_EMPTY_ATTR;
 			TexSamplerIdleSig <= CMD_TexSampler_Idle and CMD_FIFO_EMPTY_TEXSAMP;
 			ROPIdleSig <= CMD_ROP_Idle and CMD_FIFO_EMPTY_ROP;
 			ClearBlockIdleSig <= CMD_ClearBlock_Idle;
@@ -1265,7 +1275,7 @@ begin
 											& "00000001"; -- Write DWORD enable mask
 									when eQTOcclusion | eQTBinaryOcclusion =>
 										CommandProcWriteRequestsFIFO_wr_data <= std_logic_vector(localIncomingPacket.payload1(ADDR_WIDTH_BITS-1 downto 0) ) -- Write Address
-											& X"000000000000000000000000000000000000000000000000" & ROP_STAT_CountPixelsPassed & X"00000000" -- Write data
+											& X"000000000000000000000000000000000000000000000000" & std_logic_vector(CombineOcclusionCounters(unsigned(DINTERP_STAT_CountDepthOnlyPixelsPassed), unsigned(ROP_STAT_CountPixelsPassed) ) ) & X"00000000" -- Write data
 											& "00000010"; -- Write DWORD enable mask
 									when eQTTimestamp =>
 										CommandProcWriteRequestsFIFO_wr_data <= std_logic_vector(localIncomingPacket.payload1(ADDR_WIDTH_BITS-1 downto 0) ) -- Write Address
@@ -1276,7 +1286,7 @@ begin
 								case eQueryType'val(to_integer(localIncomingPacket.payload0(1 downto 0) ) ) is
 									when eQTOcclusion | eQTBinaryOcclusion =>
 										CommandProcWriteRequestsFIFO_wr_data <= std_logic_vector(localIncomingPacket.payload1(ADDR_WIDTH_BITS-1 downto 0) ) -- Write Address
-											& X"00000000000000000000000000000000000000000000000000000000" & ROP_STAT_CountPixelsPassed -- Write data
+											& X"00000000000000000000000000000000000000000000000000000000" & std_logic_vector(CombineOcclusionCounters(unsigned(DINTERP_STAT_CountDepthOnlyPixelsPassed), unsigned(ROP_STAT_CountPixelsPassed) ) ) -- Write data
 											& "00000001"; -- Write DWORD enable mask
 									when others => -- Do nothing
 										CommandProcWriteRequestsFIFO_wr_en <= '0';

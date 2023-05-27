@@ -126,7 +126,6 @@ entity ClipUnit is
 	-- Stats interface end
 
 	-- Debug signals
-		DBG_DisableClipping : in STD_LOGIC;
 		DBG_CurrentState : out STD_LOGIC_VECTOR(7 downto 0) := (others => '0');
 		DBG_CurrentClipPlane : out STD_LOGIC_VECTOR(3 downto 0) := (others => '0');
 		DBG_CurrentClipBitmask : out STD_LOGIC_VECTOR(2 downto 0) := (others => '0');
@@ -632,7 +631,7 @@ DBG_AlreadyClippedPlanes <= currentTriAlreadyClippedPlanes;
 								currentState <= clip_sendNewDrawEventID;
 							end if;
 						elsif (DoesTriangleNeedClipping(IA_inv0ClipOutcodes, IA_inv1ClipOutcodes, IA_inv2ClipOutcodes, IA_inWholeTriangleAABBIntersectsViewport) ) then							
-							if (DBG_DisableClipping = '1') then
+							if (currentStateBlock.ClippingEnable = '0') then
 								if (hasSentCurrentDrawEventID = '1' and newDrawEventIDClear = '0') then
 									prevStageReady <= '1';
 									currentState <= idleState;

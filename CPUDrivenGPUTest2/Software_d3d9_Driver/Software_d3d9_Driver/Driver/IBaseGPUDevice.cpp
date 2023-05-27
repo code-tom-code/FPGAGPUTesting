@@ -760,7 +760,7 @@ HRESULT __stdcall IBaseGPUDevice::DeviceSetTriSetupState(const float viewportHal
 	return hRetViewport0;
 }
 
-HRESULT __stdcall IBaseGPUDevice::DeviceSetClipState(const bool depthClipEnabled, const bool useOpenGLNearZClip, const float guardBandXScale, const float guardBandYScale)
+HRESULT __stdcall IBaseGPUDevice::DeviceSetClipState(const bool depthClipEnabled, const bool useOpenGLNearZClip, const float guardBandXScale, const float guardBandYScale, const bool clippingEnabled)
 {
 	if (guardBandXScale < 1.0f || guardBandXScale > 32768.0f || guardBandYScale < 1.0f || guardBandYScale > 32768.0f)
 	{
@@ -781,7 +781,7 @@ HRESULT __stdcall IBaseGPUDevice::DeviceSetClipState(const bool depthClipEnabled
 	}
 
 	if (DoCacheDeviceState() && currentCachedState.deviceCachedDepthClipEnable == depthClipEnabled && currentCachedState.deviceCachedOpenGLNearZClipMode == useOpenGLNearZClip 
-			&& currentCachedState.deviceCachedGuardBandXScale == guardBandXScaleLog2 && currentCachedState.deviceCachedGuardBandYScale == guardBandYScaleLog2)
+			&& currentCachedState.deviceCachedGuardBandXScale == guardBandXScaleLog2 && currentCachedState.deviceCachedGuardBandYScale == guardBandYScaleLog2 && currentCachedState.deviceCachedClippingEnable == clippingEnabled)
 		return S_OK;
 
 	setClipperStateCommand setClipState;
@@ -789,6 +789,7 @@ HRESULT __stdcall IBaseGPUDevice::DeviceSetClipState(const bool depthClipEnabled
 	setClipState.useOpenGLNearZClip = useOpenGLNearZClip;
 	setClipState.guardBandScaleX = guardBandXScaleLog2;
 	setClipState.guardBandScaleY = guardBandYScaleLog2;
+	setClipState.clippingEnabled = clippingEnabled;
 
 	setClipState.checksum = command::ComputeChecksum(&setClipState, sizeof(setClipState) );
 #ifdef _DEBUG
@@ -804,6 +805,7 @@ HRESULT __stdcall IBaseGPUDevice::DeviceSetClipState(const bool depthClipEnabled
 		currentCachedState.deviceCachedOpenGLNearZClipMode = useOpenGLNearZClip;
 		currentCachedState.deviceCachedGuardBandXScale = guardBandXScaleLog2;
 		currentCachedState.deviceCachedGuardBandYScale = guardBandYScaleLog2;
+		currentCachedState.deviceCachedClippingEnable = clippingEnabled;
 	}
 	if (FAILED(hRet) )
 		return hRet;
@@ -1086,8 +1088,6 @@ HRESULT __stdcall IBaseGPUDevice::DeviceDownloadEndOfFrameStats(const gpuvoid* c
 	}
 
 	endFrameCommand endFrameStatsReadbackCmd;
-	endFrameStatsReadbackCmd.statsMemoryAddress = (const DWORD)statsMemory;
-	endFrameStatsReadbackCmd.finalizeStatsCollection = true;
 	endFrameStatsReadbackCmd.checksum = command::ComputeChecksum(&endFrameStatsReadbackCmd, sizeof(endFrameStatsReadbackCmd) );
 #ifdef _DEBUG
 	if (!command::IsValidPacket(&endFrameStatsReadbackCmd, sizeof(endFrameStatsReadbackCmd) ) )
@@ -1102,10 +1102,177 @@ HRESULT __stdcall IBaseGPUDevice::DeviceDownloadEndOfFrameStats(const gpuvoid* c
 	if (DoSyncEveryCall() )
 		DeviceWaitForIdle();
 
+	setStatsEventConfigCommand configNoEventFrame;
+	configNoEventFrame.eventsOrStatsAddress = (const DWORD)statsMemory;
+	configNoEventFrame.eventOrdersAddress = NULL;
+	configNoEventFrame.enableEventRecording = false;
+	configNoEventFrame.checksum = command::ComputeChecksum(&configNoEventFrame, sizeof(configNoEventFrame) );
+#ifdef _DEBUG
+	if (!command::IsValidPacket(&configNoEventFrame, sizeof(configNoEventFrame) ) )
+	{
+		__debugbreak();
+	}
+#endif
+	const HRESULT hEventConfigRet = SendOrStorePacket(&configNoEventFrame);
+	if (FAILED(hEventConfigRet) )
+		return hEventConfigRet;
+
+	if (DoSyncEveryCall() )
+		DeviceWaitForIdle();
+
 	// Wait for the memory controller to be done working before we try to read back our stats data from the frame
 	DeviceWaitForIdle(waitForDeviceIdleCommand::waitForMemControllerIdle);
 
 	return deviceComms->ReadFromDevice(statsMemory, outReadbackStatsData, sizeof(DWORD) * endFrameStatsResponse::TotalAllStatsCount);
+}
+
+HRESULT __stdcall IBaseGPUDevice::DeviceEndFrameAndFinishEventRecording(const gpuvoid* const eventTimestampsMemory, const gpuvoid* const eventOrderingMemory, DWORD* const outReadbackEventTimestamps, USHORT* const outReadbackEventOrderings, DWORD* const outReadbackEventsHeaderBlock)
+{
+	if (currentlyRecordingCommandList != NULL)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Illegal to call this function while we are recording a command list!
+#endif
+		return E_INVALIDARG;
+	}
+
+	if (!ValidateAddress(eventTimestampsMemory) )
+		return E_INVALIDARG;
+
+	if (!ValidateAddress(eventOrderingMemory) )
+		return E_INVALIDARG;
+
+	if (!ValidateMemoryRangeExistsInsideAllocation(eventTimestampsMemory, sizeof(EventTimestamp) * NUM_GPU_EVENT_SYSTEMS_TRACKED * MAX_NUM_EVENTS_PER_FRAME) )
+	{
+#ifdef _DEBUG
+		__debugbreak();
+#endif
+		return E_INVALIDARG;
+	}
+
+	if (!ValidateMemoryRangeExistsInsideAllocation(eventOrderingMemory, sizeof(USHORT) * NUM_GPU_EVENT_SYSTEMS_TRACKED * MAX_NUM_EVENTS_PER_FRAME) )
+	{
+#ifdef _DEBUG
+		__debugbreak();
+#endif
+		return E_INVALIDARG;
+	}
+
+	if (!outReadbackEventTimestamps)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Can't pass in a null pointer for the return data
+#endif
+		return E_INVALIDARG;
+	}
+
+	if (!outReadbackEventOrderings)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Can't pass in a null pointer for the return data
+#endif
+		return E_INVALIDARG;
+	}
+
+	if (!outReadbackEventsHeaderBlock)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Can't pass in a null pointer for the return data
+#endif
+		return E_INVALIDARG;
+	}
+
+	endFrameCommand endFrameCmd;
+	endFrameCmd.checksum = command::ComputeChecksum(&endFrameCmd, sizeof(endFrameCmd) );
+#ifdef _DEBUG
+	if (!command::IsValidPacket(&endFrameCmd, sizeof(endFrameCmd) ) )
+	{
+		__debugbreak();
+	}
+#endif
+	const HRESULT hRet = SendOrStorePacket(&endFrameCmd);
+	if (FAILED(hRet) )
+		return hRet;
+
+	if (DoSyncEveryCall() )
+		DeviceWaitForIdle();
+
+	// Wait for the memory controller and everything else to be done working before we try to read back our stats event data from the frame
+	DeviceWaitForIdle(waitForDeviceIdleCommand::waitForFullPipelineFlush);
+
+	// Offset our reads by +32 bytes to account for the fact that the events header block comes first followed by the actual event data after that
+	printf("Downloading %u bytes from device for event timestamps (GPU 0x%08X -> CPU 0x%08X)...\n", sizeof(EventTimestamp) * NUM_GPU_EVENT_SYSTEMS_TRACKED * MAX_NUM_EVENTS_PER_FRAME, reinterpret_cast<const DWORD>( (const BYTE* const)eventTimestampsMemory + sizeof(EventDataHeaderBlock) ), reinterpret_cast<const DWORD>(outReadbackEventTimestamps) );
+	deviceComms->ReadFromDevice( (const gpuvoid* const)( (const BYTE* const)eventTimestampsMemory + sizeof(EventDataHeaderBlock) ), outReadbackEventTimestamps, sizeof(EventTimestamp) * NUM_GPU_EVENT_SYSTEMS_TRACKED * MAX_NUM_EVENTS_PER_FRAME);
+	printf("Downloading %u bytes from device for event orderings (GPU 0x%08X -> CPU 0x%08X)...\n", sizeof(USHORT) * NUM_GPU_EVENT_SYSTEMS_TRACKED * MAX_NUM_EVENTS_PER_FRAME, reinterpret_cast<const DWORD>( (const BYTE* const)eventOrderingMemory + sizeof(EventDataHeaderBlock) ), reinterpret_cast<const DWORD>(outReadbackEventOrderings) );
+	deviceComms->ReadFromDevice( (const gpuvoid* const)( (const BYTE* const)eventOrderingMemory + sizeof(EventDataHeaderBlock) ), outReadbackEventOrderings, sizeof(USHORT) * NUM_GPU_EVENT_SYSTEMS_TRACKED * MAX_NUM_EVENTS_PER_FRAME);
+	printf("Downloading %u bytes from device for event block header (GPU 0x%08X -> CPU 0x%08X)...\n", sizeof(EventDataHeaderBlock), reinterpret_cast<const DWORD>(eventTimestampsMemory), reinterpret_cast<const DWORD>(outReadbackEventsHeaderBlock) );
+	deviceComms->ReadFromDevice(eventTimestampsMemory, outReadbackEventsHeaderBlock, sizeof(EventDataHeaderBlock) );
+
+	setStatsEventConfigCommand configNoEventFrame;
+	configNoEventFrame.eventsOrStatsAddress = (const DWORD)eventTimestampsMemory;
+	configNoEventFrame.eventOrdersAddress = (const DWORD)eventOrderingMemory;
+	configNoEventFrame.enableEventRecording = true;
+	configNoEventFrame.checksum = command::ComputeChecksum(&configNoEventFrame, sizeof(configNoEventFrame) );
+#ifdef _DEBUG
+	if (!command::IsValidPacket(&configNoEventFrame, sizeof(configNoEventFrame) ) )
+	{
+		__debugbreak();
+	}
+#endif
+	const HRESULT hEventConfigRet = SendOrStorePacket(&configNoEventFrame);
+	if (FAILED(hEventConfigRet) )
+		return hEventConfigRet;
+
+	if (DoSyncEveryCall() )
+		DeviceWaitForIdle();
+
+	return hEventConfigRet;
+}
+
+HRESULT __stdcall IBaseGPUDevice::DeviceEndFrameAndQueueEventRecording(gpuvoid* const eventTimestampsMemory, gpuvoid* const eventOrderingMemory)
+{
+	if (currentlyRecordingCommandList != NULL)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Illegal to call this function while we are recording a command list!
+#endif
+		return E_INVALIDARG;
+	}
+
+	endFrameCommand endFrameCmd;
+	endFrameCmd.checksum = command::ComputeChecksum(&endFrameCmd, sizeof(endFrameCmd) );
+#ifdef _DEBUG
+	if (!command::IsValidPacket(&endFrameCmd, sizeof(endFrameCmd) ) )
+	{
+		__debugbreak();
+	}
+#endif
+	const HRESULT hRet = SendOrStorePacket(&endFrameCmd);
+	if (FAILED(hRet) )
+		return hRet;
+
+	if (DoSyncEveryCall() )
+		DeviceWaitForIdle();
+
+	setStatsEventConfigCommand configEventRecordingNextFrame;
+	configEventRecordingNextFrame.eventsOrStatsAddress = (DWORD)eventTimestampsMemory;
+	configEventRecordingNextFrame.eventOrdersAddress = (DWORD)eventOrderingMemory;
+	configEventRecordingNextFrame.enableEventRecording = true; // Queue event recording next frame
+	configEventRecordingNextFrame.checksum = command::ComputeChecksum(&configEventRecordingNextFrame, sizeof(configEventRecordingNextFrame) );
+#ifdef _DEBUG
+	if (!command::IsValidPacket(&configEventRecordingNextFrame, sizeof(configEventRecordingNextFrame) ) )
+	{
+		__debugbreak();
+	}
+#endif
+	const HRESULT hEventConfigRet = SendOrStorePacket(&configEventRecordingNextFrame);
+	if (FAILED(hEventConfigRet) )
+		return hEventConfigRet;
+
+	if (DoSyncEveryCall() )
+		DeviceWaitForIdle();
+
+	return S_OK;
 }
 
 HRESULT __stdcall IBaseGPUDevice::DeviceEndFrame()
@@ -1119,8 +1286,6 @@ HRESULT __stdcall IBaseGPUDevice::DeviceEndFrame()
 	}
 
 	endFrameCommand endFrameCmd;
-	endFrameCmd.statsMemoryAddress = 0x00000000;
-	endFrameCmd.finalizeStatsCollection = false;
 	endFrameCmd.checksum = command::ComputeChecksum(&endFrameCmd, sizeof(endFrameCmd) );
 #ifdef _DEBUG
 	if (!command::IsValidPacket(&endFrameCmd, sizeof(endFrameCmd) ) )
@@ -1131,6 +1296,24 @@ HRESULT __stdcall IBaseGPUDevice::DeviceEndFrame()
 	const HRESULT hRet = SendOrStorePacket(&endFrameCmd);
 	if (FAILED(hRet) )
 		return hRet;
+
+	if (DoSyncEveryCall() )
+		DeviceWaitForIdle();
+
+	setStatsEventConfigCommand configNoEventFrame;
+	configNoEventFrame.eventsOrStatsAddress = NULL;
+	configNoEventFrame.eventOrdersAddress = NULL;
+	configNoEventFrame.enableEventRecording = false;
+	configNoEventFrame.checksum = command::ComputeChecksum(&configNoEventFrame, sizeof(configNoEventFrame) );
+#ifdef _DEBUG
+	if (!command::IsValidPacket(&configNoEventFrame, sizeof(configNoEventFrame) ) )
+	{
+		__debugbreak();
+	}
+#endif
+	const HRESULT hEventConfigRet = SendOrStorePacket(&configNoEventFrame);
+	if (FAILED(hEventConfigRet) )
+		return hEventConfigRet;
 
 	if (DoSyncEveryCall() )
 		DeviceWaitForIdle();
@@ -2272,6 +2455,7 @@ const bool IBaseGPUDevice::PacketIsValidForRecording(const command::ePacketType 
 	case command::PT_SETVIEWPORTPARAMS0:
 	case command::PT_SETVIEWPORTPARAMS1:
 	case command::PT_SETSCISSORRECT:
+	case command::PT_SETSTATSEVENTCONFIG:
 		return true;
 	default:
 #ifdef _DEBUG
@@ -2280,7 +2464,6 @@ const bool IBaseGPUDevice::PacketIsValidForRecording(const command::ePacketType 
 	// Disallow all of the packet types that return data or read back data from the GPU to the CPU, since when executing a recorded command list
 	// there won't be anybody listening to acknowledge that data:
 	case command::PT_REMOVED7: // Don't allow removed packets in our recorded command buffers
-	case command::PT_UNUSED23: // Don't allow removed packets in our recorded command buffers
 	case command::PT_READMEM:
 	case command::PT_READMEMRESPONSE:
 	case command::PT_WAITFORDEVICEIDLE:

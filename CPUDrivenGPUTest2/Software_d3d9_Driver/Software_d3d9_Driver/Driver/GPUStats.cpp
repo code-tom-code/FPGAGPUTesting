@@ -8,6 +8,8 @@ static const UINT WM_USER_DLG_INIT_MSG = WM_USER + 0x3E9E;
 GPUStats::GPUStats()
 {
 	memset(&uStats, 0, sizeof(uStats) );
+	memset(&downloadedEventTimestamps, 0, sizeof(downloadedEventTimestamps) );
+	memset(&downloadedEventOrders, 0, sizeof(downloadedEventOrders) );
 }
 
 GPUStats::~GPUStats()
@@ -29,9 +31,40 @@ void GPUStats::InitStatsBuffer()
 		return;
 	}
 
-	GPUStatsBuffer = GPUAlloc(sizeof(DWORD) * endFrameStatsResponse::TotalAllStatsCount, endFrameStatsResponse::TotalAllStatsCount, 0, 0, 0, GPUVAT_StatsMemory, gpuFormat::GPUFMT_StatsBuffer
+	GPUStatsBuffer = GPUAlloc(sizeof(CyclesCount) * endFrameStatsResponse::TotalAllStatsCount, endFrameStatsResponse::TotalAllStatsCount, 0, 0, 0, GPUVAT_StatsMemory, gpuFormat::GPUFMT_StatsBuffer
 #ifdef _DEBUG
 		, "StatsBuffer"
+#endif
+	);
+}
+
+void GPUStats::InitEventsBuffers()
+{
+	if (GPUEventTimestampsBuffer != NULL)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Don't call this function more than once or it'll clobber its own memory allocation!
+#endif
+		return;
+	}
+
+	GPUEventTimestampsBuffer = GPUAlloc(sizeof(EventTimestamp) * NUM_GPU_EVENT_SYSTEMS_TRACKED * MAX_NUM_EVENTS_PER_FRAME + 32 * 2, MAX_NUM_EVENTS_PER_FRAME, 0, 0, 0, GPUVAT_StatsMemory, gpuFormat::GPUFMT_EventTimestampsBuffer
+#ifdef _DEBUG
+		, "EventTimestamps"
+#endif
+	);
+
+	if (GPUEventOrdersBuffer != NULL)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Don't call this function more than once or it'll clobber its own memory allocation!
+#endif
+		return;
+	}
+
+	GPUEventOrdersBuffer = GPUAlloc(sizeof(USHORT) * NUM_GPU_EVENT_SYSTEMS_TRACKED * MAX_NUM_EVENTS_PER_FRAME + 32 * 2, MAX_NUM_EVENTS_PER_FRAME, 0, 0, 0, GPUVAT_StatsMemory, gpuFormat::GPUFMT_EventOrderBuffer
+#ifdef _DEBUG
+		, "EventsOrder"
 #endif
 	);
 }
@@ -47,6 +80,28 @@ gpuvoid* const GPUStats::GetStatsBuffer() const
 	return GPUStatsBuffer;
 }
 
+gpuvoid* const GPUStats::GetEventTimestampsBuffer() const
+{
+#ifdef _DEBUG
+	if (GPUEventTimestampsBuffer == NULL)
+	{
+		__debugbreak(); // Error: Must call InitEventsBuffers() to create the buffer before getting it!
+	}
+#endif
+	return GPUEventTimestampsBuffer;
+}
+
+gpuvoid* const GPUStats::GetEventsOrderBuffer() const
+{
+#ifdef _DEBUG
+	if (GPUEventOrdersBuffer == NULL)
+	{
+		__debugbreak(); // Error: Must call InitEventsBuffers() to create the buffer before getting it!
+	}
+#endif
+	return GPUEventOrdersBuffer;
+}
+
 HRESULT GPUStats::DownloadEndOfFrameStats(IBaseGPUDevice* const deviceBase)
 {
 	if (!deviceBase)
@@ -58,6 +113,235 @@ HRESULT GPUStats::DownloadEndOfFrameStats(IBaseGPUDevice* const deviceBase)
 	}
 
 	return deviceBase->DeviceDownloadEndOfFrameStats(GetStatsBuffer(), uStats.rawCPUStatsBuffer);
+}
+
+HRESULT GPUStats::CollectEventDataThisFrame()
+{
+	if (!armCollectEventDataNextFrame)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // We're already armed to record next frame's events!
+#endif
+		return E_INVALIDARG;
+	}
+
+	if (isCollectingEventDataThisFrame)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // We're already collecting event data on this current frame!
+#endif
+		return E_INVALIDARG;
+	}
+
+	armCollectEventDataNextFrame = false;
+	isCollectingEventDataThisFrame = true;
+	return S_OK;
+}
+
+HRESULT GPUStats::ArmCollectEventDataNextFrame()
+{
+	if (armCollectEventDataNextFrame)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // We're already armed to record next frame's events!
+#endif
+		return E_INVALIDARG;
+	}
+
+	armCollectEventDataNextFrame = true;
+	return S_OK;
+}
+
+static inline const unsigned RoundUpToNextMultipleOf8(const unsigned x)
+{
+	return ( (x + 7) / 8) * 8;
+}
+
+void GPUStats::ProcessDrawEventsData()
+{
+	// Erase the last frame's processed draw data:
+	ProcessedDrawEventData.clear();
+
+	unsigned numDrawEvents = 0;
+	const unsigned numDrawStats = (const unsigned)flippedRecordedDrawEvents.size();
+	for (unsigned x = 0; x < numDrawStats; ++x)
+	{
+		switch (flippedRecordedDrawEvents[x].DrawType)
+		{
+		default:
+#ifdef _DEBUG
+			__debugbreak(); // Should never be here!
+#endif
+		case RecordedDrawCallStat::DT_Clear: // Clear events don't get tracked by the hardware, so skip them when counting draw events
+			break;
+		case RecordedDrawCallStat::DT_DrawPrimitive:
+		case RecordedDrawCallStat::DT_DrawIndexedPrimitive:
+			++numDrawEvents;
+			break;
+		}
+	}
+
+	const unsigned writeBlockCount = RoundUpToNextMultipleOf8(numDrawEvents) / 8 * NUM_GPU_EVENT_SYSTEMS_TRACKED;
+
+	std::vector<EventTimestamp> RawTimestampsPerSystem[NUM_GPU_EVENT_SYSTEMS_TRACKED];
+	for (unsigned x = 0; x < NUM_GPU_EVENT_SYSTEMS_TRACKED; ++x)
+	{
+		RawTimestampsPerSystem[x].reserve(writeBlockCount * 8);
+	}
+
+	std::vector<ProcessedEventData::TimestampRange> ParsedTimestamps[NUM_GPU_EVENT_SYSTEMS_TRACKED];
+	std::vector<ProcessedEventData::EventStatSystems> SystemBlockTypes;
+	SystemBlockTypes.reserve(numDrawEvents * NUM_GPU_EVENT_SYSTEMS_TRACKED);
+
+	for (unsigned x = 0; x < writeBlockCount * 8; ++x)
+	{
+		const ProcessedEventData::EventStatSystems thisWriteBlockSystem = (const ProcessedEventData::EventStatSystems)( (downloadedEventOrders[x / 4] >> ( (3 - (x % 4) ) * 4) ) & 0xF);
+		SystemBlockTypes.push_back(thisWriteBlockSystem);
+	}
+
+	for (unsigned x = 0; x < writeBlockCount; ++x)
+	{
+		const EventTimestamp* writeBlock = downloadedEventTimestamps + (x * 8);
+		const ProcessedEventData::EventStatSystems thisWriteBlockType = SystemBlockTypes[x];
+		if (thisWriteBlockType < ProcessedEventData::MAX_EVENT_STAT_SYSTEMS) // Skip any padding blocks
+		{
+			for (unsigned y = 0; y < 8; ++y)
+			{
+				const EventTimestamp thisTimestamp = writeBlock[y];
+				if (thisTimestamp != 0x00000000)
+				{
+					RawTimestampsPerSystem[thisWriteBlockType].push_back(thisTimestamp);
+				}
+			}
+		}
+	}
+
+	// All other frame events should be keyed relative to this one!
+	const EventTimestamp FrameOriginTimestamp = downloadedEventDataHeader.FrameStartTimestamp;
+	const EventTimestamp FrameEndTimestamp = downloadedEventDataHeader.FrameEndTimestamp;
+
+	// Go through and make all frame timestamps relative to the frame origin timestamp:
+	for (unsigned x = 0; x < NUM_GPU_EVENT_SYSTEMS_TRACKED; ++x)
+	{
+		std::vector<EventTimestamp>& currentSystemTimestamps = RawTimestampsPerSystem[x];
+		const unsigned numTimestamps = currentSystemTimestamps.size();
+		for (unsigned y = 0; y < numTimestamps; ++y)
+		{
+			EventTimestamp& thisTimestamp = currentSystemTimestamps[y];
+			thisTimestamp -= FrameOriginTimestamp;
+		}
+	}
+
+	EventTimestamp PerSystemLastTimestamp[NUM_GPU_EVENT_SYSTEMS_TRACKED] = {0};
+	for (unsigned x = 0; x < NUM_GPU_EVENT_SYSTEMS_TRACKED; ++x)
+	{
+		if (!RawTimestampsPerSystem[x].empty() )
+		{
+			PerSystemLastTimestamp[x] = RawTimestampsPerSystem[x][0];
+		}
+	}
+
+	unsigned currentHardwareDrawEventIndex = 0;
+	for (unsigned x = 0; x < numDrawStats; ++x)
+	{
+		switch (flippedRecordedDrawEvents[x].DrawType)
+		{
+		default:
+#ifdef _DEBUG
+			__debugbreak(); // Should never be here!
+#endif
+		case RecordedDrawCallStat::DT_Clear: // Clear events don't get tracked by the hardware, so skip them when counting draw events
+			break;
+		case RecordedDrawCallStat::DT_DrawPrimitive:
+		case RecordedDrawCallStat::DT_DrawIndexedPrimitive:
+		{
+			ProcessedEventData newProcessedEvent;
+			newProcessedEvent.DrawPtr = &(flippedRecordedDrawEvents[x]);
+			newProcessedEvent.DrawEventIndex = currentHardwareDrawEventIndex + 1; // The hardware always starts with DrawID 1
+			for (unsigned y = 0; y < NUM_GPU_EVENT_SYSTEMS_TRACKED; ++y)
+			{
+				newProcessedEvent.EventTimestamps[y].BeginTimestamp = PerSystemLastTimestamp[y];
+				newProcessedEvent.EventTimestamps[y].EndTimestamp = RawTimestampsPerSystem[y][currentHardwareDrawEventIndex + 1];
+				PerSystemLastTimestamp[y] = newProcessedEvent.EventTimestamps[y].EndTimestamp;
+			}
+			ProcessedDrawEventData.push_back(newProcessedEvent);
+		}
+			++currentHardwareDrawEventIndex;
+			break;
+		}
+	}
+
+	// Print out the column headers:
+	printf("System, DrawEventIndex, BeginTimestamp, EndTimestamp, PrimCount\n");
+
+	const unsigned numDrawEventsToPrint = (const unsigned)ProcessedDrawEventData.size();
+	for (unsigned x = 0; x < numDrawEventsToPrint; ++x)
+	{
+		const ProcessedEventData& thisEvent = ProcessedDrawEventData[x];
+
+		printf("VBB, %u, %u, %u, %u\n", thisEvent.DrawEventIndex, thisEvent.EventTimestamps[ProcessedEventData::ESS_VertexBatchBuilder].BeginTimestamp, thisEvent.EventTimestamps[ProcessedEventData::ESS_VertexBatchBuilder].EndTimestamp, thisEvent.DrawPtr->DrawCallStatUnion.DrawData.PrimCount);
+		printf("VS, %u, %u, %u, %u\n", thisEvent.DrawEventIndex, thisEvent.EventTimestamps[ProcessedEventData::ESS_VertexShader].BeginTimestamp, thisEvent.EventTimestamps[ProcessedEventData::ESS_VertexShader].EndTimestamp, thisEvent.DrawPtr->DrawCallStatUnion.DrawData.PrimCount);
+		printf("IA, %u, %u, %u, %u\n", thisEvent.DrawEventIndex, thisEvent.EventTimestamps[ProcessedEventData::ESS_InputAssembler].BeginTimestamp, thisEvent.EventTimestamps[ProcessedEventData::ESS_InputAssembler].EndTimestamp, thisEvent.DrawPtr->DrawCallStatUnion.DrawData.PrimCount);
+		printf("CLIP, %u, %u, %u, %u\n", thisEvent.DrawEventIndex, thisEvent.EventTimestamps[ProcessedEventData::ESS_ClipUnit].BeginTimestamp, thisEvent.EventTimestamps[ProcessedEventData::ESS_ClipUnit].EndTimestamp, thisEvent.DrawPtr->DrawCallStatUnion.DrawData.PrimCount);
+		printf("TRISETUP, %u, %u, %u, %u\n", thisEvent.DrawEventIndex, thisEvent.EventTimestamps[ProcessedEventData::ESS_TriangleSetup].BeginTimestamp, thisEvent.EventTimestamps[ProcessedEventData::ESS_TriangleSetup].EndTimestamp, thisEvent.DrawPtr->DrawCallStatUnion.DrawData.PrimCount);
+		printf("RAST, %u, %u, %u, %u\n", thisEvent.DrawEventIndex, thisEvent.EventTimestamps[ProcessedEventData::ESS_Rasterizer].BeginTimestamp, thisEvent.EventTimestamps[ProcessedEventData::ESS_Rasterizer].EndTimestamp, thisEvent.DrawPtr->DrawCallStatUnion.DrawData.PrimCount);
+		printf("DINTERP, %u, %u, %u, %u\n", thisEvent.DrawEventIndex, thisEvent.EventTimestamps[ProcessedEventData::ESS_DepthInterpolator].BeginTimestamp, thisEvent.EventTimestamps[ProcessedEventData::ESS_DepthInterpolator].EndTimestamp, thisEvent.DrawPtr->DrawCallStatUnion.DrawData.PrimCount);
+		printf("INTERP, %u, %u, %u, %u\n", thisEvent.DrawEventIndex, thisEvent.EventTimestamps[ProcessedEventData::ESS_AttributeInterpolator].BeginTimestamp, thisEvent.EventTimestamps[ProcessedEventData::ESS_AttributeInterpolator].EndTimestamp, thisEvent.DrawPtr->DrawCallStatUnion.DrawData.PrimCount);
+		printf("TEXSAMP, %u, %u, %u, %u\n", thisEvent.DrawEventIndex, thisEvent.EventTimestamps[ProcessedEventData::ESS_TextureSampler].BeginTimestamp, thisEvent.EventTimestamps[ProcessedEventData::ESS_TextureSampler].EndTimestamp, thisEvent.DrawPtr->DrawCallStatUnion.DrawData.PrimCount);
+		printf("ROP, %u, %u, %u, %u\n", thisEvent.DrawEventIndex, thisEvent.EventTimestamps[ProcessedEventData::ESS_ROP].BeginTimestamp, thisEvent.EventTimestamps[ProcessedEventData::ESS_ROP].EndTimestamp, thisEvent.DrawPtr->DrawCallStatUnion.DrawData.PrimCount);
+	}
+}
+
+void GPUStats::FlipRecordedDrawEventsToStats(std::vector<RecordedDrawCallStat>& deviceRecordedDrawEvents)
+{
+	flippedRecordedDrawEvents.clear();
+	deviceRecordedDrawEvents.swap(flippedRecordedDrawEvents);
+}
+
+HRESULT GPUStats::FinishDownloadingEndOfFrameEvents(IBaseGPUDevice* const deviceBase)
+{
+	if (!deviceBase)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Uhhh, don't call this function with a NULL device pointer!
+#endif
+		return E_INVALIDARG;
+	}
+
+	if (armCollectEventDataNextFrame)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Need to run the frame with event data collection enabled first!
+#endif
+		return E_INVALIDARG;
+	}
+
+	if (!isCollectingEventDataThisFrame)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Can't download any event data if we haven't recorded any yet!
+#endif
+		return E_INVALIDARG;
+	}
+
+	memset(&downloadedEventTimestamps, 0, sizeof(downloadedEventTimestamps) );
+	memset(&downloadedEventOrders, 0, sizeof(downloadedEventOrders) );
+
+	const HRESULT ret = deviceBase->DeviceEndFrameAndFinishEventRecording(GetEventTimestampsBuffer(), GetEventsOrderBuffer(), downloadedEventTimestamps, downloadedEventOrders, &downloadedEventDataHeader.FrameStartTimestamp);
+
+	isCollectingEventDataThisFrame = false;
+
+	return ret;
+}
+
+bool GPUStats::IsArmedForEventCollectionNextFrame() const
+{
+	return armCollectEventDataNextFrame;
+}
+
+bool GPUStats::IsCollectingEventDataThisFrame() const
+{
+	return isCollectingEventDataThisFrame;
 }
 
 static INT_PTR CALLBACK GPUStatsDialogProc(_In_ HWND hWnd, _In_ UINT MSG, _In_ WPARAM wParam, _In_ LPARAM lParam)

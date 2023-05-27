@@ -36,7 +36,7 @@ struct command
 		PT_LOADSHADERINSTRUCTIONS = 20,
 		PT_SETSHADERCONSTANT = 21,
 		PT_SETVERTEXSTREAMDATA = 22,
-		PT_UNUSED23 = 23,
+		PT_SETSTATSEVENTCONFIG = 23,
 		PT_SETSHADERCONSTANTSPECIAL = 24,
 		PT_SETSHADERSTARTADDRESS = 25,
 		PT_DEBUGSHADERNEXTDRAWCALL = 26,
@@ -827,11 +827,10 @@ struct endFrameCommand : command
 	}
 
 	// Payload 0:
-	// (Only used if finalizeStatsCollection is true)
-	DWORD statsMemoryAddress = 0x00000000; // 31 downto 0
+	DWORD unused0 = 0x00000000; // 31 downto 0
 
 	// Payload 1:
-	bool finalizeStatsCollection = false; // 7 downto 0
+	bool unused1bool = false; // 7 downto 0
 	unsigned char unused1[3] = {0}; // 31 downto 8
 };
 
@@ -1007,7 +1006,7 @@ struct setDepthStateCommand : command
 struct setClipperStateCommand : command
 {
 	setClipperStateCommand() : command(PT_SETCLIPSTATE), 
-		depthClipEnable(true), useOpenGLNearZClip(false), unused0(0),
+		depthClipEnable(true), useOpenGLNearZClip(false), clippingEnabled(true), unused0(0),
 		guardBandScaleX(4), guardBandScaleY(5), unused1(0)
 	{
 	}
@@ -1015,7 +1014,8 @@ struct setClipperStateCommand : command
 	// Payload 0:
 	unsigned depthClipEnable : 1; // 0
 	unsigned useOpenGLNearZClip : 1; // 1
-	unsigned unused0 : 30; // 31 downto 2
+	unsigned clippingEnabled : 1; // 2
+	unsigned unused0 : 29; // 31 downto 3
 
 	// Payload 1:
 	unsigned guardBandScaleX : 4; // 3 downto 0
@@ -1086,6 +1086,24 @@ struct setScissorRectCommand : command
 	USHORT scissorBottom = 480u; // 31 downto 16
 };
 
+struct setStatsEventConfigCommand : command
+{
+	setStatsEventConfigCommand() : command(PT_SETSTATSEVENTCONFIG),
+		eventsOrStatsAddress(0x00000000), unused0(0), enableEventRecording(false),
+		eventOrdersAddress(0x00000000), unused1(0)
+	{
+	}
+
+	// Payload 0:
+	unsigned eventsOrStatsAddress : 30; // 29 downto 0
+	unsigned unused0 : 1; // 30
+	unsigned enableEventRecording : 1; // 31
+
+	// Payload 1:
+	unsigned eventOrdersAddress : 30; // 29 downto 0
+	unsigned unused1 : 2; // 31 downto 30
+};
+
 // TODO: One day implement variable-sized packets and then this can go away
 static_assert(sizeof(genericCommand) == sizeof(doNothingCommand) &&
 	sizeof(genericCommand) == sizeof(writeMemCommand) &&
@@ -1119,6 +1137,7 @@ static_assert(sizeof(genericCommand) == sizeof(doNothingCommand) &&
 	sizeof(genericCommand) == sizeof(setViewportState0Command) &&
 	sizeof(genericCommand) == sizeof(setViewportState1Command) &&
 	sizeof(genericCommand) == sizeof(setScissorRectCommand) &&
+	sizeof(genericCommand) == sizeof(setStatsEventConfigCommand) &&
 	sizeof(genericCommand) == 11, "Error: Unexpected struct size!");
 
 #pragma pack(pop) // End pragma pack 1 region

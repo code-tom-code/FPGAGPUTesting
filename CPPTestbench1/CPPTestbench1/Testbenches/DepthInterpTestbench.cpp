@@ -36,77 +36,56 @@ enum depthInterpStateType
 	barycentricNormalization3, // 10
 	barycentricNormalization4, // 11
 	barycentricNormalization5, // 12
-	barycentricNormalization6, // 13
-	barycentricNormalization7, // 14
 
-	// Multiply the normalized barycentrics with the Z (zN) values
-	barycentricMultiply0, // 15
-	barycentricMultiply1, // 16
-	barycentricMultiply2, // 17
-	barycentricMultiply3, // 18
-	barycentricMultiply4, // 19
-	barycentricMultiply5, // 20
-	barycentricMultiply6, // 21
-	barycentricMultiply7, // 22
-	barycentricMultiply8, // 23
-	barycentricMultiply9, // 24
+	// Multiply the normalized barycentrics with the inverseZ (1.0f/zN) values
+	barycentricMultiply0, // 13
+	barycentricMultiply1, // 14
+	barycentricMultiply2, // 15
+	barycentricMultiply3, // 16
+	barycentricMultiply4, // 17
+	barycentricMultiply5, // 18
+	barycentricMultiply6, // 19
+	barycentricMultiply7, // 20
+	barycentricMultiply8, // 21
+	barycentricMultiply9, // 22
 
 	// Sum the products together to complete the dot product
-	barycentricDotProductSums0, // 25
-	barycentricDotProductSums1, // 26
-	barycentricDotProductSums2, // 27
-	barycentricDotProductSums3, // 28
-	barycentricDotProductSums4, // 29
-	barycentricDotProductSums5, // 30
-	barycentricDotProductSums6, // 31
-	barycentricDotProductSums7, // 32
-	barycentricDotProductSums8, // 33
-	barycentricDotProductSums9, // 34
+	barycentricDotProductSums0, // 23
+	barycentricDotProductSums1, // 24
+	barycentricDotProductSums2, // 25
+	barycentricDotProductSums3, // 26
 
 	// Take the dot product (dot(normbary.abc, Z.xyz) ) to yield the per-pixel depth value and 
 	// take the inverse dot product (1.0f / (dot(normbary.abc, invW.xyz) ) ) to yield the per-pixel W value as a float32
-	barycentricDotProductRecip0, // 35
-	barycentricDotProductRecip1, // 36
-	barycentricDotProductRecip2, // 37
-	barycentricDotProductRecip3, // 38
-	barycentricDotProductRecip4, // 39
-	barycentricDotProductRecip5, // 40
-	barycentricDotProductRecip6, // 41
-	barycentricDotProductRecip7, // 42
-	barycentricDotProductRecip8, // 43
-	barycentricDotProductRecip9, // 44
-	barycentricDotProductRecip10, // 45
-	barycentricDotProductRecip11, // 46
-	barycentricDotProductRecip12, // 47
-	barycentricDotProductRecip13, // 48
-	barycentricDotProductRecip14, // 49
-	barycentricDotProductRecip15, // 50
-	barycentricDotProductRecip16, // 51
-
-	// If depth testing is enabled, perform the depth test now. Otherwise, skip these stages entirely.
-	depthTestState0, // 52
-	depthTestState1, // 53
-	depthTestState2, // 54
-	depthTestState3, // 55
-	depthTestState4, // 56
-	depthTestState5, // 57
-	depthTestState6, // 58
-	depthTestState7, // 59
-	depthTestState8, // 60
-	depthTestState9, // 61
-	depthTestState10, // 62
+	barycentricDotProductRecip0, // 27
+	barycentricDotProductRecip1, // 28
+	barycentricDotProductRecip2, // 29
+	barycentricDotProductRecip3, // 30
+	barycentricDotProductRecip4, // 31
+	barycentricDotProductRecip5, // 32
+	barycentricDotProductRecip6, // 33
+	barycentricDotProductRecip7, // 34
+	barycentricDotProductRecip8, // 35
+	barycentricDotProductRecip9, // 36
+	barycentricDotProductRecip10, // 37
+	barycentricDotProductRecip11, // 38
+	barycentricDotProductRecip12, // 39
+	barycentricDotProductRecip13, // 40
+	barycentricDotProductRecip14, // 41
+	barycentricDotProductRecip15, // 42
+	barycentricDotProductRecip16, // 43
 
 	// When it's ready we can send the now depth-test-passed pixel off to the next block for attribute interpolation
-	sendPixelForAttrInterpolation, // 63
+	sendPixelForAttrInterpolation, // 44
 
-	setNewPrimitiveSlot, // 64
-	signalPrimitiveComplete, // 65
-	signalNewDrawEventID, // 66
-	signalTerminateDrawEventID, // 67
-	setDepthState // 68
+	setNewPrimitiveSlot, // 45
+	signalPrimitiveComplete, // 46
+	signalNewDrawEventID, // 47
+	signalTerminateDrawEventID, // 48
+	setDepthState // 49
 };
 
-void EmulateDepthInterpCPU(const triSetupOutput& triSetupData, const std::vector<rasterizedPixelData>& rasterizedPixels, std::vector<depthInterpOutputData>& outDepthInterpData)
+void EmulateDepthInterpCPU(const triSetupOutput& triSetupData, const std::vector<rasterizedPixelData>& rasterizedPixels, std::vector<depthInterpOutputData>& outDepthInterpData, std::vector<unsigned>& outDebugDepthValues)
 {
 	const unsigned numPixels = (const unsigned)rasterizedPixels.size();
 	for (unsigned x = 0; x < numPixels; ++x)
@@ -148,11 +127,30 @@ void EmulateDepthInterpCPU(const triSetupOutput& triSetupData, const std::vector
 			depthInterpOutputData newDepthInterpOutput;
 			newDepthInterpOutput.pixelX = thisPixelData.pixelX;
 			newDepthInterpOutput.pixelY = thisPixelData.pixelY;
-			newDepthInterpOutput.interpolatedPixelW = interpolatedPixelW;
+			newDepthInterpOutput.tx0 = triSetupData.v0.xTex;
+			newDepthInterpOutput.tx10 = triSetupData.v10.xTex;
+			newDepthInterpOutput.tx20 = triSetupData.v20.xTex;
+			newDepthInterpOutput.ty0 = triSetupData.v0.yTex;
+			newDepthInterpOutput.ty10 = triSetupData.v10.yTex;
+			newDepthInterpOutput.ty20 = triSetupData.v20.yTex;
+			newDepthInterpOutput.vc0.r = triSetupData.v0.rgba.r;
+			newDepthInterpOutput.vc0.g = triSetupData.v0.rgba.g;
+			newDepthInterpOutput.vc0.b = triSetupData.v0.rgba.b;
+			newDepthInterpOutput.vc0.a = triSetupData.v0.rgba.a;
+			newDepthInterpOutput.vc10.r = triSetupData.v10.rgba.r;
+			newDepthInterpOutput.vc10.g = triSetupData.v10.rgba.g;
+			newDepthInterpOutput.vc10.b = triSetupData.v10.rgba.b;
+			newDepthInterpOutput.vc10.a = triSetupData.v10.rgba.a;
+			newDepthInterpOutput.vc20.r = triSetupData.v20.rgba.r;
+			newDepthInterpOutput.vc20.g = triSetupData.v20.rgba.g;
+			newDepthInterpOutput.vc20.b = triSetupData.v20.rgba.b;
+			newDepthInterpOutput.vc20.a = triSetupData.v20.rgba.a;
 			newDepthInterpOutput.normalizedBarycentricB = normalizedBarycentricB;
 			newDepthInterpOutput.normalizedBarycentricC = normalizedBarycentricC;
-			newDepthInterpOutput.dbgDepthU24 = u24Depth;
+			newDepthInterpOutput.interpolatedPixelW = interpolatedPixelW;
 			outDepthInterpData.push_back(newDepthInterpOutput);
+
+			outDebugDepthValues.push_back(u24Depth);
 		}
 	}
 }
@@ -184,7 +182,7 @@ struct simulatedDepthBuffer
 		if (pipeStages[0].pixelReady)
 		{
 			DEPTH_PixelPassedDepthTest = (pipeStages[0].pixelDepth <= 16777215);
-			DEPTH_PixelFailedDepthTest = false;
+			DEPTH_PixelFailedDepthTest = !(pipeStages[0].pixelDepth <= 16777215);
 		}
 		else
 		{
@@ -237,18 +235,30 @@ const int RunTestsDepthInterp(Xsi::Loader& loader)
 	std_logic_port RASTOUT_FIFO_rd_en(PD_OUT, loader, "RASTOUT_FIFO_rd_en");
 // Rasterizer Output per-pixel interface end
 
+// Depth Interpolator State Block interface begin
+	std_logic_vector_port<40> STATE_StateBitsAtDrawID(PD_IN, loader, "STATE_StateBitsAtDrawID");
+	std_logic_vector_port<16> STATE_NextDrawID(PD_IN, loader, "STATE_NextDrawID");
+	std_logic_port STATE_StateIsValid(PD_IN, loader, "STATE_StateIsValid");
+	std_logic_port STATE_ConsumeStateSlot(PD_OUT, loader, "STATE_ConsumeStateSlot");
+// Depth Interpolator State Block interface end
+
 // FPU interfaces begin
-	std_logic_vector_port<32> FPU_A(PD_OUT, loader, "FPU_A");
-	std_logic_vector_port<32> FPU_B(PD_OUT, loader, "FPU_B");
-	std_logic_vector_port<32> FPU_OUT(PD_IN, loader, "FPU_OUT");
-	std_logic_vector_port<3> FPU_Mode(PD_OUT, loader, "FPU_Mode");
-	std_logic_port FPU_ISHFT_GO(PD_OUT, loader, "FPU_ISHFT_GO");
-	std_logic_port FPU_IMUL_GO(PD_OUT, loader, "FPU_IMUL_GO");
-	std_logic_port FPU_IADD_GO(PD_OUT, loader, "FPU_IADD_GO");
-	std_logic_port FPU_ICMP_GO(PD_OUT, loader, "FPU_ICMP_GO");
-	std_logic_port FPU_ICNV_GO(PD_OUT, loader, "FPU_ICNV_GO");
-	std_logic_port FPU_ISPEC_GO(PD_OUT, loader, "FPU_ISPEC_GO");
-	std_logic_port FPU_IBIT_GO(PD_OUT, loader, "FPU_IBIT_GO");
+	// MUL pipe for multiplication:
+	std_logic_vector_port<32> FPU_MUL_A(PD_OUT, loader, "FPU_MUL_A");
+	std_logic_vector_port<32> FPU_MUL_B(PD_OUT, loader, "FPU_MUL_B");
+	std_logic_vector_port<32> FPU_MUL_OUT(PD_IN, loader, "FPU_MUL_OUT");
+	std_logic_port FPU_MUL_GO(PD_OUT, loader, "FPU_MUL_GO");
+
+	// CNV pipe for float-to-int and int-to-float conversions:
+	std_logic_vector_port<32> FPU_CNV_A(PD_OUT, loader, "FPU_CNV_A");
+	std_logic_vector_port<3> FPU_CNV_Mode(PD_OUT, loader, "FPU_CNV_Mode");
+	std_logic_vector_port<32> FPU_CNV_OUT(PD_IN, loader, "FPU_CNV_OUT");
+	std_logic_port FPU_CNV_GO(PD_OUT, loader, "FPU_CNV_GO");
+
+	// SPEC pipe for float reciprocal:
+	std_logic_vector_port<32> FPU_SPEC_A(PD_OUT, loader, "FPU_SPEC_A");
+	std_logic_vector_port<32> FPU_SPEC_OUT(PD_IN, loader, "FPU_SPEC_OUT");
+	std_logic_port FPU_SPEC_GO(PD_OUT, loader, "FPU_SPEC_GO");
 // FPU interfaces end
 
 // Depth Buffer interface begin
@@ -258,27 +268,18 @@ const int RunTestsDepthInterp(Xsi::Loader& loader)
 	std_logic_vector_port<24> DEPTH_OutPixelDepth(PD_OUT, loader, "DEPTH_OutPixelDepth");
 	std_logic_port DEPTH_PixelPassedDepthTest(PD_IN, loader, "DEPTH_PixelPassedDepthTest");
 	std_logic_port DEPTH_PixelFailedDepthTest(PD_IN, loader, "DEPTH_PixelFailedDepthTest");
-	std_logic_port DEPTH_DepthTestEnabled(PD_IN, loader, "DEPTH_DepthTestEnabled");
+
+	std_logic_port DEPTH_SetDepthParams(PD_OUT, loader, "DEPTH_SetDepthParams");
+	std_logic_port DEPTH_DepthWriteEnable(PD_OUT, loader, "DEPTH_DepthWriteEnable");
+	std_logic_vector_port<3> DEPTH_DepthFunction(PD_OUT, loader, "DEPTH_DepthFunction");
+	std_logic_port DEPTH_DepthIsIdle(PD_IN, loader, "DEPTH_DepthIsIdle");
 // Depth Buffer interface end
 
-// Attribute Interpolator interface begin
-	std_logic_port ATTR_ReadyForNewPixel(PD_IN, loader, "ATTR_ReadyForNewPixel");
-	std_logic_port ATTR_NewPixelValid(PD_OUT, loader, "ATTR_NewPixelValid");
-	std_logic_vector_port<10> ATTR_PosX(PD_OUT, loader, "ATTR_PosX");
-	std_logic_vector_port<10> ATTR_PosY(PD_OUT, loader, "ATTR_PosY");
-	std_logic_vector_port<32> ATTR_TX0(PD_OUT, loader, "ATTR_TX0");
-	std_logic_vector_port<32> ATTR_TX10(PD_OUT, loader, "ATTR_TX10");
-	std_logic_vector_port<32> ATTR_TX20(PD_OUT, loader, "ATTR_TX20");
-	std_logic_vector_port<32> ATTR_TY0(PD_OUT, loader, "ATTR_TY0");
-	std_logic_vector_port<32> ATTR_TY10(PD_OUT, loader, "ATTR_TY10");
-	std_logic_vector_port<32> ATTR_TY20(PD_OUT, loader, "ATTR_TY20");
-	std_logic_vector_port<128> ATTR_VC0(PD_OUT, loader, "ATTR_VC0");
-	std_logic_vector_port<128> ATTR_VC10(PD_OUT, loader, "ATTR_VC10");
-	std_logic_vector_port<128> ATTR_VC20(PD_OUT, loader, "ATTR_VC20");
-	std_logic_vector_port<32> ATTR_NormalizedBarycentricB(PD_OUT, loader, "ATTR_NormalizedBarycentricB");
-	std_logic_vector_port<32> ATTR_NormalizedBarycentricC(PD_OUT, loader, "ATTR_NormalizedBarycentricC");
-	std_logic_vector_port<32> ATTR_OutPixelW(PD_OUT, loader, "ATTR_OutPixelW");
-// Attribute Interpolator interface end
+// Attribute Interpolator FIFO interface begin
+	std_logic_port ATTR_FIFO_full(PD_IN, loader, "ATTR_FIFO_full");
+	std_logic_port ATTR_FIFO_wr_en(PD_OUT, loader, "ATTR_FIFO_wr_en");
+	std_logic_vector_port<704> ATTR_FIFO_wr_data(PD_OUT, loader, "ATTR_FIFO_wr_data");
+// Attribute Interpolator FIFO interface end
 
 // Debug signals
 	std_logic_vector_port<7> DBG_DepthInterpolator_State(PD_OUT, loader, "DBG_DepthInterpolator_State");
@@ -286,7 +287,9 @@ const int RunTestsDepthInterp(Xsi::Loader& loader)
 	std_logic_vector_port<32> DBG_RastBarycentricC(PD_OUT, loader, "DBG_RastBarycentricC");
 	std_logic_vector_port<24> DBG_InterpolatedDepthU24(PD_OUT, loader, "DBG_InterpolatedDepthU24");
 
-	FPU depthInterpFPU(0);
+	FPU depthInterpFPU_MUL(0);
+	FPU depthInterpFPU_CNV(0);
+	FPU depthInterpFPU_SPEC(0);
 	simulatedDepthBuffer depthInterpDepthBuffer;
 
 	bool successResult = true;
@@ -298,19 +301,26 @@ const int RunTestsDepthInterp(Xsi::Loader& loader)
 	{
 		scoped_timestep time(loader, clk, 100);
 		RASTOUT_FIFO_empty = true;
-		FPU_OUT = 0.0f;
+		FPU_MUL_OUT = 0.0f;
+		FPU_CNV_OUT = 0.0f;
+		FPU_SPEC_OUT = 0.0f;
 		DEPTH_PixelPassedDepthTest = false;
 		DEPTH_PixelFailedDepthTest = false;
-		DEPTH_DepthTestEnabled = true;
-		ATTR_ReadyForNewPixel = true;
+		ATTR_FIFO_full = false;
+		DEPTH_DepthIsIdle = true;
+		STATE_StateIsValid = false;
+		STATE_NextDrawID = 0x0000;
+		STATE_StateBitsAtDrawID.SetToZero();
 	}
 
-	auto simulateRTLDepthInterp = [&](const triSetupOutput& triSetupData, std::vector<rasterizedPixelData> rasterizedPixels, std::vector<depthInterpOutputData>& outDepthInterpData)
+	auto simulateRTLDepthInterp = [&](const triSetupOutput& triSetupData, std::vector<rasterizedPixelData> rasterizedPixels, std::vector<depthInterpOutputData>& outDepthInterpData, std::vector<unsigned>& outDebugDepthValues)
 	{
 		// TODO: Simulate tricache with different slots
-		triSetupData.DeserializeTriSetupOutput(TRICACHE_inBarycentricInverse, TRICACHE_inZ0, TRICACHE_inZ10, TRICACHE_inZ20,
+		triSetupData.DeserializeTriSetupOutput(TRICACHE_inBarycentricInverse, 
+			TRICACHE_inZ0, TRICACHE_inZ10, TRICACHE_inZ20,
 			TRICACHE_inInvW0, TRICACHE_inInvW10, TRICACHE_inInvW20,
-			TRICACHE_inT0X, TRICACHE_inT0Y, TRICACHE_inT10X, TRICACHE_inT10Y, TRICACHE_inT20X, TRICACHE_inT20Y,
+			TRICACHE_inT0X, TRICACHE_inT10X, TRICACHE_inT20X,
+			TRICACHE_inT0Y, TRICACHE_inT10Y, TRICACHE_inT20Y,
 			TRICACHE_inColorRGBA0, TRICACHE_inColorRGBA10, TRICACHE_inColorRGBA20);
 		RASTOUT_FIFO_rd_data.SetStructVal(rasterizedPixels[0]);
 
@@ -335,13 +345,21 @@ const int RunTestsDepthInterp(Xsi::Loader& loader)
 					RASTOUT_FIFO_rd_data.SetStructVal(emptyPixelData);
 				}
 			}
-			if (ATTR_NewPixelValid.GetBoolVal() )
+			if (ATTR_FIFO_wr_en.GetBoolVal() )
 			{
 				depthInterpOutputData newOutData;
-				newOutData.Serialize(ATTR_PosX, ATTR_PosY, ATTR_NormalizedBarycentricB, ATTR_NormalizedBarycentricC, ATTR_OutPixelW, DBG_InterpolatedDepthU24);
-				outDepthInterpData.push_back(newOutData);
+				ATTR_FIFO_wr_data.GetStructVal(newOutData);
+				if (!IsSpecialCodePixel(newOutData.pixelX) )
+				{
+					outDepthInterpData.push_back(newOutData);
+
+					const unsigned dbgDepth24 = DBG_InterpolatedDepthU24.GetUint32Val();
+					outDebugDepthValues.push_back(dbgDepth24);
+				}
 			}
-			depthInterpFPU.Update(FPU_ISHFT_GO, FPU_IMUL_GO, FPU_IADD_GO, FPU_ICMP_GO, FPU_ISPEC_GO, FPU_ICNV_GO, FPU_IBIT_GO,	FPU_A, FPU_B, FPU_Mode, FPU_OUT);
+			depthInterpFPU_MUL.UpdateMulOnly(FPU_MUL_GO, FPU_MUL_A, FPU_MUL_B, FPU_MUL_OUT);
+			depthInterpFPU_CNV.UpdateCnvOnly(FPU_CNV_GO, FPU_CNV_Mode, FPU_CNV_A, FPU_CNV_OUT);
+			depthInterpFPU_SPEC.UpdateRcpOnly(FPU_SPEC_GO, FPU_SPEC_A, FPU_SPEC_OUT);
 			depthInterpDepthBuffer.Update(DEPTH_PixelReady, DEPTH_PosX, DEPTH_PosY, DEPTH_OutPixelDepth, DEPTH_PixelPassedDepthTest, DEPTH_PixelFailedDepthTest);
 		}
 
@@ -355,8 +373,10 @@ const int RunTestsDepthInterp(Xsi::Loader& loader)
 	{
 		std::vector<depthInterpOutputData> emulatedCPUDepthInterpData;
 		std::vector<depthInterpOutputData> simulatedRTLDepthInterpData;
-		EmulateDepthInterpCPU(triSetupData, rasterizedPixels, emulatedCPUDepthInterpData);
-		simulateRTLDepthInterp(triSetupData, rasterizedPixels, simulatedRTLDepthInterpData);
+		std::vector<unsigned> emulatedCPUDepthValues;
+		std::vector<unsigned> simulatedRTLDepthValues;
+		EmulateDepthInterpCPU(triSetupData, rasterizedPixels, emulatedCPUDepthInterpData, emulatedCPUDepthValues);
+		simulateRTLDepthInterp(triSetupData, rasterizedPixels, simulatedRTLDepthInterpData, simulatedRTLDepthValues);
 
 		if (emulatedCPUDepthInterpData.size() != simulatedRTLDepthInterpData.size() )
 		{
@@ -383,9 +403,17 @@ const int RunTestsDepthInterp(Xsi::Loader& loader)
 		for (unsigned x = 0; x < numOutputPixels; ++x)
 		{
 			const depthInterpOutputData& emulatedCPUPixel = emulatedCPUDepthInterpData[x];
+			const unsigned emulatedCPUDepthValue = emulatedCPUDepthValues[x];
 			const depthInterpOutputData& simulatedRTLPixel = simulatedRTLDepthInterpData[x];
+			const unsigned simulatedRTLDepthValue = simulatedRTLDepthValues[x];
 
 			if (!(emulatedCPUPixel == simulatedRTLPixel) )
+			{
+				__debugbreak();
+				return false;
+			}
+
+			if (!(abs( (const int)simulatedRTLDepthValue - (const int)emulatedCPUDepthValue) <= 3) )
 			{
 				__debugbreak();
 				return false;
@@ -410,11 +438,11 @@ const int RunTestsDepthInterp(Xsi::Loader& loader)
 			{
 				__debugbreak();
 			}*/
-			if (simulatedRTLPixel.dbgDepthU24 + 1 < zMinU24) // Fudge by one depth unit just in case we have some float precision issues
+			if (emulatedCPUDepthValue + 1 < zMinU24) // Fudge by one depth unit just in case we have some float precision issues
 			{
 				__debugbreak();
 			}
-			if (simulatedRTLPixel.dbgDepthU24 - 1 > zMaxU24)
+			if (emulatedCPUDepthValue - 1 > zMaxU24)
 			{
 				__debugbreak();
 			}
@@ -592,6 +620,6 @@ const int RunTestsDepthInterp(Xsi::Loader& loader)
 			testSimpleDrawCall(verts, fullTriangleIB, ARRAYSIZE(fullTriangleIB) / 3, useRandomZWPositions);
 		}
 	}
-
+	
 	return successResult ? S_OK : E_FAIL;
 }

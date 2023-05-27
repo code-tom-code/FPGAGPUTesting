@@ -20,17 +20,17 @@ entity AttrInterpolator is
 	-- Depth Interpolator FIFO interface end
 
 	-- FPU interfaces begin
-		FPU_A : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-		FPU_B : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-		FPU_Mode : out STD_LOGIC_VECTOR(2 downto 0) := (others => '0');
-		FPU_ISHFT_GO : out STD_LOGIC := '0'; -- Unused
-		FPU_IMUL_GO : out STD_LOGIC := '0';
-		FPU_IADD_GO : out STD_LOGIC := '0';
-		FPU_ICMP_GO : out STD_LOGIC := '0'; -- Unused
-		FPU_ICNV_GO : out STD_LOGIC := '0';
-		FPU_ISPEC_GO : out STD_LOGIC := '0'; -- Unused
-		FPU_IBIT_GO : out STD_LOGIC := '0'; -- Unused
-		FPU_OUT : in STD_LOGIC_VECTOR(31 downto 0);
+		-- MUL pipe for multiplication:
+		FPU_MUL_A : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		FPU_MUL_B : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		FPU_MUL_OUT : in STD_LOGIC_VECTOR(31 downto 0);
+		FPU_MUL_GO : out STD_LOGIC := '0';
+
+		-- CNV pipe for float-to-int conversions and frac():
+		FPU_CNV_A : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		FPU_CNV_Mode : out STD_LOGIC_VECTOR(2 downto 0) := (others => '0');
+		FPU_CNV_OUT : in STD_LOGIC_VECTOR(31 downto 0);
+		FPU_CNV_GO : out STD_LOGIC := '0';
 	-- FPU interfaces end
 
 	-- Texture Sampler FIFO interface begin
@@ -100,28 +100,7 @@ type attrInterpStateType is
 	multBarycentricsAndAttr11, -- 12
 	multBarycentricsAndAttr12, -- 13
 	multBarycentricsAndAttr13, -- 14
-	multBarycentricsAndAttr14, -- 15
-	multBarycentricsAndAttr15, -- 16
-	multBarycentricsAndAttr16, -- 17
-	multBarycentricsAndAttr17, -- 18
-
-	addDotProductTerms0, -- 19
-	addDotProductTerms1, -- 20
-	addDotProductTerms2, -- 21
-	addDotProductTerms3, -- 22
-	addDotProductTerms4, -- 23
-	addDotProductTerms5, -- 24
-	addDotProductTerms6, -- 25
-	addDotProductTerms7, -- 26
-	addDotProductTerms8, -- 27
-	addDotProductTerms9, -- 28
-	addDotProductTerms10, -- 29
-	addDotProductTerms11, -- 30
-	addDotProductTerms12, -- 31
-	addDotProductTerms13, -- 32
-	addDotProductTerms14, -- 33
-	addDotProductTerms15, -- 34
-	addDotProductTerms16, -- 35
+	multBarycentricsAndAttr14, -- 14
 
 	multiplyPixelW0, -- 36
 	multiplyPixelW1, -- 37
@@ -162,6 +141,22 @@ type VertexFloatData is record
 	color_a : f32;
 end record VertexFloatData;
 
+COMPONENT FloatALU_Interpolator
+	Port (clk : in STD_LOGIC;
+
+		IN_B : in STD_LOGIC_VECTOR(31 downto 0);
+		IN_C : in STD_LOGIC_VECTOR(31 downto 0);
+		IN_Attr0 : in STD_LOGIC_VECTOR(31 downto 0);
+		IN_Attr10 : in STD_LOGIC_VECTOR(31 downto 0);
+		IN_Attr20 : in STD_LOGIC_VECTOR(31 downto 0);
+
+		OINTERP : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+
+		-- INTERP pipe operates in 5+4+4=13 clock cycles.
+		IINTERP_GO : in STD_LOGIC
+		);
+end component;
+
 constant DefaultVertexFloatData : VertexFloatData := (others => (others => '0') );
 
 signal readyForNewPixel : std_logic := '0';
@@ -199,6 +194,14 @@ signal compressedOutPixelDataColorG : unsigned(7 downto 0) := (others => '0');
 signal compressedOutPixelDataColorB : unsigned(7 downto 0) := (others => '0');
 signal compressedOutPixelDataColorA : unsigned(7 downto 0) := (others => '0');
 
+signal interpInputB : f32 := (others => '0');
+signal interpInputC : f32 := (others => '0');
+signal interpInputAttr0 : f32 := (others => '0');
+signal interpInputAttr10 : f32 := (others => '0');
+signal interpInputAttr20 : f32 := (others => '0');
+signal interpGoSignal : std_logic := '0';
+signal interpOutput : std_logic_vector(31 downto 0) := (others => '0');
+
 signal statCyclesIdle : unsigned(31 downto 0) := (others => '0');
 signal statCyclesWorking : unsigned(31 downto 0) := (others => '0');
 signal statCyclesWaitingForOutput : unsigned(31 downto 0) := (others => '0');
@@ -226,8 +229,10 @@ STAT_CyclesSpentWorking <= std_logic_vector(statCyclesWorking);
 STAT_CyclesWaitingForOutput <= std_logic_vector(statCyclesWaitingForOutput);
 
 DBG_AttrInterpolator_State <= std_logic_vector(to_unsigned(attrInterpStateType'pos(currentState), 7) );
-DBG_RastBarycentricB <= std_logic_vector(normalizedBarycentricB);
-DBG_RastBarycentricC <= std_logic_vector(normalizedBarycentricC);
+DBG_RastBarycentricB <= std_logic_vector(interpInputAttr0);
+DBG_RastBarycentricC <= std_logic_vector(interpInputAttr20);
+
+Interpolator : FloatALU_Interpolator port map(clk => clk, IN_B => std_logic_vector(interpInputB), IN_C => std_logic_vector(interpInputC), IN_Attr0 => std_logic_vector(interpInputAttr0), IN_Attr10 => std_logic_vector(interpInputAttr10), IN_Attr20 => std_logic_vector(interpInputAttr20), OINTERP => interpOutput, IINTERP_GO => interpGoSignal);
 
 	process(clk)
 	begin
@@ -252,6 +257,8 @@ DBG_RastBarycentricC <= std_logic_vector(normalizedBarycentricC);
 			CMD_IsIdle <= '0';
 			STATE_ConsumeStateSlot <= '0';
 			DINTERP_FIFO_rd_en <= '0';
+			FPU_MUL_GO <= '0';
+			FPU_CNV_GO <= '0';
 
 			case currentState is
 				when waitingForRead =>
@@ -317,277 +324,137 @@ DBG_RastBarycentricC <= std_logic_vector(normalizedBarycentricC);
 					end if;
 
 				when multBarycentricsAndAttr0 =>
-					FPU_A <= std_logic_vector(normalizedBarycentricB);
-					FPU_B <= std_logic_vector(unpackedVertex10.tx);
-					FPU_IMUL_GO <= '1';
+
+					interpInputB <= normalizedBarycentricB;
+					interpInputC <= normalizedBarycentricC;
+					interpInputAttr0 <= unpackedVertex0.tx;
+					interpInputAttr10 <= unpackedVertex10.tx;
+					interpInputAttr20 <= unpackedVertex20.tx;
+					interpGoSignal <= '1';
+
 					currentState <= multBarycentricsAndAttr1;
 
 				when multBarycentricsAndAttr1 =>
-					FPU_A <= std_logic_vector(normalizedBarycentricB);
-					FPU_B <= std_logic_vector(unpackedVertex10.ty);
-					FPU_IMUL_GO <= '1';
+					interpInputAttr0 <= unpackedVertex0.ty;
+					interpInputAttr10 <= unpackedVertex10.ty;
+					interpInputAttr20 <= unpackedVertex20.ty;
+					interpGoSignal <= '1';
+
 					currentState <= multBarycentricsAndAttr2;
 
 				when multBarycentricsAndAttr2 =>
-					FPU_A <= std_logic_vector(normalizedBarycentricB);
-					FPU_B <= std_logic_vector(unpackedVertex10.color_r);
-					FPU_IMUL_GO <= '1';
+					interpInputAttr0 <= unpackedVertex0.color_r;
+					interpInputAttr10 <= unpackedVertex10.color_r;
+					interpInputAttr20 <= unpackedVertex20.color_r;
+					interpGoSignal <= '1';
+
 					currentState <= multBarycentricsAndAttr3;
 
 				when multBarycentricsAndAttr3 =>
-					FPU_A <= std_logic_vector(normalizedBarycentricB);
-					FPU_B <= std_logic_vector(unpackedVertex10.color_g);
-					FPU_IMUL_GO <= '1';
+					interpInputAttr0 <= unpackedVertex0.color_g;
+					interpInputAttr10 <= unpackedVertex10.color_g;
+					interpInputAttr20 <= unpackedVertex20.color_g;
+					interpGoSignal <= '1';
+
 					currentState <= multBarycentricsAndAttr4;
 
 				when multBarycentricsAndAttr4 =>
-					FPU_A <= std_logic_vector(normalizedBarycentricB);
-					FPU_B <= std_logic_vector(unpackedVertex10.color_b);
-					FPU_IMUL_GO <= '1';
+					interpInputAttr0 <= unpackedVertex0.color_b;
+					interpInputAttr10 <= unpackedVertex10.color_b;
+					interpInputAttr20 <= unpackedVertex20.color_b;
+					interpGoSignal <= '1';
+
 					currentState <= multBarycentricsAndAttr5;
 
 				when multBarycentricsAndAttr5 =>
-					FPU_A <= std_logic_vector(normalizedBarycentricB);
-					FPU_B <= std_logic_vector(unpackedVertex10.color_a);
-					FPU_IMUL_GO <= '1';
+					interpInputAttr0 <= unpackedVertex0.color_a;
+					interpInputAttr10 <= unpackedVertex10.color_a;
+					interpInputAttr20 <= unpackedVertex20.color_a;
+					interpGoSignal <= '1';
+
 					currentState <= multBarycentricsAndAttr6;
 
 				when multBarycentricsAndAttr6 =>
-					unpackedVertex10.tx <= f32(FPU_OUT);
-
-					FPU_A <= std_logic_vector(normalizedBarycentricC);
-					FPU_B <= std_logic_vector(unpackedVertex20.tx);
-					FPU_IMUL_GO <= '1';
+					interpGoSignal <= '0';
 					currentState <= multBarycentricsAndAttr7;
 
 				when multBarycentricsAndAttr7 =>
-					unpackedVertex10.ty <= f32(FPU_OUT);
-
-					FPU_A <= std_logic_vector(normalizedBarycentricC);
-					FPU_B <= std_logic_vector(unpackedVertex20.ty);
-					FPU_IMUL_GO <= '1';
 					currentState <= multBarycentricsAndAttr8;
 
 				when multBarycentricsAndAttr8 =>
-					unpackedVertex10.color_r <= f32(FPU_OUT);
-
-					FPU_A <= std_logic_vector(normalizedBarycentricC);
-					FPU_B <= std_logic_vector(unpackedVertex20.color_r);
-					FPU_IMUL_GO <= '1';
 					currentState <= multBarycentricsAndAttr9;
 
 				when multBarycentricsAndAttr9 =>
-					unpackedVertex10.color_g <= f32(FPU_OUT);
-
-					FPU_A <= std_logic_vector(normalizedBarycentricC);
-					FPU_B <= std_logic_vector(unpackedVertex20.color_g);
-					FPU_IMUL_GO <= '1';
 					currentState <= multBarycentricsAndAttr10;
 
 				when multBarycentricsAndAttr10 =>
-					unpackedVertex10.color_b <= f32(FPU_OUT);
-
-					FPU_A <= std_logic_vector(normalizedBarycentricC);
-					FPU_B <= std_logic_vector(unpackedVertex20.color_b);
-					FPU_IMUL_GO <= '1';
 					currentState <= multBarycentricsAndAttr11;
 
 				when multBarycentricsAndAttr11 =>
-					unpackedVertex10.color_a <= f32(FPU_OUT);
-
-					FPU_A <= std_logic_vector(normalizedBarycentricC);
-					FPU_B <= std_logic_vector(unpackedVertex20.color_a);
-					FPU_IMUL_GO <= '1';
 					currentState <= multBarycentricsAndAttr12;
 
 				when multBarycentricsAndAttr12 =>
-					unpackedVertex20.tx <= f32(FPU_OUT);
-
-					FPU_IMUL_GO <= '0';
 					currentState <= multBarycentricsAndAttr13;
 
 				when multBarycentricsAndAttr13 =>
-					unpackedVertex20.ty <= f32(FPU_OUT);
-					currentState <= multBarycentricsAndAttr14;
+					currentState <= multiplyPixelW0;
 
 				when multBarycentricsAndAttr14 =>
-					unpackedVertex20.color_r <= f32(FPU_OUT);
-					currentState <= multBarycentricsAndAttr15;
-
-				when multBarycentricsAndAttr15 =>
-					unpackedVertex20.color_g <= f32(FPU_OUT);
-					currentState <= multBarycentricsAndAttr16;
-
-				when multBarycentricsAndAttr16 =>
-					unpackedVertex20.color_b <= f32(FPU_OUT);
-					currentState <= multBarycentricsAndAttr17;
-
-				when multBarycentricsAndAttr17 =>
-					unpackedVertex20.color_a <= f32(FPU_OUT);
-					currentState <= addDotProductTerms0;
-
-				when addDotProductTerms0 =>
-					FPU_A <= std_logic_vector(unpackedVertex10.tx);
-					FPU_B <= std_logic_vector(unpackedVertex20.tx);
-					FPU_IADD_GO <= '1';
-					currentState <= addDotProductTerms1;
-
-				when addDotProductTerms1 =>
-					FPU_A <= std_logic_vector(unpackedVertex10.ty);
-					FPU_B <= std_logic_vector(unpackedVertex20.ty);
-					FPU_IADD_GO <= '1';
-					currentState <= addDotProductTerms2;
-
-				when addDotProductTerms2 =>
-					FPU_A <= std_logic_vector(unpackedVertex10.color_r);
-					FPU_B <= std_logic_vector(unpackedVertex20.color_r);
-					FPU_IADD_GO <= '1';
-					currentState <= addDotProductTerms3;
-
-				when addDotProductTerms3 =>
-					FPU_A <= std_logic_vector(unpackedVertex10.color_g);
-					FPU_B <= std_logic_vector(unpackedVertex20.color_g);
-					FPU_IADD_GO <= '1';
-					currentState <= addDotProductTerms4;
-
-				when addDotProductTerms4 =>
-					FPU_A <= std_logic_vector(unpackedVertex10.color_b);
-					FPU_B <= std_logic_vector(unpackedVertex20.color_b);
-					FPU_IADD_GO <= '1';
-					currentState <= addDotProductTerms5;
-
-				when addDotProductTerms5 =>
-					dotProductTemporarySumTX <= f32(FPU_OUT);
-
-					FPU_A <= std_logic_vector(unpackedVertex10.color_a);
-					FPU_B <= std_logic_vector(unpackedVertex20.color_a);
-					FPU_IADD_GO <= '1';
-					currentState <= addDotProductTerms6;
-
-				when addDotProductTerms6 =>
-					dotProductTemporarySumTY <= f32(FPU_OUT);
-
-					FPU_A <= std_logic_vector(dotProductTemporarySumTX);
-					FPU_B <= std_logic_vector(unpackedVertex0.tx);
-					FPU_IADD_GO <= '1';
-					currentState <= addDotProductTerms7;
-
-				when addDotProductTerms7 =>
-					dotProductTemporarySumColorR <= f32(FPU_OUT);
-
-					FPU_A <= std_logic_vector(dotProductTemporarySumTY);
-					FPU_B <= std_logic_vector(unpackedVertex0.ty);
-					FPU_IADD_GO <= '1';
-					currentState <= addDotProductTerms8;
-
-				when addDotProductTerms8 =>
-					dotProductTemporarySumColorG <= f32(FPU_OUT);
-
-					FPU_A <= std_logic_vector(dotProductTemporarySumColorR);
-					FPU_B <= std_logic_vector(unpackedVertex0.color_r);
-					FPU_IADD_GO <= '1';
-					currentState <= addDotProductTerms9;
-
-				when addDotProductTerms9 =>
-					dotProductTemporarySumColorB <= f32(FPU_OUT);
-
-					FPU_A <= std_logic_vector(dotProductTemporarySumColorG);
-					FPU_B <= std_logic_vector(unpackedVertex0.color_g);
-					FPU_IADD_GO <= '1';
-					currentState <= addDotProductTerms10;
-
-				when addDotProductTerms10 =>
-					dotProductTemporarySumColorA <= f32(FPU_OUT);
-
-					FPU_A <= std_logic_vector(dotProductTemporarySumColorB);
-					FPU_B <= std_logic_vector(unpackedVertex0.color_b);
-					FPU_IADD_GO <= '1';
-					currentState <= addDotProductTerms11;
-
-				when addDotProductTerms11 =>
-					dotProductTemporarySumTX <= f32(FPU_OUT);
-
-					FPU_A <= std_logic_vector(dotProductTemporarySumColorA);
-					FPU_B <= std_logic_vector(unpackedVertex0.color_a);
-					FPU_IADD_GO <= '1';
-					currentState <= addDotProductTerms12;
-
-				when addDotProductTerms12 =>
-					dotProductTemporarySumTY <= f32(FPU_OUT);
-
-					FPU_IADD_GO <= '0';
-					currentState <= addDotProductTerms13;
-
-				when addDotProductTerms13 =>
-					dotProductTemporarySumColorR <= f32(FPU_OUT);
-					currentState <= addDotProductTerms14;
-
-				when addDotProductTerms14 =>
-					dotProductTemporarySumColorG <= f32(FPU_OUT);
-					currentState <= addDotProductTerms15;
-
-				when addDotProductTerms15 =>
-					dotProductTemporarySumColorB <= f32(FPU_OUT);
-					currentState <= addDotProductTerms16;
-
-				when addDotProductTerms16 =>
-					dotProductTemporarySumColorA <= f32(FPU_OUT);
 					currentState <= multiplyPixelW0;
 
 				when multiplyPixelW0 =>
-					FPU_A <= std_logic_vector(dotProductTemporarySumTX);
-					FPU_B <= std_logic_vector(pixelW);
-					FPU_IMUL_GO <= '1';
+					FPU_MUL_A <= interpOutput;
+					FPU_MUL_B <= std_logic_vector(pixelW);
+					FPU_MUL_GO <= '1';
 					currentState <= multiplyPixelW1;
 
 				when multiplyPixelW1 =>
-					FPU_A <= std_logic_vector(dotProductTemporarySumTY);
-					FPU_IMUL_GO <= '1';
+					FPU_MUL_A <= interpOutput;
+					FPU_MUL_GO <= '1';
 					currentState <= multiplyPixelW2;
 
 				when multiplyPixelW2 =>
-					FPU_A <= std_logic_vector(dotProductTemporarySumColorR);
-					FPU_IMUL_GO <= '1';
+					FPU_MUL_A <= interpOutput;
+					FPU_MUL_GO <= '1';
 					currentState <= multiplyPixelW3;
 
 				when multiplyPixelW3=>
-					FPU_A <= std_logic_vector(dotProductTemporarySumColorG);
-					FPU_IMUL_GO <= '1';
+					FPU_MUL_A <= interpOutput;
+					FPU_MUL_GO <= '1';
 					currentState <= multiplyPixelW4;
 
 				when multiplyPixelW4 =>
-					FPU_A <= std_logic_vector(dotProductTemporarySumColorB);
-					FPU_IMUL_GO <= '1';
+					FPU_MUL_A <= interpOutput;
+					FPU_MUL_GO <= '1';
 					currentState <= multiplyPixelW5;
 
 				when multiplyPixelW5 =>
-					FPU_A <= std_logic_vector(dotProductTemporarySumColorA);
-					FPU_IMUL_GO <= '1';
+					FPU_MUL_A <= interpOutput;
+					FPU_MUL_GO <= '1';
 					currentState <= multiplyPixelW6;
 
 				when multiplyPixelW6 =>
-					unpackedVertex0.tx <= f32(FPU_OUT);
-					FPU_IMUL_GO <= '0';
+					unpackedVertex0.tx <= f32(FPU_MUL_OUT);
 					currentState <= multiplyPixelW7;
 
 				when multiplyPixelW7 =>
-					unpackedVertex0.ty <= f32(FPU_OUT);
+					unpackedVertex0.ty <= f32(FPU_MUL_OUT);
 					currentState <= multiplyPixelW8;
 
 				when multiplyPixelW8 =>
-					unpackedVertex0.color_r <= f32(FPU_OUT);
+					unpackedVertex0.color_r <= f32(FPU_MUL_OUT);
 					currentState <= multiplyPixelW9;
 
 				when multiplyPixelW9 =>
-					unpackedVertex0.color_g <= f32(FPU_OUT);
+					unpackedVertex0.color_g <= f32(FPU_MUL_OUT);
 					currentState <= multiplyPixelW10;
 
 				when multiplyPixelW10 =>
-					unpackedVertex0.color_b <= f32(FPU_OUT);
+					unpackedVertex0.color_b <= f32(FPU_MUL_OUT);
 					currentState <= multiplyPixelW11;
 
 				when multiplyPixelW11 =>
-					unpackedVertex0.color_a <= f32(FPU_OUT);
+					unpackedVertex0.color_a <= f32(FPU_MUL_OUT);
 					if (texcoord0AddressingModeU = TAM_Clamp) then
 						wrappedTexcoordTX <= SaturateFloat(unpackedVertex0.tx);
 					end if;
@@ -603,76 +470,70 @@ DBG_RastBarycentricC <= std_logic_vector(normalizedBarycentricC);
 					end if;
 
 				when compressOutput0 =>
-					FPU_A <= std_logic_vector(unpackedVertex0.tx);
-					FPU_Mode <= std_logic_vector(to_unsigned(eConvertMode'pos(F_Frc), 3) );
-					FPU_ICNV_GO <= '1';
+					FPU_CNV_A <= std_logic_vector(unpackedVertex0.tx);
+					FPU_CNV_Mode <= std_logic_vector(to_unsigned(eConvertMode'pos(F_Frc), 3) );
+					FPU_CNV_GO <= '1';
 					currentState <= compressOutput1;
 
 				when compressOutput1 =>
-					FPU_A <= std_logic_vector(unpackedVertex0.ty);
-					FPU_Mode <= std_logic_vector(to_unsigned(eConvertMode'pos(F_Frc), 3) );
-					FPU_ICNV_GO <= '1';
+					FPU_CNV_A <= std_logic_vector(unpackedVertex0.ty);
+					FPU_CNV_GO <= '1';
 					currentState <= compressOutput2;
 
 				when compressOutput2 =>
-					FPU_A <= std_logic_vector(SaturateFloat(unpackedVertex0.color_r) );
-					FPU_Mode <= std_logic_vector(to_unsigned(eConvertMode'pos(F_to_UNORM8), 3) );
-					FPU_ICNV_GO <= '1';
+					FPU_CNV_A <= std_logic_vector(SaturateFloat(unpackedVertex0.color_r) );
+					FPU_CNV_Mode <= std_logic_vector(to_unsigned(eConvertMode'pos(F_to_UNORM8), 3) );
+					FPU_CNV_GO <= '1';
 					currentState <= compressOutput3;
 
 				when compressOutput3 =>
-					FPU_A <= std_logic_vector(SaturateFloat(unpackedVertex0.color_g) );
-					FPU_Mode <= std_logic_vector(to_unsigned(eConvertMode'pos(F_to_UNORM8), 3) );
-					FPU_ICNV_GO <= '1';
+					FPU_CNV_A <= std_logic_vector(SaturateFloat(unpackedVertex0.color_g) );
+					FPU_CNV_GO <= '1';
 					currentState <= compressOutput4;
 
 				when compressOutput4 =>
 					if (texcoord0AddressingModeU = TAM_Wrap) then
-						wrappedTexcoordTX <= f32(FPU_OUT);
+						wrappedTexcoordTX <= f32(FPU_CNV_OUT);
 					end if;
-					FPU_A <= std_logic_vector(SaturateFloat(unpackedVertex0.color_b) );
-					FPU_Mode <= std_logic_vector(to_unsigned(eConvertMode'pos(F_to_UNORM8), 3) );
-					FPU_ICNV_GO <= '1';
+					FPU_CNV_A <= std_logic_vector(SaturateFloat(unpackedVertex0.color_b) );
+					FPU_CNV_GO <= '1';
 					currentState <= compressOutput5;
 
 				when compressOutput5 =>
 					if (texcoord0AddressingModeV = TAM_Wrap) then
-						wrappedTexcoordTY <= f32(FPU_OUT);
+						wrappedTexcoordTY <= f32(FPU_CNV_OUT);
 					end if;
-					FPU_A <= std_logic_vector(SaturateFloat(unpackedVertex0.color_a) );
-					FPU_Mode <= std_logic_vector(to_unsigned(eConvertMode'pos(F_to_UNORM8), 3) );
-					FPU_ICNV_GO <= '1';
+					FPU_CNV_A <= std_logic_vector(SaturateFloat(unpackedVertex0.color_a) );
+					FPU_CNV_GO <= '1';
 					currentState <= compressOutput6;
 
 				when compressOutput6 =>
-					compressedOutPixelDataColorR <= unsigned(FPU_OUT(7 downto 0) );
-					FPU_A <= std_logic_vector(wrappedTexcoordTX);
-					FPU_Mode <= std_logic_vector(to_unsigned(eConvertMode'pos(F_To_UNORM16), 3) );
-					FPU_ICNV_GO <= '1';
+					compressedOutPixelDataColorR <= unsigned(FPU_CNV_OUT(7 downto 0) );
+					FPU_CNV_A <= std_logic_vector(wrappedTexcoordTX);
+					FPU_CNV_Mode <= std_logic_vector(to_unsigned(eConvertMode'pos(F_To_UNORM16), 3) );
+					FPU_CNV_GO <= '1';
 					currentState <= compressOutput7;
 
 				when compressOutput7 =>
-					compressedOutPixelDataColorG <= unsigned(FPU_OUT(7 downto 0) );
-					FPU_A <= std_logic_vector(wrappedTexcoordTY);
-					FPU_Mode <= std_logic_vector(to_unsigned(eConvertMode'pos(F_To_UNORM16), 3) );
-					FPU_ICNV_GO <= '1';
+					compressedOutPixelDataColorG <= unsigned(FPU_CNV_OUT(7 downto 0) );
+					FPU_CNV_A <= std_logic_vector(wrappedTexcoordTY);
+					FPU_CNV_GO <= '1';
 					currentState <= compressOutput8;
 
 				when compressOutput8 =>
-					compressedOutPixelDataColorB <= unsigned(FPU_OUT(7 downto 0) );
-					FPU_ICNV_GO <= '0';
+					compressedOutPixelDataColorB <= unsigned(FPU_CNV_OUT(7 downto 0) );
 					currentState <= compressOutput9;
 
 				when compressOutput9 =>
-					compressedOutPixelDataColorA <= unsigned(FPU_OUT(7 downto 0) );
+					compressedOutPixelDataColorA <= unsigned(FPU_CNV_OUT(7 downto 0) );
 					currentState <= compressOutput10;
 
 				when compressOutput10 =>
-					compressedOutPixelDataTX <= unsigned(FPU_OUT(15 downto 0) );
+					compressedOutPixelDataTX <= unsigned(FPU_CNV_OUT(15 downto 0) );
 					currentState <= compressOutput11;
 
 				when compressOutput11 =>
-					compressedOutPixelDataTY <= unsigned(FPU_OUT(15 downto 0) );
+					compressedOutPixelDataTY <= unsigned(FPU_CNV_OUT(15 downto 0) );
 					currentState <= waitingForWrite;
 
 				when waitingForWrite =>

@@ -261,6 +261,7 @@
     <None Include="hdl_src\FloatALU.vhd" />
     <None Include="hdl_src\FloatALU\FloatALU_CMP.vhd" />
     <None Include="hdl_src\FloatALU\FloatALU_CNV.vhd" />
+    <None Include="hdl_src\FloatALU\FloatALU_Interpolator.vhd" />
     <None Include="hdl_src\FloatALU\FloatALU_SHFT.vhd" />
     <None Include="hdl_src\FloatALU\FloatCommon.vhd" />
     <None Include="hdl_src\FloatALU_Types.vhd" />

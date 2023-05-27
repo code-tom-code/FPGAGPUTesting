@@ -134,11 +134,25 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DSwapChain9Hook::Present(
 		// This implicitly calls DeviceEndFrame() internally so we don't need to call it twice
 		parentDevice->GetDeviceStats().DownloadEndOfFrameStats(parentDevice->GetBaseDevice() );
 	}
-	else
+	else if (parentDevice->GetDeviceStats().IsCollectingEventDataThisFrame() )
+	{
+		parentDevice->GetDeviceStats().FinishDownloadingEndOfFrameEvents(parentDevice->GetBaseDevice() );
+		parentDevice->GetDeviceStats().FlipRecordedDrawEventsToStats(parentDevice->GetEventRecordedDrawEvents() );
+		parentDevice->GetDeviceStats().ProcessDrawEventsData();
+	}
+	else if (parentDevice->GetDeviceStats().IsArmedForEventCollectionNextFrame() )
+	{
+		parentDevice->GetBaseDevice()->DeviceEndFrameAndQueueEventRecording(parentDevice->GetDeviceStats().GetEventTimestampsBuffer(), parentDevice->GetDeviceStats().GetEventsOrderBuffer() );
+		parentDevice->GetDeviceStats().CollectEventDataThisFrame();
+	}
+	else // Regular frame
 	{
 		// Ends the frame, causing the command processor to clear all of the state blocks and reset its draw calls counter
 		parentDevice->GetBaseDevice()->DeviceEndFrame();
 	}
+
+	// Make sure to wipe our end-of-frame draw events list so that it doesn't grow forever and eat up infinite memory
+	parentDevice->GetEventRecordedDrawEvents().clear();
 
 	UpdateOverlay(parentDevice);
 

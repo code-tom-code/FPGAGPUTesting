@@ -361,7 +361,7 @@ protected:
 	} creationMethod;
 
 	BYTE* surfaceBytesRaw = NULL;
-	BYTE* auxSurfaceBytesRaw = NULL; // Aux surface data is nly present for compressed surface types and stencil buffers
+	BYTE* auxSurfaceBytesRaw = NULL; // Aux surface data is only present for compressed surface types and stencil buffers
 	gpuvoid* GPUSurfaceBytesRaw = NULL;
 	UINT surfaceBytesRawSize = 0;
 	UINT auxSurfaceBytesRawSize = 0;

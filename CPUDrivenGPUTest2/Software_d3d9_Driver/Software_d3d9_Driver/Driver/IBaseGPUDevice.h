@@ -179,6 +179,7 @@ struct GPUDeviceState
 	bool deviceCachedScanoutInvertColors = false;
 	bool deviceCachedDepthClipEnable = true;
 	bool deviceCachedOpenGLNearZClipMode = false;
+	bool deviceCachedClippingEnable = true;
 	unsigned deviceCachedGuardBandXScale = 4;
 	unsigned deviceCachedGuardBandYScale = 5;
 	CachedVertexStream deviceCachedVertexStreams[GPU_MAX_NUM_VERTEX_STREAMS];
@@ -231,7 +232,7 @@ __declspec(align(16) ) struct IBaseGPUDevice
 
 	HRESULT __stdcall DeviceSetTriSetupState(const float viewportHalfWidth, const float viewportHalfHeight, const float viewportZScale, const float viewportZOffset,
 		const unsigned short scissorRectLeft, const unsigned short scissorRectRight, const unsigned short scissorRectTop, const unsigned short scissorRectBottom);
-	HRESULT __stdcall DeviceSetClipState(const bool depthClipEnabled, const bool useOpenGLNearZClip, const float guardBandXScale, const float guardBandYScale);
+	HRESULT __stdcall DeviceSetClipState(const bool depthClipEnabled, const bool useOpenGLNearZClip, const float guardBandXScale, const float guardBandYScale, const bool clippingEnabled);
 	HRESULT __stdcall DeviceSetDepthState(const bool zEnabled, const bool zWriteEnabled, const bool colorWriteEnabled, const eCmpFunc zTestCmpFunc, const eDepthFormat zFormat, const float depthBias);
 
 	HRESULT __stdcall DeviceSetIAState(const eCullMode cullMode, const ePrimTopology primTopology, const eStripCutType stripCut, const eIndexFormat indexFormat, const unsigned indexBufferLengthBytes, const gpuvoid* const indexBufferBaseAddr);
@@ -240,6 +241,8 @@ __declspec(align(16) ) struct IBaseGPUDevice
 		const setScanoutPointerCommand::eDisplayChannelSwizzle redChannelSwizzle = setScanoutPointerCommand::dcs_red, const setScanoutPointerCommand::eDisplayChannelSwizzle greenChannelSwizzle = setScanoutPointerCommand::dcs_green, const setScanoutPointerCommand::eDisplayChannelSwizzle blueChannelSwizzle = setScanoutPointerCommand::dcs_blue);
 	HRESULT __stdcall DeviceDownloadEndOfFrameStats(const gpuvoid* const statsMemory, DWORD* const outReadbackStatsData);
 	HRESULT __stdcall DeviceEndFrame();
+	HRESULT __stdcall DeviceEndFrameAndQueueEventRecording(gpuvoid* const eventTimestampsMemory, gpuvoid* const eventOrderingMemory);
+	HRESULT __stdcall DeviceEndFrameAndFinishEventRecording(const gpuvoid* const eventTimestampsMemory, const gpuvoid* const eventOrderingMemory, DWORD* const outReadbackEventTimestamps, USHORT* const outReadbackEventOrderings, DWORD* const outReadbackEventsHeaderBlock);
 
 	HRESULT __stdcall DeviceIssueQuery(const gpuvoid* const queryAddress, const bool isEndEvent, const eQueryType queryType);
 

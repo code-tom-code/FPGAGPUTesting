@@ -106,8 +106,10 @@ enum gpuFormat : unsigned char
 	GPUFMT_EndValidShaderInstructionsFormats = GPUFMT_PixelShaderInstructions,
 	
 	GPUFMT_StatsBuffer,
+	GPUFMT_EventTimestampsBuffer,
+	GPUFMT_EventOrderBuffer,
 	GPUFMT_StartValidStatsFormats = GPUFMT_StatsBuffer,
-	GPUFMT_EndValidStatsFormats = GPUFMT_StatsBuffer,
+	GPUFMT_EndValidStatsFormats = GPUFMT_EventOrderBuffer,
 
 	GPUFMT_RegFileDump,
 	GPUFMT_StartValidRegFileDumpFormats = GPUFMT_RegFileDump,

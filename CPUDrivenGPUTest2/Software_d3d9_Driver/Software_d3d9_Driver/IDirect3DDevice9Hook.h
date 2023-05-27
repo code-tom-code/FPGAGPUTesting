@@ -1585,6 +1585,11 @@ public:
 		scanoutBlueSwizzle = newScanoutSwizzle;
 	}
 
+	std::vector<RecordedDrawCallStat>& GetEventRecordedDrawEvents()
+	{
+		return eventRecordedDrawCalls;
+	}
+
 protected:
 	LPDIRECT3DDEVICE9 d3d9dev;
 	IDirect3D9Hook* parentHook;
@@ -1663,6 +1668,8 @@ protected:
 	setScanoutPointerCommand::eDisplayChannelSwizzle scanoutBlueSwizzle;
 
 	gpuvoid* allocatedDebugShaderRegisterFile;
+
+	std::vector<RecordedDrawCallStat> eventRecordedDrawCalls;
 
 	std::vector<deviceAllocatedBuffer> cachedVertexPositionBuffers;
 	std::vector<deviceAllocatedBuffer> cachedVertexInvZBuffers;

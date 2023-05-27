@@ -1304,6 +1304,11 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::Present(THI
 		PlaySoundA("C:\\Windows\\Media\\tada.wav", GetModuleHandleA(NULL), SND_FILENAME); // Play a sound file to indicate that the copy has finished!
 	}
 
+	if (GetAsyncKeyState(VK_F11) )
+	{
+		GetDeviceStats().ArmCollectEventDataNextFrame();
+	}
+
 	HRESULT ret = implicitSwapChain->Present(pSourceRect, pDestRect, hDestWindowOverride, pDirtyRegion, 0);
 	if (FAILED(ret) )
 		return ret;
@@ -1798,6 +1803,17 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::Clear(THIS_
 
 	// I know it isn't strictly a "draw call", but having the clear also be able to use the single-step capabilities is very useful for debugging
 	HandleDrawCallSingleStepMode();
+
+	if (GetDeviceStats().IsCollectingEventDataThisFrame() )
+	{
+		RecordedDrawCallStat newClearEvent;
+		newClearEvent.DrawType = RecordedDrawCallStat::DT_Clear;
+		newClearEvent.DrawCallStatUnion.ClearData.ClearColor = Color;
+		newClearEvent.DrawCallStatUnion.ClearData.ClearDepth = Z;
+		newClearEvent.DrawCallStatUnion.ClearData.ClearFlags = Flags;
+		newClearEvent.DrawCallStatUnion.ClearData.ClearStencil = (const BYTE)Stencil;
+		eventRecordedDrawCalls.push_back(newClearEvent);
+	}
 
 #ifdef _DEBUG
 	HRESULT ret = d3d9dev->Clear(Count, pRects, Flags, Color, Z, Stencil);
@@ -4489,6 +4505,20 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawPrimiti
 		CallRunCommandList(newRecordingCommandList);
 	}
 
+	if (GetDeviceStats().IsCollectingEventDataThisFrame() )
+	{
+		RecordedDrawCallStat newDrawEvent;
+		newDrawEvent.DrawType = RecordedDrawCallStat::DT_DrawPrimitive;
+		newDrawEvent.DrawCallStatUnion.DrawData.BaseVertexIndex = StartVertex;
+		newDrawEvent.DrawCallStatUnion.DrawData.MinVertexIndex = 0;
+		newDrawEvent.DrawCallStatUnion.DrawData.NumVertices = 0;
+		newDrawEvent.DrawCallStatUnion.DrawData.PrimCount = PrimitiveCount;
+		newDrawEvent.DrawCallStatUnion.DrawData.StartIndex = 0;
+		newDrawEvent.DrawCallStatUnion.DrawData.primType = (const BYTE)PrimitiveType;
+		newDrawEvent.DrawCallStatUnion.DrawData.CurrentFVF = currentState.currentFVF;
+		eventRecordedDrawCalls.push_back(newDrawEvent);
+	}
+
 	if (CurrentPipelineCanEarlyZTest() )
 		DrawPrimitiveUB<true>(PrimitiveType, PrimitiveCount);
 	else
@@ -5280,7 +5310,8 @@ void IDirect3DDevice9Hook::DeviceSetCurrentState(const D3DPRIMITIVETYPE primType
 	const bool useOpenGLNearZClip = false;
 	const float guardBandXScale = currentState.cachedViewport.fGuardBandWidthScale;
 	const float guardBandYScale = currentState.cachedViewport.fGuardBandHeightScale;
-	baseDevice->DeviceSetClipState(depthClipEnable, useOpenGLNearZClip, guardBandXScale, guardBandYScale);
+	const bool clippingEnabled = currentState.currentRenderStates.renderStatesUnion.namedStates.clipping ? true : false;
+	baseDevice->DeviceSetClipState(depthClipEnable, useOpenGLNearZClip, guardBandXScale, guardBandYScale, clippingEnabled);
 
 	// Set the viewport/scissor rect states:
 	const float viewportHalfWidth = currentState.cachedViewport.halfWidthF;
@@ -5715,6 +5746,20 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawIndexed
 		DeviceSetUsedVertexShaderConstants(); // Copy over and set our vertex shader constant registers
 
 		CallRunCommandList(newRecordingCommandList);
+	}
+
+	if (GetDeviceStats().IsCollectingEventDataThisFrame() )
+	{
+		RecordedDrawCallStat newDrawEvent;
+		newDrawEvent.DrawType = RecordedDrawCallStat::DT_DrawIndexedPrimitive;
+		newDrawEvent.DrawCallStatUnion.DrawData.BaseVertexIndex = BaseVertexIndex;
+		newDrawEvent.DrawCallStatUnion.DrawData.MinVertexIndex = MinVertexIndex;
+		newDrawEvent.DrawCallStatUnion.DrawData.NumVertices = NumVertices;
+		newDrawEvent.DrawCallStatUnion.DrawData.PrimCount = primCount;
+		newDrawEvent.DrawCallStatUnion.DrawData.StartIndex = startIndex;
+		newDrawEvent.DrawCallStatUnion.DrawData.primType = (const BYTE)PrimitiveType;
+		newDrawEvent.DrawCallStatUnion.DrawData.CurrentFVF = currentState.currentFVF;
+		eventRecordedDrawCalls.push_back(newDrawEvent);
 	}
 
 	if (CurrentPipelineCanEarlyZTest() )
@@ -11153,8 +11198,9 @@ void IDirect3DDevice9Hook::InitializeState(const D3DPRESENT_PARAMETERS& d3dpp, c
 	// Set up the initial device state:
 	baseDevice->DeviceSetScanoutBuffer(backbufferSurfaceHook->GetDeviceSurfaceBytes(), enableScanout, invertScanoutColors, scanoutRedSwizzle, scanoutGreenSwizzle, scanoutBlueSwizzle);
 
-	// Init our stats buffer:
+	// Init our stats buffers:
 	deviceStats.InitStatsBuffer();
+	deviceStats.InitEventsBuffers();
 
 	const bool zEnable = false;
 	const bool zWriteEnable = false;
@@ -11171,6 +11217,7 @@ void IDirect3DDevice9Hook::InitializeState(const D3DPRESENT_PARAMETERS& d3dpp, c
 	const bool depthClipEnable = true;
 	const bool useOpenGLNearZClip = false;
 	const bool colorWritesEnabled = true;
+	const bool clippingEnabled = true;
 	const float guardBandXScale = 16.0f;
 	const float guardBandYScale = 32.0f;
 	const float defaultDepthBias = 0.0f;
@@ -11193,7 +11240,7 @@ void IDirect3DDevice9Hook::InitializeState(const D3DPRESENT_PARAMETERS& d3dpp, c
 			alphaBlendEnable, srcColorBlend, destColorBlend, colorBlendOp, srcAlphaBlend, destAlphaBlend, alphaBlendOp, blendFactorARGB);
 	baseDevice->DeviceClearRendertarget(backbufferSurfaceHook->GetDeviceSurfaceBytes(), D3DCOLOR_ARGB(255, 0, 0, 0) ); // Perform initial device clear so that our backbuffer doesn't start out as garbage
 	baseDevice->DeviceSetNullTextureState(TF_bilinearFilter, tcm_r, tcm_g, tcm_b, tcm_a, cbm_textureModulateVertexColor, cbm_textureModulateVertexColor);
-	baseDevice->DeviceSetClipState(depthClipEnable, useOpenGLNearZClip, guardBandXScale, guardBandYScale);
+	baseDevice->DeviceSetClipState(depthClipEnable, useOpenGLNearZClip, guardBandXScale, guardBandYScale, clippingEnabled);
 	baseDevice->DeviceSetTriSetupState(viewportHalfWidth, viewportHalfHeight, viewportZScale, viewportZOffset, scissorLeft, scissorRight, scissorTop, scissorBottom);
 	baseDevice->DeviceSetDepthState(forceDisableDepth ? false : zEnable, zWriteEnable, colorWritesEnabled, ConvertToDeviceCmpFunc(zCmpFunc), ConvertToDeviceDepthFormat(defaultZFormat), defaultDepthBias);
 	baseDevice->DeviceClearDepthStencil(currentState.currentDepthStencil ? currentState.currentDepthStencil->GetDeviceSurfaceBytes() : NULL, clearDepth, clearStencil, clearZValue, clearStencilValue);

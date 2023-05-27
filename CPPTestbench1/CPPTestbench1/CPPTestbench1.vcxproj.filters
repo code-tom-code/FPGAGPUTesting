@@ -469,5 +469,8 @@
     <None Include="FloatALU_Interpolator.prj">
       <Filter>Resource Files\Project Files</Filter>
     </None>
+    <None Include="hdl_src\FloatALU\FloatALU_Interpolator.vhd">
+      <Filter>HDL\FloatALU</Filter>
+    </None>
   </ItemGroup>
 </Project>

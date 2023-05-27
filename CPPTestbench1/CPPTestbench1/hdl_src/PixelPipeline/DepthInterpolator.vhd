@@ -50,17 +50,22 @@ entity DepthInterpolator is
 	-- Depth Interpolator State Block interface end
 
 	-- FPU interfaces begin
-		FPU_A : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-		FPU_B : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-		FPU_Mode : out STD_LOGIC_VECTOR(2 downto 0) := (others => '0');
-		FPU_ISHFT_GO : out STD_LOGIC := '0'; -- Unused
-		FPU_IMUL_GO : out STD_LOGIC := '0';
-		FPU_IADD_GO : out STD_LOGIC := '0';
-		FPU_ICMP_GO : out STD_LOGIC := '0'; -- Unused
-		FPU_ICNV_GO : out STD_LOGIC := '0';
-		FPU_ISPEC_GO : out STD_LOGIC := '0';
-		FPU_IBIT_GO : out STD_LOGIC := '0'; -- Unused
-		FPU_OUT : in STD_LOGIC_VECTOR(31 downto 0);
+		-- MUL pipe for multiplication:
+		FPU_MUL_A : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		FPU_MUL_B : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		FPU_MUL_OUT : in STD_LOGIC_VECTOR(31 downto 0);
+		FPU_MUL_GO : out STD_LOGIC := '0';
+
+		-- CNV pipe for float-to-int and int-to-float conversions:
+		FPU_CNV_A : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		FPU_CNV_Mode : out STD_LOGIC_VECTOR(2 downto 0) := (others => '0');
+		FPU_CNV_OUT : in STD_LOGIC_VECTOR(31 downto 0);
+		FPU_CNV_GO : out STD_LOGIC := '0';
+
+		-- SPEC pipe for float reciprocal:
+		FPU_SPEC_A : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		FPU_SPEC_OUT : in STD_LOGIC_VECTOR(31 downto 0);
+		FPU_SPEC_GO : out STD_LOGIC := '0';
 	-- FPU interfaces end
 
 	-- Depth Buffer interface begin
@@ -121,6 +126,22 @@ ATTRIBUTE X_INTERFACE_INFO of ATTR_FIFO_full: SIGNAL is "xilinx.com:interface:fi
 
 constant noperspective : STD_LOGIC := '1';
 
+COMPONENT FloatALU_Interpolator
+	Port (clk : in STD_LOGIC;
+
+		IN_B : in STD_LOGIC_VECTOR(31 downto 0);
+		IN_C : in STD_LOGIC_VECTOR(31 downto 0);
+		IN_Attr0 : in STD_LOGIC_VECTOR(31 downto 0);
+		IN_Attr10 : in STD_LOGIC_VECTOR(31 downto 0);
+		IN_Attr20 : in STD_LOGIC_VECTOR(31 downto 0);
+
+		OINTERP : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+
+		-- INTERP pipe operates in 5+4+4=13 clock cycles.
+		IINTERP_GO : in STD_LOGIC
+		);
+end component;
+
 type depthInterpStateType is 
 (
 	waitingForRead, -- 0
@@ -141,74 +162,53 @@ type depthInterpStateType is
 	barycentricNormalization3, -- 10
 	barycentricNormalization4, -- 11
 	barycentricNormalization5, -- 12
-	barycentricNormalization6, -- 13
-	barycentricNormalization7, -- 14
 
 	-- Multiply the normalized barycentrics with the inverseZ (1.0f/zN) values
-	barycentricMultiply0, -- 15
-	barycentricMultiply1, -- 16
-	barycentricMultiply2, -- 17
-	barycentricMultiply3, -- 18
-	barycentricMultiply4, -- 19
-	barycentricMultiply5, -- 20
-	barycentricMultiply6, -- 21
-	barycentricMultiply7, -- 22
-	barycentricMultiply8, -- 23
-	barycentricMultiply9, -- 24
+	barycentricMultiply0, -- 13
+	barycentricMultiply1, -- 14
+	barycentricMultiply2, -- 15
+	barycentricMultiply3, -- 16
+	barycentricMultiply4, -- 17
+	barycentricMultiply5, -- 18
+	barycentricMultiply6, -- 19
+	barycentricMultiply7, -- 20
+	barycentricMultiply8, -- 21
+	barycentricMultiply9, -- 22
 
 	-- Sum the products together to complete the dot product
-	barycentricDotProductSums0, -- 25
-	barycentricDotProductSums1, -- 26
-	barycentricDotProductSums2, -- 27
-	barycentricDotProductSums3, -- 28
-	barycentricDotProductSums4, -- 29
-	barycentricDotProductSums5, -- 30
-	barycentricDotProductSums6, -- 31
-	barycentricDotProductSums7, -- 32
-	barycentricDotProductSums8, -- 33
-	barycentricDotProductSums9, -- 34
+	barycentricDotProductSums0, -- 23
+	barycentricDotProductSums1, -- 24
+	barycentricDotProductSums2, -- 25
+	barycentricDotProductSums3, -- 26
 
 	-- Take the dot product (dot(normbary.abc, Z.xyz) ) to yield the per-pixel depth value and 
 	-- take the inverse dot product (1.0f / (dot(normbary.abc, invW.xyz) ) ) to yield the per-pixel W value as a float32
-	barycentricDotProductRecip0, -- 35
-	barycentricDotProductRecip1, -- 36
-	barycentricDotProductRecip2, -- 37
-	barycentricDotProductRecip3, -- 38
-	barycentricDotProductRecip4, -- 39
-	barycentricDotProductRecip5, -- 40
-	barycentricDotProductRecip6, -- 41
-	barycentricDotProductRecip7, -- 42
-	barycentricDotProductRecip8, -- 43
-	barycentricDotProductRecip9, -- 44
-	barycentricDotProductRecip10, -- 45
-	barycentricDotProductRecip11, -- 46
-	barycentricDotProductRecip12, -- 47
-	barycentricDotProductRecip13, -- 48
-	barycentricDotProductRecip14, -- 49
-	barycentricDotProductRecip15, -- 50
-	barycentricDotProductRecip16, -- 51
-
-	-- If depth testing is enabled, perform the depth test now. Otherwise, skip these stages entirely.
-	depthTestState0, -- 52
-	depthTestState1, -- 53
-	depthTestState2, -- 54
-	depthTestState3, -- 55
-	depthTestState4, -- 56
-	depthTestState5, -- 57
-	depthTestState6, -- 58
-	depthTestState7, -- 59
-	depthTestState8, -- 60
-	depthTestState9, -- 61
-	depthTestState10, -- 62
+	barycentricDotProductRecip0, -- 27
+	barycentricDotProductRecip1, -- 28
+	barycentricDotProductRecip2, -- 29
+	barycentricDotProductRecip3, -- 30
+	barycentricDotProductRecip4, -- 31
+	barycentricDotProductRecip5, -- 32
+	barycentricDotProductRecip6, -- 33
+	barycentricDotProductRecip7, -- 34
+	barycentricDotProductRecip8, -- 35
+	barycentricDotProductRecip9, -- 36
+	barycentricDotProductRecip10, -- 37
+	barycentricDotProductRecip11, -- 38
+	barycentricDotProductRecip12, -- 39
+	barycentricDotProductRecip13, -- 40
+	barycentricDotProductRecip14, -- 41
+	barycentricDotProductRecip15, -- 42
+	barycentricDotProductRecip16, -- 43
 
 	-- When it's ready we can send the now depth-test-passed pixel off to the next block for attribute interpolation
-	sendPixelForAttrInterpolation, -- 63
+	sendPixelForAttrInterpolation, -- 44
 
-	setNewPrimitiveSlot, -- 64
-	signalPrimitiveComplete, -- 65
-	signalNewDrawEventID, -- 66
-	signalTerminateDrawEventID, -- 67
-	setDepthState -- 68
+	setNewPrimitiveSlot, -- 45
+	signalPrimitiveComplete, -- 46
+	signalNewDrawEventID, -- 47
+	signalTerminateDrawEventID, -- 48
+	setDepthState -- 49
 );
 
 pure function Int32toUint32(intVal : signed(31 downto 0); signBit : std_logic) return unsigned is
@@ -282,12 +282,6 @@ signal tempFloatBarycentricC : f32 := (others => '0'); -- float32 format of the 
 signal normalizedBarycentricB : f32 := (others => '0'); -- float32 format of barycentricNormalizeFactor * float(barycentricB)
 signal normalizedBarycentricC : f32 := (others => '0'); -- float32 format of barycentricNormalizeFactor * float(barycentricC)
 
-signal tempZDP3B : f32 := (others => '0'); -- float32 format of (z1 * normalizedBarycentricB)
-signal tempZDP3C : f32 := (others => '0'); -- float32 format of (z2 * normalizedBarycentricC)
-
-signal tempInvWDP3B : f32 := (others => '0'); -- float32 format of (1/w1 * normalizedBarycentricB)
-signal tempInvWDP3C : f32 := (others => '0'); -- float32 format of (1/w2 * normalizedBarycentricC)
-
 signal pixelDepth : f32 := (others => '0'); -- float32 format (0.0f to 1.0f) pixel depth value
 signal pixelW : f32 := (others => '0'); -- float32 format (0.0f to 1.0f) pixel W value
 signal pixelDepthU24 : unsigned(23 downto 0) := (others => '0');
@@ -319,6 +313,14 @@ signal statCyclesIdle : unsigned(31 downto 0) := (others => '0');
 signal statCyclesWorking : unsigned(31 downto 0) := (others => '0');
 signal statCyclesWaitingForOutput : unsigned(31 downto 0) := (others => '0');
 
+signal interpInputB : f32 := (others => '0');
+signal interpInputC : f32 := (others => '0');
+signal interpInputAttr0 : f32 := (others => '0');
+signal interpInputAttr10 : f32 := (others => '0');
+signal interpInputAttr20 : f32 := (others => '0');
+signal interpGoSignal : std_logic := '0';
+signal interpOutput : std_logic_vector(31 downto 0) := (others => '0');
+
 begin
 
 RASTOUT_FIFO_rd_en <= readFromFifo;
@@ -331,6 +333,8 @@ STAT_DepthOnlyPixelsPassed <= std_logic_vector(depthOnlyPixelsPassed);
 DBG_DepthInterpolator_State <= std_logic_vector(to_unsigned(depthInterpStateType'pos(currentState), 7) );
 DBG_RastBarycentricB <= std_logic_vector(storedDbgBarycentricB);
 DBG_RastBarycentricC <= std_logic_vector(storedDbgBarycentricC);
+
+Interpolator : FloatALU_Interpolator port map(clk => clk, IN_B => std_logic_vector(interpInputB), IN_C => std_logic_vector(interpInputC), IN_Attr0 => std_logic_vector(interpInputAttr0), IN_Attr10 => std_logic_vector(interpInputAttr10), IN_Attr20 => std_logic_vector(interpInputAttr20), OINTERP => interpOutput, IINTERP_GO => interpGoSignal);
 
 	StatsProcess : process(clk)
 	begin
@@ -359,6 +363,9 @@ DBG_RastBarycentricC <= std_logic_vector(storedDbgBarycentricC);
 			STATE_ConsumeStateSlot <= '0';
 			DEPTH_SetDepthParams <= '0';
 			ATTR_FIFO_wr_en <= '0';
+			FPU_MUL_GO <= '0';
+			FPU_CNV_GO <= '0';
+			FPU_SPEC_GO <= '0';
 
 			case currentState is
 				when waitingForRead =>
@@ -428,19 +435,17 @@ DBG_RastBarycentricC <= std_logic_vector(storedDbgBarycentricC);
 
 				when barycentricConversion0 =>
 					readFromFifo <= '0'; -- Stop reading from the FIFO after one cycle in order to not pull more than one item off of the queue
-					FPU_ICNV_GO <= '1';
-					FPU_A <= std_logic_vector(Int32toUint32(tempMultBarycentricB, tempMultBarycentricBIsNegative) );
-					FPU_Mode <= std_logic_vector(to_unsigned(eConvertMode'pos(U32_to_F), 3) );
+					FPU_CNV_A <= std_logic_vector(Int32toUint32(tempMultBarycentricB, tempMultBarycentricBIsNegative) );
+					FPU_CNV_Mode <= std_logic_vector(to_unsigned(eConvertMode'pos(U32_to_F), 3) );
+					FPU_CNV_GO <= '1';
 					currentState <= barycentricConversion1;
 
 				when barycentricConversion1 =>
-					FPU_ICNV_GO <= '1';
-					FPU_A <= std_logic_vector(Int32toUint32(tempMultBarycentricC, tempMultBarycentricCIsNegative) );
-					FPU_Mode <= std_logic_vector(to_unsigned(eConvertMode'pos(U32_to_F), 3) );
+					FPU_CNV_A <= std_logic_vector(Int32toUint32(tempMultBarycentricC, tempMultBarycentricCIsNegative) );
+					FPU_CNV_GO <= '1';
 					currentState <= barycentricConversion2;
 
 				when barycentricConversion2 =>
-					FPU_ICNV_GO <= '0';
 					currentState <= barycentricConversion3;
 
 				when barycentricConversion3 =>
@@ -448,151 +453,114 @@ DBG_RastBarycentricC <= std_logic_vector(storedDbgBarycentricC);
 
 				when barycentricConversion4 =>
 					tempFloatBarycentricB(31) <= tempMultBarycentricBIsNegative;
-					tempFloatBarycentricB(30 downto 0) <= unsigned(FPU_OUT(30 downto 0) );
+					tempFloatBarycentricB(30 downto 0) <= unsigned(FPU_CNV_OUT(30 downto 0) );
+
+					FPU_MUL_A <= std_logic_vector(storedBarycentricInverse);
+					FPU_MUL_B(30 downto 0) <= FPU_CNV_OUT(30 downto 0);
+					FPU_MUL_B(31) <= tempMultBarycentricBIsNegative;
+					FPU_MUL_GO <= '1';
+
 					currentState <= barycentricConversion5;
 
 				when barycentricConversion5 =>
 					tempFloatBarycentricC(31) <= tempMultBarycentricCIsNegative;
-					tempFloatBarycentricC(30 downto 0) <= unsigned(FPU_OUT(30 downto 0) );
+					tempFloatBarycentricC(30 downto 0) <= unsigned(FPU_CNV_OUT(30 downto 0) );
+
+					FPU_MUL_B(30 downto 0) <= FPU_CNV_OUT(30 downto 0);
+					FPU_MUL_B(31) <= tempMultBarycentricCIsNegative;
+					FPU_MUL_GO <= '1';
+
 					currentState <= barycentricNormalization0;
 
 				when barycentricNormalization0 =>
-					FPU_A <= std_logic_vector(storedBarycentricInverse);
-					FPU_B <= std_logic_vector(tempFloatBarycentricB);
-					FPU_IMUL_GO <= '1';
 					currentState <= barycentricNormalization1;
 
 				when barycentricNormalization1 =>
-					FPU_A <= std_logic_vector(storedBarycentricInverse);
-					FPU_B <= std_logic_vector(tempFloatBarycentricC);
-					FPU_IMUL_GO <= '1';
 					currentState <= barycentricNormalization2;
 
 				when barycentricNormalization2 =>
-					FPU_IMUL_GO <= '0';
 					currentState <= barycentricNormalization3;
 
 				when barycentricNormalization3 =>
 					currentState <= barycentricNormalization4;
 
 				when barycentricNormalization4 =>
+					normalizedBarycentricB <= f32(FPU_MUL_OUT);
 					currentState <= barycentricNormalization5;
 
 				when barycentricNormalization5 =>
-					currentState <= barycentricNormalization6;
-
-				when barycentricNormalization6 =>
-					normalizedBarycentricB <= f32(FPU_OUT);
-					currentState <= barycentricNormalization7;
-
-				when barycentricNormalization7 =>
-					normalizedBarycentricC <= f32(FPU_OUT);
+					normalizedBarycentricC <= f32(FPU_MUL_OUT);
 					currentState <= barycentricMultiply0;
 
 				when barycentricMultiply0 =>
-					FPU_A <= std_logic_vector(normalizedBarycentricB);
-					FPU_B <= std_logic_vector(storedZ10);
-					FPU_IMUL_GO <= '1';
+					interpInputB <= normalizedBarycentricB;
+					interpInputC <= normalizedBarycentricC;
+					interpInputAttr0 <= storedZ0;
+					interpInputAttr10 <= storedZ10;
+					interpInputAttr20 <= storedZ20;
+					interpGoSignal <= '1';
+
 					currentState <= barycentricMultiply1;
 
 				when barycentricMultiply1 =>
-					FPU_A <= std_logic_vector(normalizedBarycentricB);
-					FPU_B <= std_logic_vector(storedInvW10);
-					FPU_IMUL_GO <= '1';
+					interpInputAttr0 <= storedInvW0;
+					interpInputAttr10 <= storedInvW10;
+					interpInputAttr20 <= storedInvW20;
 					currentState <= barycentricMultiply2;
 
 				when barycentricMultiply2 =>
-					FPU_A <= std_logic_vector(normalizedBarycentricC);
-					FPU_B <= std_logic_vector(storedZ20);
-					FPU_IMUL_GO <= '1';
+					interpGoSignal <= '0';
 					currentState <= barycentricMultiply3;
 
 				when barycentricMultiply3 =>
-					FPU_A <= std_logic_vector(normalizedBarycentricC);
-					FPU_B <= std_logic_vector(storedInvW20);
-					FPU_IMUL_GO <= '1';
 					currentState <= barycentricMultiply4;
 
 				when barycentricMultiply4 =>
-					FPU_IMUL_GO <= '0';
 					currentState <= barycentricMultiply5;
 
 				when barycentricMultiply5 =>
 					currentState <= barycentricMultiply6;
 
 				when barycentricMultiply6 =>
-					tempZDP3B <= f32(FPU_OUT);
 					currentState <= barycentricMultiply7;
 
 				when barycentricMultiply7 =>
-					tempInvWDP3B <= f32(FPU_OUT);
 					currentState <= barycentricMultiply8;
 
 				when barycentricMultiply8 =>
-					tempZDP3C <= f32(FPU_OUT);
 					currentState <= barycentricMultiply9;
 
 				when barycentricMultiply9 =>
-					tempInvWDP3C <= f32(FPU_OUT);
 					currentState <= barycentricDotProductSums0;
 
 				when barycentricDotProductSums0 =>
-					FPU_A <= std_logic_vector(tempZDP3B);
-					FPU_B <= std_logic_vector(tempZDP3C);
-					FPU_IADD_GO <= '1';
 					currentState <= barycentricDotProductSums1;
 
 				when barycentricDotProductSums1 =>
-					FPU_A <= std_logic_vector(tempInvWDP3B);
-					FPU_B <= std_logic_vector(tempInvWDP3C);
-					FPU_IADD_GO <= '1';
 					currentState <= barycentricDotProductSums2;
 
 				when barycentricDotProductSums2 =>
-					FPU_IADD_GO <= '0';
 					currentState <= barycentricDotProductSums3;
 
 				when barycentricDotProductSums3 =>
-					currentState <= barycentricDotProductSums4;
-
-				when barycentricDotProductSums4 =>
-					currentState <= barycentricDotProductSums5;
-
-				when barycentricDotProductSums5 =>
-					FPU_A <= FPU_OUT;
-					FPU_B <= std_logic_vector(storedZ0);
-					FPU_IADD_GO <= '1';
-					currentState <= barycentricDotProductSums6;
-
-				when barycentricDotProductSums6 =>
-					FPU_A <= FPU_OUT;
-					FPU_B <= std_logic_vector(storedInvW0);
-					FPU_IADD_GO <= '1';
-					currentState <= barycentricDotProductSums7;
-
-				when barycentricDotProductSums7 =>
-					FPU_IADD_GO <= '0';
-					currentState <= barycentricDotProductSums8;
-
-				when barycentricDotProductSums8 =>
-					currentState <= barycentricDotProductSums9;
-
-				when barycentricDotProductSums9 =>
 					currentState <= barycentricDotProductRecip0;
 
 				when barycentricDotProductRecip0 =>
-					pixelDepth <= f32(FPU_OUT);
+					pixelDepth <= FloatSaturate(f32(interpOutput) );
 					currentState <= barycentricDotProductRecip1;
 
 				when barycentricDotProductRecip1 =>
-					FPU_A <= FPU_OUT;
-					FPU_ISPEC_GO <= '1';
-					pixelDepth <= FloatSaturate(pixelDepth);
+					FPU_SPEC_A <= interpOutput;
+					FPU_SPEC_GO <= '1';
+
+					pixelDepth <= FloatMultiplyBy2_24(pixelDepth);
 					currentState <= barycentricDotProductRecip2;
 
 				when barycentricDotProductRecip2 =>
-					FPU_ISPEC_GO <= '0';
-					pixelDepth <= FloatMultiplyBy2_24(pixelDepth);
+					FPU_CNV_A <= std_logic_vector(pixelDepth);
+					FPU_CNV_Mode <= std_logic_vector(to_unsigned(eConvertMode'pos(F_to_U24_RoundNearestEven), 3) );
+					FPU_CNV_GO <= '1';
+
 					currentState <= barycentricDotProductRecip3;
 
 				when barycentricDotProductRecip3 =>
@@ -605,9 +573,17 @@ DBG_RastBarycentricC <= std_logic_vector(storedDbgBarycentricC);
 					currentState <= barycentricDotProductRecip6;
 
 				when barycentricDotProductRecip6 =>
+					pixelDepthU24 <= unsigned(FPU_CNV_OUT(23 downto 0) );
+					DBG_InterpolatedDepthU24 <= FPU_CNV_OUT(23 downto 0);
+
+					DEPTH_OutPixelDepth <= FPU_CNV_OUT(23 downto 0);
+					DEPTH_PosX <= std_logic_vector(storedPixelX(9 downto 0) );
+					DEPTH_PosY <= std_logic_vector(storedPixelY(9 downto 0) );
+					DEPTH_PixelReady <= '1';
 					currentState <= barycentricDotProductRecip7;
 
 				when barycentricDotProductRecip7 =>
+					DEPTH_PixelReady <= '0';
 					currentState <= barycentricDotProductRecip8;
 
 				when barycentricDotProductRecip8 =>
@@ -626,7 +602,16 @@ DBG_RastBarycentricC <= std_logic_vector(storedDbgBarycentricC);
 					currentState <= barycentricDotProductRecip13;
 
 				when barycentricDotProductRecip13 =>
-					currentState <= barycentricDotProductRecip14;
+					if (DEPTH_PixelPassedDepthTest = '1' and currentDepthState.ColorWritesEnabled = '1' and currentDepthState.DepthTestEnable = '1') then
+						currentState <= barycentricDotProductRecip14;
+					elsif (DEPTH_PixelPassedDepthTest = '1' and currentDepthState.ColorWritesEnabled = '0' and currentDepthState.DepthTestEnable = '1') then
+						depthOnlyPixelsPassed <= depthOnlyPixelsPassed + 1; -- Count this depth-only pixel as passed
+						currentState <= waitingForRead;
+					elsif (currentDepthState.DepthTestEnable = '0') then
+						currentState <= barycentricDotProductRecip14;
+					else
+						currentState <= waitingForRead; -- We failed the depth test, kill this pixel!
+					end if;
 
 				when barycentricDotProductRecip14 =>
 					currentState <= barycentricDotProductRecip15;
@@ -635,68 +620,10 @@ DBG_RastBarycentricC <= std_logic_vector(storedDbgBarycentricC);
 					currentState <= barycentricDotProductRecip16;
 
 				when barycentricDotProductRecip16 =>
-					pixelW <= f32(FPU_OUT); -- Do *not* saturate the interpolated per-pixel W-value! It is supposed to be allowed outside of the [0.0f, 1.0f] range.
-					FPU_A <= std_logic_vector(pixelDepth);
-					FPU_Mode <= std_logic_vector(to_unsigned(eConvertMode'pos(F_to_U24_RoundNearestEven), 3) );
-					FPU_ICNV_GO <= '1';
-					if (currentDepthState.DepthTestEnable = '1') then
-						currentState <= depthTestState0;
-					else
-						currentState <= sendPixelForAttrInterpolation;
-					end if;
-
-				when depthTestState0 =>
-					FPU_ICNV_GO <= '0';
-					currentState <= depthTestState1;
-
-				when depthTestState1 =>
-					currentState <= depthTestState2;
-
-				when depthTestState2 =>
-					currentState <= depthTestState3;
-
-				when depthTestState3 =>
-					pixelDepthU24 <= unsigned(FPU_OUT(23 downto 0) );
-					DBG_InterpolatedDepthU24 <= FPU_OUT(23 downto 0);
-
-					DEPTH_OutPixelDepth <= FPU_OUT(23 downto 0);
-					DEPTH_PosX <= std_logic_vector(storedPixelX(9 downto 0) );
-					DEPTH_PosY <= std_logic_vector(storedPixelY(9 downto 0) );
-					DEPTH_PixelReady <= '1';
-					currentState <= depthTestState4;
-
-				when depthTestState4 =>
-					DEPTH_PixelReady <= '0';
-					currentState <= depthTestState5;
-
-				when depthTestState5 =>
-					currentState <= depthTestState6;
-
-				when depthTestState6 =>
-					currentState <= depthTestState7;
-
-				when depthTestState7 =>
-					currentState <= depthTestState8;
-
-				when depthTestState8 =>
-					currentState <= depthTestState9;
-
-				when depthTestState9 =>
-					currentState <= depthTestState10;
-
-				when depthTestState10 =>
-					if (DEPTH_PixelPassedDepthTest = '1' and currentDepthState.ColorWritesEnabled = '1') then
-						currentState <= sendPixelForAttrInterpolation;
-					elsif (DEPTH_PixelPassedDepthTest = '1') then
-						depthOnlyPixelsPassed <= depthOnlyPixelsPassed + 1;
-						currentState <= waitingForRead;
-					else
-						currentState <= waitingForRead; -- We failed the depth test, kill this pixel!
-					end if;
+					pixelW <= f32(FPU_SPEC_OUT); -- Do *not* saturate the interpolated per-pixel W-value! It is supposed to be allowed outside of the [0.0f, 1.0f] range.
+					currentState <= sendPixelForAttrInterpolation;
 
 				when sendPixelForAttrInterpolation =>
-					FPU_ICNV_GO <= '0';
-
 					ATTR_FIFO_wr_data <= SerializeAttributeData(MakeStructFromMembers(storedPixelX, storedPixelY,
 						storedTX0, storedTX10, storedTX20,
 						storedTY0, storedTY10, storedTY20,
@@ -722,8 +649,12 @@ DBG_RastBarycentricC <= std_logic_vector(storedDbgBarycentricC);
 				when signalNewDrawEventID =>
 					readFromFifo <= '0'; -- Stop reading from the FIFO after one cycle in order to not pull more than one item off of the queue
 
-					ATTR_FIFO_wr_data <= X"000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000" & 
-						std_logic_vector(currentDrawEventID) & std_logic_vector(PixelMsg_SetNewDrawEventID);
+					ATTR_FIFO_wr_data <= SerializeAttributeData(MakeStructFromMembers(PixelMsg_SetNewDrawEventID, currentDrawEventID,
+						storedTX0, storedTX10, storedTX20,
+						storedTY0, storedTY10, storedTY20,
+						storedColorRGBA0, storedColorRGBA10, storedColorRGBA20,
+						normalizedBarycentricB, normalizedBarycentricC,
+						pixelW) );
 					if (ATTR_FIFO_full = '0') then
 						ATTR_FIFO_wr_en <= '1';
 						currentState <= waitingForRead;
@@ -732,8 +663,12 @@ DBG_RastBarycentricC <= std_logic_vector(storedDbgBarycentricC);
 				when signalTerminateDrawEventID =>
 					readFromFifo <= '0'; -- Stop reading from the FIFO after one cycle in order to not pull more than one item off of the queue
 
-					ATTR_FIFO_wr_data <= X"000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000" & 
-						std_logic_vector(currentDrawEventID) & std_logic_vector(PixelMsg_TermCurrentDrawEventID);
+					ATTR_FIFO_wr_data <= SerializeAttributeData(MakeStructFromMembers(PixelMsg_TermCurrentDrawEventID, currentDrawEventID,
+						storedTX0, storedTX10, storedTX20,
+						storedTY0, storedTY10, storedTY20,
+						storedColorRGBA0, storedColorRGBA10, storedColorRGBA20,
+						normalizedBarycentricB, normalizedBarycentricC,
+						pixelW) );
 					if (ATTR_FIFO_full = '0') then
 						ATTR_FIFO_wr_en <= '1';
 						currentState <= waitingForRead;

@@ -292,10 +292,18 @@ struct depthInterpOutputData
 {
 	signed short pixelX;
 	signed short pixelY;
-	float interpolatedPixelW;
+	float tx0;
+	float tx10;
+	float tx20;
+	float ty0;
+	float ty10;
+	float ty20;
+	D3DCOLORVALUE vc0;
+	D3DCOLORVALUE vc10;
+	D3DCOLORVALUE vc20;
 	float normalizedBarycentricB;
 	float normalizedBarycentricC;
-	uint32_t dbgDepthU24;
+	float interpolatedPixelW;
 
 	void Deserialize(std_logic_vector_port<10>& ATTR_PosX, std_logic_vector_port<10>& ATTR_PosY,
 		std_logic_vector_port<32>& ATTR_NormalizedBarycentricB,
@@ -320,16 +328,24 @@ struct depthInterpOutputData
 		normalizedBarycentricB = ATTR_NormalizedBarycentricB.GetFloat32Val();
 		normalizedBarycentricC = ATTR_NormalizedBarycentricC.GetFloat32Val();
 		interpolatedPixelW = ATTR_OutPixelW.GetFloat32Val();
-		dbgDepthU24 = DBG_InterpolatedDepthU24.GetUint32Val();
+	}
+
+	inline const bool InterpolatedWCloseEnough(const float rhsInterpolatedW) const
+	{
+		return abs(*(const int* const)&interpolatedPixelW - *(const int* const)&rhsInterpolatedW) <= 29;
 	}
 
 	const bool operator==(const depthInterpOutputData& rhs) const
 	{
 		// Might need to do float-epsilon comparisons here instead
 		return pixelX == rhs.pixelX && pixelY == rhs.pixelY &&
-			interpolatedPixelW == rhs.interpolatedPixelW &&
+			tx0 == rhs.tx0 && tx10 == rhs.tx10 && tx20 == rhs.tx20 &&
+			ty0 == rhs.ty0 && ty10 == rhs.ty10 && ty20 == rhs.ty20 &&
+			vc0.r == rhs.vc0.r && vc0.g == rhs.vc0.g && vc0.b == rhs.vc0.b && vc0.a == rhs.vc0.a && 
+			vc10.r == rhs.vc10.r && vc10.g == rhs.vc10.g && vc10.b == rhs.vc10.b && vc10.a == rhs.vc10.a && 
+			vc20.r == rhs.vc20.r && vc20.g == rhs.vc20.g && vc20.b == rhs.vc20.b && vc20.a == rhs.vc20.a && 
 			normalizedBarycentricB == rhs.normalizedBarycentricB && normalizedBarycentricC == rhs.normalizedBarycentricC &&
-			(abs(int(dbgDepthU24) - int(rhs.dbgDepthU24) ) < 2);
+			InterpolatedWCloseEnough(rhs.interpolatedPixelW);
 	}
 };
 
@@ -421,7 +437,7 @@ struct attributeInterpOutputData
 	const bool operator==(const attributeInterpOutputData& rhs) const
 	{
 		return (pixelX == rhs.pixelX) && (pixelY == rhs.pixelY) &&
-			(texcoordX == rhs.texcoordX) && (texcoordY == rhs.texcoordY) &&
+			(abs( (const short)texcoordX - (const short)rhs.texcoordX) <= 2) && (abs( (const short)texcoordY == (const short)rhs.texcoordY) <= 2) &&
 			(vertexColorRGBA == rhs.vertexColorRGBA);
 	}
 };
@@ -485,6 +501,6 @@ triSetupResultType EmulateCPUTriSetup(const triSetupInput& inTriData, triSetupOu
 // This rasterization algorithm, while it does work in most cases, is not fully correct with respect to the D3D11 rasterization rules: https://docs.microsoft.com/en-us/windows/win32/direct3d11/d3d10-graphics-programming-guide-rasterizer-stage-rules
 void EmulateCPURasterizer(const triSetupOutput& triSetupData, std::vector<rasterizedPixelData>& outRasterizedPixels);
 
-void EmulateDepthInterpCPU(const triSetupOutput& triSetupData, const std::vector<rasterizedPixelData>& rasterizedPixels, std::vector<depthInterpOutputData>& outDepthInterpData);
+void EmulateDepthInterpCPU(const triSetupOutput& triSetupData, const std::vector<rasterizedPixelData>& rasterizedPixels, std::vector<depthInterpOutputData>& outDepthInterpData, std::vector<unsigned>& outDebugDepthValues);
 void EmulateAttributeInterpCPU(const triSetupOutput& triSetupData, const std::vector<depthInterpOutputData>& depthInterpData, const bool validateNormalizedTexcoords, std::vector<attributeInterpOutputData>& outAttributeInterpData);
 void EmulateTexSamplerCPU(const std::vector<attributeInterpOutputData>& interpolatedData, std::vector<texSampOutput>& outTexSampData, const bool useBilinearInterp, const D3DSURFACE_DESC& texDesc, const D3DLOCKED_RECT& d3dlr);

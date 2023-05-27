@@ -10,6 +10,7 @@
 #include <vector>
 
 static unsigned currentTriCacheIndex = 0;
+extern bool enableDebugOutput;
 
 #define COLOR4_ARGB(a,r,g,b) \
     ((D3DCOLOR)((((a)&0xff)<<24)|(((b)&0xff)<<16)|(((g)&0xff)<<8)|((r)&0xff)))
@@ -212,36 +213,23 @@ const int RunTestsAttributeInterp(Xsi::Loader& loader)
 	std_logic_port clk(PD_IN, loader, "clk");
 
 // Depth Interpolator interface begin
-	std_logic_port DINTERP_ReadyForNewPixel(PD_OUT, loader, "DINTERP_ReadyForNewPixel");
-	std_logic_port DINTERP_NewPixelValid(PD_IN, loader, "DINTERP_NewPixelValid");
-	std_logic_vector_port<10> DINTERP_PosX(PD_IN, loader, "DINTERP_PosX");
-	std_logic_vector_port<10> DINTERP_PosY(PD_IN, loader, "DINTERP_PosY");
-	std_logic_vector_port<32> DINTERP_TX0(PD_IN, loader, "DINTERP_TX0");
-	std_logic_vector_port<32> DINTERP_TY0(PD_IN, loader, "DINTERP_TY0");
-	std_logic_vector_port<32> DINTERP_TX10(PD_IN, loader, "DINTERP_TX10");
-	std_logic_vector_port<32> DINTERP_TY10(PD_IN, loader, "DINTERP_TY10");
-	std_logic_vector_port<32> DINTERP_TX20(PD_IN, loader, "DINTERP_TX20");
-	std_logic_vector_port<32> DINTERP_TY20(PD_IN, loader, "DINTERP_TY20");
-	std_logic_vector_port<128> DINTERP_VC0(PD_IN, loader, "DINTERP_VC0");
-	std_logic_vector_port<128> DINTERP_VC10(PD_IN, loader, "DINTERP_VC10");
-	std_logic_vector_port<128> DINTERP_VC20(PD_IN, loader, "DINTERP_VC20");
-	std_logic_vector_port<32> DINTERP_NormalizedBarycentricB(PD_IN, loader, "DINTERP_NormalizedBarycentricB");
-	std_logic_vector_port<32> DINTERP_NormalizedBarycentricC(PD_IN, loader, "DINTERP_NormalizedBarycentricC");
-	std_logic_vector_port<32> DINTERP_OutPixelW(PD_IN, loader, "DINTERP_OutPixelW");
+	std_logic_vector_port<704> DINTERP_FIFO_rd_data(PD_IN, loader, "DINTERP_FIFO_rd_data");
+	std_logic_port DINTERP_FIFO_empty(PD_IN, loader, "DINTERP_FIFO_empty");
+	std_logic_port DINTERP_FIFO_rd_en(PD_OUT, loader, "DINTERP_FIFO_rd_en");
 // Depth Interpolator interface end
 
 // FPU interfaces begin
-	std_logic_vector_port<32> FPU_A(PD_OUT, loader, "FPU_A");
-	std_logic_vector_port<32> FPU_B(PD_OUT, loader, "FPU_B");
-	std_logic_vector_port<32> FPU_OUT(PD_IN, loader, "FPU_OUT");
-	std_logic_vector_port<3> FPU_Mode(PD_OUT, loader, "FPU_Mode");
-	std_logic_port FPU_ISHFT_GO(PD_OUT, loader, "FPU_ISHFT_GO");
-	std_logic_port FPU_IMUL_GO(PD_OUT, loader, "FPU_IMUL_GO");
-	std_logic_port FPU_IADD_GO(PD_OUT, loader, "FPU_IADD_GO");
-	std_logic_port FPU_ICMP_GO(PD_OUT, loader, "FPU_ICMP_GO");
-	std_logic_port FPU_ICNV_GO(PD_OUT, loader, "FPU_ICNV_GO");
-	std_logic_port FPU_ISPEC_GO(PD_OUT, loader, "FPU_ISPEC_GO");
-	std_logic_port FPU_IBIT_GO(PD_OUT, loader, "FPU_IBIT_GO");
+	// MUL pipe for multiplication:
+	std_logic_vector_port<32> FPU_MUL_A(PD_OUT, loader, "FPU_MUL_A");
+	std_logic_vector_port<32> FPU_MUL_B(PD_OUT, loader, "FPU_MUL_B");
+	std_logic_vector_port<32> FPU_MUL_OUT(PD_IN, loader, "FPU_MUL_OUT");
+	std_logic_port FPU_MUL_GO(PD_OUT, loader, "FPU_MUL_GO");
+
+	// CNV pipe for float-to-int conversions and frac():
+	std_logic_vector_port<32> FPU_CNV_A(PD_OUT, loader, "FPU_CNV_A");
+	std_logic_vector_port<3> FPU_CNV_Mode(PD_OUT, loader, "FPU_CNV_Mode");
+	std_logic_vector_port<32> FPU_CNV_OUT(PD_IN, loader, "FPU_CNV_OUT");
+	std_logic_port FPU_CNV_GO(PD_OUT, loader, "FPU_CNV_GO");
 // FPU interfaces end
 
 // Texture Sampler interface begin
@@ -255,7 +243,8 @@ const int RunTestsAttributeInterp(Xsi::Loader& loader)
 	std_logic_vector_port<32> DBG_RastBarycentricB(PD_OUT, loader, "DBG_RastBarycentricB");
 	std_logic_vector_port<32> DBG_RastBarycentricC(PD_OUT, loader, "DBG_RastBarycentricC");
 
-	FPU attrInterpFPU(0);
+	FPU attrInterpFPU_MUL(0);
+	FPU attrInterpFPU_CNV(0);
 
 	bool successResult = true;
 
@@ -265,50 +254,49 @@ const int RunTestsAttributeInterp(Xsi::Loader& loader)
 	for (unsigned startupCycle = 0; startupCycle < 100; ++startupCycle)
 	{
 		scoped_timestep time(loader, clk, 100);
-		FPU_OUT = 0.0f;
-		DINTERP_NewPixelValid = false;
+		FPU_MUL_OUT = 0.0f;
+		FPU_CNV_OUT = 0.0f;
+		DINTERP_FIFO_empty = true;
 		TEXSAMP_OutFIFO_full = false;
 	}
 
 	auto simulateRTLAttributeInterp = [&](const triSetupOutput& triSetupData, const std::vector<depthInterpOutputData>& depthInterpData, std::vector<attributeInterpOutputData>& outAttributeInterpData)
 	{
-		triSetupData.DeserializeTriSetupOutput(DINTERP_TX0, DINTERP_TX10, DINTERP_TX20, DINTERP_TY0, DINTERP_TY10, DINTERP_TY20, DINTERP_VC0, DINTERP_VC10, DINTERP_VC20);
+		DINTERP_FIFO_empty = true;
 
 		const unsigned numPixels = (const unsigned)depthInterpData.size();
 		for (unsigned x = 0; x < numPixels; ++x)
 		{
 			const depthInterpOutputData& thisPixelData = depthInterpData[x];
 
-			// Wait for the attribute interpolator core to be ready for a new pixel:
-			while (!DINTERP_ReadyForNewPixel.GetBoolVal() )
+			DINTERP_FIFO_rd_data.SetStructVal(thisPixelData);
+			DINTERP_FIFO_empty = false;
+
+			// Wait for the attribute interpolator core to pull a new pixel off of the FIFO:
+			while (!DINTERP_FIFO_rd_en.GetBoolVal() )
 			{
 				scoped_timestep time(loader, clk, 100);
+				attrInterpFPU_MUL.UpdateMulOnly(FPU_MUL_GO, FPU_MUL_A, FPU_MUL_B, FPU_MUL_OUT);
+				attrInterpFPU_CNV.UpdateCnvOnly(FPU_CNV_GO, FPU_CNV_Mode, FPU_CNV_A, FPU_CNV_OUT);
+				UpdateOutputFIFO(outAttributeInterpData, TEXSAMP_OutFIFO_wr_data, TEXSAMP_OutFIFO_full, TEXSAMP_OutFIFO_wr_en);
 			}
 
-			thisPixelData.Deserialize(DINTERP_PosX, DINTERP_PosY, DINTERP_NormalizedBarycentricB, DINTERP_NormalizedBarycentricC, DINTERP_OutPixelW);
-
-			// Just pulse this "go signal" for one clock cycle:
-			{
-				scoped_timestep time(loader, clk, 100);
-				DINTERP_NewPixelValid = true;
-			}
-			{
-				scoped_timestep time(loader, clk, 100);
-				DINTERP_NewPixelValid = false;
-			}
+			DINTERP_FIFO_empty = true;
 
 			while (!TEXSAMP_OutFIFO_wr_en.GetBoolVal() )
 			{
 				scoped_timestep time(loader, clk, 100);
 
-				attrInterpFPU.Update(FPU_ISHFT_GO, FPU_IMUL_GO, FPU_IADD_GO, FPU_ICMP_GO, FPU_ISPEC_GO, FPU_ICNV_GO, FPU_IBIT_GO, FPU_A, FPU_B, FPU_Mode, FPU_OUT);
+				attrInterpFPU_MUL.UpdateMulOnly(FPU_MUL_GO, FPU_MUL_A, FPU_MUL_B, FPU_MUL_OUT);
+				attrInterpFPU_CNV.UpdateCnvOnly(FPU_CNV_GO, FPU_CNV_Mode, FPU_CNV_A, FPU_CNV_OUT);
 				UpdateOutputFIFO(outAttributeInterpData, TEXSAMP_OutFIFO_wr_data, TEXSAMP_OutFIFO_full, TEXSAMP_OutFIFO_wr_en);
 			}
 
 			while (TEXSAMP_OutFIFO_wr_en.GetBoolVal() )
 			{
 				scoped_timestep time(loader, clk, 100);
-				attrInterpFPU.Update(FPU_ISHFT_GO, FPU_IMUL_GO, FPU_IADD_GO, FPU_ICMP_GO, FPU_ISPEC_GO, FPU_ICNV_GO, FPU_IBIT_GO, FPU_A, FPU_B, FPU_Mode, FPU_OUT);
+				attrInterpFPU_MUL.UpdateMulOnly(FPU_MUL_GO, FPU_MUL_A, FPU_MUL_B, FPU_MUL_OUT);
+				attrInterpFPU_CNV.UpdateCnvOnly(FPU_CNV_GO, FPU_CNV_Mode, FPU_CNV_A, FPU_CNV_OUT);
 				UpdateOutputFIFO(outAttributeInterpData, TEXSAMP_OutFIFO_wr_data, TEXSAMP_OutFIFO_full, TEXSAMP_OutFIFO_wr_en);
 			}
 		}
@@ -468,7 +456,8 @@ const int RunTestsAttributeInterp(Xsi::Loader& loader)
 				rasterizedPixels.push_back(endTriMessage);
 
 				std::vector<depthInterpOutputData> emulatedCPUDepthInterpData;
-				EmulateDepthInterpCPU(triSetupData, rasterizedPixels, emulatedCPUDepthInterpData);
+				std::vector<unsigned> emulatedCPUDepthValues;
+				EmulateDepthInterpCPU(triSetupData, rasterizedPixels, emulatedCPUDepthInterpData, emulatedCPUDepthValues);
 
 				successResult &= runAttributeInterpTest(triSetupData, emulatedCPUDepthInterpData, !randomAttributes);
 			}

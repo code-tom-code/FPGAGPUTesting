@@ -842,7 +842,8 @@ const int RunTestsTexSampler(Xsi::Loader& loader, RenderWindow* renderWindow)
 				rasterizedPixels.push_back(endTriMessage);
 
 				std::vector<depthInterpOutputData> emulatedCPUDepthInterpData;
-				EmulateDepthInterpCPU(triSetupData, rasterizedPixels, emulatedCPUDepthInterpData);
+				std::vector<unsigned> emulatedCPUDepthValues;
+				EmulateDepthInterpCPU(triSetupData, rasterizedPixels, emulatedCPUDepthInterpData, emulatedCPUDepthValues);
 
 				std::vector<attributeInterpOutputData> emulatedCPUAttributeInterpData;
 				EmulateAttributeInterpCPU(triSetupData, emulatedCPUDepthInterpData, !randomAttributes, emulatedCPUAttributeInterpData);

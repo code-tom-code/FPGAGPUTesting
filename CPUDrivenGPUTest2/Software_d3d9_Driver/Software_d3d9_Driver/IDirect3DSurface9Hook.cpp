@@ -1111,7 +1111,7 @@ void IDirect3DSurface9Hook::UpdateSurfaceToGPU()
 
 	IBaseDeviceComms* const deviceComms = IBaseDeviceComms::GetGlobalDeviceComms();
 
-	printf("Copying updated texture info to device (0x%08X)...\n", (const DWORD)GetDeviceSurfaceBytes() );
+	printf("Copying updated texture info to device (CPU 0x%08X -> GPU 0x%08X)...\n", (const DWORD)surfaceBytesRaw, (const DWORD)GetDeviceSurfaceBytes() );
 
 	const DWORD startTick = GetTickCount();
 

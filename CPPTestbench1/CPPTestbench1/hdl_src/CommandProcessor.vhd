@@ -212,7 +212,13 @@ entity CommandProcessor is
 
 	-- Stats interface begin
 		STAT_PresentSignal : out STD_LOGIC := '0';
+		STAT_SetNewStatsConfig : out STD_LOGIC := '0';
 		STAT_WriteFrameStatsAddress : out STD_LOGIC_VECTOR(29 downto 0) := (others => '0');
+		STAT_EnableEventTimestamps : out STD_LOGIC := '0';
+		STAT_WriteEventTimestampsAddress : out STD_LOGIC_VECTOR(29 downto 0) := (others => '0');
+		STAT_WriteEventTimestampOrders : out STD_LOGIC_VECTOR(29 downto 0) := (others => '0');
+		STAT_CountTimestampsMemoryWrites : in STD_LOGIC_VECTOR(15 downto 0);
+		STAT_CountTimestampsOrdersMemoryWrites : in STD_LOGIC_VECTOR(15 downto 0);
 		STAT_StatsSaveComplete : in STD_LOGIC;
 
 		STAT_CyclesIdle : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
@@ -318,7 +324,7 @@ architecture Behavioral of CommandProcessor is
 						SET_SHADER_CONSTANT_WAIT_FOR_SEND_HIGH_REGISTER, -- 38
 						SET_SHADER_CONSTANT_WAIT_FOR_SEND_HIGH_REGISTER_COOLDOWN, -- 39
 						SET_VERTEX_STREAM_DATA, -- 40
-						UNUSED41, -- 41
+						SET_EVENT_CONFIG_STATE, -- 41
 						SET_SHADER_CONSTANT_SPECIAL, -- 42
 						SET_SHADER_START_ADDRESS, -- 43
 
@@ -590,6 +596,7 @@ begin
 						ROP_SetNewState <= '0';
 						ROP_EndFrameReset <= '0';
 						CommandProcWriteRequestsFIFO_wr_en <= '0';
+						STAT_SetNewStatsConfig <= '0';
 
 						if (commandListState.numRemainingCommands > 0) then -- If we're executing a command list from memory:
 							if (commandListState.numCommandsThisDRAMRead > 0) then
@@ -699,6 +706,9 @@ begin
 
 							when PT_ISSUEQUERY =>
 								mst_packet_state <= ISSUE_QUERY_STATE;
+
+							when PT_SETSTATSEVENTCONFIG =>
+								mst_packet_state <= SET_EVENT_CONFIG_STATE;
 
 							when others => --when PT_DONOTHING =>
 								mst_packet_state <= DONOTHING_PACKET;
@@ -1016,16 +1026,11 @@ begin
 						TEXSAMP_EndFrameReset <= '1';
 						ROP_EndFrameReset <= '1';
 
-						if (localIncomingPacket.payload1(0) = '1') then
-							if (STAT_StatsSaveComplete = '1') then
-								STAT_PresentSignal <= '0';
-								mst_packet_state <= READ_NEXT_PACKET_FROM_FIFO;
-							else
-								STAT_PresentSignal <= '1';
-								STAT_WriteFrameStatsAddress <= std_logic_vector(localIncomingPacket.payload0(29 downto 0) );
-							end if;
-						else
+						if (STAT_StatsSaveComplete = '1') then
+							STAT_PresentSignal <= '0';
 							mst_packet_state <= READ_NEXT_PACKET_FROM_FIFO;
+						else
+							STAT_PresentSignal <= '1';
 						end if;
 
 					when BEGIN_EXECUTE_COMMAND_LIST =>
@@ -1252,7 +1257,7 @@ begin
 
 					when SET_CLIP_STATE =>
 						CLIP_NewStateBits <= SerializeStructToBits(MakeStructFromMembers(localIncomingPacket.payload0(0), localIncomingPacket.payload0(1), 
-							localIncomingPacket.payload1(3 downto 0), localIncomingPacket.payload1(7 downto 4) ) );
+							localIncomingPacket.payload1(3 downto 0), localIncomingPacket.payload1(7 downto 4), localIncomingPacket.payload0(2) ) );
 						CLIP_NewStateDrawEventID <= std_logic_vector(currentDrawStateGeneration);
 						if (unsigned(CLIP_NumFreeSlots) /= 0) then
 							CLIP_SetNewState <= '1';
@@ -1338,7 +1343,19 @@ begin
 							mst_packet_state <= READ_NEXT_PACKET_FROM_FIFO;
 						end if;
 
-					when UNUSED41 => -- Do nothing. We should reuse this case at some point.
+					when SET_EVENT_CONFIG_STATE =>
+						if (localIncomingPacket.payload0(31) = '1') then
+							STAT_WriteEventTimestampsAddress <= std_logic_vector(localIncomingPacket.payload0(29 downto 0) );
+							STAT_WriteEventTimestampOrders <= std_logic_vector(localIncomingPacket.payload1(29 downto 0) );
+							STAT_EnableEventTimestamps <= '1';
+							STAT_WriteFrameStatsAddress <= (others => '0');
+						else
+							STAT_WriteEventTimestampsAddress <= (others => '0');
+							STAT_WriteEventTimestampOrders <= (others => '0');
+							STAT_EnableEventTimestamps <= '0';
+							STAT_WriteFrameStatsAddress <= std_logic_vector(localIncomingPacket.payload0(29 downto 0) );
+						end if;
+						STAT_SetNewStatsConfig <= '1';
 						mst_packet_state <= READ_NEXT_PACKET_FROM_FIFO;
 
 				end case;

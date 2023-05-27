@@ -224,7 +224,7 @@ __declspec(nothrow) HRESULT __stdcall IBaseDeviceComms::ReadFromDevice(const gpu
 	}
 
 #ifdef PRINT_COMMS
-	printf("Reading back %u bytes from device (0x%08X)%s\n", dwByteLength, (const DWORD)deviceSrcAddr, dwByteLength >= 1024 ? "..." : "");
+	printf("Reading back %u bytes from device (GPU 0x%08X -> CPU 0x%08X)%s\n", dwByteLength, (const DWORD)deviceSrcAddr, (const DWORD)destCPUAddr, dwByteLength >= 1024 ? "..." : "");
 #endif
 
 	DWORD* const writeMem = (DWORD* const)destCPUAddr;

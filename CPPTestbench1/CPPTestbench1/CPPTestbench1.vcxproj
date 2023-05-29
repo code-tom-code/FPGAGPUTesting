@@ -326,7 +326,6 @@
     <None Include="StatsCollector.prj" />
     <None Include="TexSample.prj" />
     <None Include="TriSetup.prj" />
-    <None Include="TriWorkCache.prj" />
     <None Include="UNORM8ToFloat.prj" />
     <None Include="VertexBatchBuilder.prj" />
     <None Include="VertexStreamCache.prj" />

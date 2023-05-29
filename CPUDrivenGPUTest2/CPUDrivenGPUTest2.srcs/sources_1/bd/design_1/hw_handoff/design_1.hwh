@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
-<EDKSYSTEM EDWVERSION="1.2" TIMESTAMP="Fri May 26 13:12:22 2023" VIVADOVERSION="2018.1_AR73068">
+<EDKSYSTEM EDWVERSION="1.2" TIMESTAMP="Sun May 28 19:29:38 2023" VIVADOVERSION="2018.1_AR73068">
 
   <SYSTEMINFO ARCH="kintexuplus" BOARD="xilinx.com:kcu116:part0:1.3" DEVICE="xcku5p" NAME="design_1" PACKAGE="ffvb676" SPEEDGRADE="-2"/>
 
@@ -124,6 +124,439 @@
   </EXTERNALINTERFACES>
 
   <MODULES>
+    <MODULE FULLNAME="/ATTRINTERP_TRIDATA_FIFO" HWVERSION="13.2" INSTANCE="ATTRINTERP_TRIDATA_FIFO" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="fifo_generator" VLNV="xilinx.com:ip:fifo_generator:13.2">
+      <DOCUMENTS>
+        <DOCUMENT SOURCE="http://www.xilinx.com/cgi-bin/docs/ipdoc?c=fifo_generator;v=v13_2;d=pg057-fifo-generator.pdf"/>
+      </DOCUMENTS>
+      <PARAMETERS>
+        <PARAMETER NAME="C_COMMON_CLOCK" VALUE="1"/>
+        <PARAMETER NAME="C_SELECT_XPM" VALUE="0"/>
+        <PARAMETER NAME="C_COUNT_TYPE" VALUE="0"/>
+        <PARAMETER NAME="C_DATA_COUNT_WIDTH" VALUE="9"/>
+        <PARAMETER NAME="C_DEFAULT_VALUE" VALUE="BlankString"/>
+        <PARAMETER NAME="C_DIN_WIDTH" VALUE="576"/>
+        <PARAMETER NAME="C_DOUT_RST_VAL" VALUE="0"/>
+        <PARAMETER NAME="C_DOUT_WIDTH" VALUE="576"/>
+        <PARAMETER NAME="C_ENABLE_RLOCS" VALUE="0"/>
+        <PARAMETER NAME="C_FAMILY" VALUE="kintexuplus"/>
+        <PARAMETER NAME="C_FULL_FLAGS_RST_VAL" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_ALMOST_EMPTY" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_ALMOST_FULL" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_BACKUP" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_DATA_COUNT" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_INT_CLK" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_MEMINIT_FILE" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_OVERFLOW" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_RD_DATA_COUNT" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_RD_RST" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_RST" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_SRST" VALUE="1"/>
+        <PARAMETER NAME="C_HAS_UNDERFLOW" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_VALID" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_WR_ACK" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_WR_DATA_COUNT" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_WR_RST" VALUE="0"/>
+        <PARAMETER NAME="C_IMPLEMENTATION_TYPE" VALUE="6"/>
+        <PARAMETER NAME="C_INIT_WR_PNTR_VAL" VALUE="0"/>
+        <PARAMETER NAME="C_MEMORY_TYPE" VALUE="4"/>
+        <PARAMETER NAME="C_MIF_FILE_NAME" VALUE="BlankString"/>
+        <PARAMETER NAME="C_OPTIMIZATION_MODE" VALUE="0"/>
+        <PARAMETER NAME="C_OVERFLOW_LOW" VALUE="0"/>
+        <PARAMETER NAME="C_PRELOAD_LATENCY" VALUE="0"/>
+        <PARAMETER NAME="C_PRELOAD_REGS" VALUE="1"/>
+        <PARAMETER NAME="C_PRIM_FIFO_TYPE" VALUE="512x72"/>
+        <PARAMETER NAME="C_PROG_EMPTY_THRESH_ASSERT_VAL" VALUE="4"/>
+        <PARAMETER NAME="C_PROG_EMPTY_THRESH_NEGATE_VAL" VALUE="5"/>
+        <PARAMETER NAME="C_PROG_EMPTY_TYPE" VALUE="0"/>
+        <PARAMETER NAME="C_PROG_FULL_THRESH_ASSERT_VAL" VALUE="511"/>
+        <PARAMETER NAME="C_PROG_FULL_THRESH_NEGATE_VAL" VALUE="510"/>
+        <PARAMETER NAME="C_PROG_FULL_TYPE" VALUE="0"/>
+        <PARAMETER NAME="C_RD_DATA_COUNT_WIDTH" VALUE="9"/>
+        <PARAMETER NAME="C_RD_DEPTH" VALUE="512"/>
+        <PARAMETER NAME="C_RD_FREQ" VALUE="1"/>
+        <PARAMETER NAME="C_RD_PNTR_WIDTH" VALUE="9"/>
+        <PARAMETER NAME="C_UNDERFLOW_LOW" VALUE="0"/>
+        <PARAMETER NAME="C_USE_DOUT_RST" VALUE="1"/>
+        <PARAMETER NAME="C_USE_ECC" VALUE="0"/>
+        <PARAMETER NAME="C_USE_EMBEDDED_REG" VALUE="0"/>
+        <PARAMETER NAME="C_USE_PIPELINE_REG" VALUE="0"/>
+        <PARAMETER NAME="C_POWER_SAVING_MODE" VALUE="0"/>
+        <PARAMETER NAME="C_USE_FIFO16_FLAGS" VALUE="0"/>
+        <PARAMETER NAME="C_USE_FWFT_DATA_COUNT" VALUE="0"/>
+        <PARAMETER NAME="C_VALID_LOW" VALUE="0"/>
+        <PARAMETER NAME="C_WR_ACK_LOW" VALUE="0"/>
+        <PARAMETER NAME="C_WR_DATA_COUNT_WIDTH" VALUE="9"/>
+        <PARAMETER NAME="C_WR_DEPTH" VALUE="512"/>
+        <PARAMETER NAME="C_WR_FREQ" VALUE="1"/>
+        <PARAMETER NAME="C_WR_PNTR_WIDTH" VALUE="9"/>
+        <PARAMETER NAME="C_WR_RESPONSE_LATENCY" VALUE="1"/>
+        <PARAMETER NAME="C_MSGON_VAL" VALUE="1"/>
+        <PARAMETER NAME="C_ENABLE_RST_SYNC" VALUE="1"/>
+        <PARAMETER NAME="C_EN_SAFETY_CKT" VALUE="0"/>
+        <PARAMETER NAME="C_ERROR_INJECTION_TYPE" VALUE="0"/>
+        <PARAMETER NAME="C_SYNCHRONIZER_STAGE" VALUE="2"/>
+        <PARAMETER NAME="C_INTERFACE_TYPE" VALUE="0"/>
+        <PARAMETER NAME="C_AXI_TYPE" VALUE="1"/>
+        <PARAMETER NAME="C_HAS_AXI_WR_CHANNEL" VALUE="1"/>
+        <PARAMETER NAME="C_HAS_AXI_RD_CHANNEL" VALUE="1"/>
+        <PARAMETER NAME="C_HAS_SLAVE_CE" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_MASTER_CE" VALUE="0"/>
+        <PARAMETER NAME="C_ADD_NGC_CONSTRAINT" VALUE="0"/>
+        <PARAMETER NAME="C_USE_COMMON_OVERFLOW" VALUE="0"/>
+        <PARAMETER NAME="C_USE_COMMON_UNDERFLOW" VALUE="0"/>
+        <PARAMETER NAME="C_USE_DEFAULT_SETTINGS" VALUE="0"/>
+        <PARAMETER NAME="C_AXI_ID_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_AXI_ADDR_WIDTH" VALUE="32"/>
+        <PARAMETER NAME="C_AXI_DATA_WIDTH" VALUE="64"/>
+        <PARAMETER NAME="C_AXI_LEN_WIDTH" VALUE="8"/>
+        <PARAMETER NAME="C_AXI_LOCK_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_HAS_AXI_ID" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_AXI_AWUSER" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_AXI_WUSER" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_AXI_BUSER" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_AXI_ARUSER" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_AXI_RUSER" VALUE="0"/>
+        <PARAMETER NAME="C_AXI_ARUSER_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_AXI_AWUSER_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_AXI_WUSER_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_AXI_BUSER_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_AXI_RUSER_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_HAS_AXIS_TDATA" VALUE="1"/>
+        <PARAMETER NAME="C_HAS_AXIS_TID" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_AXIS_TDEST" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_AXIS_TUSER" VALUE="1"/>
+        <PARAMETER NAME="C_HAS_AXIS_TREADY" VALUE="1"/>
+        <PARAMETER NAME="C_HAS_AXIS_TLAST" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_AXIS_TSTRB" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_AXIS_TKEEP" VALUE="0"/>
+        <PARAMETER NAME="C_AXIS_TDATA_WIDTH" VALUE="8"/>
+        <PARAMETER NAME="C_AXIS_TID_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_AXIS_TDEST_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_AXIS_TUSER_WIDTH" VALUE="4"/>
+        <PARAMETER NAME="C_AXIS_TSTRB_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_AXIS_TKEEP_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_WACH_TYPE" VALUE="0"/>
+        <PARAMETER NAME="C_WDCH_TYPE" VALUE="0"/>
+        <PARAMETER NAME="C_WRCH_TYPE" VALUE="0"/>
+        <PARAMETER NAME="C_RACH_TYPE" VALUE="0"/>
+        <PARAMETER NAME="C_RDCH_TYPE" VALUE="0"/>
+        <PARAMETER NAME="C_AXIS_TYPE" VALUE="0"/>
+        <PARAMETER NAME="C_IMPLEMENTATION_TYPE_WACH" VALUE="1"/>
+        <PARAMETER NAME="C_IMPLEMENTATION_TYPE_WDCH" VALUE="1"/>
+        <PARAMETER NAME="C_IMPLEMENTATION_TYPE_WRCH" VALUE="1"/>
+        <PARAMETER NAME="C_IMPLEMENTATION_TYPE_RACH" VALUE="1"/>
+        <PARAMETER NAME="C_IMPLEMENTATION_TYPE_RDCH" VALUE="1"/>
+        <PARAMETER NAME="C_IMPLEMENTATION_TYPE_AXIS" VALUE="1"/>
+        <PARAMETER NAME="C_APPLICATION_TYPE_WACH" VALUE="0"/>
+        <PARAMETER NAME="C_APPLICATION_TYPE_WDCH" VALUE="0"/>
+        <PARAMETER NAME="C_APPLICATION_TYPE_WRCH" VALUE="0"/>
+        <PARAMETER NAME="C_APPLICATION_TYPE_RACH" VALUE="0"/>
+        <PARAMETER NAME="C_APPLICATION_TYPE_RDCH" VALUE="0"/>
+        <PARAMETER NAME="C_APPLICATION_TYPE_AXIS" VALUE="0"/>
+        <PARAMETER NAME="C_PRIM_FIFO_TYPE_WACH" VALUE="512x36"/>
+        <PARAMETER NAME="C_PRIM_FIFO_TYPE_WDCH" VALUE="512x72"/>
+        <PARAMETER NAME="C_PRIM_FIFO_TYPE_WRCH" VALUE="512x36"/>
+        <PARAMETER NAME="C_PRIM_FIFO_TYPE_RACH" VALUE="512x36"/>
+        <PARAMETER NAME="C_PRIM_FIFO_TYPE_RDCH" VALUE="512x72"/>
+        <PARAMETER NAME="C_PRIM_FIFO_TYPE_AXIS" VALUE="1kx18"/>
+        <PARAMETER NAME="C_USE_ECC_WACH" VALUE="0"/>
+        <PARAMETER NAME="C_USE_ECC_WDCH" VALUE="0"/>
+        <PARAMETER NAME="C_USE_ECC_WRCH" VALUE="0"/>
+        <PARAMETER NAME="C_USE_ECC_RACH" VALUE="0"/>
+        <PARAMETER NAME="C_USE_ECC_RDCH" VALUE="0"/>
+        <PARAMETER NAME="C_USE_ECC_AXIS" VALUE="0"/>
+        <PARAMETER NAME="C_ERROR_INJECTION_TYPE_WACH" VALUE="0"/>
+        <PARAMETER NAME="C_ERROR_INJECTION_TYPE_WDCH" VALUE="0"/>
+        <PARAMETER NAME="C_ERROR_INJECTION_TYPE_WRCH" VALUE="0"/>
+        <PARAMETER NAME="C_ERROR_INJECTION_TYPE_RACH" VALUE="0"/>
+        <PARAMETER NAME="C_ERROR_INJECTION_TYPE_RDCH" VALUE="0"/>
+        <PARAMETER NAME="C_ERROR_INJECTION_TYPE_AXIS" VALUE="0"/>
+        <PARAMETER NAME="C_DIN_WIDTH_WACH" VALUE="1"/>
+        <PARAMETER NAME="C_DIN_WIDTH_WDCH" VALUE="64"/>
+        <PARAMETER NAME="C_DIN_WIDTH_WRCH" VALUE="2"/>
+        <PARAMETER NAME="C_DIN_WIDTH_RACH" VALUE="32"/>
+        <PARAMETER NAME="C_DIN_WIDTH_RDCH" VALUE="64"/>
+        <PARAMETER NAME="C_DIN_WIDTH_AXIS" VALUE="1"/>
+        <PARAMETER NAME="C_WR_DEPTH_WACH" VALUE="16"/>
+        <PARAMETER NAME="C_WR_DEPTH_WDCH" VALUE="1024"/>
+        <PARAMETER NAME="C_WR_DEPTH_WRCH" VALUE="16"/>
+        <PARAMETER NAME="C_WR_DEPTH_RACH" VALUE="16"/>
+        <PARAMETER NAME="C_WR_DEPTH_RDCH" VALUE="1024"/>
+        <PARAMETER NAME="C_WR_DEPTH_AXIS" VALUE="1024"/>
+        <PARAMETER NAME="C_WR_PNTR_WIDTH_WACH" VALUE="4"/>
+        <PARAMETER NAME="C_WR_PNTR_WIDTH_WDCH" VALUE="10"/>
+        <PARAMETER NAME="C_WR_PNTR_WIDTH_WRCH" VALUE="4"/>
+        <PARAMETER NAME="C_WR_PNTR_WIDTH_RACH" VALUE="4"/>
+        <PARAMETER NAME="C_WR_PNTR_WIDTH_RDCH" VALUE="10"/>
+        <PARAMETER NAME="C_WR_PNTR_WIDTH_AXIS" VALUE="10"/>
+        <PARAMETER NAME="C_HAS_DATA_COUNTS_WACH" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_DATA_COUNTS_WDCH" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_DATA_COUNTS_WRCH" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_DATA_COUNTS_RACH" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_DATA_COUNTS_RDCH" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_DATA_COUNTS_AXIS" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_PROG_FLAGS_WACH" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_PROG_FLAGS_WDCH" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_PROG_FLAGS_WRCH" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_PROG_FLAGS_RACH" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_PROG_FLAGS_RDCH" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_PROG_FLAGS_AXIS" VALUE="0"/>
+        <PARAMETER NAME="C_PROG_FULL_TYPE_WACH" VALUE="0"/>
+        <PARAMETER NAME="C_PROG_FULL_TYPE_WDCH" VALUE="0"/>
+        <PARAMETER NAME="C_PROG_FULL_TYPE_WRCH" VALUE="0"/>
+        <PARAMETER NAME="C_PROG_FULL_TYPE_RACH" VALUE="0"/>
+        <PARAMETER NAME="C_PROG_FULL_TYPE_RDCH" VALUE="0"/>
+        <PARAMETER NAME="C_PROG_FULL_TYPE_AXIS" VALUE="0"/>
+        <PARAMETER NAME="C_PROG_FULL_THRESH_ASSERT_VAL_WACH" VALUE="1023"/>
+        <PARAMETER NAME="C_PROG_FULL_THRESH_ASSERT_VAL_WDCH" VALUE="1023"/>
+        <PARAMETER NAME="C_PROG_FULL_THRESH_ASSERT_VAL_WRCH" VALUE="1023"/>
+        <PARAMETER NAME="C_PROG_FULL_THRESH_ASSERT_VAL_RACH" VALUE="1023"/>
+        <PARAMETER NAME="C_PROG_FULL_THRESH_ASSERT_VAL_RDCH" VALUE="1023"/>
+        <PARAMETER NAME="C_PROG_FULL_THRESH_ASSERT_VAL_AXIS" VALUE="1023"/>
+        <PARAMETER NAME="C_PROG_EMPTY_TYPE_WACH" VALUE="0"/>
+        <PARAMETER NAME="C_PROG_EMPTY_TYPE_WDCH" VALUE="0"/>
+        <PARAMETER NAME="C_PROG_EMPTY_TYPE_WRCH" VALUE="0"/>
+        <PARAMETER NAME="C_PROG_EMPTY_TYPE_RACH" VALUE="0"/>
+        <PARAMETER NAME="C_PROG_EMPTY_TYPE_RDCH" VALUE="0"/>
+        <PARAMETER NAME="C_PROG_EMPTY_TYPE_AXIS" VALUE="0"/>
+        <PARAMETER NAME="C_PROG_EMPTY_THRESH_ASSERT_VAL_WACH" VALUE="1022"/>
+        <PARAMETER NAME="C_PROG_EMPTY_THRESH_ASSERT_VAL_WDCH" VALUE="1022"/>
+        <PARAMETER NAME="C_PROG_EMPTY_THRESH_ASSERT_VAL_WRCH" VALUE="1022"/>
+        <PARAMETER NAME="C_PROG_EMPTY_THRESH_ASSERT_VAL_RACH" VALUE="1022"/>
+        <PARAMETER NAME="C_PROG_EMPTY_THRESH_ASSERT_VAL_RDCH" VALUE="1022"/>
+        <PARAMETER NAME="C_PROG_EMPTY_THRESH_ASSERT_VAL_AXIS" VALUE="1022"/>
+        <PARAMETER NAME="C_REG_SLICE_MODE_WACH" VALUE="0"/>
+        <PARAMETER NAME="C_REG_SLICE_MODE_WDCH" VALUE="0"/>
+        <PARAMETER NAME="C_REG_SLICE_MODE_WRCH" VALUE="0"/>
+        <PARAMETER NAME="C_REG_SLICE_MODE_RACH" VALUE="0"/>
+        <PARAMETER NAME="C_REG_SLICE_MODE_RDCH" VALUE="0"/>
+        <PARAMETER NAME="C_REG_SLICE_MODE_AXIS" VALUE="0"/>
+        <PARAMETER NAME="Component_Name" VALUE="design_1_fifo_generator_0_26"/>
+        <PARAMETER NAME="Fifo_Implementation" VALUE="Common_Clock_Builtin_FIFO"/>
+        <PARAMETER NAME="synchronization_stages" VALUE="2"/>
+        <PARAMETER NAME="synchronization_stages_axi" VALUE="2"/>
+        <PARAMETER NAME="INTERFACE_TYPE" VALUE="Native"/>
+        <PARAMETER NAME="Performance_Options" VALUE="First_Word_Fall_Through"/>
+        <PARAMETER NAME="asymmetric_port_width" VALUE="false"/>
+        <PARAMETER NAME="Input_Data_Width" VALUE="576"/>
+        <PARAMETER NAME="Input_Depth" VALUE="512"/>
+        <PARAMETER NAME="Output_Data_Width" VALUE="576"/>
+        <PARAMETER NAME="Output_Depth" VALUE="512"/>
+        <PARAMETER NAME="Enable_ECC" VALUE="false"/>
+        <PARAMETER NAME="Use_Embedded_Registers" VALUE="false"/>
+        <PARAMETER NAME="Reset_Pin" VALUE="true"/>
+        <PARAMETER NAME="Enable_Reset_Synchronization" VALUE="true"/>
+        <PARAMETER NAME="Reset_Type" VALUE="Synchronous_Reset"/>
+        <PARAMETER NAME="Full_Flags_Reset_Value" VALUE="0"/>
+        <PARAMETER NAME="Use_Dout_Reset" VALUE="true"/>
+        <PARAMETER NAME="Dout_Reset_Value" VALUE="0"/>
+        <PARAMETER NAME="dynamic_power_saving" VALUE="false"/>
+        <PARAMETER NAME="Almost_Full_Flag" VALUE="false"/>
+        <PARAMETER NAME="Almost_Empty_Flag" VALUE="false"/>
+        <PARAMETER NAME="Valid_Flag" VALUE="false"/>
+        <PARAMETER NAME="Valid_Sense" VALUE="Active_High"/>
+        <PARAMETER NAME="Underflow_Flag" VALUE="false"/>
+        <PARAMETER NAME="Underflow_Sense" VALUE="Active_High"/>
+        <PARAMETER NAME="Write_Acknowledge_Flag" VALUE="false"/>
+        <PARAMETER NAME="Write_Acknowledge_Sense" VALUE="Active_High"/>
+        <PARAMETER NAME="Overflow_Flag" VALUE="false"/>
+        <PARAMETER NAME="Overflow_Sense" VALUE="Active_High"/>
+        <PARAMETER NAME="Inject_Sbit_Error" VALUE="false"/>
+        <PARAMETER NAME="Inject_Dbit_Error" VALUE="false"/>
+        <PARAMETER NAME="ecc_pipeline_reg" VALUE="false"/>
+        <PARAMETER NAME="Use_Extra_Logic" VALUE="false"/>
+        <PARAMETER NAME="Data_Count" VALUE="false"/>
+        <PARAMETER NAME="Data_Count_Width" VALUE="9"/>
+        <PARAMETER NAME="Write_Data_Count" VALUE="false"/>
+        <PARAMETER NAME="Write_Data_Count_Width" VALUE="9"/>
+        <PARAMETER NAME="Read_Data_Count" VALUE="false"/>
+        <PARAMETER NAME="Read_Data_Count_Width" VALUE="9"/>
+        <PARAMETER NAME="Disable_Timing_Violations" VALUE="false"/>
+        <PARAMETER NAME="Read_Clock_Frequency" VALUE="1"/>
+        <PARAMETER NAME="Write_Clock_Frequency" VALUE="1"/>
+        <PARAMETER NAME="Programmable_Full_Type" VALUE="No_Programmable_Full_Threshold"/>
+        <PARAMETER NAME="Full_Threshold_Assert_Value" VALUE="511"/>
+        <PARAMETER NAME="Full_Threshold_Negate_Value" VALUE="510"/>
+        <PARAMETER NAME="Programmable_Empty_Type" VALUE="No_Programmable_Empty_Threshold"/>
+        <PARAMETER NAME="Empty_Threshold_Assert_Value" VALUE="4"/>
+        <PARAMETER NAME="Empty_Threshold_Negate_Value" VALUE="5"/>
+        <PARAMETER NAME="PROTOCOL" VALUE="AXI4"/>
+        <PARAMETER NAME="Clock_Type_AXI" VALUE="Common_Clock"/>
+        <PARAMETER NAME="HAS_ACLKEN" VALUE="false"/>
+        <PARAMETER NAME="Clock_Enable_Type" VALUE="Slave_Interface_Clock_Enable"/>
+        <PARAMETER NAME="READ_WRITE_MODE" VALUE="READ_WRITE"/>
+        <PARAMETER NAME="ID_WIDTH" VALUE="0"/>
+        <PARAMETER NAME="ADDRESS_WIDTH" VALUE="32"/>
+        <PARAMETER NAME="DATA_WIDTH" VALUE="64"/>
+        <PARAMETER NAME="AWUSER_Width" VALUE="0"/>
+        <PARAMETER NAME="WUSER_Width" VALUE="0"/>
+        <PARAMETER NAME="BUSER_Width" VALUE="0"/>
+        <PARAMETER NAME="ARUSER_Width" VALUE="0"/>
+        <PARAMETER NAME="RUSER_Width" VALUE="0"/>
+        <PARAMETER NAME="TDATA_NUM_BYTES" VALUE="1"/>
+        <PARAMETER NAME="TID_WIDTH" VALUE="0"/>
+        <PARAMETER NAME="TDEST_WIDTH" VALUE="0"/>
+        <PARAMETER NAME="TUSER_WIDTH" VALUE="4"/>
+        <PARAMETER NAME="Enable_TREADY" VALUE="true"/>
+        <PARAMETER NAME="Enable_TLAST" VALUE="false"/>
+        <PARAMETER NAME="HAS_TSTRB" VALUE="false"/>
+        <PARAMETER NAME="TSTRB_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="HAS_TKEEP" VALUE="false"/>
+        <PARAMETER NAME="TKEEP_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="wach_type" VALUE="FIFO"/>
+        <PARAMETER NAME="FIFO_Implementation_wach" VALUE="Common_Clock_Block_RAM"/>
+        <PARAMETER NAME="FIFO_Application_Type_wach" VALUE="Data_FIFO"/>
+        <PARAMETER NAME="Enable_ECC_wach" VALUE="false"/>
+        <PARAMETER NAME="Inject_Sbit_Error_wach" VALUE="false"/>
+        <PARAMETER NAME="Inject_Dbit_Error_wach" VALUE="false"/>
+        <PARAMETER NAME="Input_Depth_wach" VALUE="16"/>
+        <PARAMETER NAME="Enable_Data_Counts_wach" VALUE="false"/>
+        <PARAMETER NAME="Programmable_Full_Type_wach" VALUE="No_Programmable_Full_Threshold"/>
+        <PARAMETER NAME="Full_Threshold_Assert_Value_wach" VALUE="1023"/>
+        <PARAMETER NAME="Programmable_Empty_Type_wach" VALUE="No_Programmable_Empty_Threshold"/>
+        <PARAMETER NAME="Empty_Threshold_Assert_Value_wach" VALUE="1022"/>
+        <PARAMETER NAME="wdch_type" VALUE="FIFO"/>
+        <PARAMETER NAME="FIFO_Implementation_wdch" VALUE="Common_Clock_Block_RAM"/>
+        <PARAMETER NAME="FIFO_Application_Type_wdch" VALUE="Data_FIFO"/>
+        <PARAMETER NAME="Enable_ECC_wdch" VALUE="false"/>
+        <PARAMETER NAME="Inject_Sbit_Error_wdch" VALUE="false"/>
+        <PARAMETER NAME="Inject_Dbit_Error_wdch" VALUE="false"/>
+        <PARAMETER NAME="Input_Depth_wdch" VALUE="1024"/>
+        <PARAMETER NAME="Enable_Data_Counts_wdch" VALUE="false"/>
+        <PARAMETER NAME="Programmable_Full_Type_wdch" VALUE="No_Programmable_Full_Threshold"/>
+        <PARAMETER NAME="Full_Threshold_Assert_Value_wdch" VALUE="1023"/>
+        <PARAMETER NAME="Programmable_Empty_Type_wdch" VALUE="No_Programmable_Empty_Threshold"/>
+        <PARAMETER NAME="Empty_Threshold_Assert_Value_wdch" VALUE="1022"/>
+        <PARAMETER NAME="wrch_type" VALUE="FIFO"/>
+        <PARAMETER NAME="FIFO_Implementation_wrch" VALUE="Common_Clock_Block_RAM"/>
+        <PARAMETER NAME="FIFO_Application_Type_wrch" VALUE="Data_FIFO"/>
+        <PARAMETER NAME="Enable_ECC_wrch" VALUE="false"/>
+        <PARAMETER NAME="Inject_Sbit_Error_wrch" VALUE="false"/>
+        <PARAMETER NAME="Inject_Dbit_Error_wrch" VALUE="false"/>
+        <PARAMETER NAME="Input_Depth_wrch" VALUE="16"/>
+        <PARAMETER NAME="Enable_Data_Counts_wrch" VALUE="false"/>
+        <PARAMETER NAME="Programmable_Full_Type_wrch" VALUE="No_Programmable_Full_Threshold"/>
+        <PARAMETER NAME="Full_Threshold_Assert_Value_wrch" VALUE="1023"/>
+        <PARAMETER NAME="Programmable_Empty_Type_wrch" VALUE="No_Programmable_Empty_Threshold"/>
+        <PARAMETER NAME="Empty_Threshold_Assert_Value_wrch" VALUE="1022"/>
+        <PARAMETER NAME="rach_type" VALUE="FIFO"/>
+        <PARAMETER NAME="FIFO_Implementation_rach" VALUE="Common_Clock_Block_RAM"/>
+        <PARAMETER NAME="FIFO_Application_Type_rach" VALUE="Data_FIFO"/>
+        <PARAMETER NAME="Enable_ECC_rach" VALUE="false"/>
+        <PARAMETER NAME="Inject_Sbit_Error_rach" VALUE="false"/>
+        <PARAMETER NAME="Inject_Dbit_Error_rach" VALUE="false"/>
+        <PARAMETER NAME="Input_Depth_rach" VALUE="16"/>
+        <PARAMETER NAME="Enable_Data_Counts_rach" VALUE="false"/>
+        <PARAMETER NAME="Programmable_Full_Type_rach" VALUE="No_Programmable_Full_Threshold"/>
+        <PARAMETER NAME="Full_Threshold_Assert_Value_rach" VALUE="1023"/>
+        <PARAMETER NAME="Programmable_Empty_Type_rach" VALUE="No_Programmable_Empty_Threshold"/>
+        <PARAMETER NAME="Empty_Threshold_Assert_Value_rach" VALUE="1022"/>
+        <PARAMETER NAME="rdch_type" VALUE="FIFO"/>
+        <PARAMETER NAME="FIFO_Implementation_rdch" VALUE="Common_Clock_Block_RAM"/>
+        <PARAMETER NAME="FIFO_Application_Type_rdch" VALUE="Data_FIFO"/>
+        <PARAMETER NAME="Enable_ECC_rdch" VALUE="false"/>
+        <PARAMETER NAME="Inject_Sbit_Error_rdch" VALUE="false"/>
+        <PARAMETER NAME="Inject_Dbit_Error_rdch" VALUE="false"/>
+        <PARAMETER NAME="Input_Depth_rdch" VALUE="1024"/>
+        <PARAMETER NAME="Enable_Data_Counts_rdch" VALUE="false"/>
+        <PARAMETER NAME="Programmable_Full_Type_rdch" VALUE="No_Programmable_Full_Threshold"/>
+        <PARAMETER NAME="Full_Threshold_Assert_Value_rdch" VALUE="1023"/>
+        <PARAMETER NAME="Programmable_Empty_Type_rdch" VALUE="No_Programmable_Empty_Threshold"/>
+        <PARAMETER NAME="Empty_Threshold_Assert_Value_rdch" VALUE="1022"/>
+        <PARAMETER NAME="axis_type" VALUE="FIFO"/>
+        <PARAMETER NAME="FIFO_Implementation_axis" VALUE="Common_Clock_Block_RAM"/>
+        <PARAMETER NAME="FIFO_Application_Type_axis" VALUE="Data_FIFO"/>
+        <PARAMETER NAME="Enable_ECC_axis" VALUE="false"/>
+        <PARAMETER NAME="Inject_Sbit_Error_axis" VALUE="false"/>
+        <PARAMETER NAME="Inject_Dbit_Error_axis" VALUE="false"/>
+        <PARAMETER NAME="Input_Depth_axis" VALUE="1024"/>
+        <PARAMETER NAME="Enable_Data_Counts_axis" VALUE="false"/>
+        <PARAMETER NAME="Programmable_Full_Type_axis" VALUE="No_Programmable_Full_Threshold"/>
+        <PARAMETER NAME="Full_Threshold_Assert_Value_axis" VALUE="1023"/>
+        <PARAMETER NAME="Programmable_Empty_Type_axis" VALUE="No_Programmable_Empty_Threshold"/>
+        <PARAMETER NAME="Empty_Threshold_Assert_Value_axis" VALUE="1022"/>
+        <PARAMETER NAME="Register_Slice_Mode_wach" VALUE="Fully_Registered"/>
+        <PARAMETER NAME="Register_Slice_Mode_wdch" VALUE="Fully_Registered"/>
+        <PARAMETER NAME="Register_Slice_Mode_wrch" VALUE="Fully_Registered"/>
+        <PARAMETER NAME="Register_Slice_Mode_rach" VALUE="Fully_Registered"/>
+        <PARAMETER NAME="Register_Slice_Mode_rdch" VALUE="Fully_Registered"/>
+        <PARAMETER NAME="Register_Slice_Mode_axis" VALUE="Fully_Registered"/>
+        <PARAMETER NAME="Underflow_Flag_AXI" VALUE="false"/>
+        <PARAMETER NAME="Underflow_Sense_AXI" VALUE="Active_High"/>
+        <PARAMETER NAME="Overflow_Flag_AXI" VALUE="false"/>
+        <PARAMETER NAME="Overflow_Sense_AXI" VALUE="Active_High"/>
+        <PARAMETER NAME="Disable_Timing_Violations_AXI" VALUE="false"/>
+        <PARAMETER NAME="Add_NGC_Constraint_AXI" VALUE="false"/>
+        <PARAMETER NAME="Enable_Common_Underflow" VALUE="false"/>
+        <PARAMETER NAME="Enable_Common_Overflow" VALUE="false"/>
+        <PARAMETER NAME="enable_read_pointer_increment_by2" VALUE="false"/>
+        <PARAMETER NAME="Use_Embedded_Registers_axis" VALUE="false"/>
+        <PARAMETER NAME="enable_low_latency" VALUE="false"/>
+        <PARAMETER NAME="use_dout_register" VALUE="false"/>
+        <PARAMETER NAME="Master_interface_Clock_enable_memory_mapped" VALUE="false"/>
+        <PARAMETER NAME="Slave_interface_Clock_enable_memory_mapped" VALUE="false"/>
+        <PARAMETER NAME="Output_Register_Type" VALUE="Embedded_Reg"/>
+        <PARAMETER NAME="Enable_Safety_Circuit" VALUE="false"/>
+        <PARAMETER NAME="Enable_ECC_Type" VALUE="Hard_ECC"/>
+        <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
+      </PARAMETERS>
+      <PORTS>
+        <PORT CLKFREQUENCY="333250000" DIR="I" NAME="clk" SIGIS="clk" SIGNAME="MemorySystem_ddr4_0_c0_ddr4_ui_clk">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="MemorySystem_ddr4_0" PORT="c0_ddr4_ui_clk"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="srst" SIGIS="undef"/>
+        <PORT DIR="I" LEFT="575" NAME="din" RIGHT="0" SIGIS="undef" SIGNAME="ATTRINTERP_TRIDATA_FIFO_din">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriWorkCache2_0" PORT="INTERP_TRIDATA_FIFO_wr_data"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="wr_en" SIGIS="undef" SIGNAME="ATTRINTERP_TRIDATA_FIFO_wr_en">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriWorkCache2_0" PORT="INTERP_TRIDATA_FIFO_wr_en"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="rd_en" SIGIS="undef" SIGNAME="ATTRINTERP_TRIDATA_FIFO_rd_en">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriWorkCache2_0" PORT="INTERP_TRIDATA_FIFO_rd_en"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="575" NAME="dout" RIGHT="0" SIGIS="undef" SIGNAME="ATTRINTERP_TRIDATA_FIFO_dout">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriWorkCache2_0" PORT="INTERP_TRIDATA_FIFO_rd_data"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="full" SIGIS="undef" SIGNAME="ATTRINTERP_TRIDATA_FIFO_full">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriWorkCache2_0" PORT="INTERP_TRIDATA_FIFO_full"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="empty" SIGIS="undef" SIGNAME="ATTRINTERP_TRIDATA_FIFO_empty">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriWorkCache2_0" PORT="INTERP_TRIDATA_FIFO_empty"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="wr_rst_busy" SIGIS="undef"/>
+        <PORT DIR="O" NAME="rd_rst_busy" SIGIS="undef"/>
+      </PORTS>
+      <BUSINTERFACES>
+        <BUSINTERFACE BUSNAME="TriWorkCache2_0_INTERP_TRIDATA_WR" NAME="FIFO_WRITE" TYPE="TARGET" VLNV="xilinx.com:interface:fifo_write:1.0">
+          <PORTMAPS>
+            <PORTMAP LOGICAL="FULL" PHYSICAL="full"/>
+            <PORTMAP LOGICAL="WR_DATA" PHYSICAL="din"/>
+            <PORTMAP LOGICAL="WR_EN" PHYSICAL="wr_en"/>
+          </PORTMAPS>
+        </BUSINTERFACE>
+        <BUSINTERFACE BUSNAME="TriWorkCache2_0_INTERP_TRIDATA_RD" NAME="FIFO_READ" TYPE="TARGET" VLNV="xilinx.com:interface:fifo_read:1.0">
+          <PORTMAPS>
+            <PORTMAP LOGICAL="EMPTY" PHYSICAL="empty"/>
+            <PORTMAP LOGICAL="RD_DATA" PHYSICAL="dout"/>
+            <PORTMAP LOGICAL="RD_EN" PHYSICAL="rd_en"/>
+          </PORTMAPS>
+        </BUSINTERFACE>
+      </BUSINTERFACES>
+    </MODULE>
     <MODULE FULLNAME="/ATTR_FIFO" HWVERSION="13.2" INSTANCE="ATTR_FIFO" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="fifo_generator" VLNV="xilinx.com:ip:fifo_generator:13.2">
       <DOCUMENTS>
         <DOCUMENT SOURCE="http://www.xilinx.com/cgi-bin/docs/ipdoc?c=fifo_generator;v=v13_2;d=pg057-fifo-generator.pdf"/>
@@ -134,9 +567,9 @@
         <PARAMETER NAME="C_COUNT_TYPE" VALUE="0"/>
         <PARAMETER NAME="C_DATA_COUNT_WIDTH" VALUE="9"/>
         <PARAMETER NAME="C_DEFAULT_VALUE" VALUE="BlankString"/>
-        <PARAMETER NAME="C_DIN_WIDTH" VALUE="704"/>
+        <PARAMETER NAME="C_DIN_WIDTH" VALUE="128"/>
         <PARAMETER NAME="C_DOUT_RST_VAL" VALUE="0"/>
-        <PARAMETER NAME="C_DOUT_WIDTH" VALUE="704"/>
+        <PARAMETER NAME="C_DOUT_WIDTH" VALUE="128"/>
         <PARAMETER NAME="C_ENABLE_RLOCS" VALUE="0"/>
         <PARAMETER NAME="C_FAMILY" VALUE="kintexuplus"/>
         <PARAMETER NAME="C_FULL_FLAGS_RST_VAL" VALUE="0"/>
@@ -338,9 +771,9 @@
         <PARAMETER NAME="INTERFACE_TYPE" VALUE="Native"/>
         <PARAMETER NAME="Performance_Options" VALUE="First_Word_Fall_Through"/>
         <PARAMETER NAME="asymmetric_port_width" VALUE="false"/>
-        <PARAMETER NAME="Input_Data_Width" VALUE="704"/>
+        <PARAMETER NAME="Input_Data_Width" VALUE="128"/>
         <PARAMETER NAME="Input_Depth" VALUE="512"/>
-        <PARAMETER NAME="Output_Data_Width" VALUE="704"/>
+        <PARAMETER NAME="Output_Data_Width" VALUE="128"/>
         <PARAMETER NAME="Output_Depth" VALUE="512"/>
         <PARAMETER NAME="Enable_ECC" VALUE="false"/>
         <PARAMETER NAME="Use_Embedded_Registers" VALUE="false"/>
@@ -507,7 +940,7 @@
           </CONNECTIONS>
         </PORT>
         <PORT DIR="I" NAME="srst" SIGIS="undef"/>
-        <PORT DIR="I" LEFT="703" NAME="din" RIGHT="0" SIGIS="undef" SIGNAME="ATTR_FIFO_din">
+        <PORT DIR="I" LEFT="127" NAME="din" RIGHT="0" SIGIS="undef" SIGNAME="ATTR_FIFO_din">
           <CONNECTIONS>
             <CONNECTION INSTANCE="DepthInterpolator_0" PORT="ATTR_FIFO_wr_data"/>
           </CONNECTIONS>
@@ -523,7 +956,7 @@
             <CONNECTION INSTANCE="AttrInterpolator_0" PORT="DINTERP_FIFO_rd_en"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="703" NAME="dout" RIGHT="0" SIGIS="undef" SIGNAME="ATTR_FIFO_dout">
+        <PORT DIR="O" LEFT="127" NAME="dout" RIGHT="0" SIGIS="undef" SIGNAME="ATTR_FIFO_dout">
           <CONNECTIONS>
             <CONNECTION INSTANCE="AttrInterpolator_0" PORT="DINTERP_FIFO_rd_data"/>
           </CONNECTIONS>
@@ -715,7 +1148,7 @@
             <CONNECTION INSTANCE="MemorySystem_ddr4_0" PORT="c0_ddr4_ui_clk"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="703" NAME="DINTERP_FIFO_rd_data" RIGHT="0" SIGIS="undef" SIGNAME="ATTR_FIFO_dout">
+        <PORT DIR="I" LEFT="127" NAME="DINTERP_FIFO_rd_data" RIGHT="0" SIGIS="undef" SIGNAME="ATTR_FIFO_dout">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ATTR_FIFO" PORT="dout"/>
           </CONNECTIONS>
@@ -737,10 +1170,60 @@
             <CONNECTION INSTANCE="ATTR_FIFO" PORT="rd_en"/>
           </CONNECTIONS>
         </PORT>
+        <PORT DIR="I" LEFT="31" NAME="TRICACHE_inT0X" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache2_0_INTERP_outT0X">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriWorkCache2_0" PORT="INTERP_outT0X"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="31" NAME="TRICACHE_inT0Y" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache2_0_INTERP_outT0Y">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriWorkCache2_0" PORT="INTERP_outT0Y"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="31" NAME="TRICACHE_inT10X" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache2_0_INTERP_outT10X">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriWorkCache2_0" PORT="INTERP_outT10X"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="31" NAME="TRICACHE_inT10Y" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache2_0_INTERP_outT10Y">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriWorkCache2_0" PORT="INTERP_outT10Y"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="31" NAME="TRICACHE_inT20X" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache2_0_INTERP_outT20X">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriWorkCache2_0" PORT="INTERP_outT20X"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="31" NAME="TRICACHE_inT20Y" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache2_0_INTERP_outT20Y">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriWorkCache2_0" PORT="INTERP_outT20Y"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="127" NAME="TRICACHE_inColorRGBA0" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache2_0_INTERP_outColorRGBA0">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriWorkCache2_0" PORT="INTERP_outColorRGBA0"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="127" NAME="TRICACHE_inColorRGBA10" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache2_0_INTERP_outColorRGBA10">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriWorkCache2_0" PORT="INTERP_outColorRGBA10"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="127" NAME="TRICACHE_inColorRGBA20" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache2_0_INTERP_outColorRGBA20">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriWorkCache2_0" PORT="INTERP_outColorRGBA20"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="TRICACHE_PopTriangleSlot" SIGIS="undef" SIGNAME="AttrInterpolator_0_TRICACHE_PopTriangleSlot">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriWorkCache2_0" PORT="INTERP_PopTriangleSlot"/>
+          </CONNECTIONS>
+        </PORT>
         <PORT DIR="O" LEFT="31" NAME="FPU_MUL_A" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_FPU_MUL_A">
           <CONNECTIONS>
             <CONNECTION INSTANCE="AttrInterp_FPU_MUL" PORT="IN_A"/>
-            <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe6"/>
+            <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe5"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="31" NAME="FPU_MUL_B" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_FPU_MUL_B">
@@ -761,7 +1244,7 @@
         <PORT DIR="O" LEFT="31" NAME="FPU_CNV_A" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_FPU_CNV_A">
           <CONNECTIONS>
             <CONNECTION INSTANCE="AttrInterp_FPU_CNV" PORT="IN_A"/>
-            <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe7"/>
+            <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe6"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="2" NAME="FPU_CNV_Mode" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_FPU_CNV_Mode">
@@ -2501,6 +2984,439 @@
       </PORTS>
       <BUSINTERFACES/>
     </MODULE>
+    <MODULE FULLNAME="/DINTERP_TRIDATA_FIFO" HWVERSION="13.2" INSTANCE="DINTERP_TRIDATA_FIFO" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="fifo_generator" VLNV="xilinx.com:ip:fifo_generator:13.2">
+      <DOCUMENTS>
+        <DOCUMENT SOURCE="http://www.xilinx.com/cgi-bin/docs/ipdoc?c=fifo_generator;v=v13_2;d=pg057-fifo-generator.pdf"/>
+      </DOCUMENTS>
+      <PARAMETERS>
+        <PARAMETER NAME="C_COMMON_CLOCK" VALUE="1"/>
+        <PARAMETER NAME="C_SELECT_XPM" VALUE="0"/>
+        <PARAMETER NAME="C_COUNT_TYPE" VALUE="0"/>
+        <PARAMETER NAME="C_DATA_COUNT_WIDTH" VALUE="9"/>
+        <PARAMETER NAME="C_DEFAULT_VALUE" VALUE="BlankString"/>
+        <PARAMETER NAME="C_DIN_WIDTH" VALUE="224"/>
+        <PARAMETER NAME="C_DOUT_RST_VAL" VALUE="0"/>
+        <PARAMETER NAME="C_DOUT_WIDTH" VALUE="224"/>
+        <PARAMETER NAME="C_ENABLE_RLOCS" VALUE="0"/>
+        <PARAMETER NAME="C_FAMILY" VALUE="kintexuplus"/>
+        <PARAMETER NAME="C_FULL_FLAGS_RST_VAL" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_ALMOST_EMPTY" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_ALMOST_FULL" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_BACKUP" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_DATA_COUNT" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_INT_CLK" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_MEMINIT_FILE" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_OVERFLOW" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_RD_DATA_COUNT" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_RD_RST" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_RST" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_SRST" VALUE="1"/>
+        <PARAMETER NAME="C_HAS_UNDERFLOW" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_VALID" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_WR_ACK" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_WR_DATA_COUNT" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_WR_RST" VALUE="0"/>
+        <PARAMETER NAME="C_IMPLEMENTATION_TYPE" VALUE="6"/>
+        <PARAMETER NAME="C_INIT_WR_PNTR_VAL" VALUE="0"/>
+        <PARAMETER NAME="C_MEMORY_TYPE" VALUE="4"/>
+        <PARAMETER NAME="C_MIF_FILE_NAME" VALUE="BlankString"/>
+        <PARAMETER NAME="C_OPTIMIZATION_MODE" VALUE="0"/>
+        <PARAMETER NAME="C_OVERFLOW_LOW" VALUE="0"/>
+        <PARAMETER NAME="C_PRELOAD_LATENCY" VALUE="0"/>
+        <PARAMETER NAME="C_PRELOAD_REGS" VALUE="1"/>
+        <PARAMETER NAME="C_PRIM_FIFO_TYPE" VALUE="512x72"/>
+        <PARAMETER NAME="C_PROG_EMPTY_THRESH_ASSERT_VAL" VALUE="4"/>
+        <PARAMETER NAME="C_PROG_EMPTY_THRESH_NEGATE_VAL" VALUE="5"/>
+        <PARAMETER NAME="C_PROG_EMPTY_TYPE" VALUE="0"/>
+        <PARAMETER NAME="C_PROG_FULL_THRESH_ASSERT_VAL" VALUE="511"/>
+        <PARAMETER NAME="C_PROG_FULL_THRESH_NEGATE_VAL" VALUE="510"/>
+        <PARAMETER NAME="C_PROG_FULL_TYPE" VALUE="0"/>
+        <PARAMETER NAME="C_RD_DATA_COUNT_WIDTH" VALUE="9"/>
+        <PARAMETER NAME="C_RD_DEPTH" VALUE="512"/>
+        <PARAMETER NAME="C_RD_FREQ" VALUE="1"/>
+        <PARAMETER NAME="C_RD_PNTR_WIDTH" VALUE="9"/>
+        <PARAMETER NAME="C_UNDERFLOW_LOW" VALUE="0"/>
+        <PARAMETER NAME="C_USE_DOUT_RST" VALUE="1"/>
+        <PARAMETER NAME="C_USE_ECC" VALUE="0"/>
+        <PARAMETER NAME="C_USE_EMBEDDED_REG" VALUE="0"/>
+        <PARAMETER NAME="C_USE_PIPELINE_REG" VALUE="0"/>
+        <PARAMETER NAME="C_POWER_SAVING_MODE" VALUE="0"/>
+        <PARAMETER NAME="C_USE_FIFO16_FLAGS" VALUE="0"/>
+        <PARAMETER NAME="C_USE_FWFT_DATA_COUNT" VALUE="0"/>
+        <PARAMETER NAME="C_VALID_LOW" VALUE="0"/>
+        <PARAMETER NAME="C_WR_ACK_LOW" VALUE="0"/>
+        <PARAMETER NAME="C_WR_DATA_COUNT_WIDTH" VALUE="9"/>
+        <PARAMETER NAME="C_WR_DEPTH" VALUE="512"/>
+        <PARAMETER NAME="C_WR_FREQ" VALUE="1"/>
+        <PARAMETER NAME="C_WR_PNTR_WIDTH" VALUE="9"/>
+        <PARAMETER NAME="C_WR_RESPONSE_LATENCY" VALUE="1"/>
+        <PARAMETER NAME="C_MSGON_VAL" VALUE="1"/>
+        <PARAMETER NAME="C_ENABLE_RST_SYNC" VALUE="1"/>
+        <PARAMETER NAME="C_EN_SAFETY_CKT" VALUE="0"/>
+        <PARAMETER NAME="C_ERROR_INJECTION_TYPE" VALUE="0"/>
+        <PARAMETER NAME="C_SYNCHRONIZER_STAGE" VALUE="2"/>
+        <PARAMETER NAME="C_INTERFACE_TYPE" VALUE="0"/>
+        <PARAMETER NAME="C_AXI_TYPE" VALUE="1"/>
+        <PARAMETER NAME="C_HAS_AXI_WR_CHANNEL" VALUE="1"/>
+        <PARAMETER NAME="C_HAS_AXI_RD_CHANNEL" VALUE="1"/>
+        <PARAMETER NAME="C_HAS_SLAVE_CE" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_MASTER_CE" VALUE="0"/>
+        <PARAMETER NAME="C_ADD_NGC_CONSTRAINT" VALUE="0"/>
+        <PARAMETER NAME="C_USE_COMMON_OVERFLOW" VALUE="0"/>
+        <PARAMETER NAME="C_USE_COMMON_UNDERFLOW" VALUE="0"/>
+        <PARAMETER NAME="C_USE_DEFAULT_SETTINGS" VALUE="0"/>
+        <PARAMETER NAME="C_AXI_ID_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_AXI_ADDR_WIDTH" VALUE="32"/>
+        <PARAMETER NAME="C_AXI_DATA_WIDTH" VALUE="64"/>
+        <PARAMETER NAME="C_AXI_LEN_WIDTH" VALUE="8"/>
+        <PARAMETER NAME="C_AXI_LOCK_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_HAS_AXI_ID" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_AXI_AWUSER" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_AXI_WUSER" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_AXI_BUSER" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_AXI_ARUSER" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_AXI_RUSER" VALUE="0"/>
+        <PARAMETER NAME="C_AXI_ARUSER_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_AXI_AWUSER_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_AXI_WUSER_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_AXI_BUSER_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_AXI_RUSER_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_HAS_AXIS_TDATA" VALUE="1"/>
+        <PARAMETER NAME="C_HAS_AXIS_TID" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_AXIS_TDEST" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_AXIS_TUSER" VALUE="1"/>
+        <PARAMETER NAME="C_HAS_AXIS_TREADY" VALUE="1"/>
+        <PARAMETER NAME="C_HAS_AXIS_TLAST" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_AXIS_TSTRB" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_AXIS_TKEEP" VALUE="0"/>
+        <PARAMETER NAME="C_AXIS_TDATA_WIDTH" VALUE="8"/>
+        <PARAMETER NAME="C_AXIS_TID_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_AXIS_TDEST_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_AXIS_TUSER_WIDTH" VALUE="4"/>
+        <PARAMETER NAME="C_AXIS_TSTRB_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_AXIS_TKEEP_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_WACH_TYPE" VALUE="0"/>
+        <PARAMETER NAME="C_WDCH_TYPE" VALUE="0"/>
+        <PARAMETER NAME="C_WRCH_TYPE" VALUE="0"/>
+        <PARAMETER NAME="C_RACH_TYPE" VALUE="0"/>
+        <PARAMETER NAME="C_RDCH_TYPE" VALUE="0"/>
+        <PARAMETER NAME="C_AXIS_TYPE" VALUE="0"/>
+        <PARAMETER NAME="C_IMPLEMENTATION_TYPE_WACH" VALUE="1"/>
+        <PARAMETER NAME="C_IMPLEMENTATION_TYPE_WDCH" VALUE="1"/>
+        <PARAMETER NAME="C_IMPLEMENTATION_TYPE_WRCH" VALUE="1"/>
+        <PARAMETER NAME="C_IMPLEMENTATION_TYPE_RACH" VALUE="1"/>
+        <PARAMETER NAME="C_IMPLEMENTATION_TYPE_RDCH" VALUE="1"/>
+        <PARAMETER NAME="C_IMPLEMENTATION_TYPE_AXIS" VALUE="1"/>
+        <PARAMETER NAME="C_APPLICATION_TYPE_WACH" VALUE="0"/>
+        <PARAMETER NAME="C_APPLICATION_TYPE_WDCH" VALUE="0"/>
+        <PARAMETER NAME="C_APPLICATION_TYPE_WRCH" VALUE="0"/>
+        <PARAMETER NAME="C_APPLICATION_TYPE_RACH" VALUE="0"/>
+        <PARAMETER NAME="C_APPLICATION_TYPE_RDCH" VALUE="0"/>
+        <PARAMETER NAME="C_APPLICATION_TYPE_AXIS" VALUE="0"/>
+        <PARAMETER NAME="C_PRIM_FIFO_TYPE_WACH" VALUE="512x36"/>
+        <PARAMETER NAME="C_PRIM_FIFO_TYPE_WDCH" VALUE="512x72"/>
+        <PARAMETER NAME="C_PRIM_FIFO_TYPE_WRCH" VALUE="512x36"/>
+        <PARAMETER NAME="C_PRIM_FIFO_TYPE_RACH" VALUE="512x36"/>
+        <PARAMETER NAME="C_PRIM_FIFO_TYPE_RDCH" VALUE="512x72"/>
+        <PARAMETER NAME="C_PRIM_FIFO_TYPE_AXIS" VALUE="1kx18"/>
+        <PARAMETER NAME="C_USE_ECC_WACH" VALUE="0"/>
+        <PARAMETER NAME="C_USE_ECC_WDCH" VALUE="0"/>
+        <PARAMETER NAME="C_USE_ECC_WRCH" VALUE="0"/>
+        <PARAMETER NAME="C_USE_ECC_RACH" VALUE="0"/>
+        <PARAMETER NAME="C_USE_ECC_RDCH" VALUE="0"/>
+        <PARAMETER NAME="C_USE_ECC_AXIS" VALUE="0"/>
+        <PARAMETER NAME="C_ERROR_INJECTION_TYPE_WACH" VALUE="0"/>
+        <PARAMETER NAME="C_ERROR_INJECTION_TYPE_WDCH" VALUE="0"/>
+        <PARAMETER NAME="C_ERROR_INJECTION_TYPE_WRCH" VALUE="0"/>
+        <PARAMETER NAME="C_ERROR_INJECTION_TYPE_RACH" VALUE="0"/>
+        <PARAMETER NAME="C_ERROR_INJECTION_TYPE_RDCH" VALUE="0"/>
+        <PARAMETER NAME="C_ERROR_INJECTION_TYPE_AXIS" VALUE="0"/>
+        <PARAMETER NAME="C_DIN_WIDTH_WACH" VALUE="1"/>
+        <PARAMETER NAME="C_DIN_WIDTH_WDCH" VALUE="64"/>
+        <PARAMETER NAME="C_DIN_WIDTH_WRCH" VALUE="2"/>
+        <PARAMETER NAME="C_DIN_WIDTH_RACH" VALUE="32"/>
+        <PARAMETER NAME="C_DIN_WIDTH_RDCH" VALUE="64"/>
+        <PARAMETER NAME="C_DIN_WIDTH_AXIS" VALUE="1"/>
+        <PARAMETER NAME="C_WR_DEPTH_WACH" VALUE="16"/>
+        <PARAMETER NAME="C_WR_DEPTH_WDCH" VALUE="1024"/>
+        <PARAMETER NAME="C_WR_DEPTH_WRCH" VALUE="16"/>
+        <PARAMETER NAME="C_WR_DEPTH_RACH" VALUE="16"/>
+        <PARAMETER NAME="C_WR_DEPTH_RDCH" VALUE="1024"/>
+        <PARAMETER NAME="C_WR_DEPTH_AXIS" VALUE="1024"/>
+        <PARAMETER NAME="C_WR_PNTR_WIDTH_WACH" VALUE="4"/>
+        <PARAMETER NAME="C_WR_PNTR_WIDTH_WDCH" VALUE="10"/>
+        <PARAMETER NAME="C_WR_PNTR_WIDTH_WRCH" VALUE="4"/>
+        <PARAMETER NAME="C_WR_PNTR_WIDTH_RACH" VALUE="4"/>
+        <PARAMETER NAME="C_WR_PNTR_WIDTH_RDCH" VALUE="10"/>
+        <PARAMETER NAME="C_WR_PNTR_WIDTH_AXIS" VALUE="10"/>
+        <PARAMETER NAME="C_HAS_DATA_COUNTS_WACH" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_DATA_COUNTS_WDCH" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_DATA_COUNTS_WRCH" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_DATA_COUNTS_RACH" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_DATA_COUNTS_RDCH" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_DATA_COUNTS_AXIS" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_PROG_FLAGS_WACH" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_PROG_FLAGS_WDCH" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_PROG_FLAGS_WRCH" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_PROG_FLAGS_RACH" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_PROG_FLAGS_RDCH" VALUE="0"/>
+        <PARAMETER NAME="C_HAS_PROG_FLAGS_AXIS" VALUE="0"/>
+        <PARAMETER NAME="C_PROG_FULL_TYPE_WACH" VALUE="0"/>
+        <PARAMETER NAME="C_PROG_FULL_TYPE_WDCH" VALUE="0"/>
+        <PARAMETER NAME="C_PROG_FULL_TYPE_WRCH" VALUE="0"/>
+        <PARAMETER NAME="C_PROG_FULL_TYPE_RACH" VALUE="0"/>
+        <PARAMETER NAME="C_PROG_FULL_TYPE_RDCH" VALUE="0"/>
+        <PARAMETER NAME="C_PROG_FULL_TYPE_AXIS" VALUE="0"/>
+        <PARAMETER NAME="C_PROG_FULL_THRESH_ASSERT_VAL_WACH" VALUE="1023"/>
+        <PARAMETER NAME="C_PROG_FULL_THRESH_ASSERT_VAL_WDCH" VALUE="1023"/>
+        <PARAMETER NAME="C_PROG_FULL_THRESH_ASSERT_VAL_WRCH" VALUE="1023"/>
+        <PARAMETER NAME="C_PROG_FULL_THRESH_ASSERT_VAL_RACH" VALUE="1023"/>
+        <PARAMETER NAME="C_PROG_FULL_THRESH_ASSERT_VAL_RDCH" VALUE="1023"/>
+        <PARAMETER NAME="C_PROG_FULL_THRESH_ASSERT_VAL_AXIS" VALUE="1023"/>
+        <PARAMETER NAME="C_PROG_EMPTY_TYPE_WACH" VALUE="0"/>
+        <PARAMETER NAME="C_PROG_EMPTY_TYPE_WDCH" VALUE="0"/>
+        <PARAMETER NAME="C_PROG_EMPTY_TYPE_WRCH" VALUE="0"/>
+        <PARAMETER NAME="C_PROG_EMPTY_TYPE_RACH" VALUE="0"/>
+        <PARAMETER NAME="C_PROG_EMPTY_TYPE_RDCH" VALUE="0"/>
+        <PARAMETER NAME="C_PROG_EMPTY_TYPE_AXIS" VALUE="0"/>
+        <PARAMETER NAME="C_PROG_EMPTY_THRESH_ASSERT_VAL_WACH" VALUE="1022"/>
+        <PARAMETER NAME="C_PROG_EMPTY_THRESH_ASSERT_VAL_WDCH" VALUE="1022"/>
+        <PARAMETER NAME="C_PROG_EMPTY_THRESH_ASSERT_VAL_WRCH" VALUE="1022"/>
+        <PARAMETER NAME="C_PROG_EMPTY_THRESH_ASSERT_VAL_RACH" VALUE="1022"/>
+        <PARAMETER NAME="C_PROG_EMPTY_THRESH_ASSERT_VAL_RDCH" VALUE="1022"/>
+        <PARAMETER NAME="C_PROG_EMPTY_THRESH_ASSERT_VAL_AXIS" VALUE="1022"/>
+        <PARAMETER NAME="C_REG_SLICE_MODE_WACH" VALUE="0"/>
+        <PARAMETER NAME="C_REG_SLICE_MODE_WDCH" VALUE="0"/>
+        <PARAMETER NAME="C_REG_SLICE_MODE_WRCH" VALUE="0"/>
+        <PARAMETER NAME="C_REG_SLICE_MODE_RACH" VALUE="0"/>
+        <PARAMETER NAME="C_REG_SLICE_MODE_RDCH" VALUE="0"/>
+        <PARAMETER NAME="C_REG_SLICE_MODE_AXIS" VALUE="0"/>
+        <PARAMETER NAME="Component_Name" VALUE="design_1_fifo_generator_0_25"/>
+        <PARAMETER NAME="Fifo_Implementation" VALUE="Common_Clock_Builtin_FIFO"/>
+        <PARAMETER NAME="synchronization_stages" VALUE="2"/>
+        <PARAMETER NAME="synchronization_stages_axi" VALUE="2"/>
+        <PARAMETER NAME="INTERFACE_TYPE" VALUE="Native"/>
+        <PARAMETER NAME="Performance_Options" VALUE="First_Word_Fall_Through"/>
+        <PARAMETER NAME="asymmetric_port_width" VALUE="false"/>
+        <PARAMETER NAME="Input_Data_Width" VALUE="224"/>
+        <PARAMETER NAME="Input_Depth" VALUE="512"/>
+        <PARAMETER NAME="Output_Data_Width" VALUE="224"/>
+        <PARAMETER NAME="Output_Depth" VALUE="512"/>
+        <PARAMETER NAME="Enable_ECC" VALUE="false"/>
+        <PARAMETER NAME="Use_Embedded_Registers" VALUE="false"/>
+        <PARAMETER NAME="Reset_Pin" VALUE="true"/>
+        <PARAMETER NAME="Enable_Reset_Synchronization" VALUE="true"/>
+        <PARAMETER NAME="Reset_Type" VALUE="Synchronous_Reset"/>
+        <PARAMETER NAME="Full_Flags_Reset_Value" VALUE="0"/>
+        <PARAMETER NAME="Use_Dout_Reset" VALUE="true"/>
+        <PARAMETER NAME="Dout_Reset_Value" VALUE="0"/>
+        <PARAMETER NAME="dynamic_power_saving" VALUE="false"/>
+        <PARAMETER NAME="Almost_Full_Flag" VALUE="false"/>
+        <PARAMETER NAME="Almost_Empty_Flag" VALUE="false"/>
+        <PARAMETER NAME="Valid_Flag" VALUE="false"/>
+        <PARAMETER NAME="Valid_Sense" VALUE="Active_High"/>
+        <PARAMETER NAME="Underflow_Flag" VALUE="false"/>
+        <PARAMETER NAME="Underflow_Sense" VALUE="Active_High"/>
+        <PARAMETER NAME="Write_Acknowledge_Flag" VALUE="false"/>
+        <PARAMETER NAME="Write_Acknowledge_Sense" VALUE="Active_High"/>
+        <PARAMETER NAME="Overflow_Flag" VALUE="false"/>
+        <PARAMETER NAME="Overflow_Sense" VALUE="Active_High"/>
+        <PARAMETER NAME="Inject_Sbit_Error" VALUE="false"/>
+        <PARAMETER NAME="Inject_Dbit_Error" VALUE="false"/>
+        <PARAMETER NAME="ecc_pipeline_reg" VALUE="false"/>
+        <PARAMETER NAME="Use_Extra_Logic" VALUE="false"/>
+        <PARAMETER NAME="Data_Count" VALUE="false"/>
+        <PARAMETER NAME="Data_Count_Width" VALUE="9"/>
+        <PARAMETER NAME="Write_Data_Count" VALUE="false"/>
+        <PARAMETER NAME="Write_Data_Count_Width" VALUE="9"/>
+        <PARAMETER NAME="Read_Data_Count" VALUE="false"/>
+        <PARAMETER NAME="Read_Data_Count_Width" VALUE="9"/>
+        <PARAMETER NAME="Disable_Timing_Violations" VALUE="false"/>
+        <PARAMETER NAME="Read_Clock_Frequency" VALUE="1"/>
+        <PARAMETER NAME="Write_Clock_Frequency" VALUE="1"/>
+        <PARAMETER NAME="Programmable_Full_Type" VALUE="No_Programmable_Full_Threshold"/>
+        <PARAMETER NAME="Full_Threshold_Assert_Value" VALUE="511"/>
+        <PARAMETER NAME="Full_Threshold_Negate_Value" VALUE="510"/>
+        <PARAMETER NAME="Programmable_Empty_Type" VALUE="No_Programmable_Empty_Threshold"/>
+        <PARAMETER NAME="Empty_Threshold_Assert_Value" VALUE="4"/>
+        <PARAMETER NAME="Empty_Threshold_Negate_Value" VALUE="5"/>
+        <PARAMETER NAME="PROTOCOL" VALUE="AXI4"/>
+        <PARAMETER NAME="Clock_Type_AXI" VALUE="Common_Clock"/>
+        <PARAMETER NAME="HAS_ACLKEN" VALUE="false"/>
+        <PARAMETER NAME="Clock_Enable_Type" VALUE="Slave_Interface_Clock_Enable"/>
+        <PARAMETER NAME="READ_WRITE_MODE" VALUE="READ_WRITE"/>
+        <PARAMETER NAME="ID_WIDTH" VALUE="0"/>
+        <PARAMETER NAME="ADDRESS_WIDTH" VALUE="32"/>
+        <PARAMETER NAME="DATA_WIDTH" VALUE="64"/>
+        <PARAMETER NAME="AWUSER_Width" VALUE="0"/>
+        <PARAMETER NAME="WUSER_Width" VALUE="0"/>
+        <PARAMETER NAME="BUSER_Width" VALUE="0"/>
+        <PARAMETER NAME="ARUSER_Width" VALUE="0"/>
+        <PARAMETER NAME="RUSER_Width" VALUE="0"/>
+        <PARAMETER NAME="TDATA_NUM_BYTES" VALUE="1"/>
+        <PARAMETER NAME="TID_WIDTH" VALUE="0"/>
+        <PARAMETER NAME="TDEST_WIDTH" VALUE="0"/>
+        <PARAMETER NAME="TUSER_WIDTH" VALUE="4"/>
+        <PARAMETER NAME="Enable_TREADY" VALUE="true"/>
+        <PARAMETER NAME="Enable_TLAST" VALUE="false"/>
+        <PARAMETER NAME="HAS_TSTRB" VALUE="false"/>
+        <PARAMETER NAME="TSTRB_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="HAS_TKEEP" VALUE="false"/>
+        <PARAMETER NAME="TKEEP_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="wach_type" VALUE="FIFO"/>
+        <PARAMETER NAME="FIFO_Implementation_wach" VALUE="Common_Clock_Block_RAM"/>
+        <PARAMETER NAME="FIFO_Application_Type_wach" VALUE="Data_FIFO"/>
+        <PARAMETER NAME="Enable_ECC_wach" VALUE="false"/>
+        <PARAMETER NAME="Inject_Sbit_Error_wach" VALUE="false"/>
+        <PARAMETER NAME="Inject_Dbit_Error_wach" VALUE="false"/>
+        <PARAMETER NAME="Input_Depth_wach" VALUE="16"/>
+        <PARAMETER NAME="Enable_Data_Counts_wach" VALUE="false"/>
+        <PARAMETER NAME="Programmable_Full_Type_wach" VALUE="No_Programmable_Full_Threshold"/>
+        <PARAMETER NAME="Full_Threshold_Assert_Value_wach" VALUE="1023"/>
+        <PARAMETER NAME="Programmable_Empty_Type_wach" VALUE="No_Programmable_Empty_Threshold"/>
+        <PARAMETER NAME="Empty_Threshold_Assert_Value_wach" VALUE="1022"/>
+        <PARAMETER NAME="wdch_type" VALUE="FIFO"/>
+        <PARAMETER NAME="FIFO_Implementation_wdch" VALUE="Common_Clock_Block_RAM"/>
+        <PARAMETER NAME="FIFO_Application_Type_wdch" VALUE="Data_FIFO"/>
+        <PARAMETER NAME="Enable_ECC_wdch" VALUE="false"/>
+        <PARAMETER NAME="Inject_Sbit_Error_wdch" VALUE="false"/>
+        <PARAMETER NAME="Inject_Dbit_Error_wdch" VALUE="false"/>
+        <PARAMETER NAME="Input_Depth_wdch" VALUE="1024"/>
+        <PARAMETER NAME="Enable_Data_Counts_wdch" VALUE="false"/>
+        <PARAMETER NAME="Programmable_Full_Type_wdch" VALUE="No_Programmable_Full_Threshold"/>
+        <PARAMETER NAME="Full_Threshold_Assert_Value_wdch" VALUE="1023"/>
+        <PARAMETER NAME="Programmable_Empty_Type_wdch" VALUE="No_Programmable_Empty_Threshold"/>
+        <PARAMETER NAME="Empty_Threshold_Assert_Value_wdch" VALUE="1022"/>
+        <PARAMETER NAME="wrch_type" VALUE="FIFO"/>
+        <PARAMETER NAME="FIFO_Implementation_wrch" VALUE="Common_Clock_Block_RAM"/>
+        <PARAMETER NAME="FIFO_Application_Type_wrch" VALUE="Data_FIFO"/>
+        <PARAMETER NAME="Enable_ECC_wrch" VALUE="false"/>
+        <PARAMETER NAME="Inject_Sbit_Error_wrch" VALUE="false"/>
+        <PARAMETER NAME="Inject_Dbit_Error_wrch" VALUE="false"/>
+        <PARAMETER NAME="Input_Depth_wrch" VALUE="16"/>
+        <PARAMETER NAME="Enable_Data_Counts_wrch" VALUE="false"/>
+        <PARAMETER NAME="Programmable_Full_Type_wrch" VALUE="No_Programmable_Full_Threshold"/>
+        <PARAMETER NAME="Full_Threshold_Assert_Value_wrch" VALUE="1023"/>
+        <PARAMETER NAME="Programmable_Empty_Type_wrch" VALUE="No_Programmable_Empty_Threshold"/>
+        <PARAMETER NAME="Empty_Threshold_Assert_Value_wrch" VALUE="1022"/>
+        <PARAMETER NAME="rach_type" VALUE="FIFO"/>
+        <PARAMETER NAME="FIFO_Implementation_rach" VALUE="Common_Clock_Block_RAM"/>
+        <PARAMETER NAME="FIFO_Application_Type_rach" VALUE="Data_FIFO"/>
+        <PARAMETER NAME="Enable_ECC_rach" VALUE="false"/>
+        <PARAMETER NAME="Inject_Sbit_Error_rach" VALUE="false"/>
+        <PARAMETER NAME="Inject_Dbit_Error_rach" VALUE="false"/>
+        <PARAMETER NAME="Input_Depth_rach" VALUE="16"/>
+        <PARAMETER NAME="Enable_Data_Counts_rach" VALUE="false"/>
+        <PARAMETER NAME="Programmable_Full_Type_rach" VALUE="No_Programmable_Full_Threshold"/>
+        <PARAMETER NAME="Full_Threshold_Assert_Value_rach" VALUE="1023"/>
+        <PARAMETER NAME="Programmable_Empty_Type_rach" VALUE="No_Programmable_Empty_Threshold"/>
+        <PARAMETER NAME="Empty_Threshold_Assert_Value_rach" VALUE="1022"/>
+        <PARAMETER NAME="rdch_type" VALUE="FIFO"/>
+        <PARAMETER NAME="FIFO_Implementation_rdch" VALUE="Common_Clock_Block_RAM"/>
+        <PARAMETER NAME="FIFO_Application_Type_rdch" VALUE="Data_FIFO"/>
+        <PARAMETER NAME="Enable_ECC_rdch" VALUE="false"/>
+        <PARAMETER NAME="Inject_Sbit_Error_rdch" VALUE="false"/>
+        <PARAMETER NAME="Inject_Dbit_Error_rdch" VALUE="false"/>
+        <PARAMETER NAME="Input_Depth_rdch" VALUE="1024"/>
+        <PARAMETER NAME="Enable_Data_Counts_rdch" VALUE="false"/>
+        <PARAMETER NAME="Programmable_Full_Type_rdch" VALUE="No_Programmable_Full_Threshold"/>
+        <PARAMETER NAME="Full_Threshold_Assert_Value_rdch" VALUE="1023"/>
+        <PARAMETER NAME="Programmable_Empty_Type_rdch" VALUE="No_Programmable_Empty_Threshold"/>
+        <PARAMETER NAME="Empty_Threshold_Assert_Value_rdch" VALUE="1022"/>
+        <PARAMETER NAME="axis_type" VALUE="FIFO"/>
+        <PARAMETER NAME="FIFO_Implementation_axis" VALUE="Common_Clock_Block_RAM"/>
+        <PARAMETER NAME="FIFO_Application_Type_axis" VALUE="Data_FIFO"/>
+        <PARAMETER NAME="Enable_ECC_axis" VALUE="false"/>
+        <PARAMETER NAME="Inject_Sbit_Error_axis" VALUE="false"/>
+        <PARAMETER NAME="Inject_Dbit_Error_axis" VALUE="false"/>
+        <PARAMETER NAME="Input_Depth_axis" VALUE="1024"/>
+        <PARAMETER NAME="Enable_Data_Counts_axis" VALUE="false"/>
+        <PARAMETER NAME="Programmable_Full_Type_axis" VALUE="No_Programmable_Full_Threshold"/>
+        <PARAMETER NAME="Full_Threshold_Assert_Value_axis" VALUE="1023"/>
+        <PARAMETER NAME="Programmable_Empty_Type_axis" VALUE="No_Programmable_Empty_Threshold"/>
+        <PARAMETER NAME="Empty_Threshold_Assert_Value_axis" VALUE="1022"/>
+        <PARAMETER NAME="Register_Slice_Mode_wach" VALUE="Fully_Registered"/>
+        <PARAMETER NAME="Register_Slice_Mode_wdch" VALUE="Fully_Registered"/>
+        <PARAMETER NAME="Register_Slice_Mode_wrch" VALUE="Fully_Registered"/>
+        <PARAMETER NAME="Register_Slice_Mode_rach" VALUE="Fully_Registered"/>
+        <PARAMETER NAME="Register_Slice_Mode_rdch" VALUE="Fully_Registered"/>
+        <PARAMETER NAME="Register_Slice_Mode_axis" VALUE="Fully_Registered"/>
+        <PARAMETER NAME="Underflow_Flag_AXI" VALUE="false"/>
+        <PARAMETER NAME="Underflow_Sense_AXI" VALUE="Active_High"/>
+        <PARAMETER NAME="Overflow_Flag_AXI" VALUE="false"/>
+        <PARAMETER NAME="Overflow_Sense_AXI" VALUE="Active_High"/>
+        <PARAMETER NAME="Disable_Timing_Violations_AXI" VALUE="false"/>
+        <PARAMETER NAME="Add_NGC_Constraint_AXI" VALUE="false"/>
+        <PARAMETER NAME="Enable_Common_Underflow" VALUE="false"/>
+        <PARAMETER NAME="Enable_Common_Overflow" VALUE="false"/>
+        <PARAMETER NAME="enable_read_pointer_increment_by2" VALUE="false"/>
+        <PARAMETER NAME="Use_Embedded_Registers_axis" VALUE="false"/>
+        <PARAMETER NAME="enable_low_latency" VALUE="false"/>
+        <PARAMETER NAME="use_dout_register" VALUE="false"/>
+        <PARAMETER NAME="Master_interface_Clock_enable_memory_mapped" VALUE="false"/>
+        <PARAMETER NAME="Slave_interface_Clock_enable_memory_mapped" VALUE="false"/>
+        <PARAMETER NAME="Output_Register_Type" VALUE="Embedded_Reg"/>
+        <PARAMETER NAME="Enable_Safety_Circuit" VALUE="false"/>
+        <PARAMETER NAME="Enable_ECC_Type" VALUE="Hard_ECC"/>
+        <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
+      </PARAMETERS>
+      <PORTS>
+        <PORT CLKFREQUENCY="333250000" DIR="I" NAME="clk" SIGIS="clk" SIGNAME="MemorySystem_ddr4_0_c0_ddr4_ui_clk">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="MemorySystem_ddr4_0" PORT="c0_ddr4_ui_clk"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="srst" SIGIS="undef"/>
+        <PORT DIR="I" LEFT="223" NAME="din" RIGHT="0" SIGIS="undef" SIGNAME="DINTERP_TRIDATA_FIFO_din">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriWorkCache2_0" PORT="DINTERP_TRIDATA_FIFO_wr_data"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="wr_en" SIGIS="undef" SIGNAME="DINTERP_TRIDATA_FIFO_wr_en">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriWorkCache2_0" PORT="DINTERP_TRIDATA_FIFO_wr_en"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="rd_en" SIGIS="undef" SIGNAME="DINTERP_TRIDATA_FIFO_rd_en">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriWorkCache2_0" PORT="DINTERP_TRIDATA_FIFO_rd_en"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="223" NAME="dout" RIGHT="0" SIGIS="undef" SIGNAME="DINTERP_TRIDATA_FIFO_dout">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriWorkCache2_0" PORT="DINTERP_TRIDATA_FIFO_rd_data"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="full" SIGIS="undef" SIGNAME="DINTERP_TRIDATA_FIFO_full">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriWorkCache2_0" PORT="DINTERP_TRIDATA_FIFO_full"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="empty" SIGIS="undef" SIGNAME="DINTERP_TRIDATA_FIFO_empty">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TriWorkCache2_0" PORT="DINTERP_TRIDATA_FIFO_empty"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="wr_rst_busy" SIGIS="undef"/>
+        <PORT DIR="O" NAME="rd_rst_busy" SIGIS="undef"/>
+      </PORTS>
+      <BUSINTERFACES>
+        <BUSINTERFACE BUSNAME="TriWorkCache2_0_DINTERP_TRIDATA_WR" NAME="FIFO_WRITE" TYPE="TARGET" VLNV="xilinx.com:interface:fifo_write:1.0">
+          <PORTMAPS>
+            <PORTMAP LOGICAL="FULL" PHYSICAL="full"/>
+            <PORTMAP LOGICAL="WR_DATA" PHYSICAL="din"/>
+            <PORTMAP LOGICAL="WR_EN" PHYSICAL="wr_en"/>
+          </PORTMAPS>
+        </BUSINTERFACE>
+        <BUSINTERFACE BUSNAME="TriWorkCache2_0_DINTERP_TRIDATA_RD" NAME="FIFO_READ" TYPE="TARGET" VLNV="xilinx.com:interface:fifo_read:1.0">
+          <PORTMAPS>
+            <PORTMAP LOGICAL="EMPTY" PHYSICAL="empty"/>
+            <PORTMAP LOGICAL="RD_DATA" PHYSICAL="dout"/>
+            <PORTMAP LOGICAL="RD_EN" PHYSICAL="rd_en"/>
+          </PORTMAPS>
+        </BUSINTERFACE>
+      </BUSINTERFACES>
+    </MODULE>
     <MODULE FULLNAME="/DepthBuffer_0" HWVERSION="1.0" INSTANCE="DepthBuffer_0" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="DepthBuffer" VLNV="xilinx.com:module_ref:DepthBuffer:1.0">
       <DOCUMENTS/>
       <PARAMETERS>
@@ -2567,7 +3483,7 @@
         <PORT DIR="O" LEFT="17" NAME="URAM_addra" RIGHT="0" SIGIS="undef" SIGNAME="DepthBuffer_0_URAM_addra">
           <CONNECTIONS>
             <CONNECTION INSTANCE="DepthBuffer_URAM" PORT="addra"/>
-            <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe15"/>
+            <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe11"/>
           </CONNECTIONS>
           <CONNECTIONS>
             <CONNECTION INSTANCE="DepthBuffer_URAM" PORT="addra"/>
@@ -2581,7 +3497,7 @@
         <PORT DIR="O" LEFT="63" NAME="URAM_dina" RIGHT="0" SIGIS="undef" SIGNAME="DepthBuffer_0_URAM_dina">
           <CONNECTIONS>
             <CONNECTION INSTANCE="DepthBuffer_URAM" PORT="dina"/>
-            <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe9"/>
+            <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe8"/>
           </CONNECTIONS>
           <CONNECTIONS>
             <CONNECTION INSTANCE="DepthBuffer_URAM" PORT="dina"/>
@@ -2595,7 +3511,7 @@
         <PORT DIR="O" LEFT="7" NAME="URAM_wea" RIGHT="0" SIGIS="undef" SIGNAME="DepthBuffer_0_URAM_wea">
           <CONNECTIONS>
             <CONNECTION INSTANCE="DepthBuffer_URAM" PORT="wea"/>
-            <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe10"/>
+            <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe9"/>
           </CONNECTIONS>
           <CONNECTIONS>
             <CONNECTION INSTANCE="DepthBuffer_URAM" PORT="wea"/>
@@ -2604,7 +3520,7 @@
         <PORT DIR="O" LEFT="17" NAME="URAM_addrb" RIGHT="0" SIGIS="undef" SIGNAME="DepthBuffer_0_URAM_addrb">
           <CONNECTIONS>
             <CONNECTION INSTANCE="DepthBuffer_URAM" PORT="addrb"/>
-            <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe14"/>
+            <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe10"/>
           </CONNECTIONS>
           <CONNECTIONS>
             <CONNECTION INSTANCE="DepthBuffer_URAM" PORT="addrb"/>
@@ -2639,7 +3555,7 @@
         <PORT DIR="O" NAME="CMD_DepthIsIdle" SIGIS="undef" SIGNAME="DepthBuffer_0_CMD_DepthIsIdle">
           <CONNECTIONS>
             <CONNECTION INSTANCE="CommandProcessor_0" PORT="CMD_Depth_Idle"/>
-            <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe17"/>
+            <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe13"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="31" NAME="STAT_PixelsPassedDepthTest" RIGHT="0" SIGIS="undef"/>
@@ -2905,8 +3821,8 @@
         <PORT DIR="O" LEFT="63" NAME="doutb" RIGHT="0" SIGIS="undef" SIGNAME="DepthBuffer_URAM_doutb">
           <CONNECTIONS>
             <CONNECTION INSTANCE="DepthBuffer_0" PORT="URAM_doutb"/>
-            <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe8"/>
             <CONNECTION INSTANCE="DepthBuffer_0" PORT="URAM_doutb"/>
+            <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe7"/>
           </CONNECTIONS>
         </PORT>
       </PORTS>
@@ -3020,94 +3936,44 @@
             <CONNECTION INSTANCE="MemorySystem_ddr4_0" PORT="c0_ddr4_ui_clk"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="TRICACHE_inBarycentricInverse" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outBarycentricInverse">
+        <PORT DIR="I" LEFT="31" NAME="TRICACHE_inBarycentricInverse" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache2_0_DINTERP_outBarycentricInverse">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outBarycentricInverse"/>
+            <CONNECTION INSTANCE="TriWorkCache2_0" PORT="DINTERP_outBarycentricInverse"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="TRICACHE_inZ0" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outZ0">
+        <PORT DIR="I" LEFT="31" NAME="TRICACHE_inZ0" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache2_0_DINTERP_outZ0">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outZ0"/>
+            <CONNECTION INSTANCE="TriWorkCache2_0" PORT="DINTERP_outZ0"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="TRICACHE_inZ10" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outZ10">
+        <PORT DIR="I" LEFT="31" NAME="TRICACHE_inZ10" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache2_0_DINTERP_outZ10">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outZ10"/>
+            <CONNECTION INSTANCE="TriWorkCache2_0" PORT="DINTERP_outZ10"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="TRICACHE_inZ20" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outZ20">
+        <PORT DIR="I" LEFT="31" NAME="TRICACHE_inZ20" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache2_0_DINTERP_outZ20">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outZ20"/>
+            <CONNECTION INSTANCE="TriWorkCache2_0" PORT="DINTERP_outZ20"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="TRICACHE_inInvW0" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outInvW0">
+        <PORT DIR="I" LEFT="31" NAME="TRICACHE_inInvW0" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache2_0_DINTERP_outInvW0">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outInvW0"/>
+            <CONNECTION INSTANCE="TriWorkCache2_0" PORT="DINTERP_outInvW0"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="TRICACHE_inInvW10" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outInvW10">
+        <PORT DIR="I" LEFT="31" NAME="TRICACHE_inInvW10" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache2_0_DINTERP_outInvW10">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outInvW10"/>
+            <CONNECTION INSTANCE="TriWorkCache2_0" PORT="DINTERP_outInvW10"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="TRICACHE_inInvW20" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outInvW20">
+        <PORT DIR="I" LEFT="31" NAME="TRICACHE_inInvW20" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache2_0_DINTERP_outInvW20">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outInvW20"/>
+            <CONNECTION INSTANCE="TriWorkCache2_0" PORT="DINTERP_outInvW20"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="TRICACHE_inT0X" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outT0X">
+        <PORT DIR="O" NAME="TRICACHE_PopTriangleSlot" SIGIS="undef" SIGNAME="DepthInterpolator_0_TRICACHE_PopTriangleSlot">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outT0X"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" LEFT="31" NAME="TRICACHE_inT0Y" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outT0Y">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outT0Y"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" LEFT="31" NAME="TRICACHE_inT10X" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outT10X">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outT10X"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" LEFT="31" NAME="TRICACHE_inT10Y" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outT10Y">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outT10Y"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" LEFT="31" NAME="TRICACHE_inT20X" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outT20X">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outT20X"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" LEFT="31" NAME="TRICACHE_inT20Y" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outT20Y">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outT20Y"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" LEFT="127" NAME="TRICACHE_inColorRGBA0" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outColorRGBA0">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outColorRGBA0"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" LEFT="127" NAME="TRICACHE_inColorRGBA10" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outColorRGBA10">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outColorRGBA10"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" LEFT="127" NAME="TRICACHE_inColorRGBA20" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outColorRGBA20">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outColorRGBA20"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="O" LEFT="2" NAME="TRICACHE_CurrentSlotIndex" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_TRICACHE_CurrentSlotIndex">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_CurrentSlotIndex"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="O" NAME="TRICACHE_SignalSlotComplete" SIGIS="undef" SIGNAME="DepthInterpolator_0_TRICACHE_SignalSlotComplete">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_SignalSlotComplete"/>
+            <CONNECTION INSTANCE="TriWorkCache2_0" PORT="DINTERP_PopTriangleSlot"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="I" LEFT="95" NAME="RASTOUT_FIFO_rd_data" RIGHT="0" SIGIS="undef" SIGNAME="rast_out_fifo_dout">
@@ -3208,7 +4074,7 @@
         <PORT DIR="O" NAME="DEPTH_PixelReady" SIGIS="undef" SIGNAME="DepthInterpolator_0_DEPTH_PixelReady">
           <CONNECTIONS>
             <CONNECTION INSTANCE="DepthBuffer_0" PORT="RAST_PixelReady"/>
-            <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe18"/>
+            <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe14"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="9" NAME="DEPTH_PosX" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_DEPTH_PosX">
@@ -3257,7 +4123,7 @@
             <CONNECTION INSTANCE="DepthBuffer_0" PORT="RAST_DepthIsIdle"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="703" NAME="ATTR_FIFO_wr_data" RIGHT="0" SIGIS="undef" SIGNAME="ATTR_FIFO_din">
+        <PORT DIR="O" LEFT="127" NAME="ATTR_FIFO_wr_data" RIGHT="0" SIGIS="undef" SIGNAME="ATTR_FIFO_din">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ATTR_FIFO" PORT="din"/>
           </CONNECTIONS>
@@ -3305,7 +4171,7 @@
         </PORT>
         <PORT DIR="O" LEFT="6" NAME="DBG_DepthInterpolator_State" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_DBG_DepthInterpolator_State">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe16"/>
+            <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe12"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="31" NAME="DBG_RastBarycentricB" RIGHT="0" SIGIS="undef"/>
@@ -3349,7 +4215,7 @@
         <PARAMETER NAME="C_SLOT_0_AXI_PROTOCOL" VALUE="AXI4"/>
         <PARAMETER NAME="C_NUM_MONITOR_SLOTS" VALUE="1"/>
         <PARAMETER NAME="C_ENABLE_ILA_AXI_MON" VALUE="0"/>
-        <PARAMETER NAME="C_NUM_OF_PROBES" VALUE="19"/>
+        <PARAMETER NAME="C_NUM_OF_PROBES" VALUE="15"/>
         <PARAMETER NAME="C_DATA_DEPTH" VALUE="1024"/>
         <PARAMETER NAME="C_MAJOR_VERSION" VALUE="2018"/>
         <PARAMETER NAME="C_MINOR_VERSION" VALUE="1"/>
@@ -3364,8 +4230,8 @@
         <PARAMETER NAME="C_RAM_STYLE" VALUE="SUBCORE"/>
         <PARAMETER NAME="C_TRIGOUT_EN" VALUE="0"/>
         <PARAMETER NAME="C_TRIGIN_EN" VALUE="0"/>
-        <PARAMETER NAME="C_SLOT_0_AXIS_TUSER_WIDTH" VALUE="4"/>
-        <PARAMETER NAME="C_SLOT_0_AXIS_TDEST_WIDTH" VALUE="32"/>
+        <PARAMETER NAME="C_SLOT_0_AXIS_TUSER_WIDTH" VALUE="32"/>
+        <PARAMETER NAME="C_SLOT_0_AXIS_TDEST_WIDTH" VALUE="64"/>
         <PARAMETER NAME="C_SLOT_0_AXIS_TID_WIDTH" VALUE="64"/>
         <PARAMETER NAME="C_SLOT_0_AXI_ID_WIDTH" VALUE="1"/>
         <PARAMETER NAME="C_SLOT_0_AXI_ARUSER_WIDTH" VALUE="1"/>
@@ -3378,18 +4244,18 @@
         <PARAMETER NAME="C_PROBE2_WIDTH" VALUE="7"/>
         <PARAMETER NAME="C_PROBE3_WIDTH" VALUE="32"/>
         <PARAMETER NAME="C_PROBE4_WIDTH" VALUE="32"/>
-        <PARAMETER NAME="C_PROBE5_WIDTH" VALUE="4"/>
+        <PARAMETER NAME="C_PROBE5_WIDTH" VALUE="32"/>
         <PARAMETER NAME="C_PROBE6_WIDTH" VALUE="32"/>
-        <PARAMETER NAME="C_PROBE7_WIDTH" VALUE="32"/>
+        <PARAMETER NAME="C_PROBE7_WIDTH" VALUE="64"/>
         <PARAMETER NAME="C_PROBE8_WIDTH" VALUE="64"/>
-        <PARAMETER NAME="C_PROBE9_WIDTH" VALUE="64"/>
-        <PARAMETER NAME="C_PROBE10_WIDTH" VALUE="8"/>
-        <PARAMETER NAME="C_PROBE11_WIDTH" VALUE="128"/>
-        <PARAMETER NAME="C_PROBE12_WIDTH" VALUE="128"/>
-        <PARAMETER NAME="C_PROBE13_WIDTH" VALUE="128"/>
-        <PARAMETER NAME="C_PROBE14_WIDTH" VALUE="18"/>
-        <PARAMETER NAME="C_PROBE15_WIDTH" VALUE="18"/>
-        <PARAMETER NAME="C_PROBE16_WIDTH" VALUE="7"/>
+        <PARAMETER NAME="C_PROBE9_WIDTH" VALUE="8"/>
+        <PARAMETER NAME="C_PROBE10_WIDTH" VALUE="18"/>
+        <PARAMETER NAME="C_PROBE11_WIDTH" VALUE="18"/>
+        <PARAMETER NAME="C_PROBE12_WIDTH" VALUE="7"/>
+        <PARAMETER NAME="C_PROBE13_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_PROBE14_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_PROBE15_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_PROBE16_WIDTH" VALUE="1"/>
         <PARAMETER NAME="C_PROBE17_WIDTH" VALUE="1"/>
         <PARAMETER NAME="C_PROBE18_WIDTH" VALUE="1"/>
         <PARAMETER NAME="C_PROBE19_WIDTH" VALUE="1"/>
@@ -6499,72 +7365,52 @@
             <CONNECTION INSTANCE="AttrInterpolator_0" PORT="DBG_RastBarycentricC"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="3" NAME="probe5" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_DBG_NumActiveTriangles">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="DBG_NumActiveTriangles"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" LEFT="31" NAME="probe6" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_FPU_MUL_A">
+        <PORT DIR="I" LEFT="31" NAME="probe5" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_FPU_MUL_A">
           <CONNECTIONS>
             <CONNECTION INSTANCE="AttrInterpolator_0" PORT="FPU_MUL_A"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="probe7" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_FPU_CNV_A">
+        <PORT DIR="I" LEFT="31" NAME="probe6" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_FPU_CNV_A">
           <CONNECTIONS>
             <CONNECTION INSTANCE="AttrInterpolator_0" PORT="FPU_CNV_A"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="63" NAME="probe8" RIGHT="0" SIGIS="undef" SIGNAME="DepthBuffer_URAM_doutb">
+        <PORT DIR="I" LEFT="63" NAME="probe7" RIGHT="0" SIGIS="undef" SIGNAME="DepthBuffer_URAM_doutb">
           <CONNECTIONS>
             <CONNECTION INSTANCE="DepthBuffer_URAM" PORT="doutb"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="63" NAME="probe9" RIGHT="0" SIGIS="undef" SIGNAME="DepthBuffer_0_URAM_dina">
+        <PORT DIR="I" LEFT="63" NAME="probe8" RIGHT="0" SIGIS="undef" SIGNAME="DepthBuffer_0_URAM_dina">
           <CONNECTIONS>
             <CONNECTION INSTANCE="DepthBuffer_0" PORT="URAM_dina"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="7" NAME="probe10" RIGHT="0" SIGIS="undef" SIGNAME="DepthBuffer_0_URAM_wea">
+        <PORT DIR="I" LEFT="7" NAME="probe9" RIGHT="0" SIGIS="undef" SIGNAME="DepthBuffer_0_URAM_wea">
           <CONNECTIONS>
             <CONNECTION INSTANCE="DepthBuffer_0" PORT="URAM_wea"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="127" NAME="probe11" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outColorRGBA0">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outColorRGBA0"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" LEFT="127" NAME="probe12" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outColorRGBA10">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outColorRGBA10"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" LEFT="127" NAME="probe13" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outColorRGBA20">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="INTERP_outColorRGBA20"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" LEFT="17" NAME="probe14" RIGHT="0" SIGIS="undef" SIGNAME="DepthBuffer_0_URAM_addrb">
+        <PORT DIR="I" LEFT="17" NAME="probe10" RIGHT="0" SIGIS="undef" SIGNAME="DepthBuffer_0_URAM_addrb">
           <CONNECTIONS>
             <CONNECTION INSTANCE="DepthBuffer_0" PORT="URAM_addrb"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="17" NAME="probe15" RIGHT="0" SIGIS="undef" SIGNAME="DepthBuffer_0_URAM_addra">
+        <PORT DIR="I" LEFT="17" NAME="probe11" RIGHT="0" SIGIS="undef" SIGNAME="DepthBuffer_0_URAM_addra">
           <CONNECTIONS>
             <CONNECTION INSTANCE="DepthBuffer_0" PORT="URAM_addra"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="6" NAME="probe16" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_DBG_DepthInterpolator_State">
+        <PORT DIR="I" LEFT="6" NAME="probe12" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_DBG_DepthInterpolator_State">
           <CONNECTIONS>
             <CONNECTION INSTANCE="DepthInterpolator_0" PORT="DBG_DepthInterpolator_State"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="0" NAME="probe17" RIGHT="0" SIGIS="undef" SIGNAME="DepthBuffer_0_CMD_DepthIsIdle">
+        <PORT DIR="I" LEFT="0" NAME="probe13" RIGHT="0" SIGIS="undef" SIGNAME="DepthBuffer_0_CMD_DepthIsIdle">
           <CONNECTIONS>
             <CONNECTION INSTANCE="DepthBuffer_0" PORT="CMD_DepthIsIdle"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="0" NAME="probe18" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_DEPTH_PixelReady">
+        <PORT DIR="I" LEFT="0" NAME="probe14" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_DEPTH_PixelReady">
           <CONNECTIONS>
             <CONNECTION INSTANCE="DepthInterpolator_0" PORT="DEPTH_PixelReady"/>
           </CONNECTIONS>
@@ -27981,7 +28827,6 @@
             <CONNECTION INSTANCE="TRISETUP_FPU_SPEC" PORT="clk"/>
             <CONNECTION INSTANCE="CLIP_FPU_SPEC_0" PORT="clk"/>
             <CONNECTION INSTANCE="TRISETUP_FPU_CNV" PORT="clk"/>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="clk"/>
             <CONNECTION INSTANCE="TexSampleStateBlock" PORT="clk"/>
             <CONNECTION INSTANCE="AttrInterpStateBlock" PORT="clk"/>
             <CONNECTION INSTANCE="InputAssemblerStateBlock" PORT="clk"/>
@@ -27992,24 +28837,25 @@
             <CONNECTION INSTANCE="TriSetupStateBlock" PORT="clk"/>
             <CONNECTION INSTANCE="TriSetup_0" PORT="clk"/>
             <CONNECTION INSTANCE="VBB_StateBlock" PORT="clk"/>
-            <CONNECTION INSTANCE="Rasterizer_0" PORT="clk"/>
             <CONNECTION INSTANCE="ATTR_FIFO" PORT="clk"/>
             <CONNECTION INSTANCE="InputAssembler2_0" PORT="clk"/>
             <CONNECTION INSTANCE="DepthBuffer_0" PORT="clk"/>
-            <CONNECTION INSTANCE="ROP_0" PORT="clk"/>
-            <CONNECTION INSTANCE="TexSample_0" PORT="clk"/>
             <CONNECTION INSTANCE="VertexBatchBuilder_0" PORT="clk"/>
             <CONNECTION INSTANCE="StatsWriteOrderNibblesFIFO" PORT="clk"/>
             <CONNECTION INSTANCE="StatsCollector_0" PORT="clk"/>
             <CONNECTION INSTANCE="CommandProcessor_0" PORT="clk"/>
             <CONNECTION INSTANCE="ClipUnit_0" PORT="clk"/>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="clk"/>
             <CONNECTION INSTANCE="AttrInterp_FPU_CNV" PORT="clk"/>
             <CONNECTION INSTANCE="AttrInterp_FPU_MUL" PORT="clk"/>
             <CONNECTION INSTANCE="DINTERP_FPU_MUL" PORT="clk"/>
             <CONNECTION INSTANCE="DINTERP_FPU_CNV" PORT="clk"/>
             <CONNECTION INSTANCE="DINTERP_FPU_SPEC" PORT="clk"/>
-            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="clk"/>
+            <CONNECTION INSTANCE="ROP_0" PORT="clk"/>
+            <CONNECTION INSTANCE="TexSample_0" PORT="clk"/>
+            <CONNECTION INSTANCE="DINTERP_TRIDATA_FIFO" PORT="clk"/>
+            <CONNECTION INSTANCE="ATTRINTERP_TRIDATA_FIFO" PORT="clk"/>
+            <CONNECTION INSTANCE="TriWorkCache2_0" PORT="clk"/>
+            <CONNECTION INSTANCE="Rasterizer_0" PORT="clk"/>
             <CONNECTION INSTANCE="SerialPacketSystem_ValidIncomingPacketsFIFO" PORT="rd_clk"/>
             <CONNECTION INSTANCE="SerialPacketSystem_ReturnOutputPacketsFIFO" PORT="wr_clk"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_InstructionCache" PORT="clka"/>
@@ -28023,6 +28869,8 @@
             <CONNECTION INSTANCE="ShaderCoreSystem_FloatALU_3" PORT="clk"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_GPRQuadSystem_GPRQuad2_0" PORT="clk"/>
             <CONNECTION INSTANCE="ScanoutSystem_CDC_Command_Scanout_0" PORT="cmd_clk"/>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="clk"/>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="clk"/>
             <CONNECTION INSTANCE="MemorySystem_ScanoutReadRequestsFIFO" PORT="rd_clk"/>
             <CONNECTION INSTANCE="MemorySystem_ZStencilReadRequestsFIFO" PORT="rd_clk"/>
             <CONNECTION INSTANCE="MemorySystem_ZStencilReadRequestsFIFO" PORT="wr_clk"/>
@@ -29135,8 +29983,8 @@
         <PORT DIR="O" NAME="empty" SIGIS="undef" SIGNAME="ROP_FIFO_empty">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ROP_0" PORT="TEXSAMP_InFIFO_empty"/>
-            <CONNECTION INSTANCE="ROP_0" PORT="TEXSAMP_InFIFO_empty"/>
             <CONNECTION INSTANCE="CommandProcessor_0" PORT="CMD_FIFO_EMPTY_ROP"/>
+            <CONNECTION INSTANCE="ROP_0" PORT="TEXSAMP_InFIFO_empty"/>
           </CONNECTIONS>
         </PORT>
       </PORTS>
@@ -29366,112 +30214,92 @@
         </PORT>
         <PORT DIR="O" LEFT="31" NAME="TRICACHE_BarycentricInverse" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_BarycentricInverse">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="RAST_inBarycentricInverse"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="O" LEFT="15" NAME="TRICACHE_PrimitiveID" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_PrimitiveID">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="RAST_inPrimitiveID"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="O" LEFT="15" NAME="TRICACHE_DrawCallID" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_DrawCallID">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="RAST_inDrawCallID"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="O" NAME="TRICACHE_VFACE" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_VFACE">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="RAST_inVFACE"/>
+            <CONNECTION INSTANCE="TriWorkCache2_0" PORT="RAST_inBarycentricInverse"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="31" NAME="TRICACHE_Z0" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_Z0">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="RAST_inZ0"/>
+            <CONNECTION INSTANCE="TriWorkCache2_0" PORT="RAST_inZ0"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="31" NAME="TRICACHE_Z10" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_Z10">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="RAST_inZ10"/>
+            <CONNECTION INSTANCE="TriWorkCache2_0" PORT="RAST_inZ10"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="31" NAME="TRICACHE_Z20" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_Z20">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="RAST_inZ20"/>
+            <CONNECTION INSTANCE="TriWorkCache2_0" PORT="RAST_inZ20"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="31" NAME="TRICACHE_InvW0" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_InvW0">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="RAST_inInvW0"/>
+            <CONNECTION INSTANCE="TriWorkCache2_0" PORT="RAST_inInvW0"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="31" NAME="TRICACHE_InvW10" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_InvW10">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="RAST_inInvW10"/>
+            <CONNECTION INSTANCE="TriWorkCache2_0" PORT="RAST_inInvW10"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="31" NAME="TRICACHE_InvW20" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_InvW20">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="RAST_inInvW20"/>
+            <CONNECTION INSTANCE="TriWorkCache2_0" PORT="RAST_inInvW20"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="31" NAME="TRICACHE_TX0" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_TX0">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="RAST_inT0X"/>
+            <CONNECTION INSTANCE="TriWorkCache2_0" PORT="RAST_inT0X"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="31" NAME="TRICACHE_TX10" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_TX10">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="RAST_inT10X"/>
+            <CONNECTION INSTANCE="TriWorkCache2_0" PORT="RAST_inT10X"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="31" NAME="TRICACHE_TX20" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_TX20">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="RAST_inT20X"/>
+            <CONNECTION INSTANCE="TriWorkCache2_0" PORT="RAST_inT20X"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="31" NAME="TRICACHE_TY0" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_TY0">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="RAST_inT0Y"/>
+            <CONNECTION INSTANCE="TriWorkCache2_0" PORT="RAST_inT0Y"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="31" NAME="TRICACHE_TY10" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_TY10">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="RAST_inT10Y"/>
+            <CONNECTION INSTANCE="TriWorkCache2_0" PORT="RAST_inT10Y"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="31" NAME="TRICACHE_TY20" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_TY20">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="RAST_inT20Y"/>
+            <CONNECTION INSTANCE="TriWorkCache2_0" PORT="RAST_inT20Y"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="127" NAME="TRICACHE_VertColor0" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_VertColor0">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="RAST_inColorRGBA0"/>
+            <CONNECTION INSTANCE="TriWorkCache2_0" PORT="RAST_inColorRGBA0"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="127" NAME="TRICACHE_VertColor10" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_VertColor10">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="RAST_inColorRGBA10"/>
+            <CONNECTION INSTANCE="TriWorkCache2_0" PORT="RAST_inColorRGBA10"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="127" NAME="TRICACHE_VertColor20" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_VertColor20">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="RAST_inColorRGBA20"/>
+            <CONNECTION INSTANCE="TriWorkCache2_0" PORT="RAST_inColorRGBA20"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" NAME="TRICACHE_RequestNewTriSlot" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_RequestNewTriSlot">
+        <PORT DIR="O" NAME="TRICACHE_PushNewTriData" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_PushNewTriData">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="RAST_RequestNewTriSlot"/>
+            <CONNECTION INSTANCE="TriWorkCache2_0" PORT="RAST_PushNewTriData"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" NAME="TRICACHE_NewTriSlotIndexValid" SIGIS="undef" SIGNAME="TriWorkCache_0_RAST_NewTriSlotIndexValid">
+        <PORT DIR="I" NAME="TRICACHE_IsFull" SIGIS="undef" SIGNAME="TriWorkCache2_0_RAST_IsFull">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="RAST_NewTriSlotIndexValid"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" LEFT="2" NAME="TRICACHE_NewTriSlotIndex" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_RAST_NewTriSlotIndex">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="TriWorkCache_0" PORT="RAST_NewTriSlotIndex"/>
+            <CONNECTION INSTANCE="TriWorkCache2_0" PORT="RAST_IsFull"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" NAME="CMD_Rasterizer_Idle" SIGIS="undef" SIGNAME="Rasterizer_0_CMD_Rasterizer_Idle">
@@ -40970,8 +41798,8 @@
         </PORT>
         <PORT DIR="O" NAME="empty" SIGIS="undef" SIGNAME="TEXSAMP_FIFO_empty">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="TexSample_0" PORT="INTERP_InFIFO_empty"/>
             <CONNECTION INSTANCE="CommandProcessor_0" PORT="CMD_FIFO_EMPTY_TEXSAMP"/>
+            <CONNECTION INSTANCE="TexSample_0" PORT="INTERP_InFIFO_empty"/>
           </CONNECTIONS>
           <CONNECTIONS>
             <CONNECTION INSTANCE="TexSample_0" PORT="INTERP_InFIFO_empty"/>
@@ -42255,10 +43083,10 @@
       </PORTS>
       <BUSINTERFACES/>
     </MODULE>
-    <MODULE FULLNAME="/TriWorkCache_0" HWVERSION="1.0" INSTANCE="TriWorkCache_0" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="TriWorkCache" VLNV="xilinx.com:module_ref:TriWorkCache:1.0">
+    <MODULE FULLNAME="/TriWorkCache2_0" HWVERSION="1.0" INSTANCE="TriWorkCache2_0" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="TriWorkCache2" VLNV="xilinx.com:module_ref:TriWorkCache2:1.0">
       <DOCUMENTS/>
       <PARAMETERS>
-        <PARAMETER NAME="Component_Name" VALUE="design_1_TriWorkCache_0_0"/>
+        <PARAMETER NAME="Component_Name" VALUE="design_1_TriWorkCache2_0_0"/>
         <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
       </PARAMETERS>
       <PORTS>
@@ -42267,120 +43095,99 @@
             <CONNECTION INSTANCE="MemorySystem_ddr4_0" PORT="c0_ddr4_ui_clk"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="31" NAME="INTERP_outBarycentricInverse" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outBarycentricInverse">
+        <PORT DIR="O" LEFT="31" NAME="DINTERP_outBarycentricInverse" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache2_0_DINTERP_outBarycentricInverse">
           <CONNECTIONS>
             <CONNECTION INSTANCE="DepthInterpolator_0" PORT="TRICACHE_inBarycentricInverse"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="15" NAME="INTERP_outPrimitiveID" RIGHT="0" SIGIS="undef"/>
-        <PORT DIR="O" LEFT="15" NAME="INTERP_outDrawCallID" RIGHT="0" SIGIS="undef"/>
-        <PORT DIR="O" NAME="INTERP_outVFACE" SIGIS="undef"/>
-        <PORT DIR="O" LEFT="31" NAME="INTERP_outZ0" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outZ0">
+        <PORT DIR="O" LEFT="31" NAME="DINTERP_outZ0" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache2_0_DINTERP_outZ0">
           <CONNECTIONS>
             <CONNECTION INSTANCE="DepthInterpolator_0" PORT="TRICACHE_inZ0"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="31" NAME="INTERP_outZ10" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outZ10">
+        <PORT DIR="O" LEFT="31" NAME="DINTERP_outZ10" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache2_0_DINTERP_outZ10">
           <CONNECTIONS>
             <CONNECTION INSTANCE="DepthInterpolator_0" PORT="TRICACHE_inZ10"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="31" NAME="INTERP_outZ20" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outZ20">
+        <PORT DIR="O" LEFT="31" NAME="DINTERP_outZ20" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache2_0_DINTERP_outZ20">
           <CONNECTIONS>
             <CONNECTION INSTANCE="DepthInterpolator_0" PORT="TRICACHE_inZ20"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="31" NAME="INTERP_outInvW0" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outInvW0">
+        <PORT DIR="O" LEFT="31" NAME="DINTERP_outInvW0" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache2_0_DINTERP_outInvW0">
           <CONNECTIONS>
             <CONNECTION INSTANCE="DepthInterpolator_0" PORT="TRICACHE_inInvW0"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="31" NAME="INTERP_outInvW10" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outInvW10">
+        <PORT DIR="O" LEFT="31" NAME="DINTERP_outInvW10" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache2_0_DINTERP_outInvW10">
           <CONNECTIONS>
             <CONNECTION INSTANCE="DepthInterpolator_0" PORT="TRICACHE_inInvW10"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="31" NAME="INTERP_outInvW20" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outInvW20">
+        <PORT DIR="O" LEFT="31" NAME="DINTERP_outInvW20" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache2_0_DINTERP_outInvW20">
           <CONNECTIONS>
             <CONNECTION INSTANCE="DepthInterpolator_0" PORT="TRICACHE_inInvW20"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="31" NAME="INTERP_outT0X" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outT0X">
+        <PORT DIR="I" NAME="DINTERP_PopTriangleSlot" SIGIS="undef" SIGNAME="DepthInterpolator_0_TRICACHE_PopTriangleSlot">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="TRICACHE_inT0X"/>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="TRICACHE_PopTriangleSlot"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="31" NAME="INTERP_outT0Y" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outT0Y">
+        <PORT DIR="O" LEFT="31" NAME="INTERP_outT0X" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache2_0_INTERP_outT0X">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="TRICACHE_inT0Y"/>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="TRICACHE_inT0X"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="31" NAME="INTERP_outT10X" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outT10X">
+        <PORT DIR="O" LEFT="31" NAME="INTERP_outT0Y" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache2_0_INTERP_outT0Y">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="TRICACHE_inT10X"/>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="TRICACHE_inT0Y"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="31" NAME="INTERP_outT10Y" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outT10Y">
+        <PORT DIR="O" LEFT="31" NAME="INTERP_outT10X" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache2_0_INTERP_outT10X">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="TRICACHE_inT10Y"/>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="TRICACHE_inT10X"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="31" NAME="INTERP_outT20X" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outT20X">
+        <PORT DIR="O" LEFT="31" NAME="INTERP_outT10Y" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache2_0_INTERP_outT10Y">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="TRICACHE_inT20X"/>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="TRICACHE_inT10Y"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="31" NAME="INTERP_outT20Y" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outT20Y">
+        <PORT DIR="O" LEFT="31" NAME="INTERP_outT20X" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache2_0_INTERP_outT20X">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="TRICACHE_inT20Y"/>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="TRICACHE_inT20X"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="127" NAME="INTERP_outColorRGBA0" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outColorRGBA0">
+        <PORT DIR="O" LEFT="31" NAME="INTERP_outT20Y" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache2_0_INTERP_outT20Y">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe11"/>
-            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="TRICACHE_inColorRGBA0"/>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="TRICACHE_inT20Y"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="127" NAME="INTERP_outColorRGBA10" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outColorRGBA10">
+        <PORT DIR="O" LEFT="127" NAME="INTERP_outColorRGBA0" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache2_0_INTERP_outColorRGBA0">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe12"/>
-            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="TRICACHE_inColorRGBA10"/>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="TRICACHE_inColorRGBA0"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="127" NAME="INTERP_outColorRGBA20" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_INTERP_outColorRGBA20">
+        <PORT DIR="O" LEFT="127" NAME="INTERP_outColorRGBA10" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache2_0_INTERP_outColorRGBA10">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe13"/>
-            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="TRICACHE_inColorRGBA20"/>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="TRICACHE_inColorRGBA10"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="2" NAME="INTERP_CurrentSlotIndex" RIGHT="0" SIGIS="undef" SIGNAME="DepthInterpolator_0_TRICACHE_CurrentSlotIndex">
+        <PORT DIR="O" LEFT="127" NAME="INTERP_outColorRGBA20" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache2_0_INTERP_outColorRGBA20">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="TRICACHE_CurrentSlotIndex"/>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="TRICACHE_inColorRGBA20"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" NAME="INTERP_SignalSlotComplete" SIGIS="undef" SIGNAME="DepthInterpolator_0_TRICACHE_SignalSlotComplete">
+        <PORT DIR="I" NAME="INTERP_PopTriangleSlot" SIGIS="undef" SIGNAME="AttrInterpolator_0_TRICACHE_PopTriangleSlot">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="TRICACHE_SignalSlotComplete"/>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="TRICACHE_PopTriangleSlot"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="I" LEFT="31" NAME="RAST_inBarycentricInverse" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_BarycentricInverse">
           <CONNECTIONS>
             <CONNECTION INSTANCE="Rasterizer_0" PORT="TRICACHE_BarycentricInverse"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" LEFT="15" NAME="RAST_inPrimitiveID" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_PrimitiveID">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="Rasterizer_0" PORT="TRICACHE_PrimitiveID"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" LEFT="15" NAME="RAST_inDrawCallID" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_DrawCallID">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="Rasterizer_0" PORT="TRICACHE_DrawCallID"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" NAME="RAST_inVFACE" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_VFACE">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="Rasterizer_0" PORT="TRICACHE_VFACE"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="I" LEFT="31" NAME="RAST_inZ0" RIGHT="0" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_Z0">
@@ -42458,28 +43265,107 @@
             <CONNECTION INSTANCE="Rasterizer_0" PORT="TRICACHE_VertColor20"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" NAME="RAST_RequestNewTriSlot" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_RequestNewTriSlot">
+        <PORT DIR="I" NAME="RAST_PushNewTriData" SIGIS="undef" SIGNAME="Rasterizer_0_TRICACHE_PushNewTriData">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="Rasterizer_0" PORT="TRICACHE_RequestNewTriSlot"/>
+            <CONNECTION INSTANCE="Rasterizer_0" PORT="TRICACHE_PushNewTriData"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" NAME="RAST_NewTriSlotIndexValid" SIGIS="undef" SIGNAME="TriWorkCache_0_RAST_NewTriSlotIndexValid">
+        <PORT DIR="O" NAME="RAST_IsFull" SIGIS="undef" SIGNAME="TriWorkCache2_0_RAST_IsFull">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="Rasterizer_0" PORT="TRICACHE_NewTriSlotIndexValid"/>
+            <CONNECTION INSTANCE="Rasterizer_0" PORT="TRICACHE_IsFull"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="2" NAME="RAST_NewTriSlotIndex" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_RAST_NewTriSlotIndex">
+        <PORT DIR="I" NAME="DINTERP_TRIDATA_FIFO_empty" SIGIS="undef" SIGNAME="DINTERP_TRIDATA_FIFO_empty">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="Rasterizer_0" PORT="TRICACHE_NewTriSlotIndex"/>
+            <CONNECTION INSTANCE="DINTERP_TRIDATA_FIFO" PORT="empty"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="3" NAME="DBG_NumActiveTriangles" RIGHT="0" SIGIS="undef" SIGNAME="TriWorkCache_0_DBG_NumActiveTriangles">
+        <PORT DIR="I" LEFT="223" NAME="DINTERP_TRIDATA_FIFO_rd_data" RIGHT="0" SIGIS="undef" SIGNAME="DINTERP_TRIDATA_FIFO_dout">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe5"/>
+            <CONNECTION INSTANCE="DINTERP_TRIDATA_FIFO" PORT="dout"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="DINTERP_TRIDATA_FIFO_rd_en" SIGIS="undef" SIGNAME="DINTERP_TRIDATA_FIFO_rd_en">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DINTERP_TRIDATA_FIFO" PORT="rd_en"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="DINTERP_TRIDATA_FIFO_full" SIGIS="undef" SIGNAME="DINTERP_TRIDATA_FIFO_full">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DINTERP_TRIDATA_FIFO" PORT="full"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="223" NAME="DINTERP_TRIDATA_FIFO_wr_data" RIGHT="0" SIGIS="undef" SIGNAME="DINTERP_TRIDATA_FIFO_din">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DINTERP_TRIDATA_FIFO" PORT="din"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="DINTERP_TRIDATA_FIFO_wr_en" SIGIS="undef" SIGNAME="DINTERP_TRIDATA_FIFO_wr_en">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="DINTERP_TRIDATA_FIFO" PORT="wr_en"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="INTERP_TRIDATA_FIFO_empty" SIGIS="undef" SIGNAME="ATTRINTERP_TRIDATA_FIFO_empty">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ATTRINTERP_TRIDATA_FIFO" PORT="empty"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="575" NAME="INTERP_TRIDATA_FIFO_rd_data" RIGHT="0" SIGIS="undef" SIGNAME="ATTRINTERP_TRIDATA_FIFO_dout">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ATTRINTERP_TRIDATA_FIFO" PORT="dout"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="INTERP_TRIDATA_FIFO_rd_en" SIGIS="undef" SIGNAME="ATTRINTERP_TRIDATA_FIFO_rd_en">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ATTRINTERP_TRIDATA_FIFO" PORT="rd_en"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="INTERP_TRIDATA_FIFO_full" SIGIS="undef" SIGNAME="ATTRINTERP_TRIDATA_FIFO_full">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ATTRINTERP_TRIDATA_FIFO" PORT="full"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="575" NAME="INTERP_TRIDATA_FIFO_wr_data" RIGHT="0" SIGIS="undef" SIGNAME="ATTRINTERP_TRIDATA_FIFO_din">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ATTRINTERP_TRIDATA_FIFO" PORT="din"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="INTERP_TRIDATA_FIFO_wr_en" SIGIS="undef" SIGNAME="ATTRINTERP_TRIDATA_FIFO_wr_en">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ATTRINTERP_TRIDATA_FIFO" PORT="wr_en"/>
           </CONNECTIONS>
         </PORT>
       </PORTS>
-      <BUSINTERFACES/>
+      <BUSINTERFACES>
+        <BUSINTERFACE BUSNAME="TriWorkCache2_0_DINTERP_TRIDATA_RD" NAME="DINTERP_TRIDATA_RD" TYPE="INITIATOR" VLNV="xilinx.com:interface:fifo_read:1.0">
+          <PORTMAPS>
+            <PORTMAP LOGICAL="RD_DATA" PHYSICAL="DINTERP_TRIDATA_FIFO_rd_data"/>
+            <PORTMAP LOGICAL="RD_EN" PHYSICAL="DINTERP_TRIDATA_FIFO_rd_en"/>
+            <PORTMAP LOGICAL="EMPTY" PHYSICAL="DINTERP_TRIDATA_FIFO_empty"/>
+          </PORTMAPS>
+        </BUSINTERFACE>
+        <BUSINTERFACE BUSNAME="TriWorkCache2_0_DINTERP_TRIDATA_WR" NAME="DINTERP_TRIDATA_WR" TYPE="INITIATOR" VLNV="xilinx.com:interface:fifo_write:1.0">
+          <PORTMAPS>
+            <PORTMAP LOGICAL="WR_DATA" PHYSICAL="DINTERP_TRIDATA_FIFO_wr_data"/>
+            <PORTMAP LOGICAL="WR_EN" PHYSICAL="DINTERP_TRIDATA_FIFO_wr_en"/>
+            <PORTMAP LOGICAL="FULL" PHYSICAL="DINTERP_TRIDATA_FIFO_full"/>
+          </PORTMAPS>
+        </BUSINTERFACE>
+        <BUSINTERFACE BUSNAME="TriWorkCache2_0_INTERP_TRIDATA_RD" NAME="INTERP_TRIDATA_RD" TYPE="INITIATOR" VLNV="xilinx.com:interface:fifo_read:1.0">
+          <PORTMAPS>
+            <PORTMAP LOGICAL="RD_DATA" PHYSICAL="INTERP_TRIDATA_FIFO_rd_data"/>
+            <PORTMAP LOGICAL="RD_EN" PHYSICAL="INTERP_TRIDATA_FIFO_rd_en"/>
+            <PORTMAP LOGICAL="EMPTY" PHYSICAL="INTERP_TRIDATA_FIFO_empty"/>
+          </PORTMAPS>
+        </BUSINTERFACE>
+        <BUSINTERFACE BUSNAME="TriWorkCache2_0_INTERP_TRIDATA_WR" NAME="INTERP_TRIDATA_WR" TYPE="INITIATOR" VLNV="xilinx.com:interface:fifo_write:1.0">
+          <PORTMAPS>
+            <PORTMAP LOGICAL="WR_DATA" PHYSICAL="INTERP_TRIDATA_FIFO_wr_data"/>
+            <PORTMAP LOGICAL="WR_EN" PHYSICAL="INTERP_TRIDATA_FIFO_wr_en"/>
+            <PORTMAP LOGICAL="FULL" PHYSICAL="INTERP_TRIDATA_FIFO_full"/>
+          </PORTMAPS>
+        </BUSINTERFACE>
+      </BUSINTERFACES>
     </MODULE>
     <MODULE FULLNAME="/VBB_FIFO" HWVERSION="13.2" INSTANCE="VBB_FIFO" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="fifo_generator" VLNV="xilinx.com:ip:fifo_generator:13.2">
       <DOCUMENTS>

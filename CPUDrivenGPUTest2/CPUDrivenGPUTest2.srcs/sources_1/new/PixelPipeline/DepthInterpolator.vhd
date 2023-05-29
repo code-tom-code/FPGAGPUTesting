@@ -22,18 +22,8 @@ entity DepthInterpolator is
 		TRICACHE_inInvW0 : in STD_LOGIC_VECTOR(31 downto 0);
 		TRICACHE_inInvW10 : in STD_LOGIC_VECTOR(31 downto 0);
 		TRICACHE_inInvW20 : in STD_LOGIC_VECTOR(31 downto 0);
-		TRICACHE_inT0X : in STD_LOGIC_VECTOR(31 downto 0);
-		TRICACHE_inT0Y : in STD_LOGIC_VECTOR(31 downto 0);
-		TRICACHE_inT10X : in STD_LOGIC_VECTOR(31 downto 0);
-		TRICACHE_inT10Y : in STD_LOGIC_VECTOR(31 downto 0);
-		TRICACHE_inT20X : in STD_LOGIC_VECTOR(31 downto 0);
-		TRICACHE_inT20Y : in STD_LOGIC_VECTOR(31 downto 0);
-		TRICACHE_inColorRGBA0 : in STD_LOGIC_VECTOR(127 downto 0);
-		TRICACHE_inColorRGBA10 : in STD_LOGIC_VECTOR(127 downto 0);
-		TRICACHE_inColorRGBA20 : in STD_LOGIC_VECTOR(127 downto 0);
 
-		TRICACHE_CurrentSlotIndex : out STD_LOGIC_VECTOR(2 downto 0) := (others => '0');
-		TRICACHE_SignalSlotComplete : out STD_LOGIC := '0';
+		TRICACHE_PopTriangleSlot : out STD_LOGIC := '0';
 	-- TriWorkCache per-triangle interface end
 
 	-- Rasterizer Output per-pixel interface begin
@@ -294,15 +284,6 @@ signal storedZ20 : f32 := (others => '0'); -- float32 format (this is z2 - z0)
 signal storedInvW0 : f32 := (others => '0'); -- float32 format (this is 1.0f / w0)
 signal storedInvW10 : f32 := (others => '0'); -- float32 format (this is 1.0f / w1)
 signal storedInvW20 : f32 := (others => '0'); -- float32 format (this is 1.0f / w2)
-signal storedTX0 : f32 := (others => '0'); -- float32 format texcoords
-signal storedTY0 : f32 := (others => '0'); -- float32 format texcoords
-signal storedTX10 : f32 := (others => '0'); -- float32 format texcoords
-signal storedTY10 : f32 := (others => '0'); -- float32 format texcoords
-signal storedTX20 : f32 := (others => '0'); -- float32 format texcoords
-signal storedTY20 : f32 := (others => '0'); -- float32 format texcoords
-signal storedColorRGBA0 : unsigned(127 downto 0) := (others => '0');
-signal storedColorRGBA10 : unsigned(127 downto 0) := (others => '0');
-signal storedColorRGBA20 : unsigned(127 downto 0) := (others => '0');
 
 signal storedDbgBarycentricB : signed(31 downto 0) := (others => '0');
 signal storedDbgBarycentricC : signed(31 downto 0) := (others => '0');
@@ -366,10 +347,11 @@ Interpolator : FloatALU_Interpolator port map(clk => clk, IN_B => std_logic_vect
 			FPU_MUL_GO <= '0';
 			FPU_CNV_GO <= '0';
 			FPU_SPEC_GO <= '0';
+			TRICACHE_PopTriangleSlot <= '0';
+			readFromFifo <= '0';
 
 			case currentState is
 				when waitingForRead =>
-					TRICACHE_SignalSlotComplete <= '0'; -- Deassert after one clock cycle
 					DEPTH_PixelReady <= '0';
 
 					barycentricB := GetBarycentricCoordinateB(unsigned(RASTOUT_FIFO_rd_data) );
@@ -383,22 +365,6 @@ Interpolator : FloatALU_Interpolator port map(clk => clk, IN_B => std_logic_vect
 					storedPixelX <= GetPixelCoordinateX(unsigned(RASTOUT_FIFO_rd_data) );
 					storedPixelY <= GetPixelCoordinateY(unsigned(RASTOUT_FIFO_rd_data) );
 					tempPixelX := GetPixelCoordinateX(unsigned(RASTOUT_FIFO_rd_data) );
-					storedBarycentricInverse <= unsigned(TRICACHE_inBarycentricInverse);
-					storedZ0 <= f32(TRICACHE_inZ0);
-					storedZ10 <= f32(TRICACHE_inZ10);
-					storedZ20 <= f32(TRICACHE_inZ20);
-					storedInvW0 <= f32(TRICACHE_inInvW0);
-					storedInvW10 <= f32(TRICACHE_inInvW10);
-					storedInvW20 <= f32(TRICACHE_inInvW20);
-					storedTX0 <= f32(TRICACHE_inT0X);
-					storedTY0 <= f32(TRICACHE_inT0Y);
-					storedTX10 <= f32(TRICACHE_inT10X);
-					storedTY10 <= f32(TRICACHE_inT10Y);
-					storedTX20 <= f32(TRICACHE_inT20X);
-					storedTY20 <= f32(TRICACHE_inT20Y);
-					storedColorRGBA0 <= unsigned(TRICACHE_inColorRGBA0);
-					storedColorRGBA10 <= unsigned(TRICACHE_inColorRGBA10);
-					storedColorRGBA20 <= unsigned(TRICACHE_inColorRGBA20);
 
 					if (STATE_StateIsValid = '1' and currentDrawEventID = unsigned(STATE_NextDrawID) ) then
 						STATE_ConsumeStateSlot <= '1';
@@ -408,6 +374,7 @@ Interpolator : FloatALU_Interpolator port map(clk => clk, IN_B => std_logic_vect
 					elsif (RASTOUT_FIFO_empty = '0') then
 						if (IsSpecialPixelMessage(GetPixelCoordinateX(unsigned(RASTOUT_FIFO_rd_data) ) ) ) then
 							if (tempPixelX(eSpecialPixelCodeBits'pos(TerminateCurrentPrimSlot) ) = '1') then -- "terminate primitive slot"
+								TRICACHE_PopTriangleSlot <= '1';
 								currentState <= signalPrimitiveComplete;
 							end if;
 							if (tempPixelX(eSpecialPixelCodeBits'pos(SetNewPrimSlot) ) = '1') then -- "set new primitive slot"
@@ -429,12 +396,9 @@ Interpolator : FloatALU_Interpolator port map(clk => clk, IN_B => std_logic_vect
 						if (readFromFifo = '0') then
 							CMD_IsIdle <= '1';
 						end if;
-
-						readFromFifo <= '0';
 					end if;
 
 				when barycentricConversion0 =>
-					readFromFifo <= '0'; -- Stop reading from the FIFO after one cycle in order to not pull more than one item off of the queue
 					FPU_CNV_A <= std_logic_vector(Int32toUint32(tempMultBarycentricB, tempMultBarycentricBIsNegative) );
 					FPU_CNV_Mode <= std_logic_vector(to_unsigned(eConvertMode'pos(U32_to_F), 3) );
 					FPU_CNV_GO <= '1';
@@ -625,9 +589,6 @@ Interpolator : FloatALU_Interpolator port map(clk => clk, IN_B => std_logic_vect
 
 				when sendPixelForAttrInterpolation =>
 					ATTR_FIFO_wr_data <= SerializeAttributeData(MakeStructFromMembers(storedPixelX, storedPixelY,
-						storedTX0, storedTX10, storedTX20,
-						storedTY0, storedTY10, storedTY20,
-						storedColorRGBA0, storedColorRGBA10, storedColorRGBA20,
 						normalizedBarycentricB, normalizedBarycentricC,
 						pixelW) );
 					if (ATTR_FIFO_full = '0') then
@@ -636,23 +597,33 @@ Interpolator : FloatALU_Interpolator port map(clk => clk, IN_B => std_logic_vect
 					end if;
 
 				when setNewPrimitiveSlot =>
-					readFromFifo <= '0'; -- Stop reading from the FIFO after one cycle in order to not pull more than one item off of the queue
-					TRICACHE_CurrentSlotIndex <= std_logic_vector(storedPixelY(2 downto 0) );
-					currentState <= waitingForRead;
+					storedBarycentricInverse <= f32(TRICACHE_inBarycentricInverse);
+					storedZ0 <= f32(TRICACHE_inZ0);
+					storedZ10 <= f32(TRICACHE_inZ10);
+					storedZ20 <= f32(TRICACHE_inZ20);
+					storedInvW0 <= f32(TRICACHE_inInvW0);
+					storedInvW10 <= f32(TRICACHE_inInvW10);
+					storedInvW20 <= f32(TRICACHE_inInvW20);
 
-				when signalPrimitiveComplete =>
-					readFromFifo <= '0'; -- Stop reading from the FIFO after one cycle in order to not pull more than one item off of the queue
-					TRICACHE_CurrentSlotIndex <= std_logic_vector(storedPixelY(2 downto 0) ); -- This set isn't really necessary...
-					TRICACHE_SignalSlotComplete <= '1';
-					currentState <= waitingForRead;
+					ATTR_FIFO_wr_data <= SerializeAttributeData(MakeStructFromMembers(PixelMsg_SetNewPrimSlot, currentDrawEventID,
+						normalizedBarycentricB, normalizedBarycentricC,
+						pixelW) );
+					if (ATTR_FIFO_full = '0') then
+						ATTR_FIFO_wr_en <= '1';
+						currentState <= waitingForRead;
+					end if;
+
+				when signalPrimitiveComplete =>					
+					ATTR_FIFO_wr_data <= SerializeAttributeData(MakeStructFromMembers(PixelMsg_TermCurrentPrimSlot, currentDrawEventID,
+						normalizedBarycentricB, normalizedBarycentricC,
+						pixelW) );
+					if (ATTR_FIFO_full = '0') then
+						ATTR_FIFO_wr_en <= '1';
+						currentState <= waitingForRead;
+					end if;
 
 				when signalNewDrawEventID =>
-					readFromFifo <= '0'; -- Stop reading from the FIFO after one cycle in order to not pull more than one item off of the queue
-
 					ATTR_FIFO_wr_data <= SerializeAttributeData(MakeStructFromMembers(PixelMsg_SetNewDrawEventID, currentDrawEventID,
-						storedTX0, storedTX10, storedTX20,
-						storedTY0, storedTY10, storedTY20,
-						storedColorRGBA0, storedColorRGBA10, storedColorRGBA20,
 						normalizedBarycentricB, normalizedBarycentricC,
 						pixelW) );
 					if (ATTR_FIFO_full = '0') then
@@ -661,12 +632,7 @@ Interpolator : FloatALU_Interpolator port map(clk => clk, IN_B => std_logic_vect
 					end if;
 
 				when signalTerminateDrawEventID =>
-					readFromFifo <= '0'; -- Stop reading from the FIFO after one cycle in order to not pull more than one item off of the queue
-
 					ATTR_FIFO_wr_data <= SerializeAttributeData(MakeStructFromMembers(PixelMsg_TermCurrentDrawEventID, currentDrawEventID,
-						storedTX0, storedTX10, storedTX20,
-						storedTY0, storedTY10, storedTY20,
-						storedColorRGBA0, storedColorRGBA10, storedColorRGBA20,
 						normalizedBarycentricB, normalizedBarycentricC,
 						pixelW) );
 					if (ATTR_FIFO_full = '0') then

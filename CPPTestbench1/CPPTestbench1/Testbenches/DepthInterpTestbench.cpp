@@ -93,7 +93,17 @@ void EmulateDepthInterpCPU(const triSetupOutput& triSetupData, const std::vector
 		const rasterizedPixelData& thisPixelData = rasterizedPixels[x];
 		if (thisPixelData.pixelX == startNewTriangleSlotCommand ||
 			thisPixelData.pixelX == finishCurrentTriangleCommand)
+		{
+			// Pass through these messages to the next stage:
+			depthInterpOutputData newDepthInterpOutput;
+			newDepthInterpOutput.pixelX = thisPixelData.pixelX;
+			newDepthInterpOutput.pixelY = thisPixelData.pixelY;
+			newDepthInterpOutput.normalizedBarycentricB = 0.0f;
+			newDepthInterpOutput.normalizedBarycentricC = 0.0f;
+			newDepthInterpOutput.interpolatedPixelW = 0.0f;
+			outDepthInterpData.push_back(newDepthInterpOutput);
 			continue;
+		}
 
 		const float normalizedBarycentricB = thisPixelData.barycentricB * triSetupData.barycentricInverse;
 		const float normalizedBarycentricC = thisPixelData.barycentricC * triSetupData.barycentricInverse;
@@ -127,24 +137,6 @@ void EmulateDepthInterpCPU(const triSetupOutput& triSetupData, const std::vector
 			depthInterpOutputData newDepthInterpOutput;
 			newDepthInterpOutput.pixelX = thisPixelData.pixelX;
 			newDepthInterpOutput.pixelY = thisPixelData.pixelY;
-			newDepthInterpOutput.tx0 = triSetupData.v0.xTex;
-			newDepthInterpOutput.tx10 = triSetupData.v10.xTex;
-			newDepthInterpOutput.tx20 = triSetupData.v20.xTex;
-			newDepthInterpOutput.ty0 = triSetupData.v0.yTex;
-			newDepthInterpOutput.ty10 = triSetupData.v10.yTex;
-			newDepthInterpOutput.ty20 = triSetupData.v20.yTex;
-			newDepthInterpOutput.vc0.r = triSetupData.v0.rgba.r;
-			newDepthInterpOutput.vc0.g = triSetupData.v0.rgba.g;
-			newDepthInterpOutput.vc0.b = triSetupData.v0.rgba.b;
-			newDepthInterpOutput.vc0.a = triSetupData.v0.rgba.a;
-			newDepthInterpOutput.vc10.r = triSetupData.v10.rgba.r;
-			newDepthInterpOutput.vc10.g = triSetupData.v10.rgba.g;
-			newDepthInterpOutput.vc10.b = triSetupData.v10.rgba.b;
-			newDepthInterpOutput.vc10.a = triSetupData.v10.rgba.a;
-			newDepthInterpOutput.vc20.r = triSetupData.v20.rgba.r;
-			newDepthInterpOutput.vc20.g = triSetupData.v20.rgba.g;
-			newDepthInterpOutput.vc20.b = triSetupData.v20.rgba.b;
-			newDepthInterpOutput.vc20.a = triSetupData.v20.rgba.a;
 			newDepthInterpOutput.normalizedBarycentricB = normalizedBarycentricB;
 			newDepthInterpOutput.normalizedBarycentricC = normalizedBarycentricC;
 			newDepthInterpOutput.interpolatedPixelW = interpolatedPixelW;
@@ -154,6 +146,62 @@ void EmulateDepthInterpCPU(const triSetupOutput& triSetupData, const std::vector
 		}
 	}
 }
+
+struct DepthInterpTriCache
+{
+	struct DepthTriCacheData
+	{
+		float BarycentricInverse;
+		float Z0;
+		float Z10;
+		float Z20;
+		float InvW0;
+		float InvW10;
+		float InvW20;
+	};
+
+	std::vector<DepthTriCacheData> dataFifo;
+
+	void Update(std_logic_port& TRICACHE_PopTriangleSlot,
+		std_logic_vector_port<32>& TRICACHE_inBarycentricInverse, 
+		std_logic_vector_port<32>& TRICACHE_inZ0, std_logic_vector_port<32>& TRICACHE_inZ10, std_logic_vector_port<32>& TRICACHE_inZ20,
+		std_logic_vector_port<32>& TRICACHE_inInvW0, std_logic_vector_port<32>& TRICACHE_inInvW10, std_logic_vector_port<32>& TRICACHE_inInvW20)
+	{
+		if (!dataFifo.empty() )
+		{
+			const DepthTriCacheData& fallthroughData = dataFifo.front();
+			TRICACHE_inBarycentricInverse = fallthroughData.BarycentricInverse;
+			TRICACHE_inZ0 = fallthroughData.Z0;
+			TRICACHE_inZ10 = fallthroughData.Z10;
+			TRICACHE_inZ20 = fallthroughData.Z20;
+			TRICACHE_inInvW0 = fallthroughData.InvW0;
+			TRICACHE_inInvW10 = fallthroughData.InvW10;
+			TRICACHE_inInvW20 = fallthroughData.InvW20;
+		}
+		else
+		{
+			TRICACHE_inBarycentricInverse = 0.0f;
+			TRICACHE_inZ0 = 0.0f;
+			TRICACHE_inZ10 = 0.0f;
+			TRICACHE_inZ20 = 0.0f;
+			TRICACHE_inInvW0 = 0.0f;
+			TRICACHE_inInvW10 = 0.0f;
+			TRICACHE_inInvW20 = 0.0f;
+		}
+
+		if (TRICACHE_PopTriangleSlot.GetBoolVal() )
+		{
+			if (dataFifo.size() > 0)
+			{
+				dataFifo.erase(dataFifo.begin() );
+			}
+			else
+			{
+				__debugbreak();
+			}
+		}
+	}
+};
 
 struct simulatedDepthBuffer
 {
@@ -215,18 +263,8 @@ const int RunTestsDepthInterp(Xsi::Loader& loader)
 	std_logic_vector_port<32> TRICACHE_inInvW0(PD_IN, loader, "TRICACHE_inInvW0");
 	std_logic_vector_port<32> TRICACHE_inInvW10(PD_IN, loader, "TRICACHE_inInvW10");
 	std_logic_vector_port<32> TRICACHE_inInvW20(PD_IN, loader, "TRICACHE_inInvW20");
-	std_logic_vector_port<32> TRICACHE_inT0X(PD_IN, loader, "TRICACHE_inT0X");
-	std_logic_vector_port<32> TRICACHE_inT0Y(PD_IN, loader, "TRICACHE_inT0Y");
-	std_logic_vector_port<32> TRICACHE_inT10X(PD_IN, loader, "TRICACHE_inT10X");
-	std_logic_vector_port<32> TRICACHE_inT10Y(PD_IN, loader, "TRICACHE_inT10Y");
-	std_logic_vector_port<32> TRICACHE_inT20X(PD_IN, loader, "TRICACHE_inT20X");
-	std_logic_vector_port<32> TRICACHE_inT20Y(PD_IN, loader, "TRICACHE_inT20Y");
-	std_logic_vector_port<128> TRICACHE_inColorRGBA0(PD_IN, loader, "TRICACHE_inColorRGBA0");
-	std_logic_vector_port<128> TRICACHE_inColorRGBA10(PD_IN, loader, "TRICACHE_inColorRGBA10");
-	std_logic_vector_port<128> TRICACHE_inColorRGBA20(PD_IN, loader, "TRICACHE_inColorRGBA20");
 
-	std_logic_vector_port<3> TRICACHE_CurrentSlotIndex(PD_OUT, loader, "TRICACHE_CurrentSlotIndex");
-	std_logic_port TRICACHE_SignalSlotComplete(PD_OUT, loader, "TRICACHE_SignalSlotComplete");
+	std_logic_port TRICACHE_PopTriangleSlot(PD_OUT, loader, "TRICACHE_PopTriangleSlot");
 // TriWorkCache per-triangle interface end
 
 // Rasterizer Output per-pixel interface begin
@@ -234,6 +272,10 @@ const int RunTestsDepthInterp(Xsi::Loader& loader)
 	std_logic_port RASTOUT_FIFO_empty(PD_IN, loader, "RASTOUT_FIFO_empty");
 	std_logic_port RASTOUT_FIFO_rd_en(PD_OUT, loader, "RASTOUT_FIFO_rd_en");
 // Rasterizer Output per-pixel interface end
+
+// Command Processor interface begin
+	std_logic_port CMD_IsIdle(PD_OUT, loader, "CMD_IsIdle");
+// Command Processor interface end
 
 // Depth Interpolator State Block interface begin
 	std_logic_vector_port<40> STATE_StateBitsAtDrawID(PD_IN, loader, "STATE_StateBitsAtDrawID");
@@ -278,7 +320,7 @@ const int RunTestsDepthInterp(Xsi::Loader& loader)
 // Attribute Interpolator FIFO interface begin
 	std_logic_port ATTR_FIFO_full(PD_IN, loader, "ATTR_FIFO_full");
 	std_logic_port ATTR_FIFO_wr_en(PD_OUT, loader, "ATTR_FIFO_wr_en");
-	std_logic_vector_port<704> ATTR_FIFO_wr_data(PD_OUT, loader, "ATTR_FIFO_wr_data");
+	std_logic_vector_port<128> ATTR_FIFO_wr_data(PD_OUT, loader, "ATTR_FIFO_wr_data");
 // Attribute Interpolator FIFO interface end
 
 // Debug signals
@@ -291,6 +333,7 @@ const int RunTestsDepthInterp(Xsi::Loader& loader)
 	FPU depthInterpFPU_CNV(0);
 	FPU depthInterpFPU_SPEC(0);
 	simulatedDepthBuffer depthInterpDepthBuffer;
+	DepthInterpTriCache depthInterpTriCache;
 
 	bool successResult = true;
 
@@ -315,16 +358,12 @@ const int RunTestsDepthInterp(Xsi::Loader& loader)
 
 	auto simulateRTLDepthInterp = [&](const triSetupOutput& triSetupData, std::vector<rasterizedPixelData> rasterizedPixels, std::vector<depthInterpOutputData>& outDepthInterpData, std::vector<unsigned>& outDebugDepthValues)
 	{
-		// TODO: Simulate tricache with different slots
-		triSetupData.DeserializeTriSetupOutput(TRICACHE_inBarycentricInverse, 
-			TRICACHE_inZ0, TRICACHE_inZ10, TRICACHE_inZ20,
-			TRICACHE_inInvW0, TRICACHE_inInvW10, TRICACHE_inInvW20,
-			TRICACHE_inT0X, TRICACHE_inT10X, TRICACHE_inT20X,
-			TRICACHE_inT0Y, TRICACHE_inT10Y, TRICACHE_inT20Y,
-			TRICACHE_inColorRGBA0, TRICACHE_inColorRGBA10, TRICACHE_inColorRGBA20);
+		depthInterpTriCache.Update(TRICACHE_PopTriangleSlot,
+			TRICACHE_inBarycentricInverse, TRICACHE_inZ0, TRICACHE_inZ10, TRICACHE_inZ20,
+			TRICACHE_inInvW0, TRICACHE_inInvW10, TRICACHE_inInvW20);
 		RASTOUT_FIFO_rd_data.SetStructVal(rasterizedPixels[0]);
 
-		while (!rasterizedPixels.empty() && !TRICACHE_SignalSlotComplete.GetBoolVal() )
+		while (!rasterizedPixels.empty() || CMD_IsIdle.GetBoolVal() == false)
 		{
 			scoped_timestep time(loader, clk, 100);
 
@@ -349,10 +388,10 @@ const int RunTestsDepthInterp(Xsi::Loader& loader)
 			{
 				depthInterpOutputData newOutData;
 				ATTR_FIFO_wr_data.GetStructVal(newOutData);
+				outDepthInterpData.push_back(newOutData);
+
 				if (!IsSpecialCodePixel(newOutData.pixelX) )
 				{
-					outDepthInterpData.push_back(newOutData);
-
 					const unsigned dbgDepth24 = DBG_InterpolatedDepthU24.GetUint32Val();
 					outDebugDepthValues.push_back(dbgDepth24);
 				}
@@ -361,11 +400,9 @@ const int RunTestsDepthInterp(Xsi::Loader& loader)
 			depthInterpFPU_CNV.UpdateCnvOnly(FPU_CNV_GO, FPU_CNV_Mode, FPU_CNV_A, FPU_CNV_OUT);
 			depthInterpFPU_SPEC.UpdateRcpOnly(FPU_SPEC_GO, FPU_SPEC_A, FPU_SPEC_OUT);
 			depthInterpDepthBuffer.Update(DEPTH_PixelReady, DEPTH_PosX, DEPTH_PosY, DEPTH_OutPixelDepth, DEPTH_PixelPassedDepthTest, DEPTH_PixelFailedDepthTest);
-		}
-
-		// Run one more clock cycle to allow the signal to the TRICACHE_SignalSlotComplete to fall off:
-		{
-			scoped_timestep time(loader, clk, 100);
+			depthInterpTriCache.Update(TRICACHE_PopTriangleSlot,
+				TRICACHE_inBarycentricInverse, TRICACHE_inZ0, TRICACHE_inZ10, TRICACHE_inZ20,
+				TRICACHE_inInvW0, TRICACHE_inInvW10, TRICACHE_inInvW20);
 		}
 	};
 
@@ -384,9 +421,15 @@ const int RunTestsDepthInterp(Xsi::Loader& loader)
 			return false;
 		}
 
+		if (emulatedCPUDepthValues.size() != simulatedRTLDepthValues.size() )
+		{
+			__debugbreak();
+			return false;
+		}
+
 		const float z0 = clipspaceOutTri.v0.zPos / clipspaceOutTri.v0.wPos;
 		const float z1 = clipspaceOutTri.v1.zPos / clipspaceOutTri.v1.wPos;
-		const float z2 = clipspaceOutTri.v2.zPos / clipspaceOutTri.v2.wPos;
+		const float z2 = clipspaceOutTri.v2.zPos / clipspaceOutTri.v2.wPos; 
 		float zMin, zMax;
 		if (z0 < z1 && z0 < z2) zMin = z0;
 		else if (z1 < z0 && z1 < z2) zMin = z1;
@@ -403,9 +446,7 @@ const int RunTestsDepthInterp(Xsi::Loader& loader)
 		for (unsigned x = 0; x < numOutputPixels; ++x)
 		{
 			const depthInterpOutputData& emulatedCPUPixel = emulatedCPUDepthInterpData[x];
-			const unsigned emulatedCPUDepthValue = emulatedCPUDepthValues[x];
 			const depthInterpOutputData& simulatedRTLPixel = simulatedRTLDepthInterpData[x];
-			const unsigned simulatedRTLDepthValue = simulatedRTLDepthValues[x];
 
 			if (!(emulatedCPUPixel == simulatedRTLPixel) )
 			{
@@ -413,17 +454,38 @@ const int RunTestsDepthInterp(Xsi::Loader& loader)
 				return false;
 			}
 
-			if (!(abs( (const int)simulatedRTLDepthValue - (const int)emulatedCPUDepthValue) <= 3) )
+			if (!IsSpecialCodePixel(simulatedRTLPixel.pixelX) )
 			{
-				__debugbreak();
-				return false;
-			}
+				// Check for out of range pixel coords:
+				if (simulatedRTLPixel.pixelX < 0 ||
+					simulatedRTLPixel.pixelY < 0 ||
+					simulatedRTLPixel.pixelX > 639 ||
+					simulatedRTLPixel.pixelY > 479)
+				{
+					__debugbreak();
+					return false;
+				}
 
-			// Check for out of range pixel coords:
-			if (simulatedRTLPixel.pixelX < 0 ||
-				simulatedRTLPixel.pixelY < 0 ||
-				simulatedRTLPixel.pixelX > 639 ||
-				simulatedRTLPixel.pixelY > 479)
+				// Check for out of range interpolated W values:
+				if (useRandomZWPositions)
+				{
+					if (simulatedRTLPixel.interpolatedPixelW <= 0.0f ||
+						simulatedRTLPixel.interpolatedPixelW > 1.0f)
+					{
+						__debugbreak();
+						return false;
+					}
+				}
+			}
+		}
+
+		const unsigned numOutputDepths = (const unsigned)emulatedCPUDepthValues.size();
+		for (unsigned x = 0; x < numOutputDepths; ++x)
+		{
+			const unsigned emulatedCPUDepthValue = emulatedCPUDepthValues[x];
+			const unsigned simulatedRTLDepthValue = simulatedRTLDepthValues[x];
+
+			if (!(abs( (const int)simulatedRTLDepthValue - (const int)emulatedCPUDepthValue) <= 3) )
 			{
 				__debugbreak();
 				return false;
@@ -445,17 +507,6 @@ const int RunTestsDepthInterp(Xsi::Loader& loader)
 			if (emulatedCPUDepthValue - 1 > zMaxU24)
 			{
 				__debugbreak();
-			}
-
-			// Check for out of range interpolated W values:
-			if (useRandomZWPositions)
-			{
-				if (simulatedRTLPixel.interpolatedPixelW <= 0.0f ||
-					simulatedRTLPixel.interpolatedPixelW > 1.0f)
-				{
-					__debugbreak();
-					return false;
-				}
 			}
 		}
 
@@ -480,6 +531,16 @@ const int RunTestsDepthInterp(Xsi::Loader& loader)
 				continue;
 			}
 			std::vector<rasterizedPixelData> rasterizedPixels;
+
+			DepthInterpTriCache::DepthTriCacheData newTriData;
+			newTriData.BarycentricInverse = triSetupData.barycentricInverse;
+			newTriData.Z0 = triSetupData.v0.Z;
+			newTriData.Z10 = triSetupData.v10.Z;
+			newTriData.Z20 = triSetupData.v20.Z;
+			newTriData.InvW0 = triSetupData.v0.invW;
+			newTriData.InvW10 = triSetupData.v10.invW;
+			newTriData.InvW20 = triSetupData.v20.invW;
+			depthInterpTriCache.dataFifo.push_back(newTriData);
 
 			rasterizedPixelData startNewTriMessage = {0};
 			startNewTriMessage.pixelX = startNewTriangleSlotCommand;

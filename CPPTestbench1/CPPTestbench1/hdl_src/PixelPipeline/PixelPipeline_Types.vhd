@@ -41,28 +41,16 @@ package PixelPipeline_Types is
 	type sInterpolatorData is record
 		PosX : unsigned(15 downto 0); -- 15 : 0
 		PosY : unsigned(15 downto 0); -- 31 : 16
-		TX0 : f32; -- 63 : 32
-		TX10 : f32; -- 95 : 64
-		TX20 : f32; -- 127 : 96
-		TY0 : f32; -- 159 : 128
-		TY10 : f32; -- 191 : 160
-		TY20 : f32; -- 223 : 192
-		VC0 : unsigned(127 downto 0); -- 351 : 224
-		VC10 : unsigned(127 downto 0); -- 479 : 352
-		VC20 : unsigned(127 downto 0); -- 607 : 480
-		NormalizedBarycentricB : f32; -- 639 : 608
-		NormalizedBarycentricC : f32; -- 671 : 640
-		InterpolatedPixelW : f32; -- 703 : 672
+		NormalizedBarycentricB : f32; -- 63 : 32
+		NormalizedBarycentricC : f32; -- 95 : 64
+		InterpolatedPixelW : f32; -- 127 : 96
 	end record sInterpolatorData;
 
-	constant INTERPOLATOR_DATA_BITS : positive := 704;
+	constant INTERPOLATOR_DATA_BITS : positive := 128;
 
 	pure function SerializeAttributeData(inStruct : sInterpolatorData) return std_logic_vector;
 	pure function DeserializeAttributeData(inBits : std_logic_vector(INTERPOLATOR_DATA_BITS-1 downto 0) ) return sInterpolatorData;
 	pure function MakeStructFromMembers(aPosX : unsigned(15 downto 0); aPosY : unsigned(15 downto 0);
-		aTX0 : f32; aTX10 : f32; aTX20 : f32;
-		aTY0 : f32; aTY10 : f32; aTY20 : f32;
-		aVC0 : unsigned(127 downto 0); aVC10 : unsigned(127 downto 0); aVC20 : unsigned(127 downto 0);
 		aNormalizedBarycentricB : f32; aNormalizedBarycentricC : f32;
 		aInterpolatedPixelW : f32) return sInterpolatorData;
 	
@@ -80,15 +68,6 @@ package body PixelPipeline_Types is
 		return std_logic_vector(inStruct.InterpolatedPixelW)
 		& std_logic_vector(inStruct.NormalizedBarycentricC)
 		& std_logic_vector(inStruct.NormalizedBarycentricB)
-		& std_logic_vector(inStruct.VC20)
-		& std_logic_vector(inStruct.VC10)
-		& std_logic_vector(inStruct.VC0)
-		& std_logic_vector(inStruct.TY20)
-		& std_logic_vector(inStruct.TY10)
-		& std_logic_vector(inStruct.TY0)
-		& std_logic_vector(inStruct.TX20)
-		& std_logic_vector(inStruct.TX10)
-		& std_logic_vector(inStruct.TX0)
 		& std_logic_vector(inStruct.PosY)
 		& std_logic_vector(inStruct.PosX);
 	end function;
@@ -98,41 +77,20 @@ package body PixelPipeline_Types is
 	begin
 		ret.PosX := unsigned(inBits(15 downto 0) );
 		ret.PosY := unsigned(inBits(31 downto 16) );
-		ret.TX0 := f32(inBits(63 downto 32) );
-		ret.TX10 := f32(inBits(95 downto 64) );
-		ret.TX20 := f32(inBits(127 downto 96) );
-		ret.TY0 := f32(inBits(159 downto 128) );
-		ret.TY10 := f32(inBits(191 downto 160) );
-		ret.TY20 := f32(inBits(223 downto 192) );
-		ret.VC0 := unsigned(inBits(351 downto 224) );
-		ret.VC10 := unsigned(inBits(479 downto 352) );
-		ret.VC20 := unsigned(inBits(607 downto 480) );
-		ret.NormalizedBarycentricB := f32(inBits(639 downto 608) );
-		ret.NormalizedBarycentricC := f32(inBits(671 downto 640) );
-		ret.InterpolatedPixelW := f32(inBits(703 downto 672) );
+		ret.NormalizedBarycentricB := f32(inBits(63 downto 32) );
+		ret.NormalizedBarycentricC := f32(inBits(95 downto 64) );
+		ret.InterpolatedPixelW := f32(inBits(127 downto 96) );
 
 		return ret;
 	end function;
 
 	pure function MakeStructFromMembers(aPosX : unsigned(15 downto 0); aPosY : unsigned(15 downto 0);
-		aTX0 : f32; aTX10 : f32; aTX20 : f32;
-		aTY0 : f32; aTY10 : f32; aTY20 : f32;
-		aVC0 : unsigned(127 downto 0); aVC10 : unsigned(127 downto 0); aVC20 : unsigned(127 downto 0);
 		aNormalizedBarycentricB : f32; aNormalizedBarycentricC : f32;
 		aInterpolatedPixelW : f32) return sInterpolatorData is
 		variable ret : sInterpolatorData;
 	begin
 		ret.PosX := aPosX;
 		ret.PosY := aPosY;
-		ret.TX0 := aTX0;
-		ret.TX10 := aTX10;
-		ret.TX20 := aTX20;
-		ret.TY0 := aTY0;
-		ret.TY10 := aTY10;
-		ret.TY20 := aTY20;
-		ret.VC0 := aVC0;
-		ret.VC10 := aVC10;
-		ret.VC20 := aVC20;
 		ret.NormalizedBarycentricB := aNormalizedBarycentricB;
 		ret.NormalizedBarycentricC := aNormalizedBarycentricC;
 		ret.InterpolatedPixelW := aInterpolatedPixelW;

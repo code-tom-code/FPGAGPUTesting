@@ -44,55 +44,36 @@ enum attrInterpStateType
 	multBarycentricsAndAttr12, // 13
 	multBarycentricsAndAttr13, // 14
 	multBarycentricsAndAttr14, // 15
-	multBarycentricsAndAttr15, // 16
-	multBarycentricsAndAttr16, // 17
-	multBarycentricsAndAttr17, // 18
 
-	addDotProductTerms0, // 19
-	addDotProductTerms1, // 20
-	addDotProductTerms2, // 21
-	addDotProductTerms3, // 22
-	addDotProductTerms4, // 23
-	addDotProductTerms5, // 24
-	addDotProductTerms6, // 25
-	addDotProductTerms7, // 26
-	addDotProductTerms8, // 27
-	addDotProductTerms9, // 28
-	addDotProductTerms10, // 29
-	addDotProductTerms11, // 30
-	addDotProductTerms12, // 31
-	addDotProductTerms13, // 32
-	addDotProductTerms14, // 33
-	addDotProductTerms15, // 34
-	addDotProductTerms16, // 35
+	multiplyPixelW0, // 16
+	multiplyPixelW1, // 17
+	multiplyPixelW2, // 18
+	multiplyPixelW3, // 19
+	multiplyPixelW4, // 20
+	multiplyPixelW5, // 21
+	multiplyPixelW6, // 22
+	multiplyPixelW7, // 23
+	multiplyPixelW8, // 24
+	multiplyPixelW9, // 25
+	multiplyPixelW10, // 26
+	multiplyPixelW11, // 27
 
-	multiplyPixelW0, // 36
-	multiplyPixelW1, // 37
-	multiplyPixelW2, // 38
-	multiplyPixelW3, // 39
-	multiplyPixelW4, // 40
-	multiplyPixelW5, // 41
-	multiplyPixelW6, // 42
-	multiplyPixelW7, // 43
-	multiplyPixelW8, // 44
-	multiplyPixelW9, // 45
-	multiplyPixelW10, // 46
-	multiplyPixelW11, // 47
+	compressOutput0, // 28
+	compressOutput1, // 29
+	compressOutput2, // 30
+	compressOutput3, // 31
+	compressOutput4, // 32
+	compressOutput5, // 33
+	compressOutput6, // 34
+	compressOutput7, // 35
+	compressOutput8, // 36
+	compressOutput9, // 37
+	compressOutput10, // 38
+	compressOutput11, // 39
 
-	compressOutput0, // 48
-	compressOutput1, // 49
-	compressOutput2, // 50
-	compressOutput3, // 51
-	compressOutput4, // 52
-	compressOutput5, // 53
-	compressOutput6, // 54
-	compressOutput7, // 55
-	compressOutput8, // 56
-	compressOutput9, // 57
-	compressOutput10, // 58
-	compressOutput11, // 59
-
-	waitingForWrite // 60
+	waitingForWrite, // 40
+	setNewPrimitive, // 41
+	terminateCurrentPrimitive // 42
 };
 
 static void ConvertCOLOR4ToFloat4(const vertAttributes::_rgba& inColor, float& outColorX, float& outColorY, float& outColorZ, float& outColorW)
@@ -119,6 +100,68 @@ const unsigned short ConvertFloatToUNORM16(const float fVal)
 	return (const unsigned short)(frcF * 65535.0f);
 }
 
+struct AttrInterpTriCache
+{
+	struct AttrTriCacheData
+	{
+		float TX0;
+		float TX10;
+		float TX20;
+		float TY0;
+		float TY10;
+		float TY20;
+		D3DCOLORVALUE RGBA0;
+		D3DCOLORVALUE RGBA10;
+		D3DCOLORVALUE RGBA20;
+	};
+
+	std::vector<AttrTriCacheData> dataFifo;
+
+	void Update(std_logic_port& TRICACHE_PopTriangleSlot,
+		std_logic_vector_port<32>& TRICACHE_inT0X, std_logic_vector_port<32>& TRICACHE_inT10X, std_logic_vector_port<32>& TRICACHE_inT20X,
+		std_logic_vector_port<32>& TRICACHE_inT0Y, std_logic_vector_port<32>& TRICACHE_inT10Y, std_logic_vector_port<32>& TRICACHE_inT20Y,
+		std_logic_vector_port<128>& TRICACHE_inColorRGBA0, std_logic_vector_port<128>& TRICACHE_inColorRGBA10, std_logic_vector_port<128>& TRICACHE_inColorRGBA20)
+	{
+		if (!dataFifo.empty() )
+		{
+			const AttrTriCacheData& fallthroughData = dataFifo.front();
+			TRICACHE_inT0X = fallthroughData.TX0;
+			TRICACHE_inT10X = fallthroughData.TX10;
+			TRICACHE_inT20X = fallthroughData.TX20;
+			TRICACHE_inT0Y = fallthroughData.TY0;
+			TRICACHE_inT10Y = fallthroughData.TY10;
+			TRICACHE_inT20Y = fallthroughData.TY20;
+			TRICACHE_inColorRGBA0.SetStructVal(fallthroughData.RGBA0);
+			TRICACHE_inColorRGBA10.SetStructVal(fallthroughData.RGBA10);
+			TRICACHE_inColorRGBA20.SetStructVal(fallthroughData.RGBA20);
+		}
+		else
+		{
+			TRICACHE_inT0X = 0.0f;
+			TRICACHE_inT10X = 0.0f;
+			TRICACHE_inT20X = 0.0f;
+			TRICACHE_inT0Y = 0.0f;
+			TRICACHE_inT10Y = 0.0f;
+			TRICACHE_inT20Y = 0.0f;
+			TRICACHE_inColorRGBA0.SetToZero();
+			TRICACHE_inColorRGBA10.SetToZero();
+			TRICACHE_inColorRGBA20.SetToZero();
+		}
+
+		if (TRICACHE_PopTriangleSlot.GetBoolVal() )
+		{
+			if (dataFifo.size() > 0)
+			{
+				dataFifo.erase(dataFifo.begin() );
+			}
+			else
+			{
+				__debugbreak();
+			}
+		}
+	}
+};
+
 void EmulateAttributeInterpCPU(const triSetupOutput& triSetupData, const std::vector<depthInterpOutputData>& depthInterpData, const bool validateNormalizedTexcoords, std::vector<attributeInterpOutputData>& outAttributeInterpData)
 {
 	D3DXVECTOR2 tex0, tex10, tex20;
@@ -137,6 +180,12 @@ void EmulateAttributeInterpCPU(const triSetupOutput& triSetupData, const std::ve
 	for (unsigned x = 0; x < numPixels; ++x)
 	{
 		const depthInterpOutputData& thisPixelData = depthInterpData[x];
+		if (thisPixelData.pixelX == startNewTriangleSlotCommand ||
+			thisPixelData.pixelX == finishCurrentTriangleCommand)
+		{
+			// Eat these messages and don't pass them along to the next stage since subsequent stages just ignore these messages anyway
+			continue;
+		}
 
 		const D3DXVECTOR2 t0divW = tex0;
 		const D3DXVECTOR2 t10divW = tex10;
@@ -213,10 +262,28 @@ const int RunTestsAttributeInterp(Xsi::Loader& loader)
 	std_logic_port clk(PD_IN, loader, "clk");
 
 // Depth Interpolator interface begin
-	std_logic_vector_port<704> DINTERP_FIFO_rd_data(PD_IN, loader, "DINTERP_FIFO_rd_data");
+	std_logic_vector_port<128> DINTERP_FIFO_rd_data(PD_IN, loader, "DINTERP_FIFO_rd_data");
 	std_logic_port DINTERP_FIFO_empty(PD_IN, loader, "DINTERP_FIFO_empty");
 	std_logic_port DINTERP_FIFO_rd_en(PD_OUT, loader, "DINTERP_FIFO_rd_en");
 // Depth Interpolator interface end
+
+// Triangle Cache interfaces begin
+	std_logic_vector_port<32> TRICACHE_inT0X(PD_IN, loader, "TRICACHE_inT0X");
+	std_logic_vector_port<32> TRICACHE_inT0Y(PD_IN, loader, "TRICACHE_inT0Y");
+	std_logic_vector_port<32> TRICACHE_inT10X(PD_IN, loader, "TRICACHE_inT10X");
+	std_logic_vector_port<32> TRICACHE_inT10Y(PD_IN, loader, "TRICACHE_inT10Y");
+	std_logic_vector_port<32> TRICACHE_inT20X(PD_IN, loader, "TRICACHE_inT20X");
+	std_logic_vector_port<32> TRICACHE_inT20Y(PD_IN, loader, "TRICACHE_inT20Y");
+	std_logic_vector_port<128> TRICACHE_inColorRGBA0(PD_IN, loader, "TRICACHE_inColorRGBA0");
+	std_logic_vector_port<128> TRICACHE_inColorRGBA10(PD_IN, loader, "TRICACHE_inColorRGBA10");
+	std_logic_vector_port<128> TRICACHE_inColorRGBA20(PD_IN, loader, "TRICACHE_inColorRGBA20");
+
+	std_logic_port TRICACHE_PopTriangleSlot(PD_OUT, loader, "TRICACHE_PopTriangleSlot");
+// Triangle Cache interfaces end
+
+// Command Processor interface begin
+	std_logic_port CMD_IsIdle(PD_OUT, loader, "CMD_IsIdle");
+// Command Processor interface end
 
 // FPU interfaces begin
 	// MUL pipe for multiplication:
@@ -245,6 +312,7 @@ const int RunTestsAttributeInterp(Xsi::Loader& loader)
 
 	FPU attrInterpFPU_MUL(0);
 	FPU attrInterpFPU_CNV(0);
+	AttrInterpTriCache triCache;
 
 	bool successResult = true;
 
@@ -264,6 +332,12 @@ const int RunTestsAttributeInterp(Xsi::Loader& loader)
 	{
 		DINTERP_FIFO_empty = true;
 
+		triCache.Update(TRICACHE_PopTriangleSlot, TRICACHE_inT0X, TRICACHE_inT10X, TRICACHE_inT20X,
+			TRICACHE_inT0Y, TRICACHE_inT10Y, TRICACHE_inT20Y,
+			TRICACHE_inColorRGBA0, TRICACHE_inColorRGBA10, TRICACHE_inColorRGBA20);
+
+		attrInterpStateType currentState = (const attrInterpStateType)DBG_AttrInterpolator_State.GetUint8Val();
+
 		const unsigned numPixels = (const unsigned)depthInterpData.size();
 		for (unsigned x = 0; x < numPixels; ++x)
 		{
@@ -272,31 +346,34 @@ const int RunTestsAttributeInterp(Xsi::Loader& loader)
 			DINTERP_FIFO_rd_data.SetStructVal(thisPixelData);
 			DINTERP_FIFO_empty = false;
 
+			currentState = (const attrInterpStateType)DBG_AttrInterpolator_State.GetUint8Val();
+
 			// Wait for the attribute interpolator core to pull a new pixel off of the FIFO:
 			while (!DINTERP_FIFO_rd_en.GetBoolVal() )
 			{
 				scoped_timestep time(loader, clk, 100);
+				currentState = (const attrInterpStateType)DBG_AttrInterpolator_State.GetUint8Val();
 				attrInterpFPU_MUL.UpdateMulOnly(FPU_MUL_GO, FPU_MUL_A, FPU_MUL_B, FPU_MUL_OUT);
 				attrInterpFPU_CNV.UpdateCnvOnly(FPU_CNV_GO, FPU_CNV_Mode, FPU_CNV_A, FPU_CNV_OUT);
+				triCache.Update(TRICACHE_PopTriangleSlot, TRICACHE_inT0X, TRICACHE_inT10X, TRICACHE_inT20X,
+					TRICACHE_inT0Y, TRICACHE_inT10Y, TRICACHE_inT20Y,
+					TRICACHE_inColorRGBA0, TRICACHE_inColorRGBA10, TRICACHE_inColorRGBA20);
 				UpdateOutputFIFO(outAttributeInterpData, TEXSAMP_OutFIFO_wr_data, TEXSAMP_OutFIFO_full, TEXSAMP_OutFIFO_wr_en);
 			}
 
 			DINTERP_FIFO_empty = true;
+			currentState = (const attrInterpStateType)DBG_AttrInterpolator_State.GetUint8Val();
 
-			while (!TEXSAMP_OutFIFO_wr_en.GetBoolVal() )
+			while (!CMD_IsIdle.GetBoolVal() )
 			{
 				scoped_timestep time(loader, clk, 100);
+				currentState = (const attrInterpStateType)DBG_AttrInterpolator_State.GetUint8Val();
 
 				attrInterpFPU_MUL.UpdateMulOnly(FPU_MUL_GO, FPU_MUL_A, FPU_MUL_B, FPU_MUL_OUT);
 				attrInterpFPU_CNV.UpdateCnvOnly(FPU_CNV_GO, FPU_CNV_Mode, FPU_CNV_A, FPU_CNV_OUT);
-				UpdateOutputFIFO(outAttributeInterpData, TEXSAMP_OutFIFO_wr_data, TEXSAMP_OutFIFO_full, TEXSAMP_OutFIFO_wr_en);
-			}
-
-			while (TEXSAMP_OutFIFO_wr_en.GetBoolVal() )
-			{
-				scoped_timestep time(loader, clk, 100);
-				attrInterpFPU_MUL.UpdateMulOnly(FPU_MUL_GO, FPU_MUL_A, FPU_MUL_B, FPU_MUL_OUT);
-				attrInterpFPU_CNV.UpdateCnvOnly(FPU_CNV_GO, FPU_CNV_Mode, FPU_CNV_A, FPU_CNV_OUT);
+				triCache.Update(TRICACHE_PopTriangleSlot, TRICACHE_inT0X, TRICACHE_inT10X, TRICACHE_inT20X,
+					TRICACHE_inT0Y, TRICACHE_inT10Y, TRICACHE_inT20Y,
+					TRICACHE_inColorRGBA0, TRICACHE_inColorRGBA10, TRICACHE_inColorRGBA20);
 				UpdateOutputFIFO(outAttributeInterpData, TEXSAMP_OutFIFO_wr_data, TEXSAMP_OutFIFO_full, TEXSAMP_OutFIFO_wr_en);
 			}
 		}
@@ -305,11 +382,11 @@ const int RunTestsAttributeInterp(Xsi::Loader& loader)
 	auto runAttributeInterpTest = [&](const triSetupOutput& triSetupData, const std::vector<depthInterpOutputData>& depthInterpOutput, const bool validateTexcoordsNormalized) -> bool
 	{
 		std::vector<attributeInterpOutputData> emulatedCPUAttributeInterpData;
-		std::vector<attributeInterpOutputData> simulatedRTLDepthInterpData;
+		std::vector<attributeInterpOutputData> simulatedRTLAttrInterpData;
 		EmulateAttributeInterpCPU(triSetupData, depthInterpOutput, validateTexcoordsNormalized, emulatedCPUAttributeInterpData);
-		simulateRTLAttributeInterp(triSetupData, depthInterpOutput, simulatedRTLDepthInterpData);
+		simulateRTLAttributeInterp(triSetupData, depthInterpOutput, simulatedRTLAttrInterpData);
 
-		if (depthInterpOutput.size() != emulatedCPUAttributeInterpData.size() )
+		if (simulatedRTLAttrInterpData.size() != emulatedCPUAttributeInterpData.size() )
 		{
 			__debugbreak();
 			return false;
@@ -319,7 +396,7 @@ const int RunTestsAttributeInterp(Xsi::Loader& loader)
 		for (unsigned x = 0; x < numOutputPixels; ++x)
 		{
 			const attributeInterpOutputData& emulatedCPUPixel = emulatedCPUAttributeInterpData[x];
-			const attributeInterpOutputData& simulatedRTLPixel = simulatedRTLDepthInterpData[x];
+			const attributeInterpOutputData& simulatedRTLPixel = simulatedRTLAttrInterpData[x];
 
 			if (!(emulatedCPUPixel == simulatedRTLPixel) )
 			{
@@ -442,6 +519,27 @@ const int RunTestsAttributeInterp(Xsi::Loader& loader)
 					continue;
 				}
 				std::vector<rasterizedPixelData> rasterizedPixels;
+
+				AttrInterpTriCache::AttrTriCacheData newTriData;
+				newTriData.TX0 = triSetupData.v0.xTex;
+				newTriData.TX10 = triSetupData.v10.xTex;
+				newTriData.TX20 = triSetupData.v20.xTex;
+				newTriData.TY0 = triSetupData.v0.yTex;
+				newTriData.TY10 = triSetupData.v10.yTex;
+				newTriData.TY20 = triSetupData.v20.yTex;
+				newTriData.RGBA0.r = triSetupData.v0.rgba.r;
+				newTriData.RGBA0.g = triSetupData.v0.rgba.g;
+				newTriData.RGBA0.b = triSetupData.v0.rgba.b;
+				newTriData.RGBA0.a = triSetupData.v0.rgba.a;
+				newTriData.RGBA10.r = triSetupData.v10.rgba.r;
+				newTriData.RGBA10.g = triSetupData.v10.rgba.g;
+				newTriData.RGBA10.b = triSetupData.v10.rgba.b;
+				newTriData.RGBA10.a = triSetupData.v10.rgba.a;
+				newTriData.RGBA20.r = triSetupData.v20.rgba.r;
+				newTriData.RGBA20.g = triSetupData.v20.rgba.g;
+				newTriData.RGBA20.b = triSetupData.v20.rgba.b;
+				newTriData.RGBA20.a = triSetupData.v20.rgba.a;
+				triCache.dataFifo.push_back(newTriData);
 
 				rasterizedPixelData startNewTriMessage = {0};
 				startNewTriMessage.pixelX = startNewTriangleSlotCommand;

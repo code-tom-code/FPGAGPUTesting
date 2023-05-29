@@ -1,4 +1,0 @@
-# vhdl work TriWorkCache.vhd
-# List other files here
-vhdl xil_defaultlib  \
-"hdl_src/PixelPipeline/TriWorkCache.vhd" \

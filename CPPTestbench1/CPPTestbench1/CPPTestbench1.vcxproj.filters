@@ -391,9 +391,6 @@
     <None Include="TriSetup.prj">
       <Filter>Resource Files\Project Files</Filter>
     </None>
-    <None Include="TriWorkCache.prj">
-      <Filter>Resource Files\Project Files</Filter>
-    </None>
     <None Include="UNORM8ToFloat.prj">
       <Filter>Resource Files\Project Files</Filter>
     </None>

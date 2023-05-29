@@ -19,6 +19,20 @@ entity AttrInterpolator is
         DINTERP_FIFO_rd_en : out STD_LOGIC := '0';
 	-- Depth Interpolator FIFO interface end
 
+	-- Triangle Cache interfaces begin
+		TRICACHE_inT0X : in STD_LOGIC_VECTOR(31 downto 0);
+		TRICACHE_inT0Y : in STD_LOGIC_VECTOR(31 downto 0);
+		TRICACHE_inT10X : in STD_LOGIC_VECTOR(31 downto 0);
+		TRICACHE_inT10Y : in STD_LOGIC_VECTOR(31 downto 0);
+		TRICACHE_inT20X : in STD_LOGIC_VECTOR(31 downto 0);
+		TRICACHE_inT20Y : in STD_LOGIC_VECTOR(31 downto 0);
+		TRICACHE_inColorRGBA0 : in STD_LOGIC_VECTOR(127 downto 0);
+		TRICACHE_inColorRGBA10 : in STD_LOGIC_VECTOR(127 downto 0);
+		TRICACHE_inColorRGBA20 : in STD_LOGIC_VECTOR(127 downto 0);
+
+		TRICACHE_PopTriangleSlot : out STD_LOGIC := '0';
+	-- Triangle Cache interfaces end
+
 	-- FPU interfaces begin
 		-- MUL pipe for multiplication:
 		FPU_MUL_A : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
@@ -100,35 +114,37 @@ type attrInterpStateType is
 	multBarycentricsAndAttr11, -- 12
 	multBarycentricsAndAttr12, -- 13
 	multBarycentricsAndAttr13, -- 14
-	multBarycentricsAndAttr14, -- 14
+	multBarycentricsAndAttr14, -- 15
 
-	multiplyPixelW0, -- 36
-	multiplyPixelW1, -- 37
-	multiplyPixelW2, -- 38
-	multiplyPixelW3, -- 39
-	multiplyPixelW4, -- 40
-	multiplyPixelW5, -- 41
-	multiplyPixelW6, -- 42
-	multiplyPixelW7, -- 43
-	multiplyPixelW8, -- 44
-	multiplyPixelW9, -- 45
-	multiplyPixelW10, -- 46
-	multiplyPixelW11, -- 47
+	multiplyPixelW0, -- 16
+	multiplyPixelW1, -- 17
+	multiplyPixelW2, -- 18
+	multiplyPixelW3, -- 19
+	multiplyPixelW4, -- 20
+	multiplyPixelW5, -- 21
+	multiplyPixelW6, -- 22
+	multiplyPixelW7, -- 23
+	multiplyPixelW8, -- 24
+	multiplyPixelW9, -- 25
+	multiplyPixelW10, -- 26
+	multiplyPixelW11, -- 27
 
-	compressOutput0, -- 48
-	compressOutput1, -- 49
-	compressOutput2, -- 50
-	compressOutput3, -- 51
-	compressOutput4, -- 52
-	compressOutput5, -- 53
-	compressOutput6, -- 54
-	compressOutput7, -- 55
-	compressOutput8, -- 56
-	compressOutput9, -- 57
-	compressOutput10, -- 58
-	compressOutput11, -- 59
+	compressOutput0, -- 28
+	compressOutput1, -- 29
+	compressOutput2, -- 30
+	compressOutput3, -- 31
+	compressOutput4, -- 32
+	compressOutput5, -- 33
+	compressOutput6, -- 34
+	compressOutput7, -- 35
+	compressOutput8, -- 36
+	compressOutput9, -- 37
+	compressOutput10, -- 38
+	compressOutput11, -- 39
 
-	waitingForWrite -- 60
+	waitingForWrite, -- 40
+	setNewPrimitive, -- 41
+	terminateCurrentPrimitive -- 42
 );
 
 type VertexFloatData is record
@@ -177,6 +193,7 @@ signal texcoord0AddressingModeV : eTexcoordAddressingMode := TAM_Wrap; -- Defaul
 signal unpackedVertex0 : VertexFloatData := DefaultVertexFloatData;
 signal unpackedVertex10 : VertexFloatData := DefaultVertexFloatData;
 signal unpackedVertex20 : VertexFloatData := DefaultVertexFloatData;
+signal computedPixelData : VertexFloatData := DefaultVertexFloatData;
 
 signal dotProductTemporarySumTX : f32 := (others => '0');
 signal dotProductTemporarySumTY : f32 := (others => '0');
@@ -259,6 +276,7 @@ Interpolator : FloatALU_Interpolator port map(clk => clk, IN_B => std_logic_vect
 			DINTERP_FIFO_rd_en <= '0';
 			FPU_MUL_GO <= '0';
 			FPU_CNV_GO <= '0';
+			TRICACHE_PopTriangleSlot <= '0';
 
 			case currentState is
 				when waitingForRead =>
@@ -266,24 +284,6 @@ Interpolator : FloatALU_Interpolator port map(clk => clk, IN_B => std_logic_vect
 
 					storedPixelX <= DeserializeAttributeData(DINTERP_FIFO_rd_data).PosX;
 					storedPixelY <= DeserializeAttributeData(DINTERP_FIFO_rd_data).PosY;
-					unpackedVertex0.tx <= DeserializeAttributeData(DINTERP_FIFO_rd_data).TX0;
-					unpackedVertex0.ty <= DeserializeAttributeData(DINTERP_FIFO_rd_data).TY0;
-					unpackedVertex10.tx <= DeserializeAttributeData(DINTERP_FIFO_rd_data).TX10;
-					unpackedVertex10.ty <= DeserializeAttributeData(DINTERP_FIFO_rd_data).TY10;
-					unpackedVertex20.tx <= DeserializeAttributeData(DINTERP_FIFO_rd_data).TX20;
-					unpackedVertex20.ty <= DeserializeAttributeData(DINTERP_FIFO_rd_data).TY20;
-					unpackedVertex0.color_r <= f32(DeserializeAttributeData(DINTERP_FIFO_rd_data).VC0(31 downto 0) );
-					unpackedVertex0.color_g <= f32(DeserializeAttributeData(DINTERP_FIFO_rd_data).VC0(63 downto 32) );
-					unpackedVertex0.color_b <= f32(DeserializeAttributeData(DINTERP_FIFO_rd_data).VC0(95 downto 64) );
-					unpackedVertex0.color_a <= f32(DeserializeAttributeData(DINTERP_FIFO_rd_data).VC0(127 downto 96) );
-					unpackedVertex10.color_r <= f32(DeserializeAttributeData(DINTERP_FIFO_rd_data).VC10(31 downto 0) );
-					unpackedVertex10.color_g <= f32(DeserializeAttributeData(DINTERP_FIFO_rd_data).VC10(63 downto 32) );
-					unpackedVertex10.color_b <= f32(DeserializeAttributeData(DINTERP_FIFO_rd_data).VC10(95 downto 64) );
-					unpackedVertex10.color_a <= f32(DeserializeAttributeData(DINTERP_FIFO_rd_data).VC10(127 downto 96) );
-					unpackedVertex20.color_r <= f32(DeserializeAttributeData(DINTERP_FIFO_rd_data).VC20(31 downto 0) );
-					unpackedVertex20.color_g <= f32(DeserializeAttributeData(DINTERP_FIFO_rd_data).VC20(63 downto 32) );
-					unpackedVertex20.color_b <= f32(DeserializeAttributeData(DINTERP_FIFO_rd_data).VC20(95 downto 64) );
-					unpackedVertex20.color_a <= f32(DeserializeAttributeData(DINTERP_FIFO_rd_data).VC20(127 downto 96) );
 					normalizedBarycentricB <= DeserializeAttributeData(DINTERP_FIFO_rd_data).NormalizedBarycentricB;
 					normalizedBarycentricC <= DeserializeAttributeData(DINTERP_FIFO_rd_data).NormalizedBarycentricC;
 					pixelW <= DeserializeAttributeData(DINTERP_FIFO_rd_data).InterpolatedPixelW;
@@ -307,6 +307,13 @@ Interpolator : FloatALU_Interpolator port map(clk => clk, IN_B => std_logic_vect
 							end if;
 							if (DeserializeAttributeData(DINTERP_FIFO_rd_data).PosX(eSpecialPixelCodeBits'pos(TerminateCurrentDrawEventID) ) = '1') then
 								currentState <= waitingForWrite;
+							end if;
+							if (DeserializeAttributeData(DINTERP_FIFO_rd_data).PosX(eSpecialPixelCodeBits'pos(SetNewPrimSlot) ) = '1') then
+								currentState <= setNewPrimitive;
+							end if;
+							if (DeserializeAttributeData(DINTERP_FIFO_rd_data).PosX(eSpecialPixelCodeBits'pos(TerminateCurrentPrimSlot) ) = '1') then
+								TRICACHE_PopTriangleSlot <= '1';
+								currentState <= terminateCurrentPrimitive;
 							end if;
 						else
 							if (useFlatShading = '1') then -- If we're doing flat shading then we should skip all of this interpolation math
@@ -434,33 +441,33 @@ Interpolator : FloatALU_Interpolator port map(clk => clk, IN_B => std_logic_vect
 					currentState <= multiplyPixelW6;
 
 				when multiplyPixelW6 =>
-					unpackedVertex0.tx <= f32(FPU_MUL_OUT);
+					computedPixelData.tx <= f32(FPU_MUL_OUT);
 					currentState <= multiplyPixelW7;
 
 				when multiplyPixelW7 =>
-					unpackedVertex0.ty <= f32(FPU_MUL_OUT);
+					computedPixelData.ty <= f32(FPU_MUL_OUT);
 					currentState <= multiplyPixelW8;
 
 				when multiplyPixelW8 =>
-					unpackedVertex0.color_r <= f32(FPU_MUL_OUT);
+					computedPixelData.color_r <= f32(FPU_MUL_OUT);
 					currentState <= multiplyPixelW9;
 
 				when multiplyPixelW9 =>
-					unpackedVertex0.color_g <= f32(FPU_MUL_OUT);
+					computedPixelData.color_g <= f32(FPU_MUL_OUT);
 					currentState <= multiplyPixelW10;
 
 				when multiplyPixelW10 =>
-					unpackedVertex0.color_b <= f32(FPU_MUL_OUT);
+					computedPixelData.color_b <= f32(FPU_MUL_OUT);
 					currentState <= multiplyPixelW11;
 
 				when multiplyPixelW11 =>
-					unpackedVertex0.color_a <= f32(FPU_MUL_OUT);
+					computedPixelData.color_a <= f32(FPU_MUL_OUT);
 					if (texcoord0AddressingModeU = TAM_Clamp) then
-						wrappedTexcoordTX <= SaturateFloat(unpackedVertex0.tx);
+						wrappedTexcoordTX <= SaturateFloat(computedPixelData.tx);
 					end if;
 
 					if (texcoord0AddressingModeV = TAM_Clamp) then
-						wrappedTexcoordTY <= SaturateFloat(unpackedVertex0.ty);
+						wrappedTexcoordTY <= SaturateFloat(computedPixelData.ty);
 					end if;
 
 					if (texcoord0AddressingModeU = TAM_Clamp and texcoord0AddressingModeV = TAM_Clamp) then
@@ -470,24 +477,24 @@ Interpolator : FloatALU_Interpolator port map(clk => clk, IN_B => std_logic_vect
 					end if;
 
 				when compressOutput0 =>
-					FPU_CNV_A <= std_logic_vector(unpackedVertex0.tx);
+					FPU_CNV_A <= std_logic_vector(computedPixelData.tx);
 					FPU_CNV_Mode <= std_logic_vector(to_unsigned(eConvertMode'pos(F_Frc), 3) );
 					FPU_CNV_GO <= '1';
 					currentState <= compressOutput1;
 
 				when compressOutput1 =>
-					FPU_CNV_A <= std_logic_vector(unpackedVertex0.ty);
+					FPU_CNV_A <= std_logic_vector(computedPixelData.ty);
 					FPU_CNV_GO <= '1';
 					currentState <= compressOutput2;
 
 				when compressOutput2 =>
-					FPU_CNV_A <= std_logic_vector(SaturateFloat(unpackedVertex0.color_r) );
+					FPU_CNV_A <= std_logic_vector(SaturateFloat(computedPixelData.color_r) );
 					FPU_CNV_Mode <= std_logic_vector(to_unsigned(eConvertMode'pos(F_to_UNORM8), 3) );
 					FPU_CNV_GO <= '1';
 					currentState <= compressOutput3;
 
 				when compressOutput3 =>
-					FPU_CNV_A <= std_logic_vector(SaturateFloat(unpackedVertex0.color_g) );
+					FPU_CNV_A <= std_logic_vector(SaturateFloat(computedPixelData.color_g) );
 					FPU_CNV_GO <= '1';
 					currentState <= compressOutput4;
 
@@ -495,7 +502,7 @@ Interpolator : FloatALU_Interpolator port map(clk => clk, IN_B => std_logic_vect
 					if (texcoord0AddressingModeU = TAM_Wrap) then
 						wrappedTexcoordTX <= f32(FPU_CNV_OUT);
 					end if;
-					FPU_CNV_A <= std_logic_vector(SaturateFloat(unpackedVertex0.color_b) );
+					FPU_CNV_A <= std_logic_vector(SaturateFloat(computedPixelData.color_b) );
 					FPU_CNV_GO <= '1';
 					currentState <= compressOutput5;
 
@@ -503,7 +510,7 @@ Interpolator : FloatALU_Interpolator port map(clk => clk, IN_B => std_logic_vect
 					if (texcoord0AddressingModeV = TAM_Wrap) then
 						wrappedTexcoordTY <= f32(FPU_CNV_OUT);
 					end if;
-					FPU_CNV_A <= std_logic_vector(SaturateFloat(unpackedVertex0.color_a) );
+					FPU_CNV_A <= std_logic_vector(SaturateFloat(computedPixelData.color_a) );
 					FPU_CNV_GO <= '1';
 					currentState <= compressOutput6;
 
@@ -547,6 +554,31 @@ Interpolator : FloatALU_Interpolator port map(clk => clk, IN_B => std_logic_vect
 					else
 						TEXSAMP_OutFIFO_wr_en <= '0';
 					end if;
+
+				when setNewPrimitive =>
+					unpackedVertex0.tx <= f32(TRICACHE_inT0X);
+					unpackedVertex0.ty <= f32(TRICACHE_inT0Y);
+					unpackedVertex10.tx <= f32(TRICACHE_inT10X);
+					unpackedVertex10.ty <= f32(TRICACHE_inT10Y);
+					unpackedVertex20.tx <= f32(TRICACHE_inT20X);
+					unpackedVertex20.ty <= f32(TRICACHE_inT20Y);
+					unpackedVertex0.color_r <= f32(TRICACHE_inColorRGBA0(31 downto 0) );
+					unpackedVertex0.color_g <= f32(TRICACHE_inColorRGBA0(63 downto 32) );
+					unpackedVertex0.color_b <= f32(TRICACHE_inColorRGBA0(95 downto 64) );
+					unpackedVertex0.color_a <= f32(TRICACHE_inColorRGBA0(127 downto 96) );
+					unpackedVertex10.color_r <= f32(TRICACHE_inColorRGBA10(31 downto 0) );
+					unpackedVertex10.color_g <= f32(TRICACHE_inColorRGBA10(63 downto 32) );
+					unpackedVertex10.color_b <= f32(TRICACHE_inColorRGBA10(95 downto 64) );
+					unpackedVertex10.color_a <= f32(TRICACHE_inColorRGBA10(127 downto 96) );
+					unpackedVertex20.color_r <= f32(TRICACHE_inColorRGBA20(31 downto 0) );
+					unpackedVertex20.color_g <= f32(TRICACHE_inColorRGBA20(63 downto 32) );
+					unpackedVertex20.color_b <= f32(TRICACHE_inColorRGBA20(95 downto 64) );
+					unpackedVertex20.color_a <= f32(TRICACHE_inColorRGBA20(127 downto 96) );
+
+					currentState <= waitingForRead;
+
+				when terminateCurrentPrimitive =>
+					currentState <= waitingForRead;
 
 			end case;
 		end if;

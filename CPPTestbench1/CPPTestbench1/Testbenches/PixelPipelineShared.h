@@ -20,10 +20,10 @@ enum eSpecialPixelCodeBits
 	SpecialCodeBit // 15
 };
 
-const unsigned short PixelMsg_SetNewPrimSlot = 0x8001;
-const unsigned short PixelMsg_TermCurrentPrimSlot = 0x8002;
-const unsigned short PixelMsg_SetNewDrawEventID = 0x8004;
-const unsigned short PixelMsg_TermCurrentDrawEventID = 0x8008;
+const signed short PixelMsg_SetNewPrimSlot = (const signed short)0x8001;
+const signed short PixelMsg_TermCurrentPrimSlot = (const signed short)0x8002;
+const signed short PixelMsg_SetNewDrawEventID = (const signed short)0x8004;
+const signed short PixelMsg_TermCurrentDrawEventID = (const signed short)0x8008;
 
 inline const bool IsSpecialCodePixel(const signed short pixelCoord)
 {
@@ -292,15 +292,6 @@ struct depthInterpOutputData
 {
 	signed short pixelX;
 	signed short pixelY;
-	float tx0;
-	float tx10;
-	float tx20;
-	float ty0;
-	float ty10;
-	float ty20;
-	D3DCOLORVALUE vc0;
-	D3DCOLORVALUE vc10;
-	D3DCOLORVALUE vc20;
 	float normalizedBarycentricB;
 	float normalizedBarycentricC;
 	float interpolatedPixelW;
@@ -337,15 +328,24 @@ struct depthInterpOutputData
 
 	const bool operator==(const depthInterpOutputData& rhs) const
 	{
-		// Might need to do float-epsilon comparisons here instead
-		return pixelX == rhs.pixelX && pixelY == rhs.pixelY &&
-			tx0 == rhs.tx0 && tx10 == rhs.tx10 && tx20 == rhs.tx20 &&
-			ty0 == rhs.ty0 && ty10 == rhs.ty10 && ty20 == rhs.ty20 &&
-			vc0.r == rhs.vc0.r && vc0.g == rhs.vc0.g && vc0.b == rhs.vc0.b && vc0.a == rhs.vc0.a && 
-			vc10.r == rhs.vc10.r && vc10.g == rhs.vc10.g && vc10.b == rhs.vc10.b && vc10.a == rhs.vc10.a && 
-			vc20.r == rhs.vc20.r && vc20.g == rhs.vc20.g && vc20.b == rhs.vc20.b && vc20.a == rhs.vc20.a && 
-			normalizedBarycentricB == rhs.normalizedBarycentricB && normalizedBarycentricC == rhs.normalizedBarycentricC &&
-			InterpolatedWCloseEnough(rhs.interpolatedPixelW);
+		if (IsSpecialCodePixel(pixelX) )
+		{
+			if (pixelX == PixelMsg_SetNewPrimSlot || pixelX == PixelMsg_TermCurrentPrimSlot)
+			{
+				return pixelX == rhs.pixelX;
+			}
+			else
+			{
+				return pixelX == rhs.pixelX && pixelY == rhs.pixelY;
+			}
+		}
+		else
+		{
+			// Might need to do float-epsilon comparisons here instead
+			return pixelX == rhs.pixelX && pixelY == rhs.pixelY &&
+				normalizedBarycentricB == rhs.normalizedBarycentricB && normalizedBarycentricC == rhs.normalizedBarycentricC &&
+				InterpolatedWCloseEnough(rhs.interpolatedPixelW);
+		}
 	}
 };
 
@@ -400,8 +400,8 @@ static_assert(sizeof(rasterizedPixelData) == 12, "Error: Unexpected struct packi
 
 enum triCacheCommand : signed short
 {
-	startNewTriangleSlotCommand = -2,
-	finishCurrentTriangleCommand = -1
+	startNewTriangleSlotCommand = (const signed short)0x8001,
+	finishCurrentTriangleCommand = (const signed short)0x8002
 };
 
 struct attributeInterpOutputData

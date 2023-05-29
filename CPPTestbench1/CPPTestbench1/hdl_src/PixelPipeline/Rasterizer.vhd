@@ -63,14 +63,9 @@ entity Rasterizer is
 		
 	-- TriWorkCache interface begin
 		TRICACHE_BarycentricInverse : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-		TRICACHE_PrimitiveID : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
-		TRICACHE_DrawCallID : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
-		TRICACHE_VFACE : out STD_LOGIC := '0';
-
 		TRICACHE_Z0 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 		TRICACHE_Z10 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 		TRICACHE_Z20 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-
 		TRICACHE_InvW0 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 		TRICACHE_InvW10 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 		TRICACHE_InvW20 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
@@ -78,18 +73,15 @@ entity Rasterizer is
 		TRICACHE_TX0 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 		TRICACHE_TX10 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 		TRICACHE_TX20 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-
 		TRICACHE_TY0 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 		TRICACHE_TY10 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 		TRICACHE_TY20 : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-
 		TRICACHE_VertColor0 : out STD_LOGIC_VECTOR(127 downto 0) := (others => '0');
 		TRICACHE_VertColor10 : out STD_LOGIC_VECTOR(127 downto 0) := (others => '0');
 		TRICACHE_VertColor20 : out STD_LOGIC_VECTOR(127 downto 0) := (others => '0');
 
-		TRICACHE_RequestNewTriSlot : out STD_LOGIC := '0';
-		TRICACHE_NewTriSlotIndexValid : in STD_LOGIC;
-		TRICACHE_NewTriSlotIndex : in STD_LOGIC_VECTOR(2 downto 0);
+		TRICACHE_PushNewTriData : out STD_LOGIC := '0';
+		TRICACHE_IsFull : in STD_LOGIC;
 	-- TriWorkCache interface end
 
 	-- Command Processor system interface begin
@@ -226,7 +218,6 @@ signal stats_totalPixelsRasterized : unsigned(31 downto 0) := (others => '0');
 signal readyForNewTri : STD_LOGIC := '0';
 
 signal hasWrittenPixelsForThisTriangle : std_logic := '0';
-signal currentTriangleAllocatedSlot : unsigned(2 downto 0) := (others => '0');
 
 signal fifoWriteData : STD_LOGIC_VECTOR(32+32+16+16 - 1 downto 0) := (others => '0');
 signal fifoWriteEnable : STD_LOGIC := '0';
@@ -290,6 +281,24 @@ DBG_MaxY <= std_logic_vector(maxY);
 		variable tempBarycentricC : signed(31 downto 0);
 	begin
 		if (rising_edge(clk) ) then
+			TRICACHE_PushNewTriData <= '0';
+			TRICACHE_TX0 <= std_logic_vector(vertDataA.texcoord.tx);
+			TRICACHE_TY0 <= std_logic_vector(vertDataA.texcoord.ty);
+			TRICACHE_VertColor0 <= std_logic_vector(vertDataA.color.a & vertDataA.color.b & vertDataA.color.g & vertDataA.color.r);
+			TRICACHE_Z0 <= std_logic_vector(vertDataA.Z);
+			TRICACHE_InvW0 <= std_logic_vector(vertDataA.invW);
+			TRICACHE_TX10 <= std_logic_vector(vertDataB.texcoord.tx);
+			TRICACHE_TY10 <= std_logic_vector(vertDataB.texcoord.ty);
+			TRICACHE_VertColor10 <= std_logic_vector(vertDataB.color.a & vertDataB.color.b & vertDataB.color.g & vertDataB.color.r);
+			TRICACHE_Z10 <= std_logic_vector(vertDataB.Z);
+			TRICACHE_InvW10 <= std_logic_vector(vertDataB.invW);
+			TRICACHE_TX20 <= std_logic_vector(vertDataC.texcoord.tx);
+			TRICACHE_TY20 <= std_logic_vector(vertDataC.texcoord.ty);
+			TRICACHE_VertColor20 <= std_logic_vector(vertDataC.color.a & vertDataC.color.b & vertDataC.color.g & vertDataC.color.r);
+			TRICACHE_Z20 <= std_logic_vector(vertDataC.Z);
+			TRICACHE_InvW20 <= std_logic_vector(vertDataC.invW);
+			TRICACHE_BarycentricInverse <= std_logic_vector(barycentricInverse);
+
 			case currentState is
 				-- Load new triangle data
 				when triRasterize_waitForTriData =>
@@ -449,42 +458,16 @@ DBG_MaxY <= std_logic_vector(maxY);
 					end if;
 
 				when triRasterize_allocateNewTriCacheSlot =>
-					if (TRICACHE_NewTriSlotIndexValid = '1') then
-						currentTriangleAllocatedSlot <= unsigned(TRICACHE_NewTriSlotIndex);
-						TRICACHE_RequestNewTriSlot <= '0';
+					if (TRICACHE_IsFull = '0') then
+						TRICACHE_PushNewTriData <= '1';
 						currentState <= triRasterize_sendSetNewTriSlotCommand;
-					else
-						TRICACHE_TX0 <= std_logic_vector(vertDataA.texcoord.tx);
-						TRICACHE_TY0 <= std_logic_vector(vertDataA.texcoord.ty);
-						TRICACHE_VertColor0 <= std_logic_vector(vertDataA.color.a & vertDataA.color.b & vertDataA.color.g & vertDataA.color.r);
-						TRICACHE_Z0 <= std_logic_vector(vertDataA.Z);
-						TRICACHE_InvW0 <= std_logic_vector(vertDataA.invW);
-
-						TRICACHE_TX10 <= std_logic_vector(vertDataB.texcoord.tx);
-						TRICACHE_TY10 <= std_logic_vector(vertDataB.texcoord.ty);
-						TRICACHE_VertColor10 <= std_logic_vector(vertDataB.color.a & vertDataB.color.b & vertDataB.color.g & vertDataB.color.r);
-						TRICACHE_Z10 <= std_logic_vector(vertDataB.Z);
-						TRICACHE_InvW10 <= std_logic_vector(vertDataB.invW);
-
-						TRICACHE_TX20 <= std_logic_vector(vertDataC.texcoord.tx);
-						TRICACHE_TY20 <= std_logic_vector(vertDataC.texcoord.ty);
-						TRICACHE_VertColor20 <= std_logic_vector(vertDataC.color.a & vertDataC.color.b & vertDataC.color.g & vertDataC.color.r);
-						TRICACHE_Z20 <= std_logic_vector(vertDataC.Z);
-						TRICACHE_InvW20 <= std_logic_vector(vertDataC.invW);
-
-						TRICACHE_BarycentricInverse <= std_logic_vector(barycentricInverse);
-						TRICACHE_PrimitiveID <= (others => '0'); -- TODO: Implement primitive ID
-						TRICACHE_DrawCallID <= (others => '0');
-						TRICACHE_VFACE <= '1';
-
-						TRICACHE_RequestNewTriSlot <= '1';
 					end if;
 
 				when triRasterize_sendSetNewTriSlotCommand =>
 					if (RASTOUT_FIFO_full = '0' and RASTOUT_FIFO_almost_full = '0') then
 						fifoWriteEnable <= '1';
-						fifoWriteData <= "0000000000000" & std_logic_vector(currentTriangleAllocatedSlot) & std_logic_vector(PixelMsg_SetNewPrimSlot) &
-							x"00000000" & x"00000000";
+						fifoWriteData <= "----------------" & std_logic_vector(PixelMsg_SetNewPrimSlot) &
+							"--------------------------------" & "--------------------------------";
 
 						currentState <= triRasterize_waitForWriteComplete;
 					else
@@ -494,8 +477,8 @@ DBG_MaxY <= std_logic_vector(maxY);
 				when triRasterize_sendFinishTriCommand =>
 					if (RASTOUT_FIFO_full = '0' and RASTOUT_FIFO_almost_full = '0') then
 						fifoWriteEnable <= '1';
-						fifoWriteData <= "0000000000000" & std_logic_vector(currentTriangleAllocatedSlot) & std_logic_vector(PixelMsg_TermCurrentPrimSlot) &
-							x"00000000" & x"00000000";
+						fifoWriteData <= "----------------" & std_logic_vector(PixelMsg_TermCurrentPrimSlot) &
+							"--------------------------------" & "--------------------------------";
 
 						currentState <= triRasterize_waitForTriData;
 					else
@@ -506,7 +489,7 @@ DBG_MaxY <= std_logic_vector(maxY);
 					if (RASTOUT_FIFO_full = '0' and RASTOUT_FIFO_almost_full = '0') then
 						fifoWriteEnable <= '1';
 						fifoWriteData <= std_logic_vector(previousDrawEventID) & std_logic_vector(PixelMsg_TermCurrentDrawEventID) &
-							x"00000000" & x"00000000";
+							"--------------------------------" & "--------------------------------";
 
 						currentState <= triRasterize_sendSetNewDrawEventCommand;
 					else
@@ -517,7 +500,7 @@ DBG_MaxY <= std_logic_vector(maxY);
 					if (RASTOUT_FIFO_full = '0' and RASTOUT_FIFO_almost_full = '0') then
 						fifoWriteEnable <= '1';
 						fifoWriteData <= std_logic_vector(currentDrawEventID) & std_logic_vector(PixelMsg_SetNewDrawEventID) &
-							x"00000000" & x"00000000";
+							"--------------------------------" & "--------------------------------";
 
 						currentState <= triRasterize_mainLoop;
 					else

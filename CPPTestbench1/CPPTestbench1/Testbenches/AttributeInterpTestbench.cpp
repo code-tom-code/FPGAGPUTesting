@@ -29,51 +29,21 @@ enum attrInterpStateType
 {
 	waitingForRead, // 0
 
-	multBarycentricsAndAttr0, // 1
-	multBarycentricsAndAttr1, // 2
-	multBarycentricsAndAttr2, // 3
-	multBarycentricsAndAttr3, // 4
-	multBarycentricsAndAttr4, // 5
-	multBarycentricsAndAttr5, // 6
-	multBarycentricsAndAttr6, // 7
-	multBarycentricsAndAttr7, // 8
-	multBarycentricsAndAttr8, // 9
-	multBarycentricsAndAttr9, // 10
-	multBarycentricsAndAttr10, // 11
-	multBarycentricsAndAttr11, // 12
-	multBarycentricsAndAttr12, // 13
-	multBarycentricsAndAttr13, // 14
-	multBarycentricsAndAttr14, // 15
+	dispatchNewPixel, // 1
+	dispatchNewSpecialMessage, // 2
+	waitingForWrite, // 3
+	setNewPrimitive, // 4
+	terminateCurrentPrimitive // 5
+};
 
-	multiplyPixelW0, // 16
-	multiplyPixelW1, // 17
-	multiplyPixelW2, // 18
-	multiplyPixelW3, // 19
-	multiplyPixelW4, // 20
-	multiplyPixelW5, // 21
-	multiplyPixelW6, // 22
-	multiplyPixelW7, // 23
-	multiplyPixelW8, // 24
-	multiplyPixelW9, // 25
-	multiplyPixelW10, // 26
-	multiplyPixelW11, // 27
-
-	compressOutput0, // 28
-	compressOutput1, // 29
-	compressOutput2, // 30
-	compressOutput3, // 31
-	compressOutput4, // 32
-	compressOutput5, // 33
-	compressOutput6, // 34
-	compressOutput7, // 35
-	compressOutput8, // 36
-	compressOutput9, // 37
-	compressOutput10, // 38
-	compressOutput11, // 39
-
-	waitingForWrite, // 40
-	setNewPrimitive, // 41
-	terminateCurrentPrimitive // 42
+enum InterpolatorStateType
+{
+	IS_TX, // 0
+	IS_TY, // 1
+	IS_R, // 2
+	IS_G, // 3
+	IS_B, // 4
+	IS_A // 5
 };
 
 static void ConvertCOLOR4ToFloat4(const vertAttributes::_rgba& inColor, float& outColorX, float& outColorY, float& outColorZ, float& outColorW)
@@ -100,90 +70,47 @@ const unsigned short ConvertFloatToUNORM16(const float fVal)
 	return (const unsigned short)(frcF * 65535.0f);
 }
 
-struct AttrInterpTriCache
+void EmulateAttributeInterpCPU(const AttrInterpTriCache& attrTriCache, const std::vector<depthInterpOutputData>& depthInterpData, const bool validateNormalizedTexcoords, std::vector<attributeInterpOutputData>& outAttributeInterpData)
 {
-	struct AttrTriCacheData
-	{
-		float TX0;
-		float TX10;
-		float TX20;
-		float TY0;
-		float TY10;
-		float TY20;
-		D3DCOLORVALUE RGBA0;
-		D3DCOLORVALUE RGBA10;
-		D3DCOLORVALUE RGBA20;
-	};
+	AttrInterpTriCache attrTriCacheLocalCopy = attrTriCache;
 
-	std::vector<AttrTriCacheData> dataFifo;
-
-	void Update(std_logic_port& TRICACHE_PopTriangleSlot,
-		std_logic_vector_port<32>& TRICACHE_inT0X, std_logic_vector_port<32>& TRICACHE_inT10X, std_logic_vector_port<32>& TRICACHE_inT20X,
-		std_logic_vector_port<32>& TRICACHE_inT0Y, std_logic_vector_port<32>& TRICACHE_inT10Y, std_logic_vector_port<32>& TRICACHE_inT20Y,
-		std_logic_vector_port<128>& TRICACHE_inColorRGBA0, std_logic_vector_port<128>& TRICACHE_inColorRGBA10, std_logic_vector_port<128>& TRICACHE_inColorRGBA20)
-	{
-		if (!dataFifo.empty() )
-		{
-			const AttrTriCacheData& fallthroughData = dataFifo.front();
-			TRICACHE_inT0X = fallthroughData.TX0;
-			TRICACHE_inT10X = fallthroughData.TX10;
-			TRICACHE_inT20X = fallthroughData.TX20;
-			TRICACHE_inT0Y = fallthroughData.TY0;
-			TRICACHE_inT10Y = fallthroughData.TY10;
-			TRICACHE_inT20Y = fallthroughData.TY20;
-			TRICACHE_inColorRGBA0.SetStructVal(fallthroughData.RGBA0);
-			TRICACHE_inColorRGBA10.SetStructVal(fallthroughData.RGBA10);
-			TRICACHE_inColorRGBA20.SetStructVal(fallthroughData.RGBA20);
-		}
-		else
-		{
-			TRICACHE_inT0X = 0.0f;
-			TRICACHE_inT10X = 0.0f;
-			TRICACHE_inT20X = 0.0f;
-			TRICACHE_inT0Y = 0.0f;
-			TRICACHE_inT10Y = 0.0f;
-			TRICACHE_inT20Y = 0.0f;
-			TRICACHE_inColorRGBA0.SetToZero();
-			TRICACHE_inColorRGBA10.SetToZero();
-			TRICACHE_inColorRGBA20.SetToZero();
-		}
-
-		if (TRICACHE_PopTriangleSlot.GetBoolVal() )
-		{
-			if (dataFifo.size() > 0)
-			{
-				dataFifo.erase(dataFifo.begin() );
-			}
-			else
-			{
-				__debugbreak();
-			}
-		}
-	}
-};
-
-void EmulateAttributeInterpCPU(const triSetupOutput& triSetupData, const std::vector<depthInterpOutputData>& depthInterpData, const bool validateNormalizedTexcoords, std::vector<attributeInterpOutputData>& outAttributeInterpData)
-{
 	D3DXVECTOR2 tex0, tex10, tex20;
-	tex0.x = triSetupData.v0.xTex;
-	tex0.y = triSetupData.v0.yTex;
-	tex10.x = triSetupData.v10.xTex;
-	tex10.y = triSetupData.v10.yTex;
-	tex20.x = triSetupData.v20.xTex;
-	tex20.y = triSetupData.v20.yTex;
 	D3DXVECTOR4 vc0, vc10, vc20;
-	ConvertCOLOR4ToFloat4(triSetupData.v0.rgba, vc0.x, vc0.y, vc0.z, vc0.w);
-	ConvertCOLOR4ToFloat4(triSetupData.v10.rgba, vc10.x, vc10.y, vc10.z, vc10.w);
-	ConvertCOLOR4ToFloat4(triSetupData.v20.rgba, vc20.x, vc20.y, vc20.z, vc20.w);
 
 	const unsigned numPixels = (const unsigned)depthInterpData.size();
 	for (unsigned x = 0; x < numPixels; ++x)
 	{
 		const depthInterpOutputData& thisPixelData = depthInterpData[x];
-		if (thisPixelData.pixelX == startNewTriangleSlotCommand ||
-			thisPixelData.pixelX == finishCurrentTriangleCommand)
+		if (IsSpecialCodePixel(thisPixelData.pixelX) )
 		{
-			// Eat these messages and don't pass them along to the next stage since subsequent stages just ignore these messages anyway
+			if (thisPixelData.pixelX == startNewTriangleSlotCommand)
+			{
+				const AttrInterpTriCache::AttrTriCacheData& currentTriData = attrTriCacheLocalCopy.dataFifo.front();
+				tex0.x = currentTriData.TX0;
+				tex0.y = currentTriData.TY0;
+				tex10.x = currentTriData.TX10;
+				tex10.y = currentTriData.TY10;
+				tex20.x = currentTriData.TX20;
+				tex20.y = currentTriData.TY20;
+				vc0.x = currentTriData.RGBA0.r;
+				vc0.y = currentTriData.RGBA0.g;
+				vc0.z = currentTriData.RGBA0.b;
+				vc0.w = currentTriData.RGBA0.a;
+				vc10.x = currentTriData.RGBA10.r;
+				vc10.y = currentTriData.RGBA10.g;
+				vc10.z = currentTriData.RGBA10.b;
+				vc10.w = currentTriData.RGBA10.a;
+				vc20.x = currentTriData.RGBA20.r;
+				vc20.y = currentTriData.RGBA20.g;
+				vc20.z = currentTriData.RGBA20.b;
+				vc20.w = currentTriData.RGBA20.a;
+			}
+			else if (thisPixelData.pixelX == finishCurrentTriangleCommand)
+			{
+				attrTriCacheLocalCopy.dataFifo.erase(attrTriCacheLocalCopy.dataFifo.begin() );
+			}
+
+			// Don't pass these messages along to the next stage since subsequent stages just ignore these messages anyway
 			continue;
 		}
 
@@ -195,7 +122,7 @@ void EmulateAttributeInterpCPU(const triSetupOutput& triSetupData, const std::ve
 		const D3DXVECTOR2 texSum20 = thisPixelData.normalizedBarycentricC * t20divW;
 		const D3DXVECTOR2 dotProdTex = texSum10 + texSum20 + t0divW;
 
-		const D3DXVECTOR2 interpolatedTexcoord = dotProdTex * thisPixelData.interpolatedPixelW;
+		D3DXVECTOR2 interpolatedTexcoord = dotProdTex * thisPixelData.interpolatedPixelW;
 
 		if (validateNormalizedTexcoords)
 		{
@@ -205,6 +132,16 @@ void EmulateAttributeInterpCPU(const triSetupOutput& triSetupData, const std::ve
 				__debugbreak();
 			}
 		}
+
+		// Clamp our texcoords:
+		/*if (interpolatedTexcoord.x > 1.0f)
+			interpolatedTexcoord.x = 1.0f;
+		else if (interpolatedTexcoord.x < 0.0f)
+			interpolatedTexcoord.x = 0.0f;
+		if (interpolatedTexcoord.y > 1.0f)
+			interpolatedTexcoord.y = 1.0f;
+		else if (interpolatedTexcoord.y < 0.0f)
+			interpolatedTexcoord.y = 0.0f;*/
 
 		const D3DXVECTOR4 vc0divW = vc0;
 		const D3DXVECTOR4 vc10divW = vc10;
@@ -254,6 +191,20 @@ static void UpdateOutputFIFO(std::vector<attributeInterpOutputData>& outAttribut
 	}
 }
 
+static const unsigned CountPixelsNotIncludingSpecials(const std::vector<depthInterpOutputData>& depthInterpFIFOData)
+{
+	unsigned countPixels = 0;
+	const unsigned numMessages = (const unsigned)depthInterpFIFOData.size();
+	for (unsigned x = 0; x < numMessages; ++x)
+	{
+		if (!IsSpecialCodePixel(depthInterpFIFOData[x].pixelX) )
+		{
+			++countPixels;
+		}
+	}
+	return countPixels;
+}
+
 const int RunTestsAttributeInterp(Xsi::Loader& loader)
 {
 	// Start everything off at the beginning:
@@ -292,27 +243,43 @@ const int RunTestsAttributeInterp(Xsi::Loader& loader)
 	std_logic_vector_port<32> FPU_MUL_OUT(PD_IN, loader, "FPU_MUL_OUT");
 	std_logic_port FPU_MUL_GO(PD_OUT, loader, "FPU_MUL_GO");
 
-	// CNV pipe for float-to-int conversions and frac():
-	std_logic_vector_port<32> FPU_CNV_A(PD_OUT, loader, "FPU_CNV_A");
-	std_logic_vector_port<3> FPU_CNV_Mode(PD_OUT, loader, "FPU_CNV_Mode");
-	std_logic_vector_port<32> FPU_CNV_OUT(PD_IN, loader, "FPU_CNV_OUT");
-	std_logic_port FPU_CNV_GO(PD_OUT, loader, "FPU_CNV_GO");
+	// First CNV pipe for float-to-int conversions and frac():
+	std_logic_vector_port<32> FPU_CNV0_A(PD_OUT, loader, "FPU_CNV0_A");
+	std_logic_vector_port<3> FPU_CNV0_Mode(PD_OUT, loader, "FPU_CNV0_Mode");
+	std_logic_vector_port<32> FPU_CNV0_OUT(PD_IN, loader, "FPU_CNV0_OUT");
+	std_logic_port FPU_CNV0_GO(PD_OUT, loader, "FPU_CNV0_GO");
+
+	// Second CNV pipe for float-to-int conversions and frac():
+	std_logic_vector_port<32> FPU_CNV1_A(PD_OUT, loader, "FPU_CNV1_A");
+	std_logic_vector_port<3> FPU_CNV1_Mode(PD_OUT, loader, "FPU_CNV1_Mode");
+	std_logic_vector_port<32> FPU_CNV1_OUT(PD_IN, loader, "FPU_CNV1_OUT");
+	std_logic_port FPU_CNV1_GO(PD_OUT, loader, "FPU_CNV1_GO");
 // FPU interfaces end
 
 // Texture Sampler interface begin
 	std_logic_vector_port<96> TEXSAMP_OutFIFO_wr_data(PD_OUT, loader, "TEXSAMP_OutFIFO_wr_data");
 	std_logic_port TEXSAMP_OutFIFO_full(PD_IN, loader, "TEXSAMP_OutFIFO_full");
 	std_logic_port TEXSAMP_OutFIFO_wr_en(PD_OUT, loader, "TEXSAMP_OutFIFO_wr_en");
+	std_logic_port TEXSAMP_OutFIFO_almost_full(PD_IN, loader, "TEXSAMP_OutFIFO_almost_full");
 // Texture Sampler interface end
 
 // Debug signals
-	std_logic_vector_port<7> DBG_AttrInterpolator_State(PD_OUT, loader, "DBG_AttrInterpolator_State");
+	std_logic_vector_port<3> DBG_AttrInterpolator_State(PD_OUT, loader, "DBG_AttrInterpolator_State");
+	std_logic_vector_port<3> DBG_InterpolatorDriver_State(PD_OUT, loader, "DBG_InterpolatorDriver_State");
+	std_logic_vector_port<3> DBG_MultiplierDriver_State(PD_OUT, loader, "DBG_MultiplierDriver_State");
+	std_logic_vector_port<3> DBG_ConverterDriver_State(PD_OUT, loader, "DBG_ConverterDriver_State");
+	std_logic_vector_port<3> DBG_OutputDriver_State(PD_OUT, loader, "DBG_OutputDriver_State");
+	std_logic_vector_port<32> DBG_PixelWFIFO(PD_OUT, loader, "DBG_PixelWFIFO");
 	std_logic_vector_port<32> DBG_RastBarycentricB(PD_OUT, loader, "DBG_RastBarycentricB");
 	std_logic_vector_port<32> DBG_RastBarycentricC(PD_OUT, loader, "DBG_RastBarycentricC");
 
 	FPU attrInterpFPU_MUL(0);
-	FPU attrInterpFPU_CNV(0);
+	FPU attrInterpFPU_CNV0(0);
+	FPU attrInterpFPU_CNV1(1);
 	AttrInterpTriCache triCache;
+	unsigned totalTriCount = 0;
+	unsigned totalPixelCount = 0;
+	unsigned totalCycleCount = 0;
 
 	bool successResult = true;
 
@@ -323,54 +290,97 @@ const int RunTestsAttributeInterp(Xsi::Loader& loader)
 	{
 		scoped_timestep time(loader, clk, 100);
 		FPU_MUL_OUT = 0.0f;
-		FPU_CNV_OUT = 0.0f;
+		FPU_CNV0_OUT = 0.0f;
+		FPU_CNV1_OUT = 0.0f;
 		DINTERP_FIFO_empty = true;
 		TEXSAMP_OutFIFO_full = false;
+		TEXSAMP_OutFIFO_almost_full = false;
 	}
 
-	auto simulateRTLAttributeInterp = [&](const triSetupOutput& triSetupData, const std::vector<depthInterpOutputData>& depthInterpData, std::vector<attributeInterpOutputData>& outAttributeInterpData)
+	auto simulateRTLAttributeInterp = [&](const std::vector<depthInterpOutputData>& depthInterpData, std::vector<attributeInterpOutputData>& outAttributeInterpData)
 	{
 		DINTERP_FIFO_empty = true;
+
+		std::vector<depthInterpOutputData> depthInterpLocalCopy = depthInterpData;
 
 		triCache.Update(TRICACHE_PopTriangleSlot, TRICACHE_inT0X, TRICACHE_inT10X, TRICACHE_inT20X,
 			TRICACHE_inT0Y, TRICACHE_inT10Y, TRICACHE_inT20Y,
 			TRICACHE_inColorRGBA0, TRICACHE_inColorRGBA10, TRICACHE_inColorRGBA20);
 
 		attrInterpStateType currentState = (const attrInterpStateType)DBG_AttrInterpolator_State.GetUint8Val();
+		InterpolatorStateType currentInterpolatorState = (const InterpolatorStateType)DBG_InterpolatorDriver_State.GetUint8Val();
+		InterpolatorStateType currentMultiplierState = (const InterpolatorStateType)DBG_MultiplierDriver_State.GetUint8Val();
+		InterpolatorStateType currentConverterState = (const InterpolatorStateType)DBG_ConverterDriver_State.GetUint8Val();
+		InterpolatorStateType currentOutputState = (const InterpolatorStateType)DBG_OutputDriver_State.GetUint8Val();
+		float currentPixelWPop = DBG_PixelWFIFO.GetFloat32Val();
 
 		const unsigned numPixels = (const unsigned)depthInterpData.size();
-		for (unsigned x = 0; x < numPixels; ++x)
+		while (!depthInterpLocalCopy.empty() )
 		{
-			const depthInterpOutputData& thisPixelData = depthInterpData[x];
+			DINTERP_FIFO_rd_data.SetStructVal(depthInterpLocalCopy.empty() ? depthInterpOutputData() : depthInterpLocalCopy.front() );
+			DINTERP_FIFO_empty = depthInterpLocalCopy.empty();
 
-			DINTERP_FIFO_rd_data.SetStructVal(thisPixelData);
-			DINTERP_FIFO_empty = false;
-
-			currentState = (const attrInterpStateType)DBG_AttrInterpolator_State.GetUint8Val();
-
-			// Wait for the attribute interpolator core to pull a new pixel off of the FIFO:
-			while (!DINTERP_FIFO_rd_en.GetBoolVal() )
+			while (CMD_IsIdle.GetBoolVal() )
 			{
 				scoped_timestep time(loader, clk, 100);
+
+				const depthInterpOutputData& thisPixelData = depthInterpLocalCopy.empty() ? depthInterpOutputData() : depthInterpLocalCopy.front();
+
+				++totalCycleCount;
 				currentState = (const attrInterpStateType)DBG_AttrInterpolator_State.GetUint8Val();
+				currentInterpolatorState = (const InterpolatorStateType)DBG_InterpolatorDriver_State.GetUint8Val();
+				currentMultiplierState = (const InterpolatorStateType)DBG_MultiplierDriver_State.GetUint8Val();
+				currentConverterState = (const InterpolatorStateType)DBG_ConverterDriver_State.GetUint8Val();
+				currentOutputState = (const InterpolatorStateType)DBG_OutputDriver_State.GetUint8Val();
+				currentPixelWPop = DBG_PixelWFIFO.GetFloat32Val();
+
+				if (DINTERP_FIFO_rd_en.GetBoolVal() )
+				{
+					depthInterpLocalCopy.erase(depthInterpLocalCopy.begin() );
+					DINTERP_FIFO_rd_data.SetStructVal(depthInterpLocalCopy.empty() ? depthInterpOutputData() : depthInterpLocalCopy.front());
+					DINTERP_FIFO_empty = depthInterpLocalCopy.empty();
+				}
+
 				attrInterpFPU_MUL.UpdateMulOnly(FPU_MUL_GO, FPU_MUL_A, FPU_MUL_B, FPU_MUL_OUT);
-				attrInterpFPU_CNV.UpdateCnvOnly(FPU_CNV_GO, FPU_CNV_Mode, FPU_CNV_A, FPU_CNV_OUT);
+				attrInterpFPU_CNV0.UpdateCnvOnly(FPU_CNV0_GO, FPU_CNV0_Mode, FPU_CNV0_A, FPU_CNV0_OUT);
+				attrInterpFPU_CNV1.UpdateCnvOnly(FPU_CNV1_GO, FPU_CNV1_Mode, FPU_CNV1_A, FPU_CNV1_OUT);
 				triCache.Update(TRICACHE_PopTriangleSlot, TRICACHE_inT0X, TRICACHE_inT10X, TRICACHE_inT20X,
 					TRICACHE_inT0Y, TRICACHE_inT10Y, TRICACHE_inT20Y,
 					TRICACHE_inColorRGBA0, TRICACHE_inColorRGBA10, TRICACHE_inColorRGBA20);
 				UpdateOutputFIFO(outAttributeInterpData, TEXSAMP_OutFIFO_wr_data, TEXSAMP_OutFIFO_full, TEXSAMP_OutFIFO_wr_en);
 			}
 
-			DINTERP_FIFO_empty = true;
 			currentState = (const attrInterpStateType)DBG_AttrInterpolator_State.GetUint8Val();
+			currentInterpolatorState = (const InterpolatorStateType)DBG_InterpolatorDriver_State.GetUint8Val();
+			currentMultiplierState = (const InterpolatorStateType)DBG_MultiplierDriver_State.GetUint8Val();
+			currentConverterState = (const InterpolatorStateType)DBG_ConverterDriver_State.GetUint8Val();
+			currentOutputState = (const InterpolatorStateType)DBG_OutputDriver_State.GetUint8Val();
+			currentPixelWPop = DBG_PixelWFIFO.GetFloat32Val();
 
 			while (!CMD_IsIdle.GetBoolVal() )
 			{
 				scoped_timestep time(loader, clk, 100);
+				++totalCycleCount;
+
+				const depthInterpOutputData& thisPixelData = depthInterpLocalCopy.empty() ? depthInterpOutputData() : depthInterpLocalCopy.front();
+
 				currentState = (const attrInterpStateType)DBG_AttrInterpolator_State.GetUint8Val();
+				currentInterpolatorState = (const InterpolatorStateType)DBG_InterpolatorDriver_State.GetUint8Val();
+				currentMultiplierState = (const InterpolatorStateType)DBG_MultiplierDriver_State.GetUint8Val();
+				currentConverterState = (const InterpolatorStateType)DBG_ConverterDriver_State.GetUint8Val();
+				currentOutputState = (const InterpolatorStateType)DBG_OutputDriver_State.GetUint8Val();
+				currentPixelWPop = DBG_PixelWFIFO.GetFloat32Val();
+				
+				if (DINTERP_FIFO_rd_en.GetBoolVal() )
+				{
+					depthInterpLocalCopy.erase(depthInterpLocalCopy.begin() );
+					DINTERP_FIFO_rd_data.SetStructVal(depthInterpLocalCopy.empty() ? depthInterpOutputData() : depthInterpLocalCopy.front() );
+					DINTERP_FIFO_empty = depthInterpLocalCopy.empty();
+				}
 
 				attrInterpFPU_MUL.UpdateMulOnly(FPU_MUL_GO, FPU_MUL_A, FPU_MUL_B, FPU_MUL_OUT);
-				attrInterpFPU_CNV.UpdateCnvOnly(FPU_CNV_GO, FPU_CNV_Mode, FPU_CNV_A, FPU_CNV_OUT);
+				attrInterpFPU_CNV0.UpdateCnvOnly(FPU_CNV0_GO, FPU_CNV0_Mode, FPU_CNV0_A, FPU_CNV0_OUT);
+				attrInterpFPU_CNV1.UpdateCnvOnly(FPU_CNV1_GO, FPU_CNV1_Mode, FPU_CNV1_A, FPU_CNV1_OUT);
 				triCache.Update(TRICACHE_PopTriangleSlot, TRICACHE_inT0X, TRICACHE_inT10X, TRICACHE_inT20X,
 					TRICACHE_inT0Y, TRICACHE_inT10Y, TRICACHE_inT20Y,
 					TRICACHE_inColorRGBA0, TRICACHE_inColorRGBA10, TRICACHE_inColorRGBA20);
@@ -379,13 +389,9 @@ const int RunTestsAttributeInterp(Xsi::Loader& loader)
 		}
 	};
 
-	auto runAttributeInterpTest = [&](const triSetupOutput& triSetupData, const std::vector<depthInterpOutputData>& depthInterpOutput, const bool validateTexcoordsNormalized) -> bool
+	auto validateAttributeInterpTest = [&](const bool validateTexcoordsNormalized, 
+		const std::vector<attributeInterpOutputData>& emulatedCPUAttributeInterpData, const std::vector<attributeInterpOutputData>& simulatedRTLAttrInterpData) -> bool
 	{
-		std::vector<attributeInterpOutputData> emulatedCPUAttributeInterpData;
-		std::vector<attributeInterpOutputData> simulatedRTLAttrInterpData;
-		EmulateAttributeInterpCPU(triSetupData, depthInterpOutput, validateTexcoordsNormalized, emulatedCPUAttributeInterpData);
-		simulateRTLAttributeInterp(triSetupData, depthInterpOutput, simulatedRTLAttrInterpData);
-
 		if (simulatedRTLAttrInterpData.size() != emulatedCPUAttributeInterpData.size() )
 		{
 			__debugbreak();
@@ -397,7 +403,7 @@ const int RunTestsAttributeInterp(Xsi::Loader& loader)
 		{
 			const attributeInterpOutputData& emulatedCPUPixel = emulatedCPUAttributeInterpData[x];
 			const attributeInterpOutputData& simulatedRTLPixel = simulatedRTLAttrInterpData[x];
-
+			
 			if (!(emulatedCPUPixel == simulatedRTLPixel) )
 			{
 				__debugbreak();
@@ -405,13 +411,16 @@ const int RunTestsAttributeInterp(Xsi::Loader& loader)
 			}
 
 			// Check for out of range pixel coords:
-			if (simulatedRTLPixel.pixelX < 0 ||
-				simulatedRTLPixel.pixelY < 0 ||
-				simulatedRTLPixel.pixelX > 639 ||
-				simulatedRTLPixel.pixelY > 479)
+			if (!IsSpecialCodePixel(simulatedRTLPixel.pixelX) )
 			{
-				__debugbreak();
-				return false;
+				if (simulatedRTLPixel.pixelX < 0 ||
+					simulatedRTLPixel.pixelY < 0 ||
+					simulatedRTLPixel.pixelX > 639 ||
+					simulatedRTLPixel.pixelY > 479)
+				{
+					__debugbreak();
+					return false;
+				}
 			}
 		}
 
@@ -421,6 +430,12 @@ const int RunTestsAttributeInterp(Xsi::Loader& loader)
 	// Indices are expected to arrive in CCW order:
 	auto testSimpleDrawCall = [&](const testVert* const vertices, const unsigned short* const indicesCCW, const unsigned numPrims, const bool randomAttributes = false)
 	{
+		std::vector<depthInterpOutputData> emulatedCPUDepthInterpData;
+		std::vector<unsigned> emulatedCPUDepthValues;
+
+		std::vector<attributeInterpOutputData> emulatedCPUAttributeInterpData;
+		std::vector<attributeInterpOutputData> simulatedRTLAttrInterpData;
+
 		for (unsigned x = 0; x < numPrims; ++x)
 		{
 			triSetupInput primTriData; 
@@ -541,6 +556,8 @@ const int RunTestsAttributeInterp(Xsi::Loader& loader)
 				newTriData.RGBA20.a = triSetupData.v20.rgba.a;
 				triCache.dataFifo.push_back(newTriData);
 
+				++totalTriCount;
+
 				rasterizedPixelData startNewTriMessage = {0};
 				startNewTriMessage.pixelX = startNewTriangleSlotCommand;
 				startNewTriMessage.pixelY = (currentTriCacheIndex) % 8;
@@ -553,12 +570,20 @@ const int RunTestsAttributeInterp(Xsi::Loader& loader)
 				endTriMessage.pixelY = (currentTriCacheIndex++) % 8;
 				rasterizedPixels.push_back(endTriMessage);
 
-				std::vector<depthInterpOutputData> emulatedCPUDepthInterpData;
-				std::vector<unsigned> emulatedCPUDepthValues;
 				EmulateDepthInterpCPU(triSetupData, rasterizedPixels, emulatedCPUDepthInterpData, emulatedCPUDepthValues);
-
-				successResult &= runAttributeInterpTest(triSetupData, emulatedCPUDepthInterpData, !randomAttributes);
 			}
+		}
+
+		totalPixelCount += CountPixelsNotIncludingSpecials(emulatedCPUDepthInterpData);
+
+		EmulateAttributeInterpCPU(triCache, emulatedCPUDepthInterpData, !randomAttributes, emulatedCPUAttributeInterpData);
+		simulateRTLAttributeInterp(emulatedCPUDepthInterpData, simulatedRTLAttrInterpData);
+
+		successResult &= validateAttributeInterpTest(!randomAttributes, emulatedCPUAttributeInterpData, simulatedRTLAttrInterpData);
+
+		if (!triCache.dataFifo.empty() )
+		{
+			__debugbreak(); // The attr triangle cache should be empty at this point!
 		}
 	};
 
@@ -581,8 +606,12 @@ const int RunTestsAttributeInterp(Xsi::Loader& loader)
 	// Let's try doing 128 random small triangles (about half will get backface culled, and some others may get degenerate triangle culled or clipped off the screen):
 	{
 		srand(3); // Set a deterministic seed so we get the same results every time
-		const unsigned short fullTriangleIB[] = { 0, 1, 2 };
-		for (unsigned x = 0; x < 128; ++x)
+		static const unsigned numTestPrims = 128u;
+		std::vector<testVert> testVerts;
+		std::vector<unsigned short> testIndices;
+		testVerts.reserve(numTestPrims * 3);
+		testIndices.reserve(numTestPrims * 3);
+		for (unsigned x = 0; x < numTestPrims; ++x)
 		{
 			testVert verts[3];
 			verts[0].posX = ( (rand() % 800) - 80) + 0.5f; // Random xPos between -80 and +720
@@ -594,10 +623,22 @@ const int RunTestsAttributeInterp(Xsi::Loader& loader)
 			verts[2].posX = verts[0].posX + ( (rand() % 100) - 50); // Random xOffset between -50 and +50
 			verts[2].posY = verts[0].posY + ( (rand() % 100) - 50); // Random xOffset between -50 and +50
 
-			const bool useRandomAttributes = true;
-			testSimpleDrawCall(verts, fullTriangleIB, ARRAYSIZE(fullTriangleIB) / 3, useRandomAttributes);
+			testVerts.push_back(verts[0]);
+			testVerts.push_back(verts[1]);
+			testVerts.push_back(verts[2]);
+			testIndices.push_back(x * 3 + 0);
+			testIndices.push_back(x * 3 + 1);
+			testIndices.push_back(x * 3 + 2);
 		}
+
+		const bool useRandomAttributes = true;
+		testSimpleDrawCall(&testVerts.front(), &testIndices.front(), numTestPrims, useRandomAttributes);
 	}
+
+	printf("Total simulated prims: %u\n", totalTriCount);
+	printf("Total simulated pixels: %u\n", totalPixelCount);
+	printf("Total simulated RTL cycles: %u\n", totalCycleCount);
+	printf("Average cycles per pixel: %f\n", totalCycleCount / (const float)totalPixelCount);
 
 	return successResult ? S_OK : E_FAIL;
 }

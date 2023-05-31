@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
-<EDKSYSTEM EDWVERSION="1.2" TIMESTAMP="Sun May 28 19:29:38 2023" VIVADOVERSION="2018.1_AR73068">
+<EDKSYSTEM EDWVERSION="1.2" TIMESTAMP="Tue May 30 21:59:39 2023" VIVADOVERSION="2018.1_AR73068">
 
   <SYSTEMINFO ARCH="kintexuplus" BOARD="xilinx.com:kcu116:part0:1.3" DEVICE="xcku5p" NAME="design_1" PACKAGE="ffvb676" SPEEDGRADE="-2"/>
 
@@ -1066,7 +1066,7 @@
       </PORTS>
       <BUSINTERFACES/>
     </MODULE>
-    <MODULE FULLNAME="/AttrInterp_FPU_CNV" HWVERSION="1.0" INSTANCE="AttrInterp_FPU_CNV" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="StandaloneFloatALU_CNV" VLNV="xilinx.com:module_ref:StandaloneFloatALU_CNV:1.0">
+    <MODULE FULLNAME="/AttrInterp_FPU_CNV0" HWVERSION="1.0" INSTANCE="AttrInterp_FPU_CNV0" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="StandaloneFloatALU_CNV" VLNV="xilinx.com:module_ref:StandaloneFloatALU_CNV:1.0">
       <DOCUMENTS/>
       <PARAMETERS>
         <PARAMETER NAME="Component_Name" VALUE="design_1_StandaloneFloatALU_C_0_0"/>
@@ -1078,24 +1078,59 @@
             <CONNECTION INSTANCE="MemorySystem_ddr4_0" PORT="c0_ddr4_ui_clk"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="IN_A" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_FPU_CNV_A">
+        <PORT DIR="I" LEFT="31" NAME="IN_A" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_FPU_CNV0_A">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="FPU_CNV_A"/>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="FPU_CNV0_A"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="2" NAME="IN_MODE" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_FPU_CNV_Mode">
+        <PORT DIR="I" LEFT="2" NAME="IN_MODE" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_FPU_CNV0_Mode">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="FPU_CNV_Mode"/>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="FPU_CNV0_Mode"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="31" NAME="OCNV" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterp_FPU_CNV_OCNV">
+        <PORT DIR="O" LEFT="31" NAME="OCNV" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterp_FPU_CNV0_OCNV">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="FPU_CNV_OUT"/>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="FPU_CNV0_OUT"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" NAME="ICNV_GO" SIGIS="undef" SIGNAME="AttrInterpolator_0_FPU_CNV_GO">
+        <PORT DIR="I" NAME="ICNV_GO" SIGIS="undef" SIGNAME="AttrInterpolator_0_FPU_CNV0_GO">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="FPU_CNV_GO"/>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="FPU_CNV0_GO"/>
+          </CONNECTIONS>
+        </PORT>
+      </PORTS>
+      <BUSINTERFACES/>
+    </MODULE>
+    <MODULE FULLNAME="/AttrInterp_FPU_CNV1" HWVERSION="1.0" INSTANCE="AttrInterp_FPU_CNV1" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="StandaloneFloatALU_CNV" VLNV="xilinx.com:module_ref:StandaloneFloatALU_CNV:1.0">
+      <DOCUMENTS/>
+      <PARAMETERS>
+        <PARAMETER NAME="Component_Name" VALUE="design_1_StandaloneFloatALU_C_0_3"/>
+        <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
+      </PARAMETERS>
+      <PORTS>
+        <PORT CLKFREQUENCY="333250000" DIR="I" NAME="clk" SIGIS="clk" SIGNAME="MemorySystem_ddr4_0_c0_ddr4_ui_clk">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="MemorySystem_ddr4_0" PORT="c0_ddr4_ui_clk"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="31" NAME="IN_A" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_FPU_CNV1_A">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="FPU_CNV1_A"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="2" NAME="IN_MODE" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_FPU_CNV1_Mode">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="FPU_CNV1_Mode"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="31" NAME="OCNV" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterp_FPU_CNV1_OCNV">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="FPU_CNV1_OUT"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="ICNV_GO" SIGIS="undef" SIGNAME="AttrInterpolator_0_FPU_CNV1_GO">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="FPU_CNV1_GO"/>
           </CONNECTIONS>
         </PORT>
       </PORTS>
@@ -1139,6 +1174,7 @@
     <MODULE FULLNAME="/AttrInterpolator_0" HWVERSION="1.0" INSTANCE="AttrInterpolator_0" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="AttrInterpolator" VLNV="xilinx.com:module_ref:AttrInterpolator:1.0">
       <DOCUMENTS/>
       <PARAMETERS>
+        <PARAMETER NAME="MAX_OCCUPANCY" VALUE="8"/>
         <PARAMETER NAME="Component_Name" VALUE="design_1_AttrInterpolator_0_0"/>
         <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
       </PARAMETERS>
@@ -1241,25 +1277,45 @@
             <CONNECTION INSTANCE="AttrInterp_FPU_MUL" PORT="IMUL_GO"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="31" NAME="FPU_CNV_A" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_FPU_CNV_A">
+        <PORT DIR="O" LEFT="31" NAME="FPU_CNV0_A" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_FPU_CNV0_A">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterp_FPU_CNV" PORT="IN_A"/>
+            <CONNECTION INSTANCE="AttrInterp_FPU_CNV0" PORT="IN_A"/>
             <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe6"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="2" NAME="FPU_CNV_Mode" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_FPU_CNV_Mode">
+        <PORT DIR="O" LEFT="2" NAME="FPU_CNV0_Mode" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_FPU_CNV0_Mode">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterp_FPU_CNV" PORT="IN_MODE"/>
+            <CONNECTION INSTANCE="AttrInterp_FPU_CNV0" PORT="IN_MODE"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="FPU_CNV_OUT" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterp_FPU_CNV_OCNV">
+        <PORT DIR="I" LEFT="31" NAME="FPU_CNV0_OUT" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterp_FPU_CNV0_OCNV">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterp_FPU_CNV" PORT="OCNV"/>
+            <CONNECTION INSTANCE="AttrInterp_FPU_CNV0" PORT="OCNV"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" NAME="FPU_CNV_GO" SIGIS="undef" SIGNAME="AttrInterpolator_0_FPU_CNV_GO">
+        <PORT DIR="O" NAME="FPU_CNV0_GO" SIGIS="undef" SIGNAME="AttrInterpolator_0_FPU_CNV0_GO">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterp_FPU_CNV" PORT="ICNV_GO"/>
+            <CONNECTION INSTANCE="AttrInterp_FPU_CNV0" PORT="ICNV_GO"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="31" NAME="FPU_CNV1_A" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_FPU_CNV1_A">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="AttrInterp_FPU_CNV1" PORT="IN_A"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="2" NAME="FPU_CNV1_Mode" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_FPU_CNV1_Mode">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="AttrInterp_FPU_CNV1" PORT="IN_MODE"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="31" NAME="FPU_CNV1_OUT" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterp_FPU_CNV1_OCNV">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="AttrInterp_FPU_CNV1" PORT="OCNV"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="FPU_CNV1_GO" SIGIS="undef" SIGNAME="AttrInterpolator_0_FPU_CNV1_GO">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="AttrInterp_FPU_CNV1" PORT="ICNV_GO"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="95" NAME="TEXSAMP_OutFIFO_wr_data" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_TEXSAMP_OutFIFO_wr_data">
@@ -1279,6 +1335,11 @@
         <PORT DIR="O" NAME="TEXSAMP_OutFIFO_wr_en" SIGIS="undef" SIGNAME="AttrInterpolator_0_TEXSAMP_OutFIFO_wr_en">
           <CONNECTIONS>
             <CONNECTION INSTANCE="TEXSAMP_FIFO" PORT="wr_en"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" NAME="TEXSAMP_OutFIFO_almost_full" SIGIS="undef" SIGNAME="TEXSAMP_FIFO_prog_full">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="TEXSAMP_FIFO" PORT="prog_full"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="I" LEFT="6" NAME="STATE_StateBitsAtDrawID" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpStateBlock_STAGE_StateBitsAtDrawID">
@@ -1327,12 +1388,17 @@
             <CONNECTION INSTANCE="StatsCollector_0" PORT="INTERP_CurrentDrawEventID"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="6" NAME="DBG_AttrInterpolator_State" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_DBG_AttrInterpolator_State">
+        <PORT DIR="O" LEFT="2" NAME="DBG_AttrInterpolator_State" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_DBG_AttrInterpolator_State">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ila_333_250" PORT="probe7"/>
             <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe2"/>
           </CONNECTIONS>
         </PORT>
+        <PORT DIR="O" LEFT="2" NAME="DBG_InterpolatorDriver_State" RIGHT="0" SIGIS="undef"/>
+        <PORT DIR="O" LEFT="2" NAME="DBG_MultiplierDriver_State" RIGHT="0" SIGIS="undef"/>
+        <PORT DIR="O" LEFT="2" NAME="DBG_ConverterDriver_State" RIGHT="0" SIGIS="undef"/>
+        <PORT DIR="O" LEFT="2" NAME="DBG_OutputDriver_State" RIGHT="0" SIGIS="undef"/>
+        <PORT DIR="O" LEFT="31" NAME="DBG_PixelWFIFO" RIGHT="0" SIGIS="undef"/>
         <PORT DIR="O" LEFT="31" NAME="DBG_RastBarycentricB" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_DBG_RastBarycentricB">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ILA_AttrInterpolator" PORT="probe3"/>
@@ -4241,7 +4307,7 @@
         <PARAMETER NAME="C_SLOT_0_AXI_BUSER_WIDTH" VALUE="1"/>
         <PARAMETER NAME="C_PROBE0_WIDTH" VALUE="96"/>
         <PARAMETER NAME="C_PROBE1_WIDTH" VALUE="24"/>
-        <PARAMETER NAME="C_PROBE2_WIDTH" VALUE="7"/>
+        <PARAMETER NAME="C_PROBE2_WIDTH" VALUE="3"/>
         <PARAMETER NAME="C_PROBE3_WIDTH" VALUE="32"/>
         <PARAMETER NAME="C_PROBE4_WIDTH" VALUE="32"/>
         <PARAMETER NAME="C_PROBE5_WIDTH" VALUE="32"/>
@@ -7350,7 +7416,7 @@
             <CONNECTION INSTANCE="DepthInterpolator_0" PORT="DEPTH_OutPixelDepth"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="6" NAME="probe2" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_DBG_AttrInterpolator_State">
+        <PORT DIR="I" LEFT="2" NAME="probe2" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_DBG_AttrInterpolator_State">
           <CONNECTIONS>
             <CONNECTION INSTANCE="AttrInterpolator_0" PORT="DBG_AttrInterpolator_State"/>
           </CONNECTIONS>
@@ -7370,9 +7436,9 @@
             <CONNECTION INSTANCE="AttrInterpolator_0" PORT="FPU_MUL_A"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="probe6" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_FPU_CNV_A">
+        <PORT DIR="I" LEFT="31" NAME="probe6" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_FPU_CNV0_A">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="FPU_CNV_A"/>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="FPU_CNV0_A"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="I" LEFT="63" NAME="probe7" RIGHT="0" SIGIS="undef" SIGNAME="DepthBuffer_URAM_doutb">
@@ -28845,7 +28911,7 @@
             <CONNECTION INSTANCE="StatsCollector_0" PORT="clk"/>
             <CONNECTION INSTANCE="CommandProcessor_0" PORT="clk"/>
             <CONNECTION INSTANCE="ClipUnit_0" PORT="clk"/>
-            <CONNECTION INSTANCE="AttrInterp_FPU_CNV" PORT="clk"/>
+            <CONNECTION INSTANCE="AttrInterp_FPU_CNV0" PORT="clk"/>
             <CONNECTION INSTANCE="AttrInterp_FPU_MUL" PORT="clk"/>
             <CONNECTION INSTANCE="DINTERP_FPU_MUL" PORT="clk"/>
             <CONNECTION INSTANCE="DINTERP_FPU_CNV" PORT="clk"/>
@@ -28856,6 +28922,7 @@
             <CONNECTION INSTANCE="ATTRINTERP_TRIDATA_FIFO" PORT="clk"/>
             <CONNECTION INSTANCE="TriWorkCache2_0" PORT="clk"/>
             <CONNECTION INSTANCE="Rasterizer_0" PORT="clk"/>
+            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="clk"/>
             <CONNECTION INSTANCE="SerialPacketSystem_ValidIncomingPacketsFIFO" PORT="rd_clk"/>
             <CONNECTION INSTANCE="SerialPacketSystem_ReturnOutputPacketsFIFO" PORT="wr_clk"/>
             <CONNECTION INSTANCE="ShaderCoreSystem_InstructionCache" PORT="clka"/>
@@ -28870,7 +28937,7 @@
             <CONNECTION INSTANCE="ShaderCoreSystem_GPRQuadSystem_GPRQuad2_0" PORT="clk"/>
             <CONNECTION INSTANCE="ScanoutSystem_CDC_Command_Scanout_0" PORT="cmd_clk"/>
             <CONNECTION INSTANCE="AttrInterpolator_0" PORT="clk"/>
-            <CONNECTION INSTANCE="DepthInterpolator_0" PORT="clk"/>
+            <CONNECTION INSTANCE="AttrInterp_FPU_CNV1" PORT="clk"/>
             <CONNECTION INSTANCE="MemorySystem_ScanoutReadRequestsFIFO" PORT="rd_clk"/>
             <CONNECTION INSTANCE="MemorySystem_ZStencilReadRequestsFIFO" PORT="rd_clk"/>
             <CONNECTION INSTANCE="MemorySystem_ZStencilReadRequestsFIFO" PORT="wr_clk"/>
@@ -41426,9 +41493,9 @@
         <PARAMETER NAME="C_PROG_EMPTY_THRESH_ASSERT_VAL" VALUE="4"/>
         <PARAMETER NAME="C_PROG_EMPTY_THRESH_NEGATE_VAL" VALUE="5"/>
         <PARAMETER NAME="C_PROG_EMPTY_TYPE" VALUE="0"/>
-        <PARAMETER NAME="C_PROG_FULL_THRESH_ASSERT_VAL" VALUE="511"/>
-        <PARAMETER NAME="C_PROG_FULL_THRESH_NEGATE_VAL" VALUE="510"/>
-        <PARAMETER NAME="C_PROG_FULL_TYPE" VALUE="0"/>
+        <PARAMETER NAME="C_PROG_FULL_THRESH_ASSERT_VAL" VALUE="462"/>
+        <PARAMETER NAME="C_PROG_FULL_THRESH_NEGATE_VAL" VALUE="461"/>
+        <PARAMETER NAME="C_PROG_FULL_TYPE" VALUE="1"/>
         <PARAMETER NAME="C_RD_DATA_COUNT_WIDTH" VALUE="10"/>
         <PARAMETER NAME="C_RD_DEPTH" VALUE="512"/>
         <PARAMETER NAME="C_RD_FREQ" VALUE="1"/>
@@ -41632,9 +41699,9 @@
         <PARAMETER NAME="Disable_Timing_Violations" VALUE="false"/>
         <PARAMETER NAME="Read_Clock_Frequency" VALUE="1"/>
         <PARAMETER NAME="Write_Clock_Frequency" VALUE="1"/>
-        <PARAMETER NAME="Programmable_Full_Type" VALUE="No_Programmable_Full_Threshold"/>
-        <PARAMETER NAME="Full_Threshold_Assert_Value" VALUE="511"/>
-        <PARAMETER NAME="Full_Threshold_Negate_Value" VALUE="510"/>
+        <PARAMETER NAME="Programmable_Full_Type" VALUE="Single_Programmable_Full_Threshold_Constant"/>
+        <PARAMETER NAME="Full_Threshold_Assert_Value" VALUE="462"/>
+        <PARAMETER NAME="Full_Threshold_Negate_Value" VALUE="461"/>
         <PARAMETER NAME="Programmable_Empty_Type" VALUE="No_Programmable_Empty_Threshold"/>
         <PARAMETER NAME="Empty_Threshold_Assert_Value" VALUE="4"/>
         <PARAMETER NAME="Empty_Threshold_Negate_Value" VALUE="5"/>
@@ -41803,6 +41870,11 @@
           </CONNECTIONS>
           <CONNECTIONS>
             <CONNECTION INSTANCE="TexSample_0" PORT="INTERP_InFIFO_empty"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="prog_full" SIGIS="undef" SIGNAME="TEXSAMP_FIFO_prog_full">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="AttrInterpolator_0" PORT="TEXSAMP_OutFIFO_almost_full"/>
           </CONNECTIONS>
         </PORT>
       </PORTS>
@@ -44974,7 +45046,7 @@
         <PARAMETER NAME="C_TRIGOUT_EN" VALUE="0"/>
         <PARAMETER NAME="C_TRIGIN_EN" VALUE="0"/>
         <PARAMETER NAME="C_SLOT_0_AXIS_TUSER_WIDTH" VALUE="8"/>
-        <PARAMETER NAME="C_SLOT_0_AXIS_TDEST_WIDTH" VALUE="7"/>
+        <PARAMETER NAME="C_SLOT_0_AXIS_TDEST_WIDTH" VALUE="3"/>
         <PARAMETER NAME="C_SLOT_0_AXIS_TID_WIDTH" VALUE="6"/>
         <PARAMETER NAME="C_SLOT_0_AXI_ID_WIDTH" VALUE="1"/>
         <PARAMETER NAME="C_SLOT_0_AXI_ARUSER_WIDTH" VALUE="30"/>
@@ -44989,7 +45061,7 @@
         <PARAMETER NAME="C_PROBE4_WIDTH" VALUE="6"/>
         <PARAMETER NAME="C_PROBE5_WIDTH" VALUE="8"/>
         <PARAMETER NAME="C_PROBE6_WIDTH" VALUE="4"/>
-        <PARAMETER NAME="C_PROBE7_WIDTH" VALUE="7"/>
+        <PARAMETER NAME="C_PROBE7_WIDTH" VALUE="3"/>
         <PARAMETER NAME="C_PROBE8_WIDTH" VALUE="6"/>
         <PARAMETER NAME="C_PROBE9_WIDTH" VALUE="5"/>
         <PARAMETER NAME="C_PROBE10_WIDTH" VALUE="4"/>
@@ -48118,7 +48190,7 @@
             <CONNECTION INSTANCE="Rasterizer_0" PORT="DBG_Rasterizer_State"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="6" NAME="probe7" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_DBG_AttrInterpolator_State">
+        <PORT DIR="I" LEFT="2" NAME="probe7" RIGHT="0" SIGIS="undef" SIGNAME="AttrInterpolator_0_DBG_AttrInterpolator_State">
           <CONNECTIONS>
             <CONNECTION INSTANCE="AttrInterpolator_0" PORT="DBG_AttrInterpolator_State"/>
           </CONNECTIONS>

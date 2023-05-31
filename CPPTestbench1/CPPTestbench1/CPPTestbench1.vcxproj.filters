@@ -469,5 +469,8 @@
     <None Include="hdl_src\FloatALU\FloatALU_Interpolator.vhd">
       <Filter>HDL\FloatALU</Filter>
     </None>
+    <None Include="hdl_src\SimpleFIFO.vhd">
+      <Filter>HDL</Filter>
+    </None>
   </ItemGroup>
 </Project>

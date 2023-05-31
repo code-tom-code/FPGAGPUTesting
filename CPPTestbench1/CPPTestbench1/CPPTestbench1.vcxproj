@@ -293,6 +293,7 @@
     <None Include="hdl_src\RenderState\TexSampleState.vhd" />
     <None Include="hdl_src\RenderState\TriSetupState.vhd" />
     <None Include="hdl_src\RenderState\VertexBatchBuilderState.vhd" />
+    <None Include="hdl_src\SimpleFIFO.vhd" />
     <None Include="hdl_src\StateBlock.vhd" />
     <None Include="hdl_src\StatsCollector.vhd" />
     <None Include="hdl_src\StatsEventsTracker.vhd" />

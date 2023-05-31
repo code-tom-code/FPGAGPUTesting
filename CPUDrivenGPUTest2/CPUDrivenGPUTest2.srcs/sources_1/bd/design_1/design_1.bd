@@ -364,7 +364,7 @@
           <spirit:configurableElementValue spirit:referenceId="C_PROBE10_WIDTH">4</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="C_PROBE9_WIDTH">5</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="C_PROBE8_WIDTH">6</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="C_PROBE7_WIDTH">7</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="C_PROBE7_WIDTH">3</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="C_PROBE6_WIDTH">4</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="C_PROBE5_WIDTH">8</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="C_PROBE4_WIDTH">6</spirit:configurableElementValue>
@@ -636,7 +636,7 @@
           <spirit:configurableElementValue spirit:referenceId="C_PROBE5_WIDTH">32</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="C_PROBE4_WIDTH">32</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="C_PROBE3_WIDTH">32</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="C_PROBE2_WIDTH">7</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="C_PROBE2_WIDTH">3</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="C_PROBE1_WIDTH">24</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="C_PROBE0_WIDTH">96</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="C_NUM_OF_PROBES">15</spirit:configurableElementValue>
@@ -818,6 +818,10 @@
           <spirit:configurableElementValue spirit:referenceId="Input_Depth">512</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="Use_Embedded_Registers">false</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="Reset_Pin">false</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="Almost_Full_Flag">false</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="Almost_Empty_Flag">false</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="Programmable_Full_Type">Single_Programmable_Full_Threshold_Constant</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="Full_Threshold_Assert_Value">462</spirit:configurableElementValue>
         </spirit:configurableElementValues>
       </spirit:componentInstance>
       <spirit:componentInstance>
@@ -1161,7 +1165,7 @@
         </spirit:configurableElementValues>
       </spirit:componentInstance>
       <spirit:componentInstance>
-        <spirit:instanceName>AttrInterp_FPU_CNV</spirit:instanceName>
+        <spirit:instanceName>AttrInterp_FPU_CNV0</spirit:instanceName>
         <spirit:componentRef spirit:library="module_ref" spirit:name="StandaloneFloatALU_CNV" spirit:vendor="xilinx.com" spirit:version="1.0"/>
         <spirit:configurableElementValues>
           <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_StandaloneFloatALU_C_0_0</spirit:configurableElementValue>
@@ -1271,6 +1275,17 @@
         </spirit:configurableElementValues>
       </spirit:componentInstance>
       <spirit:componentInstance>
+        <spirit:instanceName>DepthInterpolator_0</spirit:instanceName>
+        <spirit:componentRef spirit:library="module_ref" spirit:name="DepthInterpolator" spirit:vendor="xilinx.com" spirit:version="1.0"/>
+        <spirit:configurableElementValues>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_DepthInterpolator_0_1</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">DepthInterpolator</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
+        </spirit:configurableElementValues>
+      </spirit:componentInstance>
+      <spirit:componentInstance>
         <spirit:instanceName>AttrInterpolator_0</spirit:instanceName>
         <spirit:componentRef spirit:library="module_ref" spirit:name="AttrInterpolator" spirit:vendor="xilinx.com" spirit:version="1.0"/>
         <spirit:configurableElementValues>
@@ -1282,11 +1297,11 @@
         </spirit:configurableElementValues>
       </spirit:componentInstance>
       <spirit:componentInstance>
-        <spirit:instanceName>DepthInterpolator_0</spirit:instanceName>
-        <spirit:componentRef spirit:library="module_ref" spirit:name="DepthInterpolator" spirit:vendor="xilinx.com" spirit:version="1.0"/>
+        <spirit:instanceName>AttrInterp_FPU_CNV1</spirit:instanceName>
+        <spirit:componentRef spirit:library="module_ref" spirit:name="StandaloneFloatALU_CNV" spirit:vendor="xilinx.com" spirit:version="1.0"/>
         <spirit:configurableElementValues>
-          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_DepthInterpolator_0_1</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">DepthInterpolator</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_StandaloneFloatALU_C_0_3</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">StandaloneFloatALU_CNV</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
@@ -1572,7 +1587,7 @@
         <spirit:internalPortReference spirit:componentRef="StatsCollector_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="CommandProcessor_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="ClipUnit_0" spirit:portRef="clk"/>
-        <spirit:internalPortReference spirit:componentRef="AttrInterp_FPU_CNV" spirit:portRef="clk"/>
+        <spirit:internalPortReference spirit:componentRef="AttrInterp_FPU_CNV0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="AttrInterp_FPU_MUL" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="DINTERP_FPU_MUL" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="DINTERP_FPU_CNV" spirit:portRef="clk"/>
@@ -1583,11 +1598,12 @@
         <spirit:internalPortReference spirit:componentRef="ATTRINTERP_TRIDATA_FIFO" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="TriWorkCache2_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="Rasterizer_0" spirit:portRef="clk"/>
+        <spirit:internalPortReference spirit:componentRef="DepthInterpolator_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="SerialPacketSystem" spirit:portRef="rd_clk"/>
         <spirit:internalPortReference spirit:componentRef="ShaderCoreSystem" spirit:portRef="clk_0"/>
         <spirit:internalPortReference spirit:componentRef="ScanoutSystem" spirit:portRef="cmd_clk"/>
         <spirit:internalPortReference spirit:componentRef="AttrInterpolator_0" spirit:portRef="clk"/>
-        <spirit:internalPortReference spirit:componentRef="DepthInterpolator_0" spirit:portRef="clk"/>
+        <spirit:internalPortReference spirit:componentRef="AttrInterp_FPU_CNV1" spirit:portRef="clk"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>xlconstant_0_dout</spirit:name>
@@ -4260,11 +4276,6 @@
         <spirit:internalPortReference spirit:componentRef="AttrInterpolator_0" spirit:portRef="FPU_MUL_OUT"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
-        <spirit:name>StandaloneFloatALU_C_0_OCNV1</spirit:name>
-        <spirit:internalPortReference spirit:componentRef="AttrInterp_FPU_CNV" spirit:portRef="OCNV"/>
-        <spirit:internalPortReference spirit:componentRef="AttrInterpolator_0" spirit:portRef="FPU_CNV_OUT"/>
-      </spirit:adHocConnection>
-      <spirit:adHocConnection>
         <spirit:name>AttrInterpolator_0_FPU_MUL_A</spirit:name>
         <spirit:internalPortReference spirit:componentRef="AttrInterpolator_0" spirit:portRef="FPU_MUL_A"/>
         <spirit:internalPortReference spirit:componentRef="AttrInterp_FPU_MUL" spirit:portRef="IN_A"/>
@@ -4282,19 +4293,9 @@
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>AttrInterpolator_0_FPU_CNV_A</spirit:name>
-        <spirit:internalPortReference spirit:componentRef="AttrInterpolator_0" spirit:portRef="FPU_CNV_A"/>
-        <spirit:internalPortReference spirit:componentRef="AttrInterp_FPU_CNV" spirit:portRef="IN_A"/>
+        <spirit:internalPortReference spirit:componentRef="AttrInterpolator_0" spirit:portRef="FPU_CNV0_A"/>
+        <spirit:internalPortReference spirit:componentRef="AttrInterp_FPU_CNV0" spirit:portRef="IN_A"/>
         <spirit:internalPortReference spirit:componentRef="ILA_AttrInterpolator" spirit:portRef="probe6"/>
-      </spirit:adHocConnection>
-      <spirit:adHocConnection>
-        <spirit:name>AttrInterpolator_0_FPU_CNV_Mode</spirit:name>
-        <spirit:internalPortReference spirit:componentRef="AttrInterpolator_0" spirit:portRef="FPU_CNV_Mode"/>
-        <spirit:internalPortReference spirit:componentRef="AttrInterp_FPU_CNV" spirit:portRef="IN_MODE"/>
-      </spirit:adHocConnection>
-      <spirit:adHocConnection>
-        <spirit:name>AttrInterpolator_0_FPU_CNV_GO</spirit:name>
-        <spirit:internalPortReference spirit:componentRef="AttrInterpolator_0" spirit:portRef="FPU_CNV_GO"/>
-        <spirit:internalPortReference spirit:componentRef="AttrInterp_FPU_CNV" spirit:portRef="ICNV_GO"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>StandaloneFloatALU_M_0_OMUL3</spirit:name>
@@ -4530,6 +4531,46 @@
         <spirit:name>TriWorkCache2_0_INTERP_outColorRGBA20</spirit:name>
         <spirit:internalPortReference spirit:componentRef="TriWorkCache2_0" spirit:portRef="INTERP_outColorRGBA20"/>
         <spirit:internalPortReference spirit:componentRef="AttrInterpolator_0" spirit:portRef="TRICACHE_inColorRGBA20"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TEXSAMP_FIFO_prog_full</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TEXSAMP_FIFO" spirit:portRef="prog_full"/>
+        <spirit:internalPortReference spirit:componentRef="AttrInterpolator_0" spirit:portRef="TEXSAMP_OutFIFO_almost_full"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>AttrInterp_FPU_CNV_OCNV</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="AttrInterp_FPU_CNV0" spirit:portRef="OCNV"/>
+        <spirit:internalPortReference spirit:componentRef="AttrInterpolator_0" spirit:portRef="FPU_CNV0_OUT"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>AttrInterpolator_0_FPU_CNV0_Mode</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="AttrInterpolator_0" spirit:portRef="FPU_CNV0_Mode"/>
+        <spirit:internalPortReference spirit:componentRef="AttrInterp_FPU_CNV0" spirit:portRef="IN_MODE"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>AttrInterpolator_0_FPU_CNV0_GO</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="AttrInterpolator_0" spirit:portRef="FPU_CNV0_GO"/>
+        <spirit:internalPortReference spirit:componentRef="AttrInterp_FPU_CNV0" spirit:portRef="ICNV_GO"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>AttrInterp_FPU_CNV1_OCNV</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="AttrInterp_FPU_CNV1" spirit:portRef="OCNV"/>
+        <spirit:internalPortReference spirit:componentRef="AttrInterpolator_0" spirit:portRef="FPU_CNV1_OUT"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>AttrInterpolator_0_FPU_CNV1_A</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="AttrInterpolator_0" spirit:portRef="FPU_CNV1_A"/>
+        <spirit:internalPortReference spirit:componentRef="AttrInterp_FPU_CNV1" spirit:portRef="IN_A"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>AttrInterpolator_0_FPU_CNV1_Mode</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="AttrInterpolator_0" spirit:portRef="FPU_CNV1_Mode"/>
+        <spirit:internalPortReference spirit:componentRef="AttrInterp_FPU_CNV1" spirit:portRef="IN_MODE"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>AttrInterpolator_0_FPU_CNV1_GO</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="AttrInterpolator_0" spirit:portRef="FPU_CNV1_GO"/>
+        <spirit:internalPortReference spirit:componentRef="AttrInterp_FPU_CNV1" spirit:portRef="ICNV_GO"/>
       </spirit:adHocConnection>
     </spirit:adHocConnections>
     <spirit:hierConnections>

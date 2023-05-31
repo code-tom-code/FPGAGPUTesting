@@ -908,6 +908,7 @@ const int RunTestsROP(Xsi::Loader& loader, RenderWindow* renderWindow)
 	std_logic_port DBG_ReadRequestFIFOFull(PD_OUT, loader, "DBG_ReadRequestFIFOFull");
 #endif // #ifdef DEBUG_PORTS_DEBUG
 
+	AttrInterpTriCache attrInterpolatorTriCache;
 	bool successResult = true;
 
 	LPDIRECT3DTEXTURE9 gradientTexture128x128 = NULL;
@@ -1332,6 +1333,27 @@ const int RunTestsROP(Xsi::Loader& loader, RenderWindow* renderWindow)
 
 				std::vector<rasterizedPixelData> rasterizedPixels;
 
+				AttrInterpTriCache::AttrTriCacheData newAttrTriData;
+				newAttrTriData.TX0 = triSetupData.v0.xTex;
+				newAttrTriData.TX10 = triSetupData.v10.xTex;
+				newAttrTriData.TX20 = triSetupData.v20.xTex;
+				newAttrTriData.TY0 = triSetupData.v0.yTex;
+				newAttrTriData.TY10 = triSetupData.v10.yTex;
+				newAttrTriData.TY20 = triSetupData.v20.yTex;
+				newAttrTriData.RGBA0.r = triSetupData.v0.rgba.r;
+				newAttrTriData.RGBA0.g = triSetupData.v0.rgba.g;
+				newAttrTriData.RGBA0.b = triSetupData.v0.rgba.b;
+				newAttrTriData.RGBA0.a = triSetupData.v0.rgba.a;
+				newAttrTriData.RGBA10.r = triSetupData.v10.rgba.r;
+				newAttrTriData.RGBA10.g = triSetupData.v10.rgba.g;
+				newAttrTriData.RGBA10.b = triSetupData.v10.rgba.b;
+				newAttrTriData.RGBA10.a = triSetupData.v10.rgba.a;
+				newAttrTriData.RGBA20.r = triSetupData.v20.rgba.r;
+				newAttrTriData.RGBA20.g = triSetupData.v20.rgba.g;
+				newAttrTriData.RGBA20.b = triSetupData.v20.rgba.b;
+				newAttrTriData.RGBA20.a = triSetupData.v20.rgba.a;
+				attrInterpolatorTriCache.dataFifo.push_back(newAttrTriData);
+
 				rasterizedPixelData startNewTriMessage = {0};
 				startNewTriMessage.pixelX = startNewTriangleSlotCommand;
 				startNewTriMessage.pixelY = (currentTriCacheIndex) % 8;
@@ -1349,7 +1371,7 @@ const int RunTestsROP(Xsi::Loader& loader, RenderWindow* renderWindow)
 				EmulateDepthInterpCPU(triSetupData, rasterizedPixels, emulatedCPUDepthInterpData, emulatedCPUDepthValues);
 
 				std::vector<attributeInterpOutputData> emulatedCPUAttributeInterpData;
-				EmulateAttributeInterpCPU(triSetupData, emulatedCPUDepthInterpData, !randomAttributes, emulatedCPUAttributeInterpData);
+				EmulateAttributeInterpCPU(attrInterpolatorTriCache, emulatedCPUDepthInterpData, !randomAttributes, emulatedCPUAttributeInterpData);
 
 				std::vector<texSampOutput> emulatedCPUTexSampleData;
 				EmulateTexSamplerCPU(emulatedCPUAttributeInterpData, emulatedCPUTexSampleData, useBilinearInterp, texDesc, d3dlr);

@@ -181,6 +181,12 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
+      <File Path="$PSRCDIR/sources_1/new/SimpleFIFO.vhd">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
       <File Path="$PSRCDIR/sources_1/new/FloatALU/Standalones/StandaloneFloatALU_ADD.vhd">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>

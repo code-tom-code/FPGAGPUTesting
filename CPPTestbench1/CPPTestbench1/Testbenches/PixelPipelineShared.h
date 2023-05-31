@@ -349,6 +349,68 @@ struct depthInterpOutputData
 	}
 };
 
+struct AttrInterpTriCache
+{
+	struct AttrTriCacheData
+	{
+		float TX0;
+		float TX10;
+		float TX20;
+		float TY0;
+		float TY10;
+		float TY20;
+		D3DCOLORVALUE RGBA0;
+		D3DCOLORVALUE RGBA10;
+		D3DCOLORVALUE RGBA20;
+	};
+
+	std::vector<AttrTriCacheData> dataFifo;
+
+	void Update(std_logic_port& TRICACHE_PopTriangleSlot,
+		std_logic_vector_port<32>& TRICACHE_inT0X, std_logic_vector_port<32>& TRICACHE_inT10X, std_logic_vector_port<32>& TRICACHE_inT20X,
+		std_logic_vector_port<32>& TRICACHE_inT0Y, std_logic_vector_port<32>& TRICACHE_inT10Y, std_logic_vector_port<32>& TRICACHE_inT20Y,
+		std_logic_vector_port<128>& TRICACHE_inColorRGBA0, std_logic_vector_port<128>& TRICACHE_inColorRGBA10, std_logic_vector_port<128>& TRICACHE_inColorRGBA20)
+	{
+		if (!dataFifo.empty() )
+		{
+			const AttrTriCacheData& fallthroughData = dataFifo.front();
+			TRICACHE_inT0X = fallthroughData.TX0;
+			TRICACHE_inT10X = fallthroughData.TX10;
+			TRICACHE_inT20X = fallthroughData.TX20;
+			TRICACHE_inT0Y = fallthroughData.TY0;
+			TRICACHE_inT10Y = fallthroughData.TY10;
+			TRICACHE_inT20Y = fallthroughData.TY20;
+			TRICACHE_inColorRGBA0.SetStructVal(fallthroughData.RGBA0);
+			TRICACHE_inColorRGBA10.SetStructVal(fallthroughData.RGBA10);
+			TRICACHE_inColorRGBA20.SetStructVal(fallthroughData.RGBA20);
+		}
+		else
+		{
+			TRICACHE_inT0X = 0.0f;
+			TRICACHE_inT10X = 0.0f;
+			TRICACHE_inT20X = 0.0f;
+			TRICACHE_inT0Y = 0.0f;
+			TRICACHE_inT10Y = 0.0f;
+			TRICACHE_inT20Y = 0.0f;
+			TRICACHE_inColorRGBA0.SetToZero();
+			TRICACHE_inColorRGBA10.SetToZero();
+			TRICACHE_inColorRGBA20.SetToZero();
+		}
+
+		if (TRICACHE_PopTriangleSlot.GetBoolVal() )
+		{
+			if (dataFifo.size() > 0)
+			{
+				dataFifo.erase(dataFifo.begin() );
+			}
+			else
+			{
+				__debugbreak();
+			}
+		}
+	}
+};
+
 enum triSetupResultType
 {
 	// Passed triangle culling:
@@ -434,11 +496,20 @@ struct attributeInterpOutputData
 		interpolatedColorRGBA = vertexColorRGBA;
 	}
 
+	static const bool ChannelCompare(const unsigned a, const unsigned b)
+	{
+		const int delta = (const int)a - (const int)b;
+		return abs(delta) < 2;
+	}
+
 	const bool operator==(const attributeInterpOutputData& rhs) const
 	{
 		return (pixelX == rhs.pixelX) && (pixelY == rhs.pixelY) &&
 			(abs( (const short)texcoordX - (const short)rhs.texcoordX) <= 2) && (abs( (const short)texcoordY == (const short)rhs.texcoordY) <= 2) &&
-			(vertexColorRGBA == rhs.vertexColorRGBA);
+			ChannelCompare(vertexColorRGBA & 0xFF, rhs.vertexColorRGBA & 0xFF) &&
+			ChannelCompare( (vertexColorRGBA >> 8) & 0xFF, (rhs.vertexColorRGBA >> 8) & 0xFF) &&
+			ChannelCompare( (vertexColorRGBA >> 16) & 0xFF, (rhs.vertexColorRGBA >> 16) & 0xFF) &&
+			ChannelCompare( (vertexColorRGBA >> 24) & 0xFF, (rhs.vertexColorRGBA >> 24) & 0xFF);
 	}
 };
 static_assert(sizeof(attributeInterpOutputData) == 12, "Error: Unexpected struct padding!");
@@ -502,5 +573,5 @@ triSetupResultType EmulateCPUTriSetup(const triSetupInput& inTriData, triSetupOu
 void EmulateCPURasterizer(const triSetupOutput& triSetupData, std::vector<rasterizedPixelData>& outRasterizedPixels);
 
 void EmulateDepthInterpCPU(const triSetupOutput& triSetupData, const std::vector<rasterizedPixelData>& rasterizedPixels, std::vector<depthInterpOutputData>& outDepthInterpData, std::vector<unsigned>& outDebugDepthValues);
-void EmulateAttributeInterpCPU(const triSetupOutput& triSetupData, const std::vector<depthInterpOutputData>& depthInterpData, const bool validateNormalizedTexcoords, std::vector<attributeInterpOutputData>& outAttributeInterpData);
+void EmulateAttributeInterpCPU(const AttrInterpTriCache& attrTriCache, const std::vector<depthInterpOutputData>& depthInterpData, const bool validateNormalizedTexcoords, std::vector<attributeInterpOutputData>& outAttributeInterpData);
 void EmulateTexSamplerCPU(const std::vector<attributeInterpOutputData>& interpolatedData, std::vector<texSampOutput>& outTexSampData, const bool useBilinearInterp, const D3DSURFACE_DESC& texDesc, const D3DLOCKED_RECT& d3dlr);

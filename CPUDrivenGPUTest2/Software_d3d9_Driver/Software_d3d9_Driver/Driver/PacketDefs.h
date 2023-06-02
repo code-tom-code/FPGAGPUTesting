@@ -52,6 +52,7 @@ struct command
 		PT_SETVIEWPORTPARAMS0 = 36,
 		PT_SETVIEWPORTPARAMS1 = 37,
 		PT_SETSCISSORRECT = 38,
+		PT_SETINTERPOLATORSTATE = 39,
 
 		PT_MAX_PACKET_TYPES // This must always be last
 	};
@@ -1104,6 +1105,29 @@ struct setStatsEventConfigCommand : command
 	unsigned unused1 : 2; // 31 downto 30
 };
 
+// Configure the attribute interpolator state
+struct setAttrInterpolatorStateCommand : command
+{
+	setAttrInterpolatorStateCommand() : command(PT_SETINTERPOLATORSTATE),
+		addressingU(TAM_Wrap), addressingV(TAM_Wrap), useFlatShadingColor(false),
+		padding0(0), padding1(0)
+	{
+		padding123[0] = 0;
+		padding123[1] = 0;
+		padding123[2] = 0;
+	}
+
+	// Payload 0:
+	eTexcoordAddressingMode addressingU : 3; // 2 downto 0
+	eTexcoordAddressingMode addressingV : 3; // 5 downto 3
+	unsigned char useFlatShadingColor : 1; // 6
+	unsigned char padding0 : 1; // 7
+	unsigned char padding123[3] = {0}; // 31 downto 8
+
+	// Payload 1:
+	DWORD padding1;
+};
+
 // TODO: One day implement variable-sized packets and then this can go away
 static_assert(sizeof(genericCommand) == sizeof(doNothingCommand) &&
 	sizeof(genericCommand) == sizeof(writeMemCommand) &&
@@ -1138,6 +1162,7 @@ static_assert(sizeof(genericCommand) == sizeof(doNothingCommand) &&
 	sizeof(genericCommand) == sizeof(setViewportState1Command) &&
 	sizeof(genericCommand) == sizeof(setScissorRectCommand) &&
 	sizeof(genericCommand) == sizeof(setStatsEventConfigCommand) &&
+	sizeof(genericCommand) == sizeof(setAttrInterpolatorStateCommand) &&
 	sizeof(genericCommand) == 11, "Error: Unexpected struct size!");
 
 #pragma pack(pop) // End pragma pack 1 region

@@ -25,6 +25,7 @@ package AttrInterpolatorState is
 
 	pure function SerializeStructToBits(stateStruct : sAttrInterpolatorState) return std_logic_vector;
 	pure function DeserializeBitsToStruct(stateStructBits : std_logic_vector(ATTR_INTERPOLATOR_STATE_SIZE_BITS-1 downto 0) ) return sAttrInterpolatorState;
+	pure function MakeStructFromMembers(argUseFlatShadingColors : std_logic; argTex0AddressingU : eTexcoordAddressingMode; argTex0AddressingV : eTexcoordAddressingMode) return sAttrInterpolatorState;
 	
 end package AttrInterpolatorState;
 
@@ -43,6 +44,16 @@ package body AttrInterpolatorState is
 		retStruct.UseFlatShadingColors := stateStructBits(0);
 		retStruct.Texcoord0AddressingModeU := eTexcoordAddressingMode'val(to_integer(unsigned(stateStructBits(3 downto 1) ) ) );
 		retStruct.Texcoord0AddressingModeV := eTexcoordAddressingMode'val(to_integer(unsigned(stateStructBits(6 downto 4) ) ) );
+
+		return retStruct;
+	end function;
+
+	pure function MakeStructFromMembers(argUseFlatShadingColors : std_logic; argTex0AddressingU : eTexcoordAddressingMode; argTex0AddressingV : eTexcoordAddressingMode) return sAttrInterpolatorState is
+		variable retStruct : sAttrInterpolatorState;
+	begin
+		retStruct.UseFlatShadingColors := argUseFlatShadingColors;
+		retStruct.Texcoord0AddressingModeU := argTex0AddressingU;
+		retStruct.Texcoord0AddressingModeV := argTex0AddressingV;
 
 		return retStruct;
 	end function;

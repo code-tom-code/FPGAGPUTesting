@@ -182,6 +182,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Driver\BlendStateBlock.cpp" />
+    <ClCompile Include="Driver\DeviceConversions.cpp" />
     <ClCompile Include="Driver\DriverSettingsDlg.cpp" />
     <ClCompile Include="Driver\GPUAllocator.cpp" />
     <ClCompile Include="Driver\GPUCommandList.cpp" />
@@ -240,6 +241,7 @@
     <ClInclude Include="DebuggableEnums.h" />
     <ClInclude Include="DeviceState.h" />
     <ClInclude Include="DitherTables.h" />
+    <ClInclude Include="Driver\DeviceConversions.h" />
     <ClInclude Include="Driver\DriverSettingsDlg.h" />
     <ClInclude Include="Driver\GPUAllocator.h" />
     <ClInclude Include="Driver\GPUCommandList.h" />

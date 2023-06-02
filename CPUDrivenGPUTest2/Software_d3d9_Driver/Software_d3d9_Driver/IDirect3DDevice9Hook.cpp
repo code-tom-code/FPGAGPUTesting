@@ -22,6 +22,7 @@
 #include "Driver/IVirtualDeviceComms.h"
 #include "Driver/GPUAllocator.h"
 #include "Driver/GPUDeviceLimits.h"
+#include "Driver/DeviceConversions.h"
 #include "..\DriverShaderCompiler\DriverShaderCompiler.h"
 #include "..\ShaderTraceViewer\ShaderTrace.h"
 #include <Mmsystem.h>
@@ -5222,76 +5223,13 @@ void IDirect3DDevice9Hook::DeviceSetUsedVertexShaderConstants()
 void IDirect3DDevice9Hook::DeviceSetCurrentState(const D3DPRIMITIVETYPE primType, const IDirect3DIndexBuffer9Hook* currentIB)
 {
 	gpuvoid* deviceBackbuffer = currentState.currentRenderTargets[0]->GetDeviceSurfaceBytes();
-	const eBlendMask eWriteMask = (const eBlendMask)(currentState.currentRenderStates.renderStatesUnion.namedStates.colorWriteEnable & 0xF);
+	const eBlendMask eWriteMask = ConvertToDeviceBlendMask(currentState.currentRenderStates.renderStatesUnion.namedStates.colorWriteEnable);
 
-	eCullMode cullMode;
-	switch (currentState.currentRenderStates.renderStatesUnion.namedStates.cullmode)
-	{
-	default:
-#ifdef _DEBUG
-		__debugbreak();
-#endif
-	case D3DCULL_NONE:
-		cullMode = cullNone;
-		break;
-	case D3DCULL_CW:
-		cullMode = cullCW;
-		break;
-	case D3DCULL_CCW:
-		cullMode = cullCCW;
-		break;
-	}
+	const eCullMode cullMode = ConvertToDeviceCullMode(currentState.currentRenderStates.renderStatesUnion.namedStates.cullmode);
 
-	ePrimTopology primTopology;
-	switch (primType)
-	{
-	case D3DPT_POINTLIST:
-		primTopology = primTop_PointList;
-		break;
-	case D3DPT_LINELIST:
-		primTopology = primTop_LineList;
-		break;
-	case D3DPT_LINESTRIP:
-		primTopology = primTop_LineStrip;
-		break;
-	default:
-#ifdef _DEBUG
-		__debugbreak();
-#endif
-	case D3DPT_TRIANGLELIST:
-		primTopology = primTop_TriangleList;
-		break;
-	case D3DPT_TRIANGLESTRIP:
-		primTopology = primTop_TriangleStrip;
-		break;
-	case D3DPT_TRIANGLEFAN:
-		primTopology = primTop_TriangleFan;
-		break;
-	}
+	const ePrimTopology primTopology = ConvertToDevicePrimTopology(primType);
 
-	eIndexFormat indexFormat = ibfmt_noIndices;
-	if (currentIB != NULL)
-	{
-		switch (currentIB->GetFormat() == D3DFMT_INDEX16 ? 16 : 32)
-		{
-		default:
-	#ifdef _DEBUG
-			__debugbreak();
-	#endif
-		case 0:
-			indexFormat = ibfmt_noIndices;
-			break;
-		case 8:
-			indexFormat = ibfmt_index8;
-			break;
-		case 16:
-			indexFormat = ibfmt_index16;
-			break;
-		case 32:
-			indexFormat = ibfmt_index32;
-			break;
-		}
-	}
+	const eIndexFormat indexFormat = ConvertToDeviceIndexFormat(currentIB, currentIB ? currentIB->GetFormat() : D3DFMT_UNKNOWN);
 
 	// Set the IA state:
 	baseDevice->DeviceSetIAState(cullMode, primTopology, sct_CutDisabled, indexFormat, currentIB ? currentIB->GetInternalLength() : 0, currentIB ? currentIB->GetGPUBytes() : NULL);
@@ -5357,6 +5295,12 @@ void IDirect3DDevice9Hook::DeviceSetCurrentState(const D3DPRIMITIVETYPE primType
 	const D3DCOLOR blendFactorARGB = currentState.currentRenderStates.renderStatesUnion.namedStates.blendFactor;
 	baseDevice->DeviceSetROPState(deviceBackbuffer, eWriteMask, alphaTestEnable, alphaTestRefVal, ConvertToDeviceCmpFunc(alphaTestCmpFunc),
 		alphaBlendEnable, srcColorBlend, destColorBlend, colorBlendOp, srcAlphaBlend, destAlphaBlend, alphaBlendOp, blendFactorARGB);
+
+	// Set our attribute interpolator state up:
+	const bool useFlatShadingColors = (currentState.currentRenderStates.renderStatesUnion.namedStates.shadeMode == D3DSHADE_FLAT);
+	const D3DTEXTUREADDRESS tex0AddressingModeU = currentState.currentSamplerStates[0].stateUnion.namedStates.addressU;
+	const D3DTEXTUREADDRESS tex0AddressingModeV = currentState.currentSamplerStates[0].stateUnion.namedStates.addressV;
+	baseDevice->DeviceSetAttrInterpolatorState(useFlatShadingColors, ConvertToDeviceTexAddressMode(tex0AddressingModeU), ConvertToDeviceTexAddressMode(tex0AddressingModeV) );
 
 	// Do some soft-conversions from texture stage states to combiner modes:
 	combinerMode cbModeColor = cbm_textureModulateVertexColor;
@@ -5445,75 +5389,12 @@ void IDirect3DDevice9Hook::DeviceSetCurrentState(const D3DPRIMITIVETYPE primType
 		unsigned dontCareY = 0;
 		const unsigned reducedDimensions = surface0hook->GetReducedTextureDimensions(dontCareX, dontCareY);
 		const bool useBilinear = currentState.currentSamplerStates[0].stateUnion.namedStates.minFilter >= D3DTEXF_LINEAR;
-		bool hasAlphaChannel = false;
-		switch (surface0hook->GetInternalFormat() )
-		{
-		default:
-		case D3DFMT_X8B8G8R8:
-		case D3DFMT_X1R5G5B5:
-		case D3DFMT_X4R4G4B4:
-		case D3DFMT_R3G3B2:
-		case D3DFMT_R5G6B5:
-			hasAlphaChannel = false;
-			break;
-		case D3DFMT_A1:
-		case D3DFMT_A1R5G5B5:
-		case D3DFMT_A8:
-		case D3DFMT_A8R8G8B8:
-		case D3DFMT_A4R4G4B4:
-		case D3DFMT_DXT1:
-		case D3DFMT_DXT2:
-		case D3DFMT_DXT3:
-		case D3DFMT_DXT4:
-		case D3DFMT_DXT5:
-			hasAlphaChannel = true;
-			break;
-		}
-		eTexFormat deviceFormat = eTexFmtNumFormats;
+		const eTexFormat deviceFormat = ConvertToDeviceTextureFormat(surface0hook->GetInternalFormat() );
 		eTexChannelMUX rChannel = tcm_r;
 		eTexChannelMUX gChannel = tcm_g;
 		eTexChannelMUX bChannel = tcm_b;
-		eTexChannelMUX aChannel = hasAlphaChannel ? tcm_a : tcm_1;
-		switch (surface0hook->GetInternalFormat() )
-		{
-		default:
-#ifdef _DEBUG
-			__debugbreak();
-#endif
-		case D3DFMT_DXT1:
-		case D3DFMT_DXT3:
-		case D3DFMT_DXT5:
-		case D3DFMT_A8R8G8B8:
-			bChannel = tcm_r; // D3D9 likes to store ARGB textures as ABGR, so we need to flip the R and B channels here
-			rChannel = tcm_b;
-			deviceFormat = eTexFmtA8R8G8B8;
-			break;
-		case D3DFMT_X8R8G8B8:
-			bChannel = tcm_r;
-			rChannel = tcm_b;
-			deviceFormat = eTexFmtX8R8G8B8;
-			break;
-		case D3DFMT_A4R4G4B4:
-			bChannel = tcm_r;
-			rChannel = tcm_b;
-			deviceFormat = eTexFmtA4R4G4B4;
-			break;
-		case D3DFMT_R5G6B5:
-			bChannel = tcm_r; 
-			rChannel = tcm_b;
-			deviceFormat = eTexFmtR5G6B5;
-			break;
-		case D3DFMT_A1R5G5B5:
-			bChannel = tcm_r;
-			rChannel = tcm_b;
-			deviceFormat = eTexFmtA1R5G5B5;
-			break;
-		case D3DFMT_X1R5G5B5:
-			bChannel = tcm_r;
-			rChannel = tcm_b;
-			deviceFormat = eTexFmtX1R5G5B5;
-			break;
-		}
+		eTexChannelMUX aChannel = tcm_a;
+		ComputeTextureChannelMUX(surface0hook->GetInternalFormat(), rChannel, gChannel, bChannel, aChannel);
 
 		surface0hook->UpdateSurfaceToGPUIfDirty();
 
@@ -11213,11 +11094,13 @@ void IDirect3DDevice9Hook::InitializeState(const D3DPRESENT_PARAMETERS& d3dpp, c
 	const BYTE alphaTestRefVal = 0x00;
 	const D3DCMPFUNC alphaTestCmpFunc = D3DCMP_ALWAYS;
 	const D3DCMPFUNC zCmpFunc = D3DCMP_ALWAYS;
+	const D3DTEXTUREADDRESS defaultTextureAddressMode = D3DTADDRESS_WRAP;
 	const bool alphaBlendEnable = false;
 	const bool depthClipEnable = true;
 	const bool useOpenGLNearZClip = false;
 	const bool colorWritesEnabled = true;
 	const bool clippingEnabled = true;
+	const bool useFlatShadingColor = false;
 	const float guardBandXScale = 16.0f;
 	const float guardBandYScale = 32.0f;
 	const float defaultDepthBias = 0.0f;
@@ -11243,6 +11126,7 @@ void IDirect3DDevice9Hook::InitializeState(const D3DPRESENT_PARAMETERS& d3dpp, c
 	baseDevice->DeviceSetClipState(depthClipEnable, useOpenGLNearZClip, guardBandXScale, guardBandYScale, clippingEnabled);
 	baseDevice->DeviceSetTriSetupState(viewportHalfWidth, viewportHalfHeight, viewportZScale, viewportZOffset, scissorLeft, scissorRight, scissorTop, scissorBottom);
 	baseDevice->DeviceSetDepthState(forceDisableDepth ? false : zEnable, zWriteEnable, colorWritesEnabled, ConvertToDeviceCmpFunc(zCmpFunc), ConvertToDeviceDepthFormat(defaultZFormat), defaultDepthBias);
+	baseDevice->DeviceSetAttrInterpolatorState(useFlatShadingColor, ConvertToDeviceTexAddressMode(defaultTextureAddressMode), ConvertToDeviceTexAddressMode(defaultTextureAddressMode) );
 	baseDevice->DeviceClearDepthStencil(currentState.currentDepthStencil ? currentState.currentDepthStencil->GetDeviceSurfaceBytes() : NULL, clearDepth, clearStencil, clearZValue, clearStencilValue);
 
 	// Force an end-frame event to clear out any state that may have been hanging around if we didn't shut down cleanly last time:

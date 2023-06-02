@@ -195,6 +195,9 @@
     <ClCompile Include="Driver\GPUMemoryMapDlg.cpp">
       <Filter>Source Files\Driver</Filter>
     </ClCompile>
+    <ClCompile Include="Driver\DeviceConversions.cpp">
+      <Filter>Source Files\Driver</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Source.def">
@@ -365,6 +368,9 @@
       <Filter>Header Files\Driver</Filter>
     </ClInclude>
     <ClInclude Include="Driver\GPUMemoryMapDlg.h">
+      <Filter>Header Files\Driver</Filter>
+    </ClInclude>
+    <ClInclude Include="Driver\DeviceConversions.h">
       <Filter>Header Files\Driver</Filter>
     </ClInclude>
   </ItemGroup>

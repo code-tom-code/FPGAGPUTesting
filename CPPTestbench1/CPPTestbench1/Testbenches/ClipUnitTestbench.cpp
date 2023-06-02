@@ -98,7 +98,8 @@ enum clipper_state_t : uint8_t
 	clip_sendToNextStage, // 74
 	clip_popNextChildTriangle0, // 75
 	clip_popNextChildTriangle1, // 76
-	clip_sendNewDrawEventID // 77
+	clip_sendNewDrawEventID, // 77
+	clip_setNewClipState // 78
 };
 
 static const char* const clipperStateStrings[] =

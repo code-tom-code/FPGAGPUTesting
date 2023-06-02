@@ -6,49 +6,7 @@
 #include "..\..\ShaderTraceViewer\ShaderTrace.h"
 #include "GPUCommandList.h"
 #include "GPUDeviceLimits.h"
-
-const eCmpFunc ConvertToDeviceCmpFunc(const D3DCMPFUNC cmpFunc)
-{
-	if (cmpFunc == 0)
-	{
-#ifdef _DEBUG
-		__debugbreak();
-#endif
-		return cmp_always;
-	}
-
-	if (cmpFunc > D3DCMP_ALWAYS)
-	{
-#ifdef _DEBUG
-		__debugbreak();
-#endif
-		return cmp_always;
-	}
-
-	return (const eCmpFunc)(cmpFunc - 1);
-}
-
-const eDepthFormat ConvertToDeviceDepthFormat(const D3DFORMAT zFormat)
-{
-	switch (zFormat)
-	{
-	case D3DFMT_D24S8:
-	case D3DFMT_D24X8:
-	case D3DFMT_D24X4S4:
-	case D3DFMT_D24FS8:
-		return eDepthFmtD24;
-	case D3DFMT_D16:
-	case D3DFMT_D16_LOCKABLE:
-		return eDepthFmtD16;
-	case D3DFMT_D15S1:
-		return eDepthFmtD15;
-	default:
-#ifdef _DEBUG
-		__debugbreak();
-#endif
-		return eDepthFmtD24;
-	}
-}
+#include "DeviceConversions.h"
 
 // TODO: Include address alignment in this validation also
 static const bool ValidateAddress(const gpuvoid* const deviceMemoryPtr)
@@ -806,6 +764,53 @@ HRESULT __stdcall IBaseGPUDevice::DeviceSetClipState(const bool depthClipEnabled
 		currentCachedState.deviceCachedGuardBandXScale = guardBandXScaleLog2;
 		currentCachedState.deviceCachedGuardBandYScale = guardBandYScaleLog2;
 		currentCachedState.deviceCachedClippingEnable = clippingEnabled;
+	}
+	if (FAILED(hRet) )
+		return hRet;
+	
+	if (DoSyncEveryCall() )
+		return DeviceWaitForIdle();
+	return hRet;
+}
+
+HRESULT __stdcall IBaseGPUDevice::DeviceSetAttrInterpolatorState(const bool useFlatShadingColor, const eTexcoordAddressingMode addressU, const eTexcoordAddressingMode addressV)
+{
+	if (addressU >= eTexcoordAddressingMode_NUM_ADDR_MODES)
+	{
+#ifdef _DEBUG
+		__debugbreak();
+#endif
+		return E_INVALIDARG;
+	}
+
+	if (addressV >= eTexcoordAddressingMode_NUM_ADDR_MODES)
+	{
+#ifdef _DEBUG
+		__debugbreak();
+#endif
+		return E_INVALIDARG;
+	}
+
+	if (DoCacheDeviceState() && currentCachedState.deviceAddressingU == addressU && currentCachedState.deviceAddressingV == addressV && currentCachedState.deviceCachedUseFlatShadingColor == useFlatShadingColor)
+		return S_OK;
+
+	setAttrInterpolatorStateCommand setAttrInterpolatorState;
+	setAttrInterpolatorState.addressingU = addressU;
+	setAttrInterpolatorState.addressingV = addressV;
+	setAttrInterpolatorState.useFlatShadingColor = useFlatShadingColor;
+	setAttrInterpolatorState.checksum = command::ComputeChecksum(&setAttrInterpolatorState, sizeof(setAttrInterpolatorState) );
+#ifdef _DEBUG
+	if (!command::IsValidPacket(&setAttrInterpolatorState, sizeof(setAttrInterpolatorState) ) )
+	{
+		__debugbreak();
+	}
+#endif
+	const HRESULT hRet = SendOrStorePacket(&setAttrInterpolatorState);
+	if (SUCCEEDED(hRet) && DoCacheDeviceState() )
+	{
+		currentCachedState.deviceAddressingU = addressU;
+		currentCachedState.deviceAddressingV = addressV;
+		currentCachedState.deviceCachedUseFlatShadingColor = useFlatShadingColor;
 	}
 	if (FAILED(hRet) )
 		return hRet;
@@ -2456,6 +2461,7 @@ const bool IBaseGPUDevice::PacketIsValidForRecording(const command::ePacketType 
 	case command::PT_SETVIEWPORTPARAMS1:
 	case command::PT_SETSCISSORRECT:
 	case command::PT_SETSTATSEVENTCONFIG:
+	case command::PT_SETINTERPOLATORSTATE:
 		return true;
 	default:
 #ifdef _DEBUG
@@ -2474,7 +2480,7 @@ const bool IBaseGPUDevice::PacketIsValidForRecording(const command::ePacketType 
 	case command::PT_DEBUGSHADERNEXTDRAWCALL:
 		return false;
 	}
-	static_assert(command::PT_MAX_PACKET_TYPES == 39, "Reminder: Need to update this switch statement with new cases when adding new packets!");
+	static_assert(command::PT_MAX_PACKET_TYPES == 40, "Reminder: Need to update this switch statement with new cases when adding new packets!");
 }
 
 HRESULT IBaseGPUDevice::SendOrStorePacket(const command* const sendPacket)

@@ -345,7 +345,8 @@ architecture Behavioral of CommandProcessor is
 						SET_VIEWPORT_PARAMS1, -- 55
 						SET_SCISSOR_RECT, -- 56
 						PUSH_NEW_TRISETUP_STATE, -- 57
-						SET_VBB_STATE -- 58
+						SET_VBB_STATE, -- 58
+						SET_ATTR_INTERP_STATE -- 59
 						);
 
 	type commandListExecState is record
@@ -709,6 +710,9 @@ begin
 
 							when PT_SETSTATSEVENTCONFIG =>
 								mst_packet_state <= SET_EVENT_CONFIG_STATE;
+
+							when PT_SETINTERPOLATORSTATE =>
+								mst_packet_state <= SET_ATTR_INTERP_STATE;
 
 							when others => --when PT_DONOTHING =>
 								mst_packet_state <= DONOTHING_PACKET;
@@ -1357,6 +1361,19 @@ begin
 						end if;
 						STAT_SetNewStatsConfig <= '1';
 						mst_packet_state <= READ_NEXT_PACKET_FROM_FIFO;
+
+					when SET_ATTR_INTERP_STATE =>
+						hasUpdatedDrawState <= '1';
+
+						INTERP_NewStateBits <= SerializeStructToBits(MakeStructFromMembers(localIncomingPacket.payload0(6), 
+							eTexcoordAddressingMode'val(to_integer(localIncomingPacket.payload0(2 downto 0) ) ), 
+							eTexcoordAddressingMode'val(to_integer(localIncomingPacket.payload0(5 downto 3) ) ) ) );
+						INTERP_NewStateDrawEventID <= std_logic_vector(currentDrawStateGeneration);
+
+						if (unsigned(INTERP_NumFreeSlots) /= 0) then
+							INTERP_SetNewState <= '1';
+							mst_packet_state <= READ_NEXT_PACKET_FROM_FIFO;
+						end if;
 
 				end case;
 			end if;

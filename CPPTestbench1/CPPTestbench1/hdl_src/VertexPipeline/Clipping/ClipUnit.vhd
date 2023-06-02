@@ -257,7 +257,8 @@ ATTRIBUTE X_INTERFACE_PARAMETER of clk: SIGNAL is "FREQ_HZ 333250000";
 		clip_sendToNextStage, -- 74
 		clip_popNextChildTriangle0, -- 75
 		clip_popNextChildTriangle1, -- 76
-		clip_sendNewDrawEventID -- 77
+		clip_sendNewDrawEventID, -- 77
+		clip_setNewClipState -- 78
 		);
 
 	-- Returns "true" if this triangle should be discarded due to being culled, or "false" otherwise
@@ -619,6 +620,8 @@ DBG_AlreadyClippedPlanes <= currentTriAlreadyClippedPlanes;
 						if (STATE_StateIsValid = '1' and STATE_NextDrawID = IA_CurrentDrawEventID) then
 							STATE_ConsumeStateSlot <= '1';
 							currentStateBlock <= DeserializeBitsToStruct(STATE_StateBitsAtDrawID);
+							currentState <= clip_setNewClipState; -- It's fine if this gets overridden by a later write to currentState. The important thing is that we don't just go back to this same state again on the next cycle,
+							-- since that would clobber the state FIFO with a double-read!
 						end if;
 
 						stats_TrianglesInputToClipCullUnit <= stats_TrianglesInputToClipCullUnit + 1;
@@ -626,7 +629,6 @@ DBG_AlreadyClippedPlanes <= currentTriAlreadyClippedPlanes;
 						if (ShouldDiscardTriangleCulled(IA_inv0ClipOutcodes, IA_inv1ClipOutcodes, IA_inv2ClipOutcodes) or ShouldDiscardTriangleInfNaNCulled(f32(IA_inv0x), f32(IA_inv0y), f32(IA_inv0z), f32(IA_inv0w), f32(IA_inv1x), f32(IA_inv1y), f32(IA_inv1z), f32(IA_inv1w), f32(IA_inv2x), f32(IA_inv2y), f32(IA_inv2z), f32(IA_inv2w) ) ) then
 							if (hasSentCurrentDrawEventID = '1' and newDrawEventIDClear = '0') then
 								prevStageReady <= '1';
-								currentState <= idleState;
 							else
 								currentState <= clip_sendNewDrawEventID;
 							end if;
@@ -634,7 +636,6 @@ DBG_AlreadyClippedPlanes <= currentTriAlreadyClippedPlanes;
 							if (currentStateBlock.ClippingEnable = '0') then
 								if (hasSentCurrentDrawEventID = '1' and newDrawEventIDClear = '0') then
 									prevStageReady <= '1';
-									currentState <= idleState;
 								else
 									currentState <= clip_sendNewDrawEventID;
 								end if;
@@ -1513,6 +1514,9 @@ DBG_AlreadyClippedPlanes <= currentTriAlreadyClippedPlanes;
 					v0.x <= (others => '1'); -- NaN
 					v0.w <= (others => '0'); -- Denormal zero reciprocal-W
 					currentState <= clip_sendToNextStage;
+
+				when clip_setNewClipState =>
+					currentState <= idleState;
 
 			end case;
 		end if;

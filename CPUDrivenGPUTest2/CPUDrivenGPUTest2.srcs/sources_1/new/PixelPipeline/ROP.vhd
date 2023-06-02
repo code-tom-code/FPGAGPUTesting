@@ -106,22 +106,23 @@ ATTRIBUTE X_INTERFACE_INFO of TEXSAMP_InFIFO_empty: SIGNAL is "xilinx.com:interf
 
 type ROPStateType is 
 (
-	waitingForPixelData, -- 1
+	waitingForPixelData, -- 0
 
-	doAlphaTest, -- 2
-	calcPixelAddress, -- 3
-	checkCache, -- 4
-	autoFlushSingleCacheLine, -- 5
-	requestReadPixel, -- 6
-	waitForReadPixel, -- 7
-	blendPixel0, -- 8
-	blendPixel1, -- 9
-	blendPixel2, -- 10
-	writePixel, -- 11
+	doAlphaTest, -- 1
+	calcPixelAddress, -- 2
+	checkCache, -- 3
+	autoFlushSingleCacheLine, -- 4
+	requestReadPixel, -- 5
+	waitForReadPixel, -- 6
+	blendPixel0, -- 7
+	blendPixel1, -- 8
+	blendPixel2, -- 9
+	writePixel, -- 10
 
-	setNewClear, -- 14
-	manualFlushFullCache, -- 15
-	manualFlushFullCacheFinish -- 16
+	setNewClear, -- 11
+	manualFlushFullCache, -- 12
+	manualFlushFullCacheFinish, -- 13
+	setNewState -- 14
 );
 
 type blendStateBlock is record
@@ -916,6 +917,7 @@ DBG_CurrentCacheLineDirtyFlags <= std_logic_vector(ROPCache(to_integer(currently
 
 						currentBlendState.needsLoadSrcColor <= DeserializeBitsToStruct(STATE_StateBitsAtDrawID).AlphaBlendConfigBlock.needsLoadSrcColor;
 						currentBlendState.needsLoadDestColor <= DeserializeBitsToStruct(STATE_StateBitsAtDrawID).AlphaBlendConfigBlock.needsLoadDestColor;
+						currentState <= setNewState;
 					elsif (CMD_FlushCacheSignal = '1') then
 						flushCachesLineIndex <= (others => '0');
 						currentState <= manualFlushFullCache;
@@ -1122,6 +1124,9 @@ DBG_CurrentCacheLineDirtyFlags <= std_logic_vector(ROPCache(to_integer(currently
 				when manualFlushFullCacheFinish =>
 					MEM_ROPWriteRequestsFIFO_wr_en <= '0'; -- Deassert after one clock cycle
 					flushCacheCommandAck <= '1';
+					currentState <= waitingForPixelData;
+
+				when setNewState =>
 					currentState <= waitingForPixelData;
 
 			end case;

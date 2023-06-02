@@ -182,11 +182,13 @@ type indexBatchArray is array(63 downto 0) of unsigned(3 downto 0);
 
 type constantIndexArray is array(11 downto 0) of indexTriplet;
 
-procedure AssembleTrianglesFromVertices(signal indexBase : in unsigned(6 downto 0); signal indexData : in indexBatchArray; signal vertexData : in vertexDataBatch; signal fillTriangle : out triangleData) is
+-- Big TODO: Break this up into multiple clock cycles so that we aren't performing a crazy double-derefererence in a single cycle!
+procedure AssembleTrianglesFromVertices(signal indexA : in unsigned(5 downto 0); signal indexB : in unsigned(5 downto 0); signal indexC : in unsigned(5 downto 0);
+	signal indexData : in indexBatchArray; signal vertexData : in vertexDataBatch; signal fillTriangle : out triangleData) is
 begin
-	fillTriangle.v0 <= vertexData(to_integer(indexData(to_integer(indexBase * 3) ) ) );
-	fillTriangle.v1 <= vertexData(to_integer(indexData(to_integer(indexBase * 3 + 1) ) ) );
-	fillTriangle.v2 <= vertexData(to_integer(indexData(to_integer(indexBase * 3 + 2) ) ) );
+	fillTriangle.v0 <= vertexData(to_integer(indexData(to_integer(indexA) ) ) );
+	fillTriangle.v1 <= vertexData(to_integer(indexData(to_integer(indexB) ) ) );
+	fillTriangle.v2 <= vertexData(to_integer(indexData(to_integer(indexC) ) ) );
 end procedure;
 
 pure function UnpackVertexDataFromBuffer(vertDataBits : unsigned(319 downto 0) ) return vertexData is
@@ -213,6 +215,8 @@ signal currentVertexData : vertexDataBatch;
 signal currentIndexData : indexBatchArray := (others => (others => '0') );
 
 signal cullState : eCullMode := CM_CullCCW;
+signal cullModeIsCW : std_logic := '0';
+signal cullModeIsNone : std_logic := '0';
 signal primTopologyState : ePrimTopology := PRIMTOP_TriangleList;
 signal currentDrawEventID : unsigned(15 downto 0) := (others => '0');
 
@@ -222,8 +226,14 @@ signal LastPrimitiveIDIsOdd : std_logic := '0';
 
 signal currentDrawIsIndexed : std_logic := '1'; -- If 1 then this is an indexed draw call (ie. DrawIndexedPrimitive), if 0 then this is a non-indexed draw call (ie. DrawPrimitive)
 
+signal triIsComplete : std_logic := '0';
+
 signal verticesUsedPerBatch : unsigned(4 downto 0) := (others => '0');
 signal indicesUsedPerBatch : unsigned(6 downto 0) := (others => '0');
+
+signal currentTriIndexA : unsigned(5 downto 0) := (others => '0');
+signal currentTriIndexB : unsigned(5 downto 0) := (others => '0');
+signal currentTriIndexC : unsigned(5 downto 0) := (others => '0');
 
 signal vertexIDPerBatch : unsigned(4 downto 0) := (others => '0');
 
@@ -281,12 +291,20 @@ DBG_IA_VertexIDPerBatch <= std_logic_vector(vertexIDPerBatch(3 downto 0) );
 	process(clk)
 	begin
 		if (rising_edge(clk) ) then
+			STATE_ConsumeStateSlot <= '0';
+			INDEXOUT_FIFO_rd_en <= '0';
+			VERTOUT_FIFO_rd_en <= '0';
+
 			case currentState is
 				when IAstate_readyIdleState =>
 					newTriBegin <= '0';
 					IAIsIdle <= '0';
+					triIsComplete <= '0';
 
 					SV_PrimitiveID <= (others => '0'); -- Reset the primitive ID as we are done with our previous draw call
+					currentTriIndexA <= to_unsigned(0, 6);
+					currentTriIndexB <= to_unsigned(1, 6);
+					currentTriIndexC <= to_unsigned(2, 6);
 
 					if (drawReady = '1' and VBO_Pushed = '0') then
 						IAIsIdle <= '1';
@@ -319,6 +337,16 @@ DBG_IA_VertexIDPerBatch <= std_logic_vector(vertexIDPerBatch(3 downto 0) );
 						STATE_ConsumeStateSlot <= '1';
 
 						cullState <= DeserializeBitsToStruct(STATE_StateBitsAtDrawID).CullMode;
+						if (DeserializeBitsToStruct(STATE_StateBitsAtDrawID).CullMode = CM_CullCW) then
+							cullModeIsCW <= '1';
+						else
+							cullModeIsCW <= '0';
+						end if;
+						if (DeserializeBitsToStruct(STATE_StateBitsAtDrawID).CullMode = CM_CullNone) then
+							cullModeIsNone <= '1';
+						else
+							cullModeIsNone <= '0';
+						end if;
 						primTopologyState <= DeserializeBitsToStruct(STATE_StateBitsAtDrawID).PrimTopology;
 					end if;
 
@@ -326,23 +354,18 @@ DBG_IA_VertexIDPerBatch <= std_logic_vector(vertexIDPerBatch(3 downto 0) );
 					currentState <= IAState_readVertexData;
 
 				when IAState_readVertexData =>
-					INDEXOUT_FIFO_rd_en <= '0'; -- Deassert after one clock cycle
-					STATE_ConsumeStateSlot <= '0'; -- Deassert after one clock cycle
-
 					currentVertexData(to_integer(vertexIDPerBatch) ) <= UnpackVertexDataFromBuffer(unsigned(VERTOUT_FIFO_rd_data) );
 
+					VERTOUT_FIFO_rd_en <= '1';
 					if (vertexIDPerBatch(3 downto 0) = "1111" or VERTOUT_FIFO_empty = '1') then
 						vertexIDPerBatch <= (others => '0');
-						VERTOUT_FIFO_rd_en <= '1';
 						currentState <= IAstate_advanceIndices;
 					else
-						VERTOUT_FIFO_rd_en <= '1';
 						vertexIDPerBatch <= vertexIDPerBatch + 1;
 						currentState <= IAState_readVertexDataCooldown;
 					end if;
 
 				when IAState_readVertexDataCooldown =>
-					VERTOUT_FIFO_rd_en <= '0'; -- Deassert after one clock cycle
 					currentState <= IAState_readVertexData;
 					
 				when IAstate_sendTriData =>
@@ -360,7 +383,7 @@ DBG_IA_VertexIDPerBatch <= std_logic_vector(vertexIDPerBatch(3 downto 0) );
 					CLIP_CurrentDrawEventID <= std_logic_vector(currentDrawEventID);
 
 					-- Swizzle our output triangles from (0, 1, 2) to (0, 2, 1) if we're doing CW culling instead of CCW culling:
-					if (cullState = CM_CullCW) then
+					if (cullModeIsCW = '1') then
 						CLIP_v1PosX <= std_logic_vector(currentTri.v2.pos.vx);
 						CLIP_v1PosY <= std_logic_vector(currentTri.v2.pos.vy);
 						CLIP_v1PosZ <= std_logic_vector(currentTri.v2.pos.vz);
@@ -404,10 +427,10 @@ DBG_IA_VertexIDPerBatch <= std_logic_vector(vertexIDPerBatch(3 downto 0) );
 
 					if (newTriBegin = '1' and CLIP_readyForNewTri = '1') then
 						newTriBegin <= '0';
-						if (cullState = CM_CullNone) then
+						if (cullModeIsNone = '1') then
 							currentState <= IAstate_sendTriDataNoCulling;
 						else
-							if (SV_PrimitiveID * 3 > indicesUsedPerBatch) then
+							if (triIsComplete = '1') then
 								currentState <= IAstate_readyIdleState;
 							else
 								currentState <= IAstate_advanceIndices;
@@ -453,7 +476,7 @@ DBG_IA_VertexIDPerBatch <= std_logic_vector(vertexIDPerBatch(3 downto 0) );
 
 					if (newTriBegin = '1' and CLIP_readyForNewTri = '1') then
 						newTriBegin <= '0';
-						if (SV_PrimitiveID * 3 > indicesUsedPerBatch) then
+						if (triIsComplete = '1') then
 							currentState <= IAstate_readyIdleState;
 						else
 							currentState <= IAstate_advanceIndices;
@@ -465,16 +488,24 @@ DBG_IA_VertexIDPerBatch <= std_logic_vector(vertexIDPerBatch(3 downto 0) );
 				when IAstate_advanceIndices =>
 					VERTOUT_FIFO_rd_en <= '0';
 
-					DBG_IA_CurrentTriIndices(3 downto 0) <= std_logic_vector(currentIndexData(to_integer(SV_PrimitiveID * 3) ) );
-					DBG_IA_CurrentTriIndices(7 downto 4) <= std_logic_vector(currentIndexData(to_integer(SV_PrimitiveID * 3 + 1) ) );
-					DBG_IA_CurrentTriIndices(11 downto 8) <= std_logic_vector(currentIndexData(to_integer(SV_PrimitiveID * 3 + 2) ) );
+					DBG_IA_CurrentTriIndices(3 downto 0) <= std_logic_vector(currentIndexData(to_integer(currentTriIndexA) ) );
+					DBG_IA_CurrentTriIndices(7 downto 4) <= std_logic_vector(currentIndexData(to_integer(currentTriIndexB) ) );
+					DBG_IA_CurrentTriIndices(11 downto 8) <= std_logic_vector(currentIndexData(to_integer(currentTriIndexC) ) );
 
-					AssembleTrianglesFromVertices(SV_PrimitiveID,
+					AssembleTrianglesFromVertices(currentTriIndexA, currentTriIndexB, currentTriIndexC,
 						currentIndexData,
 						currentVertexData,
 						currentTri);
 
 					SV_PrimitiveID <= SV_PrimitiveID + 1;
+
+					if ( (currentTriIndexC + 1) > indicesUsedPerBatch) then
+						triIsComplete <= '1';
+					end if;
+
+					currentTriIndexA <= currentTriIndexC + 1;
+					currentTriIndexB <= currentTriIndexC + 2;
+					currentTriIndexC <= currentTriIndexC + 3;
                     
 					currentState <= IAstate_sendTriData;
 

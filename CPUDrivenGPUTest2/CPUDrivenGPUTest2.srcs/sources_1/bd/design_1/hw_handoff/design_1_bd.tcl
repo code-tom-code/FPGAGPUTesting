@@ -2151,14 +2151,14 @@ proc create_root_design { parentCell } {
   set_property -dict [ list \
    CONFIG.C_ENABLE_ILA_AXI_MON {false} \
    CONFIG.C_MONITOR_TYPE {Native} \
-   CONFIG.C_NUM_OF_PROBES {15} \
+   CONFIG.C_NUM_OF_PROBES {16} \
    CONFIG.C_PROBE0_WIDTH {96} \
    CONFIG.C_PROBE10_WIDTH {18} \
    CONFIG.C_PROBE11_WIDTH {18} \
    CONFIG.C_PROBE12_WIDTH {7} \
    CONFIG.C_PROBE13_WIDTH {1} \
    CONFIG.C_PROBE14_WIDTH {1} \
-   CONFIG.C_PROBE15_WIDTH {1} \
+   CONFIG.C_PROBE15_WIDTH {16} \
    CONFIG.C_PROBE16_WIDTH {1} \
    CONFIG.C_PROBE17_WIDTH {1} \
    CONFIG.C_PROBE18_WIDTH {1} \
@@ -2993,6 +2993,7 @@ proc create_root_design { parentCell } {
   connect_bd_net -net AttrInterp_FPU_CNV_OCNV [get_bd_pins AttrInterp_FPU_CNV0/OCNV] [get_bd_pins AttrInterpolator_0/FPU_CNV0_OUT]
   connect_bd_net -net AttrInterpolator_0_CMD_IsIdle [get_bd_pins AttrInterpolator_0/CMD_IsIdle] [get_bd_pins CommandProcessor_0/CMD_AttrInterpolator_Idle]
   connect_bd_net -net AttrInterpolator_0_DBG_AttrInterpolator_State [get_bd_pins AttrInterpolator_0/DBG_AttrInterpolator_State] [get_bd_pins ILA_AttrInterpolator/probe2] [get_bd_pins ila_333_250/probe7]
+  connect_bd_net -net AttrInterpolator_0_DBG_CurrentDrawEvent [get_bd_pins AttrInterpolator_0/DBG_CurrentDrawEvent] [get_bd_pins ILA_AttrInterpolator/probe15]
   connect_bd_net -net AttrInterpolator_0_DBG_RastBarycentricB [get_bd_pins AttrInterpolator_0/DBG_RastBarycentricB] [get_bd_pins ILA_AttrInterpolator/probe3]
   connect_bd_net -net AttrInterpolator_0_DBG_RastBarycentricC [get_bd_pins AttrInterpolator_0/DBG_RastBarycentricC] [get_bd_pins ILA_AttrInterpolator/probe4]
   connect_bd_net -net AttrInterpolator_0_DINTERP_FIFO_rd_en [get_bd_pins ATTR_FIFO/rd_en] [get_bd_pins AttrInterpolator_0/DINTERP_FIFO_rd_en]

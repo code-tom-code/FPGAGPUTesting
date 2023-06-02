@@ -12,10 +12,6 @@ typedef DWORD D3DCOLOR;
 typedef unsigned char BYTE;
 typedef enum _D3DPRIMITIVETYPE D3DPRIMITIVETYPE;
 
-typedef enum _D3DCMPFUNC D3DCMPFUNC;
-const eCmpFunc ConvertToDeviceCmpFunc(const D3DCMPFUNC cmpFunc);
-const eDepthFormat ConvertToDeviceDepthFormat(const D3DFORMAT zFormat);
-
 struct CachedVertexStream
 {
 	const bool operator==(const CachedVertexStream& rhs) const
@@ -172,6 +168,8 @@ struct GPUDeviceState
 	ePrimTopology deviceCachedPrimTop = primTop_NUM_PRIM_TOPOLOGIES;
 	eStripCutType deviceCachedStripCut = sct_NUM_STRIP_CUT_TYPES;
 	eIndexFormat deviceCachedIndexFormat = ibfmt_NUM_INDEX_FORMATS;
+	eTexcoordAddressingMode deviceAddressingU = TAM_Wrap;
+	eTexcoordAddressingMode deviceAddressingV = TAM_Wrap;
 	setScanoutPointerCommand::eDisplayChannelSwizzle deviceScanoutSwizzleR = setScanoutPointerCommand::dcs_red;
 	setScanoutPointerCommand::eDisplayChannelSwizzle deviceScanoutSwizzleG = setScanoutPointerCommand::dcs_green;
 	setScanoutPointerCommand::eDisplayChannelSwizzle deviceScanoutSwizzleB = setScanoutPointerCommand::dcs_blue;
@@ -180,6 +178,7 @@ struct GPUDeviceState
 	bool deviceCachedDepthClipEnable = true;
 	bool deviceCachedOpenGLNearZClipMode = false;
 	bool deviceCachedClippingEnable = true;
+	bool deviceCachedUseFlatShadingColor = false;
 	unsigned deviceCachedGuardBandXScale = 4;
 	unsigned deviceCachedGuardBandYScale = 5;
 	CachedVertexStream deviceCachedVertexStreams[GPU_MAX_NUM_VERTEX_STREAMS];
@@ -234,6 +233,7 @@ __declspec(align(16) ) struct IBaseGPUDevice
 		const unsigned short scissorRectLeft, const unsigned short scissorRectRight, const unsigned short scissorRectTop, const unsigned short scissorRectBottom);
 	HRESULT __stdcall DeviceSetClipState(const bool depthClipEnabled, const bool useOpenGLNearZClip, const float guardBandXScale, const float guardBandYScale, const bool clippingEnabled);
 	HRESULT __stdcall DeviceSetDepthState(const bool zEnabled, const bool zWriteEnabled, const bool colorWriteEnabled, const eCmpFunc zTestCmpFunc, const eDepthFormat zFormat, const float depthBias);
+	HRESULT __stdcall DeviceSetAttrInterpolatorState(const bool useFlatShadingColor, const eTexcoordAddressingMode addressU, const eTexcoordAddressingMode addressV);
 
 	HRESULT __stdcall DeviceSetIAState(const eCullMode cullMode, const ePrimTopology primTopology, const eStripCutType stripCut, const eIndexFormat indexFormat, const unsigned indexBufferLengthBytes, const gpuvoid* const indexBufferBaseAddr);
 

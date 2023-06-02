@@ -88,7 +88,8 @@ entity AttrInterpolator is
 		DBG_OutputDriver_State : out STD_LOGIC_VECTOR(2 downto 0) := (others => '0');
 		DBG_PixelWFIFO : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 		DBG_RastBarycentricB : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-		DBG_RastBarycentricC : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0')
+		DBG_RastBarycentricC : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		DBG_CurrentDrawEvent : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0')
 		);
 end AttrInterpolator;
 
@@ -118,7 +119,8 @@ type attrInterpStateType is
 	dispatchNewSpecialMessage, -- 2
 	waitingForWrite, -- 3
 	setNewPrimitive, -- 4
-	terminateCurrentPrimitive -- 5
+	terminateCurrentPrimitive, -- 5
+	setNewState -- 6
 );
 
 type VertexFloatData is record
@@ -180,7 +182,7 @@ signal readyForNewPixel : std_logic := '0';
 signal newWaveIsReady : std_logic := '0'; -- Written by the main coordinator process, read by the interpolator driver process
 signal interpDriverReadyForNextPixel : std_logic := '0'; -- Written by the interpolator driver process, read by the main coordinator process
 
-signal currentState : attrInterpStateType := waitingForRead;
+signal currentState : attrInterpStateType := waitingForRead; -- Main coordinator process' state
 signal currentInterpolatorState : InterpolatorStateType := IS_TX;
 signal currentMultiplierState : InterpolatorStateType := IS_TX;
 signal currentConverterState : InterpolatorStateType := IS_TX;
@@ -191,28 +193,17 @@ signal outputCollectorMainProcessGoSignal : std_logic := '0';
 signal outputCollectorConverterProcessGoSignal : std_logic := '0';
 signal outputCollectorGoSignal : std_logic := '0';
 
-signal storedPixelX : unsigned(15 downto 0) := (others => '0');
-signal storedPixelY : unsigned(15 downto 0) := (others => '0');
 signal currentDrawEventID : unsigned(15 downto 0) := (others => '0');
 
-signal pixelW : f32 := (others => '0'); -- float32 format (0.0f to 1.0f) pixel W value
-signal normalizedBarycentricB : f32 := (others => '0'); -- float32 format
-signal normalizedBarycentricC : f32 := (others => '0'); -- float32 format
+-- Current render states:
 signal useFlatShading : std_logic := '0';
 signal texcoord0AddressingModeU : eTexcoordAddressingMode := TAM_Wrap; -- Default to wrap mode.
 signal texcoord0AddressingModeV : eTexcoordAddressingMode := TAM_Wrap; -- Default to wrap mode.
 
+-- Current triangle data:
 signal unpackedVertex0 : VertexFloatData := DefaultVertexFloatData;
 signal unpackedVertex10 : VertexFloatData := DefaultVertexFloatData;
 signal unpackedVertex20 : VertexFloatData := DefaultVertexFloatData;
-signal computedPixelData : VertexFloatData := DefaultVertexFloatData;
-
-signal dotProductTemporarySumTX : f32 := (others => '0');
-signal dotProductTemporarySumTY : f32 := (others => '0');
-signal dotProductTemporarySumColorR : f32 := (others => '0');
-signal dotProductTemporarySumColorG : f32 := (others => '0');
-signal dotProductTemporarySumColorB : f32 := (others => '0');
-signal dotProductTemporarySumColorA : f32 := (others => '0');
 
 signal clampedTexcoordTX : f32 := (others => '0');
 signal clampedTexcoordTY : f32 := (others => '0');
@@ -221,6 +212,7 @@ signal compressedOutPixelDataColorR : unsigned(7 downto 0) := (others => '0');
 signal compressedOutPixelDataColorG : unsigned(7 downto 0) := (others => '0');
 signal compressedOutPixelDataColorB : unsigned(7 downto 0) := (others => '0');
 
+-- Signals for the Interpolator FPU:
 signal interpInputB : f32 := (others => '0');
 signal interpInputC : f32 := (others => '0');
 signal interpInputAttr0 : f32 := (others => '0');
@@ -229,13 +221,13 @@ signal interpInputAttr20 : f32 := (others => '0');
 signal interpGoSignal : std_logic := '0';
 signal interpOutput : std_logic_vector(31 downto 0) := (others => '0');
 
-signal newMulWaveIsReady : std_logic_vector(9 downto 0) := (others => '0');
+signal newMulWaveIsReady : std_logic_vector(8 downto 0) := (others => '0');
 signal mulGoSignal : std_logic := '0';
-
 signal newCnvWaveIsReady : std_logic := '0';
 signal cnv0GoSignal : std_logic := '0';
 signal cnv1GoSignal : std_logic := '0';
 
+-- Stats signals:
 signal statCyclesIdle : unsigned(31 downto 0) := (others => '0');
 signal statCyclesWorking : unsigned(31 downto 0) := (others => '0');
 signal statCyclesWaitingForOutput : unsigned(31 downto 0) := (others => '0');
@@ -299,6 +291,7 @@ DBG_OutputDriver_State <= std_logic_vector(to_unsigned(InterpolatorStateType'pos
 DBG_RastBarycentricB <= std_logic_vector(interpInputAttr0);
 DBG_RastBarycentricC <= std_logic_vector(interpInputAttr20);
 DBG_PixelWFIFO <= PixelWFIFO_OutCurrentData;
+DBG_CurrentDrawEvent <= std_logic_vector(currentDrawEventID);
 
 Interpolator : FloatALU_Interpolator port map(clk => clk, IN_B => std_logic_vector(interpInputB), IN_C => std_logic_vector(interpInputC), IN_Attr0 => std_logic_vector(interpInputAttr0), IN_Attr10 => std_logic_vector(interpInputAttr10), IN_Attr20 => std_logic_vector(interpInputAttr20), OINTERP => interpOutput, IINTERP_GO => interpGoSignal);
 BarycentricBCFIFO : SimpleFIFO generic map(FIFO_Depth => MAX_OCCUPANCY, FIFO_Bit_Width => 64) port map(clk => clk, FIFO_IsEmpty => BarycentricBCFIFO_IsEmpty, FIFO_IsFull => BarycentricBCFIFO_IsFull, FIFO_PushNewElement => BarycentricBCFIFO_PushElement, FIFO_PopLastElement => BarycentricBCFIFO_PopElement, FIFO_NewElementDataWr => BarycentricBCFIFO_InNewData, FIFO_NextElementDataRd => BarycentricBCFIFO_OutCurrentData);
@@ -345,12 +338,6 @@ outputCollectorGoSignal <= outputCollectorConverterProcessGoSignal or outputColl
 				when waitingForRead =>
 					readyForNewPixel <= '0';
 
-					storedPixelX <= DeserializeAttributeData(DINTERP_FIFO_rd_data).PosX;
-					storedPixelY <= DeserializeAttributeData(DINTERP_FIFO_rd_data).PosY;
-					normalizedBarycentricB <= DeserializeAttributeData(DINTERP_FIFO_rd_data).NormalizedBarycentricB;
-					normalizedBarycentricC <= DeserializeAttributeData(DINTERP_FIFO_rd_data).NormalizedBarycentricC;
-					pixelW <= DeserializeAttributeData(DINTERP_FIFO_rd_data).InterpolatedPixelW;
-
 					if (STATE_StateIsValid = '1' and currentDrawEventID = unsigned(STATE_NextDrawID) ) then
 						if (InterpolatorDriverIsIdle = '1' and MultiplierDriverIsIdle = '1' and ConverterDriverIsIdle = '1' and OutputDriverIsIdle = '1') then -- Wait for a full unit flush before changing state out from under us
 							STATE_ConsumeStateSlot <= '1';
@@ -358,6 +345,8 @@ outputCollectorGoSignal <= outputCollectorConverterProcessGoSignal or outputColl
 							useFlatShading <= DeserializeBitsToStruct(STATE_StateBitsAtDrawID).UseFlatShadingColors;
 							texcoord0AddressingModeU <= DeserializeBitsToStruct(STATE_StateBitsAtDrawID).Texcoord0AddressingModeU;
 							texcoord0AddressingModeV <= DeserializeBitsToStruct(STATE_StateBitsAtDrawID).Texcoord0AddressingModeV;
+
+							currentState <= setNewState;
 						end if;
 					elsif (DINTERP_FIFO_empty = '0' and readyForNewPixel = '1' and TEXSAMP_OutFIFO_almost_full = '0'
 						and BarycentricBCFIFO_IsFull = '0' and PixelWFIFO_IsFull = '0' and PixelXYFIFO_IsFull = '0' and interpDriverReadyForNextPixel = '1') then
@@ -437,7 +426,7 @@ outputCollectorGoSignal <= outputCollectorConverterProcessGoSignal or outputColl
 
 					currentState <= waitingForRead;
 
-				when terminateCurrentPrimitive =>
+				when terminateCurrentPrimitive | setNewState =>
 					currentState <= waitingForRead;
 
 			end case;
@@ -460,8 +449,6 @@ outputCollectorGoSignal <= outputCollectorConverterProcessGoSignal or outputColl
 			newMulWaveIsReady(5) <= newMulWaveIsReady(6);
 			newMulWaveIsReady(6) <= newMulWaveIsReady(7);
 			newMulWaveIsReady(7) <= newMulWaveIsReady(8);
-			--newMulWaveIsReady(8) <= newMulWaveIsReady(9);
-			--newMulWaveIsReady(9) <= '0';
 			newMulWaveIsReady(8) <= '0';
 
 			InterpolatorDriverIsIdle <= '0';
@@ -491,32 +478,52 @@ outputCollectorGoSignal <= outputCollectorConverterProcessGoSignal or outputColl
 
 				when IS_R =>
 					interpInputAttr0 <= unpackedVertex0.color_r;
-					interpInputAttr10 <= unpackedVertex10.color_r;
-					interpInputAttr20 <= unpackedVertex20.color_r;
+					if (useFlatShading = '1') then
+						interpInputAttr10 <= (others => '0');
+						interpInputAttr20 <= (others => '0');
+					else
+						interpInputAttr10 <= unpackedVertex10.color_r;
+						interpInputAttr20 <= unpackedVertex20.color_r;
+					end if;
 					interpGoSignal <= '1';
 
 					currentInterpolatorState <= IS_G;
 
 				when IS_G =>
 					interpInputAttr0 <= unpackedVertex0.color_g;
-					interpInputAttr10 <= unpackedVertex10.color_g;
-					interpInputAttr20 <= unpackedVertex20.color_g;
+					if (useFlatShading = '1') then
+						interpInputAttr10 <= (others => '0');
+						interpInputAttr20 <= (others => '0');
+					else
+						interpInputAttr10 <= unpackedVertex10.color_g;
+						interpInputAttr20 <= unpackedVertex20.color_g;
+					end if;
 					interpGoSignal <= '1';
 
 					currentInterpolatorState <= IS_B;
 
 				when IS_B =>
 					interpInputAttr0 <= unpackedVertex0.color_b;
-					interpInputAttr10 <= unpackedVertex10.color_b;
-					interpInputAttr20 <= unpackedVertex20.color_b;
+					if (useFlatShading = '1') then
+						interpInputAttr10 <= (others => '0');
+						interpInputAttr20 <= (others => '0');
+					else
+						interpInputAttr10 <= unpackedVertex10.color_b;
+						interpInputAttr20 <= unpackedVertex20.color_b;
+					end if;
 					interpGoSignal <= '1';
 
 					currentInterpolatorState <= IS_A;
 
 				when IS_A =>
 					interpInputAttr0 <= unpackedVertex0.color_a;
-					interpInputAttr10 <= unpackedVertex10.color_a;
-					interpInputAttr20 <= unpackedVertex20.color_a;
+					if (useFlatShading = '1') then
+						interpInputAttr10 <= (others => '0');
+						interpInputAttr20 <= (others => '0');
+					else
+						interpInputAttr10 <= unpackedVertex10.color_a;
+						interpInputAttr20 <= unpackedVertex20.color_a;
+					end if;
 					interpGoSignal <= '1';
 
 					newMulWaveIsReady(8) <= '1';
@@ -597,7 +604,7 @@ outputCollectorGoSignal <= outputCollectorConverterProcessGoSignal or outputColl
 					FPU_CNV1_Mode <= (others => '-');
 
 					if (newCnvWaveIsReady = '1') then
-						if (texcoord0AddressingModeU = TAM_Wrap) then
+						if (texcoord0AddressingModeU /= TAM_Clamp) then
 							cnv0GoSignal <= '1';
 						end if;
 						currentConverterState <= IS_TY;
@@ -610,7 +617,7 @@ outputCollectorGoSignal <= outputCollectorConverterProcessGoSignal or outputColl
 					FPU_CNV0_A <= FPU_MUL_OUT; -- ty * pixelW
 					FPU_CNV0_Mode <= std_logic_vector(to_unsigned(eConvertMode'pos(F_Frc), 3) );
 					FPU_CNV1_Mode <= (others => '-');
-					if (texcoord0AddressingModeV = TAM_Wrap) then
+					if (texcoord0AddressingModeV /= TAM_Clamp) then
 						cnv0GoSignal <= '1';
 					end if;
 
@@ -638,7 +645,7 @@ outputCollectorGoSignal <= outputCollectorConverterProcessGoSignal or outputColl
 					FPU_CNV0_A <= std_logic_vector(SaturateFloat(f32(FPU_MUL_OUT) ) ); -- b * pixelW
 					FPU_CNV0_Mode <= std_logic_vector(to_unsigned(eConvertMode'pos(F_to_UNORM8), 3) );
 					FPU_CNV1_Mode <= std_logic_vector(to_unsigned(eConvertMode'pos(F_to_UNORM16), 3) );
-					if (texcoord0AddressingModeU = TAM_Wrap) then
+					if (texcoord0AddressingModeU /= TAM_Clamp) then
 						FPU_CNV1_A <= FPU_CNV0_OUT; -- If this is wrap mode, then source our texcoord from the frac() output
 					else
 						FPU_CNV1_A <= std_logic_vector(clampedTexcoordTX); -- If this is clamp mode, then just use our clamped texcoord
@@ -652,7 +659,7 @@ outputCollectorGoSignal <= outputCollectorConverterProcessGoSignal or outputColl
 					FPU_CNV0_A <= std_logic_vector(SaturateFloat(f32(FPU_MUL_OUT) ) ); -- a * pixelW
 					FPU_CNV0_Mode <= std_logic_vector(to_unsigned(eConvertMode'pos(F_to_UNORM8), 3) );
 					FPU_CNV1_Mode <= std_logic_vector(to_unsigned(eConvertMode'pos(F_to_UNORM16), 3) );
-					if (texcoord0AddressingModeV = TAM_Wrap) then
+					if (texcoord0AddressingModeV /= TAM_Clamp) then
 						FPU_CNV1_A <= FPU_CNV0_OUT; -- If this is wrap mode, then source our texcoord from the frac() output
 					else
 						FPU_CNV1_A <= std_logic_vector(clampedTexcoordTY); -- If this is clamp mode, then just use our clamped texcoord

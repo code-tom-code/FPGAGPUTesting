@@ -92,6 +92,17 @@ enum eCullMode : unsigned char
 	eCullMode_NUM_CULL_MODES // This must always be last
 };
 
+enum eTexcoordAddressingMode : unsigned char
+{
+	TAM_Wrap = 0,
+	TAM_Clamp = 1,
+	TAM_Mirror = 2,
+	TAM_BorderColor = 3,
+	TAM_MirrorOnce = 4,
+
+	eTexcoordAddressingMode_NUM_ADDR_MODES // This must always be last!
+};
+
 enum ePrimTopology : unsigned char
 {
 	primTop_PointList = 0, // Not yet implemented

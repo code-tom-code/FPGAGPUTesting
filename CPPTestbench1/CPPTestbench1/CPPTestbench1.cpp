@@ -81,12 +81,12 @@ int main(const unsigned argc, const char* const argv[])
 		//status = RunTestsVertexStreamCache(loader);
 		//status = RunTestsVertexBatchBuilder(loader);
 		//status = RunTestsShaderCore(loader);
-		//status = RunTestsInputAssembler(loader);
+		status = RunTestsInputAssembler(loader);
 		//status = RunTestsClipUnit(loader, renderWindow);
 		//status = RunTestsTriSetup(loader);
 		//status = RunTestsRasterizer(loader);
 		//status = RunTestsDepthInterp(loader);
-		status = RunTestsAttributeInterp(loader);
+		//status = RunTestsAttributeInterp(loader);
 		//status = RunTestsTexSampler(loader, renderWindow);
 		//status = RunTestsROP(loader, renderWindow);
 		//status = RunTestsHDMIScanout(loader, renderWindow);

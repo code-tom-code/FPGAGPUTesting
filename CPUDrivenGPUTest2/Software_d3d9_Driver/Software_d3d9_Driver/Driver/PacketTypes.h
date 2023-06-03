@@ -231,6 +231,8 @@ enum combinerMode : unsigned char
 	cbm_debugTexcoords = 4,
 	cbm_debugBilinearInterpolants = 5,
 	cbm_textureModulateVertexColor = 6,
+	cbm_debugDepth = 7,
+	cbm_debugStencil = 8,
 
 	cbm_MAX_NUM_COMBINER_MODES // This must always be last!
 };

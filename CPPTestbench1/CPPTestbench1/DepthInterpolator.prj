@@ -4,6 +4,7 @@ vhdl xil_defaultlib  \
 "hdl_src/PacketType.vhd" \
 "hdl_src/FloatALU_Types.vhd" \
 "hdl_src/FloatALU/FloatCommon.vhd" \
+"hdl_src/SimpleFIFO.vhd" \
 "hdl_src/PixelPipeline/PixelPipeline_Types.vhd" \
 "hdl_src/RenderState/DepthInterpolatorState.vhd" \
 "hdl_src/FloatALU/Standalones/StandaloneFloatALU_MUL.vhd" \

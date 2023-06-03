@@ -94,7 +94,7 @@ package body FloatALU_CNV is
 			return CnvNaNEarlyOut;
 		elsif (aIsNegative = '1' or GetFloatIsDenorm(a) = '1') then
 			return CnvBelowMinEarlyOut; -- This is 0.0f
-		elsif (a(30 downto 0) > maxPositiveVal) then
+		elsif (a(30 downto 0) >= maxPositiveVal) then
 			return CnvAboveMaxEarlyOut; -- This is 16777215
 		else
 			return CnvNoEarlyOut;

@@ -190,7 +190,7 @@ public:
 			return *reinterpret_cast<const int* const>(&fResult);
 		}
 		case F_to_U24_RoundNearestEven: // 1
-			if (a > 0x00FFFFFF)
+			if (a >= 0x00FFFFFF) // Use greater-equals here because in this case if we add 0.5f to 0xFFFFFF then we'll actually overflow into 0x1000000 on accident
 				return 0x00FFFFFF;
 			else if (a <= 0.0f)
 				return 0;

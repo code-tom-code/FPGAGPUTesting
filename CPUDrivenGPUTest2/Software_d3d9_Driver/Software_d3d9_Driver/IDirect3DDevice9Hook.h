@@ -1500,21 +1500,6 @@ public:
 		}
 	}
 
-	const bool DoOverrideTexCombinerMode() const
-	{
-		return overrideTexCombinerMode >= 0;
-	}
-
-	const int GetOverrideTexCombinerMode() const
-	{
-		return overrideTexCombinerMode;
-	}
-
-	void SetOverrideTexCombinerMode(const int newOverrideTexCombinerMode)
-	{
-		overrideTexCombinerMode = newOverrideTexCombinerMode;
-	}
-
 	const bool GetEmulateCommandLists() const
 	{
 		return emulateCommandLists;
@@ -1545,14 +1530,116 @@ public:
 		invertScanoutColors = newScanoutInvertColors;
 	}
 
-	const bool GetForceDisableDepth() const
+	const bool GetStateDepthEnable() const;
+	const bool GetStateDepthWriteEnable() const;
+	const bool GetStateStencilEnable() const;
+	const D3DFILLMODE GetStateFillMode() const;
+	const D3DSHADEMODE GetStateShadeMode() const;
+	const D3DCULL GetStateCullMode() const;
+	const bool GetStateFogEnable() const;
+	void GetStateAlphaBlend(bool& alphaBlendEnable, bool& separateAlphaBlendEnable, D3DBLEND& srcColorBlend, D3DBLEND& destColorBlend, D3DBLEND& srcAlphaBlend, D3DBLEND& destAlphaBlend, D3DBLENDOP& colorBlendOp, D3DBLENDOP& alphaBlendOp) const;
+	void GetStateAlphaTest(bool& alphaTestEnable, D3DCMPFUNC& alphaCmpFunc, unsigned char& alphaTestRef);
+	void GetStateTexAddressing(D3DTEXTUREADDRESS& texAddressU, D3DTEXTUREADDRESS& texAddressV, D3DCOLOR& borderColor);
+	void GetStateTexCombinerMode(combinerMode& colorCombiner, combinerMode& alphaCombiner);
+
+	const DepthOverrideSettings GetDepthOverride() const
 	{
-		return forceDisableDepth;
+		return overrideDepth;
 	}
 
-	void SetForceDisableDepth(const bool newForceDisableDepth)
+	void SetDepthOverride(const DepthOverrideSettings newDepthOverride)
 	{
-		forceDisableDepth = newForceDisableDepth;
+		overrideDepth = newDepthOverride;
+	}
+
+	const StencilOverrideSettings GetStencilOverride() const
+	{
+		return overrideStencil;
+	}
+
+	void SetStencilOverride(const StencilOverrideSettings newStencilOverride)
+	{
+		overrideStencil = newStencilOverride;
+	}
+
+	const FillModeOverrideSettings GetFillModeOverride() const
+	{
+		return overrideFillMode;
+	}
+
+	void SetFillModeOverride(const FillModeOverrideSettings newFillModeOverride)
+	{
+		overrideFillMode = newFillModeOverride;
+	}
+
+	const ShadeModeOverrideSettings GetShadeModeOverride() const
+	{
+		return overrideShadeMode;
+	}
+
+	void SetShadeModeOverride(const ShadeModeOverrideSettings newShadeModeOverride)
+	{
+		overrideShadeMode = newShadeModeOverride;
+	}
+
+	const CullModeOverrideSettings GetCullModeOverride() const
+	{
+		return overrideCullMode;
+	}
+
+	void SetCullModeOverride(const CullModeOverrideSettings newCullModeOverride)
+	{
+		overrideCullMode = newCullModeOverride;
+	}
+
+	const FogModeOverrideSettings GetFogModeOverride() const
+	{
+		return overrideFogMode;
+	}
+
+	void SetFogModeOverride(const FogModeOverrideSettings newFogModeOverride)
+	{
+		overrideFogMode = newFogModeOverride;
+	}
+
+	const AlphaBlendOverrideSettings GetAlphaBlendOverride() const
+	{
+		return overrideAlphaBlend;
+	}
+
+	void SetAlphaBlendOverride(const AlphaBlendOverrideSettings newAlphaBlendOverride)
+	{
+		overrideAlphaBlend = newAlphaBlendOverride;
+	}
+
+	const AlphaTestOverrideSettings GetAlphaTestOverride() const
+	{
+		return overrideAlphaTest;
+	}
+
+	void SetAlphaTestOverride(const AlphaTestOverrideSettings newAlphaTestOverride)
+	{
+		overrideAlphaTest = newAlphaTestOverride;
+	}
+
+	const TexAddressOverrideSettings GetTexAddressOverride() const
+	{
+		return overrideTexAddress;
+	}
+
+	void SetTexAddressOverride(const TexAddressOverrideSettings newTexAddressOverride)
+	{
+		overrideTexAddress = newTexAddressOverride;
+	}
+
+	const TexModeOverrideSettings GetTexModeOverride() const
+	{
+		return overrideTexMode;
+	}
+
+	void SetTexModeOverride(const TexModeOverrideSettings newTexModeOverride)
+	{
+		overrideTexMode = newTexModeOverride;
 	}
 
 	const setScanoutPointerCommand::eDisplayChannelSwizzle GetScanoutSwizzleR() const
@@ -1657,9 +1744,21 @@ protected:
 	bool enableVSyncWait;
 	bool emulateCommandLists;
 	bool printScrnCapturesScreenshot;
-	int overrideTexCombinerMode;
 	bool invertScanoutColors;
-	bool forceDisableDepth;
+	
+	// Render state override settings allow the driver to render the scene with a specific set of render states
+	// being overridden by user values. This is useful for debugging rendering issues in real-time:
+	DepthOverrideSettings overrideDepth;
+	StencilOverrideSettings overrideStencil;
+	FillModeOverrideSettings overrideFillMode;
+	ShadeModeOverrideSettings overrideShadeMode;
+	CullModeOverrideSettings overrideCullMode;
+	FogModeOverrideSettings overrideFogMode;
+	AlphaBlendOverrideSettings overrideAlphaBlend;
+	AlphaTestOverrideSettings overrideAlphaTest;
+	TexAddressOverrideSettings overrideTexAddress;
+	TexModeOverrideSettings overrideTexMode;
+
 	unsigned drawCallSleepMicros;
 	bool singleStepDrawCallMode;
 	bool queueSingleStepDrawCallModeNextFrame;

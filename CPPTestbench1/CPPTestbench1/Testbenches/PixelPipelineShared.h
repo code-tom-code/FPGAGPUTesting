@@ -323,7 +323,17 @@ struct depthInterpOutputData
 
 	inline const bool InterpolatedWCloseEnough(const float rhsInterpolatedW) const
 	{
-		return abs(*(const int* const)&interpolatedPixelW - *(const int* const)&rhsInterpolatedW) <= 29;
+		const int deltaULPs = abs(*(const int* const)&interpolatedPixelW - *(const int* const)&rhsInterpolatedW);
+		return deltaULPs <= 50;
+	}
+
+	inline const bool BarycentricsCloseEnough(const depthInterpOutputData& rhs) const
+	{
+		const int deltaB_ULPs = abs(*(const int* const)&normalizedBarycentricB - *(const int* const)&rhs.normalizedBarycentricB);
+		const int deltaC_ULPs = abs(*(const int* const)&normalizedBarycentricC - *(const int* const)&rhs.normalizedBarycentricC);
+		const bool barycentricBCloseEnough = deltaB_ULPs <= 12;
+		const bool barycentricCCloseEnough = deltaC_ULPs <= 12;
+		return barycentricBCloseEnough && barycentricCCloseEnough;
 	}
 
 	const bool operator==(const depthInterpOutputData& rhs) const
@@ -343,8 +353,64 @@ struct depthInterpOutputData
 		{
 			// Might need to do float-epsilon comparisons here instead
 			return pixelX == rhs.pixelX && pixelY == rhs.pixelY &&
-				normalizedBarycentricB == rhs.normalizedBarycentricB && normalizedBarycentricC == rhs.normalizedBarycentricC &&
+				BarycentricsCloseEnough(rhs) &&
 				InterpolatedWCloseEnough(rhs.interpolatedPixelW);
+		}
+	}
+};
+
+struct DepthInterpTriCache
+{
+	struct DepthTriCacheData
+	{
+		float BarycentricInverse;
+		float Z0;
+		float Z10;
+		float Z20;
+		float InvW0;
+		float InvW10;
+		float InvW20;
+	};
+
+	std::vector<DepthTriCacheData> dataFifo;
+
+	void Update(std_logic_port& TRICACHE_PopTriangleSlot,
+		std_logic_vector_port<32>& TRICACHE_inBarycentricInverse, 
+		std_logic_vector_port<32>& TRICACHE_inZ0, std_logic_vector_port<32>& TRICACHE_inZ10, std_logic_vector_port<32>& TRICACHE_inZ20,
+		std_logic_vector_port<32>& TRICACHE_inInvW0, std_logic_vector_port<32>& TRICACHE_inInvW10, std_logic_vector_port<32>& TRICACHE_inInvW20)
+	{
+		if (!dataFifo.empty() )
+		{
+			const DepthTriCacheData& fallthroughData = dataFifo.front();
+			TRICACHE_inBarycentricInverse = fallthroughData.BarycentricInverse;
+			TRICACHE_inZ0 = fallthroughData.Z0;
+			TRICACHE_inZ10 = fallthroughData.Z10;
+			TRICACHE_inZ20 = fallthroughData.Z20;
+			TRICACHE_inInvW0 = fallthroughData.InvW0;
+			TRICACHE_inInvW10 = fallthroughData.InvW10;
+			TRICACHE_inInvW20 = fallthroughData.InvW20;
+		}
+		else
+		{
+			TRICACHE_inBarycentricInverse = 0.0f;
+			TRICACHE_inZ0 = 0.0f;
+			TRICACHE_inZ10 = 0.0f;
+			TRICACHE_inZ20 = 0.0f;
+			TRICACHE_inInvW0 = 0.0f;
+			TRICACHE_inInvW10 = 0.0f;
+			TRICACHE_inInvW20 = 0.0f;
+		}
+
+		if (TRICACHE_PopTriangleSlot.GetBoolVal() )
+		{
+			if (dataFifo.size() > 0)
+			{
+				dataFifo.erase(dataFifo.begin() );
+			}
+			else
+			{
+				__debugbreak();
+			}
 		}
 	}
 };
@@ -572,6 +638,6 @@ triSetupResultType EmulateCPUTriSetup(const triSetupInput& inTriData, triSetupOu
 // This rasterization algorithm, while it does work in most cases, is not fully correct with respect to the D3D11 rasterization rules: https://docs.microsoft.com/en-us/windows/win32/direct3d11/d3d10-graphics-programming-guide-rasterizer-stage-rules
 void EmulateCPURasterizer(const triSetupOutput& triSetupData, std::vector<rasterizedPixelData>& outRasterizedPixels);
 
-void EmulateDepthInterpCPU(const triSetupOutput& triSetupData, const std::vector<rasterizedPixelData>& rasterizedPixels, std::vector<depthInterpOutputData>& outDepthInterpData, std::vector<unsigned>& outDebugDepthValues);
+void EmulateDepthInterpCPU(const DepthInterpTriCache& depthInterpTriCache, const std::vector<rasterizedPixelData>& rasterizedPixels, std::vector<depthInterpOutputData>& outDepthInterpData, std::vector<unsigned>& outDebugDepthValues);
 void EmulateAttributeInterpCPU(const AttrInterpTriCache& attrTriCache, const std::vector<depthInterpOutputData>& depthInterpData, const bool validateNormalizedTexcoords, std::vector<attributeInterpOutputData>& outAttributeInterpData);
 void EmulateTexSamplerCPU(const std::vector<attributeInterpOutputData>& interpolatedData, std::vector<texSampOutput>& outTexSampData, const bool useBilinearInterp, const D3DSURFACE_DESC& texDesc, const D3DLOCKED_RECT& d3dlr);

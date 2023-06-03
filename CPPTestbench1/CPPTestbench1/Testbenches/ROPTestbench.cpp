@@ -906,6 +906,7 @@ const int RunTestsROP(Xsi::Loader& loader, RenderWindow* renderWindow)
 	std_logic_port DBG_ReadRequestFIFOFull(PD_OUT, loader, "DBG_ReadRequestFIFOFull");
 #endif // #ifdef DEBUG_PORTS_DEBUG
 
+	DepthInterpTriCache depthInterpolatorTriCache;
 	AttrInterpTriCache attrInterpolatorTriCache;
 	bool successResult = true;
 
@@ -1331,6 +1332,16 @@ const int RunTestsROP(Xsi::Loader& loader, RenderWindow* renderWindow)
 
 				std::vector<rasterizedPixelData> rasterizedPixels;
 
+				DepthInterpTriCache::DepthTriCacheData newDepthTriData;
+				newDepthTriData.BarycentricInverse = triSetupData.barycentricInverse;
+				newDepthTriData.Z0 = triSetupData.v0.Z;
+				newDepthTriData.Z10 = triSetupData.v10.Z;
+				newDepthTriData.Z20 = triSetupData.v20.Z;
+				newDepthTriData.InvW0 = triSetupData.v0.invW;
+				newDepthTriData.InvW10 = triSetupData.v10.invW;
+				newDepthTriData.InvW20 = triSetupData.v20.invW;
+				depthInterpolatorTriCache.dataFifo.push_back(newDepthTriData);
+
 				AttrInterpTriCache::AttrTriCacheData newAttrTriData;
 				newAttrTriData.TX0 = triSetupData.v0.xTex;
 				newAttrTriData.TX10 = triSetupData.v10.xTex;
@@ -1366,7 +1377,7 @@ const int RunTestsROP(Xsi::Loader& loader, RenderWindow* renderWindow)
 
 				std::vector<depthInterpOutputData> emulatedCPUDepthInterpData;
 				std::vector<unsigned> emulatedCPUDepthValues;
-				EmulateDepthInterpCPU(triSetupData, rasterizedPixels, emulatedCPUDepthInterpData, emulatedCPUDepthValues);
+				EmulateDepthInterpCPU(depthInterpolatorTriCache, rasterizedPixels, emulatedCPUDepthInterpData, emulatedCPUDepthValues);
 
 				std::vector<attributeInterpOutputData> emulatedCPUAttributeInterpData;
 				EmulateAttributeInterpCPU(attrInterpolatorTriCache, emulatedCPUDepthInterpData, !randomAttributes, emulatedCPUAttributeInterpData);

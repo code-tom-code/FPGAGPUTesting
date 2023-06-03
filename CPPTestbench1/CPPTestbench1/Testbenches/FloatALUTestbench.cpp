@@ -1709,7 +1709,11 @@ static const int RunTestsFloatCNV(Xsi::Loader& loader, std_logic_port& clk, std_
 		allTestsSuccessful &= (cnvTestFunc(fx, F_to_U24_RoundNearestEven) == softRoundToNE(fx) );
 	}
 
+#ifdef _DEBUG
+	for (unsigned x = 0; x < 16777216; x += 11)
+#else
 	for (unsigned x = 0; x < 16777216; ++x)
+#endif
 	{
 		const float fx = (const float)x;
 		if (cnvTestFunc(fx, F_to_U24_RoundNearestEven) != x)
@@ -1728,6 +1732,8 @@ static const int RunTestsFloatCNV(Xsi::Loader& loader, std_logic_port& clk, std_
 	allTestsSuccessful &= (cnvTestFunc(8388607.0f, F_to_U24_RoundNearestEven) == 8388607);
 	allTestsSuccessful &= (cnvTestFunc(-8388608.0f, F_to_U24_RoundNearestEven) == 0);
 	allTestsSuccessful &= (cnvTestFunc(16777215.0f, F_to_U24_RoundNearestEven) == 16777215);
+	allTestsSuccessful &= (cnvTestFunc(16777214.0f, F_to_U24_RoundNearestEven) == 16777214);
+	allTestsSuccessful &= (cnvTestFunc(16777216.0f, F_to_U24_RoundNearestEven) == 16777215);
 	allTestsSuccessful &= (cnvTestFunc(-16777215.0f, F_to_U24_RoundNearestEven) == 0);
 	allTestsSuccessful &= (cnvTestFunc(16777215.0f * 2.0f, F_to_U24_RoundNearestEven) == 16777215);
 	allTestsSuccessful &= (cnvTestFunc(-16777215.0f * 2.0f, F_to_U24_RoundNearestEven) == 0);

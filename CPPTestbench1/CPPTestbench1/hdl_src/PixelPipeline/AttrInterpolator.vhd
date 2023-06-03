@@ -294,9 +294,9 @@ DBG_PixelWFIFO <= PixelWFIFO_OutCurrentData;
 DBG_CurrentDrawEvent <= std_logic_vector(currentDrawEventID);
 
 Interpolator : FloatALU_Interpolator port map(clk => clk, IN_B => std_logic_vector(interpInputB), IN_C => std_logic_vector(interpInputC), IN_Attr0 => std_logic_vector(interpInputAttr0), IN_Attr10 => std_logic_vector(interpInputAttr10), IN_Attr20 => std_logic_vector(interpInputAttr20), OINTERP => interpOutput, IINTERP_GO => interpGoSignal);
-BarycentricBCFIFO : SimpleFIFO generic map(FIFO_Depth => MAX_OCCUPANCY, FIFO_Bit_Width => 64) port map(clk => clk, FIFO_IsEmpty => BarycentricBCFIFO_IsEmpty, FIFO_IsFull => BarycentricBCFIFO_IsFull, FIFO_PushNewElement => BarycentricBCFIFO_PushElement, FIFO_PopLastElement => BarycentricBCFIFO_PopElement, FIFO_NewElementDataWr => BarycentricBCFIFO_InNewData, FIFO_NextElementDataRd => BarycentricBCFIFO_OutCurrentData);
+BarycentricBCFIFO : SimpleFIFO generic map(FIFO_Depth => MAX_OCCUPANCY, FIFO_Bit_Width => 32*2) port map(clk => clk, FIFO_IsEmpty => BarycentricBCFIFO_IsEmpty, FIFO_IsFull => BarycentricBCFIFO_IsFull, FIFO_PushNewElement => BarycentricBCFIFO_PushElement, FIFO_PopLastElement => BarycentricBCFIFO_PopElement, FIFO_NewElementDataWr => BarycentricBCFIFO_InNewData, FIFO_NextElementDataRd => BarycentricBCFIFO_OutCurrentData);
 PixelWFIFO : SimpleFIFO generic map(FIFO_Depth => MAX_OCCUPANCY, FIFO_Bit_Width => 32) port map(clk => clk, FIFO_IsEmpty => PixelWFIFO_IsEmpty, FIFO_IsFull => PixelWFIFO_IsFull, FIFO_PushNewElement => PixelWFIFO_PushElement, FIFO_PopLastElement => PixelWFIFO_PopElement, FIFO_NewElementDataWr => PixelWFIFO_InNewData, FIFO_NextElementDataRd => PixelWFIFO_OutCurrentData);
-PixelXYFIFO : SimpleFIFO generic map(FIFO_Depth => MAX_OCCUPANCY, FIFO_Bit_Width => 32) port map(clk => clk, FIFO_IsEmpty => PixelXYFIFO_IsEmpty, FIFO_IsFull => PixelXYFIFO_IsFull, FIFO_PushNewElement => PixelXYFIFO_PushElement, FIFO_PopLastElement => PixelXYFIFO_PopElement, FIFO_NewElementDataWr => PixelXYFIFO_InNewData, FIFO_NextElementDataRd => PixelXYFIFO_OutCurrentData);
+PixelXYFIFO : SimpleFIFO generic map(FIFO_Depth => MAX_OCCUPANCY, FIFO_Bit_Width => 16*2) port map(clk => clk, FIFO_IsEmpty => PixelXYFIFO_IsEmpty, FIFO_IsFull => PixelXYFIFO_IsFull, FIFO_PushNewElement => PixelXYFIFO_PushElement, FIFO_PopLastElement => PixelXYFIFO_PopElement, FIFO_NewElementDataWr => PixelXYFIFO_InNewData, FIFO_NextElementDataRd => PixelXYFIFO_OutCurrentData);
 FPU_MUL_GO <= mulGoSignal;
 FPU_CNV0_GO <= cnv0GoSignal;
 FPU_CNV1_GO <= cnv1GoSignal;
@@ -339,7 +339,8 @@ outputCollectorGoSignal <= outputCollectorConverterProcessGoSignal or outputColl
 					readyForNewPixel <= '0';
 
 					if (STATE_StateIsValid = '1' and currentDrawEventID = unsigned(STATE_NextDrawID) ) then
-						if (InterpolatorDriverIsIdle = '1' and MultiplierDriverIsIdle = '1' and ConverterDriverIsIdle = '1' and OutputDriverIsIdle = '1') then -- Wait for a full unit flush before changing state out from under us
+						if (InterpolatorDriverIsIdle = '1' and MultiplierDriverIsIdle = '1' and ConverterDriverIsIdle = '1' and OutputDriverIsIdle = '1' and
+							PixelXYFIFO_IsEmpty = '1' and PixelWFIFO_IsEmpty = '1' and BarycentricBCFIFO_IsEmpty = '1') then -- Wait for a full unit flush before changing state out from under us
 							STATE_ConsumeStateSlot <= '1';
 
 							useFlatShading <= DeserializeBitsToStruct(STATE_StateBitsAtDrawID).UseFlatShadingColors;

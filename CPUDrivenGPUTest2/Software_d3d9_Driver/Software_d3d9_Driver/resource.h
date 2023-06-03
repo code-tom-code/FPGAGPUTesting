@@ -26,7 +26,6 @@
 #define IDC_CHK_INVERTSCANOUTCOLORS     1011
 #define IDC_RDB_SHOWCYCLE               1012
 #define IDC_CHK_WAITFORVSYNC            1012
-#define IDC_CHK_FORCEDISABLEDEPTH       1013
 #define IDC_STATIC2                     1014
 #define IDC_CHK_SINGLESTEPDRAWCALLS     1014
 #define IDC_IA_STAT1                    1015
@@ -50,17 +49,27 @@
 #define IDC_LST_CATEGORYLIST            1027
 #define IDC_INTERP_STAT2                1028
 #define IDC_LST_ALLOCINFO               1028
+#define IDC_CMB_OVERRIDEZ               1028
 #define IDC_INTERP_STAT3                1029
 #define IDC_BTN_OPENMEMORYSTATS         1029
 #define IDC_TEXSAMP_STAT1               1030
+#define IDC_CMB_OVERRIDEFILLMODE        1030
 #define IDC_TEXSAMP_STAT2               1031
+#define IDC_CMB_OVERRIDESHADEMODE       1031
 #define IDC_TEXSAMP_STAT3               1032
+#define IDC_CMB_OVERRIDECULLMODE        1032
 #define IDC_TEXSAMP_STAT4               1033
+#define IDC_CMB_OVERRIDEFOGMODE         1033
 #define IDC_ROP_STAT1                   1034
+#define IDC_CMB_OVERRIDEALPHABLEND      1034
 #define IDC_ROP_STAT2                   1035
+#define IDC_CMB_OVERRIDEALPHATEST       1035
 #define IDC_ROP_STAT3                   1036
+#define IDC_CMB_OVERRIDETEXTUREADDRESSING 1036
 #define IDC_ROP_STAT4                   1037
+#define IDC_CMB_OVERRIDETEXTURING       1037
 #define IDC_CMD_STAT1                   1038
+#define IDC_CMB_OVERRIDESTENCIL         1038
 #define IDC_CMD_STAT2                   1039
 #define IDC_MEMREAD_STAT1               1040
 #define IDC_MEMREAD_STAT2               1041
@@ -85,7 +94,6 @@
 #define IDC_CLIPUNIT_STAT3              1060
 #define IDC_VBB_STAT1                   1061
 #define IDC_VBB_STAT2                   1062
-#define IDC_CLIPUNIT_STAT6              1063
 #define IDC_VBB_STAT3                   1063
 
 // Next default values for new objects

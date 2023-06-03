@@ -10,6 +10,7 @@
 #include <vector>
 
 static unsigned currentTriCacheIndex = 0;
+extern bool enableDebugOutput;
 
 static const float frand()
 {
@@ -19,82 +20,47 @@ static const float frand()
 enum depthInterpStateType
 {
 	waitingForRead, // 0
-
-	// Convert our input barycentrics from int32 to float32
-	barycentricConversion0, // 1
-	barycentricConversion1, // 2
-	barycentricConversion2, // 3
-	barycentricConversion3, // 4
-	barycentricConversion4, // 5
-	barycentricConversion5, // 6
-
-	// Normalize our barycentrics by multiplying the [0.0f, 16777215.0f] values by the barycentric normalization factor (computed by the TriSetup block previously) to
-	// get them into the [0.0f, 1.0f] range.
-	barycentricNormalization0, // 7
-	barycentricNormalization1, // 8
-	barycentricNormalization2, // 9
-	barycentricNormalization3, // 10
-	barycentricNormalization4, // 11
-	barycentricNormalization5, // 12
-
-	// Multiply the normalized barycentrics with the inverseZ (1.0f/zN) values
-	barycentricMultiply0, // 13
-	barycentricMultiply1, // 14
-	barycentricMultiply2, // 15
-	barycentricMultiply3, // 16
-	barycentricMultiply4, // 17
-	barycentricMultiply5, // 18
-	barycentricMultiply6, // 19
-	barycentricMultiply7, // 20
-	barycentricMultiply8, // 21
-	barycentricMultiply9, // 22
-
-	// Sum the products together to complete the dot product
-	barycentricDotProductSums0, // 23
-	barycentricDotProductSums1, // 24
-	barycentricDotProductSums2, // 25
-	barycentricDotProductSums3, // 26
-
-	// Take the dot product (dot(normbary.abc, Z.xyz) ) to yield the per-pixel depth value and 
-	// take the inverse dot product (1.0f / (dot(normbary.abc, invW.xyz) ) ) to yield the per-pixel W value as a float32
-	barycentricDotProductRecip0, // 27
-	barycentricDotProductRecip1, // 28
-	barycentricDotProductRecip2, // 29
-	barycentricDotProductRecip3, // 30
-	barycentricDotProductRecip4, // 31
-	barycentricDotProductRecip5, // 32
-	barycentricDotProductRecip6, // 33
-	barycentricDotProductRecip7, // 34
-	barycentricDotProductRecip8, // 35
-	barycentricDotProductRecip9, // 36
-	barycentricDotProductRecip10, // 37
-	barycentricDotProductRecip11, // 38
-	barycentricDotProductRecip12, // 39
-	barycentricDotProductRecip13, // 40
-	barycentricDotProductRecip14, // 41
-	barycentricDotProductRecip15, // 42
-	barycentricDotProductRecip16, // 43
-
-	// When it's ready we can send the now depth-test-passed pixel off to the next block for attribute interpolation
-	sendPixelForAttrInterpolation, // 44
-
-	setNewPrimitiveSlot, // 45
-	signalPrimitiveComplete, // 46
-	signalNewDrawEventID, // 47
-	signalTerminateDrawEventID, // 48
-	setDepthState // 49
+	kickNewPixel, // 1
+	setNewPrimitiveSlot, // 2
+	setDepthState, // 3
+	signalSpecialPixelMessage // 4
 };
 
-void EmulateDepthInterpCPU(const triSetupOutput& triSetupData, const std::vector<rasterizedPixelData>& rasterizedPixels, std::vector<depthInterpOutputData>& outDepthInterpData, std::vector<unsigned>& outDebugDepthValues)
+void EmulateDepthInterpCPU(const DepthInterpTriCache& depthInterpTriCache, const std::vector<rasterizedPixelData>& rasterizedPixels, std::vector<depthInterpOutputData>& outDepthInterpData, std::vector<unsigned>& outDebugDepthValues)
 {
+	DepthInterpTriCache localDepthTriCacheCopy = depthInterpTriCache;
+
+	float currentTriBarycentricInverse = 1.0f;
+	float Z0 = 0.5f;
+	float Z10 = 0.0f;
+	float Z20 = 0.0f;
+	float InvW0 = 1.0f;
+	float InvW10 = 0.0f;
+	float InvW20 = 0.0f;
+
 	const unsigned numPixels = (const unsigned)rasterizedPixels.size();
 	for (unsigned x = 0; x < numPixels; ++x)
 	{
 		const rasterizedPixelData& thisPixelData = rasterizedPixels[x];
-		if (thisPixelData.pixelX == startNewTriangleSlotCommand ||
-			thisPixelData.pixelX == finishCurrentTriangleCommand)
+		if (IsSpecialCodePixel(thisPixelData.pixelX) )
 		{
-			// Pass through these messages to the next stage:
+			if (thisPixelData.pixelX == startNewTriangleSlotCommand)
+			{
+				const DepthInterpTriCache::DepthTriCacheData& currentTriData = localDepthTriCacheCopy.dataFifo.front();
+				currentTriBarycentricInverse = currentTriData.BarycentricInverse;
+				Z0 = currentTriData.Z0;
+				Z10 = currentTriData.Z10;
+				Z20 = currentTriData.Z20;
+				InvW0 = currentTriData.InvW0;
+				InvW10 = currentTriData.InvW10;
+				InvW20 = currentTriData.InvW20;
+			}
+			else if (thisPixelData.pixelX == finishCurrentTriangleCommand)
+			{
+				localDepthTriCacheCopy.dataFifo.erase(localDepthTriCacheCopy.dataFifo.begin() );
+			}
+
+			// Pass through these special messages to the next stage:
 			depthInterpOutputData newDepthInterpOutput;
 			newDepthInterpOutput.pixelX = thisPixelData.pixelX;
 			newDepthInterpOutput.pixelY = thisPixelData.pixelY;
@@ -105,12 +71,9 @@ void EmulateDepthInterpCPU(const triSetupOutput& triSetupData, const std::vector
 			continue;
 		}
 
-		const float normalizedBarycentricB = thisPixelData.barycentricB * triSetupData.barycentricInverse;
-		const float normalizedBarycentricC = thisPixelData.barycentricC * triSetupData.barycentricInverse;
+		const float normalizedBarycentricB = thisPixelData.barycentricB * currentTriBarycentricInverse;
+		const float normalizedBarycentricC = thisPixelData.barycentricC * currentTriBarycentricInverse;
 
-		const float Z0 = triSetupData.v0.Z;
-		const float Z10 = triSetupData.v10.Z;
-		const float Z20 = triSetupData.v20.Z;
 		const float dotproductResultZ = Z10 * normalizedBarycentricB + Z20 * normalizedBarycentricC + Z0;
 
 		const float interpolatedPixelDepth = dotproductResultZ;
@@ -127,10 +90,7 @@ void EmulateDepthInterpCPU(const triSetupOutput& triSetupData, const std::vector
 		if (u24Depth <= 0xFFFFFFFF)
 		{
 			// Interpolate per-pixel W (uses the same calculation as per-pixel Z):
-			const float invW0 = triSetupData.v0.invW;
-			const float invW10 = triSetupData.v10.invW;
-			const float invW20 = triSetupData.v20.invW;
-			const float dotproductResultW = invW10 * normalizedBarycentricB + invW20 * normalizedBarycentricC + invW0;
+			const float dotproductResultW = InvW10 * normalizedBarycentricB + InvW20 * normalizedBarycentricC + InvW0;
 
 			const float interpolatedPixelW = 1.0f / dotproductResultW;
 
@@ -146,62 +106,6 @@ void EmulateDepthInterpCPU(const triSetupOutput& triSetupData, const std::vector
 		}
 	}
 }
-
-struct DepthInterpTriCache
-{
-	struct DepthTriCacheData
-	{
-		float BarycentricInverse;
-		float Z0;
-		float Z10;
-		float Z20;
-		float InvW0;
-		float InvW10;
-		float InvW20;
-	};
-
-	std::vector<DepthTriCacheData> dataFifo;
-
-	void Update(std_logic_port& TRICACHE_PopTriangleSlot,
-		std_logic_vector_port<32>& TRICACHE_inBarycentricInverse, 
-		std_logic_vector_port<32>& TRICACHE_inZ0, std_logic_vector_port<32>& TRICACHE_inZ10, std_logic_vector_port<32>& TRICACHE_inZ20,
-		std_logic_vector_port<32>& TRICACHE_inInvW0, std_logic_vector_port<32>& TRICACHE_inInvW10, std_logic_vector_port<32>& TRICACHE_inInvW20)
-	{
-		if (!dataFifo.empty() )
-		{
-			const DepthTriCacheData& fallthroughData = dataFifo.front();
-			TRICACHE_inBarycentricInverse = fallthroughData.BarycentricInverse;
-			TRICACHE_inZ0 = fallthroughData.Z0;
-			TRICACHE_inZ10 = fallthroughData.Z10;
-			TRICACHE_inZ20 = fallthroughData.Z20;
-			TRICACHE_inInvW0 = fallthroughData.InvW0;
-			TRICACHE_inInvW10 = fallthroughData.InvW10;
-			TRICACHE_inInvW20 = fallthroughData.InvW20;
-		}
-		else
-		{
-			TRICACHE_inBarycentricInverse = 0.0f;
-			TRICACHE_inZ0 = 0.0f;
-			TRICACHE_inZ10 = 0.0f;
-			TRICACHE_inZ20 = 0.0f;
-			TRICACHE_inInvW0 = 0.0f;
-			TRICACHE_inInvW10 = 0.0f;
-			TRICACHE_inInvW20 = 0.0f;
-		}
-
-		if (TRICACHE_PopTriangleSlot.GetBoolVal() )
-		{
-			if (dataFifo.size() > 0)
-			{
-				dataFifo.erase(dataFifo.begin() );
-			}
-			else
-			{
-				__debugbreak();
-			}
-		}
-	}
-};
 
 struct simulatedDepthBuffer
 {
@@ -291,11 +195,17 @@ const int RunTestsDepthInterp(Xsi::Loader& loader)
 	std_logic_vector_port<32> FPU_MUL_OUT(PD_IN, loader, "FPU_MUL_OUT");
 	std_logic_port FPU_MUL_GO(PD_OUT, loader, "FPU_MUL_GO");
 
-	// CNV pipe for float-to-int and int-to-float conversions:
-	std_logic_vector_port<32> FPU_CNV_A(PD_OUT, loader, "FPU_CNV_A");
-	std_logic_vector_port<3> FPU_CNV_Mode(PD_OUT, loader, "FPU_CNV_Mode");
-	std_logic_vector_port<32> FPU_CNV_OUT(PD_IN, loader, "FPU_CNV_OUT");
-	std_logic_port FPU_CNV_GO(PD_OUT, loader, "FPU_CNV_GO");
+	// CNV pipe for u32 to f32 conversions:
+	std_logic_vector_port<32> FPU_CNV0_A(PD_OUT, loader, "FPU_CNV0_A");
+	std_logic_vector_port<3> FPU_CNV0_Mode(PD_OUT, loader, "FPU_CNV0_Mode");
+	std_logic_vector_port<32> FPU_CNV0_OUT(PD_IN, loader, "FPU_CNV0_OUT");
+	std_logic_port FPU_CNV0_GO(PD_OUT, loader, "FPU_CNV0_GO");
+
+	// CNV pipe for f32 to u24 conversion:
+	std_logic_vector_port<32> FPU_CNV1_A(PD_OUT, loader, "FPU_CNV1_A");
+	std_logic_vector_port<3> FPU_CNV1_Mode(PD_OUT, loader, "FPU_CNV1_Mode");
+	std_logic_vector_port<32> FPU_CNV1_OUT(PD_IN, loader, "FPU_CNV1_OUT");
+	std_logic_port FPU_CNV1_GO(PD_OUT, loader, "FPU_CNV1_GO");
 
 	// SPEC pipe for float reciprocal:
 	std_logic_vector_port<32> FPU_SPEC_A(PD_OUT, loader, "FPU_SPEC_A");
@@ -321,19 +231,31 @@ const int RunTestsDepthInterp(Xsi::Loader& loader)
 	std_logic_port ATTR_FIFO_full(PD_IN, loader, "ATTR_FIFO_full");
 	std_logic_port ATTR_FIFO_wr_en(PD_OUT, loader, "ATTR_FIFO_wr_en");
 	std_logic_vector_port<128> ATTR_FIFO_wr_data(PD_OUT, loader, "ATTR_FIFO_wr_data");
+	std_logic_port ATTR_FIFO_almost_full(PD_IN, loader, "ATTR_FIFO_almost_full");
 // Attribute Interpolator FIFO interface end
 
 // Debug signals
 	std_logic_vector_port<7> DBG_DepthInterpolator_State(PD_OUT, loader, "DBG_DepthInterpolator_State");
+	std_logic_vector_port<4> DBG_BarycentricConvertState(PD_OUT, loader, "DBG_BarycentricConvertState");
+	std_logic_vector_port<4> DBG_BarycentricNormalizeState(PD_OUT, loader, "DBG_BarycentricNormalizeState");
+	std_logic_vector_port<4> DBG_InterpolatorDriverState(PD_OUT, loader, "DBG_InterpolatorDriverState");
+	std_logic_vector_port<4> DBG_ShiftConvertZState(PD_OUT, loader, "DBG_ShiftConvertZState");
+	std_logic_vector_port<4> DBG_DepthTestDriverZState(PD_OUT, loader, "DBG_DepthTestDriverZState");
 	std_logic_vector_port<32> DBG_RastBarycentricB(PD_OUT, loader, "DBG_RastBarycentricB");
 	std_logic_vector_port<32> DBG_RastBarycentricC(PD_OUT, loader, "DBG_RastBarycentricC");
 	std_logic_vector_port<24> DBG_InterpolatedDepthU24(PD_OUT, loader, "DBG_InterpolatedDepthU24");
+	std_logic_vector_port<10> DBG_IdleVector(PD_OUT, loader, "DBG_IdleVector");
+	std_logic_vector_port<64> DBG_BarycentricBCFIFO(PD_OUT, loader, "DBG_BarycentricBCFIFO");
 
 	FPU depthInterpFPU_MUL(0);
-	FPU depthInterpFPU_CNV(0);
+	FPU depthInterpFPU_CNV0(0);
+	FPU depthInterpFPU_CNV1(1);
 	FPU depthInterpFPU_SPEC(0);
 	simulatedDepthBuffer depthInterpDepthBuffer;
 	DepthInterpTriCache depthInterpTriCache;
+	unsigned totalTriCount = 0;
+	unsigned totalPixelCount = 0;
+	unsigned totalCycleCount = 0;
 
 	bool successResult = true;
 
@@ -344,8 +266,10 @@ const int RunTestsDepthInterp(Xsi::Loader& loader)
 	{
 		scoped_timestep time(loader, clk, 100);
 		RASTOUT_FIFO_empty = true;
+		ATTR_FIFO_almost_full = false;
 		FPU_MUL_OUT = 0.0f;
-		FPU_CNV_OUT = 0.0f;
+		FPU_CNV0_OUT = 0.0f;
+		FPU_CNV1_OUT = 0.0f;
 		FPU_SPEC_OUT = 0.0f;
 		DEPTH_PixelPassedDepthTest = false;
 		DEPTH_PixelFailedDepthTest = false;
@@ -356,18 +280,31 @@ const int RunTestsDepthInterp(Xsi::Loader& loader)
 		STATE_StateBitsAtDrawID.SetToZero();
 	}
 
-	auto simulateRTLDepthInterp = [&](const triSetupOutput& triSetupData, std::vector<rasterizedPixelData> rasterizedPixels, std::vector<depthInterpOutputData>& outDepthInterpData, std::vector<unsigned>& outDebugDepthValues)
+	auto simulateRTLDepthInterp = [&](std::vector<rasterizedPixelData> rasterizedPixels, std::vector<depthInterpOutputData>& outDepthInterpData, std::vector<unsigned>& outDebugDepthValues)
 	{
 		depthInterpTriCache.Update(TRICACHE_PopTriangleSlot,
 			TRICACHE_inBarycentricInverse, TRICACHE_inZ0, TRICACHE_inZ10, TRICACHE_inZ20,
 			TRICACHE_inInvW0, TRICACHE_inInvW10, TRICACHE_inInvW20);
 		RASTOUT_FIFO_rd_data.SetStructVal(rasterizedPixels[0]);
 
+		totalPixelCount += (const unsigned)rasterizedPixels.size();
+
+		bool isEvenDepthSubmit = true;
+
 		while (!rasterizedPixels.empty() || CMD_IsIdle.GetBoolVal() == false)
 		{
 			scoped_timestep time(loader, clk, 100);
 
+			++totalCycleCount;
+
 			const depthInterpStateType depthInterpState = (const depthInterpStateType)DBG_DepthInterpolator_State.GetUint8Val();
+			const uint8_t barycentricConvertState = DBG_BarycentricConvertState.GetUint8Val();
+			const uint8_t barycentricNormalizeState = DBG_BarycentricNormalizeState.GetUint8Val();
+			const uint8_t interpolatorDriverState = DBG_InterpolatorDriverState.GetUint8Val();
+			const uint8_t shiftConvertZState = DBG_ShiftConvertZState.GetUint8Val();
+			const uint8_t depthTestDriverState = DBG_DepthTestDriverZState.GetUint8Val();
+			const uint16_t idleVector = DBG_IdleVector.GetUint16Val();
+			const uint64_t bcData = DBG_BarycentricBCFIFO.GetUint64Val();
 
 			RASTOUT_FIFO_empty = rasterizedPixels.empty();
 			if (RASTOUT_FIFO_rd_en.GetBoolVal() )
@@ -389,31 +326,41 @@ const int RunTestsDepthInterp(Xsi::Loader& loader)
 				depthInterpOutputData newOutData;
 				ATTR_FIFO_wr_data.GetStructVal(newOutData);
 				outDepthInterpData.push_back(newOutData);
-
-				if (!IsSpecialCodePixel(newOutData.pixelX) )
-				{
-					const unsigned dbgDepth24 = DBG_InterpolatedDepthU24.GetUint32Val();
-					outDebugDepthValues.push_back(dbgDepth24);
-				}
 			}
 			depthInterpFPU_MUL.UpdateMulOnly(FPU_MUL_GO, FPU_MUL_A, FPU_MUL_B, FPU_MUL_OUT);
-			depthInterpFPU_CNV.UpdateCnvOnly(FPU_CNV_GO, FPU_CNV_Mode, FPU_CNV_A, FPU_CNV_OUT);
+			depthInterpFPU_CNV0.UpdateCnvOnly(FPU_CNV0_GO, FPU_CNV0_Mode, FPU_CNV0_A, FPU_CNV0_OUT);
+			depthInterpFPU_CNV1.UpdateCnvOnly(FPU_CNV1_GO, FPU_CNV1_Mode, FPU_CNV1_A, FPU_CNV1_OUT);
 			depthInterpFPU_SPEC.UpdateRcpOnly(FPU_SPEC_GO, FPU_SPEC_A, FPU_SPEC_OUT);
 			depthInterpDepthBuffer.Update(DEPTH_PixelReady, DEPTH_PosX, DEPTH_PosY, DEPTH_OutPixelDepth, DEPTH_PixelPassedDepthTest, DEPTH_PixelFailedDepthTest);
+			if (DEPTH_PixelReady.GetBoolVal() )
+			{
+				const unsigned dbgDepth24 = DBG_InterpolatedDepthU24.GetUint32Val();
+				if (enableDebugOutput)
+				{
+					printf("Depth output: [%i, %i] Value: 0x%06X (%u)\n", DEPTH_PosX.GetInt16Val(), DEPTH_PosY.GetInt16Val(), dbgDepth24, dbgDepth24);
+				}
+
+				// Since we pulse the depth test twice for every pixel, we only want to capture every other depth test:
+				if (isEvenDepthSubmit)
+				{
+					outDebugDepthValues.push_back(dbgDepth24);
+				}
+				isEvenDepthSubmit = !isEvenDepthSubmit;
+			}
 			depthInterpTriCache.Update(TRICACHE_PopTriangleSlot,
 				TRICACHE_inBarycentricInverse, TRICACHE_inZ0, TRICACHE_inZ10, TRICACHE_inZ20,
 				TRICACHE_inInvW0, TRICACHE_inInvW10, TRICACHE_inInvW20);
 		}
 	};
 
-	auto runDepthInterpTest = [&](const triSetupInput& clipspaceOutTri, const triSetupOutput& triSetupData, const std::vector<rasterizedPixelData>& rasterizedPixels, const bool useRandomZWPositions) -> bool
+	auto runDepthInterpTest = [&](const std::vector<rasterizedPixelData>& rasterizedPixels, const bool useRandomZWPositions) -> bool
 	{
 		std::vector<depthInterpOutputData> emulatedCPUDepthInterpData;
 		std::vector<depthInterpOutputData> simulatedRTLDepthInterpData;
 		std::vector<unsigned> emulatedCPUDepthValues;
 		std::vector<unsigned> simulatedRTLDepthValues;
-		EmulateDepthInterpCPU(triSetupData, rasterizedPixels, emulatedCPUDepthInterpData, emulatedCPUDepthValues);
-		simulateRTLDepthInterp(triSetupData, rasterizedPixels, simulatedRTLDepthInterpData, simulatedRTLDepthValues);
+		EmulateDepthInterpCPU(depthInterpTriCache, rasterizedPixels, emulatedCPUDepthInterpData, emulatedCPUDepthValues);
+		simulateRTLDepthInterp(rasterizedPixels, simulatedRTLDepthInterpData, simulatedRTLDepthValues);
 
 		if (emulatedCPUDepthInterpData.size() != simulatedRTLDepthInterpData.size() )
 		{
@@ -427,7 +374,7 @@ const int RunTestsDepthInterp(Xsi::Loader& loader)
 			return false;
 		}
 
-		const float z0 = clipspaceOutTri.v0.zPos / clipspaceOutTri.v0.wPos;
+		/*const float z0 = clipspaceOutTri.v0.zPos / clipspaceOutTri.v0.wPos;
 		const float z1 = clipspaceOutTri.v1.zPos / clipspaceOutTri.v1.wPos;
 		const float z2 = clipspaceOutTri.v2.zPos / clipspaceOutTri.v2.wPos; 
 		float zMin, zMax;
@@ -440,7 +387,7 @@ const int RunTestsDepthInterp(Xsi::Loader& loader)
 		else zMax = z2;
 
 		const unsigned zMinU24 = (const unsigned)(16777215.0f * zMin);
-		const unsigned zMaxU24 = (const unsigned)(16777215.0f * zMax);
+		const unsigned zMaxU24 = (const unsigned)(16777215.0f * zMax);*/
 
 		const unsigned numOutputPixels = (const unsigned)emulatedCPUDepthInterpData.size();
 		for (unsigned x = 0; x < numOutputPixels; ++x)
@@ -485,7 +432,8 @@ const int RunTestsDepthInterp(Xsi::Loader& loader)
 			const unsigned emulatedCPUDepthValue = emulatedCPUDepthValues[x];
 			const unsigned simulatedRTLDepthValue = simulatedRTLDepthValues[x];
 
-			if (!(abs( (const int)simulatedRTLDepthValue - (const int)emulatedCPUDepthValue) <= 3) )
+			const int delta = (const int)simulatedRTLDepthValue - (const int)emulatedCPUDepthValue;
+			if (!(abs(delta) <= 3) )
 			{
 				__debugbreak();
 				return false;
@@ -499,7 +447,7 @@ const int RunTestsDepthInterp(Xsi::Loader& loader)
 			if (simulatedRTLPixel.dbgDepthU24 > zMaxU24)
 			{
 				__debugbreak();
-			}*/
+			}
 			if (emulatedCPUDepthValue + 1 < zMinU24) // Fudge by one depth unit just in case we have some float precision issues
 			{
 				__debugbreak();
@@ -507,13 +455,13 @@ const int RunTestsDepthInterp(Xsi::Loader& loader)
 			if (emulatedCPUDepthValue - 1 > zMaxU24)
 			{
 				__debugbreak();
-			}
+			}*/
 		}
 
 		return true;
 	};
 
-	auto testComplexDrawCallSingleTri = [&](const triSetupInput& singleTri, const bool testRandomZWPositions = false)
+	auto addSingleTriToDrawCall = [&](const triSetupInput& singleTri, std::vector<rasterizedPixelData>& rasterizedPixels, const bool testRandomZWPositions = false)
 	{
 		std::vector<triSetupInput> unclippedTris;
 		unclippedTris.push_back(singleTri);
@@ -530,7 +478,6 @@ const int RunTestsDepthInterp(Xsi::Loader& loader)
 				// __debugbreak();
 				continue;
 			}
-			std::vector<rasterizedPixelData> rasterizedPixels;
 
 			DepthInterpTriCache::DepthTriCacheData newTriData;
 			newTriData.BarycentricInverse = triSetupData.barycentricInverse;
@@ -541,6 +488,8 @@ const int RunTestsDepthInterp(Xsi::Loader& loader)
 			newTriData.InvW10 = triSetupData.v10.invW;
 			newTriData.InvW20 = triSetupData.v20.invW;
 			depthInterpTriCache.dataFifo.push_back(newTriData);
+
+			++totalTriCount;
 
 			rasterizedPixelData startNewTriMessage = {0};
 			startNewTriMessage.pixelX = startNewTriangleSlotCommand;
@@ -553,14 +502,13 @@ const int RunTestsDepthInterp(Xsi::Loader& loader)
 			endTriMessage.pixelX = finishCurrentTriangleCommand;
 			endTriMessage.pixelY = (currentTriCacheIndex++) % 8;
 			rasterizedPixels.push_back(endTriMessage);
-
-			successResult &= runDepthInterpTest(thisInputTri, triSetupData, rasterizedPixels, testRandomZWPositions);
 		}
 	};
 
 	// Indices are expected to arrive in CCW order:
 	auto testSimpleDrawCall = [&](const testVert* const vertices, const unsigned short* const indicesCCW, const unsigned numPrims, const bool randomZWPositions = false)
 	{
+		std::vector<rasterizedPixelData> rasterizedPixels;
 		for (unsigned x = 0; x < numPrims; ++x)
 		{
 			triSetupInput primTriData; 
@@ -614,7 +562,14 @@ const int RunTestsDepthInterp(Xsi::Loader& loader)
 				primTriData.v2.zPos *= primTriData.v2.wPos;
 			}
 
-			testComplexDrawCallSingleTri(primTriData, randomZWPositions);
+			addSingleTriToDrawCall(primTriData, rasterizedPixels, randomZWPositions);
+		}
+
+		successResult &= runDepthInterpTest(rasterizedPixels, randomZWPositions);
+
+		if (!depthInterpTriCache.dataFifo.empty() )
+		{
+			__debugbreak(); // The depth triangle cache should be empty at this point!
 		}
 	};
 
@@ -634,8 +589,11 @@ const int RunTestsDepthInterp(Xsi::Loader& loader)
 		testSimpleDrawCall(threeTrisSharedVertex, sharedVertex3TrianglesIndices, ARRAYSIZE(sharedVertex3TrianglesIndices) / 3);
 	}
 
+	//enableDebugOutput = true;
+
 	// Test case with three triangles using data from a PIX capture (warning: may take a little while to rasterize and validate - this is not a super small triangle):
 	{
+		std::vector<rasterizedPixelData> rasterizedPixels;
 		triSetupInput testTri; // This triangle will not get clipped. It is firmly inside our viewport:
 		testTri.v0.rgba.r = testTri.v0.rgba.g = testTri.v0.rgba.b = testTri.v0.rgba.a = 1.0f;
 		testTri.v1.rgba.r = testTri.v1.rgba.g = testTri.v1.rgba.b = testTri.v1.rgba.a = 1.0f;
@@ -658,14 +616,20 @@ const int RunTestsDepthInterp(Xsi::Loader& loader)
 		testTri.v2.wPos = 0.258160591f;
 		testTri.v2.xTex = 0.0f;
 		testTri.v2.yTex = -0.9667976994f;
-		testComplexDrawCallSingleTri(testTri);
+		addSingleTriToDrawCall(testTri, rasterizedPixels);
+		const bool useRandomZWPositions = false;
+		successResult &= runDepthInterpTest(rasterizedPixels, useRandomZWPositions);
 	}
 
 	// Let's try doing 128 random small triangles (about half will get backface culled, and some others may get degenerate triangle culled or clipped off the screen):
 	{
 		srand(3); // Set a deterministic seed so we get the same results every time
-		const unsigned short fullTriangleIB[] = { 0, 1, 2 };
-		for (unsigned x = 0; x < 128; ++x)
+		static const unsigned primCount = 128u;
+		std::vector<testVert> testVerts;
+		std::vector<unsigned short> testIndices;
+		testVerts.reserve(3 * primCount);
+		testIndices.reserve(3 * primCount);
+		for (unsigned x = 0; x < primCount; ++x)
 		{
 			testVert verts[3];
 			verts[0].posX = ( (rand() % 800) - 80) + 0.5f; // Random xPos between -80 and +720
@@ -673,14 +637,26 @@ const int RunTestsDepthInterp(Xsi::Loader& loader)
 
 			verts[1].posX = verts[0].posX + ( (rand() % 100) - 50); // Random xOffset between -50 and +50
 			verts[1].posY = verts[0].posY + ( (rand() % 100) - 50); // Random yOffset between -50 and +50
-
+			
 			verts[2].posX = verts[0].posX + ( (rand() % 100) - 50); // Random xOffset between -50 and +50
 			verts[2].posY = verts[0].posY + ( (rand() % 100) - 50); // Random yOffset between -50 and +50
 
-			const bool useRandomZWPositions = true;
-			testSimpleDrawCall(verts, fullTriangleIB, ARRAYSIZE(fullTriangleIB) / 3, useRandomZWPositions);
+			testVerts.push_back(verts[0]);
+			testVerts.push_back(verts[1]);
+			testVerts.push_back(verts[2]);
+			testIndices.push_back(x * 3 + 0);
+			testIndices.push_back(x * 3 + 1);
+			testIndices.push_back(x * 3 + 2);
 		}
+
+		const bool useRandomZWPositions = true;
+		testSimpleDrawCall(&testVerts.front(), &testIndices.front(), primCount, useRandomZWPositions);
 	}
+
+	printf("Total simulated prims: %u\n", totalTriCount);
+	printf("Total simulated pixels: %u\n", totalPixelCount);
+	printf("Total simulated RTL cycles: %u\n", totalCycleCount);
+	printf("Average cycles per pixel: %f\n", totalCycleCount / (const float)totalPixelCount);
 	
 	return successResult ? S_OK : E_FAIL;
 }

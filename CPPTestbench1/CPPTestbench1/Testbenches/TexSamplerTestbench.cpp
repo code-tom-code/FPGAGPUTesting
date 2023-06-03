@@ -459,6 +459,7 @@ const int RunTestsTexSampler(Xsi::Loader& loader, RenderWindow* renderWindow)
 	std_logic_vector_port<14> DBG_TexCache_addra(PD_OUT, loader, "DBG_TexCache_addra");
 
 	bool successResult = true;
+	DepthInterpTriCache depthInterpolatorTriCache;
 	AttrInterpTriCache attrInterpolatorTriCache;
 
 	LPDIRECT3DTEXTURE9 gridTexture128x128 = NULL;
@@ -830,6 +831,16 @@ const int RunTestsTexSampler(Xsi::Loader& loader, RenderWindow* renderWindow)
 				}
 				std::vector<rasterizedPixelData> rasterizedPixels;
 
+				DepthInterpTriCache::DepthTriCacheData newDepthTriData;
+				newDepthTriData.BarycentricInverse = triSetupData.barycentricInverse;
+				newDepthTriData.Z0 = triSetupData.v0.Z;
+				newDepthTriData.Z10 = triSetupData.v10.Z;
+				newDepthTriData.Z20 = triSetupData.v20.Z;
+				newDepthTriData.InvW0 = triSetupData.v0.invW;
+				newDepthTriData.InvW10 = triSetupData.v10.invW;
+				newDepthTriData.InvW20 = triSetupData.v20.invW;
+				depthInterpolatorTriCache.dataFifo.push_back(newDepthTriData);
+
 				AttrInterpTriCache::AttrTriCacheData newAttrTriData;
 				newAttrTriData.TX0 = triSetupData.v0.xTex;
 				newAttrTriData.TX10 = triSetupData.v10.xTex;
@@ -865,7 +876,7 @@ const int RunTestsTexSampler(Xsi::Loader& loader, RenderWindow* renderWindow)
 
 				std::vector<depthInterpOutputData> emulatedCPUDepthInterpData;
 				std::vector<unsigned> emulatedCPUDepthValues;
-				EmulateDepthInterpCPU(triSetupData, rasterizedPixels, emulatedCPUDepthInterpData, emulatedCPUDepthValues);
+				EmulateDepthInterpCPU(depthInterpolatorTriCache, rasterizedPixels, emulatedCPUDepthInterpData, emulatedCPUDepthValues);
 
 				std::vector<attributeInterpOutputData> emulatedCPUAttributeInterpData;
 				EmulateAttributeInterpCPU(attrInterpolatorTriCache, emulatedCPUDepthInterpData, !randomAttributes, emulatedCPUAttributeInterpData);

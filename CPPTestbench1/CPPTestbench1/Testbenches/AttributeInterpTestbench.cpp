@@ -276,6 +276,7 @@ const int RunTestsAttributeInterp(Xsi::Loader& loader)
 	FPU attrInterpFPU_MUL(0);
 	FPU attrInterpFPU_CNV0(0);
 	FPU attrInterpFPU_CNV1(1);
+	DepthInterpTriCache depthTriCache;
 	AttrInterpTriCache triCache;
 	unsigned totalTriCount = 0;
 	unsigned totalPixelCount = 0;
@@ -535,6 +536,16 @@ const int RunTestsAttributeInterp(Xsi::Loader& loader)
 				}
 				std::vector<rasterizedPixelData> rasterizedPixels;
 
+				DepthInterpTriCache::DepthTriCacheData newDepthTriData;
+				newDepthTriData.BarycentricInverse = triSetupData.barycentricInverse;
+				newDepthTriData.Z0 = triSetupData.v0.Z;
+				newDepthTriData.Z10 = triSetupData.v10.Z;
+				newDepthTriData.Z20 = triSetupData.v20.Z;
+				newDepthTriData.InvW0 = triSetupData.v0.invW;
+				newDepthTriData.InvW10 = triSetupData.v10.invW;
+				newDepthTriData.InvW20 = triSetupData.v20.invW;
+				depthTriCache.dataFifo.push_back(newDepthTriData);
+
 				AttrInterpTriCache::AttrTriCacheData newTriData;
 				newTriData.TX0 = triSetupData.v0.xTex;
 				newTriData.TX10 = triSetupData.v10.xTex;
@@ -570,7 +581,7 @@ const int RunTestsAttributeInterp(Xsi::Loader& loader)
 				endTriMessage.pixelY = (currentTriCacheIndex++) % 8;
 				rasterizedPixels.push_back(endTriMessage);
 
-				EmulateDepthInterpCPU(triSetupData, rasterizedPixels, emulatedCPUDepthInterpData, emulatedCPUDepthValues);
+				EmulateDepthInterpCPU(depthTriCache, rasterizedPixels, emulatedCPUDepthInterpData, emulatedCPUDepthValues);
 			}
 		}
 
@@ -581,6 +592,10 @@ const int RunTestsAttributeInterp(Xsi::Loader& loader)
 
 		successResult &= validateAttributeInterpTest(!randomAttributes, emulatedCPUAttributeInterpData, simulatedRTLAttrInterpData);
 
+		if (!depthTriCache.dataFifo.empty() )
+		{
+			__debugbreak(); // The depth triangle cache should be empty at this point!
+		}
 		if (!triCache.dataFifo.empty() )
 		{
 			__debugbreak(); // The attr triangle cache should be empty at this point!

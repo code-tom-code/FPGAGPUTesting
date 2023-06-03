@@ -5220,89 +5220,302 @@ void IDirect3DDevice9Hook::DeviceSetUsedVertexShaderConstants()
 	}
 }
 
-void IDirect3DDevice9Hook::DeviceSetCurrentState(const D3DPRIMITIVETYPE primType, const IDirect3DIndexBuffer9Hook* currentIB)
+const bool IDirect3DDevice9Hook::GetStateDepthEnable() const
 {
-	gpuvoid* deviceBackbuffer = currentState.currentRenderTargets[0]->GetDeviceSurfaceBytes();
-	const eBlendMask eWriteMask = ConvertToDeviceBlendMask(currentState.currentRenderStates.renderStatesUnion.namedStates.colorWriteEnable);
-
-	const eCullMode cullMode = ConvertToDeviceCullMode(currentState.currentRenderStates.renderStatesUnion.namedStates.cullmode);
-
-	const ePrimTopology primTopology = ConvertToDevicePrimTopology(primType);
-
-	const eIndexFormat indexFormat = ConvertToDeviceIndexFormat(currentIB, currentIB ? currentIB->GetFormat() : D3DFMT_UNKNOWN);
-
-	// Set the IA state:
-	baseDevice->DeviceSetIAState(cullMode, primTopology, sct_CutDisabled, indexFormat, currentIB ? currentIB->GetInternalLength() : 0, currentIB ? currentIB->GetGPUBytes() : NULL);
-
-	// Set the depth states:
-	const bool zEnable = currentState.currentRenderStates.renderStatesUnion.namedStates.zEnable != D3DZB_FALSE && currentState.currentDepthStencil != NULL;
-	const bool zWriteEnable = (currentState.currentRenderStates.renderStatesUnion.namedStates.zWriteEnable && currentState.currentDepthStencil != NULL) ? true : false;
-	const bool colorWritesEnabled = currentState.currentRenderStates.renderStatesUnion.namedStates.colorWriteEnable != 0 && currentState.currentRenderTargets[0] != NULL;
-	const D3DCMPFUNC zCmpFunc = currentState.currentRenderStates.renderStatesUnion.namedStates.zFunc;
-	const float depthBias = currentState.currentRenderStates.renderStatesUnion.namedStates.depthBias;
-	const eDepthFormat depthFormat = currentState.currentDepthStencil ? ConvertToDeviceDepthFormat(currentState.currentDepthStencil->GetInternalFormat() ) : ConvertToDeviceDepthFormat(D3DFMT_D24X8);
-	baseDevice->DeviceSetDepthState(forceDisableDepth ? false : zEnable, zWriteEnable, colorWritesEnabled, ConvertToDeviceCmpFunc(zCmpFunc), depthFormat, depthBias);
-
-	// Set the clipper state:
-	const bool depthClipEnable = zEnable;
-	const bool useOpenGLNearZClip = false;
-	const float guardBandXScale = currentState.cachedViewport.fGuardBandWidthScale;
-	const float guardBandYScale = currentState.cachedViewport.fGuardBandHeightScale;
-	const bool clippingEnabled = currentState.currentRenderStates.renderStatesUnion.namedStates.clipping ? true : false;
-	baseDevice->DeviceSetClipState(depthClipEnable, useOpenGLNearZClip, guardBandXScale, guardBandYScale, clippingEnabled);
-
-	// Set the viewport/scissor rect states:
-	const float viewportHalfWidth = currentState.cachedViewport.halfWidthF;
-	const float viewportHalfHeight = currentState.cachedViewport.halfHeightF;
-	const float viewportZScale = currentState.cachedViewport.zScale;
-	const float viewportZOffset = currentState.cachedViewport.viewport.MinZ;
+	switch (overrideDepth)
+	{
+	default:
 #ifdef _DEBUG
-	if (currentState.currentScissorRect.scissorRect.left < 0 || currentState.currentScissorRect.scissorRect.left > 0xFFFF)
-	{
-		__debugbreak(); // Scissor rect out of range!
-	}
-	if (currentState.currentScissorRect.scissorRect.right < 0 || currentState.currentScissorRect.scissorRect.right > 0xFFFF)
-	{
-		__debugbreak(); // Scissor rect out of range!
-	}
-	if (currentState.currentScissorRect.scissorRect.top < 0 || currentState.currentScissorRect.scissorRect.top > 0xFFFF)
-	{
-		__debugbreak(); // Scissor rect out of range!
-	}
-	if (currentState.currentScissorRect.scissorRect.bottom < 0 || currentState.currentScissorRect.scissorRect.bottom > 0xFFFF)
-	{
-		__debugbreak(); // Scissor rect out of range!
-	}
+		__debugbreak(); // Should never be here!
 #endif
-	const unsigned short scissorLeft = (const unsigned short)currentState.currentScissorRect.scissorRect.left;
-	const unsigned short scissorRight = (const unsigned short)currentState.currentScissorRect.scissorRect.right;
-	const unsigned short scissorTop = (const unsigned short)currentState.currentScissorRect.scissorRect.top;
-	const unsigned short scissorBottom = (const unsigned short)currentState.currentScissorRect.scissorRect.bottom;
-	baseDevice->DeviceSetTriSetupState(viewportHalfWidth, viewportHalfHeight, viewportZScale, viewportZOffset, scissorLeft, scissorRight, scissorTop, scissorBottom);
+	case DepthOverrideSettings::DOS_Default:
+		return currentState.currentRenderStates.renderStatesUnion.namedStates.zEnable != D3DZB_FALSE && currentState.currentDepthStencil != NULL;
+	case DepthOverrideSettings::DOS_OverrideZDisable:
+		return false;
+	case DepthOverrideSettings::DOS_OverrideZEnableZWriteEnable:
+	case DepthOverrideSettings::DOS_OverrideZEnableZWriteDisable:
+		return true;
+	}
+}
 
-	// Set the alpha-testing, render target, and blend states:
-	const bool alphaTestEnable = currentState.currentRenderStates.renderStatesUnion.namedStates.alphaTestEnable ? true : false;
-	const BYTE alphaTestRefVal = (const BYTE)(currentState.currentRenderStates.renderStatesUnion.namedStates.alphaRef & 0xFF);
-	const D3DCMPFUNC alphaTestCmpFunc = currentState.currentRenderStates.renderStatesUnion.namedStates.alphaFunc;
-	const bool alphaBlendEnable = currentState.currentRenderStates.renderStatesUnion.namedStates.alphaBlendEnable ? true : false;
-	const bool separateAlphaBlendEnable = currentState.currentRenderStates.renderStatesUnion.namedStates.separateAlphaBlendEnable ? true : false;
-	const D3DBLEND srcColorBlend = currentState.currentRenderStates.renderStatesUnion.namedStates.srcBlend;
-	const D3DBLEND destColorBlend = currentState.currentRenderStates.renderStatesUnion.namedStates.destBlend;
-	const D3DBLEND srcAlphaBlend = separateAlphaBlendEnable ? currentState.currentRenderStates.renderStatesUnion.namedStates.srcBlendAlpha : srcColorBlend;
-	const D3DBLEND destAlphaBlend = separateAlphaBlendEnable ? currentState.currentRenderStates.renderStatesUnion.namedStates.destBlendAlpha : destColorBlend;
-	const D3DBLENDOP colorBlendOp = currentState.currentRenderStates.renderStatesUnion.namedStates.blendOp;
-	const D3DBLENDOP alphaBlendOp = separateAlphaBlendEnable ? currentState.currentRenderStates.renderStatesUnion.namedStates.blendOpAlpha : colorBlendOp;
-	const D3DCOLOR blendFactorARGB = currentState.currentRenderStates.renderStatesUnion.namedStates.blendFactor;
-	baseDevice->DeviceSetROPState(deviceBackbuffer, eWriteMask, alphaTestEnable, alphaTestRefVal, ConvertToDeviceCmpFunc(alphaTestCmpFunc),
-		alphaBlendEnable, srcColorBlend, destColorBlend, colorBlendOp, srcAlphaBlend, destAlphaBlend, alphaBlendOp, blendFactorARGB);
+const bool IDirect3DDevice9Hook::GetStateDepthWriteEnable() const
+{
+	switch (overrideDepth)
+	{
+	default:
+#ifdef _DEBUG
+		__debugbreak(); // Should never be here!
+#endif
+	case DepthOverrideSettings::DOS_Default:
+		return currentState.currentRenderStates.renderStatesUnion.namedStates.zWriteEnable && currentState.currentDepthStencil != NULL;
+	case DepthOverrideSettings::DOS_OverrideZDisable:
+	case DepthOverrideSettings::DOS_OverrideZEnableZWriteDisable:
+		return false;
+	case DepthOverrideSettings::DOS_OverrideZEnableZWriteEnable:
+		return true;
+	}
+}
 
-	// Set our attribute interpolator state up:
-	const bool useFlatShadingColors = (currentState.currentRenderStates.renderStatesUnion.namedStates.shadeMode == D3DSHADE_FLAT);
-	const D3DTEXTUREADDRESS tex0AddressingModeU = currentState.currentSamplerStates[0].stateUnion.namedStates.addressU;
-	const D3DTEXTUREADDRESS tex0AddressingModeV = currentState.currentSamplerStates[0].stateUnion.namedStates.addressV;
-	baseDevice->DeviceSetAttrInterpolatorState(useFlatShadingColors, ConvertToDeviceTexAddressMode(tex0AddressingModeU), ConvertToDeviceTexAddressMode(tex0AddressingModeV) );
+const bool IDirect3DDevice9Hook::GetStateStencilEnable() const
+{
+	switch (overrideStencil)
+	{
+	default:
+#ifdef _DEBUG
+		__debugbreak(); // Should never be here!
+#endif
+	case StencilOverrideSettings::SOS_Default:
+		return currentState.currentRenderStates.renderStatesUnion.namedStates.stencilEnable != FALSE && currentState.currentDepthStencil != NULL;
+	case StencilOverrideSettings::SOS_OverrideStencilDisable:
+		return false;
+	case StencilOverrideSettings::SOS_OverrideStencilEnable:
+		return true;
+	}
+}
 
-	// Do some soft-conversions from texture stage states to combiner modes:
+const D3DFILLMODE IDirect3DDevice9Hook::GetStateFillMode() const
+{
+	switch (overrideFillMode)
+	{
+	default:
+#ifdef _DEBUG
+		__debugbreak(); // Should never be here!
+#endif
+	case FillModeOverrideSettings::FMOS_Default:
+		return currentState.currentRenderStates.renderStatesUnion.namedStates.fillmode;
+	case FillModeOverrideSettings::FMOS_OverrideFillSolid:
+		return D3DFILL_SOLID;
+	case FillModeOverrideSettings::FMOS_OverrideFillWireframe:
+		return D3DFILL_WIREFRAME;
+	case FillModeOverrideSettings::FMOS_OverrideFillPoint:
+		return D3DFILL_POINT;
+	}
+}
+
+const D3DSHADEMODE IDirect3DDevice9Hook::GetStateShadeMode() const
+{
+	switch (overrideShadeMode)
+	{
+	default:
+#ifdef _DEBUG
+		__debugbreak(); // Should never be here!
+#endif
+	case ShadeModeOverrideSettings::SMOS_Default:
+		return currentState.currentRenderStates.renderStatesUnion.namedStates.shadeMode;
+	case ShadeModeOverrideSettings::SMOS_OverrideShadeFlat:
+		return D3DSHADE_FLAT;
+	case ShadeModeOverrideSettings::SMOS_OverrideShadeGouraud:
+		return D3DSHADE_GOURAUD;
+	}
+}
+
+const D3DCULL IDirect3DDevice9Hook::GetStateCullMode() const
+{
+	switch (overrideCullMode)
+	{
+	default:
+#ifdef _DEBUG
+		__debugbreak(); // Should never be here!
+#endif
+	case CullModeOverrideSettings::CMOS_Default:
+		return currentState.currentRenderStates.renderStatesUnion.namedStates.cullmode;
+	case CullModeOverrideSettings::CMOS_OverrideCullCW:
+		return D3DCULL_CW;
+	case CullModeOverrideSettings::CMOS_OverrideCullCCW:
+		return D3DCULL_CCW;
+	case CullModeOverrideSettings::CMOS_OverrideCullNone:
+		return D3DCULL_NONE;
+	}
+}
+
+const bool IDirect3DDevice9Hook::GetStateFogEnable() const
+{
+	switch (overrideFogMode)
+	{
+	default:
+#ifdef _DEBUG
+		__debugbreak(); // Should never be here!
+#endif
+	case FogModeOverrideSettings::FOGOS_Default:
+		return currentState.currentRenderStates.renderStatesUnion.namedStates.fogEnable;
+	case FogModeOverrideSettings::FOGOS_OverrideFogDisable:
+		return false;
+	case FogModeOverrideSettings::FOGOS_OverrideFog_PixelFogEnable:
+	case FogModeOverrideSettings::FOGOS_OverrideFog_VertexFogEnable:
+		return true;
+	}
+}
+
+void IDirect3DDevice9Hook::GetStateAlphaBlend(bool& alphaBlendEnable, bool& separateAlphaBlendEnable, D3DBLEND& srcColorBlend, D3DBLEND& destColorBlend, D3DBLEND& srcAlphaBlend, D3DBLEND& destAlphaBlend, D3DBLENDOP& colorBlendOp, D3DBLENDOP& alphaBlendOp) const
+{
+	switch (overrideAlphaBlend)
+	{
+	default:
+#ifdef _DEBUG
+		__debugbreak(); // Should never be here!
+#endif
+	case AlphaBlendOverrideSettings::ABOS_Default:
+		alphaBlendEnable = currentState.currentRenderStates.renderStatesUnion.namedStates.alphaBlendEnable;
+		separateAlphaBlendEnable = currentState.currentRenderStates.renderStatesUnion.namedStates.separateAlphaBlendEnable;
+		srcColorBlend = currentState.currentRenderStates.renderStatesUnion.namedStates.srcBlend;
+		destColorBlend = currentState.currentRenderStates.renderStatesUnion.namedStates.destBlend;
+		srcAlphaBlend = separateAlphaBlendEnable ? currentState.currentRenderStates.renderStatesUnion.namedStates.srcBlendAlpha : srcColorBlend;
+		destAlphaBlend = separateAlphaBlendEnable ? currentState.currentRenderStates.renderStatesUnion.namedStates.destBlendAlpha : destColorBlend;
+		colorBlendOp = currentState.currentRenderStates.renderStatesUnion.namedStates.blendOp;
+		alphaBlendOp = separateAlphaBlendEnable ? currentState.currentRenderStates.renderStatesUnion.namedStates.blendOpAlpha : colorBlendOp;
+		return;
+	case AlphaBlendOverrideSettings::ABOS_OverrideAlphaBlendDisable:
+		alphaBlendEnable = false;
+		separateAlphaBlendEnable = false;
+		srcColorBlend = D3DBLEND_ONE;
+		destColorBlend = D3DBLEND_ZERO;
+		srcAlphaBlend = D3DBLEND_ONE;
+		destAlphaBlend = D3DBLEND_ZERO;
+		colorBlendOp = D3DBLENDOP_ADD;
+		alphaBlendOp = D3DBLENDOP_ADD;
+		return;
+	case AlphaBlendOverrideSettings::ABOS_OverrideAlphaBlendAdditive:
+		alphaBlendEnable = true;
+		separateAlphaBlendEnable = false;
+		srcColorBlend = D3DBLEND_ONE;
+		destColorBlend = D3DBLEND_ONE;
+		srcAlphaBlend = D3DBLEND_ONE;
+		destAlphaBlend = D3DBLEND_ONE;
+		colorBlendOp = D3DBLENDOP_ADD;
+		alphaBlendOp = D3DBLENDOP_ADD;
+		return;
+	case AlphaBlendOverrideSettings::ABOS_OverrideAlphaBlendMultiplicative:
+		alphaBlendEnable = true;
+		separateAlphaBlendEnable = true;
+		srcColorBlend = D3DBLEND_ZERO;
+		destColorBlend = D3DBLEND_SRCCOLOR;
+		srcAlphaBlend = D3DBLEND_ZERO;
+		destAlphaBlend = D3DBLEND_SRCALPHA;
+		colorBlendOp = D3DBLENDOP_ADD;
+		alphaBlendOp = D3DBLENDOP_ADD;
+		return;
+	case AlphaBlendOverrideSettings::ABOS_OverrideAlphaBlendAlpha:
+		alphaBlendEnable = true;
+		separateAlphaBlendEnable = false;
+		srcColorBlend = D3DBLEND_SRCALPHA;
+		destColorBlend = D3DBLEND_INVSRCALPHA;
+		srcAlphaBlend = D3DBLEND_SRCALPHA;
+		destAlphaBlend = D3DBLEND_INVSRCALPHA;
+		colorBlendOp = D3DBLENDOP_ADD;
+		alphaBlendOp = D3DBLENDOP_ADD;
+		return;
+	case AlphaBlendOverrideSettings::ABOS_OverrideAlphaBlendMod2x:
+		alphaBlendEnable = true;
+		separateAlphaBlendEnable = true;
+		srcColorBlend = D3DBLEND_SRCCOLOR;
+		destColorBlend = D3DBLEND_DESTCOLOR;
+		srcAlphaBlend = D3DBLEND_SRCALPHA;
+		destAlphaBlend = D3DBLEND_DESTALPHA;
+		colorBlendOp = D3DBLENDOP_ADD;
+		alphaBlendOp = D3DBLENDOP_ADD;
+		return;
+	}
+}
+
+void IDirect3DDevice9Hook::GetStateAlphaTest(bool& alphaTestEnable, D3DCMPFUNC& alphaCmpFunc, unsigned char& alphaTestRef)
+{
+	switch (overrideAlphaTest)
+	{
+	default:
+#ifdef _DEBUG
+		__debugbreak(); // Should never be here!
+#endif
+	case AlphaTestOverrideSettings::ATOS_Default:
+		alphaTestEnable = currentState.currentRenderStates.renderStatesUnion.namedStates.alphaTestEnable ? true : false;
+		alphaCmpFunc = currentState.currentRenderStates.renderStatesUnion.namedStates.alphaFunc;
+		alphaTestRef = (const unsigned char)(currentState.currentRenderStates.renderStatesUnion.namedStates.alphaRef & 0xFF);
+		return;
+	case AlphaTestOverrideSettings::ATOS_OverrideAlphaTestDisable:
+		alphaTestEnable = false;
+		alphaCmpFunc = D3DCMP_ALWAYS;
+		alphaTestRef = 0;
+		return;
+	case AlphaTestOverrideSettings::ATOS_OverrideAlphaTestGreaterEqual1:
+		alphaTestEnable = true;
+		alphaCmpFunc = D3DCMP_GREATEREQUAL;
+		alphaTestRef = 1;
+		return;
+	case AlphaTestOverrideSettings::ATOS_OverrideAlphaTestLess128:
+		alphaTestEnable = true;
+		alphaCmpFunc = D3DCMP_LESS;
+		alphaTestRef = 128;
+		return;
+	case AlphaTestOverrideSettings::ATOS_OverrideAlphaTestEqual255:
+		alphaTestEnable = true;
+		alphaCmpFunc = D3DCMP_EQUAL;
+		alphaTestRef = 255;
+		return;
+	case AlphaTestOverrideSettings::ATOS_OverrideAlphaTestNotEqual0:
+		alphaTestEnable = true;
+		alphaCmpFunc = D3DCMP_NOTEQUAL;
+		alphaTestRef = 0;
+		return;
+	}
+}
+
+void IDirect3DDevice9Hook::GetStateTexAddressing(D3DTEXTUREADDRESS& texAddressU, D3DTEXTUREADDRESS& texAddressV, D3DCOLOR& borderColor)
+{
+	switch (overrideTexAddress)
+	{
+	default:
+#ifdef _DEBUG
+		__debugbreak(); // Should never be here!
+#endif
+	case TexAddressOverrideSettings::TAOS_Default:
+		texAddressU = currentState.currentSamplerStates[0].stateUnion.namedStates.addressU;
+		texAddressV = currentState.currentSamplerStates[0].stateUnion.namedStates.addressV;
+		borderColor = currentState.currentSamplerStates[0].stateUnion.namedStates.borderColor;
+		return;
+	case TexAddressOverrideSettings::TAOS_OverrideWrap:
+		texAddressU = D3DTADDRESS_WRAP;
+		texAddressV = D3DTADDRESS_WRAP;
+		borderColor = D3DCOLOR_ARGB(0, 0, 0, 0);
+		return;
+	case TexAddressOverrideSettings::TAOS_OverrideMirror:
+		texAddressU = D3DTADDRESS_MIRROR;
+		texAddressV = D3DTADDRESS_MIRROR;
+		borderColor = D3DCOLOR_ARGB(0, 0, 0, 0);
+		return;
+	case TexAddressOverrideSettings::TAOS_OverrideClamp:
+		texAddressU = D3DTADDRESS_CLAMP;
+		texAddressV = D3DTADDRESS_CLAMP;
+		borderColor = D3DCOLOR_ARGB(0, 0, 0, 0);
+		return;
+	case TexAddressOverrideSettings::TAOS_OverrideMirrorOnce:
+		texAddressU = D3DTADDRESS_MIRRORONCE;
+		texAddressV = D3DTADDRESS_MIRRORONCE;
+		borderColor = D3DCOLOR_ARGB(0, 0, 0, 0);
+		return;
+	case TexAddressOverrideSettings::TAOS_OverrideBorderDefault:
+		texAddressU = D3DTADDRESS_BORDER;
+		texAddressV = D3DTADDRESS_BORDER;
+		borderColor = currentState.currentSamplerStates[0].stateUnion.namedStates.borderColor;
+		return;
+	case TexAddressOverrideSettings::TAOS_OverrideBorderOpaqueBlack:
+		texAddressU = D3DTADDRESS_BORDER;
+		texAddressV = D3DTADDRESS_BORDER;
+		borderColor = D3DCOLOR_ARGB(255, 0, 0, 0);
+		return;
+	case TexAddressOverrideSettings::TAOS_OverrideBorderTransparentBlack:
+		texAddressU = D3DTADDRESS_BORDER;
+		texAddressV = D3DTADDRESS_BORDER;
+		borderColor = D3DCOLOR_ARGB(0, 0, 0, 0);
+		return;
+	case TexAddressOverrideSettings::TAOS_OverrideBorderOpaqueWhite:
+		texAddressU = D3DTADDRESS_BORDER;
+		texAddressV = D3DTADDRESS_BORDER;
+		borderColor = D3DCOLOR_ARGB(255, 255, 255, 255);
+		return;
+	}
+}
+
+void IDirect3DDevice9Hook::GetStateTexCombinerMode(combinerMode& colorCombiner, combinerMode& alphaCombiner)
+{
 	combinerMode cbModeColor = cbm_textureModulateVertexColor;
 	combinerMode cbModeAlpha = cbm_textureModulateVertexColor;
 	if (currentState.currentStageStates[0].stageStateUnion.namedStates.colorOp == D3DTOP_SELECTARG1)
@@ -5374,11 +5587,142 @@ void IDirect3DDevice9Hook::DeviceSetCurrentState(const D3DPRIMITIVETYPE primType
 		cbModeAlpha = cbm_textureModulateVertexColor;
 	}
 
-	if (overrideTexCombinerMode >= 0)
+	switch (overrideTexMode)
 	{
-		cbModeColor = (const combinerMode)overrideTexCombinerMode;
-		cbModeAlpha = cbm_allWhite;
+	default:
+#ifdef _DEBUG
+		__debugbreak(); // Should never be here!
+#endif
+	case TexModeOverrideSettings::TMOS_Default:
+		colorCombiner = cbModeColor;
+		alphaCombiner = cbModeAlpha;
+		return;
+	case TexModeOverrideSettings::TMOS_OverrideBlack:
+		colorCombiner = combinerMode::cbm_allBlack;
+		alphaCombiner = combinerMode::cbm_allWhite;
+		return;
+	case TexModeOverrideSettings::TMOS_OverrideWhite:
+		colorCombiner = combinerMode::cbm_allWhite;
+		alphaCombiner = combinerMode::cbm_allWhite;
+		return;
+	case TexModeOverrideSettings::TMOS_OverrideTexture:
+		colorCombiner = combinerMode::cbm_textureOnly;
+		alphaCombiner = combinerMode::cbm_allWhite;
+		return;
+	case TexModeOverrideSettings::TMOS_OverrideVertColor:
+		colorCombiner = combinerMode::cbm_vertexColorOnly;
+		alphaCombiner = combinerMode::cbm_allWhite;
+		return;
+	case TexModeOverrideSettings::TMOS_OverrideTexcoords:
+		colorCombiner = combinerMode::cbm_debugTexcoords;
+		alphaCombiner = combinerMode::cbm_allWhite;
+		return;
+	case TexModeOverrideSettings::TMOS_OverrideBilinearInterp:
+		colorCombiner = combinerMode::cbm_debugBilinearInterpolants;
+		alphaCombiner = combinerMode::cbm_allWhite;
+		return;
+	case TexModeOverrideSettings::TMOS_OverrideTexModVC:
+		colorCombiner = combinerMode::cbm_textureModulateVertexColor;
+		alphaCombiner = combinerMode::cbm_allWhite;
+		return;
+	case TexModeOverrideSettings::TMOS_OverrideDepth:
+		colorCombiner = combinerMode::cbm_debugDepth;
+		alphaCombiner = combinerMode::cbm_allWhite;
+		return;
+	case TexModeOverrideSettings::TMOS_OverrideStencil:
+		colorCombiner = combinerMode::cbm_debugStencil;
+		alphaCombiner = combinerMode::cbm_allWhite;
+		return;
 	}
+}
+
+void IDirect3DDevice9Hook::DeviceSetCurrentState(const D3DPRIMITIVETYPE primType, const IDirect3DIndexBuffer9Hook* currentIB)
+{
+	gpuvoid* deviceBackbuffer = currentState.currentRenderTargets[0]->GetDeviceSurfaceBytes();
+	const eBlendMask eWriteMask = ConvertToDeviceBlendMask(currentState.currentRenderStates.renderStatesUnion.namedStates.colorWriteEnable);
+
+	const eCullMode cullMode = ConvertToDeviceCullMode(GetStateCullMode() );
+
+	const ePrimTopology primTopology = ConvertToDevicePrimTopology(primType);
+
+	const eIndexFormat indexFormat = ConvertToDeviceIndexFormat(currentIB, currentIB ? currentIB->GetFormat() : D3DFMT_UNKNOWN);
+
+	// Set the IA state:
+	baseDevice->DeviceSetIAState(cullMode, primTopology, sct_CutDisabled, indexFormat, currentIB ? currentIB->GetInternalLength() : 0, currentIB ? currentIB->GetGPUBytes() : NULL);
+
+	// Set the depth states:
+	const bool zEnable = GetStateDepthEnable();
+	const bool zWriteEnable = GetStateDepthWriteEnable();
+	const bool colorWritesEnabled = currentState.currentRenderStates.renderStatesUnion.namedStates.colorWriteEnable != 0 && currentState.currentRenderTargets[0] != NULL;
+	const D3DCMPFUNC zCmpFunc = currentState.currentRenderStates.renderStatesUnion.namedStates.zFunc;
+	const float depthBias = currentState.currentRenderStates.renderStatesUnion.namedStates.depthBias;
+	const eDepthFormat depthFormat = currentState.currentDepthStencil ? ConvertToDeviceDepthFormat(currentState.currentDepthStencil->GetInternalFormat() ) : ConvertToDeviceDepthFormat(D3DFMT_D24X8);
+	baseDevice->DeviceSetDepthState(zEnable, zWriteEnable, colorWritesEnabled, ConvertToDeviceCmpFunc(zCmpFunc), depthFormat, depthBias);
+
+	// Set the clipper state:
+	const bool depthClipEnable = zEnable;
+	const bool useOpenGLNearZClip = false;
+	const float guardBandXScale = currentState.cachedViewport.fGuardBandWidthScale;
+	const float guardBandYScale = currentState.cachedViewport.fGuardBandHeightScale;
+	const bool clippingEnabled = currentState.currentRenderStates.renderStatesUnion.namedStates.clipping ? true : false;
+	baseDevice->DeviceSetClipState(depthClipEnable, useOpenGLNearZClip, guardBandXScale, guardBandYScale, clippingEnabled);
+
+	// Set the viewport/scissor rect states:
+	const float viewportHalfWidth = currentState.cachedViewport.halfWidthF;
+	const float viewportHalfHeight = currentState.cachedViewport.halfHeightF;
+	const float viewportZScale = currentState.cachedViewport.zScale;
+	const float viewportZOffset = currentState.cachedViewport.viewport.MinZ;
+#ifdef _DEBUG
+	if (currentState.currentScissorRect.scissorRect.left < 0 || currentState.currentScissorRect.scissorRect.left > 0xFFFF)
+	{
+		__debugbreak(); // Scissor rect out of range!
+	}
+	if (currentState.currentScissorRect.scissorRect.right < 0 || currentState.currentScissorRect.scissorRect.right > 0xFFFF)
+	{
+		__debugbreak(); // Scissor rect out of range!
+	}
+	if (currentState.currentScissorRect.scissorRect.top < 0 || currentState.currentScissorRect.scissorRect.top > 0xFFFF)
+	{
+		__debugbreak(); // Scissor rect out of range!
+	}
+	if (currentState.currentScissorRect.scissorRect.bottom < 0 || currentState.currentScissorRect.scissorRect.bottom > 0xFFFF)
+	{
+		__debugbreak(); // Scissor rect out of range!
+	}
+#endif
+	const unsigned short scissorLeft = (const unsigned short)currentState.currentScissorRect.scissorRect.left;
+	const unsigned short scissorRight = (const unsigned short)currentState.currentScissorRect.scissorRect.right;
+	const unsigned short scissorTop = (const unsigned short)currentState.currentScissorRect.scissorRect.top;
+	const unsigned short scissorBottom = (const unsigned short)currentState.currentScissorRect.scissorRect.bottom;
+	baseDevice->DeviceSetTriSetupState(viewportHalfWidth, viewportHalfHeight, viewportZScale, viewportZOffset, scissorLeft, scissorRight, scissorTop, scissorBottom);
+
+	// Set the alpha-testing, render target, and blend states:
+	bool alphaTestEnable;
+	BYTE alphaTestRefVal;
+	D3DCMPFUNC alphaTestCmpFunc;
+	GetStateAlphaTest(alphaTestEnable, alphaTestCmpFunc, alphaTestRefVal);
+
+	bool alphaBlendEnable, separateAlphaBlendEnable;
+	D3DBLEND srcColorBlend, destColorBlend, srcAlphaBlend, destAlphaBlend;
+	D3DBLENDOP colorBlendOp, alphaBlendOp;
+	GetStateAlphaBlend(alphaBlendEnable, separateAlphaBlendEnable, srcColorBlend, destColorBlend, srcAlphaBlend, destAlphaBlend, colorBlendOp, alphaBlendOp);
+
+	const D3DCOLOR blendFactorARGB = currentState.currentRenderStates.renderStatesUnion.namedStates.blendFactor;
+	baseDevice->DeviceSetROPState(deviceBackbuffer, eWriteMask, alphaTestEnable, alphaTestRefVal, ConvertToDeviceCmpFunc(alphaTestCmpFunc),
+		alphaBlendEnable, srcColorBlend, destColorBlend, colorBlendOp, srcAlphaBlend, destAlphaBlend, alphaBlendOp, blendFactorARGB);
+
+	// Set our attribute interpolator state up:
+	const bool useFlatShadingColors = (GetStateShadeMode() == D3DSHADE_FLAT);
+	D3DTEXTUREADDRESS tex0AddressingModeU;
+	D3DTEXTUREADDRESS tex0AddressingModeV;
+	D3DCOLOR borderColor;
+	GetStateTexAddressing(tex0AddressingModeU, tex0AddressingModeV, borderColor);
+	baseDevice->DeviceSetAttrInterpolatorState(useFlatShadingColors, ConvertToDeviceTexAddressMode(tex0AddressingModeU), ConvertToDeviceTexAddressMode(tex0AddressingModeV) );
+
+	// Do some soft-conversions from texture stage states to combiner modes:
+	combinerMode cbModeColor = cbm_textureModulateVertexColor;
+	combinerMode cbModeAlpha = cbm_textureModulateVertexColor;
+	GetStateTexCombinerMode(cbModeColor, cbModeAlpha);
 
 	IDirect3DTexture9Hook* const currentTex0 = currentState.currentTextures[0];
 	if (currentTex0)
@@ -11125,7 +11469,7 @@ void IDirect3DDevice9Hook::InitializeState(const D3DPRESENT_PARAMETERS& d3dpp, c
 	baseDevice->DeviceSetNullTextureState(TF_bilinearFilter, tcm_r, tcm_g, tcm_b, tcm_a, cbm_textureModulateVertexColor, cbm_textureModulateVertexColor);
 	baseDevice->DeviceSetClipState(depthClipEnable, useOpenGLNearZClip, guardBandXScale, guardBandYScale, clippingEnabled);
 	baseDevice->DeviceSetTriSetupState(viewportHalfWidth, viewportHalfHeight, viewportZScale, viewportZOffset, scissorLeft, scissorRight, scissorTop, scissorBottom);
-	baseDevice->DeviceSetDepthState(forceDisableDepth ? false : zEnable, zWriteEnable, colorWritesEnabled, ConvertToDeviceCmpFunc(zCmpFunc), ConvertToDeviceDepthFormat(defaultZFormat), defaultDepthBias);
+	baseDevice->DeviceSetDepthState(zEnable, zWriteEnable, colorWritesEnabled, ConvertToDeviceCmpFunc(zCmpFunc), ConvertToDeviceDepthFormat(defaultZFormat), defaultDepthBias);
 	baseDevice->DeviceSetAttrInterpolatorState(useFlatShadingColor, ConvertToDeviceTexAddressMode(defaultTextureAddressMode), ConvertToDeviceTexAddressMode(defaultTextureAddressMode) );
 	baseDevice->DeviceClearDepthStencil(currentState.currentDepthStencil ? currentState.currentDepthStencil->GetDeviceSurfaceBytes() : NULL, clearDepth, clearStencil, clearZValue, clearStencilValue);
 
@@ -11158,8 +11502,11 @@ void IDirect3DDevice9Hook::InitializeState(const D3DPRESENT_PARAMETERS& d3dpp, c
 
 IDirect3DDevice9Hook::IDirect3DDevice9Hook(LPDIRECT3DDEVICE9 _d3d9dev, IDirect3D9Hook* _parentHook) : d3d9dev(_d3d9dev), parentHook(_parentHook), refCount(1), initialDevType(D3DDEVTYPE_HAL), initialCreateFlags(D3DCREATE_HARDWARE_VERTEXPROCESSING),
 	enableDialogs(FALSE), sceneBegun(FALSE), implicitSwapChain(NULL), hConsoleHandle(INVALID_HANDLE_VALUE), numPixelsPassedZTest(0), initialCreateFocusWindow(NULL), initialCreateDeviceWindow(NULL),
-	processedVertexBuffer(NULL), processedVertsUsed(0), processVertsAllocated(0), currentlyRecordingStateBlock(NULL), currentSwvpEnabled(FALSE), deviceComms(NULL), baseDevice(NULL), overrideTexCombinerMode(-1), allocatedDebugShaderRegisterFile(NULL),
-	invertScanoutColors(false), forceDisableDepth(false), drawCallSleepMicros(0), singleStepDrawCallMode(false), queueSingleStepDrawCallModeNextFrame(false), scanoutRedSwizzle(setScanoutPointerCommand::dcs_red), scanoutGreenSwizzle(setScanoutPointerCommand::dcs_green), scanoutBlueSwizzle(setScanoutPointerCommand::dcs_blue)
+	processedVertexBuffer(NULL), processedVertsUsed(0), processVertsAllocated(0), currentlyRecordingStateBlock(NULL), currentSwvpEnabled(FALSE), deviceComms(NULL), baseDevice(NULL), allocatedDebugShaderRegisterFile(NULL),
+	overrideDepth(DepthOverrideSettings::DOS_Default), overrideStencil(StencilOverrideSettings::SOS_Default), overrideFillMode(FillModeOverrideSettings::FMOS_Default), overrideShadeMode(ShadeModeOverrideSettings::SMOS_Default),
+	overrideCullMode(CullModeOverrideSettings::CMOS_Default), overrideFogMode(FogModeOverrideSettings::FOGOS_Default), overrideAlphaBlend(AlphaBlendOverrideSettings::ABOS_Default), overrideAlphaTest(AlphaTestOverrideSettings::ATOS_Default),
+	overrideTexAddress(TexAddressOverrideSettings::TAOS_Default), overrideTexMode(TexModeOverrideSettings::TMOS_Default),
+	invertScanoutColors(false), drawCallSleepMicros(0), singleStepDrawCallMode(false), queueSingleStepDrawCallModeNextFrame(false), scanoutRedSwizzle(setScanoutPointerCommand::dcs_red), scanoutGreenSwizzle(setScanoutPointerCommand::dcs_green), scanoutBlueSwizzle(setScanoutPointerCommand::dcs_blue)
 {
 #ifdef _DEBUG
 	m_FirstMember = false;

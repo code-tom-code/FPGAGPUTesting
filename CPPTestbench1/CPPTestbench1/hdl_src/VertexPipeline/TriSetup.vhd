@@ -522,7 +522,7 @@ DBG_RightProd1 <= std_logic_vector(resize(rightProduct1, 32) );
 DBG_RightProd2 <= std_logic_vector(resize(rightProduct2, 32) );
 DBG_TwiceTriArea <= std_logic_vector(twiceTriangleArea);
 
-	process(clk)
+	StatsProcess : process(clk)
 	begin
 		if (rising_edge(clk) ) then
 			STAT_CurrentDrawEventID <= std_logic_vector(currentDrawEventID);
@@ -537,9 +537,9 @@ DBG_TwiceTriArea <= std_logic_vector(twiceTriangleArea);
 					statCyclesWorking <= statCyclesWorking + 1;
 			end case;
 		end if;
-	end process;
+	end process StatsProcess;
 
-	process(clk)
+	MainStateMachine : process(clk)
 	begin
 		if (rising_edge(clk) ) then                       
 			STATE_ConsumeStateSlot <= '0';
@@ -1370,7 +1370,6 @@ DBG_TwiceTriArea <= std_logic_vector(twiceTriangleArea);
 
 			end case;
 		end if;
-	end process;
-
+	end process MainStateMachine;
 
 end Behavioral;

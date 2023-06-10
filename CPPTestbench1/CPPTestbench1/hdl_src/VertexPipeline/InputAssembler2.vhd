@@ -135,7 +135,8 @@ type IA_state_t is (
 	IAState_readVertexData, -- 4
 	IAState_readVertexDataCooldown, -- 5
 
-	IAstate_advanceIndices -- 6
+	IAstate_advanceIndices, -- 6
+	IAState_waitResolveIndices -- 7
 );
     
 type vertexPosClipSpace is record
@@ -182,15 +183,6 @@ type indexBatchArray is array(63 downto 0) of unsigned(3 downto 0);
 
 type constantIndexArray is array(11 downto 0) of indexTriplet;
 
--- Big TODO: Break this up into multiple clock cycles so that we aren't performing a crazy double-derefererence in a single cycle!
-procedure AssembleTrianglesFromVertices(signal indexA : in unsigned(5 downto 0); signal indexB : in unsigned(5 downto 0); signal indexC : in unsigned(5 downto 0);
-	signal indexData : in indexBatchArray; signal vertexData : in vertexDataBatch; signal fillTriangle : out triangleData) is
-begin
-	fillTriangle.v0 <= vertexData(to_integer(indexData(to_integer(indexA) ) ) );
-	fillTriangle.v1 <= vertexData(to_integer(indexData(to_integer(indexB) ) ) );
-	fillTriangle.v2 <= vertexData(to_integer(indexData(to_integer(indexC) ) ) );
-end procedure;
-
 pure function UnpackVertexDataFromBuffer(vertDataBits : unsigned(319 downto 0) ) return vertexData is
 	variable ret : vertexData;
 begin
@@ -217,6 +209,7 @@ signal currentIndexData : indexBatchArray := (others => (others => '0') );
 signal cullState : eCullMode := CM_CullCCW;
 signal cullModeIsCW : std_logic := '0';
 signal cullModeIsNone : std_logic := '0';
+signal reverseCurrentTri : std_logic := '0';
 signal primTopologyState : ePrimTopology := PRIMTOP_TriangleList;
 signal currentDrawEventID : unsigned(15 downto 0) := (others => '0');
 
@@ -231,9 +224,15 @@ signal triIsComplete : std_logic := '0';
 signal verticesUsedPerBatch : unsigned(4 downto 0) := (others => '0');
 signal indicesUsedPerBatch : unsigned(6 downto 0) := (others => '0');
 
+-- These are index indices which will later be used to index into the batch index list:
 signal currentTriIndexA : unsigned(5 downto 0) := (others => '0');
 signal currentTriIndexB : unsigned(5 downto 0) := (others => '0');
 signal currentTriIndexC : unsigned(5 downto 0) := (others => '0');
+
+-- These are vertex indices, resolved by reading the per-batch index buffer:
+signal vertIndexA : unsigned(3 downto 0) := (others => '0');
+signal vertIndexB : unsigned(3 downto 0) := (others => '0');
+signal vertIndexC : unsigned(3 downto 0) := (others => '0');
 
 signal vertexIDPerBatch : unsigned(4 downto 0) := (others => '0');
 
@@ -268,7 +267,35 @@ STAT_CyclesLoadingDataToCache <= std_logic_vector(statCyclesLoadingDataToCache);
 DBG_IA_State <= std_logic_vector(to_unsigned(IA_state_t'pos(currentState), 6) );
 DBG_IA_VertexIDPerBatch <= std_logic_vector(vertexIDPerBatch(3 downto 0) );
 
-	process(clk)
+CLIP_v0PosX <= std_logic_vector(currentTri.v0.pos.vx);
+CLIP_v0PosY <= std_logic_vector(currentTri.v0.pos.vy);
+CLIP_v0PosZ <= std_logic_vector(currentTri.v0.pos.vz);
+CLIP_v0PosW <= std_logic_vector(currentTri.v0.pos.vw);
+CLIP_tex0_X <= std_logic_vector(currentTri.v0.texcoord.tx);
+CLIP_tex0_Y <= std_logic_vector(currentTri.v0.texcoord.ty);
+CLIP_vertColor0_RGBA <= std_logic_vector(currentTri.v0.color.a) & std_logic_vector(currentTri.v0.color.b) & std_logic_vector(currentTri.v0.color.g) & std_logic_vector(currentTri.v0.color.r);
+CLIP_v0ClipCodes <= currentTri.v0.clipCodes;
+CLIP_CurrentDrawEventID <= std_logic_vector(currentDrawEventID);
+
+-- Swizzle our output triangles from (0, 1, 2) to (0, 2, 1) if we're doing CW culling instead of CCW culling:
+CLIP_v1PosX <= std_logic_vector(currentTri.v1.pos.vx) when reverseCurrentTri = '0' else std_logic_vector(currentTri.v2.pos.vx);
+CLIP_v1PosY <= std_logic_vector(currentTri.v1.pos.vy) when reverseCurrentTri = '0' else std_logic_vector(currentTri.v2.pos.vy);
+CLIP_v1PosZ <= std_logic_vector(currentTri.v1.pos.vz) when reverseCurrentTri = '0' else std_logic_vector(currentTri.v2.pos.vz);
+CLIP_v1PosW <= std_logic_vector(currentTri.v1.pos.vw) when reverseCurrentTri = '0' else std_logic_vector(currentTri.v2.pos.vw);
+CLIP_v2PosX <= std_logic_vector(currentTri.v2.pos.vx) when reverseCurrentTri = '0' else std_logic_vector(currentTri.v1.pos.vx);
+CLIP_v2PosY <= std_logic_vector(currentTri.v2.pos.vy) when reverseCurrentTri = '0' else std_logic_vector(currentTri.v1.pos.vy);
+CLIP_v2PosZ <= std_logic_vector(currentTri.v2.pos.vz) when reverseCurrentTri = '0' else std_logic_vector(currentTri.v1.pos.vz);
+CLIP_v2PosW <= std_logic_vector(currentTri.v2.pos.vw) when reverseCurrentTri = '0' else std_logic_vector(currentTri.v1.pos.vw);
+CLIP_tex1_X <= std_logic_vector(currentTri.v1.texcoord.tx) when reverseCurrentTri = '0' else std_logic_vector(currentTri.v2.texcoord.tx);
+CLIP_tex1_Y <= std_logic_vector(currentTri.v1.texcoord.ty) when reverseCurrentTri = '0' else std_logic_vector(currentTri.v2.texcoord.ty);
+CLIP_tex2_X <= std_logic_vector(currentTri.v2.texcoord.tx) when reverseCurrentTri = '0' else std_logic_vector(currentTri.v1.texcoord.tx);
+CLIP_tex2_Y <= std_logic_vector(currentTri.v2.texcoord.ty) when reverseCurrentTri = '0' else std_logic_vector(currentTri.v1.texcoord.ty);
+CLIP_vertColor1_RGBA <= (std_logic_vector(currentTri.v1.color.a) & std_logic_vector(currentTri.v1.color.b) & std_logic_vector(currentTri.v1.color.g) & std_logic_vector(currentTri.v1.color.r) ) when reverseCurrentTri = '0' else (std_logic_vector(currentTri.v2.color.a) & std_logic_vector(currentTri.v2.color.b) & std_logic_vector(currentTri.v2.color.g) & std_logic_vector(currentTri.v2.color.r) );
+CLIP_vertColor2_RGBA <= (std_logic_vector(currentTri.v2.color.a) & std_logic_vector(currentTri.v2.color.b) & std_logic_vector(currentTri.v2.color.g) & std_logic_vector(currentTri.v2.color.r) ) when reverseCurrentTri = '0' else (std_logic_vector(currentTri.v1.color.a) & std_logic_vector(currentTri.v1.color.b) & std_logic_vector(currentTri.v1.color.g) & std_logic_vector(currentTri.v1.color.r) );
+CLIP_v1ClipCodes <= currentTri.v1.clipCodes when reverseCurrentTri = '0' else currentTri.v2.clipCodes;
+CLIP_v2ClipCodes <= currentTri.v2.clipCodes when reverseCurrentTri = '0' else currentTri.v1.clipCodes;
+
+	StatsProcess : process(clk)
 	begin
 		if (rising_edge(clk) ) then
 			STAT_CurrentDrawEventID <= std_logic_vector(currentDrawEventID);
@@ -286,18 +313,36 @@ DBG_IA_VertexIDPerBatch <= std_logic_vector(vertexIDPerBatch(3 downto 0) );
 					statCyclesWorking <= statCyclesWorking + 1;
 			end case;
 		end if;
-	end process;
+	end process StatsProcess;
 
-	process(clk)
+	IndexResolverProcess : process(clk)
+	begin
+		if (rising_edge(clk) ) then
+			vertIndexA <= currentIndexData(to_integer(currentTriIndexA) );
+			vertIndexB <= currentIndexData(to_integer(currentTriIndexB) );
+			vertIndexC <= currentIndexData(to_integer(currentTriIndexC) );
+		end if;
+	end process IndexResolverProcess;
+
+	VertexResolverProcess : process(clk)
+	begin
+		if (rising_edge(clk) ) then
+			currentTri.v0 <= currentVertexData(to_integer(vertIndexA) );
+			currentTri.v1 <= currentVertexData(to_integer(vertIndexB) );
+			currentTri.v2 <= currentVertexData(to_integer(vertIndexC) );
+		end if;
+	end process VertexResolverProcess;
+
+	MainStateMachine : process(clk)
 	begin
 		if (rising_edge(clk) ) then
 			STATE_ConsumeStateSlot <= '0';
 			INDEXOUT_FIFO_rd_en <= '0';
 			VERTOUT_FIFO_rd_en <= '0';
+			newTriBegin <= '0';
 
 			case currentState is
 				when IAstate_readyIdleState =>
-					newTriBegin <= '0';
 					IAIsIdle <= '0';
 					triIsComplete <= '0';
 
@@ -356,10 +401,13 @@ DBG_IA_VertexIDPerBatch <= std_logic_vector(vertexIDPerBatch(3 downto 0) );
 				when IAState_readVertexData =>
 					currentVertexData(to_integer(vertexIDPerBatch) ) <= UnpackVertexDataFromBuffer(unsigned(VERTOUT_FIFO_rd_data) );
 
-					VERTOUT_FIFO_rd_en <= '1';
+					if (VERTOUT_FIFO_empty = '0') then
+						VERTOUT_FIFO_rd_en <= '1';
+					end if;
+
 					if (vertexIDPerBatch(3 downto 0) = "1111" or VERTOUT_FIFO_empty = '1') then
 						vertexIDPerBatch <= (others => '0');
-						currentState <= IAstate_advanceIndices;
+						currentState <= IAState_waitResolveIndices;
 					else
 						vertexIDPerBatch <= vertexIDPerBatch + 1;
 						currentState <= IAState_readVertexDataCooldown;
@@ -369,65 +417,9 @@ DBG_IA_VertexIDPerBatch <= std_logic_vector(vertexIDPerBatch(3 downto 0) );
 					currentState <= IAState_readVertexData;
 					
 				when IAstate_sendTriData =>
-					CLIP_v0PosX <= std_logic_vector(currentTri.v0.pos.vx);
-					CLIP_v0PosY <= std_logic_vector(currentTri.v0.pos.vy);
-					CLIP_v0PosZ <= std_logic_vector(currentTri.v0.pos.vz);
-					CLIP_v0PosW <= std_logic_vector(currentTri.v0.pos.vw);
-
-					CLIP_tex0_X <= std_logic_vector(currentTri.v0.texcoord.tx);
-					CLIP_tex0_Y <= std_logic_vector(currentTri.v0.texcoord.ty);
-
-					CLIP_vertColor0_RGBA <= std_logic_vector(currentTri.v0.color.a) & std_logic_vector(currentTri.v0.color.b) & std_logic_vector(currentTri.v0.color.g) & std_logic_vector(currentTri.v0.color.r);
-
-					CLIP_v0ClipCodes <= currentTri.v0.clipCodes;
-					CLIP_CurrentDrawEventID <= std_logic_vector(currentDrawEventID);
-
-					-- Swizzle our output triangles from (0, 1, 2) to (0, 2, 1) if we're doing CW culling instead of CCW culling:
-					if (cullModeIsCW = '1') then
-						CLIP_v1PosX <= std_logic_vector(currentTri.v2.pos.vx);
-						CLIP_v1PosY <= std_logic_vector(currentTri.v2.pos.vy);
-						CLIP_v1PosZ <= std_logic_vector(currentTri.v2.pos.vz);
-						CLIP_v1PosW <= std_logic_vector(currentTri.v2.pos.vw);
-						CLIP_v2PosX <= std_logic_vector(currentTri.v1.pos.vx);
-						CLIP_v2PosY <= std_logic_vector(currentTri.v1.pos.vy);
-						CLIP_v2PosZ <= std_logic_vector(currentTri.v1.pos.vz);
-						CLIP_v2PosW <= std_logic_vector(currentTri.v1.pos.vw);
-
-						CLIP_tex1_X <= std_logic_vector(currentTri.v2.texcoord.tx);
-						CLIP_tex1_Y <= std_logic_vector(currentTri.v2.texcoord.ty);
-						CLIP_tex2_X <= std_logic_vector(currentTri.v1.texcoord.tx);
-						CLIP_tex2_Y <= std_logic_vector(currentTri.v1.texcoord.ty);
-
-						CLIP_vertColor1_RGBA <= std_logic_vector(currentTri.v2.color.a) & std_logic_vector(currentTri.v2.color.b) & std_logic_vector(currentTri.v2.color.g) & std_logic_vector(currentTri.v2.color.r);
-						CLIP_vertColor2_RGBA <= std_logic_vector(currentTri.v1.color.a) & std_logic_vector(currentTri.v1.color.b) & std_logic_vector(currentTri.v1.color.g) & std_logic_vector(currentTri.v1.color.r);
-
-						CLIP_v1ClipCodes <= currentTri.v2.clipCodes;
-						CLIP_v2ClipCodes <= currentTri.v1.clipCodes;
-					else
-						CLIP_v1PosX <= std_logic_vector(currentTri.v1.pos.vx);
-						CLIP_v1PosY <= std_logic_vector(currentTri.v1.pos.vy);
-						CLIP_v1PosZ <= std_logic_vector(currentTri.v1.pos.vz);
-						CLIP_v1PosW <= std_logic_vector(currentTri.v1.pos.vw);
-						CLIP_v2PosX <= std_logic_vector(currentTri.v2.pos.vx);
-						CLIP_v2PosY <= std_logic_vector(currentTri.v2.pos.vy);
-						CLIP_v2PosZ <= std_logic_vector(currentTri.v2.pos.vz);
-						CLIP_v2PosW <= std_logic_vector(currentTri.v2.pos.vw);
-
-						CLIP_tex1_X <= std_logic_vector(currentTri.v1.texcoord.tx);
-						CLIP_tex1_Y <= std_logic_vector(currentTri.v1.texcoord.ty);
-						CLIP_tex2_X <= std_logic_vector(currentTri.v2.texcoord.tx);
-						CLIP_tex2_Y <= std_logic_vector(currentTri.v2.texcoord.ty);
-
-						CLIP_vertColor1_RGBA <= std_logic_vector(currentTri.v1.color.a) & std_logic_vector(currentTri.v1.color.b) & std_logic_vector(currentTri.v1.color.g) & std_logic_vector(currentTri.v1.color.r);
-						CLIP_vertColor2_RGBA <= std_logic_vector(currentTri.v2.color.a) & std_logic_vector(currentTri.v2.color.b) & std_logic_vector(currentTri.v2.color.g) & std_logic_vector(currentTri.v2.color.r);
-
-						CLIP_v1ClipCodes <= currentTri.v1.clipCodes;
-						CLIP_v2ClipCodes <= currentTri.v2.clipCodes;
-					end if;
-
 					if (newTriBegin = '1' and CLIP_readyForNewTri = '1') then
-						newTriBegin <= '0';
 						if (cullModeIsNone = '1') then
+							reverseCurrentTri <= '1';
 							currentState <= IAstate_sendTriDataNoCulling;
 						else
 							if (triIsComplete = '1') then
@@ -441,41 +433,8 @@ DBG_IA_VertexIDPerBatch <= std_logic_vector(vertexIDPerBatch(3 downto 0) );
 					end if;
 
 				when IAstate_sendTriDataNoCulling =>
-					-- Send the same triangle with a reversed vertex ordering in order to draw the back side of it:
-					CLIP_v0PosX <= std_logic_vector(currentTri.v0.pos.vx);
-					CLIP_v0PosY <= std_logic_vector(currentTri.v0.pos.vy);
-					CLIP_v0PosZ <= std_logic_vector(currentTri.v0.pos.vz);
-					CLIP_v0PosW <= std_logic_vector(currentTri.v0.pos.vw);
-
-					CLIP_tex0_X <= std_logic_vector(currentTri.v0.texcoord.tx);
-					CLIP_tex0_Y <= std_logic_vector(currentTri.v0.texcoord.ty);
-
-					CLIP_vertColor0_RGBA <= std_logic_vector(currentTri.v0.color.a) & std_logic_vector(currentTri.v0.color.b) & std_logic_vector(currentTri.v0.color.g) & std_logic_vector(currentTri.v0.color.r);
-
-					CLIP_v0ClipCodes <= currentTri.v0.clipCodes;
-					CLIP_CurrentDrawEventID <= std_logic_vector(currentDrawEventID);
-
-					CLIP_v1PosX <= std_logic_vector(currentTri.v2.pos.vx);
-					CLIP_v1PosY <= std_logic_vector(currentTri.v2.pos.vy);
-					CLIP_v1PosZ <= std_logic_vector(currentTri.v2.pos.vz);
-					CLIP_v1PosW <= std_logic_vector(currentTri.v2.pos.vw);
-					CLIP_v2PosX <= std_logic_vector(currentTri.v1.pos.vx);
-					CLIP_v2PosY <= std_logic_vector(currentTri.v1.pos.vy);
-					CLIP_v2PosZ <= std_logic_vector(currentTri.v1.pos.vz);
-					CLIP_v2PosW <= std_logic_vector(currentTri.v1.pos.vw);
-
-					CLIP_tex1_X <= std_logic_vector(currentTri.v2.texcoord.tx);
-					CLIP_tex1_Y <= std_logic_vector(currentTri.v2.texcoord.ty);
-					CLIP_tex2_X <= std_logic_vector(currentTri.v1.texcoord.tx);
-					CLIP_tex2_Y <= std_logic_vector(currentTri.v1.texcoord.ty);
-
-					CLIP_vertColor1_RGBA <= std_logic_vector(currentTri.v2.color.a) & std_logic_vector(currentTri.v2.color.b) & std_logic_vector(currentTri.v2.color.g) & std_logic_vector(currentTri.v2.color.r);
-					CLIP_vertColor2_RGBA <= std_logic_vector(currentTri.v1.color.a) & std_logic_vector(currentTri.v1.color.b) & std_logic_vector(currentTri.v1.color.g) & std_logic_vector(currentTri.v1.color.r);
-					CLIP_v1ClipCodes <= currentTri.v2.clipCodes;
-					CLIP_v2ClipCodes <= currentTri.v1.clipCodes;
-
+					-- Send the same triangle with a reversed vertex ordering in order to draw the back side of it
 					if (newTriBegin = '1' and CLIP_readyForNewTri = '1') then
-						newTriBegin <= '0';
 						if (triIsComplete = '1') then
 							currentState <= IAstate_readyIdleState;
 						else
@@ -486,31 +445,29 @@ DBG_IA_VertexIDPerBatch <= std_logic_vector(vertexIDPerBatch(3 downto 0) );
 					end if;
 
 				when IAstate_advanceIndices =>
-					VERTOUT_FIFO_rd_en <= '0';
-
-					DBG_IA_CurrentTriIndices(3 downto 0) <= std_logic_vector(currentIndexData(to_integer(currentTriIndexA) ) );
-					DBG_IA_CurrentTriIndices(7 downto 4) <= std_logic_vector(currentIndexData(to_integer(currentTriIndexB) ) );
-					DBG_IA_CurrentTriIndices(11 downto 8) <= std_logic_vector(currentIndexData(to_integer(currentTriIndexC) ) );
-
-					AssembleTrianglesFromVertices(currentTriIndexA, currentTriIndexB, currentTriIndexC,
-						currentIndexData,
-						currentVertexData,
-						currentTri);
-
 					SV_PrimitiveID <= SV_PrimitiveID + 1;
-
-					if ( (currentTriIndexC + 1) > indicesUsedPerBatch) then
-						triIsComplete <= '1';
-					end if;
 
 					currentTriIndexA <= currentTriIndexC + 1;
 					currentTriIndexB <= currentTriIndexC + 2;
 					currentTriIndexC <= currentTriIndexC + 3;
                     
+					currentState <= IAState_waitResolveIndices;
+
+				when IAState_waitResolveIndices =>
+					DBG_IA_CurrentTriIndices(3 downto 0) <= std_logic_vector(currentIndexData(to_integer(currentTriIndexA) ) );
+					DBG_IA_CurrentTriIndices(7 downto 4) <= std_logic_vector(currentIndexData(to_integer(currentTriIndexB) ) );
+					DBG_IA_CurrentTriIndices(11 downto 8) <= std_logic_vector(currentIndexData(to_integer(currentTriIndexC) ) );
+
+					if ( (currentTriIndexC + 1) >= indicesUsedPerBatch) then
+						triIsComplete <= '1';
+					end if;
+
+					-- CCW and None culling modes do not (initially) reverse the triangle winding
+					reverseCurrentTri <= cullModeIsCW;
 					currentState <= IAstate_sendTriData;
 
 			end case;
 		end if;
-	end process;
+	end process MainStateMachine;
 
 end Behavioral;

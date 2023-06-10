@@ -15,11 +15,28 @@ static_assert(sizeof(registerUnion) == sizeof(DWORD), "Error: Unexpected union s
 
 struct VBOEntry
 {
-	registerUnion registers[10];
+	registerUnion vx;
+	registerUnion vy;
+	registerUnion vz;
+	registerUnion vw;
+	registerUnion tx;
+	registerUnion ty;
+	registerUnion r;
+	registerUnion g;
+	registerUnion b;
+	registerUnion a;
 };
 static_assert(sizeof(VBOEntry) == sizeof(DWORD) * 10, "Error: Unexpected struct padding!");
 
+struct IBOEntry
+{
+	unsigned char indices[32] = {0}; // Each index is actually only 4 bits and there's 64 indices per block, but C++ doesn't like arrays of bit values
+	unsigned short drawID = 0xFFFF;
+};
+static_assert(sizeof(IBOEntry) == 34, "Error: Unexpected struct padding!");
+
 static std::vector<VBOEntry> VBO_FIFO;
+static std::vector<IBOEntry> IBO_FIFO;
 
 static const unsigned short minCubeIB[36] = {
 	0, 1, 2,    // side 1
@@ -34,6 +51,21 @@ static const unsigned short minCubeIB[36] = {
     7, 1, 5,
     3, 7, 2,    // side 6
     2, 7, 6
+};
+
+enum IA_state_t : unsigned char
+{
+	IAstate_readyIdleState, // 0
+
+	IAstate_sendTriData, // 1
+	IAstate_sendTriDataNoCulling, // 2
+
+	IAState_readIndexData, // 3
+	IAState_readVertexData, // 4
+	IAState_readVertexDataCooldown, // 5
+
+	IAstate_advanceIndices, // 6
+	IAState_waitResolveIndices // 7
 };
 
 // This is a batch of 15 shaded verts' data from the VBB and ShaderCore testbenches
@@ -101,6 +133,11 @@ static const DWORD drawPrimitiveTriList5Tris[] = {
 
 static unsigned currentIndexBufferBaseAddr = 0x00000000;
 
+static const float frand()
+{
+	return (rand() / (const float)RAND_MAX) * 2.0f - 1.0f;
+}
+
 const int RunTestsInputAssembler(Xsi::Loader& loader)
 {
 	// Start everything off at the beginning:
@@ -130,6 +167,8 @@ const int RunTestsInputAssembler(Xsi::Loader& loader)
 	std_logic_vector_port<128> CLIP_vertColor0_RGBA(PD_OUT, loader, "CLIP_vertColor0_RGBA");
 	std_logic_vector_port<128> CLIP_vertColor1_RGBA(PD_OUT, loader, "CLIP_vertColor1_RGBA");
 	std_logic_vector_port<128> CLIP_vertColor2_RGBA(PD_OUT, loader, "CLIP_vertColor2_RGBA");
+	std_logic_vector_port<16> CLIP_CurrentDrawEventID(PD_OUT, loader, "CLIP_CurrentDrawEventID");
+	std_logic_port CLIP_AABBTriOverlapsViewport(PD_OUT, loader, "CLIP_AABBTriOverlapsViewport");
 	std_logic_port CLIP_readyForNewTri(PD_IN, loader, "CLIP_readyForNewTri");
 	std_logic_port CLIP_newTriBegin(PD_OUT, loader, "CLIP_newTriBegin");
 	// Clip unit interfaces end
@@ -144,18 +183,11 @@ const int RunTestsInputAssembler(Xsi::Loader& loader)
 	std_logic_vector_port<320> VERTOUT_FIFO_rd_data(PD_IN, loader, "VERTOUT_FIFO_rd_data");
 	std_logic_port VERTOUT_FIFO_rd_en(PD_OUT, loader, "VERTOUT_FIFO_rd_en");
 	std_logic_port INDEXOUT_FIFO_empty(PD_IN, loader, "INDEXOUT_FIFO_empty");
-	std_logic_vector_port<256> INDEXOUT_FIFO_rd_data(PD_IN, loader, "INDEXOUT_FIFO_rd_data");
+	std_logic_vector_port<272> INDEXOUT_FIFO_rd_data(PD_IN, loader, "INDEXOUT_FIFO_rd_data");
 	std_logic_port INDEXOUT_FIFO_rd_en(PD_OUT, loader, "INDEXOUT_FIFO_rd_en");
 	// Vertex Batch Output (VBO) interfaces end
 
 	// Command processor interfaces begin
-	std_logic_port CMD_DrawReady(PD_OUT, loader, "CMD_DrawReady");
-
-	std_logic_port CMD_SetStateReady(PD_OUT, loader, "CMD_SetStateReady");
-	std_logic_port CMD_SetStateEnable(PD_IN, loader, "CMD_SetStateEnable");
-	std_logic_vector_port<2> CMD_StateCullMode(PD_IN, loader, "CMD_StateCullMode");
-	std_logic_vector_port<3> CMD_StatePrimTopology(PD_IN, loader, "CMD_StatePrimTopology");
-
 	std_logic_port CMD_IA_Idle(PD_OUT, loader, "CMD_IA_Idle"); // Signal to let the command processor know that we are idle (have no work to do)
 	// Command processor interfaces end
 
@@ -175,14 +207,27 @@ const int RunTestsInputAssembler(Xsi::Loader& loader)
 	{
 		if (VERTOUT_FIFO_rd_en.GetBoolVal() )
 		{
-			VBOEntry nextVBOEntry = VBO_FIFO.front();
+			const VBOEntry& currentVBOEntry = VBO_FIFO.front();
 			VBO_FIFO.erase(VBO_FIFO.begin() );
 		}
 		VERTOUT_FIFO_empty = VBO_FIFO.empty();
 
 		if (!VBO_FIFO.empty() )
 		{
-			VERTOUT_FIFO_rd_data.SetStructVal(VBO_FIFO.front() );
+			const VBOEntry& nextVBOEntry = VBO_FIFO.front();
+			VERTOUT_FIFO_rd_data.SetStructVal(nextVBOEntry);
+		}
+
+		if (INDEXOUT_FIFO_rd_en.GetBoolVal() )
+		{
+			const IBOEntry& currentIBOEntry = IBO_FIFO.front();
+			IBO_FIFO.erase(IBO_FIFO.begin() );
+		}
+		INDEXOUT_FIFO_empty = IBO_FIFO.empty();
+		if (!IBO_FIFO.empty() )
+		{
+			const IBOEntry& nextIBOEntry = IBO_FIFO.front();
+			INDEXOUT_FIFO_rd_data.SetStructVal(nextIBOEntry);
 		}
 
 		if (CLIP_newTriBegin.GetBoolVal() )
@@ -231,7 +276,6 @@ const int RunTestsInputAssembler(Xsi::Loader& loader)
 	VERTOUT_FIFO_rd_data.SetToZero();
 	INDEXOUT_FIFO_empty = true;
 	INDEXOUT_FIFO_rd_data.SetToZero();
-	CMD_SetStateEnable = false;
 	for (unsigned startupCycle = 0; startupCycle < 100; ++startupCycle)
 	{
 		scoped_timestep time(loader, clk, 100);
@@ -242,32 +286,53 @@ const int RunTestsInputAssembler(Xsi::Loader& loader)
 	for (unsigned x = 0; x < ARRAYSIZE(drawPrimitiveTriList5Tris) / 4; ++x)
 	{
 		VBOEntry newEntry;
-		newEntry.registers[0].intReg = drawPrimitiveTriList5Tris[x * 4 + 0];
-		newEntry.registers[1].intReg = drawPrimitiveTriList5Tris[x * 4 + 1];
-		newEntry.registers[2].intReg = drawPrimitiveTriList5Tris[x * 4 + 2];
-		newEntry.registers[3].intReg = drawPrimitiveTriList5Tris[x * 4 + 3];
+		newEntry.vx.floatReg = frand();
+		newEntry.vy.floatReg = (const float)x;
+		newEntry.vz.floatReg = 0.5f;
+		newEntry.vw.floatReg = 1.0f;
+		newEntry.tx.floatReg = (const float)(x & 0x1);
+		newEntry.ty.floatReg = (const float)( (x >> 1) & 0x1);
+		newEntry.r.floatReg = 1.0f;
+		newEntry.g.floatReg = 1.0f;
+		newEntry.b.floatReg = 1.0f;
+		newEntry.a.floatReg = 1.0f;
 		VBO_FIFO.push_back(newEntry);
 	}
+
+	IBOEntry newIBO;
+	memset(&(newIBO.indices), 0xFFFFFFFF, sizeof(newIBO.indices) );
+	for (unsigned x = 0; x < 5; ++x)
+	{
+		unsigned char indexA = x * 3;
+		unsigned char indexB = x * 3 + 1;
+		unsigned char indexC = x * 3 + 2;
+
+		if (x & 0x1)
+		{
+			newIBO.indices[indexA / 2] = (indexA << 4) | (newIBO.indices[indexA / 2] & 0xF);
+			newIBO.indices[indexB / 2] = (indexC << 4) | (indexB);
+		}
+		else
+		{
+			newIBO.indices[indexA / 2] = (indexB << 4) | (indexA);
+			newIBO.indices[indexC / 2] = (0xF << 4) | (indexC);
+		}
+	}
+	IBO_FIFO.push_back(newIBO);
 
 	if (!VBO_Ready.GetBoolVal() )
 	{
 		__debugbreak();
 	}
 
-	if (!CMD_SetStateReady.GetBoolVal() )
-	{
-		__debugbreak();
-	}
-
+	VBO_IsIndexedDrawCall = true;
+	VBO_NumVertices = 5;
+	VBO_NumIndices = 3 * 5;
 	{
 		scoped_timestep time(loader, clk, 100);
-		CMD_SetStateEnable = true;
-		CMD_StateCullMode = 0; // Cull CCW
-		CMD_StatePrimTopology = 3; // Triangle list
 		currentIndexBufferBaseAddr = reinterpret_cast<unsigned>(&minCubeIB);
 		updateInterfaces();
 	}
-	CMD_SetStateEnable = false;
 
 	CLIP_readyForNewTri = true;
 
@@ -282,14 +347,14 @@ const int RunTestsInputAssembler(Xsi::Loader& loader)
 		updateInterfaces();
 	}
 
-	unsigned IAState = 0;
+	IA_state_t IAState = IAstate_readyIdleState;
 
 	// Load vertex data from the vertex batch:
 	do
 	{
 		scoped_timestep time(loader, clk, 100);
 		updateInterfaces();
-		IAState = DBG_IA_State.GetUint8Val();
+		IAState = (const IA_state_t)DBG_IA_State.GetUint8Val();
 	} while (IAState == 3);
 
 	// Push vertex data into triangle setup:
@@ -297,7 +362,7 @@ const int RunTestsInputAssembler(Xsi::Loader& loader)
 	{
 		scoped_timestep time(loader, clk, 100);
 		updateInterfaces();
-		IAState = DBG_IA_State.GetUint8Val();
+		IAState = (const IA_state_t)DBG_IA_State.GetUint8Val();
 	} while (IAState != 0);
 
 	printf("Indexed tri test:\n");
@@ -305,12 +370,19 @@ const int RunTestsInputAssembler(Xsi::Loader& loader)
 	for (unsigned x = 0; x < ARRAYSIZE(drawPrimitiveTriList5Tris) / 4; ++x)
 	{
 		VBOEntry newEntry;
-		newEntry.registers[0].intReg = drawPrimitiveTriList5Tris[x * 4 + 0];
-		newEntry.registers[1].intReg = drawPrimitiveTriList5Tris[x * 4 + 1];
-		newEntry.registers[2].intReg = drawPrimitiveTriList5Tris[x * 4 + 2];
-		newEntry.registers[3].intReg = drawPrimitiveTriList5Tris[x * 4 + 3];
+		newEntry.vx.floatReg = frand();
+		newEntry.vy.floatReg = (const float)x;
+		newEntry.vz.floatReg = 0.5f;
+		newEntry.vw.floatReg = 1.0f;
+		newEntry.tx.floatReg = (const float)(x & 0x1);
+		newEntry.ty.floatReg = (const float)( (x >> 1) & 0x1);
+		newEntry.r.floatReg = 1.0f;
+		newEntry.g.floatReg = 1.0f;
+		newEntry.b.floatReg = 1.0f;
+		newEntry.a.floatReg = 1.0f;
 		VBO_FIFO.push_back(newEntry);
 	}
+	IBO_FIFO.push_back(newIBO);
 
 	{
 		scoped_timestep time(loader, clk, 100);
@@ -323,10 +395,10 @@ const int RunTestsInputAssembler(Xsi::Loader& loader)
 	{
 		scoped_timestep time(loader, clk, 100);
 		updateInterfaces();
-		IAState = DBG_IA_State.GetUint8Val();
+		IAState = (const IA_state_t)DBG_IA_State.GetUint8Val();
 	} while (IAState != 0);
 
-	IAState = DBG_IA_State.GetUint8Val();
+	IAState = (const IA_state_t)DBG_IA_State.GetUint8Val();
 	
 	return S_OK;
 }

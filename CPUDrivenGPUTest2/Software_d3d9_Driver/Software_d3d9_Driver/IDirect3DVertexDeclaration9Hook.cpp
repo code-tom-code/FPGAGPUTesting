@@ -1,6 +1,7 @@
 #pragma once
 
 #include "IDirect3DVertexDeclaration9Hook.h"
+#include "IDirect3DVertexShader9Hook.h"
 
 static inline const bool operator==(const DebuggableD3DVERTEXELEMENT9& lhs, const DebuggableD3DVERTEXELEMENT9& rhs)
 {
@@ -10,6 +11,17 @@ static inline const bool operator==(const DebuggableD3DVERTEXELEMENT9& lhs, cons
 static inline const bool operator!=(const DebuggableD3DVERTEXELEMENT9& lhs, const DebuggableD3DVERTEXELEMENT9& rhs)
 {
 	return !(lhs == rhs);
+}
+
+IDirect3DVertexDeclaration9Hook::~IDirect3DVertexDeclaration9Hook()
+{
+	// TODO: Remove this vertex decl from the FVFToVertDeclCache when it gets fully released
+#ifdef WIPE_ON_DESTRUCT_D3DHOOKOBJECT
+	memset(this, 0x00000000, sizeof(*this) - (sizeof(elements) + sizeof(vertShaderOutputElements) ) );
+#endif
+
+	devicePassthroughVS->Release();
+	devicePassthroughVS = NULL;
 }
 
 void IDirect3DVertexDeclaration9Hook::CreateVertexDeclaration(const DebuggableD3DVERTEXELEMENT9* const pVertexElements, const debuggableFVF _vertDeclAutoCreatedFromFVF)
@@ -91,6 +103,13 @@ void IDirect3DVertexDeclaration9Hook::CreateVertexDeclaration(const DebuggableD3
 	}
 
 	ComputeVertexSizes();
+
+	if (skipVertexProcessing)
+	{
+		IDirect3DVertexShader9Hook* passthroughVS = new IDirect3DVertexShader9Hook(NULL, parentDevice);
+		passthroughVS->CreatePretransformPassthroughVertexShader(&GetElementsInternal().front(), GetElementsInternal().size() );
+		devicePassthroughVS = passthroughVS;
+	}
 }
 
 void IDirect3DVertexDeclaration9Hook::ComputeVertexSizes()

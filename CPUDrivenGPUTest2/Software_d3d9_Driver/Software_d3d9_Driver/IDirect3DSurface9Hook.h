@@ -111,6 +111,11 @@ public:
 			free(auxSurfaceBytesRaw);
 			auxSurfaceBytesRaw = NULL;
 		}
+		if (GPUSurfaceBytesRaw)
+		{
+			GPUFree(GPUSurfaceBytesRaw);
+			GPUSurfaceBytesRaw = NULL;
+		}
 #endif // #ifdef SURFACE_ALLOC_PAGE_NOACCESS
 
 #ifdef WIPE_ON_DESTRUCT_D3DHOOKOBJECT

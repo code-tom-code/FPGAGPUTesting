@@ -1893,7 +1893,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::SetFVF(THIS
 		// 1) Release any existing set vertex declarations
 		// 2) Create a new implicit vertex declaration (retrievable only via GetVertexDeclaration() )
 		// 3) Assign that new implicit vertex declaration
-		CreateVertexDeclFromFVFCode(dbgFVF);
+		CreateAndSetVertexDeclFromFVFCode(dbgFVF);
 	}
 
 	return ret;

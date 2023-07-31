@@ -224,7 +224,7 @@ void GPUStats::ProcessDrawEventsData()
 	for (unsigned x = 0; x < NUM_GPU_EVENT_SYSTEMS_TRACKED; ++x)
 	{
 		std::vector<EventTimestamp>& currentSystemTimestamps = RawTimestampsPerSystem[x];
-		const unsigned numTimestamps = currentSystemTimestamps.size();
+		const unsigned numTimestamps = (const unsigned)currentSystemTimestamps.size();
 		for (unsigned y = 0; y < numTimestamps; ++y)
 		{
 			EventTimestamp& thisTimestamp = currentSystemTimestamps[y];
@@ -346,7 +346,7 @@ bool GPUStats::IsCollectingEventDataThisFrame() const
 
 static INT_PTR CALLBACK GPUStatsDialogProc(_In_ HWND hWnd, _In_ UINT MSG, _In_ WPARAM wParam, _In_ LPARAM lParam)
 {
-	GPUStats* const gpuStats = (GPUStats* const)GetWindowLongPtrA(hWnd, DWL_USER);
+	GPUStats* const gpuStats = (GPUStats* const)GetWindowLongPtrA(hWnd, DWLP_USER);
 	switch (MSG)
 	{
 	case WM_INITDIALOG:
@@ -402,7 +402,7 @@ void GPUStats::CreateStatsDialog(HWND parentWindow)
 	GPUStatsDialog = CreateDialogA(currentDLLModule, MAKEINTRESOURCEA(IDD_DLG_GPUSTATS), parentWindow, &GPUStatsDialogProc);
 	if (GPUStatsDialog)
 	{
-		SetWindowLongPtrA(GPUStatsDialog, DWL_USER, (size_t)this);
+		SetWindowLongPtrA(GPUStatsDialog, DWLP_USER, (const LONG_PTR)this);
 		ShowWindow(GPUStatsDialog, SW_SHOW);
 		UpdateWindow(GPUStatsDialog);
 		SendMessageA(GPUStatsDialog, WM_USER_DLG_INIT_MSG, NULL, NULL);

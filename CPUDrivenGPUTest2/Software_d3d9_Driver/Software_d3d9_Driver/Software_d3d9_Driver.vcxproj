@@ -190,7 +190,10 @@
     <ClCompile Include="Driver\GPUStats.cpp" />
     <ClCompile Include="Driver\IBaseDeviceComms.cpp" />
     <ClCompile Include="Driver\IBaseGPUDevice.cpp" />
+    <ClCompile Include="Driver\IBroadcastVirtualDeviceComms.cpp" />
+    <ClCompile Include="Driver\ILocalEndpointDLLComms.cpp" />
     <ClCompile Include="Driver\INetSocketDeviceComms.cpp" />
+    <ClCompile Include="Driver\IRemoteProcessIPCComms.cpp" />
     <ClCompile Include="Driver\ISerialDeviceComms.cpp" />
     <ClCompile Include="Driver\IVirtualDeviceComms.cpp" />
     <ClCompile Include="FixedFunctionToPixelShader.cpp" />
@@ -224,6 +227,7 @@
     <ClCompile Include="ShaderTextureFunctions.cpp" />
     <ClCompile Include="ShaderJIT.cpp" />
     <ClCompile Include="ShaderTextureFunctions4.cpp" />
+    <ClCompile Include="SharedMemIPC\SharedMemIPC.cpp" />
     <ClCompile Include="VShaderEngine_InterpreterExec1.cpp" />
     <ClCompile Include="VShaderEngine_InterpreterExec4.cpp" />
     <None Include="FixedFuncEmu\FFPS\Include\FFPS_ApplyColorStage.fxh" />
@@ -248,9 +252,13 @@
     <ClInclude Include="Driver\GPUDeviceLimits.h" />
     <ClInclude Include="Driver\GPUMemoryMapDlg.h" />
     <ClInclude Include="Driver\GPUStats.h" />
+    <ClInclude Include="Driver\GPUTypes.h" />
     <ClInclude Include="Driver\IBaseDeviceComms.h" />
     <ClInclude Include="Driver\IBaseGPUDevice.h" />
+    <ClInclude Include="Driver\IBroadcastVirtualDeviceComms.h" />
+    <ClInclude Include="Driver\ILocalEndpointDLLComms.h" />
     <ClInclude Include="Driver\INetSocketDeviceComms.h" />
+    <ClInclude Include="Driver\IRemoteProcessIPCComms.h" />
     <ClInclude Include="Driver\ISerialDeviceComms.h" />
     <ClInclude Include="Driver\IVirtualDeviceComms.h" />
     <ClInclude Include="Driver\PacketDefs.h" />
@@ -285,6 +293,7 @@
     <ClInclude Include="ShaderJIT.h" />
     <ClInclude Include="ShaderJIT_HLSL_to_CPP_Tables.h" />
     <ClInclude Include="ShaderOpcodeInfo.h" />
+    <ClInclude Include="SharedMemIPC\SharedMemIPC.h" />
     <ClInclude Include="SimpleInstrumentedProfiler.h" />
     <ClInclude Include="VShaderEngine.h" />
   </ItemGroup>

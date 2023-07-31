@@ -280,6 +280,11 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DVertexBuffer9Hook::Lock(
 	}
 #endif
 
+	if (IsUnlocked() )
+	{
+		lockFlags = Flags;
+	}
+
 	++lockCount;
 
 	return S_OK;
@@ -313,11 +318,31 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DVertexBuffer9Hook::Unloc
 	}
 #endif
 
-	// Copy our newly locked data off from the CPU to the GPU:
-	IBaseDeviceComms* const deviceComms = IBaseDeviceComms::GetGlobalDeviceComms();
-	deviceComms->DeviceMemCopy(GetGPUBytes(), data, InternalLength);
+	if (IsUnlocked() )
+	{
+		if ( (lockFlags & D3DLOCK_READONLY) == 0)
+		{
+			GPUBytesDirty = true;
+		}
+
+#ifdef _DEBUG
+		lockFlags = 0x00000000;
+#endif
+	}
 
 	return S_OK;
+}
+
+void IDirect3DVertexBuffer9Hook::UpdateDataToGPU()
+{
+	if (GPUBytesDirty)
+	{
+		// Copy our newly locked data off from the CPU to the GPU:
+		IBaseDeviceComms* const deviceComms = IBaseDeviceComms::GetGlobalDeviceComms();
+		deviceComms->DeviceMemCopy(GetGPUBytes(), data, InternalLength);
+
+		GPUBytesDirty = false;
+	}
 }
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DVertexBuffer9Hook::GetDesc(THIS_ D3DVERTEXBUFFER_DESC *pDesc)

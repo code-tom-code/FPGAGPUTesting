@@ -21,7 +21,5 @@ __declspec(align(16) ) struct IVirtualDeviceComms : public IBaseDeviceComms
 	virtual void StoreRecvdPacket(const genericCommand& recvdPacket) override;
 
 private:
-	__declspec(nothrow) HRESULT __stdcall InternalInitComms();
-
 	IBaseDeviceComms* const optionalProxyComms = NULL;
 };

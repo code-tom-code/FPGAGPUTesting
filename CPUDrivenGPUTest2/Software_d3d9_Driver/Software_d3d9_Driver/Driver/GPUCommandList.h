@@ -4,6 +4,9 @@
 #include "GPUAllocator.h"
 #include <vector>
 
+// Forward-declares:
+struct IBaseDeviceComms;
+
 // A simpler, smaller packet struct that we can fit more of into a 32-byte DRAM read line than our fatter over-the-wire command packet format
 #pragma pack(push)
 #pragma pack(1)
@@ -33,7 +36,7 @@ struct GPUCommandList
 	static void ConvertSimplifiedCommandPacketToCommandPacket(const SimplifiedCommandPacket* const inSimplifiedPacket, command* const outFullPacket);
 
 	const unsigned GetCommandListSize_bytes() const;
-	const unsigned GetCommandListCommandCount() const { return commands.size(); }
+	const unsigned GetCommandListCommandCount() const { return (const unsigned)commands.size(); }
 
 private:
 	enum _recordingState : unsigned char

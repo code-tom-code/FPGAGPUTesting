@@ -11,6 +11,7 @@
 
 // Forwards-declare:
 const ShaderCompileResultCode CompileShaderInternal(const ShaderInfo& inDXShaderInfo, const ShaderCompileOptions inCompileOptions, DeviceBytecode*& outCompiledDeviceBytecode, const char* const inOptShaderBaseFilename);
+const ShaderCompileResultCode CompilePretransformedShaderInternal(const ShaderCompileOptions inCompileOptions, DeviceBytecode*& outCompiledDeviceBytecode, const char* const inOptShaderBaseFilename);
 
 BOOL APIENTRY DllMain( HMODULE hModule,
                        DWORD  ul_reason_for_call,
@@ -146,7 +147,7 @@ void WriteDeviceShaderInfoDataToFile(const DeviceShaderInfo& inDeviceShaderInfo,
 
 	fprintf(outFile, "// Execution cycles: %u\n", inDeviceShaderInfo.deviceExecutionCycleCount);
 	fprintf(outFile, "// Cycles wasted to waits: %u\n", inDeviceShaderInfo.deviceCyclesWastedToWaits);
-	fprintf(outFile, "// %u/%u device instruction slots used (%u/%u bytes):\n", 
+	fprintf(outFile, "// %u/%u device instruction slots used (%zu/%zu bytes):\n", 
 		inDeviceShaderInfo.deviceInstructionTokenCount, 
 		GPU_SHADER_MAX_NUM_INSTRUCTIONS, 
 		inDeviceShaderInfo.deviceInstructionTokenCount * sizeof(instructionSlot),
@@ -266,6 +267,14 @@ const ShaderCompileResultCode __stdcall CompileShaderInfoToDeviceBytecode(const 
 		}
 	}
 
+	if ( (inCompileOptions & SCOption_VS_GeneratePassthroughShader) != 0)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Error: This function is for compiling vertex shaders. Pretransformed verts specifically do not use vertex shaders. Use the other GenerateShaderForPretransformedVertices() entrypoint function instead if you want a pretransformed shader to be generated.
+#endif
+		return ShaderCompile_ERR_InvalidArg;
+	}
+
 	// The driver shader compiler does not yet support pixel shaders. Vertex shaders only for right now!
 	if (inDXShaderInfo->isPixelShader)
 	{
@@ -307,5 +316,104 @@ const ShaderCompileResultCode __stdcall CompileShaderBytecodeToDeviceBytecode(co
 	);
 
 	return CompileShaderInfoToDeviceBytecode(&tempShaderInfo, inCompileOptions, outCompiledDeviceBytecode, inOptShaderBaseFilename);
+}
+
+// This function generates a vertex shader for a draw call containing pretransformed vertices (D3DFVF_XYZRHW/POSITIONT0).
+// If this function succeeds, then the caller now owns the device bytecode buffer (free it using free(outCompiledDeviceBytecode) after you're done with it).
+const ShaderCompileResultCode __stdcall GenerateShaderForPretransformedVertices(const D3DVERTEXELEMENT9* const inDXVertexDeclElements, const unsigned inElementsCount, const ShaderCompileOptions inCompileOptions, DeviceBytecode** outCompiledDeviceBytecode, const char* const inOptShaderBaseFilename)
+{
+	if (!inDXVertexDeclElements)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Error: Need to specify D3D9 vertex declaration elements array for this function
+#endif
+		return ShaderCompile_ERR_InvalidArg;
+	}
+
+	if (inElementsCount < 1)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Error: Need to specify a non-zero count of elements (not counting the D3DDECL_END element)
+#endif
+		return ShaderCompile_ERR_InvalidArg;
+	}
+
+	if (!outCompiledDeviceBytecode)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Error: Need to specify an output pointer for the compiled device bytecode
+#endif
+		return ShaderCompile_ERR_InvalidArg;
+	}
+
+	if (inCompileOptions >= SCOPtion_LAST_VALID_OPTION)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Error: Invalid/Unknown option specified!
+#endif
+		return ShaderCompile_ERR_InvalidArg;
+	}
+
+	if ( (inCompileOptions & SCOption_VS_GeneratePassthroughShader) == 0)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Error: This function is for generating pretransformed shaders. Please call the other main entrypoint function CompileShaderInfoToDeviceBytecode() instead to compile non-pretransformed shaders.
+#endif
+		return ShaderCompile_ERR_InvalidArg;
+	}
+
+	if ( (inCompileOptions & SCOption_OutputEverything) != 0)
+	{
+		if (!inOptShaderBaseFilename)
+		{
+#ifdef _DEBUG
+			__debugbreak(); // Error: Must specify a shaderBaseFilename string when using one of the Output options or else we won't know where to output the files to!
+#endif
+			return ShaderCompile_ERR_InvalidArg;
+		}
+	}
+
+	if (inCompileOptions & (SCOption_VS_AppendDivideByW | SCOption_VS_AppendViewportTransform) )
+	{
+#ifdef _DEBUG
+		__debugbreak(); // These two "append" shader options are invalid when using passthrough mode!
+#endif
+		return ShaderCompile_ERR_InvalidArg;
+	}
+
+	bool foundPretransformedElement = false;
+	for (unsigned x = 0; x < inElementsCount; ++x)
+	{
+		const D3DVERTEXELEMENT9& thisElement = inDXVertexDeclElements[x];
+		if (thisElement.Usage == D3DDECLUSAGE_POSITIONT && thisElement.UsageIndex == 0)
+		{
+			if (thisElement.Type != D3DDECLTYPE_FLOAT4)
+			{
+#ifdef _DEBUG
+				__debugbreak(); // Error: We only support POSITIONT elements in the fully-expanded float4 format currently. Other formats are not yet available!
+#endif
+				return ShaderCompile_ERR_InvalidArg;
+			}
+
+			if (foundPretransformedElement != false)
+			{
+#ifdef _DEBUG
+				__debugbreak(); // Error: You can't have multiple elements with the same semantic POSITIONT0 in your elements stream. This is invalid!
+#endif
+				return ShaderCompile_ERR_InvalidArg;
+			}
+
+			foundPretransformedElement = true;
+		}
+	}
+	if (foundPretransformedElement == false)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Error: You must pass in an elements decl that includes a POSITIONT0 element. For non-pretransformed shaders, call the other compile shader functions instead!
+#endif
+		return ShaderCompile_ERR_InvalidArg;
+	}
+
+	return CompilePretransformedShaderInternal(inCompileOptions, *outCompiledDeviceBytecode, inOptShaderBaseFilename);
 }
 

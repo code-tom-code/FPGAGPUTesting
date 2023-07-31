@@ -1,0 +1,5 @@
+LIBRARY RecordingEndpoint_DiskFile
+EXPORTS
+
+; Functions exported by name go here:
+GetDLLInfo=GetDLLInfo @1

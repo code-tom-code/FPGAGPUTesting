@@ -13,7 +13,7 @@ void MemcpyTokens(const instructionToken* const copySourceBaseStartingToken, con
 // Rebases all of the instruction start pointers in the given vector to be offset from the newBasePtr
 void RebaseInstructionStartPointers(std::vector<const instructionToken*>& outRebaseInstructionStartPtrs, const anyToken* const newBasePtr)
 {
-	const unsigned numStartsToRebase = outRebaseInstructionStartPtrs.size();
+	const unsigned numStartsToRebase = (const unsigned)outRebaseInstructionStartPtrs.size();
 	for (unsigned startIndex = 0; startIndex < numStartsToRebase; ++startIndex)
 	{
 		const instructionToken*& thisInstructionStart = outRebaseInstructionStartPtrs[startIndex];
@@ -37,7 +37,7 @@ const instructionToken* const GetUnbasedInstructionStartPointer(const anyToken* 
 // Copies all of the tokens for an instruction (instruction token, dst token, src tokens, relative addressing tokens, etc.) from one token stream to another
 void CopyInstructionToNewInstructionStream(std::vector<anyToken>& outCopyDestInstructionStream, std::vector<const instructionToken*>& outCopyDestUnbasedInstructionStartPtrs, const instructionToken* const inCopySrcInstruction, const ShaderInfo& inDXShaderInfo)
 {
-	const unsigned newInstructionStartDWORDIndex = outCopyDestInstructionStream.size();
+	const unsigned newInstructionStartDWORDIndex = (const unsigned)outCopyDestInstructionStream.size();
 	const unsigned instructionDWORDCount = GetInstructionDWORDCount(inCopySrcInstruction, inDXShaderInfo);
 	for (unsigned x = 0; x < instructionDWORDCount; ++x)
 	{
@@ -72,8 +72,9 @@ void AppendNewTokenToTokenStream(std::vector<anyToken>& outTokenStream, const ds
 // Appends a new unbased instruction start pointer to the end of the outInstructionStartPtrs assuming that the new instruction will be inserted to the end of the tokenStream after calling this function
 void AppendNewInstructionStartToTokenStartPtrs(std::vector<const instructionToken*>& outInstructionStartPtrs, const std::vector<anyToken>& tokenStream)
 {
-	const unsigned byteOffset = tokenStream.size() * sizeof(anyToken);
-	const instructionToken* const unbasedNewInstructionPtr = (const instructionToken* const)byteOffset;
+	const unsigned byteOffset = (const unsigned)tokenStream.size() * sizeof(anyToken);
+	const unsigned char* const nullBaseOffsetPointer = NULL;
+	const instructionToken* const unbasedNewInstructionPtr = reinterpret_cast<const instructionToken* const>(nullBaseOffsetPointer + byteOffset);
 	outInstructionStartPtrs.push_back(unbasedNewInstructionPtr);
 }
 

@@ -1,5 +1,4 @@
 #include "IVirtualDeviceComms.h"
-#include <stdio.h>
 
 IVirtualDeviceComms::IVirtualDeviceComms(IBaseDeviceComms* const _optionalProxyComms/* = NULL*/) : IBaseDeviceComms(), optionalProxyComms(_optionalProxyComms)
 {

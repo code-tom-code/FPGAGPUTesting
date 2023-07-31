@@ -13,6 +13,8 @@ typedef _iobuf FILE;
 
 typedef unsigned long DWORD;
 
+typedef struct _D3DVERTEXELEMENT9 D3DVERTEXELEMENT9;
+
 // You can check this for "success" as (ShaderCompileResultCode == 0) and for "failure" as (ShaderCompile_OK > 0)
 enum ShaderCompileResultCode : unsigned
 {
@@ -146,12 +148,17 @@ struct DeviceShaderInfo
 
 struct DeviceBytecode
 {
+	// The deviceShaderInfo is only used by the driver. It does *not* get uploaded to the GPU!
 	DeviceShaderInfo deviceShaderInfo;
+
+	// The shaderHeader marks the start of the info that gets uploaded to the GPU.
+	// The GPU itself doesn't actually read the shader header, but it's useful to identify the shader in the debugger!
+	DeviceShaderHeader shaderHeader;
 
 	// The actual compiled device-specific shader instructions begin here:
 	instructionSlot deviceInstructions[1];
 };
-static_assert(sizeof(DeviceBytecode) == sizeof(DeviceShaderInfo) + sizeof(instructionSlot), "Error: Unexpected struct alignment!");
+static_assert(sizeof(DeviceBytecode) == sizeof(DeviceShaderInfo) + sizeof(DeviceShaderHeader) + sizeof(instructionSlot), "Error: Unexpected struct alignment!");
 #pragma pack(pop)
 
 // This is our main function that takes compiled D3D9 bytecode (shader model 1, 2, or 3) and converts it into device-specific bytecode.
@@ -161,6 +168,10 @@ const ShaderCompileResultCode __stdcall CompileShaderInfoToDeviceBytecode(const 
 // This is our main function that takes compiled D3D9 bytecode (shader model 1, 2, or 3) and converts it into device-specific bytecode.
 // If this function succeeds, then the caller now owns the device bytecode buffer (free it using free(outCompiledDeviceBytecode) after you're done with it).
 const ShaderCompileResultCode __stdcall CompileShaderBytecodeToDeviceBytecode(const DWORD* const inDXShaderBytecode, const ShaderCompileOptions inCompileOptions, DeviceBytecode** outCompiledDeviceBytecode, const char* const inOptShaderBaseFilename);
+
+// This function generates a vertex shader for a draw call containing pretransformed vertices (D3DFVF_XYZRHW/POSITIONT0).
+// If this function succeeds, then the caller now owns the device bytecode buffer (free it using free(outCompiledDeviceBytecode) after you're done with it).
+const ShaderCompileResultCode __stdcall GenerateShaderForPretransformedVertices(const D3DVERTEXELEMENT9* const inDXVertexDeclElements, const unsigned inElementsCount, const ShaderCompileOptions inCompileOptions, DeviceBytecode** outCompiledDeviceBytecode, const char* const inOptShaderBaseFilename);
 
 // After this function returns, the caller owns the outString. Be sure to call free() on the outString when you are done with it to avoid leaking memory!
 const ShaderCompileResultCode __stdcall DisasmDeviceBytecodeToString(const DeviceBytecode* const inCompiledDeviceBytecode, const char** outString);

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "PacketTypes.h"
+#include "GPUTypes.h"
 
 // Note that all changes made to this file must be mirrored into PacketType.vhd as well!
 static const char PACKET_MAGIC_VALUE = 'C';
@@ -237,7 +238,7 @@ struct clearBackbufferCommand : command
 	DWORD writeColorRGBA = 0xFFFFFFFF;
 
 	// Payload 1:
-	DWORD renderTargetAddress = 0x00000000;
+	DWORD renderTargetAddress = 0x00000000; // This needs to have backbuffer alignment
 };
 
 struct clearZStencilCommand : command
@@ -330,8 +331,8 @@ struct setTextureStateCommand : command
 
 	enum texAddressMode : unsigned char
 	{
-		ta_wrap = 0, // Not yet implemented!
-		ta_clamp = 1, // Not yet implemented!
+		ta_wrap = 0,
+		ta_clamp = 1,
 		ta_mirror = 2, // Not yet implemented!
 		ta_mirrorOnce = 3, // Not yet implemented!
 		ta_border = 4 // Not yet implemented!
@@ -470,7 +471,7 @@ struct drawIndexedCommand : command
 
 	const UINT ExtractStartIndex(void) const
 	{
-		const UINT combinedBits = (startIndexHigh << 7) | (startIndexLow);
+		const UINT combinedBits = (startIndexHigh << 13) | (startIndexLow);
 		return combinedBits;
 	}
 
@@ -926,24 +927,35 @@ struct setShaderConstantSpecialCommand : command
 struct setVertexStreamDataCommand : command
 {
 	setVertexStreamDataCommand() : command(PT_SETVERTEXSTREAMDATA),
-		streamBaseAddress(0x00000000), dwordCount(1),
-		streamID(0), isD3DCOLOR(false), shaderInputRegIndex(0),
-		dwordStride(1), dwordOffset(0), unused0(0)
+		streamBaseAddress(0x00000000), dwordCount(DWC_Float2),
+		streamID(0), isD3DCOLOR(FALSE), shaderInputRegIndex(0),
+		dwordStride(1), dwordOffset(0), inputUsage(UT_Position), inputUsageIndex(0), unused0(0)
 	{
 	}
 
+	enum dwordCountType : DWORD
+	{
+		DWC_Float1 = 0,
+		DWC_D3DCOLOR = 0,
+		DWC_Float2 = 1,
+		DWC_Float3 = 2,
+		DWC_Float4 = 3
+	};
+
 	// Payload 0:
 	DWORD streamBaseAddress : 30; // Must be DRAM-line-aligned (evenly divisible by 32) // 29 downto 0
-	DWORD dwordCount : 2; // Is this a 1-, 2-, 3-, or 4-DWORD stream element? (D3DCOLOR/float1 = 1, float2 = 2, float3 = 3, float4 = 4). DWORD count is implicitly +1 since a zero DWORD element is not allowed. // 31 downto 30
+	dwordCountType dwordCount : 2; // Is this a 1-, 2-, 3-, or 4-DWORD stream element? (D3DCOLOR/float1 = 1, float2 = 2, float3 = 3, float4 = 4). DWORD count is implicitly +1 since a zero DWORD element is not allowed. // 31 downto 30
 
 	// Payload 1:
 	DWORD streamID : 3; // The stream index of this data (matches stream number in CreateVertexDeclaration() ) // 2 downto 0
-	DWORD isD3DCOLOR : 1; // Is this a D3DCOLOR element (1) that needs to do UINT8->UNORM8 conversion and ARGB->RGBA swizzling, or a FLOAT element (0)? // 3
+	BOOL isD3DCOLOR : 1; // Is this a D3DCOLOR element (1) that needs to do UINT8->UNORM8 conversion and ARGB->RGBA swizzling, or a FLOAT element (0)? // 3
 	DWORD shaderInputRegIndex : 3; // Which v# register does this vertex data get loaded into? // 6 downto 4
 	DWORD dwordStride : 6; // What is the stride (in DWORD's) between elements in this stream? May be 0 to indicate that this data is the same for all elements. // 12 downto 7
 	DWORD dwordOffset : 6; // What is the offset (in DWORD's) from the start of the stream? // 18 downto 13
 	DWORD numVertexStreamsTotal : 3; // How many vertex streams does this shader use in total? // 21 downto 19
-	DWORD unused0 : 10; // 31 downto 22
+	eInputUsageType inputUsage : 3; // What usage to bind this to // 24 downto 22
+	DWORD inputUsageIndex : 1; // Which usage index to bind this to // 25
+	DWORD unused0 : 6; // 31 downto 26
 };
 
 // This configures the index buffer address and type for the pretransformed index cache in the Vertex Batch Builder.
@@ -1024,7 +1036,7 @@ struct setClipperStateCommand : command
 	unsigned unused1 : 24; // 31 downto 8
 };
 
-// This configures the clipper state
+// This issues a query (usually an event query, occlusion query, or timestamp query)
 struct issueQueryCommand : command
 {
 	issueQueryCommand() : command(PT_ISSUEQUERY), 

@@ -55,6 +55,12 @@
     <Filter Include="Header Files\Driver">
       <UniqueIdentifier>{57e956c2-4981-4c21-b661-72f23f20e7e3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\SharedMemIPC">
+      <UniqueIdentifier>{a7c4628f-7454-43d0-aa84-aab6cfcb149c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\SharedMemIPC">
+      <UniqueIdentifier>{2f3d4144-e1d9-4021-9990-645d63add7aa}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="hookd3d9.cpp">
@@ -197,6 +203,18 @@
     </ClCompile>
     <ClCompile Include="Driver\DeviceConversions.cpp">
       <Filter>Source Files\Driver</Filter>
+    </ClCompile>
+    <ClCompile Include="Driver\IBroadcastVirtualDeviceComms.cpp">
+      <Filter>Source Files\Driver</Filter>
+    </ClCompile>
+    <ClCompile Include="Driver\IRemoteProcessIPCComms.cpp">
+      <Filter>Source Files\Driver</Filter>
+    </ClCompile>
+    <ClCompile Include="Driver\ILocalEndpointDLLComms.cpp">
+      <Filter>Source Files\Driver</Filter>
+    </ClCompile>
+    <ClCompile Include="SharedMemIPC\SharedMemIPC.cpp">
+      <Filter>Source Files\SharedMemIPC</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -371,6 +389,21 @@
       <Filter>Header Files\Driver</Filter>
     </ClInclude>
     <ClInclude Include="Driver\DeviceConversions.h">
+      <Filter>Header Files\Driver</Filter>
+    </ClInclude>
+    <ClInclude Include="Driver\IBroadcastVirtualDeviceComms.h">
+      <Filter>Header Files\Driver</Filter>
+    </ClInclude>
+    <ClInclude Include="Driver\IRemoteProcessIPCComms.h">
+      <Filter>Header Files\Driver</Filter>
+    </ClInclude>
+    <ClInclude Include="Driver\ILocalEndpointDLLComms.h">
+      <Filter>Header Files\Driver</Filter>
+    </ClInclude>
+    <ClInclude Include="SharedMemIPC\SharedMemIPC.h">
+      <Filter>Header Files\SharedMemIPC</Filter>
+    </ClInclude>
+    <ClInclude Include="Driver\GPUTypes.h">
       <Filter>Header Files\Driver</Filter>
     </ClInclude>
   </ItemGroup>

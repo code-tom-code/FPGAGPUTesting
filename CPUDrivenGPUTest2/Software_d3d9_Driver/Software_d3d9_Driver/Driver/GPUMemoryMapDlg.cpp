@@ -72,9 +72,10 @@ static const char* const ColumnNamesMap[] =
 };
 static_assert(ARRAYSIZE(ColumnNamesMap) == CE_COUNT, "Error: Missing enum string entry");
 
+static const char* const nullBaseAddress = NULL;
 const unsigned GPUAddrToMemoryMapTexelOffset(const gpuvoid* const gpuAddr)
 {
-	const unsigned long ulAddr = (const unsigned long)gpuAddr;
+	const unsigned long ulAddr = (const unsigned long)( (const char* const)gpuAddr - nullBaseAddress);
 
 	// Convert ulAddr from bytes 0-1GB into DRAM Pages 0-512K
 	const unsigned long DRAMPageIndex = ulAddr / GPU_PAGE_SIZE_BYTES;
@@ -247,7 +248,7 @@ static void InsertItemIntoReport(const liveAllocation& thisAlloc, HWND dialogWnd
 			case CE_Address:
 #pragma warning(push)
 #pragma warning(disable:4996)
-				sprintf(printBuffer, "0x%08X", reinterpret_cast<const unsigned>(thisAlloc.allocAddress) );
+				sprintf(printBuffer, "0x%08X", static_cast<const unsigned>( (const char* const)thisAlloc.allocAddress - nullBaseAddress) );
 				itemStruct.pszText = (LPSTR)printBuffer;
 				break;
 			case CE_Size:
@@ -507,7 +508,7 @@ INT_PTR GPUMemoryMapDlg::ClassDialogProc(_In_ HWND hWnd, _In_ UINT MSG, _In_ WPA
 
 static INT_PTR CALLBACK GPUMemoryMapDialogProc(_In_ HWND hWnd, _In_ UINT MSG, _In_ WPARAM wParam, _In_ LPARAM lParam)
 {
-	GPUMemoryMapDlg* const gpuMemoryMap = (GPUMemoryMapDlg* const)GetWindowLongPtrA(hWnd, DWL_USER);
+	GPUMemoryMapDlg* const gpuMemoryMap = (GPUMemoryMapDlg* const)GetWindowLongPtrA(hWnd, DWLP_USER);
 	switch (MSG)
 	{
 	case WM_INITDIALOG:
@@ -581,7 +582,7 @@ __declspec(noinline) void GPUMemoryMapDlg::CreateMemoryMapDialog(HWND parentWind
 	GPUMemoryMapDialog = CreateDialogA(currentDLLModule, MAKEINTRESOURCEA(IDD_DLG_GPUMEMORYMAP), parentWindow, &GPUMemoryMapDialogProc);
 	if (GPUMemoryMapDialog)
 	{
-		SetWindowLongPtrA(GPUMemoryMapDialog, DWL_USER, (size_t)this);
+		SetWindowLongPtrA(GPUMemoryMapDialog, DWLP_USER, (const LONG_PTR)this);
 		ShowWindow(GPUMemoryMapDialog, SW_SHOW);
 		UpdateWindow(GPUMemoryMapDialog);
 		SendMessageA(GPUMemoryMapDialog, WM_USER_DLG_INIT_MSG, NULL, NULL);

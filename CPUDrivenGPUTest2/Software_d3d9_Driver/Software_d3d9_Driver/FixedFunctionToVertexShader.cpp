@@ -341,10 +341,10 @@ static inline void BuildVertexStateDefines(const DeviceState& state, std::vector
 		switch (state.currentRenderStates.renderStatesUnion.namedStates.vertexBlend)
 		{
 		default:
-		case D3DVBF_DISABLE:
+		case D3DVBF_DISABLE: // Currently we can only afford no vertex blending in our shader without overflowing the bounds of the VS instruction cache on the device!
 			vertexBlend.Definition = "D3DVBF_DISABLE";
 			break;
-		case D3DVBF_1WEIGHTS:
+		/*case D3DVBF_1WEIGHTS:
 			vertexBlend.Definition = "D3DVBF_1WEIGHTS";
 			break;
 		case D3DVBF_2WEIGHTS:
@@ -358,7 +358,7 @@ static inline void BuildVertexStateDefines(const DeviceState& state, std::vector
 			break;
 		case D3DVBF_0WEIGHTS:
 			vertexBlend.Definition = "D3DVBF_0WEIGHTS";
-			break;
+			break;*/
 		}
 		defines.push_back(vertexBlend);
 	}
@@ -418,6 +418,10 @@ static inline void BuildVertexStateDefines(const DeviceState& state, std::vector
 				++numEnabledLights;
 			}
 		}
+		
+		// For now, just cap everything to a single light to avoid blowing up our vertex shader to the point that it can't fit inside the vertex shader instruction cache on the device anymore:
+		if (numEnabledLights > 1)
+			numEnabledLights = 1;
 
 		// Note that it *is* possible to have a situation where NUM_ENABLED_LIGHTS is 0 and LIGHTING is 1
 		D3DXMACRO lightCount = {0};

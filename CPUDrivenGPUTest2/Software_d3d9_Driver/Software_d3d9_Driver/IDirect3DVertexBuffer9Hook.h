@@ -68,6 +68,8 @@ public:
     virtual COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE Unlock(THIS) override;
     virtual COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE GetDesc(THIS_ D3DVERTEXBUFFER_DESC *pDesc) override;
 
+	void UpdateDataToGPU();
+
 	void CreateVertexBuffer(UINT _Length, const DebuggableUsage _Usage, DWORD _FVF, D3DPOOL _Pool);
 
 	inline void MarkSoftBufferUP(const bool isSoftUPVertexBuffer)
@@ -146,11 +148,16 @@ protected:
 	DWORD InternalFVF;
 	D3DPOOL InternalPool;
 
+	DWORD lockFlags = 0x00000000;
 	long lockCount;
 	bool isSoftVertexBufferUP; // If this is true, then the memory pointed to by the buffer is managed by the application and should not be modified or freed!
 
 	BYTE* data;
+
 	gpuvoid* GPUBytes;
+
+	// Dirty flag gets set on Unlock and gets cleared when we upload a fresh copy of this buffer to the GPU!
+	bool GPUBytesDirty = true;
 
 #ifdef _DEBUG
 	char debugObjectName[256] = {0};

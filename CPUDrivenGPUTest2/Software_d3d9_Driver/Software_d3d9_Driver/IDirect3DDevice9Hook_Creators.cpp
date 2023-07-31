@@ -253,41 +253,9 @@ static const unsigned char texCoordSizeLookup[4] =
 	#define D3DFVF_FOG 0x00002000L /* There is a separate fog value in the FVF vertex */
 #endif
 
-// This is not an official D3D9 function, even though it looks like one. It is only used internally.
-// Most of these conversions came from this MSDN page: https://docs.microsoft.com/en-us/windows/win32/direct3d9/mapping-fvf-codes-to-a-directx-9-declaration
-// The remainder of the conversions came from testing and seeing what happens.
-// The test-set contained all 2^32 unique FVF codes, which should encompass all combinations of FVF codes. For all of those tested codes, the output of this function matches that of what the D3D9 runtime
-// internally uses to convert FVF codes into vertex declarations.
-/*
-Undocumented/underdocumented D3D9 weird things:
-- D3DFVF_FOG is listed as part of D3DFVF_RESERVED2 in the d3d9 headers, but it is listed in the Windows DDK as a separate FVF flag.
-- If the FVF is 0x00000000 then the DrawPrimitive call gets dropped entirely for the fixed-function pipeline (although this could probably still work for the case of a vertex shader rendering a single point using shader constants for data).
-- If both D3DFVF_LASTBETA_UBYTE4 and D3DFVF_LASTBETA_D3DCOLOR are set (probably not a "valid FVF", but the runtime seems to accept it anyway) then D3DFVF_LASTBETA_UBYTE4 takes precedence and D3DFVF_LASTBETA_D3DCOLOR gets ignored.
-- D3DFVF_LASTBETA_UBYTE4 and D3DFVF_LASTBETA_D3DCOLOR are ignored for D3DFVF_XYZ, D3DFVF_XYZRHW, and D3DFVF_XYZW positions (they only work if one of the XYZBn positions are used).
-- D3DFVF_XYZB1 with one of the LASTBETA flags produces a vertex with blend indices but no blend weights.
-- D3DFVF_XYZB5 with none of the LASTBETA flags defined means that you get a "float4 blendweights0, float1 blendindices0" rather than what I would've initially thought ("float4 blendweights0, float1 blendweights1"). I guess B5 always implies indices, although I'm not sure what float indices means.
-- It seems like the runtime handles D3DFVF_XYZB2 specially when it comes to the LASTBETA flags. It seems to *always* want to make the last element of type D3DDECLTYPE_UBYTE4, and then it switches between using D3DDECLTYPE_FLOAT1 and D3DDECLTYPE_D3DCOLOR for the first DWORD.
-*/
-IDirect3DVertexDeclaration9Hook* IDirect3DDevice9Hook::CreateVertexDeclFromFVFCode(const debuggableFVF FVF)
+// Translates a given FVF code into an array of D3DVERTEXELEMENT9 elements. The return value is the number of used vertex elements:
+const unsigned TranslateFVFCodeToVertexElements(const debuggableFVF FVF, D3DVERTEXELEMENT9 (&outVertexElements)[24])
 {
-#ifndef NO_CACHING_FVF_VERT_DECLS
-	const std::map<DWORD, IDirect3DVertexDeclaration9Hook*>::const_iterator it = FVFToVertDeclCache->find(FVF.rawFVF_DWORD);
-	if (it != FVFToVertDeclCache->end() )
-	{
-		IDirect3DVertexDeclaration9Hook* const fvfVertDecl = it->second;
-		SetVertexDeclaration(fvfVertDecl);
-		return fvfVertDecl;
-	}
-#endif // NO_CACHING_FVF_VERT_DECLS
-
-	// 24 is the worst-case number of decl elements (including the D3DDECL_END delimiter) because we could have this monsterous FVF code:
-	// (D3DFVF_XYZB5 | D3DFVF_LASTBETA_D3DCOLOR | D3DFVF_LASTBETA_UBYTE4 | D3DFVF_NORMAL | D3DFVF_PSIZE | D3DFVF_DIFFUSE | D3DFVF_SPECULAR | TEX15 | D3DFVF_FOG |
-	// D3DFVF_TEXCOORDSIZE4(0) | D3DFVF_TEXCOORDSIZE4(1) | D3DFVF_TEXCOORDSIZE4(2) | D3DFVF_TEXCOORDSIZE4(3) | 
-	// D3DFVF_TEXCOORDSIZE4(4) | D3DFVF_TEXCOORDSIZE4(5) | D3DFVF_TEXCOORDSIZE4(6) | D3DFVF_TEXCOORDSIZE4(7) )
-	// That's 3 tokens from the "position" section (D3DFVF_XYZB5), 4 from the "attributes" section (D3DFVF_NORMAL | D3DFVF_PSIZE | D3DFVF_DIFFUSE | D3DFVF_SPECULAR), one from fog,
-	// 15 tokens from the "texcoords" section (TEX8 and all of the D3DFVF_TEXCOORDSIZE4 macros), and one for the D3DDECL_END token.
-	D3DVERTEXELEMENT9 elements[24] = {0};
-
 	unsigned currentElementIndex = 0;
 	unsigned short totalVertexSizeBytes = 0;
 	const bool hasLastbeta = (FVF.rawFVF_DWORD & (D3DFVF_LASTBETA_D3DCOLOR | D3DFVF_LASTBETA_UBYTE4) ) != 0;
@@ -309,116 +277,116 @@ IDirect3DVertexDeclaration9Hook* IDirect3DDevice9Hook::CreateVertexDeclFromFVFCo
 	{
 	case D3DFVF_XYZ:
 	{
-		elements[currentElementIndex++] = {0, totalVertexSizeBytes, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0};
+		outVertexElements[currentElementIndex++] = {0, totalVertexSizeBytes, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0};
 		totalVertexSizeBytes += sizeof(D3DXVECTOR3);
 	}
 		break;
 	case D3DFVF_XYZRHW:
 	{
-		elements[currentElementIndex++] = {0, totalVertexSizeBytes, D3DDECLTYPE_FLOAT4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITIONT, 0};
+		outVertexElements[currentElementIndex++] = {0, totalVertexSizeBytes, D3DDECLTYPE_FLOAT4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITIONT, 0};
 		totalVertexSizeBytes += sizeof(D3DXVECTOR4);
 	}
 		break;
 	case D3DFVF_XYZW:
 	{
-		elements[currentElementIndex++] = {0, totalVertexSizeBytes, D3DDECLTYPE_FLOAT4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0};
+		outVertexElements[currentElementIndex++] = {0, totalVertexSizeBytes, D3DDECLTYPE_FLOAT4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0};
 		totalVertexSizeBytes += sizeof(D3DXVECTOR4);
 	}
 		break;
 	case D3DFVF_XYZB1:
 	{
-		elements[currentElementIndex++] = {0, totalVertexSizeBytes, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0};
+		outVertexElements[currentElementIndex++] = {0, totalVertexSizeBytes, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0};
 		totalVertexSizeBytes += sizeof(D3DXVECTOR3);
 
 		if (hasLastbeta)
-			elements[currentElementIndex++] = {0, totalVertexSizeBytes, lastBetaType, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_BLENDINDICES, 0};
+			outVertexElements[currentElementIndex++] = {0, totalVertexSizeBytes, lastBetaType, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_BLENDINDICES, 0};
 		else
-			elements[currentElementIndex++] = {0, totalVertexSizeBytes, D3DDECLTYPE_FLOAT1, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_BLENDWEIGHT, 0};
+			outVertexElements[currentElementIndex++] = {0, totalVertexSizeBytes, D3DDECLTYPE_FLOAT1, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_BLENDWEIGHT, 0};
 		totalVertexSizeBytes += sizeof(float);
 	}
 		break;
 	case D3DFVF_XYZB2:
 	{
-		elements[currentElementIndex++] = {0, totalVertexSizeBytes, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0};
+		outVertexElements[currentElementIndex++] = {0, totalVertexSizeBytes, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0};
 		totalVertexSizeBytes += sizeof(D3DXVECTOR3);
 
 		if (hasLastbeta)
 		{
 			// Okay so this is undocumented and weird (and might be a bug?) but it seems like the runtime handles D3DFVF_XYZB2 specially when it comes to the LASTBETA flags. It seems to *always* want to make
 			// the last element of type D3DDECLTYPE_UBYTE4, and then it switches between using D3DDECLTYPE_FLOAT1 and D3DDECLTYPE_D3DCOLOR for the first DWORD.
-			elements[currentElementIndex++] = {0, totalVertexSizeBytes, (const BYTE)(FVF.namedFVF.lastBeta_UBYTE4 ? D3DDECLTYPE_FLOAT1 : D3DDECLTYPE_D3DCOLOR), D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_BLENDWEIGHT, 0};
+			outVertexElements[currentElementIndex++] = {0, totalVertexSizeBytes, (const BYTE)(FVF.namedFVF.lastBeta_UBYTE4 ? D3DDECLTYPE_FLOAT1 : D3DDECLTYPE_D3DCOLOR), D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_BLENDWEIGHT, 0};
 			totalVertexSizeBytes += sizeof(float);
 
-			elements[currentElementIndex++] = {0, totalVertexSizeBytes, D3DDECLTYPE_UBYTE4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_BLENDINDICES, 0};
+			outVertexElements[currentElementIndex++] = {0, totalVertexSizeBytes, D3DDECLTYPE_UBYTE4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_BLENDINDICES, 0};
 			totalVertexSizeBytes += sizeof(DWORD);
 		}
 		else
 		{
-			elements[currentElementIndex++] = {0, totalVertexSizeBytes, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_BLENDWEIGHT, 0};
+			outVertexElements[currentElementIndex++] = {0, totalVertexSizeBytes, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_BLENDWEIGHT, 0};
 			totalVertexSizeBytes += sizeof(D3DXVECTOR2);
 		}
 	}
 		break;
 	case D3DFVF_XYZB3:
 	{
-		elements[currentElementIndex++] = {0, totalVertexSizeBytes, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0};
+		outVertexElements[currentElementIndex++] = {0, totalVertexSizeBytes, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0};
 		totalVertexSizeBytes += sizeof(D3DXVECTOR3);
 
 		if (hasLastbeta)
 		{
-			elements[currentElementIndex++] = {0, totalVertexSizeBytes, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_BLENDWEIGHT, 0};
+			outVertexElements[currentElementIndex++] = {0, totalVertexSizeBytes, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_BLENDWEIGHT, 0};
 			totalVertexSizeBytes += sizeof(D3DXVECTOR2);
 
-			elements[currentElementIndex++] = {0, totalVertexSizeBytes, lastBetaType, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_BLENDINDICES, 0};
+			outVertexElements[currentElementIndex++] = {0, totalVertexSizeBytes, lastBetaType, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_BLENDINDICES, 0};
 			totalVertexSizeBytes += sizeof(DWORD);
 		}
 		else
 		{
-			elements[currentElementIndex++] = {0, totalVertexSizeBytes, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_BLENDWEIGHT, 0};
+			outVertexElements[currentElementIndex++] = {0, totalVertexSizeBytes, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_BLENDWEIGHT, 0};
 			totalVertexSizeBytes += sizeof(D3DXVECTOR3);
 		}
 	}
 		break;
 	case D3DFVF_XYZB4:
 	{
-		elements[currentElementIndex++] = {0, totalVertexSizeBytes, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0};
+		outVertexElements[currentElementIndex++] = {0, totalVertexSizeBytes, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0};
 		totalVertexSizeBytes += sizeof(D3DXVECTOR3);
 
 		if (hasLastbeta)
 		{
-			elements[currentElementIndex++] = {0, totalVertexSizeBytes, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_BLENDWEIGHT, 0};
+			outVertexElements[currentElementIndex++] = {0, totalVertexSizeBytes, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_BLENDWEIGHT, 0};
 			totalVertexSizeBytes += sizeof(D3DXVECTOR3);
 
-			elements[currentElementIndex++] = {0, totalVertexSizeBytes, lastBetaType, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_BLENDINDICES, 0};
+			outVertexElements[currentElementIndex++] = {0, totalVertexSizeBytes, lastBetaType, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_BLENDINDICES, 0};
 			totalVertexSizeBytes += sizeof(DWORD);
 		}
 		else
 		{
-			elements[currentElementIndex++] = {0, totalVertexSizeBytes, D3DDECLTYPE_FLOAT4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_BLENDWEIGHT, 0};
+			outVertexElements[currentElementIndex++] = {0, totalVertexSizeBytes, D3DDECLTYPE_FLOAT4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_BLENDWEIGHT, 0};
 			totalVertexSizeBytes += sizeof(D3DXVECTOR4);
 		}
 	}
 		break;
 	case D3DFVF_XYZB5:
 	{
-		elements[currentElementIndex++] = {0, totalVertexSizeBytes, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0};
+		outVertexElements[currentElementIndex++] = {0, totalVertexSizeBytes, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0};
 		totalVertexSizeBytes += sizeof(D3DXVECTOR3);
 		if (hasLastbeta)
 		{
-			elements[currentElementIndex++] = {0, totalVertexSizeBytes, D3DDECLTYPE_FLOAT4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_BLENDWEIGHT, 0};
+			outVertexElements[currentElementIndex++] = {0, totalVertexSizeBytes, D3DDECLTYPE_FLOAT4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_BLENDWEIGHT, 0};
 			totalVertexSizeBytes += sizeof(D3DXVECTOR4);
 
-			elements[currentElementIndex++] = {0, totalVertexSizeBytes, lastBetaType, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_BLENDINDICES, 0};
+			outVertexElements[currentElementIndex++] = {0, totalVertexSizeBytes, lastBetaType, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_BLENDINDICES, 0};
 			totalVertexSizeBytes += sizeof(DWORD);
 		}
 		else
 		{
-			elements[currentElementIndex++] = {0, totalVertexSizeBytes, D3DDECLTYPE_FLOAT4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_BLENDWEIGHT, 0};
+			outVertexElements[currentElementIndex++] = {0, totalVertexSizeBytes, D3DDECLTYPE_FLOAT4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_BLENDWEIGHT, 0};
 			totalVertexSizeBytes += sizeof(D3DXVECTOR4);
 
 			// This is a weird thing, but D3D9 has the D3DFVF_XYZB5 case create "float1 blendindices0" for D3DFVF_XYZB5 when one of the LASTBETA flags aren't specified. We're going to
 			// follow this exact behavior so that we can fully match the official D3D9 FVF to Decl conversion.
-			elements[currentElementIndex++] = {0, totalVertexSizeBytes, D3DDECLTYPE_FLOAT1, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_BLENDINDICES, 0};
+			outVertexElements[currentElementIndex++] = {0, totalVertexSizeBytes, D3DDECLTYPE_FLOAT1, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_BLENDINDICES, 0};
 			totalVertexSizeBytes += sizeof(float);
 		}
 	}
@@ -427,32 +395,32 @@ IDirect3DVertexDeclaration9Hook* IDirect3DDevice9Hook::CreateVertexDeclFromFVFCo
 
 	if (FVF.rawFVF_DWORD & D3DFVF_NORMAL)
 	{
-		elements[currentElementIndex++] = {0, totalVertexSizeBytes, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL, 0};
+		outVertexElements[currentElementIndex++] = {0, totalVertexSizeBytes, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL, 0};
 		totalVertexSizeBytes += sizeof(D3DXVECTOR3);
 	}
 
 	if (FVF.rawFVF_DWORD & D3DFVF_PSIZE)
 	{
-		elements[currentElementIndex++] = {0, totalVertexSizeBytes, D3DDECLTYPE_FLOAT1, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_PSIZE, 0};
+		outVertexElements[currentElementIndex++] = {0, totalVertexSizeBytes, D3DDECLTYPE_FLOAT1, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_PSIZE, 0};
 		totalVertexSizeBytes += sizeof(float);
 	}
 
 	if (FVF.rawFVF_DWORD & D3DFVF_DIFFUSE)
 	{
-		elements[currentElementIndex++] = {0, totalVertexSizeBytes, D3DDECLTYPE_D3DCOLOR, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_COLOR, 0};
+		outVertexElements[currentElementIndex++] = {0, totalVertexSizeBytes, D3DDECLTYPE_D3DCOLOR, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_COLOR, 0};
 		totalVertexSizeBytes += sizeof(D3DCOLOR);
 	}
 
 	if (FVF.rawFVF_DWORD & D3DFVF_SPECULAR)
 	{
-		elements[currentElementIndex++] = {0, totalVertexSizeBytes, D3DDECLTYPE_D3DCOLOR, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_COLOR, 1};
+		outVertexElements[currentElementIndex++] = {0, totalVertexSizeBytes, D3DDECLTYPE_D3DCOLOR, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_COLOR, 1};
 		totalVertexSizeBytes += sizeof(D3DCOLOR);
 	}
 
 	// The rather undocumented D3DFVF_FOG flag breaks the convention of all the other FVF flags of appearing "in order" as it actually comes *before* texcoords but *after* position and lighting attributes
 	if (FVF.rawFVF_DWORD & D3DFVF_FOG)
 	{
-		elements[currentElementIndex++] = {0, totalVertexSizeBytes, D3DDECLTYPE_FLOAT1, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_FOG, 0};
+		outVertexElements[currentElementIndex++] = {0, totalVertexSizeBytes, D3DDECLTYPE_FLOAT1, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_FOG, 0};
 		totalVertexSizeBytes += sizeof(float);
 	}
 
@@ -466,19 +434,58 @@ IDirect3DVertexDeclaration9Hook* IDirect3DDevice9Hook::CreateVertexDeclFromFVFCo
 			const unsigned texCoordType = (FVF.rawFVF_DWORD & texCoordTypeMask) >> texCoordTypeShift;
 			const D3DDECLTYPE texCoordTypeFormat = texCoordTypeLookup[texCoordType];
 			const unsigned char texCoordTypeSize = texCoordSizeLookup[texCoordType];
-			elements[currentElementIndex++] = {0, totalVertexSizeBytes, (const BYTE)texCoordTypeFormat, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, x};
+			outVertexElements[currentElementIndex++] = {0, totalVertexSizeBytes, (const BYTE)texCoordTypeFormat, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, x};
 			totalVertexSizeBytes += texCoordTypeSize;
 		}
 		else // Since there are no more bits to read, all texcoords after TEX8 are assumed to be of "float2" format
 		{
 			const D3DDECLTYPE texCoordTypeFormat = D3DDECLTYPE_FLOAT2;
 			const unsigned texCoordTypeSize = sizeof(D3DXVECTOR2);
-			elements[currentElementIndex++] = {0, totalVertexSizeBytes, (const BYTE)texCoordTypeFormat, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, x};
+			outVertexElements[currentElementIndex++] = {0, totalVertexSizeBytes, (const BYTE)texCoordTypeFormat, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, x};
 			totalVertexSizeBytes += texCoordTypeSize;
 		}
 	}
 
-	elements[currentElementIndex] = D3DDECL_END();
+	outVertexElements[currentElementIndex] = D3DDECL_END();
+	return currentElementIndex;
+}
+
+// This is not an official D3D9 function, even though it looks like one. It is only used internally.
+// Most of these conversions came from this MSDN page: https://docs.microsoft.com/en-us/windows/win32/direct3d9/mapping-fvf-codes-to-a-directx-9-declaration
+// The remainder of the conversions came from testing and seeing what happens.
+// The test-set contained all 2^32 unique FVF codes, which should encompass all combinations of FVF codes. For all of those tested codes, the output of this function matches that of what the D3D9 runtime
+// internally uses to convert FVF codes into vertex declarations.
+/*
+Undocumented/underdocumented D3D9 weird things:
+- D3DFVF_FOG is listed as part of D3DFVF_RESERVED2 in the d3d9 headers, but it is listed in the Windows DDK as a separate FVF flag.
+- If the FVF is 0x00000000 then the DrawPrimitive call gets dropped entirely for the fixed-function pipeline (although this could probably still work for the case of a vertex shader rendering a single point using shader constants for data).
+- If both D3DFVF_LASTBETA_UBYTE4 and D3DFVF_LASTBETA_D3DCOLOR are set (probably not a "valid FVF", but the runtime seems to accept it anyway) then D3DFVF_LASTBETA_UBYTE4 takes precedence and D3DFVF_LASTBETA_D3DCOLOR gets ignored.
+- D3DFVF_LASTBETA_UBYTE4 and D3DFVF_LASTBETA_D3DCOLOR are ignored for D3DFVF_XYZ, D3DFVF_XYZRHW, and D3DFVF_XYZW positions (they only work if one of the XYZBn positions are used).
+- D3DFVF_XYZB1 with one of the LASTBETA flags produces a vertex with blend indices but no blend weights.
+- D3DFVF_XYZB5 with none of the LASTBETA flags defined means that you get a "float4 blendweights0, float1 blendindices0" rather than what I would've initially thought ("float4 blendweights0, float1 blendweights1"). I guess B5 always implies indices, although I'm not sure what float indices means.
+- It seems like the runtime handles D3DFVF_XYZB2 specially when it comes to the LASTBETA flags. It seems to *always* want to make the last element of type D3DDECLTYPE_UBYTE4, and then it switches between using D3DDECLTYPE_FLOAT1 and D3DDECLTYPE_D3DCOLOR for the first DWORD.
+*/
+IDirect3DVertexDeclaration9Hook* IDirect3DDevice9Hook::CreateAndSetVertexDeclFromFVFCode(const debuggableFVF FVF)
+{
+#ifndef NO_CACHING_FVF_VERT_DECLS
+	const std::map<DWORD, IDirect3DVertexDeclaration9Hook*>::const_iterator it = FVFToVertDeclCache->find(FVF.rawFVF_DWORD);
+	if (it != FVFToVertDeclCache->end() )
+	{
+		IDirect3DVertexDeclaration9Hook* const fvfVertDecl = it->second;
+		SetVertexDeclaration(fvfVertDecl);
+		return fvfVertDecl;
+	}
+#endif // NO_CACHING_FVF_VERT_DECLS
+
+	// 24 is the worst-case number of decl elements (including the D3DDECL_END delimiter) because we could have this monsterous FVF code:
+	// (D3DFVF_XYZB5 | D3DFVF_LASTBETA_D3DCOLOR | D3DFVF_LASTBETA_UBYTE4 | D3DFVF_NORMAL | D3DFVF_PSIZE | D3DFVF_DIFFUSE | D3DFVF_SPECULAR | TEX15 | D3DFVF_FOG |
+	// D3DFVF_TEXCOORDSIZE4(0) | D3DFVF_TEXCOORDSIZE4(1) | D3DFVF_TEXCOORDSIZE4(2) | D3DFVF_TEXCOORDSIZE4(3) | 
+	// D3DFVF_TEXCOORDSIZE4(4) | D3DFVF_TEXCOORDSIZE4(5) | D3DFVF_TEXCOORDSIZE4(6) | D3DFVF_TEXCOORDSIZE4(7) )
+	// That's 3 tokens from the "position" section (D3DFVF_XYZB5), 4 from the "attributes" section (D3DFVF_NORMAL | D3DFVF_PSIZE | D3DFVF_DIFFUSE | D3DFVF_SPECULAR), one from fog,
+	// 15 tokens from the "texcoords" section (TEX8 and all of the D3DFVF_TEXCOORDSIZE4 macros), and one for the D3DDECL_END token.
+	D3DVERTEXELEMENT9 elements[24] = {0};
+
+	TranslateFVFCodeToVertexElements(FVF, elements);
 
 	IDirect3DVertexDeclaration9Hook* fvfVertexDecl = NULL;
 	if (FAILED(CreateVertexDeclarationFromFVF(elements, (LPDIRECT3DVERTEXDECLARATION9*)&fvfVertexDecl, FVF) ) || !fvfVertexDecl)

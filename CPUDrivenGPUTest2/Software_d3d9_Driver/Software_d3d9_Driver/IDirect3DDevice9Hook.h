@@ -1377,7 +1377,7 @@ public:
 	static void ModifyPresentParameters(D3DPRESENT_PARAMETERS& inOutStruct);
 
 	// This is not an official D3D9 function, even though it looks like one. It is only used internally.
-	IDirect3DVertexDeclaration9Hook* CreateVertexDeclFromFVFCode(const debuggableFVF FVF);
+	IDirect3DVertexDeclaration9Hook* CreateAndSetVertexDeclFromFVFCode(const debuggableFVF FVF);
 
 	mutable DeviceFrameStats frameStats;
 
@@ -1778,6 +1778,9 @@ protected:
 	std::vector<deviceAllocatedBuffer> cachedConstantBuffers;
 	std::vector<GPUCommandList> cachedCommandLists;
 };
+
+// Translates a given FVF code into an array of D3DVERTEXELEMENT9 elements. The return value is the number of used vertex elements:
+const unsigned TranslateFVFCodeToVertexElements(const debuggableFVF FVF, D3DVERTEXELEMENT9 (&outVertexElements)[24]);
 
 const char* const GetAbbreviatedFormatStringFromFormat(const D3DFORMAT fmt);
 

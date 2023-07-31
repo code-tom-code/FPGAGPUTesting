@@ -128,7 +128,7 @@ static void PopulateDropdownListFromStringTable(_In_ HWND hWnd, _In_ const int d
 
 static INT_PTR CALLBACK DriverSettingsDialogProc(_In_ HWND hWnd, _In_ UINT MSG, _In_ WPARAM wParam, _In_ LPARAM lParam)
 {
-	IDirect3DDevice9Hook* const d3d9devhook = (IDirect3DDevice9Hook* const)GetWindowLongPtrA(hWnd, DWL_USER);
+	IDirect3DDevice9Hook* const d3d9devhook = (IDirect3DDevice9Hook* const)GetWindowLongPtrA(hWnd, DWLP_USER);
 	switch (MSG)
 	{
 	case WM_INITDIALOG:
@@ -236,7 +236,7 @@ static INT_PTR CALLBACK DriverSettingsDialogProc(_In_ HWND hWnd, _In_ UINT MSG, 
 				return TRUE;
 			case IDC_CMB_SCANOUTSWIZZLER:
 			{
-				const int comboboxIndex = SendDlgItemMessageA(hWnd, IDC_CMB_SCANOUTSWIZZLER, CB_GETCURSEL, 0, 0);
+				const LRESULT comboboxIndex = SendDlgItemMessageA(hWnd, IDC_CMB_SCANOUTSWIZZLER, CB_GETCURSEL, 0, 0);
 				if (comboboxIndex >= 0)
 				{
 					d3d9devhook->SetScanoutSwizzleR( (const setScanoutPointerCommand::eDisplayChannelSwizzle)comboboxIndex);
@@ -245,7 +245,7 @@ static INT_PTR CALLBACK DriverSettingsDialogProc(_In_ HWND hWnd, _In_ UINT MSG, 
 				return TRUE;
 			case IDC_CMB_SCANOUTSWIZZLEG:
 			{
-				const int comboboxIndex = SendDlgItemMessageA(hWnd, IDC_CMB_SCANOUTSWIZZLEG, CB_GETCURSEL, 0, 0);
+				const LRESULT comboboxIndex = SendDlgItemMessageA(hWnd, IDC_CMB_SCANOUTSWIZZLEG, CB_GETCURSEL, 0, 0);
 				if (comboboxIndex >= 0)
 				{
 					d3d9devhook->SetScanoutSwizzleG( (const setScanoutPointerCommand::eDisplayChannelSwizzle)comboboxIndex);
@@ -254,7 +254,7 @@ static INT_PTR CALLBACK DriverSettingsDialogProc(_In_ HWND hWnd, _In_ UINT MSG, 
 				return TRUE;
 			case IDC_CMB_SCANOUTSWIZZLEB:
 			{
-				const int comboboxIndex = SendDlgItemMessageA(hWnd, IDC_CMB_SCANOUTSWIZZLEB, CB_GETCURSEL, 0, 0);
+				const LRESULT comboboxIndex = SendDlgItemMessageA(hWnd, IDC_CMB_SCANOUTSWIZZLEB, CB_GETCURSEL, 0, 0);
 				if (comboboxIndex >= 0)
 				{
 					d3d9devhook->SetScanoutSwizzleB( (const setScanoutPointerCommand::eDisplayChannelSwizzle)comboboxIndex);
@@ -263,7 +263,7 @@ static INT_PTR CALLBACK DriverSettingsDialogProc(_In_ HWND hWnd, _In_ UINT MSG, 
 				return TRUE;
 			case IDC_CMB_OVERRIDEZ:
 			{
-				const int comboboxIndex = SendDlgItemMessageA(hWnd, IDC_CMB_OVERRIDEZ, CB_GETCURSEL, 0, 0);
+				const LRESULT comboboxIndex = SendDlgItemMessageA(hWnd, IDC_CMB_OVERRIDEZ, CB_GETCURSEL, 0, 0);
 				if (comboboxIndex >= 0)
 				{
 					d3d9devhook->SetDepthOverride( (const DepthOverrideSettings)comboboxIndex);
@@ -272,7 +272,7 @@ static INT_PTR CALLBACK DriverSettingsDialogProc(_In_ HWND hWnd, _In_ UINT MSG, 
 				return TRUE;
 			case IDC_CMB_OVERRIDESTENCIL:
 			{
-				const int comboboxIndex = SendDlgItemMessageA(hWnd, IDC_CMB_OVERRIDESTENCIL, CB_GETCURSEL, 0, 0);
+				const LRESULT comboboxIndex = SendDlgItemMessageA(hWnd, IDC_CMB_OVERRIDESTENCIL, CB_GETCURSEL, 0, 0);
 				if (comboboxIndex >= 0)
 				{
 					d3d9devhook->SetStencilOverride( (const StencilOverrideSettings)comboboxIndex);
@@ -281,7 +281,7 @@ static INT_PTR CALLBACK DriverSettingsDialogProc(_In_ HWND hWnd, _In_ UINT MSG, 
 				return TRUE;
 			case IDC_CMB_OVERRIDEFILLMODE:
 			{
-				const int comboboxIndex = SendDlgItemMessageA(hWnd, IDC_CMB_OVERRIDEFILLMODE, CB_GETCURSEL, 0, 0);
+				const LRESULT comboboxIndex = SendDlgItemMessageA(hWnd, IDC_CMB_OVERRIDEFILLMODE, CB_GETCURSEL, 0, 0);
 				if (comboboxIndex >= 0)
 				{
 					d3d9devhook->SetFillModeOverride( (const FillModeOverrideSettings)comboboxIndex);
@@ -290,7 +290,7 @@ static INT_PTR CALLBACK DriverSettingsDialogProc(_In_ HWND hWnd, _In_ UINT MSG, 
 				return TRUE;
 			case IDC_CMB_OVERRIDESHADEMODE:
 			{
-				const int comboboxIndex = SendDlgItemMessageA(hWnd, IDC_CMB_OVERRIDESHADEMODE, CB_GETCURSEL, 0, 0);
+				const LRESULT comboboxIndex = SendDlgItemMessageA(hWnd, IDC_CMB_OVERRIDESHADEMODE, CB_GETCURSEL, 0, 0);
 				if (comboboxIndex >= 0)
 				{
 					d3d9devhook->SetShadeModeOverride( (const ShadeModeOverrideSettings)comboboxIndex);
@@ -299,7 +299,7 @@ static INT_PTR CALLBACK DriverSettingsDialogProc(_In_ HWND hWnd, _In_ UINT MSG, 
 				return TRUE;
 			case IDC_CMB_OVERRIDECULLMODE:
 			{
-				const int comboboxIndex = SendDlgItemMessageA(hWnd, IDC_CMB_OVERRIDECULLMODE, CB_GETCURSEL, 0, 0);
+				const LRESULT comboboxIndex = SendDlgItemMessageA(hWnd, IDC_CMB_OVERRIDECULLMODE, CB_GETCURSEL, 0, 0);
 				if (comboboxIndex >= 0)
 				{
 					d3d9devhook->SetCullModeOverride( (const CullModeOverrideSettings)comboboxIndex);
@@ -308,7 +308,7 @@ static INT_PTR CALLBACK DriverSettingsDialogProc(_In_ HWND hWnd, _In_ UINT MSG, 
 				return TRUE;
 			case IDC_CMB_OVERRIDEFOGMODE:
 			{
-				const int comboboxIndex = SendDlgItemMessageA(hWnd, IDC_CMB_OVERRIDEFOGMODE, CB_GETCURSEL, 0, 0);
+				const LRESULT comboboxIndex = SendDlgItemMessageA(hWnd, IDC_CMB_OVERRIDEFOGMODE, CB_GETCURSEL, 0, 0);
 				if (comboboxIndex >= 0)
 				{
 					d3d9devhook->SetFogModeOverride( (const FogModeOverrideSettings)comboboxIndex);
@@ -317,7 +317,7 @@ static INT_PTR CALLBACK DriverSettingsDialogProc(_In_ HWND hWnd, _In_ UINT MSG, 
 				return TRUE;
 			case IDC_CMB_OVERRIDEALPHABLEND:
 			{
-				const int comboboxIndex = SendDlgItemMessageA(hWnd, IDC_CMB_OVERRIDEALPHABLEND, CB_GETCURSEL, 0, 0);
+				const LRESULT comboboxIndex = SendDlgItemMessageA(hWnd, IDC_CMB_OVERRIDEALPHABLEND, CB_GETCURSEL, 0, 0);
 				if (comboboxIndex >= 0)
 				{
 					d3d9devhook->SetAlphaBlendOverride( (const AlphaBlendOverrideSettings)comboboxIndex);
@@ -326,7 +326,7 @@ static INT_PTR CALLBACK DriverSettingsDialogProc(_In_ HWND hWnd, _In_ UINT MSG, 
 				return TRUE;
 			case IDC_CMB_OVERRIDEALPHATEST:
 			{
-				const int comboboxIndex = SendDlgItemMessageA(hWnd, IDC_CMB_OVERRIDEALPHATEST, CB_GETCURSEL, 0, 0);
+				const LRESULT comboboxIndex = SendDlgItemMessageA(hWnd, IDC_CMB_OVERRIDEALPHATEST, CB_GETCURSEL, 0, 0);
 				if (comboboxIndex >= 0)
 				{
 					d3d9devhook->SetAlphaTestOverride( (const AlphaTestOverrideSettings)comboboxIndex);
@@ -335,7 +335,7 @@ static INT_PTR CALLBACK DriverSettingsDialogProc(_In_ HWND hWnd, _In_ UINT MSG, 
 				return TRUE;
 			case IDC_CMB_OVERRIDETEXTUREADDRESSING:
 			{
-				const int comboboxIndex = SendDlgItemMessageA(hWnd, IDC_CMB_OVERRIDETEXTUREADDRESSING, CB_GETCURSEL, 0, 0);
+				const LRESULT comboboxIndex = SendDlgItemMessageA(hWnd, IDC_CMB_OVERRIDETEXTUREADDRESSING, CB_GETCURSEL, 0, 0);
 				if (comboboxIndex >= 0)
 				{
 					d3d9devhook->SetTexAddressOverride( (const TexAddressOverrideSettings)comboboxIndex);
@@ -344,7 +344,7 @@ static INT_PTR CALLBACK DriverSettingsDialogProc(_In_ HWND hWnd, _In_ UINT MSG, 
 				return TRUE;
 			case IDC_CMB_OVERRIDETEXTURING:
 			{
-				const int comboboxIndex = SendDlgItemMessageA(hWnd, IDC_CMB_OVERRIDETEXTURING, CB_GETCURSEL, 0, 0);
+				const LRESULT comboboxIndex = SendDlgItemMessageA(hWnd, IDC_CMB_OVERRIDETEXTURING, CB_GETCURSEL, 0, 0);
 				if (comboboxIndex >= 0)
 				{
 					d3d9devhook->SetTexModeOverride( (const TexModeOverrideSettings)comboboxIndex);
@@ -381,6 +381,8 @@ void DriverSettingsDlg::InitDialog(HWND initialCreateFocusWindow, HWND initialCr
 	else
 		driverOptionsDlgParentWnd = initialCreateDeviceWindow;
 
+	return;
+
 	if (driverOptionsDlgParentWnd != NULL)
 	{
 		HMODULE currentDLLModule = NULL;
@@ -392,10 +394,10 @@ void DriverSettingsDlg::InitDialog(HWND initialCreateFocusWindow, HWND initialCr
 #endif
 			return;
 		}
-		driverOptionsDlgWnd = CreateDialogA(currentDLLModule, MAKEINTRESOURCEA(IDD_DRIVEROPTIONS), driverOptionsDlgParentWnd, &DriverSettingsDialogProc);
+		driverOptionsDlgWnd = CreateDialogA(currentDLLModule, MAKEINTRESOURCEA(IDD_DRIVEROPTIONS), /*driverOptionsDlgParentWnd*/NULL, &DriverSettingsDialogProc);
 		if (driverOptionsDlgWnd)
 		{
-			SetWindowLongPtrA(driverOptionsDlgWnd, DWL_USER, (size_t)d3d9devhook);
+			SetWindowLongPtrA(driverOptionsDlgWnd, DWLP_USER, (const LONG_PTR)d3d9devhook);
 			ShowWindow(driverOptionsDlgWnd, SW_SHOW);
 			UpdateWindow(driverOptionsDlgWnd);
 			SendMessageA(driverOptionsDlgWnd, WM_USER_DLG_INIT_MSG, NULL, NULL);
@@ -409,7 +411,7 @@ void DriverSettingsDlg::UpdateDialog()
 	if (driverOptionsDlgWnd != NULL)
 	{
 		MSG msg = {0};
-		while (PeekMessageA(&msg, NULL, 0, 0, PM_REMOVE) )
+		while (PeekMessageA(&msg, driverOptionsDlgWnd, 0, 0, PM_REMOVE) )
 		{
 			// Dispatch message to dialog box window if it's a dialog message
 			if (IsDialogMessageA(driverOptionsDlgWnd, &msg) )

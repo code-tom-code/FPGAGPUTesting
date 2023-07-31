@@ -20,6 +20,8 @@ void PrintDebugVertexShaderName(char* const outString, const char* const inName)
 
 void IDirect3DVertexShader9Hook::CreateVertexShader(const DWORD* const pFunction)
 {
+	isPretransformPassthroughVS = false;
+
 	if (!pFunction)
 		return;
 
@@ -124,11 +126,53 @@ void IDirect3DVertexShader9Hook::CreateVertexShader(const DWORD* const pFunction
 	parentDevice->UnlockDeviceCS();
 
 #ifdef _DEBUG
-	const char* const jitName = ConstructShaderJITName(vertexShaderInfo);
+	const char* const jitName = ConstructShaderJITName(tempVertexShaderInfo);
 	PrintDebugVertexShaderName(debugObjectName, jitName);
 #endif
 
 	//JitLoadShader();
+}
+
+static const unsigned GetVertexElementsHash(const DebuggableD3DVERTEXELEMENT9* const pElements, const unsigned numElements)
+{
+	unsigned hashResult = 0;
+	const unsigned bytesSize = sizeof(DebuggableD3DVERTEXELEMENT9) * numElements;
+	const BYTE* const bytesData = (const BYTE* const)pElements;
+	for (unsigned x = 0; x < bytesSize; ++x)
+	{
+		hashResult ^= bytesData[x];
+		hashResult = RotateLeft32(hashResult, 7);
+	}
+	return hashResult;
+}
+
+void IDirect3DVertexShader9Hook::CreatePretransformPassthroughVertexShader(const DebuggableD3DVERTEXELEMENT9* const pElements, const unsigned numElements)
+{
+	isPretransformPassthroughVS = true;
+
+	outPositionRegisterIndex = 0;
+	outColor0RegisterIndex = 1; // This is oD0
+	outTexcoord0RegisterIndex = 2; // This is oT0
+
+	parentDevice->LockDeviceCS();
+	aliveVertShaders.push_back(this);
+	parentDevice->UnlockDeviceCS();
+
+	DebuggableD3DVERTEXELEMENT9* const passthroughElementsCopy = (DebuggableD3DVERTEXELEMENT9* const)malloc(sizeof(DebuggableD3DVERTEXELEMENT9) * numElements);
+	memcpy(passthroughElementsCopy, pElements, sizeof(DebuggableD3DVERTEXELEMENT9) * numElements);
+	passthroughVSElements = passthroughElementsCopy;
+	passthroughVSElementsCount = numElements;
+
+	// Our pretransformed vertex shader is hardcoded to use the c0 and c1 constant registers:
+	vertexShaderInfo.usedConstantsF.push_back(0);
+	vertexShaderInfo.usedConstantsF.push_back(1);
+
+#ifdef _DEBUG
+#pragma warning(push)
+#pragma warning(disable:4996)
+	sprintf(debugObjectName, "PretransformedPassthroughVS_0x%08X", GetVertexElementsHash(pElements, numElements) );
+#pragma warning(pop)
+#endif
 }
 
 /*virtual*/ IDirect3DVertexShader9Hook::~IDirect3DVertexShader9Hook()
@@ -152,6 +196,18 @@ void IDirect3DVertexShader9Hook::CreateVertexShader(const DWORD* const pFunction
 	}
 #endif
 	parentDevice->UnlockDeviceCS();
+
+	free( (void* const)deviceCompiledVertexShaderBytecode);
+	deviceCompiledVertexShaderBytecode = NULL;
+
+	free( (void* const)passthroughVSElements);
+	passthroughVSElements = NULL;
+	passthroughVSElementsCount = 0;
+
+	if (deviceCompiledVertexShaderBytes != NULL)
+	{
+		GPUFree( (gpuvoid* const)deviceCompiledVertexShaderBytes);
+	}
 
 	shaderBytecode.clear();
 #ifdef WIPE_ON_DESTRUCT_D3DHOOKOBJECT
@@ -243,88 +299,114 @@ void IDirect3DVertexShader9Hook::UploadShaderBytecodeToDevice(gpuvoid* const gpu
 	}
 
 	IBaseDeviceComms* const deviceComms = IBaseDeviceComms::GetGlobalDeviceComms();
-	deviceComms->DeviceMemCopy(gpuUploadShaderAddress, &(deviceCompiledVertexShaderBytecode->deviceInstructions), deviceCompiledVertexShaderBytecode->deviceShaderInfo.deviceInstructionTokenCount * sizeof(instructionSlot) );
+	deviceComms->DeviceMemCopy(gpuUploadShaderAddress, &(deviceCompiledVertexShaderBytecode->shaderHeader), deviceCompiledVertexShaderBytecode->deviceShaderInfo.deviceInstructionTokenCount * sizeof(instructionSlot) + sizeof(DeviceShaderHeader) );
 }
 
-void IDirect3DVertexShader9Hook::JitLoadShader()
+void IDirect3DVertexShader9Hook::JitLoadShader(const DWORD FVF /*= 0x00000000*/)
 {
-	const char* const jitName = ConstructShaderJITName(vertexShaderInfo);
+	DeviceBytecode* compiledVertexShaderBytecode = NULL;
 
-	triedJit = true;
+	if (isPretransformPassthroughVS == false)
+	{
+		const char* const jitName = ConstructShaderJITName(vertexShaderInfo);
+
+		triedJit = true;
 
 #ifndef FORCE_INTERPRETED_VERTEX_SHADER
-	char jitFilenameBuffer[MAX_PATH] = {0};
+		char jitFilenameBuffer[MAX_PATH] = {0};
 #pragma warning(push)
 #pragma warning(disable:4996)
-	sprintf(jitFilenameBuffer, "%s\\%s.dll", shaderJITTempDirectory, jitName);
+		sprintf(jitFilenameBuffer, "%s\\%s.dll", shaderJITTempDirectory, jitName);
 #pragma warning(pop)
-	HMODULE hm = LoadLibraryA(jitFilenameBuffer);
+		HMODULE hm = LoadLibraryA(jitFilenameBuffer);
 
-	static const char* const shaderMainExportName = "@VertexShaderMain@4";
-	static const char* const shaderMainExportName4 = "@VertexShaderMain4@4";
+		static const char* const shaderMainExportName = "@VertexShaderMain@4";
+		static const char* const shaderMainExportName4 = "@VertexShaderMain4@4";
 
-	if (hm)
-	{
-		jitShaderMain = (VSEntry)GetProcAddress(hm, shaderMainExportName);
-		jitShaderMain4 = (VSEntry)GetProcAddress(hm, shaderMainExportName4);
-		if (!jitShaderMain)
+		if (hm)
 		{
-			DbgBreakPrint("Error: Cannot find VertexShaderMain in existing JIT DLL");
-		} 
-		else if (!jitShaderMain4)
+			jitShaderMain = (VSEntry)GetProcAddress(hm, shaderMainExportName);
+			jitShaderMain4 = (VSEntry)GetProcAddress(hm, shaderMainExportName4);
+			if (!jitShaderMain)
+			{
+				DbgBreakPrint("Error: Cannot find VertexShaderMain in existing JIT DLL");
+			} 
+			else if (!jitShaderMain4)
+			{
+				DbgPrint("Warning: Cannot find VertexShaderMain4 in existing JIT DLL");
+			}
+		}
+		else
 		{
-			DbgPrint("Warning: Cannot find VertexShaderMain4 in existing JIT DLL");
+			if (!JITNewShader(vertexShaderInfo, jitName) )
+			{
+				DbgBreakPrint("Error: Failed to JIT Vertex Shader");
+			}
+			else
+			{
+				HMODULE hm2 = LoadLibraryA(jitFilenameBuffer);
+				if (!hm2)
+				{
+					DbgBreakPrint("Error: Failed to load recently JIT'd Vertex Shader");
+				}
+				else
+				{
+					jitShaderMain = (VSEntry)GetProcAddress(hm2, shaderMainExportName);
+					jitShaderMain4 = (VSEntry)GetProcAddress(hm2, shaderMainExportName4);
+					if (!jitShaderMain)
+					{
+						DbgBreakPrint("Error: Cannot find VertexShaderMain in newly created JIT DLL");
+					} 
+					else if (!jitShaderMain4)
+					{
+						DbgPrint("Warning: Cannot find VertexShaderMain4 in newly created JIT DLL");
+					}
+				}
+			}
+		}
+#endif // #ifndef FORCE_INTERPRETED_VERTEX_SHADER
+
+		ShaderCompileOptions compileFlags = (ShaderCompileOptions)(SCOption_VS_AppendViewportTransform | SCOption_VS_AppendDivideByW | SCOption_VS_OutputCompressionEnable);
+#ifdef _DEBUG
+		compileFlags = (ShaderCompileOptions)(compileFlags | SCOption_OutputEverything);
+#else
+		compileFlags = (ShaderCompileOptions)(compileFlags | SCOption_Optimize_D3DOptimizations | SCOption_Optimize_DeviceOptimizations | SCOption_OutputEverything);
+#endif
+
+		if (CompileShaderInfoToDeviceBytecode(&GetShaderInfo(), compileFlags, &compiledVertexShaderBytecode, jitName) != ShaderCompile_OK)
+		{
+#ifdef _DEBUG
+			__debugbreak(); // Shader compilation to device bytecode failed!
+#endif
+			return;
 		}
 	}
 	else
 	{
-		if (!JITNewShader(vertexShaderInfo, jitName) )
-		{
-			DbgBreakPrint("Error: Failed to JIT Vertex Shader");
-		}
-		else
-		{
-			HMODULE hm2 = LoadLibraryA(jitFilenameBuffer);
-			if (!hm2)
-			{
-				DbgBreakPrint("Error: Failed to load recently JIT'd Vertex Shader");
-			}
-			else
-			{
-				jitShaderMain = (VSEntry)GetProcAddress(hm2, shaderMainExportName);
-				jitShaderMain4 = (VSEntry)GetProcAddress(hm2, shaderMainExportName4);
-				if (!jitShaderMain)
-				{
-					DbgBreakPrint("Error: Cannot find VertexShaderMain in newly created JIT DLL");
-				} 
-				else if (!jitShaderMain4)
-				{
-					DbgPrint("Warning: Cannot find VertexShaderMain4 in newly created JIT DLL");
-				}
-			}
-		}
-	}
-#endif // #ifndef FORCE_INTERPRETED_VERTEX_SHADER
-
-	ShaderCompileOptions compileFlags = (ShaderCompileOptions)(SCOption_VS_AppendViewportTransform | SCOption_VS_AppendDivideByW | SCOption_VS_OutputCompressionEnable);
+		ShaderCompileOptions compileFlags = (ShaderCompileOptions)(SCOption_VS_GeneratePassthroughShader);
 #ifdef _DEBUG
-	compileFlags = (ShaderCompileOptions)(compileFlags | SCOption_OutputEverything);
-
-	// Just for testing:
-	//compileFlags = (ShaderCompileOptions)(compileFlags | SCOption_VS_GeneratePassthroughShader); // Force special shader path
-	//compileFlags = (ShaderCompileOptions)(compileFlags & (~SCOption_VS_OutputCompressionEnable) ); // Remove output compresion
+		compileFlags = (ShaderCompileOptions)(compileFlags | SCOption_OutputEverything);
 #else
-	compileFlags = (ShaderCompileOptions)(compileFlags | SCOption_Optimize_D3DOptimizations | SCOption_Optimize_DeviceOptimizations | SCOption_OutputEverything);
+		compileFlags = (ShaderCompileOptions)(compileFlags | SCOption_Optimize_D3DOptimizations | SCOption_Optimize_DeviceOptimizations | SCOption_OutputEverything);
 #endif
-	if (CompileShaderInfoToDeviceBytecode(&GetShaderInfo(), compileFlags, &deviceCompiledVertexShaderBytecode, jitName) != ShaderCompile_OK)
-	{
+		char shaderNameBuffer[64] = {0};
+#pragma warning(push)
+#pragma warning(disable:4996)
+	sprintf(shaderNameBuffer, "PretransformedPassthroughVS_0x%08X", GetVertexElementsHash(passthroughVSElements, passthroughVSElementsCount) );
+#pragma warning(pop)
+
+		if (GenerateShaderForPretransformedVertices(reinterpret_cast<const D3DVERTEXELEMENT9* const>(passthroughVSElements), passthroughVSElementsCount - 1, compileFlags, &compiledVertexShaderBytecode, shaderNameBuffer) != ShaderCompile_OK)
+		{
 #ifdef _DEBUG
-		__debugbreak(); // Shader compilation to device bytecode failed!
+			__debugbreak(); // Shader generation failed!
 #endif
-		return;
+			return;
+		}
 	}
 
-	gpuvoid* allocVertexShaderBytes = GPUAlloc(deviceCompiledVertexShaderBytecode->deviceShaderInfo.deviceInstructionTokenCount * sizeof(instructionSlot), 
+	deviceCompiledVertexShaderBytecode = compiledVertexShaderBytecode;
+
+	gpuvoid* allocVertexShaderBytes = GPUAlloc(deviceCompiledVertexShaderBytecode->deviceShaderInfo.deviceInstructionTokenCount * sizeof(instructionSlot) + sizeof(DeviceShaderHeader), 
 		deviceCompiledVertexShaderBytecode->deviceShaderInfo.deviceInstructionTokenCount, 0, 0, 0, GPUVAT_ShaderInstructionsMemory, GPUFMT_VertexShaderInstructions
 #ifdef _DEBUG
 		, debugObjectName

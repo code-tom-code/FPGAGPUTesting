@@ -12,8 +12,8 @@
 #elif ENABLE_PIX_PROFILER
 	#define USE_PIX 1
 	// TODO: Don't hardcode this path
-	#include "C:\\Users\\Tom\\Documents\\Visual Studio 2013\\Projects\\Software_d3d9\\trunk\\Software_d3d9\\WinPixEventRuntime\\pix3.h"
-	#pragma comment(lib, "C:\\Users\\Tom\\Documents\\Visual Studio 2013\\Projects\\Software_d3d9\\trunk\\Software_d3d9\\WinPixEventRuntime\\WinPixEventRuntime.lib")
+	#include "C:\\Users\\Tom\\Documents\\Visual Studio 2017\\Projects\\Software_d3d9_Driver\\Software_d3d9_Driver\\WinPixEventRuntime\\pix3.h"
+	#pragma comment(lib, "C:\\Users\\Tom\\Documents\\Visual Studio 2017\\Projects\\Software_d3d9_Driver\\Software_d3d9_Driver\\WinPixEventRuntime\\WinPixEventRuntime.lib")
 
 	#define SIMPLE_DYNAMIC_STRING_SCOPE(dynamicStringScopeName) PIXScopedEvent(PIX_COLOR_DEFAULT, dynamicStringScopeName)
 	#define SIMPLE_NAME_SCOPE(scopeName) PIXScopedEvent(PIX_COLOR_DEFAULT, scopeName)

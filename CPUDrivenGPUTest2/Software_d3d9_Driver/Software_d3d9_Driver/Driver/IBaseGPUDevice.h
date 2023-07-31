@@ -22,7 +22,9 @@ struct CachedVertexStream
 			rhs.isD3DCOLOR == isD3DCOLOR &&
 			rhs.shaderInputRegIndex == shaderInputRegIndex &&
 			rhs.dwordStride == dwordStride &&
-			rhs.dwordOffset == dwordOffset);
+			rhs.dwordOffset == dwordOffset &&
+			rhs.usageType == usageType &&
+			rhs.usageIndex == usageIndex);
 	}
 
 	void Reset(const BYTE _streamID)
@@ -38,6 +40,8 @@ struct CachedVertexStream
 	BYTE shaderInputRegIndex = 0;
 	BYTE dwordStride = 0;
 	BYTE dwordOffset = 0;
+	eInputUsageType usageType = UT_Position;
+	BYTE usageIndex = 0;
 };
 
 struct ROPBlock
@@ -214,7 +218,7 @@ __declspec(align(16) ) struct IBaseGPUDevice
 		deviceComms = NULL;
 	}
 
-	HRESULT __stdcall DeviceClearRendertarget(gpuvoid* const renderTargetMemory, const D3DCOLOR clearColor);
+	HRESULT __stdcall DeviceClearRendertarget(gpuvoid* const renderTargetMemory, const D3DCOLOR clearColor, const unsigned width, const unsigned height);
 
 	HRESULT __stdcall DeviceClearDepthStencil(gpuvoid* const zStencilMemory, const bool bDoClearDepth, const bool bDoClearStencil, 
 		const float clearDepth = 1.0f, const BYTE clearStencil = 0x00);
@@ -250,7 +254,7 @@ __declspec(align(16) ) struct IBaseGPUDevice
 	HRESULT __stdcall DeviceSetVertexShaderStartAddr(const unsigned short shaderStartAddress);
 
 	HRESULT __stdcall DeviceSetVertexStreamData(const gpuvoid* const vertexStreamData, const unsigned vertexBufferLengthBytes, const BYTE dwordCount, const BYTE streamID, 
-		const bool isD3DCOLOR, const BYTE shaderInputRegIndex, const BYTE dwordStride, const BYTE dwordOffset, const BYTE numVertexStreamsTotal);
+		const bool isD3DCOLOR, const BYTE shaderInputRegIndex, const BYTE dwordStride, const BYTE dwordOffset, const BYTE numVertexStreamsTotal, const D3DDECLUSAGE usage, const BYTE usageIndex);
 
 	HRESULT __stdcall DeviceSetConstantData(const gpuvoid* const constantBufferMemory, const float4* const baseCPUFloat4RegisterFile, const BYTE startingRegisterIndex, const BYTE numFloat4Registers);
 

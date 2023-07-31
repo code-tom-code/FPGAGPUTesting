@@ -98,10 +98,42 @@ static const BYTE GetLog2TexDimension(const unsigned inTexDim)
 	}
 }
 
-HRESULT __stdcall IBaseGPUDevice::DeviceClearRendertarget(gpuvoid* const renderTargetMemory, const D3DCOLOR clearColor)
+HRESULT __stdcall IBaseGPUDevice::DeviceClearRendertarget(gpuvoid* const renderTargetMemory, const D3DCOLOR clearColor, const unsigned width, const unsigned height)
 {
 	if (!ValidateAddress(renderTargetMemory) )
 		return E_INVALIDARG;
+
+	if (width == 0)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Invalid for a render target to have 0-dimensions!
+#endif
+		return E_INVALIDARG;
+	}
+
+	if (height == 0)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Invalid for a render target to have 0-dimensions!
+#endif
+		return E_INVALIDARG;
+	}
+
+	if (width > 1024)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Out of range render target size!
+#endif
+		return E_INVALIDARG;
+	}
+
+	if (height > 1024)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Out of range render target size!
+#endif
+		return E_INVALIDARG;
+	}
 
 	if (DoCacheDeviceState() )
 	{
@@ -114,7 +146,7 @@ HRESULT __stdcall IBaseGPUDevice::DeviceClearRendertarget(gpuvoid* const renderT
 		}
 	}
 
-	if (!ValidateMemoryRangeExistsInsideAllocation(renderTargetMemory, 640 * 480 * sizeof(D3DCOLOR) ) )
+	if (!ValidateMemoryRangeExistsInsideAllocation(renderTargetMemory, width * height * sizeof(D3DCOLOR) ) )
 	{
 #ifdef _DEBUG
 		__debugbreak();
@@ -1206,11 +1238,11 @@ HRESULT __stdcall IBaseGPUDevice::DeviceEndFrameAndFinishEventRecording(const gp
 	DeviceWaitForIdle(waitForDeviceIdleCommand::waitForFullPipelineFlush);
 
 	// Offset our reads by +32 bytes to account for the fact that the events header block comes first followed by the actual event data after that
-	printf("Downloading %u bytes from device for event timestamps (GPU 0x%08X -> CPU 0x%08X)...\n", sizeof(EventTimestamp) * NUM_GPU_EVENT_SYSTEMS_TRACKED * MAX_NUM_EVENTS_PER_FRAME, reinterpret_cast<const DWORD>( (const BYTE* const)eventTimestampsMemory + sizeof(EventDataHeaderBlock) ), reinterpret_cast<const DWORD>(outReadbackEventTimestamps) );
+	printf("Downloading %u bytes from device for event timestamps (GPU 0x%08X -> CPU 0x%08X)...\n", (const DWORD)(sizeof(EventTimestamp) * NUM_GPU_EVENT_SYSTEMS_TRACKED * MAX_NUM_EVENTS_PER_FRAME), reinterpret_cast<const DWORD>( (const BYTE* const)eventTimestampsMemory + sizeof(EventDataHeaderBlock) ), reinterpret_cast<const DWORD>(outReadbackEventTimestamps) );
 	deviceComms->ReadFromDevice( (const gpuvoid* const)( (const BYTE* const)eventTimestampsMemory + sizeof(EventDataHeaderBlock) ), outReadbackEventTimestamps, sizeof(EventTimestamp) * NUM_GPU_EVENT_SYSTEMS_TRACKED * MAX_NUM_EVENTS_PER_FRAME);
-	printf("Downloading %u bytes from device for event orderings (GPU 0x%08X -> CPU 0x%08X)...\n", sizeof(USHORT) * NUM_GPU_EVENT_SYSTEMS_TRACKED * MAX_NUM_EVENTS_PER_FRAME, reinterpret_cast<const DWORD>( (const BYTE* const)eventOrderingMemory + sizeof(EventDataHeaderBlock) ), reinterpret_cast<const DWORD>(outReadbackEventOrderings) );
+	printf("Downloading %u bytes from device for event orderings (GPU 0x%08X -> CPU 0x%08X)...\n", (const DWORD)(sizeof(USHORT) * NUM_GPU_EVENT_SYSTEMS_TRACKED * MAX_NUM_EVENTS_PER_FRAME), reinterpret_cast<const DWORD>( (const BYTE* const)eventOrderingMemory + sizeof(EventDataHeaderBlock) ), reinterpret_cast<const DWORD>(outReadbackEventOrderings) );
 	deviceComms->ReadFromDevice( (const gpuvoid* const)( (const BYTE* const)eventOrderingMemory + sizeof(EventDataHeaderBlock) ), outReadbackEventOrderings, sizeof(USHORT) * NUM_GPU_EVENT_SYSTEMS_TRACKED * MAX_NUM_EVENTS_PER_FRAME);
-	printf("Downloading %u bytes from device for event block header (GPU 0x%08X -> CPU 0x%08X)...\n", sizeof(EventDataHeaderBlock), reinterpret_cast<const DWORD>(eventTimestampsMemory), reinterpret_cast<const DWORD>(outReadbackEventsHeaderBlock) );
+	printf("Downloading %u bytes from device for event block header (GPU 0x%08X -> CPU 0x%08X)...\n", (const DWORD)(sizeof(EventDataHeaderBlock) ), reinterpret_cast<const DWORD>(eventTimestampsMemory), reinterpret_cast<const DWORD>(outReadbackEventsHeaderBlock) );
 	deviceComms->ReadFromDevice(eventTimestampsMemory, outReadbackEventsHeaderBlock, sizeof(EventDataHeaderBlock) );
 
 	setStatsEventConfigCommand configNoEventFrame;
@@ -1405,7 +1437,7 @@ HRESULT __stdcall IBaseGPUDevice::DeviceLoadVertexShader(const gpuvoid* const ve
 		return E_INVALIDARG;
 	}
 
-	if (!ValidateMemoryRangeExistsInsideAllocation(vertexShaderMemory, numShaderTokensToLoad * sizeof(instructionSlot) ) )
+	if (!ValidateMemoryRangeExistsInsideAllocation(vertexShaderMemory, numShaderTokensToLoad * sizeof(instructionSlot) + sizeof(DeviceShaderHeader) ) )
 	{
 #ifdef _DEBUG
 		__debugbreak();
@@ -1417,7 +1449,7 @@ HRESULT __stdcall IBaseGPUDevice::DeviceLoadVertexShader(const gpuvoid* const ve
 		return S_OK;
 
 	loadShaderInstructionsCommand loadShaderInstructions;
-	loadShaderInstructions.shaderStartAddress = (const DWORD)vertexShaderMemory;
+	loadShaderInstructions.shaderStartAddress = (const DWORD)vertexShaderMemory + sizeof(DeviceShaderHeader); // Advance past the shader header block, since the GPU won't be reading that part into the instruction-RAM
 	loadShaderInstructions.shaderLengthTokens = numShaderTokensToLoad;
 	loadShaderInstructions.shaderLoadTargetOffset = targetAddressToLoadTo;
 	loadShaderInstructions.checksum = command::ComputeChecksum(&loadShaderInstructions, sizeof(loadShaderInstructions) );
@@ -1444,6 +1476,8 @@ HRESULT __stdcall IBaseGPUDevice::DeviceLoadVertexShader(const gpuvoid* const ve
 		currentCachedState.deviceCachedVertexStreams[0].isD3DCOLOR = false;
 		currentCachedState.deviceCachedVertexStreams[0].streamID = 0;
 		currentCachedState.deviceCachedVertexStreams[0].shaderInputRegIndex = 0;
+		currentCachedState.deviceCachedVertexStreams[0].usageType = UT_Position;
+		currentCachedState.deviceCachedVertexStreams[0].usageIndex = 0;
 
 		currentCachedState.deviceCachedVertexShader = vertexShaderMemory;
 	}
@@ -1490,7 +1524,7 @@ HRESULT __stdcall IBaseGPUDevice::DeviceSetVertexShaderStartAddr(const unsigned 
 }
 
 HRESULT __stdcall IBaseGPUDevice::DeviceSetVertexStreamData(const gpuvoid* const vertexStreamData, const unsigned vertexBufferLengthBytes, const BYTE dwordCount, const BYTE streamID, 
-	const bool isD3DCOLOR, const BYTE shaderInputRegIndex, const BYTE dwordStride, const BYTE dwordOffset, const BYTE numVertexStreamsTotal)
+	const bool isD3DCOLOR, const BYTE shaderInputRegIndex, const BYTE dwordStride, const BYTE dwordOffset, const BYTE numVertexStreamsTotal, const D3DDECLUSAGE usage, const BYTE usageIndex)
 {
 	if (!ValidateAddress(vertexStreamData) )
 		return E_INVALIDARG;
@@ -1499,6 +1533,22 @@ HRESULT __stdcall IBaseGPUDevice::DeviceSetVertexStreamData(const gpuvoid* const
 	{
 #ifdef _DEBUG
 		__debugbreak();
+#endif
+		return E_INVALIDARG;
+	}
+
+	if (usage < D3DDECLUSAGE_POSITION || usage > D3DDECLUSAGE_SAMPLE)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Out of range usage type!
+#endif
+		return E_INVALIDARG;
+	}
+
+	if (usageIndex > 7)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Out of range usage index!
 #endif
 		return E_INVALIDARG;
 	}
@@ -1591,18 +1641,28 @@ HRESULT __stdcall IBaseGPUDevice::DeviceSetVertexStreamData(const gpuvoid* const
 	compareVertexStream.shaderInputRegIndex = shaderInputRegIndex;
 	compareVertexStream.dwordStride = dwordStride;
 	compareVertexStream.dwordOffset = dwordOffset;
+	compareVertexStream.usageType = ConvertToDeviceDeclUsage(usage);
+	compareVertexStream.usageIndex = usageIndex;
 
 	//if (DoCacheDeviceState() && currentCachedState.deviceCachedVertexStreams[streamID] == compareVertexStream) // TODO: DO we actually want to cache this? What if we have a dynamic vertex buffer?
 		//return S_OK;
 
 	setVertexStreamDataCommand setVertexStreamData;
 	setVertexStreamData.streamBaseAddress = (const DWORD)vertexStreamData;
-	setVertexStreamData.dwordCount = dwordCount - 1; // Convert from 0-based to 1-based element DWORD count here
+	setVertexStreamData.dwordCount = (const setVertexStreamDataCommand::dwordCountType)(dwordCount - 1); // Convert from 0-based to 1-based element DWORD count here
 	setVertexStreamData.streamID = streamID;
-	setVertexStreamData.isD3DCOLOR = isD3DCOLOR;
+	setVertexStreamData.isD3DCOLOR = isD3DCOLOR ? TRUE : FALSE;
 	setVertexStreamData.shaderInputRegIndex = shaderInputRegIndex;
 	setVertexStreamData.dwordStride = dwordStride;
 	setVertexStreamData.dwordOffset = dwordOffset;
+	setVertexStreamData.inputUsage = ConvertToDeviceDeclUsage(usage);
+#ifdef _DEBUG
+	if (usageIndex > 1)
+	{
+		__debugbreak(); // We technically don't support usage indices beyond 1 (for COLOR1 or TEXCOORD1)
+	}
+#endif
+	setVertexStreamData.inputUsageIndex = usageIndex;
 	setVertexStreamData.numVertexStreamsTotal = numVertexStreamsTotal;
 	setVertexStreamData.checksum = command::ComputeChecksum(&setVertexStreamData, sizeof(setVertexStreamData) );
 #ifdef _DEBUG

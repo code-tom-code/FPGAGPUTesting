@@ -109,8 +109,8 @@ enum ePrimTopology : unsigned char
 	primTop_LineList = 1, // Not yet implemented
 	primTop_LineStrip = 2, // Not yet implemented
 	primTop_TriangleList = 3,
-	primTop_TriangleStrip = 4, // Not yet implemented
-	primTop_TriangleFan = 5, // Not yet implemented
+	primTop_TriangleStrip = 4,
+	primTop_TriangleFan = 5,
 	primTop_ScreenAlignedQuad = 6, // Not yet implemented
 
 	primTop_NUM_PRIM_TOPOLOGIES // This must always be last
@@ -130,7 +130,7 @@ enum eIndexFormat : unsigned char
 	ibfmt_noIndices = 0,
 	ibfmt_index8 = 1, // Not yet implemented
 	ibfmt_index16 = 2,
-	ibfmt_index32 = 3, // Not yet implemented
+	ibfmt_index32 = 3,
 
 	ibfmt_NUM_INDEX_FORMATS // This must always be last
 };

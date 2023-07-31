@@ -2,6 +2,7 @@
 #include "DriverShaderCompiler.h"
 #include "..\Software_d3d9_Driver\ShaderAnalysis.h"
 #include "..\Software_d3d9_Driver\Driver\GPUDeviceLimits.h"
+#include "..\Software_d3d9_Driver\Driver\GPUTypes.h"
 #include "AssembleDXToken.h"
 #include "AssembleDXHelpers.h"
 #include "DeviceConversions.h"
@@ -249,7 +250,7 @@ const ShaderCompileResultCode ScalarizeVectorShader(const ShaderInfo& inDXShader
 
 	ShaderCompileResultCode result = ShaderCompile_OK;
 
-	const unsigned numVectorInstructions = inVectorInstructions.size();
+	const unsigned numVectorInstructions = (const unsigned)inVectorInstructions.size();
 	for (unsigned vectorInstructionIndex = 0; vectorInstructionIndex < numVectorInstructions; ++vectorInstructionIndex)
 	{
 		const instructionToken* const currentVectorInstruction = inVectorInstructions[vectorInstructionIndex];
@@ -423,7 +424,7 @@ const ShaderCompileResultCode ScalarizeVectorShader(const ShaderInfo& inDXShader
 						AppendNewTokenToTokenStream(outScalarizedInstructions, AssembleDestParameterToken(inDXShaderInfo, aliasedInstruction->srcDst.dst.GetRegisterType(), aliasedInstruction->srcDst.dst.GetRegisterIndex(), dstWriteMask, 
 							(const resultModifierType)aliasedInstruction->srcDst.dst.GetResultModifier(), aliasedInstruction->srcDst.dst.GetResultShiftScale(), aliasedInstruction->srcDst.dst.GetRelativeAddressingType() ? true : false) ); // dst
 						AppendNewTokenToTokenStream(outScalarizedInstructions, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, D3DSPR_TEMP, freeGPRRegIndex, src0Swizzle, 
-							(const debuggableSourceModifierType)aliasedInstruction->srcDst.src0.GetSourceModifiersUnshifted(), aliasedInstruction->srcDst.src0.GetRelativeAddressingType() ? true : false) ); // src0
+							(const debuggableSourceModifierType)aliasedInstruction->srcDst.src0.GetSourceModifiers(), aliasedInstruction->srcDst.src0.GetRelativeAddressingType() ? true : false) ); // src0
 					}
 				}
 			}
@@ -441,7 +442,7 @@ const ShaderCompileResultCode ScalarizeVectorShader(const ShaderInfo& inDXShader
 						AppendNewTokenToTokenStream(outScalarizedInstructions, AssembleDestParameterToken(inDXShaderInfo, aliasedInstruction->srcDst.dst.GetRegisterType(), aliasedInstruction->srcDst.dst.GetRegisterIndex(), writeChannelMask, 
 							(const resultModifierType)aliasedInstruction->srcDst.dst.GetResultModifier(), aliasedInstruction->srcDst.dst.GetResultShiftScale(), aliasedInstruction->srcDst.dst.GetRelativeAddressingType() ? true : false) ); // dst
 						AppendNewTokenToTokenStream(outScalarizedInstructions, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, aliasedInstruction->srcDst.src0.GetRegisterType(), aliasedInstruction->srcDst.src0.GetRegisterIndex(),
-							src0Swizzle, (const debuggableSourceModifierType)aliasedInstruction->srcDst.src0.GetSourceModifiersUnshifted(), aliasedInstruction->srcDst.src0.GetRelativeAddressingType() ? true : false) ); // src0
+							src0Swizzle, (const debuggableSourceModifierType)aliasedInstruction->srcDst.src0.GetSourceModifiers(), aliasedInstruction->srcDst.src0.GetRelativeAddressingType() ? true : false) ); // src0
 					}
 				}
 			}
@@ -485,7 +486,7 @@ const ShaderCompileResultCode ScalarizeVectorShader(const ShaderInfo& inDXShader
 						AppendNewTokenToTokenStream(outScalarizedInstructions, AssembleDestParameterToken(inDXShaderInfo, aliasedInstruction->srcDst.dst.GetRegisterType(), aliasedInstruction->srcDst.dst.GetRegisterIndex(), copyChannelMask, 
 							(const resultModifierType)aliasedInstruction->srcDst.dst.GetResultModifier(), aliasedInstruction->srcDst.dst.GetResultShiftScale(), aliasedInstruction->srcDst.dst.GetRelativeAddressingType() ? true : false) ); // dst
 						AppendNewTokenToTokenStream(outScalarizedInstructions, AssembleSourceParameterTokenReplicateSwizzle(inDXShaderInfo, aliasedInstruction->srcDst.dst.GetRegisterType(), aliasedInstruction->srcDst.dst.GetRegisterIndex(),
-							(const debuggableSwizzleChannel)firstWriteMaskChannelIndex, (const debuggableSourceModifierType)aliasedInstruction->srcDst.src0.GetSourceModifiersUnshifted(), aliasedInstruction->srcDst.src0.GetRelativeAddressingType() ? true : false) ); // src0
+							(const debuggableSwizzleChannel)firstWriteMaskChannelIndex, (const debuggableSourceModifierType)aliasedInstruction->srcDst.src0.GetSourceModifiers(), aliasedInstruction->srcDst.src0.GetRelativeAddressingType() ? true : false) ); // src0
 					}
 				}
 			}
@@ -566,7 +567,7 @@ const constantBufferRegisterSpace FindLargestUnusedConstBufferRegisterSpace(cons
 {
 	// Set up our bitmap:
 	unsigned usedConstantSpace[256 / 32] = {0};
-	const unsigned numUsedConstants = inDXShaderInfo.usedConstantsF.size();
+	const unsigned numUsedConstants = (const unsigned)inDXShaderInfo.usedConstantsF.size();
 	for (unsigned x = 0; x < inDXShaderInfo.usedConstantsF.size(); ++x)
 	{
 		const unsigned short thisRegisterIndex = inDXShaderInfo.usedConstantsF[x];
@@ -716,7 +717,7 @@ static const unsigned char InstructionDecompositionNewConstantRegistersRequired(
 	case _D3DSIO_LIT:
 	case _D3DSIO_DST:
 	{
-		const unsigned numPredefinedConstants = inDXShaderInfo.initialConstantValues.size();
+		const unsigned numPredefinedConstants = (const unsigned)inDXShaderInfo.initialConstantValues.size();
 		for (unsigned x = 0; x < numPredefinedConstants; ++x)
 		{
 			const InitialConstantValue& thisConst = inDXShaderInfo.initialConstantValues[x];
@@ -743,7 +744,7 @@ const ShaderCompileResultCode DecomposeShaderInstructions(const ShaderInfo& inDX
 {
 	ShaderCompileResultCode result = ShaderCompile_OK;
 
-	const unsigned numInstructions = inInstructionStartPtrs.size();
+	const unsigned numInstructions = (const unsigned)inInstructionStartPtrs.size();
 	for (unsigned instructionIndex = 0; instructionIndex < numInstructions; ++instructionIndex)
 	{
 		const instructionToken* const thisInstruction = inInstructionStartPtrs[instructionIndex];
@@ -835,7 +836,7 @@ const ShaderCompileResultCode DecomposeShaderInstructions(const ShaderInfo& inDX
 				AppendNewInstructionStartToTokenStartPtrs(outDecomposedInstructionStartPtrs, outDecomposedInstructionStream);
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleInstructionToken(inDXShaderInfo, _D3DSIO_ADD) ); // ADD
 				AppendNewTokenToTokenStream(outDecomposedInstructionStream, CopyExistingDestParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcSrcDst.dst) ); // dst
-				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcSrcDst.dst.GetRegisterIndex(), (const debuggableFullSwizzle)aliasedInstruction->srcSrcSrcDst.src1.GetSwizzle() ) ); // dest (as src0 for the ADD)
+				AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterToken(inDXShaderInfo, aliasedInstruction->srcSrcSrcDst.dst.GetRegisterType(), aliasedInstruction->srcSrcSrcDst.dst.GetRegisterIndex(), _NoSwizzleXYZW) ); // dest (as src0 for the ADD)
 				if (dstAliasesSrc2)
 				{
 					AppendNewTokenToTokenStream(outDecomposedInstructionStream, AssembleSourceParameterToken(inDXShaderInfo, D3DSPR_TEMP, inTempGPRIndex, (const debuggableFullSwizzle)aliasedInstruction->srcSrcSrcDst.src2.GetSwizzle(), (const debuggableSourceModifierType)aliasedInstruction->srcSrcSrcDst.src2.GetSourceModifiers() ) ); // temp (as src1 for the ADD)
@@ -1941,7 +1942,7 @@ const ShaderCompileResultCode DecomposeShaderInstructions(const ShaderInfo& inDX
 const ShaderCompileResultCode TranslateToDeviceBytecode(const ShaderInfo& inDXShaderInfo, const std::vector<const instructionToken*>& inDXStartPtrs, const ShaderCompileOptions inCompileOptions, std::vector<instructionSlot>& outDeviceInstructionStream)
 {
 	ShaderCompileResultCode result = ShaderCompile_OK;
-	const unsigned numDecomposedInstructions = inDXStartPtrs.size();
+	const unsigned numDecomposedInstructions = (const unsigned)inDXStartPtrs.size();
 	for (unsigned instructionIndex = 0; instructionIndex < numDecomposedInstructions; ++instructionIndex)
 	{
 		// Big note for now - the aliasedInstructionTokens union *does not* take into account relative addressing tokens!
@@ -2182,7 +2183,7 @@ void AppendVSInterpolantDivideByW(const unsigned oAttributeRegIndex, const unsig
 const signed short FindUnusedConstantRegisterIndex(const ShaderInfo& inDXShaderInfo)
 {
 	unsigned usedConstantsBitmap[GPU_SHADER_MAX_NUM_CONSTANT_FLOAT_REG / 32] = {0};
-	const unsigned numUsedConstants = inDXShaderInfo.usedConstantsF.size();
+	const unsigned numUsedConstants = (const unsigned)inDXShaderInfo.usedConstantsF.size();
 	for (unsigned x = 0; x < numUsedConstants; ++x)
 	{
 		const unsigned usedConstRegIndexF = inDXShaderInfo.usedConstantsF[x];
@@ -2380,51 +2381,31 @@ ShaderCompileResultCode GenerateSpecialShader(const ShaderInfo& inDXShaderInfo, 
 	return GenerateConstBufferWriteAllRegFileShader(inDXShaderInfo, outDeviceInstructionStream, outDeviceShaderInfo);
 }
 
-// Used for D3DFVF_XYZRHW FVF's or POSITIONT vertex decl's. Simply copies the pretransformed vertex data over to its output registers.
-ShaderCompileResultCode MakePretransformedPassthroughShader(const ShaderInfo& inDXShaderInfo, std::vector<instructionSlot>& outDeviceInstructionStream, DeviceShaderInfo& outDeviceShaderInfo)
+// Used for D3DFVF_XYZRHW FVF's or POSITIONT vertex decl's. Untransforms the pretransformed vertex position back into clip-space and copies the interpolants over to their output registers.
+// This generated shader assumes that:
+// c0.xy = Negation of viewport X,Y offsets
+// c0.z = Negation of viewport Z offset
+// c1.xy = Reciprocal of viewport X,Y scales
+// c1.z = Reciprocal of viewport Z scale
+ShaderCompileResultCode MakePretransformedPassthroughShader(std::vector<instructionSlot>& outDeviceInstructionStream, DeviceShaderInfo& outDeviceShaderInfo, const bool vertexColorPresent = true, const bool texcoord0Present = true)
 {
-	return GenerateSpecialShader(inDXShaderInfo, outDeviceInstructionStream, outDeviceShaderInfo);
+	// This generated shader looks like this:
+	// x0.xyz = add v0.xyz, c0.xyz // Subtract the viewport X offset, Y offset, and Z offset ({0.5f - viewPortWidth/2.0f + viewport.left, 0.5f - viewportHeight/2.0f + viewport.top, -viewport.minZ})
+	// x1.xyz = mul x0.xyz, c1.xyz // Divide out the viewport X scale, Y scale, and Z scale (constant buffer already contains reciprocals of the scales) ({2.0f/viewportWidth, -2.0f/viewportHeight, 1.0f/viewport.zScale})
+	// x0.w = rcp v0.w // Convert from reciprocal of W back to regular pixel W
+	// o0.xyz = mul x1.xyz, x0.w // Undo the division-by-W step to unproject our vertices back into clip-space
+	// o0.w = mov x0.w // Copy over the pixel W component (this is needed for the later TriangleSetup stage to redo our division-by-W again after clipping is done)
+	// o1 = oD0 = mov oD0, v1.rgba
+	// o2 = oT0 = mov oT0, v2.xy00
 
-	// Simply do:
-	// o0 = oPos = mov oPos, v0
-	// o1 = oD0 = mov oD0, v2
-	// o2 = oT0 = mov oT0, v1.xy00
-	// Don't apply the viewport transform VS suffix, or the division by W VS suffix, but do apply output compression if requested
+	// For now, these input and output registers are always hardcoded:
+	const unsigned inputPositionReg = 0; // v0 = POSITION0
+	const unsigned inputDiffuseReg = 1; // v1 = COLOR0
+	const unsigned inputTexcoordReg = 2; // v2 = TEXCOORD0
 
-	unsigned inputPositionReg = 0xFFFFFFFF; // v0 = POSITION0
-	unsigned inputTexcoordReg = 0xFFFFFFFF; // v1 = TEXCOORD0
-	unsigned inputDiffuseReg = 0xFFFFFFFF; // v2 = COLOR0
-
-	unsigned outputPositionReg = 0xFFFFFFFF; // o0 = oPos = OPOSITION0
-	unsigned outputDiffuseReg = 0xFFFFFFFF; // o1 = oD0 = OCOLOR0
-	unsigned outputTexcoordReg = 0xFFFFFFFF; // o2 = oT0 = OTEXCOORD0
-
-	const unsigned numDeclaredRegs = inDXShaderInfo.declaredRegisters.size();
-	for (unsigned declIndex = 0; declIndex < numDeclaredRegs; ++declIndex)
-	{
-		const DeclaredRegister& thisDecl = inDXShaderInfo.declaredRegisters[declIndex];
-		if ( (thisDecl.usageType == D3DDECLUSAGE_POSITION || thisDecl.usageType == D3DDECLUSAGE_POSITIONT) && thisDecl.usageIndex == 0)
-		{
-			if (thisDecl.isOutputRegister)
-				outputPositionReg = thisDecl.registerIndex;
-			else
-				inputPositionReg = thisDecl.registerIndex;
-		}
-		else if (thisDecl.usageType == D3DDECLUSAGE_TEXCOORD && thisDecl.usageIndex == 0)
-		{
-			if (thisDecl.isOutputRegister)
-				outputTexcoordReg = thisDecl.registerIndex;
-			else
-				inputTexcoordReg = thisDecl.registerIndex;
-		}
-		else if (thisDecl.usageType == D3DDECLUSAGE_COLOR && thisDecl.usageIndex == 0)
-		{
-			if (thisDecl.isOutputRegister)
-				outputDiffuseReg = thisDecl.registerIndex;
-			else
-				inputDiffuseReg = thisDecl.registerIndex;
-		}
-	}
+	const unsigned outputPositionReg = 0; // o0 = oPos = OPOSITION0
+	const unsigned outputDiffuseReg = 1; // o1 = oD0 = OCOLOR0
+	const unsigned outputTexcoordReg = 2; // o2 = oT0 = OTEXCOORD0
 
 	if (inputPositionReg >= GPU_SHADER_MAX_NUM_INPUT_REG)
 	{
@@ -2442,31 +2423,12 @@ ShaderCompileResultCode MakePretransformedPassthroughShader(const ShaderInfo& in
 		return ShaderCompile_ERR_MissingOutputPos;
 	}
 
-	const bool hasVertexColor = outputDiffuseReg < GPU_SHADER_MAX_NUM_OUTPUT_REG && inputDiffuseReg < GPU_SHADER_MAX_NUM_INPUT_REG;
-	const bool hasTexcoord = outputTexcoordReg < GPU_SHADER_MAX_NUM_OUTPUT_REG && inputTexcoordReg < GPU_SHADER_MAX_NUM_INPUT_REG;
+	const bool hasVertexColor = vertexColorPresent && outputDiffuseReg < GPU_SHADER_MAX_NUM_OUTPUT_REG && inputDiffuseReg < GPU_SHADER_MAX_NUM_INPUT_REG;
+	const bool hasTexcoord = texcoord0Present && outputTexcoordReg < GPU_SHADER_MAX_NUM_OUTPUT_REG && inputTexcoordReg < GPU_SHADER_MAX_NUM_INPUT_REG;
 
-	// Output Vertex Color index reassign (default to o1):
-	if (outputDiffuseReg >= GPU_SHADER_MAX_NUM_OUTPUT_REG)
-	{
-		if (outputPositionReg != 1 && outputTexcoordReg != 1)
-			outputDiffuseReg = 1;
-		else if (outputPositionReg != 2 && outputTexcoordReg != 2)
-			outputDiffuseReg = 2;
-		else
-			outputDiffuseReg = 0;
-	}
-
-	// Output Texcoord index reassign (default to o2):
-	if (outputTexcoordReg >= GPU_SHADER_MAX_NUM_OUTPUT_REG)
-	{
-		if (outputPositionReg != 2 && outputDiffuseReg != 2)
-			outputTexcoordReg = 2;
-		else if (outputPositionReg != 1 && outputDiffuseReg != 1)
-			outputTexcoordReg = 1;
-		else
-			outputTexcoordReg = 0;
-	}
-
+	outDeviceShaderInfo.inputRegisters.pos0 = inputPositionReg;
+	outDeviceShaderInfo.inputRegisters.color0 = inputDiffuseReg;
+	outDeviceShaderInfo.inputRegisters.texcoord[0] = inputTexcoordReg;
 	outDeviceShaderInfo.outputRegisters.oPosRegIndex = outputPositionReg;
 	outDeviceShaderInfo.outputRegisters.oDiffuseRegIndex = outputDiffuseReg;
 	outDeviceShaderInfo.outputRegisters.oTexRegIndex[0] = outputTexcoordReg;
@@ -2493,23 +2455,45 @@ ShaderCompileResultCode MakePretransformedPassthroughShader(const ShaderInfo& in
 		return ShaderCompile_ERR_InvalidArg;
 	}
 
-	// mov oPos, v0:
-	const instructionSlot movoPos0R = { {Op_MOV, DRMod_None, DRTyp_O, outputPositionReg /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_V, inputPositionReg /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_0, 0 /*src0RegIndex*/, Chan_X} }; // mov o0.x, v0.x, 0.x
-	const instructionSlot movoPos0G = { {Op_MOV, DRMod_None, DRTyp_O, outputPositionReg /*destRegIndex*/, Chan_Y, SRMod_None, SRTyp_V, inputPositionReg /*src0RegIndex*/, Chan_Y, SRMod_None, SRTyp_0, 0 /*src0RegIndex*/, Chan_X} }; // mov o0.y, v0.y, 0.x
-	const instructionSlot movoPos0B = { {Op_MOV, DRMod_None, DRTyp_O, outputPositionReg /*destRegIndex*/, Chan_Z, SRMod_None, SRTyp_V, inputPositionReg /*src0RegIndex*/, Chan_Z, SRMod_None, SRTyp_0, 0 /*src0RegIndex*/, Chan_X} }; // mov o0.z, v0.z, 0.x
-	const instructionSlot movoPos0A = { {Op_MOV, DRMod_None, DRTyp_O, outputPositionReg /*destRegIndex*/, Chan_W, SRMod_None, SRTyp_V, inputPositionReg /*src0RegIndex*/, Chan_W, SRMod_None, SRTyp_0, 0 /*src0RegIndex*/, Chan_X} }; // mov o0.w, v0.w, 0.x
-	outDeviceInstructionStream.push_back(movoPos0R);
-	outDeviceInstructionStream.push_back(movoPos0G);
-	outDeviceInstructionStream.push_back(movoPos0B);
-	outDeviceInstructionStream.push_back(movoPos0A);
+	// x0.xyz = add v0.xyz, c0.xyz // Subtract the viewport X offset, Y offset, and Z offset
+	const instructionSlot addx0X = { {Op_ADD, DRMod_None, DRTyp_X, 0 /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_V, inputPositionReg /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_C, 0 /*src0RegIndex*/, Chan_X} }; // add x0.x, v0.x, c0.x
+	const instructionSlot addx0Y = { {Op_ADD, DRMod_None, DRTyp_X, 0 /*destRegIndex*/, Chan_Y, SRMod_None, SRTyp_V, inputPositionReg /*src0RegIndex*/, Chan_Y, SRMod_None, SRTyp_C, 0 /*src0RegIndex*/, Chan_Y} }; // add x0.y, v0.y, c0.y
+	const instructionSlot addx0Z = { {Op_ADD, DRMod_None, DRTyp_X, 0 /*destRegIndex*/, Chan_Z, SRMod_None, SRTyp_V, inputPositionReg /*src0RegIndex*/, Chan_Z, SRMod_None, SRTyp_C, 0 /*src0RegIndex*/, Chan_Z} }; // add x0.z, v0.z, c0.z
+	outDeviceInstructionStream.push_back(addx0X);
+	outDeviceInstructionStream.push_back(addx0Y);
+	outDeviceInstructionStream.push_back(addx0Z);
+
+	// x1.xyz = mul x0.xyz, c1.xyz // Divide out the viewport X scale, Y scale, and Z scale (constant buffer already contains reciprocals of the scales)
+	const instructionSlot mulx1X = { {Op_MUL, DRMod_None, DRTyp_X, 1 /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_X, 0 /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_C, 1 /*src0RegIndex*/, Chan_X} }; // mul x1.x, x0.x, c1.x
+	const instructionSlot mulx1Y = { {Op_MUL, DRMod_None, DRTyp_X, 1 /*destRegIndex*/, Chan_Y, SRMod_None, SRTyp_X, 0 /*src0RegIndex*/, Chan_Y, SRMod_None, SRTyp_C, 1 /*src0RegIndex*/, Chan_Y} }; // mul x1.y, x0.y, c1.y
+	const instructionSlot mulx1Z = { {Op_MUL, DRMod_None, DRTyp_X, 1 /*destRegIndex*/, Chan_Z, SRMod_None, SRTyp_X, 0 /*src0RegIndex*/, Chan_Z, SRMod_None, SRTyp_C, 1 /*src0RegIndex*/, Chan_Z} }; // mul x1.z, x0.z, c1.z
+	outDeviceInstructionStream.push_back(mulx1X);
+	outDeviceInstructionStream.push_back(mulx1Y);
+	outDeviceInstructionStream.push_back(mulx1Z);
+
+	// x0.w = rcp v0.w // Convert from reciprocal of W back to regular pixel W
+	const instructionSlot rcpx0W = { {Op_RCP, DRMod_None, DRTyp_X, 0 /*destRegIndex*/, Chan_W, SRMod_None, SRTyp_V, 0 /*src0RegIndex*/, Chan_W, SRMod_None, SRTyp_0, 0 /*src0RegIndex*/, Chan_X} }; // rcp x0.w, v0.w, 00.x
+	outDeviceInstructionStream.push_back(rcpx0W);
+
+	// o0.xyz = mul x1.xyz, x0.w // Undo the division-by-W step to unproject our vertices back into clip-space
+	const instructionSlot mulo0X = { {Op_MUL, DRMod_None, DRTyp_O, outputPositionReg /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_X, 1 /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_X, 0 /*src0RegIndex*/, Chan_W} }; // mul o0.x, x1.x, x0.w
+	const instructionSlot mulo0Y = { {Op_MUL, DRMod_None, DRTyp_O, outputPositionReg /*destRegIndex*/, Chan_Y, SRMod_None, SRTyp_X, 1 /*src0RegIndex*/, Chan_Y, SRMod_None, SRTyp_X, 0 /*src0RegIndex*/, Chan_W} }; // mul o0.y, x1.y, x0.w
+	const instructionSlot mulo0Z = { {Op_MUL, DRMod_None, DRTyp_O, outputPositionReg /*destRegIndex*/, Chan_Z, SRMod_None, SRTyp_X, 1 /*src0RegIndex*/, Chan_Z, SRMod_None, SRTyp_X, 0 /*src0RegIndex*/, Chan_W} }; // mul o0.z, x1.z, x0.w
+	outDeviceInstructionStream.push_back(mulo0X);
+	outDeviceInstructionStream.push_back(mulo0Y);
+	outDeviceInstructionStream.push_back(mulo0Z);
+
+	// o0.w = mov x0.w // Copy over the pixel W component (this is needed for the later TriangleSetup stage to redo our division-by-W again after clipping is done)
+	const instructionSlot movo0W = { {Op_MOV, DRMod_None, DRTyp_O, outputPositionReg /*destRegIndex*/, Chan_W, SRMod_None, SRTyp_X, 0 /*src0RegIndex*/, Chan_W, SRMod_None, SRTyp_0, 0 /*src0RegIndex*/, Chan_X} }; // mov o0.w, x0.w, 00.x
+	outDeviceInstructionStream.push_back(movo0W);
 
 	if (hasVertexColor)
 	{
-		// mov oD0, v2:
-		const instructionSlot movD0R = { {Op_MOV, DRMod_None, DRTyp_O, outputDiffuseReg /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_V, inputDiffuseReg /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_0, 0 /*src0RegIndex*/, Chan_X} }; // mov o1.x, v2.x, 0.x
-		const instructionSlot movD0G = { {Op_MOV, DRMod_None, DRTyp_O, outputDiffuseReg /*destRegIndex*/, Chan_Y, SRMod_None, SRTyp_V, inputDiffuseReg /*src0RegIndex*/, Chan_Y, SRMod_None, SRTyp_0, 0 /*src0RegIndex*/, Chan_X} }; // mov o1.y, v2.y, 0.x
-		const instructionSlot movD0B = { {Op_MOV, DRMod_None, DRTyp_O, outputDiffuseReg /*destRegIndex*/, Chan_Z, SRMod_None, SRTyp_V, inputDiffuseReg /*src0RegIndex*/, Chan_Z, SRMod_None, SRTyp_0, 0 /*src0RegIndex*/, Chan_X} }; // mov o1.z, v2.z, 0.x
-		const instructionSlot movD0A = { {Op_MOV, DRMod_None, DRTyp_O, outputDiffuseReg /*destRegIndex*/, Chan_W, SRMod_None, SRTyp_V, inputDiffuseReg /*src0RegIndex*/, Chan_W, SRMod_None, SRTyp_0, 0 /*src0RegIndex*/, Chan_X} }; // mov o1.w, v2.w, 0.x
+		// mov oD0, v1:
+		const instructionSlot movD0R = { {Op_MOV, DRMod_None, DRTyp_O, outputDiffuseReg /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_V, inputDiffuseReg /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_0, 0 /*src0RegIndex*/, Chan_X} }; // mov o1.x, v1.x, 0.x
+		const instructionSlot movD0G = { {Op_MOV, DRMod_None, DRTyp_O, outputDiffuseReg /*destRegIndex*/, Chan_Y, SRMod_None, SRTyp_V, inputDiffuseReg /*src0RegIndex*/, Chan_Y, SRMod_None, SRTyp_0, 0 /*src0RegIndex*/, Chan_X} }; // mov o1.y, v1.y, 0.x
+		const instructionSlot movD0B = { {Op_MOV, DRMod_None, DRTyp_O, outputDiffuseReg /*destRegIndex*/, Chan_Z, SRMod_None, SRTyp_V, inputDiffuseReg /*src0RegIndex*/, Chan_Z, SRMod_None, SRTyp_0, 0 /*src0RegIndex*/, Chan_X} }; // mov o1.z, v1.z, 0.x
+		const instructionSlot movD0A = { {Op_MOV, DRMod_None, DRTyp_O, outputDiffuseReg /*destRegIndex*/, Chan_W, SRMod_None, SRTyp_V, inputDiffuseReg /*src0RegIndex*/, Chan_W, SRMod_None, SRTyp_0, 0 /*src0RegIndex*/, Chan_X} }; // mov o1.w, v1.w, 0.x
 		outDeviceInstructionStream.push_back(movD0R);
 		outDeviceInstructionStream.push_back(movD0G);
 		outDeviceInstructionStream.push_back(movD0B);
@@ -2530,9 +2514,9 @@ ShaderCompileResultCode MakePretransformedPassthroughShader(const ShaderInfo& in
 
 	if (hasTexcoord)
 	{
-		// mov oT0.xy, v1.xy:
-		const instructionSlot movT0X = { {Op_MOV, DRMod_None, DRTyp_O, outputTexcoordReg /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_V, inputTexcoordReg /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_0, 0 /*src0RegIndex*/, Chan_X} }; // mov o2.x, v1.x, 0.x
-		const instructionSlot movT0Y = { {Op_MOV, DRMod_None, DRTyp_O, outputTexcoordReg /*destRegIndex*/, Chan_Y, SRMod_None, SRTyp_V, inputTexcoordReg /*src0RegIndex*/, Chan_Y, SRMod_None, SRTyp_0, 0 /*src0RegIndex*/, Chan_X} }; // mov o2.y, v1.y, 0.x
+		// mov oT0.xy, v2.xy:
+		const instructionSlot movT0X = { {Op_MOV, DRMod_None, DRTyp_O, outputTexcoordReg /*destRegIndex*/, Chan_X, SRMod_None, SRTyp_V, inputTexcoordReg /*src0RegIndex*/, Chan_X, SRMod_None, SRTyp_0, 0 /*src0RegIndex*/, Chan_X} }; // mov o2.x, v2.x, 0.x
+		const instructionSlot movT0Y = { {Op_MOV, DRMod_None, DRTyp_O, outputTexcoordReg /*destRegIndex*/, Chan_Y, SRMod_None, SRTyp_V, inputTexcoordReg /*src0RegIndex*/, Chan_Y, SRMod_None, SRTyp_0, 0 /*src0RegIndex*/, Chan_X} }; // mov o2.y, v2.y, 0.x
 		outDeviceInstructionStream.push_back(movT0X);
 		outDeviceInstructionStream.push_back(movT0Y);
 	}
@@ -2710,7 +2694,7 @@ void OutputDXShaderDisasm(const std::vector<anyToken>& inDXDecomposedInstruction
 	}
 	else
 	{
-		return OutputDXShaderDisasm( (const DWORD* const)&inDXDecomposedInstructionStream.front(), inDXDecomposedInstructionStream.size(), inOptShaderBaseFilename, inShaderOutType);
+		return OutputDXShaderDisasm( (const DWORD* const)&inDXDecomposedInstructionStream.front(), (const unsigned)inDXDecomposedInstructionStream.size(), inOptShaderBaseFilename, inShaderOutType);
 	}
 }
 
@@ -2848,7 +2832,7 @@ void CalculateDeviceShaderStats(const std::vector<instructionSlot>& inFinalDevic
 	outDeviceShaderInfo.vsViewportTransformConstRegisterF = vsViewportTransformConstRegisterF;
 }
 
-void PopulateRegisterMapping(const ShaderInfo& inDXShaderInfo, DeviceShaderInfo& outDeviceShaderInfo)
+void PopulateRegisterMapping(const ShaderInfo& inDXShaderInfo, DeviceShaderInfo& outDeviceShaderInfo, DeviceShaderHeader& outDeviceShaderHeader)
 {
 	for (unsigned x = 0; x < inDXShaderInfo.declaredRegisters.size(); ++x)
 	{
@@ -2862,6 +2846,11 @@ void PopulateRegisterMapping(const ShaderInfo& inDXShaderInfo, DeviceShaderInfo&
 
 		if (thisDeclaredReg.isOutputRegister == false)
 		{
+			if (thisDeclaredReg.registerIndex < ARRAYSIZE(outDeviceShaderHeader.inputRegsData) )
+			{
+				outDeviceShaderHeader.inputRegsData[thisDeclaredReg.registerIndex].usageType = ConvertToDeviceDeclUsage(thisDeclaredReg.usageType);
+				outDeviceShaderHeader.inputRegsData[thisDeclaredReg.registerIndex].usageIndex = thisDeclaredReg.usageIndex;
+			}
 			switch (thisDeclaredReg.usageType)
 			{
 			case D3DDECLUSAGE_POSITION:
@@ -2898,6 +2887,11 @@ void PopulateRegisterMapping(const ShaderInfo& inDXShaderInfo, DeviceShaderInfo&
 					outDeviceShaderInfo.inputRegisters.color0 = thisDeclaredReg.registerIndex;
 				break;
 			}
+		}
+		else
+		{
+			outDeviceShaderHeader.outputRegsData[thisDeclaredReg.registerIndex].usageType = ConvertToDeviceDeclUsage(thisDeclaredReg.usageType);
+			outDeviceShaderHeader.outputRegsData[thisDeclaredReg.registerIndex].usageIndex = thisDeclaredReg.usageIndex;
 		}
 	}
 
@@ -3009,7 +3003,8 @@ const ShaderCompileResultCode CompileShaderInternal(const ShaderInfo& inDXShader
 {
 	ShaderCompileResultCode result = ShaderCompile_OK;
 	DeviceShaderInfo devShaderInfo;
-	PopulateRegisterMapping(inDXShaderInfo, devShaderInfo);
+	DeviceShaderHeader devShaderHeader;
+	PopulateRegisterMapping(inDXShaderInfo, devShaderInfo, devShaderHeader);
 
 	if (inCompileOptions & SCOption_OutputInputDisasm)
 	{
@@ -3019,97 +3014,82 @@ const ShaderCompileResultCode CompileShaderInternal(const ShaderInfo& inDXShader
 	std::vector<instructionSlot> deviceInstructionStream;
 	signed short viewportConstRegIndex = -1;
 
-	if (inCompileOptions & SCOption_VS_GeneratePassthroughShader)
+	if (inDXShaderInfo.tempRegistersUsedBitmask >= (1 << GPU_SHADER_MAX_NUM_GPR_REG) )
 	{
 #ifdef _DEBUG
+		__debugbreak(); // Error: This shader uses too many GPR's, we don't have enough in hardware!
+#endif
+		if (!(inCompileOptions & SCOption_IgnoreShaderCompileErrors) )
+			return ShaderCompile_ERR_TempGPRCountExceedsHardware;
+	}
+
+	const int freeDecomposeTempGPRIndex = FindAvailableTempGPR(inDXShaderInfo);
+	const int freeScalarizeTempGPRIndex = (freeDecomposeTempGPRIndex >= 0) ? FindAvailableTempGPR(inDXShaderInfo.tempRegistersUsedBitmask | (1 << freeDecomposeTempGPRIndex) ) : -1;
+	constantBufferRegisterSpace unusedConstRegSpace = FindLargestUnusedConstBufferRegisterSpace(inDXShaderInfo);
+
+	// First walk the D3D9 shader bytecode and find our instruction start pointers:
+	std::vector<const instructionToken*> instructionStartPtrs;
+	versionToken shaderVersionToken;
+	result = ParseInstructions(inDXShaderInfo, instructionStartPtrs, shaderVersionToken);
+	if (result != ShaderCompile_OK && !(inCompileOptions & SCOption_IgnoreShaderCompileErrors) )
+		return result;
+
+	// Next, decompose "combo" instructions (DP3, MAD, NRM, DST, LIT, etc.) into smaller pieces that the device could execute:
+	std::vector<anyToken> decomposedInstructionStream;
+	decomposedInstructionStream.push_back(*(reinterpret_cast<const anyToken* const>(&shaderVersionToken) ) );
+	std::vector<const instructionToken*> decomposedInstructionStartPtrs;
+	result = DecomposeShaderInstructions(inDXShaderInfo, instructionStartPtrs, inCompileOptions, freeDecomposeTempGPRIndex, unusedConstRegSpace, decomposedInstructionStream, decomposedInstructionStartPtrs);
+	if (result != ShaderCompile_OK && !(inCompileOptions & SCOption_IgnoreShaderCompileErrors) )
+		return result;
+
+	if (inCompileOptions & SCOption_OutputDecomposedDisasm)
+		OutputDXShaderDisasm(decomposedInstructionStream, inOptShaderBaseFilename, DXDecomposed);
+
+	// Next, we scalarize our vector instruction stream:
+	std::vector<anyToken> scalarizedInstructionStream;
+	scalarizedInstructionStream.push_back(*(reinterpret_cast<const anyToken* const>(&shaderVersionToken) ) );
+	std::vector<const instructionToken*> scalarizedInstructionStartPtrs;
+	result = ScalarizeVectorShader(inDXShaderInfo, decomposedInstructionStartPtrs, inCompileOptions, freeScalarizeTempGPRIndex, scalarizedInstructionStream, scalarizedInstructionStartPtrs);
+	if (result != ShaderCompile_OK && !(inCompileOptions & SCOption_IgnoreShaderCompileErrors) )
+		return result;
+
+	if (inCompileOptions & SCOption_OutputScalarizedDisasm)
+		OutputDXShaderDisasm(scalarizedInstructionStream, inOptShaderBaseFilename, DXScalarized);
+
+	// (Optional) Apply D3D-level bytecode optimizations at this time (sequence deduplication, dependency tracking and dead code elimination, etc.)
+	if (inCompileOptions & SCOption_Optimize_D3DOptimizations)
+	{
+		result = PerformD3DOptimizations(inDXShaderInfo, scalarizedInstructionStartPtrs, scalarizedInstructionStream);
+		if (result != ShaderCompile_OK && !(inCompileOptions & SCOption_IgnoreShaderCompileErrors) )
+			return result;
+
+		if (inCompileOptions & SCOption_OutputD3DPostOptimizationDisasm)				 
+			OutputDXShaderDisasm(scalarizedInstructionStream, inOptShaderBaseFilename, DXPostOptimized);
+	}
+
+	// Then we translate from D3D9 bytecode to our custom device format instructions bytecode:
+	result = TranslateToDeviceBytecode(inDXShaderInfo, scalarizedInstructionStartPtrs, inCompileOptions, deviceInstructionStream);
+	if (result != ShaderCompile_OK && !(inCompileOptions & SCOption_IgnoreShaderCompileErrors) )
+		return result;
+
+	if (inCompileOptions & SCOption_OutputTranslatedDeviceBytecode)
+	{
+		DumpDeviceBytecodeToFile(devShaderInfo, &deviceInstructionStream.front(), (const unsigned)deviceInstructionStream.size(), inOptShaderBaseFilename, DeviceTranslated);
+	}
+
+	// For now, simply build a "passthrough" simple VS and use that:
+	//MakeSimplePassthroughShader(inDXShaderInfo, deviceInstructionStream);
+
+	// (Optional) Finally, append VS suffix instructions (such as the viewport transform or the division-by-W projection):
+	result = AppendVSSuffix(inDXShaderInfo, deviceInstructionStream, inCompileOptions, viewportConstRegIndex);
+	if (result != ShaderCompile_OK && !(inCompileOptions & SCOption_IgnoreShaderCompileErrors) )
+		return result;
+
+	if (inCompileOptions & SCOption_OutputTranslatedDeviceBytecode)
+	{
 		if (inCompileOptions & (SCOption_VS_AppendDivideByW | SCOption_VS_AppendViewportTransform) )
 		{
-			__debugbreak(); // These two "append" shader options get ignored when using passthrough mode!
-		}
-#endif
-		result = MakePretransformedPassthroughShader(inDXShaderInfo, deviceInstructionStream, devShaderInfo);
-		if (result != ShaderCompile_OK && !(inCompileOptions & SCOption_IgnoreShaderCompileErrors) )
-			return result;
-	}
-	else // Standard shader compilation pipeline:
-	{
-		if (inDXShaderInfo.tempRegistersUsedBitmask >= (1 << GPU_SHADER_MAX_NUM_GPR_REG) )
-		{
-#ifdef _DEBUG
-			__debugbreak(); // Error: This shader uses too many GPR's, we don't have enough in hardware!
-#endif
-			if (!(inCompileOptions & SCOption_IgnoreShaderCompileErrors) )
-				return ShaderCompile_ERR_TempGPRCountExceedsHardware;
-		}
-
-		const int freeDecomposeTempGPRIndex = FindAvailableTempGPR(inDXShaderInfo);
-		const int freeScalarizeTempGPRIndex = (freeDecomposeTempGPRIndex >= 0) ? FindAvailableTempGPR(inDXShaderInfo.tempRegistersUsedBitmask | (1 << freeDecomposeTempGPRIndex) ) : -1;
-		constantBufferRegisterSpace unusedConstRegSpace = FindLargestUnusedConstBufferRegisterSpace(inDXShaderInfo);
-
-		// First walk the D3D9 shader bytecode and find our instruction start pointers:
-		std::vector<const instructionToken*> instructionStartPtrs;
-		versionToken shaderVersionToken;
-		result = ParseInstructions(inDXShaderInfo, instructionStartPtrs, shaderVersionToken);
-		if (result != ShaderCompile_OK && !(inCompileOptions & SCOption_IgnoreShaderCompileErrors) )
-			return result;
-
-		// Next, decompose "combo" instructions (DP3, MAD, NRM, DST, LIT, etc.) into smaller pieces that the device could execute:
-		std::vector<anyToken> decomposedInstructionStream;
-		decomposedInstructionStream.push_back(*(reinterpret_cast<const anyToken* const>(&shaderVersionToken) ) );
-		std::vector<const instructionToken*> decomposedInstructionStartPtrs;
-		result = DecomposeShaderInstructions(inDXShaderInfo, instructionStartPtrs, inCompileOptions, freeDecomposeTempGPRIndex, unusedConstRegSpace, decomposedInstructionStream, decomposedInstructionStartPtrs);
-		if (result != ShaderCompile_OK && !(inCompileOptions & SCOption_IgnoreShaderCompileErrors) )
-			return result;
-
-		if (inCompileOptions & SCOption_OutputDecomposedDisasm)
-			OutputDXShaderDisasm(decomposedInstructionStream, inOptShaderBaseFilename, DXDecomposed);
-
-		// Next, we scalarize our vector instruction stream:
-		std::vector<anyToken> scalarizedInstructionStream;
-		scalarizedInstructionStream.push_back(*(reinterpret_cast<const anyToken* const>(&shaderVersionToken) ) );
-		std::vector<const instructionToken*> scalarizedInstructionStartPtrs;
-		result = ScalarizeVectorShader(inDXShaderInfo, decomposedInstructionStartPtrs, inCompileOptions, freeScalarizeTempGPRIndex, scalarizedInstructionStream, scalarizedInstructionStartPtrs);
-		if (result != ShaderCompile_OK && !(inCompileOptions & SCOption_IgnoreShaderCompileErrors) )
-			return result;
-
-		if (inCompileOptions & SCOption_OutputScalarizedDisasm)
-			OutputDXShaderDisasm(scalarizedInstructionStream, inOptShaderBaseFilename, DXScalarized);
-
-		// (Optional) Apply D3D-level bytecode optimizations at this time (sequence deduplication, dependency tracking and dead code elimination, etc.)
-		if (inCompileOptions & SCOption_Optimize_D3DOptimizations)
-		{
-			result = PerformD3DOptimizations(inDXShaderInfo, scalarizedInstructionStartPtrs, scalarizedInstructionStream);
-			if (result != ShaderCompile_OK && !(inCompileOptions & SCOption_IgnoreShaderCompileErrors) )
-				return result;
-
-			if (inCompileOptions & SCOption_OutputD3DPostOptimizationDisasm)				 
-				OutputDXShaderDisasm(scalarizedInstructionStream, inOptShaderBaseFilename, DXPostOptimized);
-		}
-
-		// Then we translate from D3D9 bytecode to our custom device format instructions bytecode:
-		result = TranslateToDeviceBytecode(inDXShaderInfo, scalarizedInstructionStartPtrs, inCompileOptions, deviceInstructionStream);
-		if (result != ShaderCompile_OK && !(inCompileOptions & SCOption_IgnoreShaderCompileErrors) )
-			return result;
-
-		if (inCompileOptions & SCOption_OutputTranslatedDeviceBytecode)
-		{
-			DumpDeviceBytecodeToFile(devShaderInfo, &deviceInstructionStream.front(), deviceInstructionStream.size(), inOptShaderBaseFilename, DeviceTranslated);
-		}
-
-		// For now, simply build a "passthrough" simple VS and use that:
-		//MakeSimplePassthroughShader(inDXShaderInfo, deviceInstructionStream);
-
-		// (Optional) Finally, append VS suffix instructions (such as the viewport transform or the division-by-W projection):
-		result = AppendVSSuffix(inDXShaderInfo, deviceInstructionStream, inCompileOptions, viewportConstRegIndex);
-		if (result != ShaderCompile_OK && !(inCompileOptions & SCOption_IgnoreShaderCompileErrors) )
-			return result;
-
-		if (inCompileOptions & SCOption_OutputTranslatedDeviceBytecode)
-		{
-			if (inCompileOptions & (SCOption_VS_AppendDivideByW | SCOption_VS_AppendViewportTransform) )
-			{
-				DumpDeviceBytecodeToFile(devShaderInfo, &deviceInstructionStream.front(), deviceInstructionStream.size(), inOptShaderBaseFilename, DeviceSuffixApplied);
-			}
+			DumpDeviceBytecodeToFile(devShaderInfo, &deviceInstructionStream.front(), (const unsigned)deviceInstructionStream.size(), inOptShaderBaseFilename, DeviceSuffixApplied);
 		}
 	}
 
@@ -3124,7 +3104,7 @@ const ShaderCompileResultCode CompileShaderInternal(const ShaderInfo& inDXShader
 		{
 			if (!deviceInstructionStream.empty() )
 			{
-				DumpDeviceBytecodeToFile(devShaderInfo, &deviceInstructionStream.front(), deviceInstructionStream.size(), inOptShaderBaseFilename, DeviceOptimized);
+				DumpDeviceBytecodeToFile(devShaderInfo, &deviceInstructionStream.front(), (const unsigned)deviceInstructionStream.size(), inOptShaderBaseFilename, DeviceOptimized);
 			}
 			else
 			{
@@ -3167,7 +3147,52 @@ const ShaderCompileResultCode CompileShaderInternal(const ShaderInfo& inDXShader
 		return ShaderCompile_ERR_ShaderInstructionCountExceedsHardware;
 	}
 
-	const unsigned deviceBytecodeAllocSize = deviceInstructionStream.size() * sizeof(instructionSlot) + sizeof(DeviceShaderInfo);
+	const unsigned deviceBytecodeAllocSize = (const unsigned)deviceInstructionStream.size() * sizeof(instructionSlot) + sizeof(DeviceShaderInfo) + sizeof(DeviceShaderHeader);
+	DeviceBytecode* const allocatedCompiledDeviceBytecode = (DeviceBytecode* const)malloc(deviceBytecodeAllocSize);
+	if (!allocatedCompiledDeviceBytecode)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Out of memory, or alloc too large?
+#endif
+		return ShaderCompile_ERR_MallocFail;
+	}
+	allocatedCompiledDeviceBytecode->deviceShaderInfo = devShaderInfo;
+
+	// Fill out our shader header now:
+	allocatedCompiledDeviceBytecode->shaderHeader = devShaderHeader;
+	allocatedCompiledDeviceBytecode->shaderHeader.shaderLength_instructionSlots = (const unsigned short)deviceInstructionStream.size();
+	allocatedCompiledDeviceBytecode->shaderHeader.shaderHash = inDXShaderInfo.shaderBytecodeHash;
+
+	memcpy(&allocatedCompiledDeviceBytecode->deviceInstructions, &(deviceInstructionStream.front() ), deviceInstructionStream.size() * sizeof(instructionSlot) );
+	outCompiledDeviceBytecode = allocatedCompiledDeviceBytecode;
+
+
+	if (inCompileOptions & ShaderCompileOptions::SCOption_OutputFinalBytecode)
+	{
+		DumpDeviceBytecodeToFile(*allocatedCompiledDeviceBytecode, inOptShaderBaseFilename, DeviceFinal);
+	}
+
+	return result;
+}
+
+const ShaderCompileResultCode CompilePretransformedShaderInternal(const ShaderCompileOptions inCompileOptions, DeviceBytecode*& outCompiledDeviceBytecode, const char* const inOptShaderBaseFilename)
+{
+	ShaderCompileResultCode result = ShaderCompile_OK;
+
+	DeviceShaderInfo devShaderInfo;
+	std::vector<instructionSlot> deviceInstructionStream;
+
+	result = MakePretransformedPassthroughShader(deviceInstructionStream, devShaderInfo);
+	if (result != ShaderCompile_OK && !(inCompileOptions & SCOption_IgnoreShaderCompileErrors) )
+		return result;
+
+	// And last but not least, append our "END" instruction to the stream as the last instruction that terminates the shader:
+	AppendVSEndInstruction(deviceInstructionStream);
+
+	// Calculate stats for the final shader (number of hardware registers used, number of cycles total, cycles spent waiting, etc.)
+	CalculateDeviceShaderStats(deviceInstructionStream, devShaderInfo, -1);
+
+	const unsigned deviceBytecodeAllocSize = (const unsigned)deviceInstructionStream.size() * sizeof(instructionSlot) + sizeof(DeviceShaderInfo);
 	DeviceBytecode* const allocatedCompiledDeviceBytecode = (DeviceBytecode* const)malloc(deviceBytecodeAllocSize);
 	if (!allocatedCompiledDeviceBytecode)
 	{
@@ -3179,7 +3204,6 @@ const ShaderCompileResultCode CompileShaderInternal(const ShaderInfo& inDXShader
 	allocatedCompiledDeviceBytecode->deviceShaderInfo = devShaderInfo;
 	memcpy(&allocatedCompiledDeviceBytecode->deviceInstructions, &(deviceInstructionStream.front() ), deviceInstructionStream.size() * sizeof(instructionSlot) );
 	outCompiledDeviceBytecode = allocatedCompiledDeviceBytecode;
-
 
 	if (inCompileOptions & ShaderCompileOptions::SCOption_OutputFinalBytecode)
 	{

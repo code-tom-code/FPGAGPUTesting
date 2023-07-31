@@ -316,7 +316,7 @@ static inline void ResolveDstParameter(const DWORD*& bytecode, ShaderInfo& shade
 
 static inline void AddIfNotPresent(std::vector<unsigned short>& vals, const unsigned short val)
 {
-	const unsigned numVals = vals.size();
+	const unsigned numVals = (const unsigned)vals.size();
 	for (unsigned x = 0; x < numVals; ++x)
 	{
 		if (vals[x] == val)
@@ -968,7 +968,7 @@ static inline const bool ParseCustomOpcode(const D3DSHADER_INSTRUCTION_OPCODE_TY
 		break;
 	case D3DSIO_END:
 		if (print) dprintf(shaderInfo, "\n");
-		shaderInfo.shaderLengthDWORDs = shaderMemory - shaderInfo.initialBytecodeToken;
+		shaderInfo.shaderLengthDWORDs = (const unsigned)(shaderMemory - shaderInfo.initialBytecodeToken);
 		return true;
 	default:
 #ifdef _DEBUG
@@ -1327,7 +1327,7 @@ void outputRegisterWriteTracker::SetAddOrSkip(const D3DSHADER_PARAM_REGISTER_TYP
 
 void outputRegisterWriteTracker::AddOutputRegisterListingToShaderInfo(ShaderInfo& outShaderInfo)
 {
-	const unsigned numWrittenOutputRegisters = registerIdentifiers.size();
+	const unsigned numWrittenOutputRegisters = (const unsigned)registerIdentifiers.size();
 	for (unsigned x = 0; x < numWrittenOutputRegisters; ++x)
 	{
 		const outputRegisterIdentifier& registerIdentifier = registerIdentifiers[x];
@@ -1408,9 +1408,9 @@ void __stdcall PrintShaderStatsToString(char (&outBuffer)[1024], const ShaderInf
 		shaderInfoIn.numArithInstructions, shaderInfoIn.numTexInstructions,
 		shaderInfoIn.numUniqueTempRegistersUsed, MAX_NUM_TEMP_REGISTERS,
 		shaderInfoIn.numUniqueInputRegistersUsed, shaderInfoIn.isPixelShader ? ( (shaderInfoIn.shaderMajorVersion < 2) ? 8 : 10) : 16,
-		shaderInfoIn.usedConstantsF.size(),
-		shaderInfoIn.usedConstantsI.size(), MAX_NUM_CONST_INT_REGISTERS,
-		shaderInfoIn.usedConstantsB.size(), MAX_NUM_CONST_BOOL_REGISTERS,
+		(const unsigned)shaderInfoIn.usedConstantsF.size(),
+		(const unsigned)shaderInfoIn.usedConstantsI.size(), MAX_NUM_CONST_INT_REGISTERS,
+		(const unsigned)shaderInfoIn.usedConstantsB.size(), MAX_NUM_CONST_BOOL_REGISTERS,
 		shaderInfoIn.usesDynamicBranching ? "TRUE" : "FALSE",
 		shaderInfoIn.usesFunctionCalls ? "TRUE" : "FALSE",
 		shaderInfoIn.usesIntToFloatConversions ? "TRUE" : "FALSE",

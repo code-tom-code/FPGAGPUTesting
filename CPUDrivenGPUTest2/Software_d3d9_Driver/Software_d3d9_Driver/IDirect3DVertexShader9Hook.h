@@ -8,11 +8,19 @@ class VShaderEngine;
 class IDirect3DVertexShader9Hook : public IDirect3DVertexShader9
 {
 public:
-	IDirect3DVertexShader9Hook(LPDIRECT3DVERTEXSHADER9 _realObject, IDirect3DDevice9Hook* _parentDevice) : realObject(_realObject), parentDevice(_parentDevice), refCount(1), 
-		outPositionRegisterIndex(0), outTexcoord0RegisterIndex(0), outColor0RegisterIndex(0), jitShaderMain(NULL), jitShaderMain4(NULL), triedJit(false), deviceCompiledVertexShaderBytecode(NULL), deviceCompiledVertexShaderBytes(NULL)
+	IDirect3DVertexShader9Hook(LPDIRECT3DVERTEXSHADER9 _realObject, IDirect3DDevice9Hook* _parentDevice) : realObject(_realObject), parentDevice(_parentDevice), refCount(1), isPretransformPassthroughVS(false),
+		outPositionRegisterIndex(0), outTexcoord0RegisterIndex(0), outColor0RegisterIndex(0), jitShaderMain(NULL), jitShaderMain4(NULL), triedJit(false), deviceCompiledVertexShaderBytecode(NULL), deviceCompiledVertexShaderBytes(NULL),
+		passthroughVSElements(NULL), passthroughVSElementsCount(0)
 	{
 #ifdef _DEBUG
-		memcpy(&Version, &realObject->Version, (char*)&realObject - (char*)&Version);
+		if (realObject)
+		{
+			memcpy(&Version, &realObject->Version, (char*)&realObject - (char*)&Version);
+		}
+		else
+		{
+			memset(&Version, 0, (char*)&realObject - (char*)&Version);
+		}
 #endif
 	}
 
@@ -33,6 +41,7 @@ public:
     virtual COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE GetFunction(THIS_ void* pData,UINT* pSizeOfData) override;
 
 	void CreateVertexShader(const DWORD* const pFunction);
+	void CreatePretransformPassthroughVertexShader(const DebuggableD3DVERTEXELEMENT9* const pElements, const unsigned numElements);
 
 	inline const ShaderInfo& GetShaderInfo() const
 	{
@@ -110,7 +119,7 @@ public:
 		outPositionPtrs[3] = ( (D3DXVECTOR4* const)thisOutputRegisters[3]) + outPositionRegisterIndex;
 	}
 
-	void JitLoadShader();
+	void JitLoadShader(const DWORD FVF = 0x00000000);
 
 	const struct DeviceBytecode* const GetDeviceCompiledShaderInfo() const
 	{
@@ -135,6 +144,7 @@ public:
 	VSEntry jitShaderMain4;
 
 	bool triedJit;
+	bool isPretransformPassthroughVS;
 protected:
 	unsigned outPositionRegisterIndex;
 	unsigned outTexcoord0RegisterIndex;
@@ -143,10 +153,13 @@ protected:
 	std::vector<DWORD> shaderBytecode;
 	ShaderInfo vertexShaderInfo;
 
+	const DebuggableD3DVERTEXELEMENT9* passthroughVSElements;
+	unsigned passthroughVSElementsCount;
+
 #ifdef _DEBUG
 	char debugObjectName[256] = {0};
 #endif
 
 	const gpuvoid* deviceCompiledVertexShaderBytes;
-	struct DeviceBytecode* deviceCompiledVertexShaderBytecode;
+	const struct DeviceBytecode* deviceCompiledVertexShaderBytecode;
 };

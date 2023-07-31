@@ -1,5 +1,7 @@
 #pragma once
 
+typedef unsigned char BYTE;
+
 enum InstructionOperation : unsigned __int64
 {
 	Op_NOP = 0,
@@ -160,6 +162,33 @@ enum eConvertMode : unsigned char
 	Half_to_F, // 6
 	U32_to_F // 7
 };
+
+struct DeviceShaderHeader
+{
+	struct inputRegBindingData
+	{
+		BYTE usageType : 3; // Position/color/texcoord/normal/blendweights/blendindices/etc. (uses the eInputUsageType enum)
+		BYTE usageIndex : 2;
+		BYTE unusedBits0 : 3;
+	};
+
+	struct outputRegBindingData
+	{
+		BYTE usageType : 3; // Position/color/texcoord/psize/fog (uses the eInputUsageType enum)
+		BYTE usageIndex : 2;
+		BYTE unusedBits0 : 3;
+	};
+
+	static const unsigned short SHADER_HEADER_MAGIC_BYTES = 'SV'; // This is "VS" reversed
+
+	unsigned short shaderMagicBytes = SHADER_HEADER_MAGIC_BYTES; 
+	unsigned short shaderLength_instructionSlots = 0;
+	unsigned long shaderHash = 0x00000000;
+	inputRegBindingData inputRegsData[8] = {0}; // These are for input registers v# (ie. v0, v1, v2, etc.)
+	outputRegBindingData outputRegsData[8] = {0}; // These are for output registers o# (ie. o0, o1, o2, etc.)
+	unsigned char unusedHeaderPadding[8] = {0};
+};
+static_assert(sizeof(DeviceShaderHeader) == 32, "Error: Unexpected struct padding!");
 
 union instructionSlot
 {

@@ -7,3 +7,4 @@ DisasmDeviceBytecodeToString=DisasmDeviceBytecodeToString @3
 DisasmDeviceBytecodeToFile=DisasmDeviceBytecodeToFile @4
 DisasmSingleInstructionToFile=DisasmSingleInstructionToFile @5
 DisasmSingleInstructionToMemory=DisasmSingleInstructionToMemory @6
+GenerateShaderForPretransformedVertices=GenerateShaderForPretransformedVertices @7

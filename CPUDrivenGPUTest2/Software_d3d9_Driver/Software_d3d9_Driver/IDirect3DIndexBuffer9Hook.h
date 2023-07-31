@@ -75,6 +75,8 @@ public:
     virtual COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE Unlock(THIS) override;
     virtual COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE GetDesc(THIS_ D3DINDEXBUFFER_DESC *pDesc) override;
 
+	void UpdateDataToGPU();
+
 	inline const bool IsUnlocked(void) const
 	{
 		return lockCount == 0;
@@ -187,6 +189,7 @@ public:
 	D3DFORMAT InternalFormat;
 	D3DPOOL InternalPool;
 
+	DWORD lockFlags = 0x00000000;
 	long lockCount;
 	bool isSoftIndexBufferUP;
 
@@ -200,6 +203,10 @@ public:
 	} rawBytes;
 
 	gpuvoid* GPUBytes = NULL;
+
+	// Dirty flag gets set on Unlock and gets cleared when we upload a fresh copy of this buffer to the GPU!
+	bool GPUBytesDirty = true;
+
 #ifdef _DEBUG
 	char debugObjectName[256] = {0};
 #endif

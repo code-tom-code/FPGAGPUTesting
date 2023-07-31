@@ -19,7 +19,9 @@
 #include "DitherTables.h"
 #include "Overlay/DebugOverlay.h"
 #include "Driver/ISerialDeviceComms.h"
-#include "Driver/IVirtualDeviceComms.h"
+#include "Driver/IRemoteProcessIPCComms.h"
+#include "Driver/ILocalEndpointDLLComms.h"
+#include "Driver/IBroadcastVirtualDeviceComms.h"
 #include "Driver/GPUAllocator.h"
 #include "Driver/GPUDeviceLimits.h"
 #include "Driver/DeviceConversions.h"
@@ -1126,7 +1128,7 @@ COM_DECLSPEC_NOTHROW ULONG STDMETHODCALLTYPE IDirect3DDevice9Hook::Release(THIS)
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::TestCooperativeLevel(THIS)
 {
 	HRESULT ret = d3d9dev->TestCooperativeLevel();
-	return ret;
+	return D3D_OK; // We don't really support device lost scenarios yet
 }
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::EvictManagedResources(THIS)
@@ -1305,7 +1307,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::Present(THI
 		PlaySoundA("C:\\Windows\\Media\\tada.wav", GetModuleHandleA(NULL), SND_FILENAME); // Play a sound file to indicate that the copy has finished!
 	}
 
-	if (GetAsyncKeyState(VK_F11) )
+	if (GetAsyncKeyState(VK_F11) && !IsDebuggerPresent() ) // We can't use F5, F10, or F11 while debugging or else our GetAsyncKeyState()'s get triggered every time you step in the debugger
 	{
 		GetDeviceStats().ArmCollectEventDataNextFrame();
 	}
@@ -1896,7 +1898,9 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::Clear(THIS_
 						currentRT->InternalColorFill(Color);
 					}
 
-					baseDevice->DeviceClearRendertarget(currentRT->GetDeviceSurfaceBytes(), Color);
+					const unsigned rtWidth = currentRT->GetInternalWidth();
+					const unsigned rtHeight = currentRT->GetInternalHeight();
+					baseDevice->DeviceClearRendertarget(currentRT->GetDeviceSurfaceBytes(), Color, rtWidth, rtHeight);
 
 #ifdef _DEBUG
 					DWORD clearTestArray[64] = {0};
@@ -1904,7 +1908,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::Clear(THIS_
 						clearTestArray[y] = D3DColorToRGBAColor(Color);
 					baseDevice->DeviceWaitForIdle();
 					deviceComms->DeviceValidateMemory(currentRT->GetDeviceSurfaceBytes(), clearTestArray, sizeof(clearTestArray) ); // Validate the beginning and the end of the clear-region
-					deviceComms->DeviceValidateMemory( (const gpuvoid* const)( (size_t)currentRT->GetDeviceSurfaceBytes() + 640 * 480 * sizeof(D3DCOLOR) - sizeof(clearTestArray) ), clearTestArray, sizeof(clearTestArray) );
+					deviceComms->DeviceValidateMemory( (const gpuvoid* const)( (size_t)currentRT->GetDeviceSurfaceBytes() + rtWidth * rtHeight * sizeof(D3DCOLOR) - sizeof(clearTestArray) ), clearTestArray, sizeof(clearTestArray) );
 #endif
 				}
 			}
@@ -1923,7 +1927,9 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::Clear(THIS_
 						{
 							currentRT->InternalColorFill(Color, clearRect);
 						}
-						baseDevice->DeviceClearRendertarget(currentRT->GetDeviceSurfaceBytes(), Color); // TODO: Implement subrect clears on the device later
+						const unsigned rtWidth = currentRT->GetInternalWidth();
+						const unsigned rtHeight = currentRT->GetInternalHeight();
+						baseDevice->DeviceClearRendertarget(currentRT->GetDeviceSurfaceBytes(), Color, rtWidth, rtHeight); // TODO: Implement subrect clears on the device later
 
 #ifdef _DEBUG
 						DWORD clearTestArray[64] = {0};
@@ -1931,7 +1937,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::Clear(THIS_
 							clearTestArray[y] = D3DColorToRGBAColor(Color);
 						baseDevice->DeviceWaitForIdle();
 						deviceComms->DeviceValidateMemory(currentRT->GetDeviceSurfaceBytes(), clearTestArray, sizeof(clearTestArray) );
-						deviceComms->DeviceValidateMemory( (const gpuvoid* const)( (size_t)currentRT->GetDeviceSurfaceBytes() + 640 * 480 * sizeof(D3DCOLOR) - sizeof(clearTestArray) ), clearTestArray, sizeof(clearTestArray) );
+						deviceComms->DeviceValidateMemory( (const gpuvoid* const)( (size_t)currentRT->GetDeviceSurfaceBytes() + rtWidth * rtHeight * sizeof(D3DCOLOR) - sizeof(clearTestArray) ), clearTestArray, sizeof(clearTestArray) );
 #endif
 					}
 				}
@@ -4389,6 +4395,19 @@ void IDirect3DDevice9Hook::CallRunCommandList(const GPUCommandList& runCommandLi
 		baseDevice->DeviceExecuteCommandList(runCommandList);
 }
 
+// This function sets the vertex shader constants for the passthrough pretransformed vertex shader:
+// c0.xy = Negation of viewport X,Y offsets
+// c0.z = Negation of viewport Z offset
+// c1.xy = Reciprocal of viewport X,-Y scales
+// c1.z = Reciprocal of viewport Z scale
+void SetPassthroughVSShaderState(const DeviceState& state, IDirect3DDevice9Hook* const dev)
+{
+	const D3DXVECTOR4 c0(-state.cachedViewport.halfWidthF, -state.cachedViewport.halfHeightF, -0.0f, 0.0f);
+	const D3DXVECTOR4 c1(1.0f / state.cachedViewport.halfWidthF, -1.0f / state.cachedViewport.halfHeightF, 1.0f / state.cachedViewport.zScale, 0.0f);
+	dev->SetVertexShaderConstantF(0, &c0.x, 1);
+	dev->SetVertexShaderConstantF(1, &c1.x, 1);
+}
+
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawPrimitive(THIS_ D3DPRIMITIVETYPE PrimitiveType, UINT StartVertex, UINT PrimitiveCount)
 {
 	SIMPLE_FUNC_SCOPE();
@@ -4414,6 +4433,8 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawPrimiti
 
 	bool usePassthroughVertexShader = false;
 	bool usePassthroughPixelShader = false;
+	bool usePretransformedVertexShader = false;
+	LPDIRECT3DVERTEXSHADER9 restorePreviousVertexShader = NULL;
 
 	if (!currentState.currentPixelShader)
 	{
@@ -4430,10 +4451,10 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawPrimiti
 	// This is the case if we have a D3DUSAGE_POSITIONT with usageindex 0
 	if (SkipVertexProcessing() )
 	{
-		if (CurrentPipelineCanEarlyZTest() )
+		/*if (CurrentPipelineCanEarlyZTest() )
 			DrawPrimitiveUBPretransformedSkipVS<false, unsigned, true>(PrimitiveType, 0, 0, PrimitiveCount);
 		else
-			DrawPrimitiveUBPretransformedSkipVS<false, unsigned, false>(PrimitiveType, 0, 0, PrimitiveCount);
+			DrawPrimitiveUBPretransformedSkipVS<false, unsigned, false>(PrimitiveType, 0, 0, PrimitiveCount);*/
 
 		/*DeviceLoadVertexDataPOSITIONTVerticesPosition(PrimitiveType, PrimitiveCount, false, 0, 0); // Upload the vertex data to the GPU
 
@@ -4450,12 +4471,15 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawPrimiti
 			CallRunCommandList(newRecordingCommandList);
 		}*/
 
-		if (usePassthroughPixelShader)
+		/*if (usePassthroughPixelShader)
 			SetPixelShader(NULL);
-		return ret;
+		return ret;*/
+		usePretransformedVertexShader = true;
+		restorePreviousVertexShader = currentState.currentVertexShader;
+		SetVertexShader(currentState.currentVertexDecl->GetPassthroughVertexShader() );
+		SetPassthroughVSShaderState(currentState, this);
 	}
-
-	if (!currentState.currentVertexShader)
+	else if (!currentState.currentVertexShader)
 	{
 		usePassthroughVertexShader = true;
 
@@ -4470,21 +4494,28 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawPrimiti
 	{
 		DbgBreakPrint("Error: NULL vertex decl");
 	}
-	DeclarationSemanticMapping vertexDeclMapping;
-	vertexDeclMapping.ClearSemanticMapping();
-	vertexDeclMapping.ComputeMappingVS(currentState.currentVertexDecl, currentState.currentVertexShader);
-	InitVertexShader(currentState, currentState.currentVertexShader->GetShaderInfo() );
+	if (!currentState.currentVertexDecl->SkipVertexProcessing() )
+	{
+		DeclarationSemanticMapping vertexDeclMapping;
+		vertexDeclMapping.ClearSemanticMapping();
+		vertexDeclMapping.ComputeMappingVS(currentState.currentVertexDecl, currentState.currentVertexShader);
+		InitVertexShader(currentState, currentState.currentVertexShader->GetShaderInfo() );
 
-	SetupCurrentDrawCallVertexData(vertexDeclMapping);
+		SetupCurrentDrawCallVertexData(vertexDeclMapping);
 
 #ifdef _DEBUG
-	if (currentState.currentVertexShader && !currentState.currentVertexShader->jitShaderMain)
-	{
-		DbgPrint("Warning: Uncached vertex shader detected");
-	}
+		if (currentState.currentVertexShader && !currentState.currentVertexShader->jitShaderMain)
+		{
+			DbgPrint("Warning: Uncached vertex shader detected");
+		}
 #endif
 
-	ProcessVerticesToBuffer<true, false>(currentState.currentVertexDecl, vertexDeclMapping, NULL, PrimitiveType, 0, 0, StartVertex, PrimitiveCount, NULL, 0);
+		// Perform software VS vertex processing if we have that enabled:
+		if (enableSoftwareRenderingVisualization)
+		{
+			ProcessVerticesToBuffer<true, false>(currentState.currentVertexDecl, vertexDeclMapping, NULL, PrimitiveType, 0, 0, StartVertex, PrimitiveCount, NULL, 0);
+		}
+	}
 
 #ifdef _DEBUG
 	if (currentState.currentPixelShader && !currentState.currentPixelShader->jitShaderMain)
@@ -4520,15 +4551,23 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawPrimiti
 		eventRecordedDrawCalls.push_back(newDrawEvent);
 	}
 
-	if (CurrentPipelineCanEarlyZTest() )
-		DrawPrimitiveUB<true>(PrimitiveType, PrimitiveCount);
-	else
-		DrawPrimitiveUB<false>(PrimitiveType, PrimitiveCount);
+	if (!currentState.currentVertexDecl->SkipVertexProcessing() )
+	{
+		if (enableSoftwareRenderingVisualization)
+		{
+			if (CurrentPipelineCanEarlyZTest() )
+				DrawPrimitiveUB<true>(PrimitiveType, PrimitiveCount);
+			else
+				DrawPrimitiveUB<false>(PrimitiveType, PrimitiveCount);
+		}
+	}
 
 	if (usePassthroughVertexShader)
 		SetVertexShader(NULL);
 	if (usePassthroughPixelShader)
 		SetPixelShader(NULL);
+	if (usePretransformedVertexShader)
+		SetVertexShader(restorePreviousVertexShader);
 
 	return ret;
 }
@@ -4794,11 +4833,12 @@ static const bool ValidateVertexDeclarationForDevice(const std::vector<Debuggabl
 
 struct deviceVertexDeclElement
 {
-	deviceVertexDeclElement() : vertexBufferBaseAddr(0x00000000), vertexBufferLength_Bytes(0), isD3DCOLOR(false),
-		thisElementDWORDCount(3), vertexStreamSlotIndex(0), shaderInputRegisterIndex(0), dwordStreamStride(0), dwordOffset(0)
+	deviceVertexDeclElement() : vertexBufferObjPtr(NULL), vertexBufferBaseAddr(0x00000000), vertexBufferLength_Bytes(0), isD3DCOLOR(false),
+		thisElementDWORDCount(3), vertexStreamSlotIndex(0), shaderInputRegisterIndex(0), dwordStreamStride(0), dwordOffset(0), usage(D3DDECLUSAGE_POSITION), usageIndex(0)
 	{
 	}
 
+	IDirect3DVertexBuffer9Hook* vertexBufferObjPtr;
 	const gpuvoid* vertexBufferBaseAddr;
 	unsigned vertexBufferLength_Bytes;
 	bool isD3DCOLOR;
@@ -4807,6 +4847,8 @@ struct deviceVertexDeclElement
 	BYTE shaderInputRegisterIndex : 3; // Can be from 0 to 7
 	BYTE dwordStreamStride : 6; // Can be from 0 to 63 DWORD's
 	BYTE dwordOffset : 6; // Can be from 0 to 63 DWORD's
+	D3DDECLUSAGE usage : 5; // This is the D3D usage type
+	BYTE usageIndex : 4; // This is the D3D usage index
 };
 
 struct deviceVertexDecl
@@ -4820,8 +4862,9 @@ void IDirect3DDevice9Hook::DeviceSetVertexDecl(const deviceVertexDecl& deviceDec
 	for (unsigned streamElementID = 0; streamElementID < deviceDecl.numElements; ++streamElementID)
 	{
 		const deviceVertexDeclElement& thisDeviceDeclElement = deviceDecl.deviceDeclElements[streamElementID];
+		thisDeviceDeclElement.vertexBufferObjPtr->UpdateDataToGPU();
 		baseDevice->DeviceSetVertexStreamData(thisDeviceDeclElement.vertexBufferBaseAddr, thisDeviceDeclElement.vertexBufferLength_Bytes, thisDeviceDeclElement.thisElementDWORDCount, streamElementID, thisDeviceDeclElement.isD3DCOLOR,
-				thisDeviceDeclElement.shaderInputRegisterIndex, thisDeviceDeclElement.dwordStreamStride, thisDeviceDeclElement.dwordOffset, deviceDecl.numElements);
+				thisDeviceDeclElement.shaderInputRegisterIndex, thisDeviceDeclElement.dwordStreamStride, thisDeviceDeclElement.dwordOffset, deviceDecl.numElements, thisDeviceDeclElement.usage, thisDeviceDeclElement.usageIndex);
 	}
 }
 
@@ -4916,19 +4959,44 @@ void IDirect3DDevice9Hook::DeviceSetVertexStreamsAndDecl()
 
 		unsigned shaderRegIndex = 0;
 		bool shaderRegIndexFound = false;
-		const ShaderInfo& vertShaderInfo = currentState.currentVertexShader->GetShaderInfo();
-		const std::vector<DeclaredRegister>& shaderRegisters = vertShaderInfo.declaredRegisters;
-		const unsigned numShaderRegisters = shaderRegisters.size();
-		for (unsigned shaderRegId = 0; shaderRegId < numShaderRegisters; ++shaderRegId)
+		if (currentState.currentVertexDecl->SkipVertexProcessing() )
 		{
-			const DeclaredRegister& thisShaderReg = shaderRegisters[shaderRegId];
-			if (thisShaderReg.registerType == D3DSPR_INPUT)
+			// Pretransformed vertices (D3DFVF_XYZRHW or POSITIONT) will hard-code the vertex shader register indices for now:
+			if (thisElement.UsageIndex == 0)
 			{
-				if (thisShaderReg.usageType == thisElement.Usage && thisShaderReg.usageIndex == thisElement.UsageIndex)
+				if (thisElement.Usage == D3DDECLUSAGE_POSITION || thisElement.Usage == D3DDECLUSAGE_POSITIONT)
 				{
-					shaderRegIndex = thisShaderReg.registerIndex;
 					shaderRegIndexFound = true;
-					break;
+					shaderRegIndex = 0;
+				}
+				else if (thisElement.Usage == D3DDECLUSAGE_COLOR)
+				{
+					shaderRegIndexFound = true;
+					shaderRegIndex = 1;
+				}
+				else if (thisElement.Usage == D3DDECLUSAGE_TEXCOORD)
+				{
+					shaderRegIndexFound = true;
+					shaderRegIndex = 2;
+				}
+			}
+		}
+		else // If we have a real vertex shader, then search the ShaderInfo to find out which shader register this vertex element maps to:
+		{
+			const ShaderInfo& vertShaderInfo = currentState.currentVertexShader->GetShaderInfo();
+			const std::vector<DeclaredRegister>& shaderRegisters = vertShaderInfo.declaredRegisters;
+			const unsigned numShaderRegisters = shaderRegisters.size();
+			for (unsigned shaderRegId = 0; shaderRegId < numShaderRegisters; ++shaderRegId)
+			{
+				const DeclaredRegister& thisShaderReg = shaderRegisters[shaderRegId];
+				if (thisShaderReg.registerType == D3DSPR_INPUT)
+				{
+					if (thisShaderReg.usageType == thisElement.Usage && thisShaderReg.usageIndex == thisElement.UsageIndex)
+					{
+						shaderRegIndex = thisShaderReg.registerIndex;
+						shaderRegIndexFound = true;
+						break;
+					}
 				}
 			}
 		}
@@ -4946,6 +5014,7 @@ void IDirect3DDevice9Hook::DeviceSetVertexStreamsAndDecl()
 
 			deviceVertexDeclElement& thisDeviceDeclElement = deviceDecl.deviceDeclElements[shaderUsedElements];
 
+			thisDeviceDeclElement.vertexBufferObjPtr = thisVertexStream.vertexBuffer;
 			thisDeviceDeclElement.vertexBufferBaseAddr = vertexBufferData;
 			thisDeviceDeclElement.vertexBufferLength_Bytes = thisVertexStream.vertexBuffer->GetInternalLength_Bytes();
 			thisDeviceDeclElement.thisElementDWORDCount = elementDWORDCount;
@@ -4953,6 +5022,8 @@ void IDirect3DDevice9Hook::DeviceSetVertexStreamsAndDecl()
 			thisDeviceDeclElement.shaderInputRegisterIndex = shaderRegIndex;
 			thisDeviceDeclElement.dwordStreamStride = thisVertexStream.streamStride / sizeof(DWORD);
 			thisDeviceDeclElement.dwordOffset = thisElement.Offset / sizeof(DWORD);
+			thisDeviceDeclElement.usage = thisElement.Usage;
+			thisDeviceDeclElement.usageIndex = thisElement.UsageIndex;
 
 			++shaderUsedElements;
 		}
@@ -5139,7 +5210,7 @@ void IDirect3DDevice9Hook::DeviceSetUsedVertexShaderConstants()
 		deviceAllocatedBuffer constantBufferAllocation;
 		constantBufferAllocation.deviceSizeBytes = (const unsigned short)( (constRegisterData.size() + numPaddingFloat4s) * sizeof(float4) );
 		constantBufferAllocation.format = GPUFMT_ConstFBufferData;
-		constantBufferAllocation.bufferHash = deviceAllocatedBuffer::ComputeHash(&constRegisterData.front(), constantBufferAllocation.deviceSizeBytes);
+		constantBufferAllocation.bufferHash = deviceAllocatedBuffer::ComputeHash(&constRegisterData.front(), (const unsigned short)(constRegisterData.size() * sizeof(float4) ) );
 
 		if (CreateOrUseCachedVertDataBuffer(constantBufferAllocation, cachedConstantBuffers
 	#ifdef _DEBUG
@@ -5427,7 +5498,10 @@ void IDirect3DDevice9Hook::GetStateAlphaTest(bool& alphaTestEnable, D3DCMPFUNC& 
 #endif
 	case AlphaTestOverrideSettings::ATOS_Default:
 		alphaTestEnable = currentState.currentRenderStates.renderStatesUnion.namedStates.alphaTestEnable ? true : false;
-		alphaCmpFunc = currentState.currentRenderStates.renderStatesUnion.namedStates.alphaFunc;
+		if (currentState.currentRenderStates.renderStatesUnion.namedStates.alphaFunc >= D3DCMP_NEVER && currentState.currentRenderStates.renderStatesUnion.namedStates.alphaFunc <= D3DCMP_ALWAYS) // Workaround for some games setting a D3DCMP of 0
+			alphaCmpFunc = currentState.currentRenderStates.renderStatesUnion.namedStates.alphaFunc;
+		else
+			alphaCmpFunc = D3DCMP_ALWAYS;
 		alphaTestRef = (const unsigned char)(currentState.currentRenderStates.renderStatesUnion.namedStates.alphaRef & 0xFF);
 		return;
 	case AlphaTestOverrideSettings::ATOS_OverrideAlphaTestDisable:
@@ -5811,6 +5885,8 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawIndexed
 
 	bool usePassthroughVertexShader = false;
 	bool usePassthroughPixelShader = false;
+	bool usePretransformedVertexShader = false;
+	LPDIRECT3DVERTEXSHADER9 restorePreviousVertexShader = NULL;
 
 	if (!currentState.currentPixelShader)
 	{
@@ -5825,7 +5901,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawIndexed
 	// This is the case if we have a D3DUSAGE_POSITIONT with usageindex 0
 	if (SkipVertexProcessing() )
 	{
-		switch (currentState.currentIndexBuffer->GetFormat() )
+		/*switch (currentState.currentIndexBuffer->GetFormat() )
 		{
 		case D3DFMT_INDEX16:
 			if (CurrentPipelineCanEarlyZTest() )
@@ -5845,7 +5921,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawIndexed
 			else
 				DrawPrimitiveUBPretransformedSkipVS<true, unsigned, false>(PrimitiveType, BaseVertexIndex, startIndex, primCount);
 			break;
-		}
+		}*/
 
 		/*DeviceLoadVertexDataPOSITIONTVerticesPosition(PrimitiveType, primCount, true, BaseVertexIndex, startIndex); // Upload the vertex data to the GPU
 
@@ -5862,12 +5938,15 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawIndexed
 			CallRunCommandList(newRecordingCommandList);
 		}*/
 
-		if (usePassthroughPixelShader)
+		/*if (usePassthroughPixelShader)
 			SetPixelShader(NULL);
-		return S_OK;
+		return S_OK;*/
+		usePretransformedVertexShader = true;
+		restorePreviousVertexShader = currentState.currentVertexShader;
+		SetVertexShader(currentState.currentVertexDecl->GetPassthroughVertexShader() );
+		SetPassthroughVSShaderState(currentState, this);
 	}
-
-	if (!currentState.currentVertexShader)
+	else if (!currentState.currentVertexShader)
 	{
 		usePassthroughVertexShader = true;
 
@@ -5885,21 +5964,27 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawIndexed
 	{
 		DbgBreakPrint("Error: NULL vertex decl");
 	}
-	DeclarationSemanticMapping vertexDeclMapping;
-	vertexDeclMapping.ClearSemanticMapping();
-	vertexDeclMapping.ComputeMappingVS(currentState.currentVertexDecl, currentState.currentVertexShader);
-	InitVertexShader(currentState, currentState.currentVertexShader->GetShaderInfo() );
+	if (!currentState.currentVertexDecl->SkipVertexProcessing() )
+	{
+		DeclarationSemanticMapping vertexDeclMapping;
+		vertexDeclMapping.ClearSemanticMapping();
+		vertexDeclMapping.ComputeMappingVS(currentState.currentVertexDecl, currentState.currentVertexShader);
+		InitVertexShader(currentState, currentState.currentVertexShader->GetShaderInfo() );
 
-	SetupCurrentDrawCallVertexData(vertexDeclMapping);
+		SetupCurrentDrawCallVertexData(vertexDeclMapping);
 
 #ifdef _DEBUG
-	if (currentState.currentVertexShader && !currentState.currentVertexShader->jitShaderMain)
-	{
-		DbgPrint("Warning: Uncached vertex shader detected");
-	}
+		if (currentState.currentVertexShader && !currentState.currentVertexShader->jitShaderMain)
+		{
+			DbgPrint("Warning: Uncached vertex shader detected");
+		}
 #endif
 
-	ProcessVerticesToBuffer<true, true>(currentState.currentVertexDecl, vertexDeclMapping, currentState.currentIndexBuffer, PrimitiveType, BaseVertexIndex, MinVertexIndex, startIndex, primCount, NULL, 0);
+		if (enableSoftwareRenderingVisualization)
+		{
+			ProcessVerticesToBuffer<true, true>(currentState.currentVertexDecl, vertexDeclMapping, currentState.currentIndexBuffer, PrimitiveType, BaseVertexIndex, MinVertexIndex, startIndex, primCount, NULL, 0);
+		}
+	}
 
 #ifdef _DEBUG
 	if (currentState.currentPixelShader && !currentState.currentPixelShader->jitShaderMain)
@@ -5915,6 +6000,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawIndexed
 		GPUCommandList newRecordingCommandList;
 		baseDevice->BeginRecordingCommandList(&newRecordingCommandList);
 
+		currentState.currentIndexBuffer->UpdateDataToGPU();
 		DeviceSetCurrentState(PrimitiveType, currentState.currentIndexBuffer); // Update the device state
 
 		DeviceSetVertexShader(); // Set our current vertex shader on the device (has the side effect of overwriting the 0th stream source register, so make sure to call this before DeviceSetVertexStreamsAndDecl() )
@@ -5987,15 +6073,23 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawIndexed
 		eventRecordedDrawCalls.push_back(newDrawEvent);
 	}
 
-	if (CurrentPipelineCanEarlyZTest() )
-		DrawPrimitiveUB<true>(PrimitiveType, primCount);
-	else
-		DrawPrimitiveUB<false>(PrimitiveType, primCount);
+	if (!currentState.currentVertexDecl->SkipVertexProcessing() )
+	{
+		if (enableSoftwareRenderingVisualization)
+		{
+			if (CurrentPipelineCanEarlyZTest() )
+				DrawPrimitiveUB<true>(PrimitiveType, primCount);
+			else
+				DrawPrimitiveUB<false>(PrimitiveType, primCount);
+		}
+	}
 
 	if (usePassthroughVertexShader)
 		SetVertexShader(NULL);
 	if (usePassthroughPixelShader)
 		SetPixelShader(NULL);
+	if (usePretransformedVertexShader)
+		SetVertexShader(restorePreviousVertexShader);
 
 	return ret;
 }
@@ -11463,9 +11557,11 @@ void IDirect3DDevice9Hook::InitializeState(const D3DPRESENT_PARAMETERS& d3dpp, c
 	const unsigned short scissorRight = 640;
 	const unsigned short scissorTop = 0;
 	const unsigned short scissorBottom = 480;
+	const unsigned renderTargetWidth = backbufferSurfaceHook->GetInternalWidth();
+	const unsigned renderTargetHeight = backbufferSurfaceHook->GetInternalHeight();
 	baseDevice->DeviceSetROPState(backbufferSurfaceHook->GetDeviceSurfaceBytes(), wm_writeAll, alphaTestEnable, alphaTestRefVal, ConvertToDeviceCmpFunc(alphaTestCmpFunc),
 			alphaBlendEnable, srcColorBlend, destColorBlend, colorBlendOp, srcAlphaBlend, destAlphaBlend, alphaBlendOp, blendFactorARGB);
-	baseDevice->DeviceClearRendertarget(backbufferSurfaceHook->GetDeviceSurfaceBytes(), D3DCOLOR_ARGB(255, 0, 0, 0) ); // Perform initial device clear so that our backbuffer doesn't start out as garbage
+	baseDevice->DeviceClearRendertarget(backbufferSurfaceHook->GetDeviceSurfaceBytes(), D3DCOLOR_ARGB(255, 0, 0, 0), renderTargetWidth, renderTargetHeight); // Perform initial device clear so that our backbuffer doesn't start out as garbage
 	baseDevice->DeviceSetNullTextureState(TF_bilinearFilter, tcm_r, tcm_g, tcm_b, tcm_a, cbm_textureModulateVertexColor, cbm_textureModulateVertexColor);
 	baseDevice->DeviceSetClipState(depthClipEnable, useOpenGLNearZClip, guardBandXScale, guardBandYScale, clippingEnabled);
 	baseDevice->DeviceSetTriSetupState(viewportHalfWidth, viewportHalfHeight, viewportZScale, viewportZOffset, scissorLeft, scissorRight, scissorTop, scissorBottom);
@@ -11513,7 +11609,7 @@ IDirect3DDevice9Hook::IDirect3DDevice9Hook(LPDIRECT3DDEVICE9 _d3d9dev, IDirect3D
 #endif
 
 #ifdef _DEBUG
-	enableSoftwareRenderingVisualization = true;
+	enableSoftwareRenderingVisualization = false;
 #else
 	enableSoftwareRenderingVisualization = false;
 #endif
@@ -11582,10 +11678,50 @@ IDirect3DDevice9Hook::IDirect3DDevice9Hook(LPDIRECT3DDEVICE9 _d3d9dev, IDirect3D
 
 	GPUInitializeAllocator();
 
-	// This won't work too well for processes that create multiple IDirect3DDevice9's, but it's fine for testing for now
-	deviceComms = new IVirtualDeviceComms(new ISerialDeviceComms("COM3", 921600, ODDPARITY) );
+	// Using a single global comms object won't work too well for processes that create multiple IDirect3DDevice9's, but it's fine for testing for now
+	IRemoteProcessIPCComms* const remoteProcessesIPCComms = new IRemoteProcessIPCComms();
+	if (!remoteProcessesIPCComms->LaunchNewRemoteIPCProcess(
+#ifdef _M_X64
+	#ifdef _DEBUG
+		"C:\\Users\\Tom\\Documents\\Visual Studio 2017\\Projects\\Software_d3d9_Driver\\x64\\Debug\\Endpoints\\GPUEndpoint_D3D9.dll" // TODO: Do not hardcode these paths!
+	#else
+		"C:\\Users\\Tom\\Documents\\Visual Studio 2017\\Projects\\Software_d3d9_Driver\\x64\\Release\\Endpoints\\GPUEndpoint_D3D9.dll"
+	#endif
+#else
+	#ifdef _DEBUG
+		"C:\\Users\\Tom\\Documents\\Visual Studio 2017\\Projects\\Software_d3d9_Driver\\Debug\\Endpoints\\GPUEndpoint_D3D9.dll" // TODO: Do not hardcode these paths!
+	#else
+		"C:\\Users\\Tom\\Documents\\Visual Studio 2017\\Projects\\Software_d3d9_Driver\\Release\\Endpoints\\GPUEndpoint_D3D9.dll"
+	#endif
+#endif
+	) )
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Error: This shouldn't happen!
+#endif
+	}
+	ILocalEndpointDLLComms* localRecorderEndpointComms = new ILocalEndpointDLLComms(
+#ifdef _M_X64
+	#ifdef _DEBUG
+		"C:\\Users\\Tom\\Documents\\Visual Studio 2017\\Projects\\Software_d3d9_Driver\\x64\\Debug\\Endpoints\\RecordingEndpoint_DiskFile.dll" // TODO: Do not hardcode these paths!
+	#else
+		"C:\\Users\\Tom\\Documents\\Visual Studio 2017\\Projects\\Software_d3d9_Driver\\x64\\Release\\Endpoints\\RecordingEndpoint_DiskFile.dll"
+	#endif
+#else
+	#ifdef _DEBUG
+		"C:\\Users\\Tom\\Documents\\Visual Studio 2017\\Projects\\Software_d3d9_Driver\\Debug\\Endpoints\\RecordingEndpoint_DiskFile.dll" // TODO: Do not hardcode these paths!
+	#else
+		"C:\\Users\\Tom\\Documents\\Visual Studio 2017\\Projects\\Software_d3d9_Driver\\Release\\Endpoints\\RecordingEndpoint_DiskFile.dll"
+	#endif
+#endif
+	);
+	//ISerialDeviceComms* const serialDeviceComms = new ISerialDeviceComms("COM3", 921600, ODDPARITY);
+	IBroadcastVirtualDeviceComms* const broadcastDeviceComms = new IBroadcastVirtualDeviceComms(/*serialDeviceComms*/remoteProcessesIPCComms);
+	//broadcastDeviceComms->AddNewSecondaryBroadcastTarget(remoteProcessesIPCComms);
+	broadcastDeviceComms->AddNewSecondaryBroadcastTarget(localRecorderEndpointComms);
 
-	baseDevice = new IBaseGPUDevice(deviceComms);
+	deviceComms = broadcastDeviceComms;
+	baseDevice = new IBaseGPUDevice(broadcastDeviceComms);
 
 	allocatedDebugShaderRegisterFile = GPUAlloc(sizeof(DeviceRegisterFile), 1, 0, 0, 0, GPUVAT_RegisterFileDumpMemory, GPUFMT_RegFileDump
 #ifdef _DEBUG

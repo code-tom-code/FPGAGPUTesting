@@ -6,7 +6,8 @@ class IDirect3DVertexDeclaration9Hook : public IDirect3DVertexDeclaration9
 {
 public:
 	IDirect3DVertexDeclaration9Hook(LPDIRECT3DVERTEXDECLARATION9 _realObject, IDirect3DDevice9Hook* _parentDevice) : realObject(_realObject), parentDevice(_parentDevice), refCount(1),
-		inVertexSize(0), outVertexSize(0), foundPositionT0(NULL), skipVertexProcessing(false), hasColor0(false), hasColor1(false)
+		inVertexSize(0), outVertexSize(0), foundPositionT0(NULL), skipVertexProcessing(false), hasColor0(false), hasColor1(false), 
+		devicePassthroughVS(NULL)
 	{
 		vertDeclAutoCreatedFromFVF.rawFVF_DWORD = 0x00000000;
 #ifdef _DEBUG
@@ -24,14 +25,7 @@ public:
 		return vertShaderOutputDecl;
 	}
 
-	virtual ~IDirect3DVertexDeclaration9Hook()
-	{
-		// TODO: Remove this vertex decl from the FVFToVertDeclCache when it gets fully released
-
-#ifdef WIPE_ON_DESTRUCT_D3DHOOKOBJECT
-		memset(this, 0x00000000, sizeof(*this) - (sizeof(elements) + sizeof(vertShaderOutputElements) ) );
-#endif
-	}
+	virtual ~IDirect3DVertexDeclaration9Hook();
 
 	const std::vector<DebuggableD3DVERTEXELEMENT9>& GetElementsInternal(void) const
 	{
@@ -97,6 +91,11 @@ public:
 		return hasColor1;
 	}
 
+	IDirect3DVertexShader9Hook* GetPassthroughVertexShader() const
+	{
+		return devicePassthroughVS;
+	}
+
 protected:
 	LPDIRECT3DVERTEXDECLARATION9 realObject;
 	IDirect3DDevice9Hook* parentDevice;
@@ -112,12 +111,18 @@ protected:
 	bool hasColor0;
 	bool hasColor1;
 
+	// If this vertex decl was implicitly created from a SetFVF() call, then this is the FVF code that resulted in this vertex decl being created.
+	// If this vertex decl was manually created using a CreateVertexDeclaration() call, then this would always be 0x00000000 instead:
 	debuggableFVF vertDeclAutoCreatedFromFVF;
 
 	unsigned inVertexSize;
 	unsigned outVertexSize;
 
 	LPDIRECT3DVERTEXDECLARATION9 vertShaderOutputDecl;
+
+	// This is only used if this vertex decl is a pretransformed/passthrough vertex decl (D3DFVF_XYZRHW/POSITIONT0).
+	// If we're a standard (not pretransformed) vertex decl, then this will always be NULL:
+	class IDirect3DVertexShader9Hook* devicePassthroughVS;
 
 	std::vector<DebuggableD3DVERTEXELEMENT9> elements;
 	std::vector<DebuggableD3DVERTEXELEMENT9> vertShaderOutputElements;

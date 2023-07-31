@@ -1731,7 +1731,7 @@ void IDirect3DSurface9Hook::CreateTextureImplicitSurface(UINT _Width, UINT _Heig
 		if (TextureSurfaceLevel == 0 && _Pool <= D3DPOOL_MANAGED)
 		{
 			GPUSurfaceBytesRaw = GPUAlloc(GetSurfaceSizeBytes( (InternalWidth + 3) & ~3, (InternalHeight + 3) & ~3, D3DFMT_A8R8G8B8), 
-				InternalWidth, InternalHeight, 1, 1, GPUVAT_Texture, ConvertD3DFormatToDeviceFormat(D3DFMT_A8R8G8B8)
+				InternalWidth, InternalHeight, 1, 1, (_Usage & D3DUSAGE_RENDERTARGET) ? GPUVAT_RenderTarget : GPUVAT_Texture, ConvertD3DFormatToDeviceFormat(D3DFMT_A8R8G8B8)
 #ifdef _DEBUG
 				, debugObjectName
 #endif
@@ -1743,7 +1743,7 @@ void IDirect3DSurface9Hook::CreateTextureImplicitSurface(UINT _Width, UINT _Heig
 		if (TextureSurfaceLevel == 0 && _Pool <= D3DPOOL_MANAGED)
 		{
 			GPUSurfaceBytesRaw = GPUAlloc(GetSurfaceSizeBytes(InternalWidth, InternalHeight, InternalFormat), 
-				InternalWidth, InternalHeight, 1, 1, GPUVAT_Texture, ConvertD3DFormatToDeviceFormat(InternalFormat)
+				InternalWidth, InternalHeight, 1, 1, (_Usage & D3DUSAGE_RENDERTARGET) ? GPUVAT_RenderTarget : GPUVAT_Texture, ConvertD3DFormatToDeviceFormat(InternalFormat)
 #ifdef _DEBUG
 				, debugObjectName
 #endif

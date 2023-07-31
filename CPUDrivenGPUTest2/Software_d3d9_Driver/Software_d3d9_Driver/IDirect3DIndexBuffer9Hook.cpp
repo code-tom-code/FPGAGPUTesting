@@ -287,6 +287,11 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DIndexBuffer9Hook::Lock(T
 		*ppbData = rawBytes.u8Bytes + OffsetToLock;
 	}
 
+	if (IsUnlocked() )
+	{
+		lockFlags = Flags;
+	}
+
 	++lockCount;
 
 	return S_OK;
@@ -306,11 +311,6 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DIndexBuffer9Hook::Unlock
 	}
 #endif
 
-	// Copy our newly locked data off from the CPU to the GPU:
-	IBaseDeviceComms* const deviceComms = IBaseDeviceComms::GetGlobalDeviceComms();
-	deviceComms->DeviceMemCopy(GetGPUBytes(), rawBytes.shortBytes, 
-		InternalLength % sizeof(DWORD) != 0 ? InternalLength + sizeof(unsigned short) : InternalLength); // We might need to pad the copy size out to an even multiple of sizeof(DWORD). This is fine.
-
 #ifdef INDEX_BUFFER_MAGIC_COOKIE
 	ValidateMagicCookie(shortBytes, longBytes, InternalLength, InternalFormat);
 #endif
@@ -325,7 +325,31 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DIndexBuffer9Hook::Unlock
 	}
 #endif
 
+	if (IsUnlocked() )
+	{
+		if ( (lockFlags & D3DLOCK_READONLY) == 0)
+		{
+			GPUBytesDirty = true;
+		}
+
+#ifdef _DEBUG
+		lockFlags = 0x00000000;
+#endif
+	}
+
 	return S_OK;
+}
+
+void IDirect3DIndexBuffer9Hook::UpdateDataToGPU()
+{
+	if (GPUBytesDirty)
+	{
+		// Copy our newly locked data off from the CPU to the GPU:
+		IBaseDeviceComms* const deviceComms = IBaseDeviceComms::GetGlobalDeviceComms();
+		deviceComms->DeviceMemCopy(GetGPUBytes(), rawBytes.shortBytes, 
+			InternalLength % sizeof(DWORD) != 0 ? InternalLength + sizeof(unsigned short) : InternalLength); // We might need to pad the copy size out to an even multiple of sizeof(DWORD). This is fine.
+		GPUBytesDirty = false;
+	}
 }
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DIndexBuffer9Hook::GetDesc(THIS_ D3DINDEXBUFFER_DESC *pDesc)

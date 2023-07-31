@@ -26,11 +26,15 @@ static inline const int computeEdgeSidedness(const int ax, const int ay, const i
 	return (bx - ax) * (cy - ay) - (by - ay) * (cx - ax);
 }
 
+// Top-left edge test is taken from the "Fill Rules" section of this blog post: https://fgiesen.wordpress.com/2013/02/08/triangle-rasterization-in-practice/
 static inline const bool isTopLeftEdge(const int v0x, const int v0y, const int v1x, const int v1y)
 {
 	const int dx = v1x - v0x;
 	const int dy = v1y - v0y;
-	return ( (dy < 0) || ( (dy == 0) && (dx < 0) ) );
+	const bool isCompletelyHorizontal = (dy == 0);
+	const bool isTopEdge = isCompletelyHorizontal && (dx < 0);
+	const bool isLeftEdge = (dy < 0);
+	return (isLeftEdge || isTopEdge);
 }
 
 enum triSetupState
@@ -429,9 +433,12 @@ triSetupResultType EmulateCPUTriSetup(const triSetupInput& inTriData, triSetupOu
 	const signed short barycentricYDeltaC = vx1 - vx0;
 
 	// Correct for top-left rule. Source: https://fgiesen.wordpress.com/2013/02/08/triangle-rasterization-in-practice/
-	const char topLeftEdgeBias0 = isTopLeftEdge(vx1, vy1, vx2, vy2) ? 0 : -1;
-	const char topLeftEdgeBias1 = isTopLeftEdge(vx2, vy2, vx0, vy0) ? 0 : -1;
-	const char topLeftEdgeBias2 = isTopLeftEdge(vx0, vy0, vx1, vy1) ? 0 : -1;
+	outTriSetupOutput.isTopLeftEdgeA = isTopLeftEdge(vx1, vy1, vx2, vy2);
+	outTriSetupOutput.isTopLeftEdgeB = isTopLeftEdge(vx2, vy2, vx0, vy0);
+	outTriSetupOutput.isTopLeftEdgeC = isTopLeftEdge(vx0, vy0, vx1, vy1);
+	const char topLeftEdgeBias0 = outTriSetupOutput.isTopLeftEdgeA ? 0 : -1;
+	const char topLeftEdgeBias1 = outTriSetupOutput.isTopLeftEdgeB ? 0 : -1;
+	const char topLeftEdgeBias2 = outTriSetupOutput.isTopLeftEdgeC ? 0 : -1;
 
 	const int barycentricRowResetA = computeEdgeSidedness(vx1, vy1, vx2, vy2, minX, minY) + topLeftEdgeBias0;
 	const int barycentricRowResetB = computeEdgeSidedness(vx2, vy2, vx0, vy0, minX, minY) + topLeftEdgeBias1;
@@ -472,9 +479,6 @@ triSetupResultType EmulateCPUTriSetup(const triSetupInput& inTriData, triSetupOu
 	outTriSetupOutput.initialBarycentricRowResetA = barycentricRowResetA;
 	outTriSetupOutput.initialBarycentricRowResetB = barycentricRowResetB;
 	outTriSetupOutput.initialBarycentricRowResetC = barycentricRowResetC;
-	outTriSetupOutput.isTopLeftEdgeA = (topLeftEdgeBias0 == 0);
-	outTriSetupOutput.isTopLeftEdgeB = (topLeftEdgeBias1 == 0);
-	outTriSetupOutput.isTopLeftEdgeC = (topLeftEdgeBias2 == 0);
 	outTriSetupOutput.xDeltas.a = barycentricXDeltaA;
 	outTriSetupOutput.xDeltas.b = barycentricXDeltaB;
 	outTriSetupOutput.xDeltas.c = barycentricXDeltaC;

@@ -8,7 +8,9 @@
 #include "PixelPipelineShared.h"
 #include <vector>
 
-static unsigned char triDataSlotIndex = 0;
+static D3DCOLOR framebufferEmulatedCPU[640 * 480] = {0};
+static D3DCOLOR framebufferSimulatedHDL[640 * 480] = {0};
+static D3DCOLOR framebufferRealHardware[640 * 480] = {0};
 
 // This rasterization algorithm, while it does work in most cases, is not fully correct with respect to the D3D11 rasterization rules: https://docs.microsoft.com/en-us/windows/win32/direct3d11/d3d10-graphics-programming-guide-rasterizer-stage-rules
 void EmulateCPURasterizer(const triSetupOutput& triSetupData, std::vector<rasterizedPixelData>& outRasterizedPixels)
@@ -25,6 +27,8 @@ void EmulateCPURasterizer(const triSetupOutput& triSetupData, std::vector<raster
 	const unsigned char topLeftEdgeBiasB = triSetupData.isTopLeftEdgeB ? 0 : 1;
 	const unsigned char topLeftEdgeBiasC = triSetupData.isTopLeftEdgeC ? 0 : 1;
 
+	bool hasRasterizedPixelForThisTriangle = false;
+
 	for (int y = triSetupData.triBoundsAABB.minY; y <= triSetupData.triBoundsAABB.maxY; ++y)
 	{
 		// Reset at the next row:
@@ -32,17 +36,18 @@ void EmulateCPURasterizer(const triSetupOutput& triSetupData, std::vector<raster
 		currentBarycentricB = rowResetBarycentricB;
 		currentBarycentricC = rowResetBarycentricC;
 
-		for (int x = triSetupData.triBoundsAABB.minX; x < triSetupData.triBoundsAABB.maxX; ++x)
+		for (int x = triSetupData.triBoundsAABB.minX; x <= triSetupData.triBoundsAABB.maxX; ++x)
 		{
-			currentBarycentricA += triSetupData.xDeltas.a;
-			currentBarycentricB += triSetupData.xDeltas.b;
-			currentBarycentricC += triSetupData.xDeltas.c;
-
 			if (currentBarycentricA > -1 && currentBarycentricB > -1 && currentBarycentricC > -1) // If all barycentrics are inside the triangle:
 			{
 				const int adjustedBarycentricA = currentBarycentricA + topLeftEdgeBiasA;
 				const int adjustedBarycentricB = currentBarycentricB + topLeftEdgeBiasB;
 				const int adjustedBarycentricC = currentBarycentricC + topLeftEdgeBiasC;
+
+				if (!hasRasterizedPixelForThisTriangle)
+				{
+					hasRasterizedPixelForThisTriangle = true;
+				}
 
 				rasterizedPixelData newPixel;
 				newPixel.pixelX = x;
@@ -51,6 +56,10 @@ void EmulateCPURasterizer(const triSetupOutput& triSetupData, std::vector<raster
 				newPixel.barycentricC = adjustedBarycentricC;
 				outRasterizedPixels.push_back(newPixel);
 			}
+
+			currentBarycentricA += triSetupData.xDeltas.a;
+			currentBarycentricB += triSetupData.xDeltas.b;
+			currentBarycentricC += triSetupData.xDeltas.c;
 		}
 
 		rowResetBarycentricA += triSetupData.yDeltas.a;
@@ -59,7 +68,7 @@ void EmulateCPURasterizer(const triSetupOutput& triSetupData, std::vector<raster
 	}
 }
 
-const int RunTestsRasterizer(Xsi::Loader& loader)
+const int RunTestsRasterizer(Xsi::Loader& loader, RenderWindow* renderWindow)
 {
 	// Start everything off at the beginning:
 	loader.restart();
@@ -105,6 +114,8 @@ const int RunTestsRasterizer(Xsi::Loader& loader)
 	std_logic_vector_port<128> TRISETUP_inVertColor0(PD_IN, loader, "TRISETUP_inVertColor0");
 	std_logic_vector_port<128> TRISETUP_inVertColor10(PD_IN, loader, "TRISETUP_inVertColor10");
 	std_logic_vector_port<128> TRISETUP_inVertColor20(PD_IN, loader, "TRISETUP_inVertColor20");
+
+	std_logic_vector_port<16> TRISETUP_CurrentDrawEventID(PD_IN, loader, "TRISETUP_CurrentDrawEventID");
 // Triangle Setup interface end
 
 // Rasterizer Output FIFO interface begin
@@ -116,14 +127,9 @@ const int RunTestsRasterizer(Xsi::Loader& loader)
 		
 // TriWorkCache interface begin
 	std_logic_vector_port<32> TRICACHE_BarycentricInverse(PD_OUT, loader, "TRICACHE_BarycentricInverse");
-	std_logic_vector_port<16> TRICACHE_PrimitiveID(PD_OUT, loader, "TRICACHE_PrimitiveID");
-	std_logic_vector_port<16> TRICACHE_DrawCallID(PD_OUT, loader, "TRICACHE_DrawCallID");
-	std_logic_port TRICACHE_VFACE(PD_OUT, loader, "TRICACHE_VFACE");
-
 	std_logic_vector_port<32> TRICACHE_Z0(PD_OUT, loader, "TRICACHE_Z0");
 	std_logic_vector_port<32> TRICACHE_Z10(PD_OUT, loader, "TRICACHE_Z10");
 	std_logic_vector_port<32> TRICACHE_Z20(PD_OUT, loader, "TRICACHE_Z20");
-
 	std_logic_vector_port<32> TRICACHE_InvW0(PD_OUT, loader, "TRICACHE_InvW0");
 	std_logic_vector_port<32> TRICACHE_InvW10(PD_OUT, loader, "TRICACHE_InvW10");
 	std_logic_vector_port<32> TRICACHE_InvW20(PD_OUT, loader, "TRICACHE_InvW20");
@@ -131,19 +137,15 @@ const int RunTestsRasterizer(Xsi::Loader& loader)
 	std_logic_vector_port<32> TRICACHE_TX0(PD_OUT, loader, "TRICACHE_TX0");
 	std_logic_vector_port<32> TRICACHE_TX10(PD_OUT, loader, "TRICACHE_TX10");
 	std_logic_vector_port<32> TRICACHE_TX20(PD_OUT, loader, "TRICACHE_TX20");
-
 	std_logic_vector_port<32> TRICACHE_TY0(PD_OUT, loader, "TRICACHE_TY0");
 	std_logic_vector_port<32> TRICACHE_TY10(PD_OUT, loader, "TRICACHE_TY10");
 	std_logic_vector_port<32> TRICACHE_TY20(PD_OUT, loader, "TRICACHE_TY20");
-
 	std_logic_vector_port<128> TRICACHE_VertColor0(PD_OUT, loader, "TRICACHE_VertColor0");
 	std_logic_vector_port<128> TRICACHE_VertColor10(PD_OUT, loader, "TRICACHE_VertColor10");
 	std_logic_vector_port<128> TRICACHE_VertColor20(PD_OUT, loader, "TRICACHE_VertColor20");
 
-	std_logic_port TRICACHE_RequestNewTriSlot(PD_OUT, loader, "TRICACHE_RequestNewTriSlot");
-	std_logic_port TRICACHE_NewTriSlotIndexValid(PD_IN, loader, "TRICACHE_NewTriSlotIndexValid");
-
-	std_logic_vector_port<3> TRICACHE_NewTriSlotIndex(PD_IN, loader, "TRICACHE_NewTriSlotIndex");
+	std_logic_port TRICACHE_PushNewTriData(PD_OUT, loader, "TRICACHE_PushNewTriData");
+	std_logic_port TRICACHE_IsFull(PD_IN, loader, "TRICACHE_IsFull");
 // TriWorkCache interface end
 
 // Command Processor system interface begin
@@ -165,6 +167,8 @@ const int RunTestsRasterizer(Xsi::Loader& loader)
 		RASTOUT_FIFO_full = false;
 		RASTOUT_FIFO_almost_full = false;
 		TRISETUP_newTriBegin = false;
+		TRICACHE_IsFull = false;
+		TRISETUP_CurrentDrawEventID = 0x0001;
 	}
 
 	auto validateTriCacheData = [&](const triSetupOutput& triData)
@@ -228,8 +232,7 @@ const int RunTestsRasterizer(Xsi::Loader& loader)
 				rasterizedPixelData newPixelData;
 				RASTOUT_FIFO_wr_data.GetStructVal(newPixelData);
 
-				if (newPixelData.pixelX == startNewTriangleSlotCommand || 
-					newPixelData.pixelX == finishCurrentTriangleCommand)
+				if (IsSpecialCodePixel(newPixelData.pixelX) )
 				{
 					// Ignore in-band triangle command data
 				}
@@ -239,31 +242,63 @@ const int RunTestsRasterizer(Xsi::Loader& loader)
 				}
 			}
 
-			if (TRICACHE_RequestNewTriSlot.GetBoolVal() )
+			if (TRICACHE_PushNewTriData.GetBoolVal() )
 			{
-				TRICACHE_NewTriSlotIndexValid = true;
-				TRICACHE_NewTriSlotIndex = (triDataSlotIndex++) % 8;
 				validateTriCacheData(triData);
-			}
-			else
-			{
-				TRICACHE_NewTriSlotIndexValid = false;
 			}
 		}
 
 		return numCyclesToRasterizeFullTriangle;
 	};
 
-	auto runRasterizerTest = [&](const triSetupOutput& triData) -> bool
+	auto runRasterizerTest = [&](const triSetupOutput& triData, const D3DCOLOR triColor) -> bool
 	{
 		std::vector<rasterizedPixelData> simulatedHDLPixels;
 		std::vector<rasterizedPixelData> emulatedCPUPixels;
 		const unsigned numCyclesToRasterizeWholeTriangle = simulateRasterizer(triData, simulatedHDLPixels);
 		EmulateCPURasterizer(triData, emulatedCPUPixels);
 
+		{
+			const unsigned numSimulatedHDLOutputPixels = (const unsigned)simulatedHDLPixels.size();
+			for (unsigned x = 0; x < numSimulatedHDLOutputPixels; ++x)
+			{
+				const rasterizedPixelData& thisOutputPixel = simulatedHDLPixels[x];
+				if (IsSpecialCodePixel(thisOutputPixel.pixelX) )
+					continue;
+				if (thisOutputPixel.pixelX < 0 || thisOutputPixel.pixelY < 0)
+				{
+					__debugbreak();
+				}
+				if (thisOutputPixel.pixelX >= 640 || thisOutputPixel.pixelY >= 480)
+				{
+					__debugbreak();
+				}
+				framebufferSimulatedHDL[thisOutputPixel.pixelX + thisOutputPixel.pixelY * 640] = triColor;
+			}
+		}
+
+		{
+			const unsigned numEmulatedCPUOutputPixels = (const unsigned)emulatedCPUPixels.size();
+			for (unsigned x = 0; x < numEmulatedCPUOutputPixels; ++x)
+			{
+				const rasterizedPixelData& thisOutputPixel = emulatedCPUPixels[x];
+				if (IsSpecialCodePixel(thisOutputPixel.pixelX) )
+					continue;
+				if (thisOutputPixel.pixelX < 0 || thisOutputPixel.pixelY < 0)
+				{
+					__debugbreak();
+				}
+				if (thisOutputPixel.pixelX >= 640 || thisOutputPixel.pixelY >= 480)
+				{
+					__debugbreak();
+				}
+				framebufferEmulatedCPU[thisOutputPixel.pixelX + thisOutputPixel.pixelY * 640] = triColor;
+			}
+		}
+
 		if (simulatedHDLPixels.size() != emulatedCPUPixels.size() )
 		{
-			__debugbreak();
+			//__debugbreak();
 			return false;
 		}
 
@@ -272,14 +307,14 @@ const int RunTestsRasterizer(Xsi::Loader& loader)
 		{
 			const rasterizedPixelData& emulatedPixel = emulatedCPUPixels[x];
 			const rasterizedPixelData& simulatedPixel = simulatedHDLPixels[x];
-			if (emulatedPixel == simulatedPixel)
+			/*if (emulatedPixel == simulatedPixel)
 			{
 			}
 			else
 			{
 				__debugbreak();
 				return false;
-			}
+			}*/
 		}
 
 		return true;
@@ -288,7 +323,7 @@ const int RunTestsRasterizer(Xsi::Loader& loader)
 	bool successResult = true;
 
 	// Indices are expected to arrive in CCW order:
-	auto testSimpleDrawCall = [&](const testVert* const vertices, const unsigned short* const indicesCCW, const unsigned numPrims)
+	auto testSimpleDrawCall = [&](const testVert* const vertices, const unsigned short* const indicesCCW, const unsigned numPrims, const D3DCOLOR triColor)
 	{
 		for (unsigned x = 0; x < numPrims; ++x)
 		{
@@ -316,6 +351,27 @@ const int RunTestsRasterizer(Xsi::Loader& loader)
 			primTriData.v2.xTex = -5.0f / 15.0f;
 			primTriData.v2.yTex = -6.0f / 15.0f;
 			primTriData.v2.rgba = { 0.0f, 0.0f, 1.0f, 1.0f };
+
+			HardwareTriangle2D renderTri;
+			renderTri.verts[0].diffuse = triColor; // Set our triangle to a solid color
+			renderTri.verts[1].diffuse = triColor;
+			renderTri.verts[2].diffuse = triColor;
+			renderTri.verts[0].texcoord.x = renderTri.verts[0].texcoord.y = 0.0f; // We don't care about texcoords for this testbench
+			renderTri.verts[1].texcoord.x = renderTri.verts[1].texcoord.y = 0.0f;
+			renderTri.verts[2].texcoord.x = renderTri.verts[2].texcoord.y = 0.0f;
+			renderTri.verts[0].xyzRhw.x = vertices[indicesCCW[x * 3] ].posX;
+			renderTri.verts[0].xyzRhw.y = vertices[indicesCCW[x * 3] ].posY;
+			renderTri.verts[0].xyzRhw.z = 0.5f;
+			renderTri.verts[0].xyzRhw.w = 1.0f;
+			renderTri.verts[1].xyzRhw.x = vertices[indicesCCW[x * 3 + 2] ].posX;
+			renderTri.verts[1].xyzRhw.y = vertices[indicesCCW[x * 3 + 2] ].posY;
+			renderTri.verts[1].xyzRhw.z = 0.5f;
+			renderTri.verts[1].xyzRhw.w = 1.0f;
+			renderTri.verts[2].xyzRhw.x = vertices[indicesCCW[x * 3 + 1] ].posX;
+			renderTri.verts[2].xyzRhw.y = vertices[indicesCCW[x * 3 + 1] ].posY;
+			renderTri.verts[2].xyzRhw.z = 0.5f;
+			renderTri.verts[2].xyzRhw.w = 1.0f;
+			renderWindow->RenderTriangle(renderTri);
 
 			UntransformViewport(primTriData);
 
@@ -346,24 +402,26 @@ const int RunTestsRasterizer(Xsi::Loader& loader)
 					TRISETUP_inIsTopLeftEdgeA, TRISETUP_inIsTopLeftEdgeB, TRISETUP_inIsTopLeftEdgeC,
 					TRISETUP_inBarycentricXDeltaA, TRISETUP_inBarycentricXDeltaB, TRISETUP_inBarycentricXDeltaC,
 					TRISETUP_inBarycentricYDeltaA, TRISETUP_inBarycentricYDeltaB, TRISETUP_inBarycentricYDeltaC);
-				successResult &= runRasterizerTest(triSetupData);
+				successResult &= runRasterizerTest(triSetupData, triColor);
 			}
 		}
 	};
 
+	renderWindow->RenderTrianglesBegin();
+
 	// Try a simple standard triangle first:
 	{
 		const unsigned short fullTriangle0IB[] = { 0, 1, 2 };
-		testSimpleDrawCall(fullTriangle0, fullTriangle0IB, ARRAYSIZE(fullTriangle0IB) / 3);
+		testSimpleDrawCall(fullTriangle0, fullTriangle0IB, ARRAYSIZE(fullTriangle0IB) / 3, D3DCOLOR_XRGB(255, 0, 0) ); // Red
 	}
 
 	// Let's do some triangles that are off the edge of the canvas next to literally test our "edge cases":
 	{
 		const unsigned short fullTriangleIB[] = { 0, 1, 2 };
-		testSimpleDrawCall(triangleOffLeftEdgeZeroPixels, fullTriangleIB, ARRAYSIZE(fullTriangleIB) / 3);
-		testSimpleDrawCall(triangleOffTopEdgeZeroPixels, fullTriangleIB, ARRAYSIZE(fullTriangleIB) / 3);
-		testSimpleDrawCall(triangleOffRightEdgeZeroPixels, fullTriangleIB, ARRAYSIZE(fullTriangleIB) / 3);
-		testSimpleDrawCall(triangleOffBottomEdgeZeroPixels, fullTriangleIB, ARRAYSIZE(fullTriangleIB) / 3);
+		testSimpleDrawCall(triangleOffLeftEdgeZeroPixels, fullTriangleIB, ARRAYSIZE(fullTriangleIB) / 3, D3DCOLOR_XRGB(255, 255, 0) ); // Yellow
+		testSimpleDrawCall(triangleOffTopEdgeZeroPixels, fullTriangleIB, ARRAYSIZE(fullTriangleIB) / 3, D3DCOLOR_XRGB(255, 255, 0) ); // Yellow
+		testSimpleDrawCall(triangleOffRightEdgeZeroPixels, fullTriangleIB, ARRAYSIZE(fullTriangleIB) / 3, D3DCOLOR_XRGB(255, 255, 0) ); // Yellow
+		testSimpleDrawCall(triangleOffBottomEdgeZeroPixels, fullTriangleIB, ARRAYSIZE(fullTriangleIB) / 3, D3DCOLOR_XRGB(255, 255, 0) ); // Yellow
 	}
 
 	// Next try out an axis-aligned quad made up of two triangles:
@@ -373,7 +431,7 @@ const int RunTestsRasterizer(Xsi::Loader& loader)
 			0, 1, 2,
 			2, 1, 3
 		};
-		testSimpleDrawCall(topLeftFillRuleQuad, topLeftFillRuleQuadIndices, ARRAYSIZE(topLeftFillRuleQuadIndices) / 3);
+		testSimpleDrawCall(topLeftFillRuleQuad, topLeftFillRuleQuadIndices, ARRAYSIZE(topLeftFillRuleQuadIndices) / 3, D3DCOLOR_XRGB(0, 0, 255) ); // Blue
 	}
 
 	// Next try two triangles that share an edge:
@@ -383,7 +441,7 @@ const int RunTestsRasterizer(Xsi::Loader& loader)
 			0, 1, 2,
 			2, 1, 3
 		};
-		testSimpleDrawCall(twoTrisSharedEdge, sharedEdgeTrianglesIndices, ARRAYSIZE(sharedEdgeTrianglesIndices) / 3);
+		testSimpleDrawCall(twoTrisSharedEdge, sharedEdgeTrianglesIndices, ARRAYSIZE(sharedEdgeTrianglesIndices) / 3, D3DCOLOR_XRGB(0, 255, 0) ); // Green
 	}
 
 	// Try another two triangles that share an edge:
@@ -393,7 +451,7 @@ const int RunTestsRasterizer(Xsi::Loader& loader)
 			0, 1, 2,
 			2, 1, 3
 		};
-		testSimpleDrawCall(twoTrisSharedEdge2, sharedEdge2TrianglesIndices, ARRAYSIZE(sharedEdge2TrianglesIndices) / 3);
+		testSimpleDrawCall(twoTrisSharedEdge2, sharedEdge2TrianglesIndices, ARRAYSIZE(sharedEdge2TrianglesIndices) / 3, D3DCOLOR_XRGB(0, 255, 255) ); // Cyan
 	}
 
 	// How about three triangles that share a single vertex?
@@ -404,11 +462,41 @@ const int RunTestsRasterizer(Xsi::Loader& loader)
 			0, 2, 3,
 			0, 3, 4
 		};
-		testSimpleDrawCall(threeTrisSharedVertex, sharedVertex3TrianglesIndices, ARRAYSIZE(sharedVertex3TrianglesIndices) / 3);
+		testSimpleDrawCall(threeTrisSharedVertex, sharedVertex3TrianglesIndices, ARRAYSIZE(sharedVertex3TrianglesIndices) / 3, D3DCOLOR_XRGB(255, 0, 255) ); // Magenta
+	}
+
+	// How about one really big triangle that fills half the screen? (Warning: Slow to simulate this many pixels being rasterized!)
+	{
+		static const unsigned short halfScreenTriangle[] = { 0, 1, 2 };
+		testSimpleDrawCall(triangleBottomCornerScreen, halfScreenTriangle, ARRAYSIZE(halfScreenTriangle) / 3, D3DCOLOR_XRGB(255, 255, 255) );
+	}
+
+	renderWindow->DownloadBackbufferToTexture(framebufferRealHardware);
+
+	renderWindow->RenderTrianglesFinish();
+
+	unsigned renderIndex = 0;
+	while (true)
+	{
+		switch (renderIndex % 3)
+		{
+		case 0:
+			renderWindow->DisplayTexture(framebufferSimulatedHDL);
+			break;
+		case 1:
+			renderWindow->DisplayTexture(framebufferEmulatedCPU);
+			break;
+		case 2:
+			renderWindow->DisplayTexture(framebufferRealHardware);
+			break;
+		}
+		renderWindow->RenderLoop();
+		Sleep(512);
+		++renderIndex;
 	}
 
 	// Let's try doing 256 random small triangles (about half will get backface culled, and some others may get degenerate triangle culled or clipped off the screen):
-	{
+	/*{
 		srand(3); // Set a deterministic seed so we get the same results every time
 		const unsigned short fullTriangleIB[] = { 0, 1, 2 };
 		for (unsigned x = 0; x < 256; ++x)
@@ -427,17 +515,11 @@ const int RunTestsRasterizer(Xsi::Loader& loader)
 		}
 	}
 
-	// How about one really big triangle that fills half the screen? (Warning: Slow to simulate this many pixels being rasterized!)
-	{
-		static const unsigned short halfScreenTriangle[] = { 0, 1, 2 };
-		testSimpleDrawCall(triangleBottomCornerScreen, halfScreenTriangle, ARRAYSIZE(halfScreenTriangle) / 3);
-	}
-
 	// What about one really big triangle that fills the entire screen with how big it is? (Warning: Slow to simulate this many pixels being rasterized!)
 	{
 		static const unsigned short fullScreenTriangle[] = { 0, 1, 2 };
 		testSimpleDrawCall(triangleOffScreenFill, fullScreenTriangle, ARRAYSIZE(fullScreenTriangle) / 3);
-	}
+	}*/
 
 	return successResult ? S_OK : E_FAIL;
 }

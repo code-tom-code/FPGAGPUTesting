@@ -11,6 +11,7 @@ use work.FloatCommon.all;
 use work.FloatALU_CMP.all;
 use work.FloatALU_SHFT.all;
 use work.FloatALU_CNV.all;
+use work.FloatALU_RSQ.all;
 
 entity FloatALU is
     Port (clk : in STD_LOGIC;
@@ -77,6 +78,9 @@ type rcpPipelineStage is record
 end record rcpPipelineStage;
 
 type rcpPipelineArray is array(SPEC_CYCLES-1 downto 0) of rcpPipelineStage;
+
+type rsqPipelineArray is array(SPEC_CYCLES-1 downto 0) of std_logic;
+type rsqSpecialCasePipelineArray is array(SPEC_CYCLES-1 downto 0) of eRsqEarlyOutType;
 
 -- Signals common to all pipes:
 signal comAIsNeg : std_logic := '0';
@@ -168,6 +172,44 @@ signal mulResultSign1 : std_logic := '0';
 signal mulResultSign2 : std_logic := '0';
 signal mulResultSign3 : std_logic := '0';
 
+-- Reciprocal-Square-Root (RSQ) pipe signals:
+signal rsqPipelineEnable : rsqPipelineArray := (others => '0');
+signal rsqSpecialCasePipeline : rsqSpecialCasePipelineArray := (others => RsqNoEarlyOut);
+signal rsqInitialValue : f32 := (others => '0');
+signal rsqInputIsExactPowerOf2 : std_logic := '0';
+signal rsqInputSignedExponent : signed(7 downto 0) := (others => '0');
+signal rsqOutputSignedExponent : signed(7 downto 0) := (others => '0');
+signal rsqOutputBiasedExponent0 : std_logic_vector(7 downto 0) := (others => '0');
+signal rsqOutputBiasedExponent1 : std_logic_vector(7 downto 0) := (others => '0');
+signal rsqOutputBiasedExponent2 : std_logic_vector(7 downto 0) := (others => '0');
+signal rsqOutputBiasedExponent3 : std_logic_vector(7 downto 0) := (others => '0');
+signal rsqOutputBiasedExponent4 : std_logic_vector(7 downto 0) := (others => '0');
+signal rsqOutputBiasedExponent5 : std_logic_vector(7 downto 0) := (others => '0');
+signal rsqOutputBiasedExponent6 : std_logic_vector(7 downto 0) := (others => '0');
+signal rsqOutputBiasedExponent7 : std_logic_vector(7 downto 0) := (others => '0');
+signal rsqOutputBiasedExponent8 : std_logic_vector(7 downto 0) := (others => '0');
+signal rsqIsInFirstRangeMantissa : std_logic := '0';
+signal rsqInputMantissa : unsigned(22 downto 0) := (others => '0');
+signal rsqMantissaEarlyOutZero0 : std_logic := '0';
+signal rsqMantissaEarlyOutZero1 : std_logic := '0';
+signal rsqMantissaEarlyOutZero2 : std_logic := '0';
+signal rsqMantissaEarlyOutZero3 : std_logic := '0';
+signal rsqSegmentMantissaOffset0 : unsigned(18 downto 0) := (others => '0');
+signal rsqSegmentMantissaOffset1 : unsigned(18 downto 0) := (others => '0');
+signal rsqSegmentIndex0 : unsigned(4 downto 0) := (others => '0');
+signal rsqSegmentIndex1 : unsigned(4 downto 0) := (others => '0');
+signal rsqSegmentIndex2 : unsigned(4 downto 0) := (others => '0');
+signal rsqSegmentSlope : unsigned(17 downto 0) := (others => '0');
+signal rsqSegmentOffset : unsigned(22 downto 0) := (others => '0');
+signal rsqMantissaProduct0 : unsigned(18 downto 0) := (others => '0');
+signal rsqMantissaProduct1 : unsigned(18 downto 0) := (others => '0');
+signal rsqComputedMantissa0 : unsigned(22 downto 0) := (others => '0');
+signal rsqComputedMantissa1 : unsigned(22 downto 0) := (others => '0');
+signal rsqComputedMantissa2 : unsigned(22 downto 0) := (others => '0');
+signal rsqComputedMantissa3 : unsigned(22 downto 0) := (others => '0');
+signal rsqComputedMantissa4 : unsigned(22 downto 0) := (others => '0');
+signal rsqComputedMantissa5 : unsigned(22 downto 0) := (others => '0');
+
 -- Reciprocal (RCP) pipe signals:
 signal rcpPipeline : rcpPipelineArray;
 signal rcpLookupSlope : unsigned(15 downto 0) := (others => '0');
@@ -219,7 +261,8 @@ signal OSHFT : std_logic_vector(31 downto 0) := (others => '0');
 signal OADD : std_logic_vector(31 downto 0) := (others => '0');
 signal OMUL : std_logic_vector(31 downto 0) := (others => '0');
 signal OCMP : std_logic_vector(31 downto 0) := (others => '0');
-signal ORCP : std_logic_vector(31 downto 0) := (others => '0');
+signal OSPEC : std_logic_vector(31 downto 0) := (others => '0');
+signal ORSQ : std_logic_vector(31 downto 0) := (others => '0');
 signal OCNV : std_logic_vector(31 downto 0) := (others => '0');
 signal OBIT : std_logic_vector(31 downto 0) := (others => '0');
 signal OMUX : MUXArrayType := (others => (others => '0') );
@@ -255,7 +298,7 @@ with OMUX(0) select
 					OADD when "0000010",
 					OMUL when "0000100",
 					OSHFT when "0001000",
-					ORCP when "0010000",
+					OSPEC when "0010000",
 					OCNV when "0100000",
 					OBIT when "1000000",
 					(others => '0') when others;
@@ -386,13 +429,251 @@ begin
 	end if;
 end process BITStage0;
 
+-- Reciprocal-Square-Root (RSQ) pipe process (cycle 1 of 13):
+RSQStage0 : process(clk)
+begin
+	if (rising_edge(clk) ) then
+		if (ISPEC_GO = '1') then
+			case eSpecMode'val(to_integer(unsigned(IN_MODE) ) ) is
+				when RsqMode =>
+					rsqPipelineEnable(0) <= '1';
+				when others =>
+					rsqPipelineEnable(0) <= '0';
+			end case;
+
+			rsqInitialValue <= f32(IN_A);
+
+			if (comAIsNaN = '1') then
+				rsqSpecialCasePipeline(0) <= RsqNaNEarlyOut;
+			elsif (comAIsINF = '1') then
+				rsqSpecialCasePipeline(0) <= RsqINFEarlyOut;
+			elsif (comAIsDenormal = '1') then
+				rsqSpecialCasePipeline(0) <= RsqZeroEarlyOut;
+			else -- Typical rsq() case!
+				rsqSpecialCasePipeline(0) <= RsqNoEarlyOut;
+			end if;
+		else
+			rsqPipelineEnable(0) <= '0';
+			rsqSpecialCasePipeline(0) <= RsqNoEarlyOut;
+		end if;
+
+		-- Advance the pipeline enable flags:
+		for i in 1 to SPEC_CYCLES-1 loop
+			rsqPipelineEnable(i) <= rsqPipelineEnable(i-1);
+			rsqSpecialCasePipeline(i) <= rsqSpecialCasePipeline(i-1);
+		end loop;
+	end if;
+end process RSQStage0;
+
+-- Reciprocal-Square-Root (RSQ) pipe process (cycle 2 of 13) (exponent pipe):
+-- Get signed exponent (input exponent - 127)
+-- Check to see if the value is an exact power of 2 (mantissa == 0)
+RSQStage1Exp : process(clk)
+begin
+	if (rising_edge(clk) ) then
+		rsqInputSignedExponent <= GetSignedExponent(rsqInitialValue);
+		if (GetMantissa(rsqInitialValue) = 0) then
+			rsqInputIsExactPowerOf2 <= '1';
+		else
+			rsqInputIsExactPowerOf2 <= '0';
+		end if;
+	end if;
+end process RSQStage1Exp;
+
+-- Reciprocal-Square-Root (RSQ) pipe process (cycle 3 of 13) (exponent pipe):
+-- Compute the new (signed) rsq exponent
+RSQStage2Exp : process(clk)
+begin
+	if (rising_edge(clk) ) then
+		rsqOutputSignedExponent <= RsqCalcNewExp(rsqInputSignedExponent, rsqInputIsExactPowerOf2);
+	end if;
+end process RSQStage2Exp;
+
+-- Reciprocal-Square-Root (RSQ) pipe process (cycle 4 of 13) (exponent pipe):
+-- Compute the new biased rsq exponent
+RSQStage3Exp : process(clk)
+begin
+	if (rising_edge(clk) ) then
+		rsqOutputBiasedExponent0 <= MakeExponentFromSigned(rsqOutputSignedExponent);
+	end if;
+end process RSQStage3Exp;
+
+-- Reciprocal-Square-Root (RSQ) pipe process (cycle 5 of 13) (exponent pipe):
+RSQStage4Exp : process(clk)
+begin
+	if (rising_edge(clk) ) then
+		rsqOutputBiasedExponent1 <= rsqOutputBiasedExponent0;
+	end if;
+end process RSQStage4Exp;
+
+-- Reciprocal-Square-Root (RSQ) pipe process (cycle 6 of 13) (exponent pipe):
+RSQStage5Exp : process(clk)
+begin
+	if (rising_edge(clk) ) then
+		rsqOutputBiasedExponent2 <= rsqOutputBiasedExponent1;
+	end if;
+end process RSQStage5Exp;
+
+-- Reciprocal-Square-Root (RSQ) pipe process (cycle 7 of 13) (exponent pipe):
+RSQStage6Exp : process(clk)
+begin
+	if (rising_edge(clk) ) then
+		rsqOutputBiasedExponent3 <= rsqOutputBiasedExponent2;
+	end if;
+end process RSQStage6Exp;
+
+-- Reciprocal-Square-Root (RSQ) pipe process (cycle 2 of 13) (mantissa pipe):
+RSQStage1Mantissa : process(clk)
+begin
+	if (rising_edge(clk) ) then
+		rsqIsInFirstRangeMantissa <= rsqInitialValue(23);
+		rsqInputMantissa <= GetMantissa(rsqInitialValue);
+	end if;
+end process RSQStage1Mantissa;
+
+-- Reciprocal-Square-Root (RSQ) pipe process (cycle 3 of 13) (mantissa pipe):
+RSQStage2Mantissa : process(clk)
+begin
+	if (rising_edge(clk) ) then
+		if (rsqIsInFirstRangeMantissa = '1' and rsqInputIsExactPowerOf2 = '1') then
+			-- Early-out our mantissa calculations and just return 0x000000
+			rsqMantissaEarlyOutZero0 <= '1';
+		else
+			rsqMantissaEarlyOutZero0 <= '0';
+		end if;
+
+		rsqSegmentIndex0 <= (not rsqIsInFirstRangeMantissa) & rsqInputMantissa(22 downto 19);
+		rsqSegmentMantissaOffset0 <= rsqInputMantissa(18 downto 0);
+	end if;
+end process RSQStage2Mantissa;
+
+-- Reciprocal-Square-Root (RSQ) pipe process (cycle 4 of 13) (mantissa pipe):
+RSQStage3Mantissa : process(clk)
+begin
+	if (rising_edge(clk) ) then
+		rsqSegmentSlope <= RsqSlopesLUT(to_integer(rsqSegmentIndex0) )(17 downto 0);
+		rsqSegmentIndex1 <= rsqSegmentIndex0;
+		rsqMantissaEarlyOutZero1 <= rsqMantissaEarlyOutZero0;
+		rsqSegmentMantissaOffset1 <= rsqSegmentMantissaOffset0;
+	end if;
+end process RSQStage3Mantissa;
+
+-- Reciprocal-Square-Root (RSQ) pipe process (cycle 5 of 13) (mantissa pipe):
+RSQStage4Mantissa : process(clk)
+	variable tempProduct : unsigned(19+18-1 downto 0);
+begin
+	if (rising_edge(clk) ) then
+		if (rsqPipelineEnable(0) = '1') then -- Gate the multiply behind the pipeline-enable flag to save power so we aren't running the multiplier every cycle when we don't need to!
+			tempProduct := rsqSegmentMantissaOffset1 * rsqSegmentSlope; -- 19x18 multiply
+			tempProduct := tempProduct srl 18;
+			rsqMantissaProduct0 <= tempProduct(18 downto 0);
+		end if;
+		rsqSegmentIndex2 <= rsqSegmentIndex1;
+		rsqMantissaEarlyOutZero2 <= rsqMantissaEarlyOutZero1;
+	end if;
+end process RSQStage4Mantissa;
+
+-- Reciprocal-Square-Root (RSQ) pipe process (cycle 6 of 13) (mantissa pipe):
+RSQStage5Mantissa : process(clk)
+begin
+	if (rising_edge(clk) ) then
+		rsqMantissaProduct1 <= rsqMantissaProduct0;
+		rsqMantissaEarlyOutZero3 <= rsqMantissaEarlyOutZero2;
+		rsqSegmentOffset <= RsqOffsetsLUT(to_integer(rsqSegmentIndex2) )(22 downto 0);
+	end if;
+end process RSQStage5Mantissa;
+
+-- Reciprocal-Square-Root (RSQ) pipe process (cycle 7 of 13) (mantissa pipe):
+RSQStage6Mantissa : process(clk)
+begin
+	if (rising_edge(clk) ) then
+		if (rsqMantissaEarlyOutZero3 = '0') then
+			rsqComputedMantissa0 <= rsqSegmentOffset - rsqMantissaProduct1;
+		else
+			rsqComputedMantissa0 <= (others => '0');
+		end if;
+	end if;
+end process RSQStage6Mantissa;
+
+-- Reciprocal-Square-Root (RSQ) pipe process (cycle 8 of 13):
+RSQStage7 : process(clk)
+begin
+	if (rising_edge(clk) ) then
+		rsqComputedMantissa1 <= rsqComputedMantissa0;
+		rsqOutputBiasedExponent4 <= rsqOutputBiasedExponent3;
+	end if;
+end process RSQStage7;
+
+-- Reciprocal-Square-Root (RSQ) pipe process (cycle 9 of 13):
+RSQStage8 : process(clk)
+begin
+	if (rising_edge(clk) ) then
+		rsqComputedMantissa2 <= rsqComputedMantissa1;
+		rsqOutputBiasedExponent5 <= rsqOutputBiasedExponent4;
+	end if;
+end process RSQStage8;
+
+-- Reciprocal-Square-Root (RSQ) pipe process (cycle 10 of 13):
+RSQStage9 : process(clk)
+begin
+	if (rising_edge(clk) ) then
+		rsqComputedMantissa3 <= rsqComputedMantissa2;
+		rsqOutputBiasedExponent6 <= rsqOutputBiasedExponent5;
+	end if;
+end process RSQStage9;
+
+-- Reciprocal-Square-Root (RSQ) pipe process (cycle 11 of 13):
+RSQStage10 : process(clk)
+begin
+	if (rising_edge(clk) ) then
+		rsqComputedMantissa4 <= rsqComputedMantissa3;
+		rsqOutputBiasedExponent7 <= rsqOutputBiasedExponent6;
+	end if;
+end process RSQStage10;
+
+-- Reciprocal-Square-Root (RSQ) pipe process (cycle 12 of 13):
+RSQStage11 : process(clk)
+begin
+	if (rising_edge(clk) ) then
+		rsqComputedMantissa5 <= rsqComputedMantissa4;
+		rsqOutputBiasedExponent8 <= rsqOutputBiasedExponent7;
+	end if;
+end process RSQStage11;
+
+-- Reciprocal-Square-Root (RSQ) pipe process (cycle 13 of 13):
+RSQStage12 : process(clk)
+begin
+	if (rising_edge(clk) ) then
+		if (rsqPipelineEnable(11) = '1') then
+			case rsqSpecialCasePipeline(11) is
+				when RsqNoEarlyOut =>
+					ORSQ <= '0' & rsqOutputBiasedExponent8 & std_logic_vector(rsqComputedMantissa5);
+				when RsqNaNEarlyOut =>
+					ORSQ <= '0' & X"FF" & "11111111111111111111111";
+				when RsqZeroEarlyOut =>
+					ORSQ <= '0' & X"FF" & "00000000000000000000000";
+				when others => --when RsqINFEarlyOut =>
+					ORSQ <= X"00000000";
+			end case;
+		else
+			ORSQ <= (others => '0');
+		end if;
+	end if;
+end process RSQStage12;
+
 -- Reciprocal (RCP) pipe process (cycle 1 of 14):
 RCPStage0 : process(clk)
 begin
 	if (rising_edge(clk) ) then
 		if (ISPEC_GO = '1') then
 
-			rcpPipeline(0).pipeStageIsValid <= '1';
+			case eSpecMode'val(to_integer(unsigned(IN_MODE) ) ) is
+				when RcpMode =>
+					rcpPipeline(0).pipeStageIsValid <= '1';
+				when others =>
+					rcpPipeline(0).pipeStageIsValid <= '0';
+			end case;
+
 			rcpPipeline(0).rcpSign <= comASign;
 
 			if (oneF(30 downto 0) = unsigned(IN_A(30 downto 0) ) ) then -- Early out for rcp(1.0f) or rcp(-1.0f) = 1.0f
@@ -568,10 +849,12 @@ begin
 	if (rising_edge(clk) ) then
 		if (rcpPipeline(12).pipeStageIsValid = '1') then
 			if (rcpPipeline(12).useEarlyOutBypass = '0') then
-				ORCP <= rcpPipeline(12).rcpSign & std_logic_vector(rcpPipeline(12).rcpExponent) & std_logic_vector(resultMantissa);
+				OSPEC <= rcpPipeline(12).rcpSign & std_logic_vector(rcpPipeline(12).rcpExponent) & std_logic_vector(resultMantissa);
 			else
-				ORCP <= rcpPipeline(12).rcpSign & std_logic_vector(rcpPipeline(12).rcpExponent) & std_logic_vector(rcpPipeline(12).calculatedMantissa);
+				OSPEC <= rcpPipeline(12).rcpSign & std_logic_vector(rcpPipeline(12).rcpExponent) & std_logic_vector(rcpPipeline(12).calculatedMantissa);
 			end if;
+		else
+			OSPEC <= ORSQ;
 		end if;
 	end if;
 end process RCPStage13;

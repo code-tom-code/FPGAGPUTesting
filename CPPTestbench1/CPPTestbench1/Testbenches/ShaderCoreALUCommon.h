@@ -16,14 +16,14 @@ static constexpr const unsigned GetMax(const unsigned a, const unsigned b)
 		return b;
 }
 
-static const constexpr unsigned RCP_CYCLES = 14u; // RCP pipe takes 14 cycles to run
+static const constexpr unsigned SPEC_CYCLES = 14u; // SPEC pipe takes 14 cycles to run
 static const constexpr unsigned MUL_CYCLES = 5u; // MUL pipe takes 5 cycles to run
 static const constexpr unsigned ADD_CYCLES = 4u; // ADD pipe takes 4 cycles to run
 static const constexpr unsigned CNV_CYCLES = 3u; // CNV pipe takes 3 cycles to run
 static const constexpr unsigned CMP_CYCLES = 1u; // CMP pipe takes 1 cycles to run
 static const constexpr unsigned SHFT_CYCLES = 1u; // SHFT pipe takes 1 cycles to run
 static const constexpr unsigned BIT_CYCLES = 1u; // BIT pipe takes 1 cycles to run
-static const constexpr unsigned MAX_PIPE_CYCLES = GetMax(GetMax(GetMax(GetMax(GetMax(GetMax(RCP_CYCLES, MUL_CYCLES), ADD_CYCLES), CNV_CYCLES), CMP_CYCLES), SHFT_CYCLES), BIT_CYCLES);
+static const constexpr unsigned MAX_PIPE_CYCLES = GetMax(GetMax(GetMax(GetMax(GetMax(GetMax(SPEC_CYCLES, MUL_CYCLES), ADD_CYCLES), CNV_CYCLES), CMP_CYCLES), SHFT_CYCLES), BIT_CYCLES);
 
 static const constexpr unsigned CBUF_LATENCY_CYCLES = 2u; // Constant Buffer reads/writes now take 3 cycles to take effect
 static const constexpr unsigned INST_CACHE_LATENCY_CYCLES = 3u; // Instruction Cache reads/writes now take 3 cycles to take effect
@@ -73,6 +73,18 @@ enum eBitMode : uint8_t
 	BShftR16, // 5
 	BShftR24, // 6
 	BAnd // 7
+};
+
+enum eSpecMode : uint8_t
+{
+	RcpMode, // 0
+	RsqMode, // 1
+	UnimplementedMode2, // 2 // exp?
+	UnimplementedMode3, // 3 // log?
+	UnimplementedMode4, // 4 // sin?
+	UnimplementedMode5, // 5 // cos?
+	UnimplementedMode6, // 6
+	UnimplementedMode7 // 7
 };
 
 enum eConvertMode : uint8_t
@@ -258,6 +270,20 @@ private:
 		}
 	}
 
+	static const char* const GetSpecModeString(const eSpecMode mode)
+	{
+		switch (mode)
+		{
+		default:
+			__debugbreak(); // Should never be here
+			return "Unknown";
+		case RcpMode: // 0
+			return "rcp";
+		case RsqMode: // 1
+			return "rsq";
+		}
+	}
+
 	static const char* const GetShiftModeString(const eShftMode mode)
 	{
 		switch (mode)
@@ -419,14 +445,14 @@ public:
 
 		if (FPU_ISPEC_GO.GetBoolVal() )
 		{
-			// Reciprocal pipe runs in 14 cycles:
+			// Special pipe runs in 14 cycles:
 			const float rcpResult = 1.0f / aVal;
-			pipeStages[RCP_CYCLES] = rcpResult;
-			if (pipeStagesValid[RCP_CYCLES] == true)
+			pipeStages[SPEC_CYCLES] = rcpResult;
+			if (pipeStagesValid[SPEC_CYCLES] == true)
 			{
 				__debugbreak(); // Error: Overwriting existing FPU pipe stage!
 			}
-			pipeStagesValid[RCP_CYCLES] = true;
+			pipeStagesValid[SPEC_CYCLES] = true;
 			if (enableDebugOutput)
 				printf("FPU%u: rcp(%f) = %f\n", fpuIndex, aVal, rcpResult);
 		}
@@ -558,16 +584,30 @@ public:
 		}
 		else if (FPU_ISPEC_GO.GetBoolVal() )
 		{
-			// Reciprocal pipe runs in 14 cycles:
-			const float rcpResult = 1.0f / aVal;
-			pipeStages[RCP_CYCLES] = rcpResult;
-			if (pipeStagesValid[RCP_CYCLES] == true)
+			// Special pipe runs in 14 cycles:
+			const eSpecMode specMode = (const eSpecMode)inMode;
+			float specResult = 0.0f;
+			switch (specMode)
+			{
+			default:
+#ifdef _DEBUG
+				__debugbreak(); // Should never be here! Invalid mode set on SPEC pipe!
+#endif
+			case RcpMode:
+				specResult = 1.0f / aVal;
+				break;
+			case RsqMode:
+				specResult = 1.0f / sqrtf(fabs(aVal) );
+				break;
+			}
+			pipeStages[SPEC_CYCLES] = specResult;
+			if (pipeStagesValid[SPEC_CYCLES] == true)
 			{
 				__debugbreak(); // Error: Overwriting existing FPU pipe stage!
 			}
-			pipeStagesValid[RCP_CYCLES] = true;
+			pipeStagesValid[SPEC_CYCLES] = true;
 			if (enableDebugOutput)
-				printf("FPU%u: rcp(%f) = %f\n", fpuIndex, aVal, rcpResult);
+				printf("FPU%u: %s(%f) = %f\n", fpuIndex, GetSpecModeString(specMode), aVal, specResult);
 		}
 		else if (FPU_ISHFT_GO.GetBoolVal() )
 		{

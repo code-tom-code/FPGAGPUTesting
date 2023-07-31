@@ -5,4 +5,4 @@ namespace Xsi
 	class Loader;
 }
 
-const int RunTestsRasterizer(Xsi::Loader& loader);
+const int RunTestsRasterizer(Xsi::Loader& loader, RenderWindow* renderWindow);

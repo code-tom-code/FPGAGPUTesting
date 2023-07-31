@@ -6,4 +6,5 @@ vhdl xil_defaultlib  \
 "hdl_src/FloatALU/FloatALU_CMP.vhd" \
 "hdl_src/FloatALU/FloatALU_SHFT.vhd" \
 "hdl_src/FloatALU/FloatALU_CNV.vhd" \
+"hdl_src/FloatALU/FloatALU_RSQ.vhd" \
 "hdl_src/FloatALU.vhd" \

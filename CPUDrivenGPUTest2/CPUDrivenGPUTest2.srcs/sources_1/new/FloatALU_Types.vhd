@@ -80,6 +80,18 @@ package FloatALU_Types is
 		BAnd -- 7
 	);
 
+	type eSpecMode is
+	(
+		RcpMode, -- 0
+		RsqMode, -- 1
+		UnimplementedMode2, -- 2
+		UnimplementedMode3, -- 3
+		UnimplementedMode4, -- 4
+		UnimplementedMode5, -- 5
+		UnimplementedMode6, -- 6
+		UnimplementedMode7 -- 7
+	);
+
 	type eConvertMode is
 	(
 		F_Frc, -- 0

@@ -472,5 +472,8 @@
     <None Include="hdl_src\SimpleFIFO.vhd">
       <Filter>HDL</Filter>
     </None>
+    <None Include="hdl_src\FloatALU\FloatALU_RSQ.vhd">
+      <Filter>HDL\FloatALU</Filter>
+    </None>
   </ItemGroup>
 </Project>

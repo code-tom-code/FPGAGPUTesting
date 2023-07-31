@@ -32,6 +32,8 @@ public:
 	void RenderTriangle(const HardwareTriangle2D& newTriangle);
 	void RenderTrianglesFinish();
 
+	void DownloadBackbufferToTexture(D3DCOLOR* const downloadedBuffer);
+
 	LPDIRECT3DDEVICE9 GetD3D9Dev()
 	{
 		return d3d9dev;

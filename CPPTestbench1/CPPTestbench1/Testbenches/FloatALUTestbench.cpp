@@ -410,6 +410,413 @@ static const int RunTestsFloatBIT(Xsi::Loader& loader, std_logic_port& clk, std_
 	return allTestsSuccessful ? S_OK : 1;
 }
 
+static const float RealRsqFunc(const float a)
+{
+	return 1.0f / sqrtf(fabs(a) );
+}
+
+// Computes the signed output exponent for a given input exponent for a rsq function:
+int RsqGetExpFunc(const int inputExp, bool isExactPowerOf2)
+{
+	if (!isExactPowerOf2)
+	{
+		if (inputExp >= 0)
+		{
+			return - inputExp / 2 - 1;
+		}
+		else
+		{
+			return - inputExp / 2 - ( (inputExp & 0x1) ? 0 : 1);
+		}
+	}
+	else
+	{
+		return RsqGetExpFunc(inputExp - 1, false);
+	}
+}
+
+// These are all 18-bit (in 0.18 fixed-point format) slope values for each of the linear segments.
+// We do not store the sign bit in this LUT because all of these slopes are implicitly negative values.
+// All combined, this slopes LUT takes up 32x18=576 bits (72 bytes).
+static const unsigned rsqLUTSlopes[32] =
+{
+	0x3d25d,
+	0x37fa8,
+	0x337fc,
+	0x2f961,
+	0x2c254,
+	0x2919a,
+	0x2663d,
+	0x23f6f,
+	0x21c8e,
+	0x1fd10,
+	0x1e083,
+	0x1c689,
+	0x1aed2,
+	0x19917,
+	0x18522,
+	0x172c0,
+
+	0x2b3ce,
+	0x27953,
+	0x246a5,
+	0x21a60,
+	0x1f373,
+	0x1d100,
+	0x1b255,
+	0x196e5,
+	0x17e3b,
+	0x167f6,
+	0x153c6,
+	0x14168,
+	0x130a2,
+	0x12145,
+	0x11329,
+	0x10628
+};
+
+// These are all 23-bit unsigned integer offsets for each of the linear segments.
+// All combined, this offsets LUT takes up 32*23=736 bits (92 bytes).
+static const unsigned rsqLUTOffsets[32] =
+{
+	0x7ffffe,
+	0x785b43,
+	0x715bf0,
+	0x6aebf5,
+	0x64f92e,
+	0x5f7482,
+	0x5a514a,
+	0x5584cd,
+	0x5105eb,
+	0x4ccccd,
+	0x48d2ab,
+	0x4511a3,
+	0x418490,
+	0x3e26eb,
+	0x3af4ba,
+	0x37ea74,
+
+	0x3504f3,
+	0x2f9d54,
+	0x2aaaab,
+	0x261d5f,
+	0x21e89b,
+	0x1e01b3,
+	0x1a5fb2,
+	0x16fb06,
+	0x13cd3a,
+	0x10d0c3,
+	0x0e00d5,
+	0x0b5948,
+	0x08d677,
+	0x067531,
+	0x0432a5,
+	0x020c52
+};
+
+const unsigned SoftRsqCalcMantissa(const unsigned inputMantissa, const bool isInFirstRange)
+{
+	// Special-case handling for mantissas that are too close to 0:
+	//if (isInFirstRange && inputMantissa < 0x000002) // Both 0x0 and 0x1 are special in that they result in a mantissa of 0x0. This would otherwise cause wrap-around in our code, so we special-case it to avoid that situation.
+		//return 0x000000;
+
+	unsigned segmentIndex = inputMantissa / (1 << (23 - 4) ); // 1<<23 is our 8388608 and 1<<4 is our 16 segment LUT's
+	if (!isInFirstRange)
+		segmentIndex += 16; // Use the second half of our LUT's for the 2.0f to 4.0f ranges
+	const unsigned segmentStart = (segmentIndex % 16) * (1 << (23 - 4) );
+	const unsigned segmentEnd = ( (segmentIndex % 16) + 1) * (1 << (23 - 4) );
+	const unsigned fixedDx = rsqLUTSlopes[segmentIndex]; // This is a 0.18 fixed-point value
+	const unsigned product = (const unsigned)( ( (const unsigned __int64)fixedDx * (const unsigned __int64)(inputMantissa - segmentStart) ) >> 18ull); // 0.18 * 0.19 needs to be shifted right by 18 bits after the multiplication
+	const unsigned interpolatedMantissaResult = rsqLUTOffsets[segmentIndex] - product; // Subtract here because our slopes are always implicitly between [-1.0f, -0.0f] so we don't store the sign bit in the LUT
+	return interpolatedMantissaResult;
+}
+
+const float SoftRsqFunc(float input)
+{
+	// D3D9 spec says that rsq is always implicitly assumed to be abs() so that it never needs to deal with negative values.
+	// D3D10+ spec says that rsq returns NaN's for negative inputs instead. We'll go with the D3D9 spec version for this test case:
+	input = fabsf(input);
+
+	// Handle our special cases:
+	if (input == 0.0f)
+		return INFINITY;
+	//else if (input == 1.0f)
+		//return 1.0f; // TODO: Is this necessary, or does the exact-power-of-2 case already cover this properly?
+	else if (isinf(input) )
+		return 0.0f;
+	else if (isnan(input) )
+		return NAN;
+
+	const int inputRawExp = ( (*(const unsigned* const)&input) >> 23) & 0xFF;
+	const int inputSignedExp = inputRawExp - 127;
+	const unsigned inputMantissa = (*(const unsigned* const)&input) & 0x7FFFFF;
+	const bool inputIsExactPowerOf2 = (inputMantissa == 0x000000);
+	const int resultSignedExp = RsqGetExpFunc(inputSignedExp, inputIsExactPowerOf2);
+	const unsigned resultRawExp = resultSignedExp + 127;
+	const bool isInFirstRange = ( (*(const unsigned* const)&input) >> 23) & 0x1;
+	const unsigned resultMantissa = (isInFirstRange && inputIsExactPowerOf2) ? 0x000000 : SoftRsqCalcMantissa(inputMantissa, isInFirstRange);
+	unsigned retBits = (resultRawExp << 23) | resultMantissa;
+	return *(const float* const)&retBits;
+}
+
+static const int RunTestsFloatRSQ(Xsi::Loader& loader, std_logic_port& clk, std_logic_vector_port<32>& IN_A, 
+	std_logic_port& ISPEC_GO, std_logic_vector_port<3>& IN_MODE, std_logic_vector_port<32>& OUT_RESULT)
+{
+	bool allTestsSuccessful = true;
+
+	const auto rsqTestFuncSingle = [&](const float a) -> float
+	{
+		IN_A = a;
+		ISPEC_GO = true;
+		IN_MODE = RsqMode;
+		for (unsigned steps = 0; steps < SPEC_CYCLES; ++steps)
+		{
+			scoped_timestep time(loader, clk, 100);
+		}
+		const float res = OUT_RESULT.GetFloat32Val();
+		return res;
+	};
+
+	const float realResult = RealRsqFunc(1.8f);
+	const float simResult = rsqTestFuncSingle(1.8f);
+
+	// Do some special-case testing:
+	allTestsSuccessful &= CompareFloatBitwise(RealRsqFunc(1.0f), rsqTestFuncSingle(1.0f) ); // 1.0f is a special case that we need to make sure works flawlessly!
+	allTestsSuccessful &= CompareFloatBitwise(RealRsqFunc(-1.0f), rsqTestFuncSingle(-1.0f) ); // Negative values are treated just like positive values (ie. the sign bit is ignored)
+	allTestsSuccessful &= CompareFloatBitwise(RealRsqFunc(0.0f), rsqTestFuncSingle(0.0f) ); // 0.0f is another special case
+	allTestsSuccessful &= CompareFloatBitwise(RealRsqFunc(-0.0f), rsqTestFuncSingle(-0.0f) ); // 0.0f is another special case
+	allTestsSuccessful &= CompareFloatBitwise(RealRsqFunc(INFINITY), rsqTestFuncSingle(INFINITY) ); // INF is another special case
+	allTestsSuccessful &= CompareFloatBitwise(RealRsqFunc(-INFINITY), rsqTestFuncSingle(-INFINITY) ); // INF is another special case
+	allTestsSuccessful &= (isnan(RealRsqFunc(NAN) ) && isnan(rsqTestFuncSingle(NAN) ) ); // NAN is another special case
+	allTestsSuccessful &= (isnan(RealRsqFunc(-NAN) ) && isnan(rsqTestFuncSingle(-NAN) ) ); // NAN is another special case
+
+	// Make sure that all of the powers of 2 return bit-exact correct results:
+	for (float fTestInput = 9.40395480657830006375e-38f; fTestInput <= 4.25352958651173079329e+37f; fTestInput *= 2.0f)
+	{
+		const float realResult = RealRsqFunc(fTestInput);
+		const float simulationResult = rsqTestFuncSingle(fTestInput);
+		const float emulationResult = SoftRsqFunc(fTestInput);
+		if (realResult != simulationResult ||
+			(*(const unsigned* const)&realResult != *(const unsigned* const)&simulationResult) ||
+			emulationResult != simulationResult ||
+			(*(const unsigned* const)&emulationResult != *(const unsigned* const)&simulationResult) )
+		{
+#ifdef _DEBUG
+			__debugbreak();
+#endif
+			allTestsSuccessful = false;
+		}
+	}
+
+	// Test all of the integers from 0 to 1024 to make sure that they return reasonably close results:
+	for (unsigned testInt = 0; testInt <= 1024; ++testInt)
+	{
+		const float fTestInput = (const float)testInt;
+		const float realResult = RealRsqFunc(fTestInput);
+		const float simulationResult = rsqTestFuncSingle(fTestInput);
+		const float emulationResult = SoftRsqFunc(fTestInput);
+		if (simulationResult != emulationResult)
+		{
+			__debugbreak(); // Error!
+		}
+		if (realResult != simulationResult)
+		{
+			const int iRealResult = *(const int* const)&realResult;
+			const int iSimulationResult = *(const int* const)&simulationResult;
+			if (abs(iRealResult - iSimulationResult) > (4096 + 2048) )
+			{
+#ifdef _DEBUG
+				__debugbreak();
+#endif
+				allTestsSuccessful = false;
+			}
+		}
+	}
+
+	// Test float values between 0.0f and 128.0f in 1/1000th's of an integer increments to make sure that the values are reasonably close:
+	for (float fTestInput = 0.0f; fTestInput <= 128.0f; 
+#ifdef _DEBUG
+		fTestInput += 0.01f)
+#else
+		fTestInput += 0.001f)
+#endif
+	{
+		const float realResult = RealRsqFunc(fTestInput);
+		const float simulationResult = rsqTestFuncSingle(fTestInput);
+		const float emulationResult = SoftRsqFunc(fTestInput);
+		if (emulationResult != simulationResult)
+		{
+			__debugbreak();
+		}
+		if (realResult != simulationResult)
+		{
+			const int iRealResult = *(const int* const)&realResult;
+			const int iSimulationResult = *(const int* const)&simulationResult;
+			if (abs(iRealResult - iSimulationResult) > (4096 + 2048) )
+			{
+				allTestsSuccessful = false;
+#ifdef _DEBUG
+				__debugbreak();
+#endif
+			}
+		}
+	}
+
+	const auto rsqCloseEnoughTest = [](const float simulationResult, const float trueResult, const float epsilon) -> bool
+	{
+		return fabs(simulationResult - trueResult) < epsilon;
+	};
+
+	const auto pipelinedRsqTest = [&]() -> bool
+	{
+		static_assert(SPEC_CYCLES == 14u, "Need to rewrite this function if the instruction latency of the SPEC pipe changes!");
+		IN_A = 0.0f;
+		ISPEC_GO = false;
+		IN_MODE = RsqMode;
+		{
+			scoped_timestep time(loader, clk, 100);
+		}
+		IN_A = 0.0f;
+		ISPEC_GO = true;
+		{
+			scoped_timestep time(loader, clk, 100);
+		}
+		IN_A = 1.0f;
+		{
+			scoped_timestep time(loader, clk, 100);
+		}
+		IN_A = 0.5f;
+		{
+			scoped_timestep time(loader, clk, 100);
+		}
+		IN_A = 2.0f;
+		{
+			scoped_timestep time(loader, clk, 100);
+		}
+		IN_A = 1.0f / 3.0f;
+		{
+			scoped_timestep time(loader, clk, 100);
+		}
+		IN_A = 3.0f;
+		{
+			scoped_timestep time(loader, clk, 100);
+		}
+		IN_A = 1.0f / 4.0f;
+		{
+			scoped_timestep time(loader, clk, 100);
+		}
+		IN_A = 4.0f;
+		{
+			scoped_timestep time(loader, clk, 100);
+		}
+		IN_A = 1.0f / 5.0f;
+		{
+			scoped_timestep time(loader, clk, 100);
+		}
+		IN_A = 5.0f;
+		{
+			scoped_timestep time(loader, clk, 100);
+		}
+		IN_A = 0.0f;
+		{
+			scoped_timestep time(loader, clk, 100);
+		}
+		IN_A = NAN;
+		{
+			scoped_timestep time(loader, clk, 100);
+		}
+		IN_A = -1.0f;
+		{
+			scoped_timestep time(loader, clk, 100);
+		}
+		IN_A = 3.1415926f;
+		{
+			scoped_timestep time(loader, clk, 100);
+		}
+		ISPEC_GO = false;
+		const float aResult = OUT_RESULT.GetFloat32Val();
+		const bool aValid = CompareFloatBitwise(aResult, INFINITY); // rsq(0.0f) = INF
+		{
+			scoped_timestep time(loader, clk, 100);
+		}
+		const float bResult = OUT_RESULT.GetFloat32Val();
+		const bool bValid = CompareFloatBitwise(bResult, 1.0f); // rsq(1.0f) = 1.0f
+		{
+			scoped_timestep time(loader, clk, 100);
+		}
+		const float cResult = OUT_RESULT.GetFloat32Val();
+		const bool cValid = CompareFloatBitwise(cResult, 1.0f / sqrtf(0.5f) ); // rsq(0.5f) = 1/sqrt(0.5f)
+		{
+			scoped_timestep time(loader, clk, 100);
+		}
+		const float dResult = OUT_RESULT.GetFloat32Val();
+		const bool dValid = CompareFloatBitwise(dResult, 1.0f / sqrtf(2.0f) ); // rsq(2.0f) = 1.0f/sqrt(2.0f)
+		{
+			scoped_timestep time(loader, clk, 100);
+		}
+		const float eResult = OUT_RESULT.GetFloat32Val();
+		const bool eValid = rsqCloseEnoughTest(eResult, sqrtf(3.0f), 0.001f); // rsq(1.0f / 3.0f) = sqrt(3.0f)
+		{
+			scoped_timestep time(loader, clk, 100);
+		}
+		const float fResult = OUT_RESULT.GetFloat32Val();
+		const bool fValid = rsqCloseEnoughTest(fResult, 1.0f / sqrtf(3.0f), 0.001f); // rsq(3.0f) = 1.0f / sqrt(3.0f)
+		{
+			scoped_timestep time(loader, clk, 100);
+		}
+		const float gResult = OUT_RESULT.GetFloat32Val();
+		const bool gValid = CompareFloatBitwise(gResult, 2.0f); // rsq(0.25f) = 2.0f
+		{
+			scoped_timestep time(loader, clk, 100);
+		}
+		const float hResult = OUT_RESULT.GetFloat32Val();
+		const bool hValid = CompareFloatBitwise(hResult, 0.5f); // rsq(4.0f) = 0.5f
+		{
+			scoped_timestep time(loader, clk, 100);
+		}
+		const float iResult = OUT_RESULT.GetFloat32Val();
+		const bool iValid = rsqCloseEnoughTest(iResult, sqrtf(5.0f), 0.001f); // rsq(1.0f / 5.0f) = sqrt(5.0f)
+		{
+			scoped_timestep time(loader, clk, 100);
+		}
+		const float jResult = OUT_RESULT.GetFloat32Val();
+		const bool jValid = rsqCloseEnoughTest(jResult, 1.0f / sqrtf(5.0f), 0.001f); // rsq(5.0f) = 1.0f / sqrt(5.0f)
+		{
+			scoped_timestep time(loader, clk, 100);
+		}
+		const float kResult = OUT_RESULT.GetFloat32Val();
+		const bool kValid = CompareFloatBitwise(kResult, INFINITY); // rsq(0.0f) = INFINITY
+		{
+			scoped_timestep time(loader, clk, 100);
+		}
+		const float lResult = OUT_RESULT.GetFloat32Val();
+		const bool lValid = isnan(lResult); // rsq(NAN) = NAN
+		{
+			scoped_timestep time(loader, clk, 100);
+		}
+		const float mResult = OUT_RESULT.GetFloat32Val();
+		const bool mValid = CompareFloatBitwise(mResult, 1.0f); // rsq(-1.0f) = 1.0f
+		{
+			scoped_timestep time(loader, clk, 100);
+		}
+		const float nResult = OUT_RESULT.GetFloat32Val();
+		const bool nValid = rsqCloseEnoughTest(nResult, 1.0f / sqrtf(3.1415926f), 0.002f); // rsq(3.1415926f) = 1.0f / sqrt(3.1415926f)
+		{
+			scoped_timestep time(loader, clk, 100);
+		}
+
+		return aValid && bValid && cValid && dValid && eValid && fValid && gValid && hValid && iValid && jValid && kValid && lValid && mValid && nValid;
+	};
+
+	// Run the pipelining test:
+	allTestsSuccessful &= pipelinedRsqTest();
+
+	// Turn off the SPEC pipe when we're done using it
+	ISPEC_GO = false;
+
+	return allTestsSuccessful ? S_OK : 1;
+}
+
 static const int RunTestsFloatRCP(Xsi::Loader& loader, std_logic_port& clk, std_logic_vector_port<32>& IN_A, 
 	std_logic_port& ISPEC_GO, std_logic_vector_port<3>& IN_MODE, std_logic_vector_port<32>& OUT_RESULT)
 {
@@ -419,7 +826,8 @@ static const int RunTestsFloatRCP(Xsi::Loader& loader, std_logic_port& clk, std_
 	{
 		IN_A = a;
 		ISPEC_GO = true;
-		for (unsigned steps = 0; steps < RCP_CYCLES; ++steps)
+		IN_MODE = RcpMode;
+		for (unsigned steps = 0; steps < SPEC_CYCLES; ++steps)
 		{
 			scoped_timestep time(loader, clk, 100);
 		}
@@ -434,9 +842,10 @@ static const int RunTestsFloatRCP(Xsi::Loader& loader, std_logic_port& clk, std_
 
 	const auto pipelinedRcpTest = [&]() -> bool
 	{
-		static_assert(RCP_CYCLES == 14u, "Need to rewrite this function if the instruction latency of the RCP pipe changes!");
+		static_assert(SPEC_CYCLES == 14u, "Need to rewrite this function if the instruction latency of the SPEC pipe changes!");
 		IN_A = 0.0f;
 		ISPEC_GO = false;
+		IN_MODE = RcpMode;
 		{
 			scoped_timestep time(loader, clk, 100);
 		}
@@ -1943,6 +2352,13 @@ const int RunTestsFloatALU(Xsi::Loader& loader)
 		IN_A = 0.0f;
 		IN_B = 0.0f;
 		IN_MODE = 0;
+		ISHFT_GO = false;
+		IADD_GO = false;
+		IMUL_GO = false;
+		ICMP_GO = false;
+		ISPEC_GO = false;
+		ICNV_GO = false;
+		IBIT_GO = false;
 	}
 
 	const bool cmpTestsSuccessful = RunTestsFloatCMP(loader, clk, IN_A, IN_B, IN_MODE, ICMP_GO, OUT_RESULT) == S_OK;
@@ -1950,10 +2366,11 @@ const int RunTestsFloatALU(Xsi::Loader& loader)
 	const bool mulTestsSuccessful = RunTestsFloatMUL(loader, clk, IN_A, IN_B, IMUL_GO, OUT_RESULT) == S_OK;
 	const bool shftTestsSuccessful = RunTestsFloatSHFT(loader, clk, IN_A, ISHFT_GO, IN_MODE, OUT_RESULT) == S_OK;
 	const bool cnvTestsSuccessful = RunTestsFloatCNV(loader, clk, IN_A, IN_MODE, ICNV_GO, OUT_RESULT) == S_OK;
+	const bool rsqTestsSuccessful = RunTestsFloatRSQ(loader, clk, IN_A, ISPEC_GO, IN_MODE, OUT_RESULT) == S_OK;
 	const bool rcpTestsSuccessful = RunTestsFloatRCP(loader, clk, IN_A, ISPEC_GO, IN_MODE, OUT_RESULT) == S_OK;
 	const bool bitTestsSuccessful = RunTestsFloatBIT(loader, clk, IN_A, IN_B, IBIT_GO, IN_MODE, OUT_RESULT) == S_OK;
 
-	if (cmpTestsSuccessful && addTestsSuccessful && mulTestsSuccessful && shftTestsSuccessful && rcpTestsSuccessful && cnvTestsSuccessful && bitTestsSuccessful)
+	if (cmpTestsSuccessful && addTestsSuccessful && mulTestsSuccessful && shftTestsSuccessful && rsqTestsSuccessful && rcpTestsSuccessful && cnvTestsSuccessful && bitTestsSuccessful)
 	{
 		return S_OK;
 	}

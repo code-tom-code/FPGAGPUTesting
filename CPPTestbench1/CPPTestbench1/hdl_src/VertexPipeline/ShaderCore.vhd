@@ -506,7 +506,7 @@ end function;
 pure function InstructionGetCycleLatency(instructionOp : InstructionOperation) return unsigned is
 begin
 	case instructionOp is
-		when Op_RCP => -- 14 cycle operation latency for RCP pipe
+		when Op_RCP | Op_RSQ => -- 14 cycle operation latency for RCP pipe
 			return to_unsigned(SPEC_CYCLES, 5);
 		when Op_MUL => -- 5 cycle operation latency for MUL pipe
 			return to_unsigned(MUL_CYCLES, 5);
@@ -783,6 +783,10 @@ begin
 			return to_unsigned(eCmpType'pos(CmpMov), 3);
 		when Op_FRC =>
 			return to_unsigned(eConvertMode'pos(F_Frc), 3);
+		when Op_RCP =>
+			return to_unsigned(eSpecMode'pos(RcpMode), 3);
+		when Op_RSQ =>
+			return to_unsigned(eSpecMode'pos(RsqMode), 3);
 		when Op_RND_UINT24NE =>
 			return to_unsigned(eConvertMode'pos(F_to_U24_RoundNearestEven), 3);
 		when Op_RND_SINT16NE =>
@@ -871,7 +875,7 @@ end function;
 pure function InstructionIsFPUSpec(instructionData : unsigned(63 downto 0) ) return std_logic is
 begin
 	case InstructionGetOperation(instructionData) is
-		when Op_RCP | Op_FRC | Op_EXPP | Op_LOGP | Op_RSQ =>
+		when Op_RCP | Op_EXPP | Op_LOGP | Op_RSQ =>
 			return '1';
 		when others =>
 			return '0';

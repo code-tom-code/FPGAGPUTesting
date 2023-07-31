@@ -841,94 +841,6 @@
         </spirit:configurableElementValues>
       </spirit:componentInstance>
       <spirit:componentInstance>
-        <spirit:instanceName>TRISETUP_FPU_ADD</spirit:instanceName>
-        <spirit:componentRef spirit:library="module_ref" spirit:name="StandaloneFloatALU_ADD" spirit:vendor="xilinx.com" spirit:version="1.0"/>
-        <spirit:configurableElementValues>
-          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_StandaloneFloatALU_A_0_0</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">StandaloneFloatALU_ADD</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
-        </spirit:configurableElementValues>
-      </spirit:componentInstance>
-      <spirit:componentInstance>
-        <spirit:instanceName>CLIP_FPU_ADD_0</spirit:instanceName>
-        <spirit:componentRef spirit:library="module_ref" spirit:name="StandaloneFloatALU_ADD" spirit:vendor="xilinx.com" spirit:version="1.0"/>
-        <spirit:configurableElementValues>
-          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_StandaloneFloatALU_A_0_1</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">StandaloneFloatALU_ADD</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
-        </spirit:configurableElementValues>
-      </spirit:componentInstance>
-      <spirit:componentInstance>
-        <spirit:instanceName>CLIP_FPU_ADD_1</spirit:instanceName>
-        <spirit:componentRef spirit:library="module_ref" spirit:name="StandaloneFloatALU_ADD" spirit:vendor="xilinx.com" spirit:version="1.0"/>
-        <spirit:configurableElementValues>
-          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_StandaloneFloatALU_A_1_0</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">StandaloneFloatALU_ADD</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
-        </spirit:configurableElementValues>
-      </spirit:componentInstance>
-      <spirit:componentInstance>
-        <spirit:instanceName>TRISETUP_FPU_MUL</spirit:instanceName>
-        <spirit:componentRef spirit:library="module_ref" spirit:name="StandaloneFloatALU_MUL" spirit:vendor="xilinx.com" spirit:version="1.0"/>
-        <spirit:configurableElementValues>
-          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_StandaloneFloatALU_M_0_0</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">StandaloneFloatALU_MUL</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
-        </spirit:configurableElementValues>
-      </spirit:componentInstance>
-      <spirit:componentInstance>
-        <spirit:instanceName>CLIP_FPU_MUL_0</spirit:instanceName>
-        <spirit:componentRef spirit:library="module_ref" spirit:name="StandaloneFloatALU_MUL" spirit:vendor="xilinx.com" spirit:version="1.0"/>
-        <spirit:configurableElementValues>
-          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_StandaloneFloatALU_M_0_1</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">StandaloneFloatALU_MUL</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
-        </spirit:configurableElementValues>
-      </spirit:componentInstance>
-      <spirit:componentInstance>
-        <spirit:instanceName>CLIP_FPU_MUL_1</spirit:instanceName>
-        <spirit:componentRef spirit:library="module_ref" spirit:name="StandaloneFloatALU_MUL" spirit:vendor="xilinx.com" spirit:version="1.0"/>
-        <spirit:configurableElementValues>
-          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_StandaloneFloatALU_M_1_0</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">StandaloneFloatALU_MUL</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
-        </spirit:configurableElementValues>
-      </spirit:componentInstance>
-      <spirit:componentInstance>
-        <spirit:instanceName>TRISETUP_FPU_SPEC</spirit:instanceName>
-        <spirit:componentRef spirit:library="module_ref" spirit:name="StandaloneFloatALU_SPEC" spirit:vendor="xilinx.com" spirit:version="1.0"/>
-        <spirit:configurableElementValues>
-          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_StandaloneFloatALU_S_0_0</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">StandaloneFloatALU_SPEC</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
-        </spirit:configurableElementValues>
-      </spirit:componentInstance>
-      <spirit:componentInstance>
-        <spirit:instanceName>CLIP_FPU_SPEC_0</spirit:instanceName>
-        <spirit:componentRef spirit:library="module_ref" spirit:name="StandaloneFloatALU_SPEC" spirit:vendor="xilinx.com" spirit:version="1.0"/>
-        <spirit:configurableElementValues>
-          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_StandaloneFloatALU_S_0_1</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">StandaloneFloatALU_SPEC</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
-        </spirit:configurableElementValues>
-      </spirit:componentInstance>
-      <spirit:componentInstance>
         <spirit:instanceName>TexSampleStateBlock</spirit:instanceName>
         <spirit:componentRef spirit:library="module_ref" spirit:name="StateBlock" spirit:vendor="xilinx.com" spirit:version="1.0"/>
         <spirit:configurableElementValues>
@@ -1079,39 +991,6 @@
         </spirit:configurableElementValues>
       </spirit:componentInstance>
       <spirit:componentInstance>
-        <spirit:instanceName>AttrInterp_FPU_MUL</spirit:instanceName>
-        <spirit:componentRef spirit:library="module_ref" spirit:name="StandaloneFloatALU_MUL" spirit:vendor="xilinx.com" spirit:version="1.0"/>
-        <spirit:configurableElementValues>
-          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_StandaloneFloatALU_M_0_2</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">StandaloneFloatALU_MUL</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
-        </spirit:configurableElementValues>
-      </spirit:componentInstance>
-      <spirit:componentInstance>
-        <spirit:instanceName>DINTERP_FPU_MUL</spirit:instanceName>
-        <spirit:componentRef spirit:library="module_ref" spirit:name="StandaloneFloatALU_MUL" spirit:vendor="xilinx.com" spirit:version="1.0"/>
-        <spirit:configurableElementValues>
-          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_StandaloneFloatALU_M_0_3</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">StandaloneFloatALU_MUL</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
-        </spirit:configurableElementValues>
-      </spirit:componentInstance>
-      <spirit:componentInstance>
-        <spirit:instanceName>DINTERP_FPU_SPEC</spirit:instanceName>
-        <spirit:componentRef spirit:library="module_ref" spirit:name="StandaloneFloatALU_SPEC" spirit:vendor="xilinx.com" spirit:version="1.0"/>
-        <spirit:configurableElementValues>
-          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_StandaloneFloatALU_S_0_2</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">StandaloneFloatALU_SPEC</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
-        </spirit:configurableElementValues>
-      </spirit:componentInstance>
-      <spirit:componentInstance>
         <spirit:instanceName>DINTERP_TRIDATA_FIFO</spirit:instanceName>
         <spirit:componentRef spirit:library="ip" spirit:name="fifo_generator" spirit:vendor="xilinx.com" spirit:version="13.2"/>
         <spirit:configurableElementValues>
@@ -1145,39 +1024,6 @@
         </spirit:configurableElementValues>
       </spirit:componentInstance>
       <spirit:componentInstance>
-        <spirit:instanceName>Rasterizer_0</spirit:instanceName>
-        <spirit:componentRef spirit:library="module_ref" spirit:name="Rasterizer" spirit:vendor="xilinx.com" spirit:version="1.0"/>
-        <spirit:configurableElementValues>
-          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_Rasterizer_0_0</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">Rasterizer</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
-        </spirit:configurableElementValues>
-      </spirit:componentInstance>
-      <spirit:componentInstance>
-        <spirit:instanceName>CommandProcessor_0</spirit:instanceName>
-        <spirit:componentRef spirit:library="module_ref" spirit:name="CommandProcessor" spirit:vendor="xilinx.com" spirit:version="1.0"/>
-        <spirit:configurableElementValues>
-          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_CommandProcessor_0_0</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">CommandProcessor</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
-        </spirit:configurableElementValues>
-      </spirit:componentInstance>
-      <spirit:componentInstance>
-        <spirit:instanceName>TexSample_0</spirit:instanceName>
-        <spirit:componentRef spirit:library="module_ref" spirit:name="TexSample" spirit:vendor="xilinx.com" spirit:version="1.0"/>
-        <spirit:configurableElementValues>
-          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_TexSample_0_0</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">TexSample</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
-        </spirit:configurableElementValues>
-      </spirit:componentInstance>
-      <spirit:componentInstance>
         <spirit:instanceName>VertexBatchBuilder_0</spirit:instanceName>
         <spirit:componentRef spirit:library="module_ref" spirit:name="VertexBatchBuilder" spirit:vendor="xilinx.com" spirit:version="1.0"/>
         <spirit:configurableElementValues>
@@ -1200,22 +1046,33 @@
         </spirit:configurableElementValues>
       </spirit:componentInstance>
       <spirit:componentInstance>
-        <spirit:instanceName>ROP_0</spirit:instanceName>
-        <spirit:componentRef spirit:library="module_ref" spirit:name="ROP" spirit:vendor="xilinx.com" spirit:version="1.0"/>
+        <spirit:instanceName>CommandProcessor_0</spirit:instanceName>
+        <spirit:componentRef spirit:library="module_ref" spirit:name="CommandProcessor" spirit:vendor="xilinx.com" spirit:version="1.0"/>
         <spirit:configurableElementValues>
-          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_ROP_0_0</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">ROP</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_CommandProcessor_0_0</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">CommandProcessor</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
         </spirit:configurableElementValues>
       </spirit:componentInstance>
       <spirit:componentInstance>
-        <spirit:instanceName>ClipUnit_0</spirit:instanceName>
-        <spirit:componentRef spirit:library="module_ref" spirit:name="ClipUnit" spirit:vendor="xilinx.com" spirit:version="1.0"/>
+        <spirit:instanceName>TriSetup_0</spirit:instanceName>
+        <spirit:componentRef spirit:library="module_ref" spirit:name="TriSetup" spirit:vendor="xilinx.com" spirit:version="1.0"/>
         <spirit:configurableElementValues>
-          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_ClipUnit_0_0</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">ClipUnit</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_TriSetup_0_0</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">TriSetup</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
+        </spirit:configurableElementValues>
+      </spirit:componentInstance>
+      <spirit:componentInstance>
+        <spirit:instanceName>Rasterizer_0</spirit:instanceName>
+        <spirit:componentRef spirit:library="module_ref" spirit:name="Rasterizer" spirit:vendor="xilinx.com" spirit:version="1.0"/>
+        <spirit:configurableElementValues>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_Rasterizer_0_0</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">Rasterizer</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
@@ -1233,11 +1090,88 @@
         </spirit:configurableElementValues>
       </spirit:componentInstance>
       <spirit:componentInstance>
-        <spirit:instanceName>AttrInterp_FPU_CNV0</spirit:instanceName>
-        <spirit:componentRef spirit:library="module_ref" spirit:name="StandaloneFloatALU_CNV" spirit:vendor="xilinx.com" spirit:version="1.0"/>
+        <spirit:instanceName>TexSample_0</spirit:instanceName>
+        <spirit:componentRef spirit:library="module_ref" spirit:name="TexSample" spirit:vendor="xilinx.com" spirit:version="1.0"/>
         <spirit:configurableElementValues>
-          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_StandaloneFloatALU_C_0_0</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">StandaloneFloatALU_CNV</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_TexSample_0_0</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">TexSample</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
+        </spirit:configurableElementValues>
+      </spirit:componentInstance>
+      <spirit:componentInstance>
+        <spirit:instanceName>ROP_0</spirit:instanceName>
+        <spirit:componentRef spirit:library="module_ref" spirit:name="ROP" spirit:vendor="xilinx.com" spirit:version="1.0"/>
+        <spirit:configurableElementValues>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_ROP_0_0</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">ROP</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
+        </spirit:configurableElementValues>
+      </spirit:componentInstance>
+      <spirit:componentInstance>
+        <spirit:instanceName>InputAssembler2_0</spirit:instanceName>
+        <spirit:componentRef spirit:library="module_ref" spirit:name="InputAssembler2" spirit:vendor="xilinx.com" spirit:version="1.0"/>
+        <spirit:configurableElementValues>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_InputAssembler2_0_0</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">InputAssembler2</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
+        </spirit:configurableElementValues>
+      </spirit:componentInstance>
+      <spirit:componentInstance>
+        <spirit:instanceName>DepthInterpolator_0</spirit:instanceName>
+        <spirit:componentRef spirit:library="module_ref" spirit:name="DepthInterpolator" spirit:vendor="xilinx.com" spirit:version="1.0"/>
+        <spirit:configurableElementValues>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_DepthInterpolator_0_1</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">DepthInterpolator</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
+        </spirit:configurableElementValues>
+      </spirit:componentInstance>
+      <spirit:componentInstance>
+        <spirit:instanceName>ClipUnit_0</spirit:instanceName>
+        <spirit:componentRef spirit:library="module_ref" spirit:name="ClipUnit" spirit:vendor="xilinx.com" spirit:version="1.0"/>
+        <spirit:configurableElementValues>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_ClipUnit_0_0</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">ClipUnit</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
+        </spirit:configurableElementValues>
+      </spirit:componentInstance>
+      <spirit:componentInstance>
+        <spirit:instanceName>TRISETUP_FPU_ADD</spirit:instanceName>
+        <spirit:componentRef spirit:library="module_ref" spirit:name="StandaloneFloatALU_ADD" spirit:vendor="xilinx.com" spirit:version="1.0"/>
+        <spirit:configurableElementValues>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_StandaloneFloatALU_A_0_0</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">StandaloneFloatALU_ADD</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
+        </spirit:configurableElementValues>
+      </spirit:componentInstance>
+      <spirit:componentInstance>
+        <spirit:instanceName>TRISETUP_FPU_MUL</spirit:instanceName>
+        <spirit:componentRef spirit:library="module_ref" spirit:name="StandaloneFloatALU_MUL" spirit:vendor="xilinx.com" spirit:version="1.0"/>
+        <spirit:configurableElementValues>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_StandaloneFloatALU_M_0_0</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">StandaloneFloatALU_MUL</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
+        </spirit:configurableElementValues>
+      </spirit:componentInstance>
+      <spirit:componentInstance>
+        <spirit:instanceName>TRISETUP_FPU_SPEC</spirit:instanceName>
+        <spirit:componentRef spirit:library="module_ref" spirit:name="StandaloneFloatALU_SPEC" spirit:vendor="xilinx.com" spirit:version="1.0"/>
+        <spirit:configurableElementValues>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_StandaloneFloatALU_S_0_0</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">StandaloneFloatALU_SPEC</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
@@ -1255,11 +1189,110 @@
         </spirit:configurableElementValues>
       </spirit:componentInstance>
       <spirit:componentInstance>
+        <spirit:instanceName>CLIP_FPU_ADD_0</spirit:instanceName>
+        <spirit:componentRef spirit:library="module_ref" spirit:name="StandaloneFloatALU_ADD" spirit:vendor="xilinx.com" spirit:version="1.0"/>
+        <spirit:configurableElementValues>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_StandaloneFloatALU_A_0_1</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">StandaloneFloatALU_ADD</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
+        </spirit:configurableElementValues>
+      </spirit:componentInstance>
+      <spirit:componentInstance>
+        <spirit:instanceName>CLIP_FPU_ADD_1</spirit:instanceName>
+        <spirit:componentRef spirit:library="module_ref" spirit:name="StandaloneFloatALU_ADD" spirit:vendor="xilinx.com" spirit:version="1.0"/>
+        <spirit:configurableElementValues>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_StandaloneFloatALU_A_1_0</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">StandaloneFloatALU_ADD</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
+        </spirit:configurableElementValues>
+      </spirit:componentInstance>
+      <spirit:componentInstance>
+        <spirit:instanceName>CLIP_FPU_MUL_0</spirit:instanceName>
+        <spirit:componentRef spirit:library="module_ref" spirit:name="StandaloneFloatALU_MUL" spirit:vendor="xilinx.com" spirit:version="1.0"/>
+        <spirit:configurableElementValues>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_StandaloneFloatALU_M_0_1</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">StandaloneFloatALU_MUL</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
+        </spirit:configurableElementValues>
+      </spirit:componentInstance>
+      <spirit:componentInstance>
+        <spirit:instanceName>CLIP_FPU_MUL_1</spirit:instanceName>
+        <spirit:componentRef spirit:library="module_ref" spirit:name="StandaloneFloatALU_MUL" spirit:vendor="xilinx.com" spirit:version="1.0"/>
+        <spirit:configurableElementValues>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_StandaloneFloatALU_M_1_0</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">StandaloneFloatALU_MUL</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
+        </spirit:configurableElementValues>
+      </spirit:componentInstance>
+      <spirit:componentInstance>
+        <spirit:instanceName>CLIP_FPU_SPEC_0</spirit:instanceName>
+        <spirit:componentRef spirit:library="module_ref" spirit:name="StandaloneFloatALU_SPEC" spirit:vendor="xilinx.com" spirit:version="1.0"/>
+        <spirit:configurableElementValues>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_StandaloneFloatALU_S_0_1</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">StandaloneFloatALU_SPEC</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
+        </spirit:configurableElementValues>
+      </spirit:componentInstance>
+      <spirit:componentInstance>
+        <spirit:instanceName>AttrInterp_FPU_MUL</spirit:instanceName>
+        <spirit:componentRef spirit:library="module_ref" spirit:name="StandaloneFloatALU_MUL" spirit:vendor="xilinx.com" spirit:version="1.0"/>
+        <spirit:configurableElementValues>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_StandaloneFloatALU_M_0_2</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">StandaloneFloatALU_MUL</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
+        </spirit:configurableElementValues>
+      </spirit:componentInstance>
+      <spirit:componentInstance>
+        <spirit:instanceName>AttrInterp_FPU_CNV0</spirit:instanceName>
+        <spirit:componentRef spirit:library="module_ref" spirit:name="StandaloneFloatALU_CNV" spirit:vendor="xilinx.com" spirit:version="1.0"/>
+        <spirit:configurableElementValues>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_StandaloneFloatALU_C_0_0</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">StandaloneFloatALU_CNV</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
+        </spirit:configurableElementValues>
+      </spirit:componentInstance>
+      <spirit:componentInstance>
+        <spirit:instanceName>DINTERP_FPU_MUL</spirit:instanceName>
+        <spirit:componentRef spirit:library="module_ref" spirit:name="StandaloneFloatALU_MUL" spirit:vendor="xilinx.com" spirit:version="1.0"/>
+        <spirit:configurableElementValues>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_StandaloneFloatALU_M_0_3</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">StandaloneFloatALU_MUL</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
+        </spirit:configurableElementValues>
+      </spirit:componentInstance>
+      <spirit:componentInstance>
         <spirit:instanceName>DINTERP_FPU_CNV0</spirit:instanceName>
         <spirit:componentRef spirit:library="module_ref" spirit:name="StandaloneFloatALU_CNV" spirit:vendor="xilinx.com" spirit:version="1.0"/>
         <spirit:configurableElementValues>
           <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_StandaloneFloatALU_C_0_2</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="bd:referenceName">StandaloneFloatALU_CNV</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
+        </spirit:configurableElementValues>
+      </spirit:componentInstance>
+      <spirit:componentInstance>
+        <spirit:instanceName>DINTERP_FPU_SPEC</spirit:instanceName>
+        <spirit:componentRef spirit:library="module_ref" spirit:name="StandaloneFloatALU_SPEC" spirit:vendor="xilinx.com" spirit:version="1.0"/>
+        <spirit:configurableElementValues>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_StandaloneFloatALU_S_0_2</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">StandaloneFloatALU_SPEC</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
@@ -1282,39 +1315,6 @@
         <spirit:configurableElementValues>
           <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_StandaloneFloatALU_C_0_4</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="bd:referenceName">StandaloneFloatALU_CNV</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
-        </spirit:configurableElementValues>
-      </spirit:componentInstance>
-      <spirit:componentInstance>
-        <spirit:instanceName>DepthInterpolator_0</spirit:instanceName>
-        <spirit:componentRef spirit:library="module_ref" spirit:name="DepthInterpolator" spirit:vendor="xilinx.com" spirit:version="1.0"/>
-        <spirit:configurableElementValues>
-          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_DepthInterpolator_0_1</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">DepthInterpolator</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
-        </spirit:configurableElementValues>
-      </spirit:componentInstance>
-      <spirit:componentInstance>
-        <spirit:instanceName>TriSetup_0</spirit:instanceName>
-        <spirit:componentRef spirit:library="module_ref" spirit:name="TriSetup" spirit:vendor="xilinx.com" spirit:version="1.0"/>
-        <spirit:configurableElementValues>
-          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_TriSetup_0_0</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">TriSetup</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
-        </spirit:configurableElementValues>
-      </spirit:componentInstance>
-      <spirit:componentInstance>
-        <spirit:instanceName>InputAssembler2_0</spirit:instanceName>
-        <spirit:componentRef spirit:library="module_ref" spirit:name="InputAssembler2" spirit:vendor="xilinx.com" spirit:version="1.0"/>
-        <spirit:configurableElementValues>
-          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_InputAssembler2_0_0</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">InputAssembler2</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
@@ -1573,14 +1573,6 @@
         <spirit:internalPortReference spirit:componentRef="VBO_INDEX_FIFO" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="ROP_FIFO" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="TEXSAMP_FIFO" spirit:portRef="clk"/>
-        <spirit:internalPortReference spirit:componentRef="TRISETUP_FPU_ADD" spirit:portRef="clk"/>
-        <spirit:internalPortReference spirit:componentRef="CLIP_FPU_ADD_0" spirit:portRef="clk"/>
-        <spirit:internalPortReference spirit:componentRef="CLIP_FPU_ADD_1" spirit:portRef="clk"/>
-        <spirit:internalPortReference spirit:componentRef="TRISETUP_FPU_MUL" spirit:portRef="clk"/>
-        <spirit:internalPortReference spirit:componentRef="CLIP_FPU_MUL_0" spirit:portRef="clk"/>
-        <spirit:internalPortReference spirit:componentRef="CLIP_FPU_MUL_1" spirit:portRef="clk"/>
-        <spirit:internalPortReference spirit:componentRef="TRISETUP_FPU_SPEC" spirit:portRef="clk"/>
-        <spirit:internalPortReference spirit:componentRef="CLIP_FPU_SPEC_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="TexSampleStateBlock" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="AttrInterpStateBlock" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="InputAssemblerStateBlock" spirit:portRef="clk"/>
@@ -1593,31 +1585,39 @@
         <spirit:internalPortReference spirit:componentRef="ATTR_FIFO" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="StatsWriteOrderNibblesFIFO" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="StatsCollector_0" spirit:portRef="clk"/>
-        <spirit:internalPortReference spirit:componentRef="AttrInterp_FPU_MUL" spirit:portRef="clk"/>
-        <spirit:internalPortReference spirit:componentRef="DINTERP_FPU_MUL" spirit:portRef="clk"/>
-        <spirit:internalPortReference spirit:componentRef="DINTERP_FPU_SPEC" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="DINTERP_TRIDATA_FIFO" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="ATTRINTERP_TRIDATA_FIFO" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="TriWorkCache2_0" spirit:portRef="clk"/>
-        <spirit:internalPortReference spirit:componentRef="Rasterizer_0" spirit:portRef="clk"/>
-        <spirit:internalPortReference spirit:componentRef="CommandProcessor_0" spirit:portRef="clk"/>
-        <spirit:internalPortReference spirit:componentRef="TexSample_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="VertexBatchBuilder_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="DepthBuffer_0" spirit:portRef="clk"/>
-        <spirit:internalPortReference spirit:componentRef="ROP_0" spirit:portRef="clk"/>
-        <spirit:internalPortReference spirit:componentRef="ClipUnit_0" spirit:portRef="clk"/>
+        <spirit:internalPortReference spirit:componentRef="CommandProcessor_0" spirit:portRef="clk"/>
+        <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="clk"/>
+        <spirit:internalPortReference spirit:componentRef="Rasterizer_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="AttrInterpolator_0" spirit:portRef="clk"/>
-        <spirit:internalPortReference spirit:componentRef="AttrInterp_FPU_CNV0" spirit:portRef="clk"/>
+        <spirit:internalPortReference spirit:componentRef="TexSample_0" spirit:portRef="clk"/>
+        <spirit:internalPortReference spirit:componentRef="ROP_0" spirit:portRef="clk"/>
+        <spirit:internalPortReference spirit:componentRef="InputAssembler2_0" spirit:portRef="clk"/>
+        <spirit:internalPortReference spirit:componentRef="DepthInterpolator_0" spirit:portRef="clk"/>
+        <spirit:internalPortReference spirit:componentRef="ClipUnit_0" spirit:portRef="clk"/>
+        <spirit:internalPortReference spirit:componentRef="TRISETUP_FPU_ADD" spirit:portRef="clk"/>
+        <spirit:internalPortReference spirit:componentRef="TRISETUP_FPU_MUL" spirit:portRef="clk"/>
+        <spirit:internalPortReference spirit:componentRef="TRISETUP_FPU_SPEC" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="TRISETUP_FPU_CNV" spirit:portRef="clk"/>
+        <spirit:internalPortReference spirit:componentRef="CLIP_FPU_ADD_0" spirit:portRef="clk"/>
+        <spirit:internalPortReference spirit:componentRef="CLIP_FPU_ADD_1" spirit:portRef="clk"/>
+        <spirit:internalPortReference spirit:componentRef="CLIP_FPU_MUL_0" spirit:portRef="clk"/>
+        <spirit:internalPortReference spirit:componentRef="CLIP_FPU_MUL_1" spirit:portRef="clk"/>
+        <spirit:internalPortReference spirit:componentRef="CLIP_FPU_SPEC_0" spirit:portRef="clk"/>
+        <spirit:internalPortReference spirit:componentRef="AttrInterp_FPU_MUL" spirit:portRef="clk"/>
+        <spirit:internalPortReference spirit:componentRef="AttrInterp_FPU_CNV0" spirit:portRef="clk"/>
+        <spirit:internalPortReference spirit:componentRef="DINTERP_FPU_MUL" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="DINTERP_FPU_CNV0" spirit:portRef="clk"/>
+        <spirit:internalPortReference spirit:componentRef="DINTERP_FPU_SPEC" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="AttrInterp_FPU_CNV1" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="DINTERP_FPU_CNV1" spirit:portRef="clk"/>
-        <spirit:internalPortReference spirit:componentRef="DepthInterpolator_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="SerialPacketSystem" spirit:portRef="rd_clk"/>
         <spirit:internalPortReference spirit:componentRef="ShaderCoreSystem" spirit:portRef="clk_0"/>
         <spirit:internalPortReference spirit:componentRef="ScanoutSystem" spirit:portRef="cmd_clk"/>
-        <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="clk"/>
-        <spirit:internalPortReference spirit:componentRef="InputAssembler2_0" spirit:portRef="clk"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>xlconstant_0_dout</spirit:name>
@@ -4292,8 +4292,8 @@
       <spirit:adHocConnection>
         <spirit:name>AttrInterpolator_0_FPU_MUL_A</spirit:name>
         <spirit:internalPortReference spirit:componentRef="AttrInterpolator_0" spirit:portRef="FPU_MUL_A"/>
-        <spirit:internalPortReference spirit:componentRef="AttrInterp_FPU_MUL" spirit:portRef="IN_A"/>
         <spirit:internalPortReference spirit:componentRef="ILA_AttrInterpolator" spirit:portRef="probe5"/>
+        <spirit:internalPortReference spirit:componentRef="AttrInterp_FPU_MUL" spirit:portRef="IN_A"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>AttrInterpolator_0_FPU_MUL_B</spirit:name>
@@ -5512,17 +5512,6 @@
         </spirit:configurableElementValues>
       </spirit:componentInstance>
       <spirit:componentInstance>
-        <spirit:instanceName>ShaderCore_0</spirit:instanceName>
-        <spirit:componentRef spirit:library="module_ref" spirit:name="ShaderCore" spirit:vendor="xilinx.com" spirit:version="1.0"/>
-        <spirit:configurableElementValues>
-          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_ShaderCore_0_0</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">ShaderCore</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
-        </spirit:configurableElementValues>
-      </spirit:componentInstance>
-      <spirit:componentInstance>
         <spirit:instanceName>FloatALU_0</spirit:instanceName>
         <spirit:componentRef spirit:library="module_ref" spirit:name="FloatALU" spirit:vendor="xilinx.com" spirit:version="1.0"/>
         <spirit:configurableElementValues>
@@ -5566,6 +5555,17 @@
           <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
         </spirit:configurableElementValues>
       </spirit:componentInstance>
+      <spirit:componentInstance>
+        <spirit:instanceName>ShaderCore_0</spirit:instanceName>
+        <spirit:componentRef spirit:library="module_ref" spirit:name="ShaderCore" spirit:vendor="xilinx.com" spirit:version="1.0"/>
+        <spirit:configurableElementValues>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_ShaderCore_0_0</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">ShaderCore</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
+        </spirit:configurableElementValues>
+      </spirit:componentInstance>
     </spirit:componentInstances>
     <spirit:interconnections>
       <spirit:interconnection>
@@ -5587,12 +5587,12 @@
         <spirit:internalPortReference spirit:componentRef="UNORM8ToFloat_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="VertexStreamCache_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="ConstantBuffer_0" spirit:portRef="clk"/>
-        <spirit:internalPortReference spirit:componentRef="ShaderCore_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="FloatALU_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="FloatALU_1" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="FloatALU_2" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="FloatALU_3" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="GPRQuadSystem" spirit:portRef="clk_0"/>
+        <spirit:internalPortReference spirit:componentRef="ShaderCore_0" spirit:portRef="clk"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>ConstantBuffer_0_readOutData</spirit:name>

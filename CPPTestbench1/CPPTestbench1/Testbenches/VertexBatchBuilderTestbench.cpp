@@ -6,6 +6,7 @@
 #include "LargeIndexBufferTest.h"
 
 static bool enablePrints = false;
+static unsigned short drawID = 0;
 
 enum VBBState
 {
@@ -58,6 +59,14 @@ enum eIndexFormat
 	index32, // 1
 	index8 // 2
 };
+
+struct stateStruct
+{
+	unsigned IndexBufferBaseAddr : 30;
+	unsigned IndexFormat : 2;
+	unsigned PrimitiveTopology : 3;
+};
+static_assert(sizeof(stateStruct) == 8, "Error: Unexpected struct packing!");
 
 struct vertexBatch
 {
@@ -224,11 +233,16 @@ const int RunTestsVertexBatchBuilder(Xsi::Loader& loader)
 	std_logic_port IBC_ReadReady(PD_IN, loader, "IBC_ReadReady");
 
 	std_logic_vector_port<2> CMD_SendCommand(PD_IN, loader, "CMD_SendCommand");
-	std_logic_vector_port<32> CMD_CommandArg0(PD_IN, loader, "CMD_CommandArg0");
+	std_logic_vector_port<24> CMD_CommandArg0(PD_IN, loader, "CMD_CommandArg0");
 	std_logic_vector_port<20> CMD_CommandArg1(PD_IN, loader, "CMD_CommandArg1");
 	std_logic_vector_port<16> CMD_CommandArg2(PD_IN, loader, "CMD_CommandArg2");
-	std_logic_vector_port<3> CMD_CommandArgType(PD_IN, loader, "CMD_CommandArgType");
+	std_logic_vector_port<16> CMD_NewDrawEventID(PD_IN, loader, "CMD_NewDrawEventID");
 	std_logic_port CMD_ReadyState(PD_OUT, loader, "CMD_ReadyState");
+
+	std_logic_vector_port<35> STATE_StateBitsAtDrawID(PD_IN, loader, "STATE_StateBitsAtDrawID");
+	std_logic_vector_port<16> STATE_NextDrawID(PD_IN, loader, "STATE_NextDrawID");
+	std_logic_port STATE_StateIsValid(PD_IN, loader, "STATE_StateIsValid");
+	std_logic_port STATE_ConsumeStateSlot(PD_OUT, loader, "STATE_ConsumeStateSlot");
 
 	std_logic_vector_port<4> DBG_CurrentState(PD_OUT, loader, "DBG_CurrentState");
 	std_logic_vector_port<5> DBG_CurrentBatchLength(PD_OUT, loader, "DBG_CurrentBatchLength");
@@ -258,7 +272,7 @@ const int RunTestsVertexBatchBuilder(Xsi::Loader& loader)
 		CMD_CommandArg0 = 0x00000000;
 		CMD_CommandArg1 = 0x00000000;
 		CMD_CommandArg2 = 0x0000;
-		CMD_CommandArgType = 0;
+		CMD_NewDrawEventID = 0;
 
 		VERTBATCH_FIFO_full = false;
 	}
@@ -418,7 +432,6 @@ const int RunTestsVertexBatchBuilder(Xsi::Loader& loader)
 			CMD_CommandArg0 = numPrimsToRender;
 			CMD_CommandArg1 = startingVertex;
 			CMD_CommandArg2 = 0x0000; // Base vertex index
-			CMD_CommandArgType = primType;
 
 			if (ibPtr != NULL)
 			{

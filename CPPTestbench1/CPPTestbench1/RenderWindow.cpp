@@ -212,6 +212,43 @@ void RenderWindow::RenderTrianglesFinish()
 	d3d9dev->Present(NULL, NULL, NULL, NULL);
 }
 
+void RenderWindow::DownloadBackbufferToTexture(D3DCOLOR* const downloadedBuffer)
+{
+	LPDIRECT3DSURFACE9 systemCopySurface = NULL;
+	if (FAILED(d3d9dev->CreateOffscreenPlainSurface(640, 480, D3DFMT_X8R8G8B8, D3DPOOL_SYSTEMMEM, &systemCopySurface, NULL) ) )
+	{
+		__debugbreak();
+	}
+
+	if (FAILED(d3d9dev->GetRenderTargetData(originalBackbuffer, systemCopySurface) ) )
+	{
+		__debugbreak();
+	}
+
+	D3DLOCKED_RECT d3dlr = {0};
+	if (FAILED(systemCopySurface->LockRect(&d3dlr, NULL, D3DLOCK_READONLY) ) || !d3dlr.pBits)
+	{
+		__debugbreak();
+	}
+
+	D3DCOLOR* destPtr = (D3DCOLOR* const)downloadedBuffer;
+
+	const char* lockedBytes = (const char* const)d3dlr.pBits;
+	for (unsigned y = 0; y < 480; ++y)
+	{
+		const D3DCOLOR* lockedRow = (const D3DCOLOR* const)(lockedBytes + y * d3dlr.Pitch);
+
+		memcpy(destPtr, lockedRow, 640 * sizeof(D3DCOLOR) );
+
+		destPtr += 640;
+	}
+
+	systemCopySurface->UnlockRect();
+
+	systemCopySurface->Release();
+	systemCopySurface = NULL;
+}
+
 void RenderWindow::RenderLoop()
 {
 	RenderTrianglesBegin();

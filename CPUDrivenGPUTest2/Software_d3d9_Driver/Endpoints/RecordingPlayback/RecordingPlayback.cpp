@@ -14,6 +14,8 @@ static const DLLEndpointMajorVersions hostMajorVersion = InitialVersion;
 static const unsigned hostMinorVersion = 0u;
 static HWND endpointWindow = NULL;
 static bool bInfiniteLoop = true;
+static LARGE_INTEGER freq = {0};
+static double ldfreq = 0.0;
 
 // Only define this option for x64 builds, since for x86 builds we won't have enough virtual address space to be able to do this:
 #ifdef _M_X64
@@ -22,21 +24,15 @@ static bool bInfiniteLoop = true;
 	#undef USE_PLAYBACK_LOCAL_MEMORY
 #endif
 
-// TODO: Don't hardcode these paths
-static const char* const LoadDLLPath =
-#ifdef _M_X64
-	#ifdef _DEBUG
-		"C:\\Users\\Tom\\Documents\\Visual Studio 2017\\Projects\\Software_d3d9_Driver\\x64\\Debug\\Endpoints\\GPUEndpoint_D3D9.dll";
-	#else
-		"C:\\Users\\Tom\\Documents\\Visual Studio 2017\\Projects\\Software_d3d9_Driver\\x64\\Release\\Endpoints\\GPUEndpoint_D3D9.dll";
-	#endif
-#else
-	#ifdef _DEBUG
-		"C:\\Users\\Tom\\Documents\\Visual Studio 2017\\Projects\\Software_d3d9_Driver\\Debug\\Endpoints\\GPUEndpoint_D3D9.dll";
-	#else
-		"C:\\Users\\Tom\\Documents\\Visual Studio 2017\\Projects\\Software_d3d9_Driver\\Release\\Endpoints\\GPUEndpoint_D3D9.dll";
-	#endif
-#endif
+enum playbackMode
+{
+	playing = 0,
+	singleFrameStep
+};
+static playbackMode currentPlaybackMode = playing;
+static unsigned playbackFramerate = 60;
+static bool playToNextFrame = true;
+static bool restartAtBeginning = false;
 
 struct renderEvent
 {
@@ -53,6 +49,140 @@ struct renderEvent
 	unsigned __int64 fileOffset_bytes : 61;
 };
 static_assert(sizeof(renderEvent) == sizeof(unsigned __int64), "Error: Unexpected struct packing!");
+
+struct registeredKey
+{
+	typedef void (*CallbackFunc)();
+	int vKey;
+	bool keyIsDown;
+	const CallbackFunc onKeyDown;
+	const CallbackFunc onKeyUp;
+
+	registeredKey(int _vKey, const CallbackFunc keyDownCallback, const CallbackFunc keyUpCallback) :
+		vKey(_vKey), onKeyDown(keyDownCallback), onKeyUp(keyUpCallback), keyIsDown(false)
+	{
+	}
+};
+static std::vector<registeredKey> registeredKeys;
+
+static void SpaceDownCallback()
+{
+	if (currentPlaybackMode == playing)
+	{
+		currentPlaybackMode = singleFrameStep;
+		playbackFramerate = 0;
+		playToNextFrame = true;
+	}
+	else
+	{
+		currentPlaybackMode = playing;
+		playbackFramerate = 60;
+		playToNextFrame = true;
+	}
+}
+
+static void RightCallback()
+{
+	currentPlaybackMode = singleFrameStep;
+	playbackFramerate = 0;
+	playToNextFrame = true;
+}
+
+static void PageDownCallback()
+{
+	switch (playbackFramerate)
+	{
+	case 0xFFFFFFFF:
+		playbackFramerate = 120;
+		break;
+	case 120:
+		playbackFramerate = 60;
+		break;
+	case 60:
+		playbackFramerate = 30;
+		break;
+	case 30:
+		playbackFramerate = 15;
+		break;
+	case 15:
+		playbackFramerate = 5;
+		break;
+	case 5:
+		playbackFramerate = 1;
+		break;
+	case 1:
+		playbackFramerate = 0;
+		currentPlaybackMode = singleFrameStep;
+		break;
+	}
+}
+
+static void PageUpCallback()
+{
+	switch (playbackFramerate)
+	{
+	case 120:
+		playbackFramerate = 0xFFFFFFFF;
+		break;
+	case 60:
+		playbackFramerate = 120;
+		break;
+	case 30:
+		playbackFramerate = 60;
+		break;
+	case 15:
+		playbackFramerate = 30;
+		break;
+	case 5:
+		playbackFramerate = 15;
+		break;
+	case 1:
+		playbackFramerate = 5;
+		break;
+	case 0:
+		playbackFramerate = 1;
+		currentPlaybackMode = playing;
+		playToNextFrame = true;
+		break;
+	}
+}
+
+static void ResetButtonCallback()
+{
+	if (MessageBoxA(NULL, "Reset to beginning?", "Are you sure?", MB_YESNO) == IDYES)
+	{
+		restartAtBeginning = true;
+	}
+}
+
+static void UpdateInput()
+{
+	const unsigned numRegisteredKeys = (const unsigned)registeredKeys.size();
+	for (unsigned x = 0; x < numRegisteredKeys; ++x)
+	{
+		registeredKey& thisRegisteredKey = registeredKeys[x];
+		const bool keyCurrentlyDown = GetAsyncKeyState(thisRegisteredKey.vKey) & 0x8000;
+		if (keyCurrentlyDown != thisRegisteredKey.keyIsDown)
+		{
+			if (thisRegisteredKey.keyIsDown && !keyCurrentlyDown)
+			{
+				if (thisRegisteredKey.onKeyUp)
+				{
+					(*thisRegisteredKey.onKeyUp)();
+				}
+			}
+			else if (!thisRegisteredKey.keyIsDown && keyCurrentlyDown)
+			{
+				if (thisRegisteredKey.onKeyDown)
+				{
+					(*thisRegisteredKey.onKeyDown)();
+				}
+			}
+
+			thisRegisteredKey.keyIsDown = keyCurrentlyDown;
+		}
+	}
+}
 
 #ifdef USE_PLAYBACK_LOCAL_MEMORY
 // This large 1GB region of memory is used as a mirror for the GPU's VRAM:
@@ -197,10 +327,41 @@ void __stdcall ReturnMessageImpl(const genericCommand* const D2HReplyPacket)
 	packetWithData->checksum = command::ComputeChecksum(packetWithData, sizeof(genericCommand) );
 }
 
+static void WaitUntilTime(const LARGE_INTEGER& waitStopTime)
+{
+	while (true)
+	{
+		LARGE_INTEGER currentTime = {0};
+		QueryPerformanceCounter(&currentTime);
+		if (currentTime.QuadPart > waitStopTime.QuadPart)
+			return;
+
+		const __int64 waitTicks = currentTime.QuadPart - waitStopTime.QuadPart;
+		const double waitSeconds = waitTicks / ldfreq;
+		const double waitMilliseconds = waitSeconds * 1000.0;
+		if (waitMilliseconds >= 1.0)
+		{
+			Sleep( (const unsigned)waitMilliseconds);
+			continue;
+		}
+		else
+		{
+			// Micro-sleep wait spin-loop:
+			while (currentTime.QuadPart < waitStopTime.QuadPart)
+			{
+				QueryPerformanceCounter(&currentTime);
+				YieldProcessor();
+			}
+		}
+	}
+}
+
 int main(const unsigned argc, const char* const argv[])
 {
 	const char* recordingFilePath = NULL;
 	char recordingFile[MAX_PATH] = {0};
+	const char* LoadDLLPath = NULL;
+	char endpointDLLPath[MAX_PATH] = {0};
 	if (argc > 1)
 	{
 		recordingFilePath = argv[1];
@@ -212,7 +373,7 @@ int main(const unsigned argc, const char* const argv[])
 		openFilenameStruct.lpstrFilter = "Recorded Stream Data (*.rsd)\0*.RSD";
 		openFilenameStruct.lpstrFile = recordingFile;
 		openFilenameStruct.nMaxFile = ARRAYSIZE(recordingFile);
-		openFilenameStruct.lpstrTitle = "Load a recording file to playback";
+		openFilenameStruct.lpstrTitle = "Load a recording file to play";
 		openFilenameStruct.Flags = OFN_ENABLESIZING | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR | OFN_PATHMUSTEXIST;
 		openFilenameStruct.lpstrDefExt = "RSD";
 		if (GetOpenFileNameA(&openFilenameStruct) )
@@ -224,6 +385,27 @@ int main(const unsigned argc, const char* const argv[])
 	if (!recordingFilePath || !*recordingFilePath)
 	{
 		printf("Error: No recorded stream file selected! You must specify a recorded stream file to load.\n");
+		return 1;
+	}
+
+	{
+		OPENFILENAMEA openFilenameStruct = {0};
+		openFilenameStruct.lStructSize = sizeof(openFilenameStruct);
+		openFilenameStruct.lpstrFilter = "Endpoint DLL (*.dll)\0*.DLL";
+		openFilenameStruct.lpstrFile = endpointDLLPath;
+		openFilenameStruct.nMaxFile = ARRAYSIZE(endpointDLLPath);
+		openFilenameStruct.lpstrTitle = "Load an endpoint DLL as the playback engine";
+		openFilenameStruct.Flags = OFN_ENABLESIZING | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR | OFN_PATHMUSTEXIST;
+		openFilenameStruct.lpstrDefExt = "DLL";
+		if (GetOpenFileNameA(&openFilenameStruct) )
+		{
+			LoadDLLPath = openFilenameStruct.lpstrFile;
+		}
+	}
+
+	if (!LoadDLLPath || !*LoadDLLPath)
+	{
+		printf("Error: No endpoint DLL selected! You must specify an endpoint DLL to load.\n");
 		return 1;
 	}
 
@@ -436,6 +618,17 @@ int main(const unsigned argc, const char* const argv[])
 
 	printf("Endpoint is running!\n");
 
+	registeredKeys.push_back(registeredKey(VK_SPACE, SpaceDownCallback, (registeredKey::CallbackFunc)NULL) );
+	registeredKeys.push_back(registeredKey(VK_RIGHT, RightCallback, (registeredKey::CallbackFunc)NULL) );
+	registeredKeys.push_back(registeredKey(VK_NEXT, PageDownCallback, (registeredKey::CallbackFunc)NULL) );
+	registeredKeys.push_back(registeredKey(VK_PRIOR, PageUpCallback, (registeredKey::CallbackFunc)NULL) );
+	registeredKeys.push_back(registeredKey('R', ResetButtonCallback, (registeredKey::CallbackFunc)NULL) );
+
+	unsigned __int64 currentFrame = 0;
+	DWORD lastInputTimestamp = 0x00000000;
+	LARGE_INTEGER nextFrameTick = {0};
+	QueryPerformanceFrequency(&freq);
+	ldfreq = (const double)freq.QuadPart;
 	do
 	{
 		// Reset our recorded file pointer to the beginning of the file:
@@ -450,8 +643,63 @@ int main(const unsigned argc, const char* const argv[])
 		}
 		readFileCache.ResetFile(hRecordingFile, fileSize.QuadPart);
 
+		// Reset our frame-counter:
+		currentFrame = 0;
+
 		for (unsigned __int64 readSoFar = 0; readSoFar < (const unsigned __int64)fileSize.QuadPart; readSoFar += sizeof(genericCommand) )
 		{
+			const DWORD currentTimestamp = GetTickCount();
+			if (currentTimestamp != lastInputTimestamp)
+			{
+				lastInputTimestamp = currentTimestamp;
+
+				UpdateInput();
+
+				if (restartAtBeginning)
+				{
+					restartAtBeginning = false;
+					break;
+				}
+
+				if (endpointWindow)
+				{
+					char buffer[128] = {0};
+#pragma warning(push)
+#pragma warning(disable:4996)
+					sprintf(buffer, "[%s] [%u FPS] Frame %llu/%llu", 
+						currentPlaybackMode == playing ? "Playing" : "Paused", 
+						playbackFramerate > 1000 ? 9999 : playbackFramerate, 
+						currentFrame, 
+						endFrameEventCount);
+#pragma warning(pop)
+					SetWindowTextA(endpointWindow, buffer);
+				}
+			}
+
+			if (playToNextFrame == false)
+			{
+				if (playbackFramerate > 0)
+				{
+					WaitUntilTime(nextFrameTick);
+					QueryPerformanceCounter(&nextFrameTick);
+					nextFrameTick.QuadPart += (const unsigned __int64)(ldfreq / (const double)playbackFramerate);
+					playToNextFrame = true;
+				}
+				else
+				{
+					while (playToNextFrame == false)
+					{
+						UpdateInput();
+
+						doNothingCommand noopPacket;
+						noopPacket.checksum = command::ComputeChecksum(&noopPacket, sizeof(noopPacket) );
+						(*dllInfo.H2DFunctions.ProcessNewMessage)(reinterpret_cast<const genericCommand* const>(&noopPacket) );
+
+						Sleep(16);
+					}
+				}
+			}
+
 			genericCommand nextPacket;
 			if (!readFileCache.ReadBytes(hRecordingFile, &nextPacket, sizeof(nextPacket) ) )
 			{
@@ -483,6 +731,12 @@ int main(const unsigned argc, const char* const argv[])
 				__debugbreak();
 			}
 #endif
+			if (nextPacket.type == command::PT_ENDFRAME)
+			{
+				++currentFrame;
+				playToNextFrame = false;
+			}
+
 			(*dllInfo.H2DFunctions.ProcessNewMessage)(&nextPacket);
 		}
 	}

@@ -8,6 +8,7 @@
 extern LPDIRECT3DDEVICE9 d3d9dev;
 extern __declspec(align(128) ) BYTE LocalMemory[GPU_DRAM_TOTAL_CAPACITY_BYTES];
 extern __declspec(align(128) ) DWORD LocalMemoryWriteDWORDsBitmap[GPU_DRAM_TOTAL_CAPACITY_BYTES / (sizeof(DWORD) * 32)];
+extern __declspec(align(128) ) DWORD LocalMemoryPagesDirtyBitmap[GPU_DRAM_TOTAL_CAPACITY_BYTES / GPU_PAGE_SIZE_BYTES / (sizeof(DWORD) * 8)];
 
 static const unsigned GetSingleElementSizeBytes(const D3DFORMAT fmt)
 {
@@ -112,6 +113,46 @@ static const unsigned GetSingleElementSizeBytes(const D3DFORMAT fmt)
 		return 4;
 	case D3DFMT_BINARYBUFFER:
 		return 1;
+	}
+}
+
+static inline const bool IsPageDirty(const unsigned pageIndex)
+{
+	const unsigned DWORDIndex = pageIndex / 32;
+	const unsigned DWORDBitIndex = pageIndex % 32;
+	return (LocalMemoryPagesDirtyBitmap[DWORDIndex] & (1 << DWORDBitIndex) ) != 0;
+}
+
+static inline void MarkPageClean(const unsigned pageIndex)
+{
+	const unsigned DWORDIndex = pageIndex / 32;
+	const unsigned DWORDBitIndex = pageIndex % 32;
+	LocalMemoryPagesDirtyBitmap[DWORDIndex] &= (~(1 << DWORDBitIndex) );
+}
+
+// Returns true if any of this resource's dirty page bits are set, or false if they are not
+static inline const bool IsResourceDirty(const unsigned gpuStartingAddress, const unsigned byteLength)
+{
+	const unsigned gpuEndingAddress = gpuStartingAddress + byteLength - 1;
+	const unsigned startingPageIndex = gpuStartingAddress / GPU_PAGE_SIZE_BYTES;
+	const unsigned endingPageIndex = gpuEndingAddress / GPU_PAGE_SIZE_BYTES;
+	for (unsigned pageIndex = startingPageIndex; pageIndex <= endingPageIndex; ++pageIndex)
+	{
+		if (IsPageDirty(pageIndex) )
+			return true;
+	}
+	return false;
+}
+
+// Marks all pages that this resource intersects as clean (clears the dirty flag)
+static inline void MarkDirtyResourceClean(const unsigned gpuStartingAddress, const unsigned byteLength)
+{
+	const unsigned gpuEndingAddress = gpuStartingAddress + byteLength - 1;
+	const unsigned startingPageIndex = gpuStartingAddress / GPU_PAGE_SIZE_BYTES;
+	const unsigned endingPageIndex = gpuEndingAddress / GPU_PAGE_SIZE_BYTES;
+	for (unsigned pageIndex = startingPageIndex; pageIndex <= endingPageIndex; ++pageIndex)
+	{
+		MarkPageClean(pageIndex);
 	}
 }
 
@@ -267,6 +308,29 @@ void LiveResourcesRegistry::CreateNewResourceAtAddress(const unsigned gpuAddress
 	allLiveResources.insert(std::make_pair(gpuAddress, newLiveResource) );
 }
 
+static void UpdateTextureData(LPDIRECT3DTEXTURE9 pTex, const unsigned gpuAddress, const unsigned short width, const unsigned short height, const unsigned char mipLevels, const D3DFORMAT format)
+{
+	const unsigned mipLevelLinearSize = GetSingleElementSizeBytes(format) * (const unsigned)width * (const unsigned)height;
+	unsigned gpuMemoryOffset = gpuAddress;
+	for (unsigned mipLevel = 0; mipLevel < mipLevels; ++mipLevel)
+	{
+		D3DLOCKED_RECT d3dlr = {0};
+		pTex->LockRect(mipLevel, &d3dlr, NULL, 0);
+		BYTE* currentLockedRowStartAddress = reinterpret_cast<BYTE* const>(d3dlr.pBits);
+		const D3DCOLOR* const mipLevelStartAddress = reinterpret_cast<const D3DCOLOR* const>(LocalMemory + gpuMemoryOffset);
+		const unsigned texelRowLinearSize = GetSingleElementSizeBytes(format) * (const unsigned)width;
+		for (unsigned y = 0; y < height; ++y)
+		{
+			const D3DCOLOR* const texelRowStartAddress = reinterpret_cast<const D3DCOLOR* const>(LocalMemory + gpuMemoryOffset + y * texelRowLinearSize);
+			memcpy(currentLockedRowStartAddress, texelRowStartAddress, texelRowLinearSize);
+			currentLockedRowStartAddress += d3dlr.Pitch; // The row Pitch is in bytes
+		}
+		pTex->UnlockRect(mipLevel);
+
+		gpuMemoryOffset += mipLevelLinearSize;
+	}
+}
+
 LPDIRECT3DTEXTURE9 LiveResourcesRegistry::GetFindOrCreateTextureAtAddress(const unsigned gpuAddress, const unsigned short width, const unsigned short height, const unsigned char mipLevels, const D3DFORMAT format)
 {
 	if (gpuAddress == NULL)
@@ -294,7 +358,17 @@ LPDIRECT3DTEXTURE9 LiveResourcesRegistry::GetFindOrCreateTextureAtAddress(const 
 
 	LPDIRECT3DTEXTURE9 foundTex = static_cast<LPDIRECT3DTEXTURE9>(FindMatchingResourceAtAddress(gpuAddress, textureObjectParams) );
 	if (foundTex)
+	{
+		const unsigned mipLevelLinearSize = GetSingleElementSizeBytes(format) * (const unsigned)width * (const unsigned)height;
+		const unsigned totalTextureLinearSize = mipLevelLinearSize * mipLevels;
+		if (IsResourceDirty(gpuAddress, totalTextureLinearSize) )
+		{
+			MarkDirtyResourceClean(gpuAddress, totalTextureLinearSize);
+
+			UpdateTextureData(foundTex, gpuAddress, width, height, mipLevels, format);
+		}
 		return foundTex;
+	}
 
 	LPDIRECT3DTEXTURE9 newlyCreatedTex = NULL;
 	if (FAILED(d3d9dev->CreateTexture(width, height, mipLevels, 0, format, D3DPOOL_MANAGED, &newlyCreatedTex, NULL) ) )
@@ -305,25 +379,7 @@ LPDIRECT3DTEXTURE9 LiveResourcesRegistry::GetFindOrCreateTextureAtAddress(const 
 		return NULL;
 	}
 
-	unsigned gpuMemoryOffset = gpuAddress;
-	for (unsigned mipLevel = 0; mipLevel < mipLevels; ++mipLevel)
-	{
-		D3DLOCKED_RECT d3dlr = {0};
-		newlyCreatedTex->LockRect(mipLevel, &d3dlr, NULL, 0);
-		BYTE* currentLockedRowStartAddress = reinterpret_cast<BYTE* const>(d3dlr.pBits);
-		const D3DCOLOR* const mipLevelStartAddress = reinterpret_cast<const D3DCOLOR* const>(LocalMemory + gpuMemoryOffset);
-		const unsigned mipLevelLinearSize = GetSingleElementSizeBytes(format) * (const unsigned)width * (const unsigned)height;
-		const unsigned texelRowLinearSize = GetSingleElementSizeBytes(format) * (const unsigned)width;
-		for (unsigned y = 0; y < height; ++y)
-		{
-			const D3DCOLOR* const texelRowStartAddress = reinterpret_cast<const D3DCOLOR* const>(LocalMemory + gpuMemoryOffset + y * texelRowLinearSize);
-			memcpy(currentLockedRowStartAddress, texelRowStartAddress, texelRowLinearSize);
-			currentLockedRowStartAddress += d3dlr.Pitch; // The row Pitch is in bytes
-		}
-		newlyCreatedTex->UnlockRect(mipLevel);
-
-		gpuMemoryOffset += mipLevelLinearSize;
-	}
+	UpdateTextureData(newlyCreatedTex, gpuAddress, width, height, mipLevels, format);
 
 	CreateNewResourceAtAddress(gpuAddress, textureObjectParams, newlyCreatedTex);
 	return newlyCreatedTex;
@@ -498,7 +554,15 @@ LPDIRECT3DVERTEXDECLARATION9 LiveResourcesRegistry::GetFindOrCreateVertexDeclara
 	return newVertexDecl;
 }
 
-LPDIRECT3DVERTEXBUFFER9 LiveResourcesRegistry::GetFindOrCreateVertexBufferAtAddress(const unsigned gpuAddress, const unsigned lengthBytes)
+static void UpdateVertexBufferData(LPDIRECT3DVERTEXBUFFER9 pVB, const unsigned gpuAddress, const unsigned lengthBytes)
+{
+	BYTE* lockedVB = NULL;
+	pVB->Lock(0, 0, (void**)&lockedVB, D3DLOCK_DISCARD);
+	memcpy(lockedVB, LocalMemory + gpuAddress, lengthBytes);
+	pVB->Unlock();
+}
+
+__declspec(noinline)  LPDIRECT3DVERTEXBUFFER9 LiveResourcesRegistry::GetFindOrCreateVertexBufferAtAddress(const unsigned gpuAddress, const unsigned lengthBytes)
 {
 	if (gpuAddress == NULL)
 	{
@@ -522,26 +586,40 @@ LPDIRECT3DVERTEXBUFFER9 LiveResourcesRegistry::GetFindOrCreateVertexBufferAtAddr
 
 	LPDIRECT3DVERTEXBUFFER9 foundVB = static_cast<LPDIRECT3DVERTEXBUFFER9>(FindMatchingResourceAtAddress(gpuAddress, vertexBufferObjectParams) );
 	if (foundVB)
+	{
+		if (IsResourceDirty(gpuAddress, lengthBytes) )
+		{
+			MarkDirtyResourceClean(gpuAddress, lengthBytes);
+			UpdateVertexBufferData(foundVB, gpuAddress, lengthBytes);
+		}
 		return foundVB;
+	}
 
 	LPDIRECT3DVERTEXBUFFER9 newlyCreatedVB = NULL;
-	if (FAILED(d3d9dev->CreateVertexBuffer(lengthBytes, D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT, &newlyCreatedVB, NULL) ) )
+	if (FAILED(d3d9dev->CreateVertexBuffer(lengthBytes, D3DUSAGE_WRITEONLY | D3DUSAGE_DYNAMIC, 0, D3DPOOL_DEFAULT, &newlyCreatedVB, NULL) ) )
 	{
 #ifdef _DEBUG
 		__debugbreak(); // Failed to create a new vertex buffer!
 #endif
 		return NULL;
 	}
-	BYTE* lockedVB = NULL;
-	newlyCreatedVB->Lock(0, 0, (void**)&lockedVB, 0);
-	memcpy(lockedVB, LocalMemory + gpuAddress, lengthBytes);
-	newlyCreatedVB->Unlock();
+
+	UpdateVertexBufferData(newlyCreatedVB, gpuAddress, lengthBytes);
 
 	CreateNewResourceAtAddress(gpuAddress, vertexBufferObjectParams, newlyCreatedVB);
 	return newlyCreatedVB;
 }
 
-LPDIRECT3DINDEXBUFFER9 LiveResourcesRegistry::GetFindOrCreateIndexBufferAtAddress(const unsigned gpuAddress, const unsigned lengthIndices, const D3DFORMAT format)
+static void UpdateIndexBufferData(LPDIRECT3DINDEXBUFFER9 pIB, const unsigned gpuAddress, const unsigned lengthIndices, const D3DFORMAT format)
+{
+	const unsigned lengthBytes = lengthIndices * GetSingleElementSizeBytes(format);
+	BYTE* lockedIB = NULL;
+	pIB->Lock(0, 0, (void**)&lockedIB, D3DLOCK_DISCARD);
+	memcpy(lockedIB, LocalMemory + gpuAddress, lengthBytes);
+	pIB->Unlock();
+}
+
+__declspec(noinline) LPDIRECT3DINDEXBUFFER9 LiveResourcesRegistry::GetFindOrCreateIndexBufferAtAddress(const unsigned gpuAddress, const unsigned lengthIndices, const D3DFORMAT format)
 {
 	if (gpuAddress == NULL)
 	{
@@ -564,23 +642,30 @@ LPDIRECT3DINDEXBUFFER9 LiveResourcesRegistry::GetFindOrCreateIndexBufferAtAddres
 	indexBufferObjectParams.objectTypeParams.indexBuffer.indexCount = lengthIndices;
 	indexBufferObjectParams.objectTypeParams.indexBuffer.indexFormat = format;
 
+	const unsigned lengthBytes = lengthIndices * GetSingleElementSizeBytes(format);
+
 	LPDIRECT3DINDEXBUFFER9 foundIB = static_cast<LPDIRECT3DINDEXBUFFER9>(FindMatchingResourceAtAddress(gpuAddress, indexBufferObjectParams) );
 	if (foundIB)
+	{
+		if (IsResourceDirty(gpuAddress, lengthBytes) )
+		{
+			MarkDirtyResourceClean(gpuAddress, lengthBytes);
+
+			UpdateIndexBufferData(foundIB, gpuAddress, lengthIndices, format);
+		}
 		return foundIB;
+	}
 
 	LPDIRECT3DINDEXBUFFER9 newlyCreatedIB = NULL;
-	const unsigned lengthBytes = lengthIndices * GetSingleElementSizeBytes(format);
-	if (FAILED(d3d9dev->CreateIndexBuffer(lengthBytes, D3DUSAGE_WRITEONLY, format, D3DPOOL_DEFAULT, &newlyCreatedIB, NULL) ) )
+	if (FAILED(d3d9dev->CreateIndexBuffer(lengthBytes, D3DUSAGE_WRITEONLY | D3DUSAGE_DYNAMIC, format, D3DPOOL_DEFAULT, &newlyCreatedIB, NULL) ) )
 	{
 #ifdef _DEBUG
 		__debugbreak(); // Failed to create a new index buffer!
 #endif
 		return NULL;
 	}
-	BYTE* lockedIB = NULL;
-	newlyCreatedIB->Lock(0, 0, (void**)&lockedIB, 0);
-	memcpy(lockedIB, LocalMemory + gpuAddress, lengthBytes);
-	newlyCreatedIB->Unlock();
+
+	UpdateIndexBufferData(newlyCreatedIB, gpuAddress, lengthIndices, format);
 
 	CreateNewResourceAtAddress(gpuAddress, indexBufferObjectParams, newlyCreatedIB);
 	return newlyCreatedIB;
@@ -610,7 +695,18 @@ LPDIRECT3DVERTEXSHADER9 LiveResourcesRegistry::GetFindOrCreateVertexShaderAtAddr
 
 	LPDIRECT3DVERTEXSHADER9 foundVS = static_cast<LPDIRECT3DVERTEXSHADER9>(FindMatchingResourceAtAddress(gpuAddress, vertexShaderObjectParams) );
 	if (foundVS)
+	{
+		if (IsResourceDirty(gpuAddress, lengthTokens * sizeof(UINT64) ) )
+		{
+			MarkDirtyResourceClean(gpuAddress, lengthTokens);
+
+			// We can't really "update" a vertex shader if it has been modified in-place at runtime. D3D9 doesn't support that!
+#ifdef _DEBUG
+			__debugbreak(); // What the heck is goin' on to cause this?
+#endif
+		}
 		return foundVS;
+	}
 
 	LPDIRECT3DVERTEXSHADER9 newlyCreatedVS = NULL;
 	const UINT64* const shaderTokenMem = reinterpret_cast<const UINT64* const>(LocalMemory + (gpuAddress & (GPU_DRAM_TOTAL_CAPACITY_BYTES - 1) ) );
@@ -655,6 +751,10 @@ void AddMemoryBitmapDWORDWrite(const unsigned gpuAddress)
 	{
 		__debugbreak(); // Error: GPU address is not DWORD-aligned!
 	}
+	if (gpuAddress >= GPU_DRAM_TOTAL_CAPACITY_BYTES)
+	{
+		__debugbreak(); // Error: GPU address is out of range!
+	}
 #endif
 	const unsigned WholeMemoryDWORDIndex = gpuAddress / sizeof(DWORD);
 	const unsigned DWORDIndex = WholeMemoryDWORDIndex / 32;
@@ -666,6 +766,17 @@ void AddMemoryBitmapDWORDWrite(const unsigned gpuAddress)
 	}
 #endif
 	LocalMemoryWriteDWORDsBitmap[DWORDIndex] |= (1 << DWORDBitIndex);
+
+	const unsigned pageIndex = gpuAddress / GPU_PAGE_SIZE_BYTES;
+	const unsigned pageDWORDIndex = pageIndex / 32;
+	const unsigned pageDWORDBitIndex = pageIndex % 32;
+#ifdef _DEBUG
+	if (pageDWORDIndex >= ARRAYSIZE(LocalMemoryPagesDirtyBitmap) )
+	{
+		__debugbreak(); // Error: Out of bounds write in our dirty pages bitmap!
+	}
+#endif
+	LocalMemoryPagesDirtyBitmap[pageDWORDIndex] |= (1 << pageDWORDBitIndex);
 }
 
 static inline const bool IsDWORDWritten(const unsigned dwordIndex)

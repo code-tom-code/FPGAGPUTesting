@@ -5847,6 +5847,11 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawIndexed
 {
 	SIMPLE_FUNC_SCOPE();
 
+	// Hack for now!
+	// Get rid of all of the awfully huge overlay text that's spamming fresh vertex and index buffers every single frame!
+	if (MinVertexIndex > 0 && startIndex > 0)
+		return S_OK;
+
 	if (!currentState.currentVertexDecl)
 		return D3DERR_INVALIDCALL;
 
@@ -11679,6 +11684,7 @@ IDirect3DDevice9Hook::IDirect3DDevice9Hook(LPDIRECT3DDEVICE9 _d3d9dev, IDirect3D
 	GPUInitializeAllocator();
 
 	// Using a single global comms object won't work too well for processes that create multiple IDirect3DDevice9's, but it's fine for testing for now
+	//ISerialDeviceComms* const serialDeviceComms = new ISerialDeviceComms("COM3", 921600, ODDPARITY);
 	IRemoteProcessIPCComms* const remoteProcessesIPCComms = new IRemoteProcessIPCComms();
 	if (!remoteProcessesIPCComms->LaunchNewRemoteIPCProcess(
 #ifdef _M_X64
@@ -11715,7 +11721,6 @@ IDirect3DDevice9Hook::IDirect3DDevice9Hook(LPDIRECT3DDEVICE9 _d3d9dev, IDirect3D
 	#endif
 #endif
 	);
-	//ISerialDeviceComms* const serialDeviceComms = new ISerialDeviceComms("COM3", 921600, ODDPARITY);
 	IBroadcastVirtualDeviceComms* const broadcastDeviceComms = new IBroadcastVirtualDeviceComms(/*serialDeviceComms*/remoteProcessesIPCComms);
 	//broadcastDeviceComms->AddNewSecondaryBroadcastTarget(remoteProcessesIPCComms);
 	broadcastDeviceComms->AddNewSecondaryBroadcastTarget(localRecorderEndpointComms);

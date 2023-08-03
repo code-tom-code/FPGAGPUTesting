@@ -123,6 +123,8 @@ __declspec(nothrow) HRESULT __stdcall ISerialDeviceComms::InternalInitComms()
 	while (remainingSize > 0)
 	{
 		DWORD numBytesWritten = 0;
+
+		// Not sure why we can't change this to push the whole buffer at once. Doing so ends up corrupting the packets on the other end.
 		if (!WriteFile(hSerialComm, buffer, 1, &numBytesWritten, NULL) )
 		{
 			printf("Error in WriteFile. numBytesWritten: %u GLE: %u\n", numBytesWritten, GetLastError() );

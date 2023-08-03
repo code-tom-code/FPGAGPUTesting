@@ -64,6 +64,9 @@ __declspec(align(128) ) BYTE LocalMemory[GPU_DRAM_TOTAL_CAPACITY_BYTES] = {0};
 // This large bitmap keeps track of which DWORDs have been written to from the driver (via the "write DWORD" packets):
 __declspec(align(128) ) DWORD LocalMemoryWriteDWORDsBitmap[GPU_DRAM_TOTAL_CAPACITY_BYTES / (sizeof(DWORD) * 32)] = {0};
 
+// This bitmap tracks which whole GPU memory pages are dirty (1 bit set) and which pages are unmodified (0 bit set):
+__declspec(align(128) ) DWORD LocalMemoryPagesDirtyBitmap[GPU_DRAM_TOTAL_CAPACITY_BYTES / GPU_PAGE_SIZE_BYTES / (sizeof(DWORD) * 8)] = {0};
+
 // This array tracks what vertex shader programs are assigned to which slots in shader instruction-memory:
 static __declspec(align(128) ) LPDIRECT3DVERTEXSHADER9 ShaderInstructionMemory[512] = {NULL};
 
@@ -870,7 +873,7 @@ static void HandlePacket(const setVertexStreamDataCommand* const typedPacket)
 	// Look up the vertex buffer based on the stream set address:
 	LPDIRECT3DVERTEXBUFFER9 setNewVB = NULL;
 	const unsigned estimatedVertexBufferSize = GetContiguousWriteRegionSizeBytes(typedPacket->streamBaseAddress);
-	setNewVB = resourcesRegistry.GetFindOrCreateVertexBufferAtAddress(typedPacket->streamBaseAddress, estimatedVertexBufferSize ? estimatedVertexBufferSize : 2048);
+	setNewVB = resourcesRegistry.GetFindOrCreateVertexBufferAtAddress(typedPacket->streamBaseAddress, estimatedVertexBufferSize ? estimatedVertexBufferSize : GPU_PAGE_SIZE_BYTES);
 	SetCachedStreamSource(typedPacket->streamID, setNewVB, 0, typedPacket->dwordStride * sizeof(DWORD) );
 }
 

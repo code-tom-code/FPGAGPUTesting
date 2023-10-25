@@ -32,7 +32,7 @@
 static const WCHAR* const simengine_libpath = L"D:\\Xilinx\\Vivado\\2018.1\\lib\\win64.o";
 static const WCHAR* const simengine_imageformats_libpath = L"D:\\Xilinx\\Vivado\\2018.1\\lib\\win64.o\\imageformats";
 static const char* const simengine_libname = "librdi_simulator_kernel.dll";
-static const char* const design_name = "FloatALU";
+static const char* const design_name = "TriSetup";
 static char wdbName[] = "xsim.wdb";
 static D3DCOLOR colorsArray[640 * 480] = {0};
 static RenderWindow* renderWindow = NULL;
@@ -72,7 +72,7 @@ int main(const unsigned argc, const char* const argv[])
 		loader.open(&info);
 
 		// Test shared components:
-		status = RunTestsFloatALU(loader);
+		//status = RunTestsFloatALU(loader);
 		//status = RunTestsFloatALU_Interpolator(loader);
 		//status = RunTestsUNORM8ToFloat(loader);
 
@@ -83,7 +83,7 @@ int main(const unsigned argc, const char* const argv[])
 		//status = RunTestsShaderCore(loader);
 		//status = RunTestsInputAssembler(loader);
 		//status = RunTestsClipUnit(loader, renderWindow);
-		//status = RunTestsTriSetup(loader);
+		status = RunTestsTriSetup(loader);
 		//status = RunTestsRasterizer(loader, renderWindow);
 		//status = RunTestsDepthInterp(loader);
 		//status = RunTestsAttributeInterp(loader);

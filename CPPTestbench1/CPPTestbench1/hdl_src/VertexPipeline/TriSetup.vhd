@@ -62,7 +62,7 @@ entity TriSetup is
 		RAST_v10_out_colorRGBA : out STD_LOGIC_VECTOR(127 downto 0) := (others => '0');
 		RAST_v20_out_colorRGBA : out STD_LOGIC_VECTOR(127 downto 0) := (others => '0');
 
-		RAST_outMinX : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0'); -- These are all signed integer values:
+		RAST_outMinX : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0'); -- These screenspace bounds are all interpreted by the rasterizer as unsigned integer values:
 		RAST_outMaxX : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
 		RAST_outMinY : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
 		RAST_outMaxY : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');

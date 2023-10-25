@@ -265,7 +265,8 @@ static const char* const TriSetupStateToString[] =
 	"triSetup_waitForDeltasCompletion4", // 83
 
 	// Finally, send our setup tri result data to the rasterizer
-	"triSetup_broadcastOutput" // 84
+	"triSetup_broadcastOutput", // 84
+	"triSetup_broadcastNewDrawEventEmptyTriangle" // 85
 };
 
 // Performs the reverse viewport transform on the data
@@ -566,7 +567,7 @@ const int RunTestsTriSetup(Xsi::Loader& loader)
 	std_logic_vector_port<128> RAST_v0_out_colorRGBA(PD_OUT, loader, "RAST_v0_out_colorRGBA");
 	std_logic_vector_port<128> RAST_v10_out_colorRGBA(PD_OUT, loader, "RAST_v10_out_colorRGBA");
 	std_logic_vector_port<128> RAST_v20_out_colorRGBA(PD_OUT, loader, "RAST_v20_out_colorRGBA");
-	std_logic_vector_port<16> RAST_outMinX(PD_OUT, loader, "RAST_outMinX");
+	std_logic_vector_port<16> RAST_outMinX(PD_OUT, loader, "RAST_outMinX"); // These screenspace bounds are all interpreted by the rasterizer as unsigned integer values
 	std_logic_vector_port<16> RAST_outMaxX(PD_OUT, loader, "RAST_outMaxX");
 	std_logic_vector_port<16> RAST_outMinY(PD_OUT, loader, "RAST_outMinY");
 	std_logic_vector_port<16> RAST_outMaxY(PD_OUT, loader, "RAST_outMaxY");
@@ -605,9 +606,12 @@ const int RunTestsTriSetup(Xsi::Loader& loader)
 
 	// Command processor signals:
 	std_logic_port CMD_TriSetupIsIdle(PD_OUT, loader, "CMD_TriSetupIsIdle");
-	std_logic_vector_port<2> CMD_SetViewportParams(PD_IN, loader, "CMD_SetViewportParams");
-	std_logic_vector_port<32> CMD_ViewportParams0(PD_IN, loader, "CMD_ViewportParams0");
-	std_logic_vector_port<32> CMD_ViewportParams1(PD_IN, loader, "CMD_ViewportParams1");
+
+	// State block signals:
+	std_logic_vector_port<192> STATE_StateBitsAtDrawID(PD_IN, loader, "STATE_StateBitsAtDrawID");
+	std_logic_vector_port<16> STATE_NextDrawID(PD_IN, loader, "STATE_NextDrawID");
+	std_logic_port STATE_StateIsValid(PD_IN, loader, "STATE_StateIsValid");
+	std_logic_port STATE_ConsumeStateSlot(PD_OUT, loader, "STATE_ConsumeStateSlot");
 
 	// Stats signals:
 	std_logic_vector_port<32> STAT_CyclesIdle(PD_OUT, loader, "STAT_CyclesIdle");
@@ -622,8 +626,7 @@ const int RunTestsTriSetup(Xsi::Loader& loader)
 	std_logic_vector_port<32> DBG_RightProd0(PD_OUT, loader, "DBG_RightProd0");
 	std_logic_vector_port<32> DBG_RightProd1(PD_OUT, loader, "DBG_RightProd1");
 	std_logic_vector_port<32> DBG_RightProd2(PD_OUT, loader, "DBG_RightProd2");
-	std_logic_vector_port<32> DBG_LeftFirstTermInner1(PD_OUT, loader, "DBG_LeftFirstTermInner1");
-	std_logic_vector_port<32> DBG_LeftSecondTermInner1(PD_OUT, loader, "DBG_LeftSecondTermInner1");
+	std_logic_vector_port<32> DBG_TwiceTriArea(PD_OUT, loader, "DBG_TwiceTriArea");
 
 	FPU triSetupFPU_ADD(0);
 	FPU triSetupFPU_MUL(0);
@@ -642,6 +645,9 @@ const int RunTestsTriSetup(Xsi::Loader& loader)
 		FPU_MUL_OUT = 0.0f;
 		FPU_CNV_OUT = 0.0f;
 		FPU_SPEC_OUT = 0.0f;
+		STATE_StateIsValid = false;
+		STATE_NextDrawID = 0x0000;
+		STATE_StateBitsAtDrawID.SetToZero();
 	}
 
 	const auto runTriSetupTest = [&](const triSetupInput& inTriData, const triSetupResultType expectedResult) -> bool
@@ -664,7 +670,6 @@ const int RunTestsTriSetup(Xsi::Loader& loader)
 			while (CLIP_readyForNewTri.GetBoolVal() == false && CMD_TriSetupIsIdle.GetBoolVal() == true)
 			{
 				CLIP_newTriBegin = false;
-				CMD_SetViewportParams = 0;
 				scoped_timestep time(loader, clk, 100);
 				dbgCurrentState = (const triSetupState)DBG_TriSetup_State.GetUint8Val();
 			}
@@ -696,10 +701,6 @@ const int RunTestsTriSetup(Xsi::Loader& loader)
 				scoped_timestep time(loader, clk, 100);
 				CLIP_newTriBegin = true;
 				dbgCurrentState = (const triSetupState)DBG_TriSetup_State.GetUint8Val();
-
-				CMD_SetViewportParams = 0x1;
-				CMD_ViewportParams0 = VIEWPORT_HALF_WIDTH;
-				CMD_ViewportParams1 = VIEWPORT_HALF_HEIGHT;
 			}
 			CLIP_newTriBegin = false;
 
@@ -714,17 +715,6 @@ const int RunTestsTriSetup(Xsi::Loader& loader)
 			{
 				scoped_timestep time(loader, clk, 100);
 
-				if (cyclesPerTri == 0)
-				{
-					CMD_SetViewportParams = 0x2;
-					CMD_ViewportParams0 = 1.0f;
-					CMD_ViewportParams1 = 0.0f;
-				}
-				else if (cyclesPerTri == 1)
-				{
-					CMD_SetViewportParams = 0x0;
-				}
-
 				++cyclesPerTri;
 
 				dbgCurrentState = (const triSetupState)DBG_TriSetup_State.GetUint8Val();
@@ -738,19 +728,24 @@ const int RunTestsTriSetup(Xsi::Loader& loader)
 
 				if (RAST_triSetupDataIsValid.GetBoolVal() )
 				{
-					if (triSetupOutputCount++ == 0)
+					// Only accept triangles with valid bounds. Invalid bounds triangle rects indicate culled triangles that need to get passed down the pipeline in order to 
+					// advance the current primitive ID, but that should not be actually rendered:
+					if (RAST_outMinX.GetUint16Val() <= RAST_outMaxX.GetUint16Val() && RAST_outMinY.GetUint16Val() <= RAST_outMaxY.GetUint16Val() )
 					{
-						simulatedRTLOutput.SerializeTriSetupOutput(RAST_outBarycentricInverse,
-							RAST_v0_out_Z, RAST_v10_out_Z, RAST_v20_out_Z,
-							RAST_v0_out_invW, RAST_v10_out_invW, RAST_v20_out_invW,
-							RAST_t0_out_x, RAST_t10_out_x, RAST_t20_out_x,
-							RAST_t0_out_y, RAST_t10_out_y, RAST_t20_out_y,
-							RAST_v0_out_colorRGBA, RAST_v10_out_colorRGBA, RAST_v20_out_colorRGBA,
-							RAST_outMinX, RAST_outMinY, RAST_outMaxX, RAST_outMaxY,
-							RAST_outInitialBarycentricRowResetA, RAST_outInitialBarycentricRowResetB, RAST_outInitialBarycentricRowResetC,
-							RAST_outIsTopLeftEdgeA, RAST_outIsTopLeftEdgeB, RAST_outIsTopLeftEdgeC,
-							RAST_outBarycentricXDeltaA, RAST_outBarycentricXDeltaB, RAST_outBarycentricXDeltaC,
-							RAST_outBarycentricYDeltaA, RAST_outBarycentricYDeltaB, RAST_outBarycentricYDeltaC);
+						if (triSetupOutputCount++ == 0)
+						{
+							simulatedRTLOutput.SerializeTriSetupOutput(RAST_outBarycentricInverse,
+								RAST_v0_out_Z, RAST_v10_out_Z, RAST_v20_out_Z,
+								RAST_v0_out_invW, RAST_v10_out_invW, RAST_v20_out_invW,
+								RAST_t0_out_x, RAST_t10_out_x, RAST_t20_out_x,
+								RAST_t0_out_y, RAST_t10_out_y, RAST_t20_out_y,
+								RAST_v0_out_colorRGBA, RAST_v10_out_colorRGBA, RAST_v20_out_colorRGBA,
+								RAST_outMinX, RAST_outMinY, RAST_outMaxX, RAST_outMaxY,
+								RAST_outInitialBarycentricRowResetA, RAST_outInitialBarycentricRowResetB, RAST_outInitialBarycentricRowResetC,
+								RAST_outIsTopLeftEdgeA, RAST_outIsTopLeftEdgeB, RAST_outIsTopLeftEdgeC,
+								RAST_outBarycentricXDeltaA, RAST_outBarycentricXDeltaB, RAST_outBarycentricXDeltaC,
+								RAST_outBarycentricYDeltaA, RAST_outBarycentricYDeltaB, RAST_outBarycentricYDeltaC);
+						}
 					}
 				}
 			}
@@ -823,7 +818,6 @@ const int RunTestsTriSetup(Xsi::Loader& loader)
 			while (CLIP_readyForNewTri.GetBoolVal() == false && CMD_TriSetupIsIdle.GetBoolVal() == true)
 			{
 				CLIP_newTriBegin = false;
-				CMD_SetViewportParams = 0;
 				scoped_timestep time(loader, clk, 100);
 				dbgCurrentState = (const triSetupState)DBG_TriSetup_State.GetUint8Val();
 			}
@@ -855,10 +849,6 @@ const int RunTestsTriSetup(Xsi::Loader& loader)
 				scoped_timestep time(loader, clk, 100);
 				CLIP_newTriBegin = true;
 				dbgCurrentState = (const triSetupState)DBG_TriSetup_State.GetUint8Val();
-
-				CMD_SetViewportParams = 0x1;
-				CMD_ViewportParams0 = VIEWPORT_HALF_WIDTH;
-				CMD_ViewportParams1 = VIEWPORT_HALF_HEIGHT;
 			}
 			CLIP_newTriBegin = false;
 
@@ -877,21 +867,11 @@ const int RunTestsTriSetup(Xsi::Loader& loader)
 			int rightProd2 = 0;
 			int firstTermInner1 = 0;
 			int secondTermInner1 = 0;
+			int twiceTriArea = 0;
 
 			while (CLIP_readyForNewTri.GetBoolVal() == false)
 			{
 				scoped_timestep time(loader, clk, 100);
-
-				if (cyclesPerTri == 0)
-				{
-					CMD_SetViewportParams = 0x2;
-					CMD_ViewportParams0 = 1.0f;
-					CMD_ViewportParams1 = 0.0f;
-				}
-				else if (cyclesPerTri == 1)
-				{
-					CMD_SetViewportParams = 0x0;
-				}
 
 				++cyclesPerTri;
 
@@ -912,8 +892,7 @@ const int RunTestsTriSetup(Xsi::Loader& loader)
 					rightProd0 = DBG_RightProd0.GetInt32Val();
 					rightProd1 = DBG_RightProd1.GetInt32Val();
 					rightProd2 = DBG_RightProd2.GetInt32Val();
-					firstTermInner1 = DBG_LeftFirstTermInner1.GetInt32Val();
-					secondTermInner1 = DBG_LeftSecondTermInner1.GetInt32Val();
+					twiceTriArea = DBG_TwiceTriArea.GetInt32Val();
 				}
 
 				if (RAST_triSetupDataIsValid.GetBoolVal() )

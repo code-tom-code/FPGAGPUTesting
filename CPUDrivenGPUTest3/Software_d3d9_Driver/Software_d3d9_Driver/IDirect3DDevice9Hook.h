@@ -1098,7 +1098,9 @@ public:
 	);
 
 	// Returns true if this is a fresh allocation, or false if it is a reused identically matching buffer
-	const bool CreateOrUseCachedCommandList(GPUCommandList*& newCommandList, std::vector<GPUCommandList*>& cachedDeviceCommandLists);
+	const bool CreateOrUseCachedCommandList(GPUCommandList*& newCommandList, std::vector<GPUCommandList*>& cachedDeviceCommandLists, std::vector<GPUCommandList*>& resetCommandLists);
+
+	GPUCommandList* const GetNewCommandList();
 
 	const float4 GetDeviceViewportConstantF() const;
 
@@ -1788,6 +1790,7 @@ protected:
 	std::vector<deviceAllocatedBuffer> cachedIndexBuffers;
 	std::vector<deviceAllocatedBuffer> cachedConstantBuffers;
 	std::vector<GPUCommandList*> cachedCommandLists;
+	std::vector<GPUCommandList*> resetCommandListsPool;
 };
 
 // Translates a given FVF code into an array of D3DVERTEXELEMENT9 elements. The return value is the number of used vertex elements:

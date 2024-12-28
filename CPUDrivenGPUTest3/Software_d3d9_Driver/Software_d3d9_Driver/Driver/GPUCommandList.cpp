@@ -201,3 +201,11 @@ void GPUCommandList::FinishRecordingAndUpload(IBaseDeviceComms* const deviceComm
 
 	recordingState = uploaded;
 }
+
+void GPUCommandList::ResetCommandListForPooling()
+{
+	commandsHash = 0;
+	gpuAllocatedAddress = NULL;
+	commands.clear();
+	recordingState = notRecording;
+}

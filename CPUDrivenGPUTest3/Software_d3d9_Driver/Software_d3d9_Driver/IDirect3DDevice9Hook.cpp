@@ -3871,7 +3871,7 @@ void IDirect3DDevice9Hook::ProcessVerticesToBufferInner(const IDirect3DVertexDec
 	{
 		__debugbreak();
 	}*/
-	const unsigned numNewJobs = vertJobsToShade.size();
+	const unsigned numNewJobs = (const unsigned)vertJobsToShade.size();
 
 #ifdef RUN_SHADERS_IN_WARPS
 	if (!deviceMainVShaderEngine.GetShaderInfo()->usesDynamicBranching && !deviceMainVShaderEngine.GetShaderInfo()->usesInstructionPredication)
@@ -4544,14 +4544,14 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawPrimiti
 #endif
 
 	{
-		GPUCommandList* newRecordingCommandList = new GPUCommandList;
+		GPUCommandList* newRecordingCommandList = GetNewCommandList();
 		baseDevice->BeginRecordingCommandList(newRecordingCommandList);
 		DeviceSetCurrentState(PrimitiveType, NULL); // Update the device state
 		DeviceSetVertexShader(); // Set our current vertex shader on the device (has the side effect of overwriting the 0th stream source register, so make sure to call this before DeviceSetVertexStreamsAndDecl() )
 		DeviceSetVertexStreamsAndDecl(); // Bind our current vertex streams and set up our vertex decl
 		baseDevice->DeviceDrawPrimitive(PrimitiveType, PrimitiveCount, StartVertex);
 
-		CreateOrUseCachedCommandList(newRecordingCommandList, cachedCommandLists);
+		CreateOrUseCachedCommandList(newRecordingCommandList, cachedCommandLists, resetCommandListsPool);
 		DeviceSetUsedVertexShaderConstants(); // Copy over and set our vertex shader constant registers
 		CallRunCommandList(*newRecordingCommandList);
 	}
@@ -4678,14 +4678,30 @@ const bool IDirect3DDevice9Hook::CreateOrUseCachedVertDataBuffer(deviceAllocated
 	return -1;
 }
 
+GPUCommandList* const IDirect3DDevice9Hook::GetNewCommandList()
+{
+	if (!resetCommandListsPool.empty() )
+	{
+		GPUCommandList* const ret = resetCommandListsPool.back();
+		resetCommandListsPool.pop_back();
+		return ret;
+	}
+
+	GPUCommandList* const ret = new GPUCommandList;
+	return ret;
+}
+
 // Returns true if this is a fresh allocation, or false if it is a reused identically matching buffer
-const bool IDirect3DDevice9Hook::CreateOrUseCachedCommandList(GPUCommandList*& newCommandList, std::vector<GPUCommandList*>& cachedDeviceCommandLists)
+const bool IDirect3DDevice9Hook::CreateOrUseCachedCommandList(GPUCommandList*& newCommandList, std::vector<GPUCommandList*>& cachedDeviceCommandLists, std::vector<GPUCommandList*>& resetCommandLists)
 {
 	const unsigned __int64 recordingListHash = newCommandList->ComputeCommandsHash();
 	const int foundIndex = FindExistingCommandList(newCommandList, recordingListHash, cachedDeviceCommandLists);
 	if (foundIndex >= 0)
 	{
-		delete newCommandList;
+		// Reset & reuse our command list in the pool:
+		newCommandList->ResetCommandListForPooling();
+		resetCommandLists.push_back(newCommandList);
+
 		newCommandList = cachedDeviceCommandLists[foundIndex];
 		cachedDeviceCommandLists.erase(cachedDeviceCommandLists.begin() + foundIndex);
 		cachedDeviceCommandLists.insert(cachedDeviceCommandLists.end(), newCommandList); // Move our found element to the end of the vector so we know that it's the most recently used element
@@ -4700,7 +4716,8 @@ const bool IDirect3DDevice9Hook::CreateOrUseCachedCommandList(GPUCommandList*& n
 		GPUCommandList* const deleteOldestBuffer = cachedDeviceCommandLists.front();
 		GPUFree(deleteOldestBuffer->gpuAllocatedAddress); // Delete our buffer from the GPU device
 		cachedDeviceCommandLists.erase(cachedDeviceCommandLists.begin() ); // Delete our buffer from the cache
-		delete deleteOldestBuffer;
+		deleteOldestBuffer->ResetCommandListForPooling();
+		resetCommandLists.push_back(deleteOldestBuffer);
 	}
 
 	newCommandList->commandsHash = recordingListHash;
@@ -6046,7 +6063,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawIndexed
 	// baseDevice->DeviceWaitForIdle( (const waitForDeviceIdleCommand::waitForDeviceSubsystem)(waitForDeviceIdleCommand::waitForIAIdle | waitForDeviceIdleCommand::waitForClipIdle) );
 
 	{
-		GPUCommandList* newRecordingCommandList = new GPUCommandList;
+		GPUCommandList* newRecordingCommandList = GetNewCommandList();
 		baseDevice->BeginRecordingCommandList(newRecordingCommandList);
 
 		currentState.currentIndexBuffer->UpdateDataToGPU();
@@ -6101,7 +6118,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawIndexed
 			baseDevice->DeviceDrawIndexedPrimitive(PrimitiveType, primCount, startIndex, BaseVertexIndex);
 		}
 
-		CreateOrUseCachedCommandList(newRecordingCommandList, cachedCommandLists);
+		CreateOrUseCachedCommandList(newRecordingCommandList, cachedCommandLists, resetCommandListsPool);
 
 		DeviceSetUsedVertexShaderConstants(); // Copy over and set our vertex shader constant registers
 

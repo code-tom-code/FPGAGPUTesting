@@ -31,6 +31,7 @@ struct GPUCommandList
 	void AddPacketToCommandList(const command& newPacket);
 	const unsigned __int64 ComputeCommandsHash() const;
 	void FinishRecordingAndUpload(IBaseDeviceComms* const deviceComms);
+	void ResetCommandListForPooling();
 
 	static void ConvertCommandPacketToSimplifiedCommandPacket(const command* const inFullPacket, SimplifiedCommandPacket* const outSimplifiedPacket);
 	static void ConvertSimplifiedCommandPacketToCommandPacket(const SimplifiedCommandPacket* const inSimplifiedPacket, command* const outFullPacket);

@@ -52,8 +52,29 @@ static inline void HashStruct(FixedFunctionStateHash& hash, const T& data)
 	if (rotateAmount != 0)
 		hash = _rotl64(hash, rotateAmount);
 
-	const unsigned char* const uData = (const unsigned char* const)&data;
-	for (unsigned x = 0; x < sizeof(T) / sizeof(unsigned char); ++x)
+	unsigned len = (const unsigned)(sizeof(T) / sizeof(unsigned char) );
+
+#ifdef _M_X64
+	const unsigned __int64* qwData = (const unsigned __int64* const)&data;
+	while (len >= sizeof(unsigned __int64) )
+	{
+		hash ^= *qwData++;
+		len -= sizeof(unsigned __int64);
+	}
+
+	const unsigned* dwData = (const unsigned* const)qwData;
+#else
+	const unsigned* dwData = (const unsigned* const)&data;
+#endif
+	while (len >= sizeof(unsigned) )
+	{
+		hash = _rotl64(hash, sizeof(unsigned) * 8);
+		hash ^= *dwData++;
+		len -= sizeof(unsigned);
+	}
+
+	const unsigned char* const uData = (const unsigned char* const)dwData;
+	for (unsigned x = 0; x < len; ++x)
 	{
 		hash = _rotl64(hash, sizeof(unsigned char) * 8);
 		hash ^= uData[x];

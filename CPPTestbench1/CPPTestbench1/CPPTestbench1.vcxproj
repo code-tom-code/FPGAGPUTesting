@@ -23,34 +23,34 @@
     <ProjectGuid>{642B0BB3-4587-4E00-805A-4FDC480C3105}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>CPPTestbench1</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
-    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>NotSet</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>NotSet</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
-    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>NotSet</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>NotSet</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -72,19 +72,23 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>D:\Xilinx\Vivado\2018.1\data\xsim\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(IncludePath);C:\Xilinx\Vivado\2024.2\data\xsim\include;C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Include</IncludePath>
+    <LibraryPath>$(LibraryPath);C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib\x86</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>D:\Xilinx\Vivado\2018.1\data\xsim\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(IncludePath);C:\Xilinx\Vivado\2024.2\data\xsim\include;C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Include</IncludePath>
+    <LibraryPath>$(LibraryPath);C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib\x64</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>D:\Xilinx\Vivado\2018.1\data\xsim\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(IncludePath);C:\Xilinx\Vivado\2024.2\data\xsim\include;C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Include</IncludePath>
+    <LibraryPath>$(LibraryPath);C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib\x86</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>D:\Xilinx\Vivado\2018.1\data\xsim\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(IncludePath);C:\Xilinx\Vivado\2024.2\data\xsim\include;C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Include</IncludePath>
+    <LibraryPath>$(LibraryPath);C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib\x64</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -118,7 +122,6 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile />
-      <AdditionalIncludeDirectories>F:\Xilinx\Vivado\2020.2\data\xsim\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <UndefinePreprocessorDefinitions>UNICODE;_UNICODE;%(UndefinePreprocessorDefinitions)</UndefinePreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -170,7 +173,6 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile />
-      <AdditionalIncludeDirectories>F:\Xilinx\Vivado\2020.2\data\xsim\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <UndefinePreprocessorDefinitions>UNICODE;_UNICODE;%(UndefinePreprocessorDefinitions)</UndefinePreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -203,6 +205,7 @@
     <ClCompile Include="Testbenches\ROPTestbench.cpp" />
     <ClCompile Include="Testbenches\ShaderCoreTestbench.cpp" />
     <ClCompile Include="Testbenches\StateBlockTestbench.cpp" />
+    <ClCompile Include="Testbenches\TexDecompressTestbench.cpp" />
     <ClCompile Include="Testbenches\TexSamplerTestbench.cpp" />
     <ClCompile Include="Testbenches\TriSetupTestbench.cpp" />
     <ClCompile Include="Testbenches\UNORM8ToFloatTestbench.cpp" />
@@ -232,6 +235,7 @@
     <ClInclude Include="Testbenches\ShaderCoreALUCommon.h" />
     <ClInclude Include="Testbenches\ShaderCoreTestbench.h" />
     <ClInclude Include="Testbenches\StateBlockTestbench.h" />
+    <ClInclude Include="Testbenches\TexDecompressTestbench.h" />
     <ClInclude Include="Testbenches\TexSamplerTestbench.h" />
     <ClInclude Include="Testbenches\TriSetupTestbench.h" />
     <ClInclude Include="Testbenches\UNORM8ToFloatTestbench.h" />
@@ -251,6 +255,7 @@
     <None Include="EthernetCRC32.prj" />
     <None Include="FloatALU.prj" />
     <None Include="FloatALU_Interpolator.prj" />
+    <None Include="FPGA_RUDP_Dissector.lua" />
     <None Include="GPRQuad.prj" />
     <None Include="hdl_src\CDC_Command_Scanout.vhd" />
     <None Include="hdl_src\CommandProcessor.vhd" />
@@ -294,11 +299,16 @@
     <None Include="hdl_src\RenderState\TexSampleState.vhd" />
     <None Include="hdl_src\RenderState\TriSetupState.vhd" />
     <None Include="hdl_src\RenderState\VertexBatchBuilderState.vhd" />
+    <None Include="hdl_src\RGBA_Interpolator.vhd" />
     <None Include="hdl_src\SimpleFIFO.vhd" />
     <None Include="hdl_src\StateBlock.vhd" />
     <None Include="hdl_src\StatsCollector.vhd" />
     <None Include="hdl_src\StatsEventsTracker.vhd" />
     <None Include="hdl_src\TestShaderCoreDriver.vhd" />
+    <None Include="hdl_src\TestTexCache.vhd" />
+    <None Include="hdl_src\TexAddress.vhd" />
+    <None Include="hdl_src\TexDecompress2.vhd" />
+    <None Include="hdl_src\TexFiltering.vhd" />
     <None Include="hdl_src\UNORM8ToFloat.vhd" />
     <None Include="hdl_src\VertexPipeline\Clipping\AABB2DOverlapViewport.vhd" />
     <None Include="hdl_src\VertexPipeline\Clipping\ClipCommon.vhd" />
@@ -326,6 +336,7 @@
     <None Include="ShaderCore.prj" />
     <None Include="StateBlock.prj" />
     <None Include="StatsCollector.prj" />
+    <None Include="TexDecompress2.prj" />
     <None Include="TexSample.prj" />
     <None Include="TriSetup.prj" />
     <None Include="UNORM8ToFloat.prj" />

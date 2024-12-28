@@ -3,4 +3,6 @@
 vhdl xil_defaultlib  \
 "hdl_src/PacketType.vhd" \
 "hdl_src/RenderState/TexSampleState.vhd" \
+"hdl_src/FloatALU_Types.vhd" \
+"hdl_src/PixelPipeline/PixelPipeline_Types.vhd" \
 "hdl_src/PixelPipeline/TexSample.vhd" \

@@ -359,9 +359,9 @@ DBG_MaxY <= std_logic_vector(maxY);
 					vertDataC.invW <= unsigned(TRISETUP_inInvW20);
 
 					-- Set the initial values of our barycentric coordinates to the starting row reset values:
-					barycentricA <= signed(TRISETUP_inInitialBarycentricRowResetA) + resize(signed(TRISETUP_inBarycentricXDeltaA), barycentricA'length);
-					barycentricB <= signed(TRISETUP_inInitialBarycentricRowResetB) + resize(signed(TRISETUP_inBarycentricXDeltaB), barycentricB'length);
-					barycentricC <= signed(TRISETUP_inInitialBarycentricRowResetC) + resize(signed(TRISETUP_inBarycentricXDeltaC), barycentricC'length);
+					barycentricA <= signed(TRISETUP_inInitialBarycentricRowResetA);-- + resize(signed(TRISETUP_inBarycentricXDeltaA), barycentricA'length);
+					barycentricB <= signed(TRISETUP_inInitialBarycentricRowResetB);-- + resize(signed(TRISETUP_inBarycentricXDeltaB), barycentricB'length);
+					barycentricC <= signed(TRISETUP_inInitialBarycentricRowResetC);-- + resize(signed(TRISETUP_inBarycentricXDeltaC), barycentricC'length);
 
 					if (TRISETUP_newTriBegin = '1' and readyForNewTri = '1') then
 						fifoWriteEnable <= '0';
@@ -385,7 +385,7 @@ DBG_MaxY <= std_logic_vector(maxY);
 
 				when triRasterize_mainLoop =>
 					fifoWriteEnable <= '0';
-					if (pixelXPos < maxX and pixelYPos <= maxY) then
+					if (pixelXPos <= maxX and pixelYPos <= maxY) then
 						if (barycentricInside(barycentricA) and barycentricInside(barycentricB) and barycentricInside(barycentricC) ) then
 							if (isTopLeftEdgeA = '0') then
 								tempBarycentricA := barycentricA + 1;
@@ -435,9 +435,9 @@ DBG_MaxY <= std_logic_vector(maxY);
 						-- We've reached the rightmost pixel, time to restart at the left again:
 						pixelXPos <= minX;
 						pixelYPos <= pixelYPos + 1;
-						barycentricA <= barycentricRowResetA + resize(barycentricYDeltaA, barycentricRowResetA'length) + resize(barycentricXDeltaA, barycentricRowResetA'length);
-						barycentricB <= barycentricRowResetB + resize(barycentricYDeltaB, barycentricRowResetB'length) + resize(barycentricXDeltaB, barycentricRowResetB'length);
-						barycentricC <= barycentricRowResetC + resize(barycentricYDeltaC, barycentricRowResetC'length) + resize(barycentricXDeltaC, barycentricRowResetC'length);
+						barycentricA <= barycentricRowResetA + resize(barycentricYDeltaA, barycentricRowResetA'length);-- + resize(barycentricXDeltaA, barycentricRowResetA'length);
+						barycentricB <= barycentricRowResetB + resize(barycentricYDeltaB, barycentricRowResetB'length);-- + resize(barycentricXDeltaB, barycentricRowResetB'length);
+						barycentricC <= barycentricRowResetC + resize(barycentricYDeltaC, barycentricRowResetC'length);-- + resize(barycentricXDeltaC, barycentricRowResetC'length);
 						barycentricRowResetA <= barycentricRowResetA + resize(barycentricYDeltaA, barycentricRowResetA'length);
 						barycentricRowResetB <= barycentricRowResetB + resize(barycentricYDeltaB, barycentricRowResetB'length);
 						barycentricRowResetC <= barycentricRowResetC + resize(barycentricYDeltaC, barycentricRowResetC'length);

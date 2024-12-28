@@ -277,76 +277,82 @@ architecture Behavioral of CommandProcessor is
 						DONOTHING_PACKET, -- 3
 
 						WRITEMEM_PACKET, -- 4
-						WRITEMEM_DEASSERT_WRITE, -- 5
 
-						CLEARMEM_PACKET, -- 6
-						CLEARMEM_LOOP, -- 7
-						CLEARMEM_DEASSERT_WRITE, -- 8
+						CLEARMEM_PACKET, -- 5
+						CLEARMEM_LOOP, -- 6
+						CLEARMEM_DEASSERT_WRITE, -- 7
 
-						READMEM_PACKET, -- 9
-						READMEM_WAIT_FOR_READ_DATA, -- 10
-						READMEM_PUSH_TO_OUT_FIFO, -- 11
-						READMEM_DEASSERT_FIFO, -- 12
+						READMEM_PACKET, -- 8
+						READMEM_WAIT_FOR_READ_DATA, -- 9
+						READMEM_PUSH_TO_OUT_FIFO, -- 10
+						READMEM_DEASSERT_FIFO, -- 11
 
-						PUSH_NEW_TEXTURESAMPLER_STATE, -- 13
-						LOAD_TEXTURE_DATA, -- 14
+						PUSH_NEW_TEXTURESAMPLER_STATE, -- 12
+						LOAD_TEXTURE_DATA, -- 13
 
-						WAIT_FOR_IDLE, -- 15
-						WAIT_FOR_IDLE_SIGNAL_BACK, -- 16
-						WAIT_FOR_IDLE_SIGNAL_BACK_DEASSERT_FIFO, -- 17
+						WAIT_FOR_IDLE, -- 14
+						WAIT_FOR_IDLE_SIGNAL_BACK, -- 15
+						WAIT_FOR_IDLE_SIGNAL_BACK_DEASSERT_FIFO, -- 16
 
-						SET_TEXTURE_STATE, -- 18
-						SET_ALPHATEST_AND_RENDERTARGET_STATE, -- 19
-						SET_SCANOUT_POINTER, -- 20
-						SET_IA_STATE, -- 21
+						SET_TEXTURE_STATE, -- 17
+						SET_ALPHATEST_AND_RENDERTARGET_STATE, -- 18
+						SET_SCANOUT_POINTER, -- 19
+						SET_IA_STATE, -- 20
 
-						ISSUE_CLEARBLOCK, -- 22
-						ISSUE_CLEARBLOCK_DEASSERT, -- 23
-						CLEARBLOCK_SYNC_ROP, -- 24
+						ISSUE_CLEARBLOCK, -- 21
+						ISSUE_CLEARBLOCK_DEASSERT, -- 22
+						CLEARBLOCK_SYNC_ROP, -- 23
 
-						FLUSH_ROP_CACHE, -- 25
+						FLUSH_ROP_CACHE, -- 24
 
-						SIGNAL_END_OF_FRAME_STATS, -- 26
+						SIGNAL_END_OF_FRAME_STATS, -- 25
 
-						DRAW_COMMAND, -- 27
-						DRAW_COMMAND2, -- 28
+						DRAW_COMMAND, -- 26
+						DRAW_COMMAND2, -- 27
 
-						BEGIN_EXECUTE_COMMAND_LIST, -- 29
-						COMMAND_LIST_LOAD_NEXT_DRAM_LINE, -- 30
-						COMMAND_LIST_WAIT_FOR_NEXT_DRAM_LINE, -- 31
-						COMMAND_LIST_FINISH_DRAM_READ, -- 32
+						BEGIN_EXECUTE_COMMAND_LIST, -- 28
+						COMMAND_LIST_LOAD_NEXT_DRAM_LINE, -- 29
+						COMMAND_LIST_WAIT_FOR_NEXT_DRAM_LINE, -- 30
+						COMMAND_LIST_FINISH_DRAM_READ, -- 31
 
-						LOAD_SHADER_INSTRUCTIONS, -- 33
-						SET_SHADER_CONSTANT, -- 34
-						SET_SHADER_CONSTANT2, -- 35
-						SET_SHADER_CONSTANT_WAIT_FOR_MEMORY, -- 36
-						SET_SHADER_CONSTANT_WAIT_FOR_MEMORY_COOLDOWN, -- 37
-						SET_SHADER_CONSTANT_WAIT_FOR_SEND_HIGH_REGISTER, -- 38
-						SET_SHADER_CONSTANT_WAIT_FOR_SEND_HIGH_REGISTER_COOLDOWN, -- 39
-						SET_VERTEX_STREAM_DATA, -- 40
-						SET_EVENT_CONFIG_STATE, -- 41
-						SET_SHADER_CONSTANT_SPECIAL, -- 42
-						SET_SHADER_START_ADDRESS, -- 43
+						LOAD_SHADER_INSTRUCTIONS, -- 32
+						SET_SHADER_CONSTANT, -- 33
+						SET_SHADER_CONSTANT2, -- 34
+						SET_SHADER_CONSTANT_WAIT_FOR_MEMORY, -- 35
+						SET_SHADER_CONSTANT_WAIT_FOR_MEMORY_COOLDOWN, -- 36
+						SET_SHADER_CONSTANT_WAIT_FOR_SEND_HIGH_REGISTER, -- 37
+						SET_SHADER_CONSTANT_WAIT_FOR_SEND_HIGH_REGISTER_COOLDOWN, -- 38
+						SET_VERTEX_STREAM_DATA, -- 39
+						SET_EVENT_CONFIG_STATE, -- 40
+						SET_SHADER_CONSTANT_SPECIAL, -- 41
+						SET_SHADER_START_ADDRESS, -- 42
 
-						SET_DEPTH_STATE, -- 44
-						INITIATE_DEPTH_BUFFER_CLEAR, -- 45
+						SET_DEPTH_STATE, -- 43
+						INITIATE_DEPTH_BUFFER_CLEAR, -- 44
 
-						DBG_SHADER_NEXT_DRAW_CALL, -- 46
-						DBG_DUMP_SHADER_REGISTERS, -- 47
-						DBG_DUMP_SHADER_REGISTERS_HIGH, -- 48
-						DBG_DUMP_SHADER_REGISTERS_MEMWRITE, -- 49
+						DBG_SHADER_NEXT_DRAW_CALL, -- 45
+						DBG_DUMP_SHADER_REGISTERS, -- 46
+						DBG_DUMP_SHADER_REGISTERS_HIGH, -- 47
+						DBG_DUMP_SHADER_REGISTERS_MEMWRITE, -- 48
 
-						SET_BLEND_STATE, -- 50
-						PUSH_NEW_ROP_STATE, -- 51
-						SET_CLIP_STATE, -- 52
-						ISSUE_QUERY_STATE, -- 53
+						SET_BLEND_STATE, -- 49
+						PUSH_NEW_ROP_STATE, -- 50
+						SET_CLIP_STATE, -- 51
+						ISSUE_QUERY_STATE, -- 52
 
-						SET_VIEWPORT_PARAMS0, -- 54
-						SET_VIEWPORT_PARAMS1, -- 55
-						SET_SCISSOR_RECT, -- 56
-						PUSH_NEW_TRISETUP_STATE, -- 57
-						SET_VBB_STATE, -- 58
-						SET_ATTR_INTERP_STATE -- 59
+						SET_VIEWPORT_PARAMS0, -- 53
+						SET_VIEWPORT_PARAMS1, -- 54
+						SET_SCISSOR_RECT, -- 55
+						PUSH_NEW_TRISETUP_STATE, -- 56
+						SET_VBB_STATE, -- 57
+						SET_ATTR_INTERP_STATE, -- 58
+
+						WRITE_BATCH_CONFIG_STATE, -- 59
+						WRITE_BATCH_DATA0_STATE, -- 60
+						WRITE_BATCH_DATA1_STATE, -- 61
+						WRITE_BATCH_DATA2_STATE, -- 62
+						WRITE_BATCH_DATA3_STATE, -- 63
+						WRITE_BATCH_WRITECOMMIT_STATE -- 64
 						);
 
 	type commandListExecState is record
@@ -393,6 +399,9 @@ architecture Behavioral of CommandProcessor is
 	signal shaderStartAddress : unsigned(8 downto 0) := (others => '0');
 	signal currentDrawStateGeneration : unsigned(15 downto 0) := X"0001"; -- 1 at the start of the frame and increments by 1 for each draw/dispatch/clear call that is invoked in which graphics state has changed
 	signal hasUpdatedDrawState : std_logic := '0'; -- Cleared to '0' on each draw/dispatch/clear call, and set to '1' on each graphics state change
+
+	signal writeBatchAddr : unsigned(ADDR_WIDTH_BITS-1 downto 0) := (others => '0');
+	signal writeBatchDRAMLine : unsigned(DATA_WIDTH_BITS-1 downto 0) := (others => '0');
 
 	-- This timestamp is used for timestamp queries and increments once for each clock cycle that runs through the command processor
 	signal currentTimestamp : unsigned(47 downto 0) := (others => '0');
@@ -714,6 +723,21 @@ begin
 							when PT_SETINTERPOLATORSTATE =>
 								mst_packet_state <= SET_ATTR_INTERP_STATE;
 
+							when PT_WRITEMEMBATCHCONFIG =>
+								mst_packet_state <= WRITE_BATCH_CONFIG_STATE;
+
+							when PT_WRITEMEMBATCH0 =>
+								mst_packet_state <= WRITE_BATCH_DATA0_STATE;
+							
+							when PT_WRITEMEMBATCH1 =>
+								mst_packet_state <= WRITE_BATCH_DATA1_STATE;
+
+							when PT_WRITEMEMBATCH2 =>
+								mst_packet_state <= WRITE_BATCH_DATA2_STATE;
+
+							when PT_WRITEMEMBATCH3WRITE =>
+								mst_packet_state <= WRITE_BATCH_DATA3_STATE;
+
 							when others => --when PT_DONOTHING =>
 								mst_packet_state <= DONOTHING_PACKET;
 						end case;
@@ -756,12 +780,8 @@ begin
 							CommandProcWriteRequestsFIFO_wr_data <= std_logic_vector(localIncomingPacket.payload0(ADDR_WIDTH_BITS-1 downto 0) ) & writeDataTemp & writeDWORDEnableTemp;
 
 							CommandProcWriteRequestsFIFO_wr_en <= '1';
-							mst_packet_state <= WRITEMEM_DEASSERT_WRITE;
+							mst_packet_state <= READ_NEXT_PACKET_FROM_FIFO;
 						end if;
-
-					when WRITEMEM_DEASSERT_WRITE =>
-						CommandProcWriteRequestsFIFO_wr_en <= '0';
-						mst_packet_state <= READ_NEXT_PACKET_FROM_FIFO;
 
 					when CLEARMEM_PACKET =>
 						if (localIncomingPacket.payload1(15 downto 0) > 0) then
@@ -1372,6 +1392,39 @@ begin
 
 						if (unsigned(INTERP_NumFreeSlots) /= 0) then
 							INTERP_SetNewState <= '1';
+							mst_packet_state <= READ_NEXT_PACKET_FROM_FIFO;
+						end if;
+
+					when WRITE_BATCH_CONFIG_STATE =>
+						writeBatchAddr <= localIncomingPacket.payload0(ADDR_WIDTH_BITS-1 downto 0);
+						mst_packet_state <= READ_NEXT_PACKET_FROM_FIFO;
+
+					when WRITE_BATCH_DATA0_STATE =>
+						writeBatchDRAMLine(32*1-1 downto 32*0) <= localIncomingPacket.payload0;
+						writeBatchDRAMLine(32*2-1 downto 32*1) <= localIncomingPacket.payload1;
+						mst_packet_state <= READ_NEXT_PACKET_FROM_FIFO;
+
+					when WRITE_BATCH_DATA1_STATE =>
+						writeBatchDRAMLine(32*3-1 downto 32*2) <= localIncomingPacket.payload0;
+						writeBatchDRAMLine(32*4-1 downto 32*3) <= localIncomingPacket.payload1;
+						mst_packet_state <= READ_NEXT_PACKET_FROM_FIFO;
+
+					when WRITE_BATCH_DATA2_STATE =>
+						writeBatchDRAMLine(32*5-1 downto 32*4) <= localIncomingPacket.payload0;
+						writeBatchDRAMLine(32*6-1 downto 32*5) <= localIncomingPacket.payload1;
+						mst_packet_state <= READ_NEXT_PACKET_FROM_FIFO;
+
+					when WRITE_BATCH_DATA3_STATE =>
+						writeBatchDRAMLine(32*7-1 downto 32*6) <= localIncomingPacket.payload0;
+						writeBatchDRAMLine(32*8-1 downto 32*7) <= localIncomingPacket.payload1;
+						mst_packet_state <= WRITE_BATCH_WRITECOMMIT_STATE;
+
+					when WRITE_BATCH_WRITECOMMIT_STATE =>
+						if (CommandProcWriteRequestsFIFO_full = '0') then
+							CommandProcWriteRequestsFIFO_wr_data <= std_logic_vector(writeBatchAddr) & std_logic_vector(writeBatchDRAMLine) & "11111111";
+
+							CommandProcWriteRequestsFIFO_wr_en <= '1';
+							writeBatchAddr <= writeBatchAddr + 32;
 							mst_packet_state <= READ_NEXT_PACKET_FROM_FIFO;
 						end if;
 

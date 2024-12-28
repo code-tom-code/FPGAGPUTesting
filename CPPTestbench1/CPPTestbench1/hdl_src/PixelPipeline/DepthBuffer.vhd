@@ -114,20 +114,26 @@ architecture Behavioral of DepthBuffer is
 
 	-- Returns true if the pixel passed the depth test, or false if the pixel didn't pass the depth test
 	pure function DepthTest(depthFunc : eCmpFunc; testPixelValue : unsigned(23 downto 0); depthBufferCurrentValue : unsigned(23 downto 0) ) return boolean is
+		variable lessTest : boolean;
+		variable equalTest : boolean;
 	begin
+		-- We only need to perform two actual comparisons to be able to support the 8 possible comparison functions using combinations of just "less" and "equal":
+		lessTest := testPixelValue < depthBufferCurrentValue;
+		equalTest := testPixelValue = depthBufferCurrentValue;
+
 		case depthFunc is
 			when cmp_less =>
-				return testPixelValue < depthBufferCurrentValue;
+				return lessTest;
 			when cmp_equal =>
-				return testPixelValue = depthBufferCurrentValue;
+				return equalTest;
 			when cmp_lessequal =>
-				return testPixelValue <= depthBufferCurrentValue;
+				return lessTest or equalTest;
 			when cmp_greater =>
-				return testPixelValue > depthBufferCurrentValue;
+				return not (lessTest or equalTest);
 			when cmp_notequal =>
-				return testPixelValue /= depthBufferCurrentValue;
+				return not equalTest;
 			when cmp_greaterequal =>
-				return testPixelValue >= depthBufferCurrentValue;
+				return not lessTest;
 			when cmp_always =>
 				return true;
 			when others => -- when cmp_never =>

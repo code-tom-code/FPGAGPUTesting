@@ -529,7 +529,9 @@ static_assert(sizeof(rasterizedPixelData) == 12, "Error: Unexpected struct packi
 enum triCacheCommand : signed short
 {
 	startNewTriangleSlotCommand = (const signed short)0x8001,
-	finishCurrentTriangleCommand = (const signed short)0x8002
+	finishCurrentTriangleCommand = (const signed short)0x8002,
+	startNewDrawIDCommand = (const signed short)0x8004,
+	finishCurrentDrawIDCommand = (const signed short)0x8008
 };
 
 struct attributeInterpOutputData
@@ -594,7 +596,7 @@ struct texSampOutput
 	static const bool ColorChannelCloseEnough(const unsigned char a, const unsigned char b)
 	{
 		const int delta = (const int)a - (const int)b;
-		return abs(delta) <= 2;
+		return abs(delta) <= 3;
 	}
 
 	const bool operator==(const texSampOutput& rhs) const
@@ -639,5 +641,5 @@ triSetupResultType EmulateCPUTriSetup(const triSetupInput& inTriData, triSetupOu
 void EmulateCPURasterizer(const triSetupOutput& triSetupData, std::vector<rasterizedPixelData>& outRasterizedPixels);
 
 void EmulateDepthInterpCPU(const DepthInterpTriCache& depthInterpTriCache, const std::vector<rasterizedPixelData>& rasterizedPixels, std::vector<depthInterpOutputData>& outDepthInterpData, std::vector<unsigned>& outDebugDepthValues);
-void EmulateAttributeInterpCPU(const AttrInterpTriCache& attrTriCache, const std::vector<depthInterpOutputData>& depthInterpData, const bool validateNormalizedTexcoords, std::vector<attributeInterpOutputData>& outAttributeInterpData);
+void EmulateAttributeInterpCPU(const AttrInterpTriCache& attrTriCache, const std::vector<depthInterpOutputData>& depthInterpData, const bool validateNormalizedTexcoords, const bool validateNormalizedVertexColors, std::vector<attributeInterpOutputData>& outAttributeInterpData);
 void EmulateTexSamplerCPU(const std::vector<attributeInterpOutputData>& interpolatedData, std::vector<texSampOutput>& outTexSampData, const bool useBilinearInterp, const D3DSURFACE_DESC& texDesc, const D3DLOCKED_RECT& d3dlr);

@@ -60,6 +60,11 @@ package PacketType is
 		PT_SETVIEWPORTPARAMS1, -- 37
 		PT_SETSCISSORRECT, -- 38
 		PT_SETINTERPOLATORSTATE, -- 39
+		PT_WRITEMEMBATCHCONFIG, -- 40
+		PT_WRITEMEMBATCH0, -- 41
+		PT_WRITEMEMBATCH1, -- 42
+		PT_WRITEMEMBATCH2, -- 43
+		PT_WRITEMEMBATCH3WRITE, -- 44
 
 		PT_MAX_PACKET_TYPES -- Must always be last!
 	);
@@ -186,6 +191,12 @@ package PacketType is
 		eTexFmtR5G6B5, -- 3
 		eTexFmtA1R5G5B5, -- 4
 		eTexFmtX1R5G5B5, -- 5
+		eTexFmtX4R4G4B4, -- 6
+		eTexFmtA8, -- 7
+		eTexFmtL8, -- 8
+		eTexFmtDXT1, -- 9
+		eTexFmtDXT3, -- 10
+		eTexFmtDXT5, -- 11
 
 		eTexFmtNumFormats -- This must always be last!
 	);

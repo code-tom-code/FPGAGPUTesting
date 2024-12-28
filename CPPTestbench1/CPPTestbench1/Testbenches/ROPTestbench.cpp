@@ -1380,7 +1380,7 @@ const int RunTestsROP(Xsi::Loader& loader, RenderWindow* renderWindow)
 				EmulateDepthInterpCPU(depthInterpolatorTriCache, rasterizedPixels, emulatedCPUDepthInterpData, emulatedCPUDepthValues);
 
 				std::vector<attributeInterpOutputData> emulatedCPUAttributeInterpData;
-				EmulateAttributeInterpCPU(attrInterpolatorTriCache, emulatedCPUDepthInterpData, !randomAttributes, emulatedCPUAttributeInterpData);
+				EmulateAttributeInterpCPU(attrInterpolatorTriCache, emulatedCPUDepthInterpData, !randomAttributes, !randomAttributes, emulatedCPUAttributeInterpData);
 
 				std::vector<texSampOutput> emulatedCPUTexSampleData;
 				EmulateTexSamplerCPU(emulatedCPUAttributeInterpData, emulatedCPUTexSampleData, useBilinearInterp, texDesc, d3dlr);

@@ -44,14 +44,15 @@ entity EthernetController3 is
 		DEVICE_MAC_ADDRESS_OCTET_4 : std_logic_vector(7 downto 0) := X"78";
 		DEVICE_MAC_ADDRESS_OCTET_5 : std_logic_vector(7 downto 0) := X"F1";
 
-		-- This is the FPGA's static IP address (defaults to 192.168.1.170):
+		-- This is the FPGA's static IP address (defaults to 192.168.1.171):
 		DEVICE_IPv4_ADDRESS_OCTET_0 : std_logic_vector(7 downto 0) := X"C0";
 		DEVICE_IPv4_ADDRESS_OCTET_1 : std_logic_vector(7 downto 0) := X"A8";
 		DEVICE_IPv4_ADDRESS_OCTET_2 : std_logic_vector(7 downto 0) := X"01";
-		DEVICE_IPv4_ADDRESS_OCTET_3 : std_logic_vector(7 downto 0) := X"AA";
+		DEVICE_IPv4_ADDRESS_OCTET_3 : std_logic_vector(7 downto 0) := X"AB";
 
-		-- This is the UDP port number that the device uses to communicate:
-		UDP_PROTOCOL_PORT : positive range 1 to 65535 := 3128;
+		-- This is the UDP port numbers that the device uses to communicate:
+		UDP_PROTOCOL_PORT_D2H : positive range 1 to 65535 := 3128;
+		UDP_PROTOCOL_PORT_H2D : positive range 1 to 65535 := 3129;
 
 		-- How many DWORD's of storage are available in total in the recv packet data FIFO
 		RECV_PKT_DATA_DWORD_CAPACITY : positive range 1 to 65535 := 2048
@@ -163,6 +164,14 @@ entity EthernetController3 is
 		NETPKT_RecvReady : out STD_LOGIC := '0'; -- Set to '1' when we are ready to receive packets from the network, '0' otherwise.
 	-- End Misc. interfaces
 
+	-- Stat signals
+		STAT_CountSendUdpPackets : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		STAT_CountValidRecvUdpPackets : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		STAT_CountValidRecvArpPackets : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		STAT_CountInvalidRecvPackets : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		STAT_CountDroppedRecvPackets : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+	-- End Stat signals
+
 	-- Debug signals
 		DBG_EthConfig_State : out STD_LOGIC_VECTOR(4 downto 0) := (others => '0');
 		DBG_EthSend_State : out STD_LOGIC_VECTOR(4 downto 0) := (others => '0');
@@ -187,7 +196,14 @@ entity EthernetController3 is
 		DBG_RecvFIFOAvailableBytes : out STD_LOGIC_VECTOR(10 downto 0) := (others => '0');
 		DBG_RecvFIFOCount : out STD_LOGIC_VECTOR(10 downto 0) := (others => '0');
 		DBG_RecvFIFOCurrentPushDWORD : out STD_LOGIC_VECTOR(8 downto 0) := (others => '0');
-		DBG_RecvFIFOPktLengthDWORDs : out STD_LOGIC_VECTOR(11 downto 0) := (others => '0')
+		DBG_RecvFIFOPktLengthDWORDs : out STD_LOGIC_VECTOR(11 downto 0) := (others => '0');
+
+		DBG_SendPacketRemainingFIFOPumpBytes : out STD_LOGIC_VECTOR(1 downto 0) := (others => '0');
+		DBG_PacketSendPtr : out STD_LOGIC_VECTOR(11 downto 0) := (others => '0');
+		DBG_send_pkt_data_rd_en : out STD_LOGIC := '0';
+		DBG_SendPacketHeaderData : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		DBG_SendPacketBodyData : out STD_LOGIC_VECTOR(7 downto 0) := (others => '0');
+		DBG_SendUDPPacketCount : out STD_LOGIC_VECTOR(7 downto 0) := (others => '0')
 		);
 end EthernetController3;
 
@@ -318,7 +334,8 @@ end record;
 
 subtype PacketBytePointerType is natural range 0 to 2047;
 
-constant UDP_PROTOCOL_PORT_UNSIGNED : unsigned(15 downto 0) := to_unsigned(UDP_PROTOCOL_PORT, 16);
+constant UDP_PROTOCOL_PORT_D2H_UNSIGNED : unsigned(15 downto 0) := to_unsigned(UDP_PROTOCOL_PORT_D2H, 16);
+constant UDP_PROTOCOL_PORT_H2D_UNSIGNED : unsigned(15 downto 0) := to_unsigned(UDP_PROTOCOL_PORT_H2D, 16);
 
 type SendPacketDataArray is array(0 to 59) of unsigned(7 downto 0);
 
@@ -360,7 +377,7 @@ constant InitialSendPacket : SendPacketDataArray := (
 	26 => X"C0", -- Source IPv4 Address (first byte)
 	27 => X"A8", -- Source IPv4 Address (second byte)
 	28 => X"01", -- Source IPv4 Address (third byte)
-	29 => X"AA", -- Source IPv4 Address (fourth byte). Our source IP for the FPGA should always be 192.168.1.170 .
+	29 => X"AB", -- Source IPv4 Address (fourth byte). Our source IP for the FPGA should always be 192.168.1.171 .
 	30 => X"C0", -- Destination IPv4 Address (first byte)
 	31 => X"A8", -- Destination IPv4 Address (second byte)
 	32 => X"01", -- Destination IPv4 Address (third byte)
@@ -478,6 +495,7 @@ signal sendIPv4PacketIDCounter : unsigned(15 downto 0) := (others => '0');
 signal sendIPv4PacketChecksum : unsigned(15 downto 0) := (others => '0');
 signal send_valid : std_logic := '0'; -- Written to by the main send process, read from by the send address data loader process when high to indicate that send_type is now valid.
 signal send_type : SendPacketType := noSendType;
+signal sendPacketsCount : unsigned(7 downto 0) := (others => '0');
 
 -- Send packet header signals sourced from the output packet data FIFO:
 signal sendDestMACAddress : unsigned(6*8-1 downto 0) := X"44A842FC3C93";
@@ -537,6 +555,13 @@ signal recv_fifo_current_header : RecvPacketHeader := (pktLength => (others => '
 signal recv_fifo_pkt_length_DWORDs : unsigned(11 downto 0) := (others => '0');
 signal recv_fifo_current_push_DWORD : unsigned(8 downto 0) := (others => '0');
 
+-- Stats signals
+signal stat_count_send_udp_packets : unsigned(31 downto 0) := (others => '0');
+signal stat_count_valid_recv_udp_packets : unsigned(31 downto 0) := (others => '0');
+signal stat_count_valid_recv_arp_packets : unsigned(31 downto 0) := (others => '0');
+signal stat_count_invalid_recv_packets : unsigned(31 downto 0) := (others => '0');
+signal stat_count_dropped_recv_packets : unsigned(31 downto 0) := (others => '0');
+
 -- Tell the auto-FSM encoding optimizer not to touch our state enums so that we can use them for debugging!
 ATTRIBUTE FSM_ENCODING of currentState: SIGNAL is "user_encoding";
 ATTRIBUTE FSM_ENCODING of sendEthState: SIGNAL is "user_encoding";
@@ -548,6 +573,12 @@ begin
 
 recv_scratch_clka125 <= clk125;
 recv_scratch_clkb125 <= clk125;
+
+STAT_CountSendUdpPackets <= std_logic_vector(stat_count_send_udp_packets);
+STAT_CountValidRecvUdpPackets <= std_logic_vector(stat_count_valid_recv_udp_packets);
+STAT_CountValidRecvArpPackets <= std_logic_vector(stat_count_valid_recv_arp_packets);
+STAT_CountInvalidRecvPackets <= std_logic_vector(stat_count_invalid_recv_packets);
+STAT_CountDroppedRecvPackets <= std_logic_vector(stat_count_dropped_recv_packets);
 
 DBG_EthConfig_State <= std_logic_vector(to_unsigned(EthConfigStateType'pos(currentState), 5) );
 DBG_EthSend_State <= std_logic_vector(to_unsigned(EthStateType'pos(sendEthState), 5) );
@@ -570,6 +601,12 @@ DBG_RecvFIFOAvailableBytes <= std_logic_vector(CalcAvailableSpaceInRecvFIFO(unsi
 DBG_RecvFIFOCount <= recv_pkt_data_count;
 DBG_RecvFIFOCurrentPushDWORD <= std_logic_vector(recv_fifo_current_push_DWORD);
 DBG_RecvFIFOPktLengthDWORDs <= std_logic_vector(recv_fifo_pkt_length_DWORDs);
+
+DBG_SendPacketRemainingFIFOPumpBytes <= std_logic_vector(sendPacketRemainingFIFOPumpBytes);
+DBG_PacketSendPtr <= std_logic_vector(initialPacketSendPtr);
+DBG_SendPacketHeaderData <= send_pkt_header_rd_data;
+DBG_SendPacketBodyData <= send_pkt_data_rd_data;
+DBG_SendUDPPacketCount <= std_logic_vector(sendPacketsCount);
 
 	mainStateMachine: process(clk125)
 	begin
@@ -680,6 +717,7 @@ DBG_RecvFIFOPktLengthDWORDs <= std_logic_vector(recv_fifo_pkt_length_DWORDs);
 								sendDestMACAddress(15 downto 0) <= unsigned(send_pkt_header_rd_data(31 downto 16) );
 								send_pkt_header_rd_en <= '1';
 								send_fifo_pop_state <= popWaitCycle;
+								stat_count_send_udp_packets <= stat_count_send_udp_packets + 1;
 
 							when ARPReplyPacketSendType =>
 								sendARPReplyAck <= '1';
@@ -742,6 +780,7 @@ DBG_RecvFIFOPktLengthDWORDs <= std_logic_vector(recv_fifo_pkt_length_DWORDs);
 		if (rising_edge(clk125) ) then
 			tx_en <= '0';
 			send_pkt_data_rd_en <= '0';
+			DBG_send_pkt_data_rd_en <= '0';
 			case sendEthState is
 				when interPacketGapWait =>
 					if (sendIPGCyclesRemain /= 0) then
@@ -1176,17 +1215,17 @@ DBG_RecvFIFOPktLengthDWORDs <= std_logic_vector(recv_fifo_pkt_length_DWORDs);
 									tx_data <= std_logic_vector(sendDestIPv4Address(7 downto 0) );
 									sendRunningCRC32 <= EthernetCRC32(sendRunningCRC32, sendDestIPv4Address(7 downto 0) );
 								when 34 => -- UDP Source Port, high byte
-									tx_data <= std_logic_vector(UDP_PROTOCOL_PORT_UNSIGNED(15 downto 8) );
-									sendRunningCRC32 <= EthernetCRC32(sendRunningCRC32, UDP_PROTOCOL_PORT_UNSIGNED(15 downto 8) );
+									tx_data <= std_logic_vector(UDP_PROTOCOL_PORT_H2D_UNSIGNED(15 downto 8) );
+									sendRunningCRC32 <= EthernetCRC32(sendRunningCRC32, UDP_PROTOCOL_PORT_H2D_UNSIGNED(15 downto 8) );
 								when 35 => -- UDP Source Port, low byte
-									tx_data <= std_logic_vector(UDP_PROTOCOL_PORT_UNSIGNED(7 downto 0) );
-									sendRunningCRC32 <= EthernetCRC32(sendRunningCRC32, UDP_PROTOCOL_PORT_UNSIGNED(7 downto 0) );
+									tx_data <= std_logic_vector(UDP_PROTOCOL_PORT_H2D_UNSIGNED(7 downto 0) );
+									sendRunningCRC32 <= EthernetCRC32(sendRunningCRC32, UDP_PROTOCOL_PORT_H2D_UNSIGNED(7 downto 0) );
 								when 36 => -- UDP Dest Port, high byte
-									tx_data <= std_logic_vector(UDP_PROTOCOL_PORT_UNSIGNED(15 downto 8) );
-									sendRunningCRC32 <= EthernetCRC32(sendRunningCRC32, UDP_PROTOCOL_PORT_UNSIGNED(15 downto 8) );
+									tx_data <= std_logic_vector(UDP_PROTOCOL_PORT_D2H_UNSIGNED(15 downto 8) );
+									sendRunningCRC32 <= EthernetCRC32(sendRunningCRC32, UDP_PROTOCOL_PORT_D2H_UNSIGNED(15 downto 8) );
 								when 37 => -- UDP Dest Port, low byte
-									tx_data <= std_logic_vector(UDP_PROTOCOL_PORT_UNSIGNED(7 downto 0) );
-									sendRunningCRC32 <= EthernetCRC32(sendRunningCRC32, UDP_PROTOCOL_PORT_UNSIGNED(7 downto 0) );
+									tx_data <= std_logic_vector(UDP_PROTOCOL_PORT_D2H_UNSIGNED(7 downto 0) );
+									sendRunningCRC32 <= EthernetCRC32(sendRunningCRC32, UDP_PROTOCOL_PORT_D2H_UNSIGNED(7 downto 0) );
 								when 38 => -- UDP Packet Length, high byte
 									tx_data <= "0000" & std_logic_vector(sendPacketUDPLength(11 downto 8) );
 									sendRunningCRC32 <= EthernetCRC32(sendRunningCRC32, "0000" & sendPacketUDPLength(11 downto 8) );
@@ -1203,25 +1242,24 @@ DBG_RecvFIFOPktLengthDWORDs <= std_logic_vector(recv_fifo_pkt_length_DWORDs);
 									tx_data <= PAYLOAD_MAGIC_HEADER_BYTE;
 									sendRunningCRC32 <= EthernetCRC32(sendRunningCRC32, unsigned(PAYLOAD_MAGIC_HEADER_BYTE) );
 									send_pkt_data_rd_en <= '1';
-								when 43 to 59 => -- These bytes may need zero padding if our packet is too small
+									DBG_send_pkt_data_rd_en <= '1';
+								when others => -- These bytes may need zero padding if our packet is too small
 									if ( (initialPacketSendPtr - 43) < sendPacketPayloadLength) then
 										tx_data <= send_pkt_data_rd_data;
 										sendRunningCRC32 <= EthernetCRC32(sendRunningCRC32, unsigned(send_pkt_data_rd_data) );
-										send_pkt_data_rd_en <= '1';
+
+										-- Need to fix an issue where we're reading off of the send_pkt_data FIFO one too many times at the end of a data packet
+										if ( (initialPacketSendPtr - 43) < sendPacketPayloadLength - 1) then
+											send_pkt_data_rd_en <= '1';
+										else
+											send_pkt_data_rd_en <= '0';
+										end if;
+										DBG_send_pkt_data_rd_en <= '1';
 									else
 										tx_data <= X"00";
 										sendRunningCRC32 <= EthernetCRC32(sendRunningCRC32, X"00");
 										send_pkt_data_rd_en <= '0';
-									end if;
-								when others => -- Procedural padding data
-									if ( (initialPacketSendPtr - 43) < sendPacketPayloadLength) then
-										tx_data <= send_pkt_data_rd_data;
-										sendRunningCRC32 <= EthernetCRC32(sendRunningCRC32, unsigned(send_pkt_data_rd_data) );
-										send_pkt_data_rd_en <= '1';
-									else
-										tx_data <= X"00";
-										sendRunningCRC32 <= EthernetCRC32(sendRunningCRC32, X"00");
-										send_pkt_data_rd_en <= '0';
+										DBG_send_pkt_data_rd_en <= '0';
 									end if;
 							end case;
 
@@ -1234,6 +1272,11 @@ DBG_RecvFIFOPktLengthDWORDs <= std_logic_vector(recv_fifo_pkt_length_DWORDs);
 						initialPacketSendPtr <= initialPacketSendPtr + 1;
 					else
 						sendPacketFCSBytesRemain <= (others => '1');
+
+						if (send_type = normalUDPPacketSendType) then
+							sendPacketsCount <= sendPacketsCount + 1;
+						end if;
+
 						sendEthState <= FCSSequence;
 					end if;
 
@@ -1242,26 +1285,33 @@ DBG_RecvFIFOPktLengthDWORDs <= std_logic_vector(recv_fifo_pkt_length_DWORDs);
 					case sendPacketFCSBytesRemain is
 						when "00" =>
 							send_pkt_data_rd_en <= '0';
+							DBG_send_pkt_data_rd_en <= '0';
 							tx_data <= std_logic_vector(not (sendRunningCRC32(31 downto 24) ) );
 						when "01" =>
 							if (sendPacketRemainingFIFOPumpBytes >= 1) then
 								send_pkt_data_rd_en <= '1';
+								DBG_send_pkt_data_rd_en <= '1';
 							else
 								send_pkt_data_rd_en <= '0';
+								DBG_send_pkt_data_rd_en <= '0';
 							end if;
 							tx_data <= std_logic_vector(not (sendRunningCRC32(23 downto 16) ) );
 						when "10" =>
 							if (sendPacketRemainingFIFOPumpBytes >= 2) then
 								send_pkt_data_rd_en <= '1';
+								DBG_send_pkt_data_rd_en <= '1';
 							else
 								send_pkt_data_rd_en <= '0';
+								DBG_send_pkt_data_rd_en <= '0';
 							end if;
 							tx_data <= std_logic_vector(not (sendRunningCRC32(15 downto 8) ) );
 						when others => -- when "11" =>
 							if (sendPacketRemainingFIFOPumpBytes = 3) then
 								send_pkt_data_rd_en <= '1';
+								DBG_send_pkt_data_rd_en <= '1';
 							else
 								send_pkt_data_rd_en <= '0';
+								DBG_send_pkt_data_rd_en <= '0';
 							end if;
 							tx_data <= std_logic_vector(not (sendRunningCRC32(7 downto 0) ) );
 					end case;
@@ -1336,7 +1386,7 @@ DBG_RecvFIFOPktLengthDWORDs <= std_logic_vector(recv_fifo_pkt_length_DWORDs);
 					recvIPv4HeaderValid(5) <= '1';
 				end if;
 
-				recvUDPHeaderValid(0) <= ValidateRecvUDPPort(recvUDPPacketHeader, to_unsigned(UDP_PROTOCOL_PORT, 16) );
+				recvUDPHeaderValid(0) <= ValidateRecvUDPPort(recvUDPPacketHeader, to_unsigned(UDP_PROTOCOL_PORT_H2D, 16) );
 
 				recvPayloadHeaderValid(0) <= ValidateRecvPayloadMagicByte(recvPacketMagicByte);
 
@@ -1566,13 +1616,19 @@ DBG_RecvFIFOPktLengthDWORDs <= std_logic_vector(recv_fifo_pkt_length_DWORDs);
 							recv_store_MACAddr <= GetMACHeaderSourceAddress(recvMACPacketHeader);
 							recv_store_IPv4Addr <= GetIPv4HeaderSourceIPAddr(recvIPv4PacketHeader);
 							recv_store_PktLength <= GetUDPHeaderLength12b(recvUDPPacketHeader) - (8 + 1); -- Subtract off the UDP header size (8 bytes) and the magic byte size (1 byte) to get the logical packet size
+							stat_count_valid_recv_udp_packets <= stat_count_valid_recv_udp_packets + 1;
 							recv_valid <= '1';
 						elsif (recvARPHeaderValid = "1111111") then -- ARP packet:
 							recv_store_MACAddr <= GetMACHeaderSourceAddress(recvMACPacketHeader);
 							recvARPReply_SHA <= GetARPHeaderSenderMAC(recvUDPPacketHeader & recvIPv4PacketHeader);
 							recvARPReply_SPA <= HToNL(GetARPHeaderSenderIPv4(recvUDPPacketHeader & recvIPv4PacketHeader) );
+							stat_count_valid_recv_arp_packets <= stat_count_valid_recv_arp_packets + 1;
 							recvARPReplyValid <= '1';
+						else
+							stat_count_invalid_recv_packets <= stat_count_invalid_recv_packets + 1;
 						end if;
+					else
+						stat_count_invalid_recv_packets <= stat_count_invalid_recv_packets + 1;
 					end if;
 					recvEthState <= interPacketGapWait;
 			end case;
@@ -1608,6 +1664,7 @@ DBG_RecvFIFOPktLengthDWORDs <= std_logic_vector(recv_fifo_pkt_length_DWORDs);
 						else
 							-- Drop our packet since we don't have enough space in the FIFO's to store it!
 							-- Don't worry, the protocol is based on UDP and retransmits automatically. So if we don't have space now, we'll have space for it later.
+							stat_count_dropped_recv_packets <= stat_count_dropped_recv_packets + 1;
 						end if;
 					end if;
 

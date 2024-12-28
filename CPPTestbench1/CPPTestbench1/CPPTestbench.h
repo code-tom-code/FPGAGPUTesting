@@ -162,6 +162,8 @@ template <unsigned numBits> void FillLogicArrayWithBits(std_logic* const outVec,
 template <unsigned numBits> void FillLogicArrayWithBits(std_logic* const outVec, const uint8_t iVal) { return FillLogicArrayWithBits<numBits>(outVec, static_cast<const uint64_t>(iVal) ); }
 template <unsigned numBits> void FillLogicArrayWithBits(std_logic* const outVec, const float fVal) { return FillLogicArrayWithBits<numBits>(outVec, static_cast<const uint64_t>(*reinterpret_cast<const unsigned* const>(&fVal) ) ); }
 
+#include <vector>
+
 class port
 {
 public:

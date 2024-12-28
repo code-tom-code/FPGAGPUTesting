@@ -1,6 +1,7 @@
 #ifndef _XSI_LOADER_H_
 #define _XSI_LOADER_H_
 
+#include <stdint.h>
 #include "xsi.h"
 #include "xsi_shared_lib.h"
 

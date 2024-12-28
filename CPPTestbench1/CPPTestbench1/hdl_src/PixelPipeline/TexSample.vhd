@@ -69,7 +69,8 @@ entity TexSample is
 		DBG_TexSample_State : out STD_LOGIC_VECTOR(5 downto 0) := (others => '0');
 		DBG_TexCache_douta : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 		DBG_TexCache_dina : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-		DBG_TexCache_addra : out STD_LOGIC_VECTOR(13 downto 0) := (others => '0')
+		DBG_TexCache_addra : out STD_LOGIC_VECTOR(13 downto 0) := (others => '0');
+		DBG_texCacheReadTexelsCount : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0')
 		);
 end TexSample;
 
@@ -506,6 +507,7 @@ DBG_TexSample_State <= std_logic_vector(to_unsigned(texSampleStateType'pos(curre
 DBG_TexCache_douta <= TexCache_douta;
 DBG_TexCache_dina <= texCacheWriteData;
 DBG_TexCache_addra <= texCacheAddress;
+DBG_texCacheReadTexelsCount <= std_logic_vector(texCacheReadTexelsCount);
 
 	process(clk)
 	begin

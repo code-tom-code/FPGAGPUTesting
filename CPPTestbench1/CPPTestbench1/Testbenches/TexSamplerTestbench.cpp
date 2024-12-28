@@ -95,6 +95,12 @@ enum eTexFormat : unsigned char
 	eTexFmtR5G6B5 = 3,
 	eTexFmtA1R5G5B5 = 4,
 	eTexFmtX1R5G5B5 = 5,
+	eTexFmtX4R4G4B4 = 6,
+	eTexFmtA8 = 7,
+	eTexFmtL8 = 8,
+	eTexFmtDXT1 = 9,
+	eTexFmtDXT3 = 10,
+	eTexFmtDXT5 = 11,
 
 	eTexFmtNumFormats // This must always be last!
 };
@@ -102,14 +108,16 @@ enum eTexFormat : unsigned char
 struct sTexSamplerState // Currently 74 bits in total
 {
 	unsigned TextureBaseAddr : 30; // 29 : 0 // This could probably be a lot smaller due to minimum texture alignment but whatever
-	unsigned /*eTexFormat*/ TextureFormat : 3; // 32 : 30
+	unsigned /*eTexFormat*/ TextureFormat_Low2 : 2; // 31 : 30
+	unsigned /*eTexFormat*/ TextureFormat_High1 : 1; // 32 : 32
 	unsigned TextureWidthLog2 : 3; // 35 : 33
 	unsigned TextureHeightLog2 : 3; // 38 : 36
 	unsigned TotalTexelCount : 16; // 54 : 39
 	unsigned /*bool*/ UseBilinearFiltering : 1; // 55
 	unsigned /*combinerMode*/ ColorCombinerMode : 3; // 58 : 56
 	unsigned /*combinerMode*/ AlphaCombinerMode : 3; // 61 : 59
-	unsigned /*eTexChannelMUX*/ ChannelSwizzleR : 3; // 64 : 62
+	unsigned /*eTexChannelMUX*/ ChannelSwizzleR_Low2 : 2; // 63 : 62
+	unsigned /*eTexChannelMUX*/ ChannelSwizzleR_High1 : 1; // 64 : 64
 	unsigned /*eTexChannelMUX*/ ChannelSwizzleG : 3; // 67 : 65
 	unsigned /*eTexChannelMUX*/ ChannelSwizzleB : 3; // 70 : 68
 	unsigned /*eTexChannelMUX*/ ChannelSwizzleA : 3; // 73 : 71
@@ -141,7 +149,7 @@ const unsigned char GetLog2TexDimension(const unsigned short textureDimension)
 	}
 }
 
-const eTexFormat GetDeviceFormatFromD3DFormat(const D3DFORMAT texFmt)
+static const eTexFormat GetDeviceFormatFromD3DFormat(const D3DFORMAT texFmt)
 {
 	switch (texFmt)
 	{
@@ -159,6 +167,18 @@ const eTexFormat GetDeviceFormatFromD3DFormat(const D3DFORMAT texFmt)
 		return eTexFmtA1R5G5B5;
 	case D3DFMT_X1R5G5B5:
 		return eTexFmtX1R5G5B5;
+	case D3DFMT_X4R4G4B4:
+		return eTexFmtX4R4G4B4;
+	case D3DFMT_A8:
+		return eTexFmtA8;
+	case D3DFMT_L8:
+		return eTexFmtL8;
+	case D3DFMT_DXT1:
+		return eTexFmtDXT1;
+	case D3DFMT_DXT3:
+		return eTexFmtDXT3;
+	case D3DFMT_DXT5:
+		return eTexFmtDXT5;
 	}
 }
 
@@ -431,6 +451,7 @@ const int RunTestsTexSampler(Xsi::Loader& loader, RenderWindow* renderWindow)
 // Texture Sampler State Block interface begin
 	std_logic_vector_port<TEX_SAMPLER_STATE_SIZE_BITS> STATE_StateBitsAtDrawID(PD_IN, loader, "STATE_StateBitsAtDrawID");
 	std_logic_vector_port<16> STATE_NextDrawID(PD_IN, loader, "STATE_NextDrawID");
+	std_logic_port STATE_StateIsValid(PD_IN, loader, "STATE_StateIsValid");
 	std_logic_port STATE_ConsumeStateSlot(PD_OUT, loader, "STATE_ConsumeStateSlot");
 // Texture Sampler State Block interface end
 
@@ -457,10 +478,15 @@ const int RunTestsTexSampler(Xsi::Loader& loader, RenderWindow* renderWindow)
 	std_logic_vector_port<32> DBG_TexCache_douta(PD_OUT, loader, "DBG_TexCache_douta");
 	std_logic_vector_port<32> DBG_TexCache_dina(PD_OUT, loader, "DBG_TexCache_dina");
 	std_logic_vector_port<14> DBG_TexCache_addra(PD_OUT, loader, "DBG_TexCache_addra");
+	std_logic_vector_port<16> DBG_texCacheReadTexelsCount(PD_OUT, loader, "DBG_texCacheReadTexelsCount");
 
 	bool successResult = true;
 	DepthInterpTriCache depthInterpolatorTriCache;
 	AttrInterpTriCache attrInterpolatorTriCache;
+
+	std::vector<texSampleStateType> texSampleStateHistory;
+
+	unsigned short currentDrawID = 0;
 
 	LPDIRECT3DTEXTURE9 gridTexture128x128 = NULL;
 	if (FAILED(D3DXCreateTextureFromFileExA(renderWindow->GetD3D9Dev(), /*"TestGrid.png"*/"RedGreenGradient128x128.png", D3DX_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, D3DFMT_X8R8G8B8, D3DPOOL_MANAGED, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &gridTexture128x128) ) || !gridTexture128x128)
@@ -484,19 +510,22 @@ const int RunTestsTexSampler(Xsi::Loader& loader, RenderWindow* renderWindow)
 
 		sTexSamplerState defaultZeroState;
 		defaultZeroState.TextureBaseAddr = 0x00000000;
-		defaultZeroState.TextureFormat = eTexFmtA8R8G8B8;
+		defaultZeroState.TextureFormat_Low2 = eTexFmtA8R8G8B8 & 0x3;
+		defaultZeroState.TextureFormat_High1 = (eTexFmtA8R8G8B8 >> 2) & 0x1;
 		defaultZeroState.TextureWidthLog2 = 6; // 64x64
 		defaultZeroState.TextureHeightLog2 = 6; // 64x64
 		defaultZeroState.UseBilinearFiltering = true;
 		defaultZeroState.ColorCombinerMode = cbm_textureModulateVertexColor;
 		defaultZeroState.AlphaCombinerMode = cbm_textureModulateVertexColor;
 		defaultZeroState.TotalTexelCount = 0;
-		defaultZeroState.ChannelSwizzleR = tcm_r;
+		defaultZeroState.ChannelSwizzleR_Low2 = tcm_r & 0x3;
+		defaultZeroState.ChannelSwizzleR_High1 = (tcm_r >> 2) & 0x1;
 		defaultZeroState.ChannelSwizzleG = tcm_g;
 		defaultZeroState.ChannelSwizzleB = tcm_b;
 		defaultZeroState.ChannelSwizzleA = tcm_a;
 
 		STATE_StateBitsAtDrawID.SetToByteMemory(&defaultZeroState);
+		STATE_StateIsValid = false;
 
 		STATE_NextDrawID = (const uint16_t)0u;
 	}
@@ -557,12 +586,24 @@ const int RunTestsTexSampler(Xsi::Loader& loader, RenderWindow* renderWindow)
 		}
 	};
 
+	auto updateStateBlock = [&]()
+	{
+		if (STATE_ConsumeStateSlot.GetBoolVal() )
+		{
+			STATE_StateIsValid = false;
+		}
+	};
+
 	auto updateTextureCache = [&]()
 	{
 		static const unsigned NUM_TEXCACHE_PIPE_STAGES = 2;
 		static textureCachePipelineState pipeStates[NUM_TEXCACHE_PIPE_STAGES + 1];
 		if (TexCache_ena.GetBoolVal() )
 		{
+#ifdef _DEBUG
+			const texSampleStateType textureState = (const texSampleStateType)DBG_TexSample_State.GetUint8Val();
+#endif
+
 			for (unsigned x = 0; x < NUM_TEXCACHE_PIPE_STAGES; ++x)
 			{
 				pipeStates[x] = pipeStates[x + 1];
@@ -615,6 +656,12 @@ const int RunTestsTexSampler(Xsi::Loader& loader, RenderWindow* renderWindow)
 		while (CMD_TexSampleIsIdle.GetBoolVal() == false)
 		{
 			scoped_timestep time(loader, clk, 100);
+			//texSampleStateHistory.push_back((const texSampleStateType)DBG_TexSample_State.GetUint8Val() );
+			updateMemoryController();
+			updateTextureCache();
+			updateStateBlock();
+			UpdateInputFIFO(emptyVector, INTERP_InFIFO_rd_data, INTERP_InFIFO_empty, INTERP_InFIFO_rd_en);
+			UpdateOutputFIFO(outTexSampData, ROP_OutFIFO_wr_data, ROP_OutFIFO_full, ROP_OutFIFO_wr_en);
 		}
 
 		// Configure texture state:
@@ -625,55 +672,69 @@ const int RunTestsTexSampler(Xsi::Loader& loader, RenderWindow* renderWindow)
 		sTexSamplerState newTexSamplerState;
 		newTexSamplerState.TextureBaseAddr = ( ( (const unsigned)(d3dlr.pBits) ) & 0x3FFFFFFF);
 		newTexSamplerState.TotalTexelCount = texDesc.Width * texDesc.Height;
-		newTexSamplerState.TextureFormat = deviceTexFormat;
+		newTexSamplerState.TextureFormat_Low2 = deviceTexFormat & 0x3;
+		newTexSamplerState.TextureFormat_High1 = (deviceTexFormat >> 2) & 0x1;
 		newTexSamplerState.TextureWidthLog2 = log2width;
 		newTexSamplerState.TextureHeightLog2 = log2height;
 		newTexSamplerState.UseBilinearFiltering = useBilinearInterp;
 		newTexSamplerState.ColorCombinerMode = cbm_textureModulateVertexColor;
 		newTexSamplerState.AlphaCombinerMode = cbm_textureModulateVertexColor;
-		newTexSamplerState.ChannelSwizzleR = tcm_b; // Swizzle BGRA to RGBA
+		newTexSamplerState.ChannelSwizzleR_Low2 = tcm_b & 0x3; // Swizzle BGRA to RGBA
+		newTexSamplerState.ChannelSwizzleR_High1 = (tcm_b >> 2) & 0x1;
 		newTexSamplerState.ChannelSwizzleG = tcm_g;
 		newTexSamplerState.ChannelSwizzleB = tcm_r;
 		newTexSamplerState.ChannelSwizzleA = tcm_a;
 
 		STATE_StateBitsAtDrawID.SetToByteMemory(&newTexSamplerState);
-		STATE_NextDrawID = (const uint16_t)1u;
+		STATE_NextDrawID = currentDrawID;
+		STATE_StateIsValid = true;
 
 		{
 			scoped_timestep time(loader, clk, 100);
+			//texSampleStateHistory.push_back((const texSampleStateType)DBG_TexSample_State.GetUint8Val() );
+			updateMemoryController();
+			updateTextureCache();
+			updateStateBlock();
+			UpdateInputFIFO(emptyVector, INTERP_InFIFO_rd_data, INTERP_InFIFO_empty, INTERP_InFIFO_rd_en);
+			UpdateOutputFIFO(outTexSampData, ROP_OutFIFO_wr_data, ROP_OutFIFO_full, ROP_OutFIFO_wr_en);
 		}
 		while (CMD_TexSampleIsIdle.GetBoolVal() == false) // Wait for idle again
 		{
 			scoped_timestep time(loader, clk, 100);
+			texSampleStateType currentState = (const texSampleStateType)DBG_TexSample_State.GetUint8Val();
+			//texSampleStateHistory.push_back((const texSampleStateType)DBG_TexSample_State.GetUint8Val() );
+			updateMemoryController();
+			updateTextureCache();
+			updateStateBlock();
+			UpdateInputFIFO(emptyVector, INTERP_InFIFO_rd_data, INTERP_InFIFO_empty, INTERP_InFIFO_rd_en);
+			UpdateOutputFIFO(outTexSampData, ROP_OutFIFO_wr_data, ROP_OutFIFO_full, ROP_OutFIFO_wr_en);
 		}
 
 		while (CMD_TexSampleIsIdle.GetBoolVal() == false) // Wait for the texture cache to fill up
 		{
 			scoped_timestep time(loader, clk, 100);
+			//texSampleStateHistory.push_back((const texSampleStateType)DBG_TexSample_State.GetUint8Val() );
 			updateMemoryController();
 			updateTextureCache();
+			updateStateBlock();
 			UpdateInputFIFO(emptyVector, INTERP_InFIFO_rd_data, INTERP_InFIFO_empty, INTERP_InFIFO_rd_en);
 			UpdateOutputFIFO(outTexSampData, ROP_OutFIFO_wr_data, ROP_OutFIFO_full, ROP_OutFIFO_wr_en);
 		}
-
-		bool hasValidatedTextureCache = false;
 
 		while (!localInterpData.empty() || CMD_TexSampleIsIdle.GetBoolVal() == false)
 		{
 			const attributeInterpOutputData& thisPixelData = localInterpData.empty() ? attributeInterpOutputData() : localInterpData.front();
 
 			scoped_timestep time(loader, clk, 100);
+			//texSampleStateHistory.push_back((const texSampleStateType)DBG_TexSample_State.GetUint8Val() );
 			updateMemoryController();
 			updateTextureCache();
+			updateStateBlock();
 			UpdateInputFIFO(localInterpData, INTERP_InFIFO_rd_data, INTERP_InFIFO_empty, INTERP_InFIFO_rd_en);
 			UpdateOutputFIFO(outTexSampData, ROP_OutFIFO_wr_data, ROP_OutFIFO_full, ROP_OutFIFO_wr_en);
-
-			if (!hasValidatedTextureCache && ROP_OutFIFO_wr_en.GetBoolVal() == true)
-			{
-				ValidateTextureCache();
-				hasValidatedTextureCache = true;
-			}
 		}
+
+		ValidateTextureCache();
 
 		if (!memResponses.empty() )
 		{
@@ -705,18 +766,33 @@ const int RunTestsTexSampler(Xsi::Loader& loader, RenderWindow* renderWindow)
 
 			if (!(emulatedCPUPixel == simulatedRTLPixel) )
 			{
-				__debugbreak();
-				return false;
+				if (IsSpecialCodePixel(emulatedCPUPixel.pixelX) )
+				{
+					if (emulatedCPUPixel.pixelX != simulatedRTLPixel.pixelX ||
+						emulatedCPUPixel.pixelY != simulatedRTLPixel.pixelY)
+					{
+						__debugbreak();
+						return false;
+					}
+				}
+				else
+				{
+					__debugbreak();
+					return false;
+				}
 			}
 
 			// Check for out of range pixel coords:
-			if (simulatedRTLPixel.pixelX < 0 ||
-				simulatedRTLPixel.pixelY < 0 ||
-				simulatedRTLPixel.pixelX > 639 ||
-				simulatedRTLPixel.pixelY > 479)
+			if (!IsSpecialCodePixel(simulatedRTLPixel.pixelX) )
 			{
-				__debugbreak();
-				return false;
+				if (simulatedRTLPixel.pixelX < 0 ||
+					simulatedRTLPixel.pixelY < 0 ||
+					simulatedRTLPixel.pixelX > 639 ||
+					simulatedRTLPixel.pixelY > 479)
+				{
+					__debugbreak();
+					return false;
+				}
 			}
 		}
 
@@ -732,6 +808,7 @@ const int RunTestsTexSampler(Xsi::Loader& loader, RenderWindow* renderWindow)
 		setTexture->LockRect(0, &d3dlr, NULL, D3DLOCK_READONLY);
 		currentTexWidth = texDesc.Width;
 		currentTexHeight = texDesc.Height;
+		bool startedNewDrawCall = false;
 		for (unsigned x = 0; x < numPrims; ++x)
 		{
 			triSetupInput primTriData; 
@@ -862,6 +939,16 @@ const int RunTestsTexSampler(Xsi::Loader& loader, RenderWindow* renderWindow)
 				newAttrTriData.RGBA20.a = triSetupData.v20.rgba.a;
 				attrInterpolatorTriCache.dataFifo.push_back(newAttrTriData);
 
+				if (!startedNewDrawCall)
+				{
+					rasterizedPixelData startNewDrawMessage = {0};
+					startNewDrawMessage.pixelX = startNewDrawIDCommand;
+					startNewDrawMessage.pixelY = ++currentDrawID;
+					rasterizedPixels.push_back(startNewDrawMessage);
+
+					startedNewDrawCall = true;
+				}
+
 				rasterizedPixelData startNewTriMessage = {0};
 				startNewTriMessage.pixelX = startNewTriangleSlotCommand;
 				startNewTriMessage.pixelY = (currentTriCacheIndex) % 8;
@@ -879,7 +966,7 @@ const int RunTestsTexSampler(Xsi::Loader& loader, RenderWindow* renderWindow)
 				EmulateDepthInterpCPU(depthInterpolatorTriCache, rasterizedPixels, emulatedCPUDepthInterpData, emulatedCPUDepthValues);
 
 				std::vector<attributeInterpOutputData> emulatedCPUAttributeInterpData;
-				EmulateAttributeInterpCPU(attrInterpolatorTriCache, emulatedCPUDepthInterpData, !randomAttributes, emulatedCPUAttributeInterpData);
+				EmulateAttributeInterpCPU(attrInterpolatorTriCache, emulatedCPUDepthInterpData, !randomAttributes, !randomAttributes, emulatedCPUAttributeInterpData);
 
 				successResult &= runTexSamplerTest(emulatedCPUAttributeInterpData, useBilinearInterp, texDesc, d3dlr);
 			}

@@ -1,3 +1,18 @@
+-- StateBlock
+--
+-- This is the shared state block logic that is used for saving asynchronous GPU state for each
+-- different part of the graphics pipeline. The Command Processor (CMD) is responsible for setting
+-- the state data, which is then consumed by the graphics pipeline block when a specific DrawID is reached.
+-- DrawID's are 16-bit monotonically-increasing values (that wrap around at 65535) and the intention is that
+-- each new Draw/DrawIndexed/Clear call will increment that value by 1.
+-- The graphics blocks are meant to apply the specific state *before* running the draw call with the given ID.
+-- There are only four slots to which state block state can be queued before the command processor must halt
+-- and wait for another slot to free up, but this should be more than sufficient to enable parallel execution
+-- of the command processor and the various parts of the graphics pipeline even while cycling through the 4
+-- queued states.
+-- 
+
+
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 

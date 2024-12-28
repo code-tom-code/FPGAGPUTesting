@@ -70,7 +70,7 @@ const unsigned short ConvertFloatToUNORM16(const float fVal)
 	return (const unsigned short)(frcF * 65535.0f);
 }
 
-void EmulateAttributeInterpCPU(const AttrInterpTriCache& attrTriCache, const std::vector<depthInterpOutputData>& depthInterpData, const bool validateNormalizedTexcoords, std::vector<attributeInterpOutputData>& outAttributeInterpData)
+void EmulateAttributeInterpCPU(const AttrInterpTriCache& attrTriCache, const std::vector<depthInterpOutputData>& depthInterpData, const bool validateNormalizedTexcoords, const bool validateNormalizedVertexColors, std::vector<attributeInterpOutputData>& outAttributeInterpData)
 {
 	AttrInterpTriCache attrTriCacheLocalCopy = attrTriCache;
 
@@ -109,8 +109,17 @@ void EmulateAttributeInterpCPU(const AttrInterpTriCache& attrTriCache, const std
 			{
 				attrTriCacheLocalCopy.dataFifo.erase(attrTriCacheLocalCopy.dataFifo.begin() );
 			}
+			else if (thisPixelData.pixelX == startNewDrawIDCommand || thisPixelData.pixelX == finishCurrentDrawIDCommand)
+			{
+				attributeInterpOutputData newDrawIDCommand;
+				newDrawIDCommand.pixelX = thisPixelData.pixelX;
+				newDrawIDCommand.pixelY = thisPixelData.pixelY;
+				newDrawIDCommand.texcoordX = 0x0000;
+				newDrawIDCommand.texcoordY = 0x0000;
+				newDrawIDCommand.vertexColorRGBA = 0x00000000;
+				outAttributeInterpData.push_back(newDrawIDCommand);
+			}
 
-			// Don't pass these messages along to the next stage since subsequent stages just ignore these messages anyway
 			continue;
 		}
 
@@ -152,22 +161,25 @@ void EmulateAttributeInterpCPU(const AttrInterpTriCache& attrTriCache, const std
 		const D3DXVECTOR4 dotProdVertColor = vcSum10 + vcSum20 + vc0divW;
 
 		const D3DXVECTOR4 interpolatedVertColor = dotProdVertColor * thisPixelData.interpolatedPixelW;
-		// Add a tiny epsilon to account for occasional floating point imprecision causing the attribute interpolation to go very slightly out of bounds:
-		if (interpolatedVertColor.x < -0.00000025f || interpolatedVertColor.x > 1.00000025f)
+		if (validateNormalizedVertexColors)
 		{
-			__debugbreak();
-		}
-		if (interpolatedVertColor.y < -0.00000025f || interpolatedVertColor.y > 1.00000025f)
-		{
-			__debugbreak();
-		}
-		if (interpolatedVertColor.z < -0.00000025f || interpolatedVertColor.z > 1.00000025f)
-		{
-			__debugbreak();
-		}
-		if (interpolatedVertColor.w < -0.00000025f || interpolatedVertColor.w > 1.00000025f)
-		{
-			__debugbreak();
+			// Add a tiny epsilon to account for occasional floating point imprecision causing the attribute interpolation to go very slightly out of bounds:
+			if (interpolatedVertColor.x < -0.00000025f || interpolatedVertColor.x > 1.00000025f)
+			{
+				__debugbreak();
+			}
+			if (interpolatedVertColor.y < -0.00000025f || interpolatedVertColor.y > 1.00000025f)
+			{
+				__debugbreak();
+			}
+			if (interpolatedVertColor.z < -0.00000025f || interpolatedVertColor.z > 1.00000025f)
+			{
+				__debugbreak();
+			}
+			if (interpolatedVertColor.w < -0.00000025f || interpolatedVertColor.w > 1.00000025f)
+			{
+				__debugbreak();
+			}
 		}
 
 		attributeInterpOutputData outInterpolatedData;
@@ -587,7 +599,7 @@ const int RunTestsAttributeInterp(Xsi::Loader& loader)
 
 		totalPixelCount += CountPixelsNotIncludingSpecials(emulatedCPUDepthInterpData);
 
-		EmulateAttributeInterpCPU(triCache, emulatedCPUDepthInterpData, !randomAttributes, emulatedCPUAttributeInterpData);
+		EmulateAttributeInterpCPU(triCache, emulatedCPUDepthInterpData, !randomAttributes, !randomAttributes, emulatedCPUAttributeInterpData);
 		simulateRTLAttributeInterp(emulatedCPUDepthInterpData, simulatedRTLAttrInterpData);
 
 		successResult &= validateAttributeInterpTest(!randomAttributes, emulatedCPUAttributeInterpData, simulatedRTLAttrInterpData);

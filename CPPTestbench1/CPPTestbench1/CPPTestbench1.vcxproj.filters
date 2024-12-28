@@ -46,6 +46,9 @@
     <Filter Include="HDL\VertexPipeline\Clipping">
       <UniqueIdentifier>{0bfdf831-34ad-441a-a053-a44e71a9a485}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Lua Files">
+      <UniqueIdentifier>{54f1127b-3755-4bf7-99db-bfa574ab6477}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CPPTestbench1.cpp">
@@ -112,6 +115,9 @@
       <Filter>Source Files\Testbenches</Filter>
     </ClCompile>
     <ClCompile Include="Testbenches\FloatALU_InterpolatorTestbench.cpp">
+      <Filter>Source Files\Testbenches</Filter>
+    </ClCompile>
+    <ClCompile Include="Testbenches\TexDecompressTestbench.cpp">
       <Filter>Source Files\Testbenches</Filter>
     </ClCompile>
   </ItemGroup>
@@ -198,6 +204,9 @@
       <Filter>Header Files\Testbenches</Filter>
     </ClInclude>
     <ClInclude Include="Testbenches\FloatALU_InterpolatorTestbench.h">
+      <Filter>Header Files\Testbenches</Filter>
+    </ClInclude>
+    <ClInclude Include="Testbenches\TexDecompressTestbench.h">
       <Filter>Header Files\Testbenches</Filter>
     </ClInclude>
   </ItemGroup>
@@ -474,6 +483,27 @@
     </None>
     <None Include="hdl_src\FloatALU\FloatALU_RSQ.vhd">
       <Filter>HDL\FloatALU</Filter>
+    </None>
+    <None Include="FPGA_RUDP_Dissector.lua">
+      <Filter>Source Files\Lua Files</Filter>
+    </None>
+    <None Include="hdl_src\TexDecompress2.vhd">
+      <Filter>HDL</Filter>
+    </None>
+    <None Include="TexDecompress2.prj">
+      <Filter>Resource Files\Project Files</Filter>
+    </None>
+    <None Include="hdl_src\TestTexCache.vhd">
+      <Filter>HDL</Filter>
+    </None>
+    <None Include="hdl_src\TexAddress.vhd">
+      <Filter>HDL</Filter>
+    </None>
+    <None Include="hdl_src\TexFiltering.vhd">
+      <Filter>HDL</Filter>
+    </None>
+    <None Include="hdl_src\RGBA_Interpolator.vhd">
+      <Filter>HDL</Filter>
     </None>
   </ItemGroup>
 </Project>

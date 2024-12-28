@@ -50,7 +50,8 @@ entity NetProtoPacketProcessor is
 	-- Command Processor FIFO's
 		-- Valid packets FIFO inputs to the Command Processor from the host:
         validPacketsFIFO_wr_data : out STD_LOGIC_VECTOR(PACKET_SIZE_IN_BYTES*8-1 downto 0) := (others => '0');
-        validPacketsFIFO_full : in STD_LOGIC;
+		validPacketsFIFO_full : in STD_LOGIC;
+        validPacketsFIFO_prog_full : in STD_LOGIC; -- This signal is asserted when there's not enough room in the ValidPacketsFIFO to store a full packet (with max-size SubpacketCount)
         validPacketsFIFO_wr_en : out STD_LOGIC := '0';
 
 		-- Return packet FIFO outputs from the Command Processor to the host:
@@ -74,6 +75,13 @@ entity NetProtoPacketProcessor is
 		sendBRAM_enb : out STD_LOGIC := '0';
 	-- End BRAM interface for send-RAM
 
+	-- Stat signals
+		STAT_SendSessionPackets : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		STAT_RecvSessionPacketsValid : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		STAT_RecvSessionPacketsInvalid : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		STAT_RecvSessionPacketsDropped : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+	-- End Stat signals
+
 	-- Debug signals
 		DBG_NetPkt_State : out STD_LOGIC_VECTOR(4 downto 0) := (others => '0');
 		DBG_SendFIFOState : out STD_LOGIC_VECTOR(4 downto 0) := (others => '0');
@@ -87,17 +95,20 @@ entity NetProtoPacketProcessor is
 		DBG_recvPacketData : out STD_LOGIC_VECTOR(8*8-1 downto 0) := (others => '0');
 		DBG_recvCurrentSubpacketOffset : out STD_LOGIC_VECTOR(3 downto 0) := (others => '0');
 		DBG_recvCurrentSubpacket : out STD_LOGIC_VECTOR(8*9-1 downto 0) := (others => '0');
+		DBG_recvValid_Session : out STD_LOGIC_VECTOR(3 downto 0) := (others => '0');
 		DBG_recvHeaderChecksum : out STD_LOGIC_VECTOR(7 downto 0) := (others => '0');
 		DBG_discardPacketReason : out STD_LOGIC_VECTOR(3 downto 0) := (others => '0');
 		DBG_sendLastAckedPacketID : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
 		DBG_recvLastSendAckedPacketID : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
 		DBG_recvLastAckedPacketID : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
-		DBG_sendCyclesBetweenAutoResends : out STD_LOGIC_VECTOR(23 downto 0) := (others => '0');
+		DBG_sendCyclesBetweenAutoResends : out STD_LOGIC_VECTOR(27 downto 0) := (others => '0');
 		DBG_recvCurrentSubpacketIndex : out STD_LOGIC_VECTOR(7 downto 0) := (others => '0');
 		DBG_recvCurrentPacketLength : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
 		DBG_returnPacketsFIFO_empty : out STD_LOGIC := '0';
 		DBG_returnPacketsFIFO_rd_en : out STD_LOGIC := '0';
-		DBG_returnPacketsFIFO_rd_data : out STD_LOGIC_VECTOR(PACKET_SIZE_IN_BYTES*8-1 downto 0) := (others => '0')
+		DBG_returnPacketsFIFO_rd_data : out STD_LOGIC_VECTOR(PACKET_SIZE_IN_BYTES*8-1 downto 0) := (others => '0');
+		DBG_sendHasUnackedSentPacket : out STD_LOGIC := '0';
+		DBG_send_pkt_header_prog_full : out STD_LOGIC := '0'
 		);
 end NetProtoPacketProcessor;
 
@@ -108,7 +119,7 @@ ATTRIBUTE X_INTERFACE_PARAMETER : STRING;
 ATTRIBUTE FSM_ENCODING : STRING;
 
 ATTRIBUTE X_INTERFACE_INFO of clk333_250: SIGNAL is "xilinx.com:signal:clock:1.0 clk333_250 CLK";
-ATTRIBUTE X_INTERFACE_PARAMETER of clk333_250: SIGNAL is "FREQ_HZ 333333333"; -- Remember to change this back when we use a real 333.250MHz clock in the actual design
+ATTRIBUTE X_INTERFACE_PARAMETER of clk333_250: SIGNAL is "FREQ_HZ 333250000";
 
 ATTRIBUTE X_INTERFACE_INFO of recv_pkt_header_rd_data: SIGNAL is "xilinx.com:interface:fifo_read:1.0 recv_pkt_header RD_DATA";
 ATTRIBUTE X_INTERFACE_INFO of recv_pkt_header_rd_en: SIGNAL is "xilinx.com:interface:fifo_read:1.0 recv_pkt_header RD_EN";
@@ -127,6 +138,7 @@ ATTRIBUTE X_INTERFACE_INFO of send_pkt_data_wr_en: SIGNAL is "xilinx.com:interfa
 ATTRIBUTE X_INTERFACE_INFO of validPacketsFIFO_wr_data: SIGNAL is "xilinx.com:interface:fifo_write:1.0 validPacketsFIFO WR_DATA";
 ATTRIBUTE X_INTERFACE_INFO of validPacketsFIFO_wr_en: SIGNAL is "xilinx.com:interface:fifo_write:1.0 validPacketsFIFO WR_EN";
 ATTRIBUTE X_INTERFACE_INFO of validPacketsFIFO_full: SIGNAL is "xilinx.com:interface:fifo_write:1.0 validPacketsFIFO FULL";
+ATTRIBUTE X_INTERFACE_INFO of validPacketsFIFO_prog_full: SIGNAL is "xilinx.com:interface:fifo_write:1.0 validPacketsFIFO ALMOST_FULL";
 
 ATTRIBUTE X_INTERFACE_INFO of returnPacketsFIFO_rd_data: SIGNAL is "xilinx.com:interface:fifo_read:1.0 returnPacketsFIFO RD_DATA";
 ATTRIBUTE X_INTERFACE_INFO of returnPacketsFIFO_rd_en: SIGNAL is "xilinx.com:interface:fifo_read:1.0 returnPacketsFIFO RD_EN";
@@ -143,13 +155,15 @@ ATTRIBUTE X_INTERFACE_INFO of sendBRAM_doutb: SIGNAL is "xilinx.com:interface:br
 ATTRIBUTE X_INTERFACE_INFO of sendBRAM_enb: SIGNAL is "xilinx.com:interface:bram:1.0 SendPacketBRAMR EN";
 
 constant AUTO_RESEND_TIME_CYCLES : positive := 333250; -- At a frequency of 333.250MHz, this is exactly 1000 microseconds, in cycles
+--constant AUTO_RESEND_TIME_CYCLES : positive := 33325000; -- At a frequency of 333.250MHz, this is exactly 100 milliseconds, in cycles
 
 type NetPktStateType is 
 (
 	init, -- 0
 	waitForNetSystemReady, -- 1
 	unconnectedSendingNonSessionBroadcasts, -- 2
-	sessionConnectedReady -- 3
+	sessionConnectedReady, -- 3
+	sessionIsResetting -- 4
 );
 
 type SessionConnectRequestReplyStatus is
@@ -184,7 +198,8 @@ type SendState is
 	sendPacketFromBRAMStateB8, -- 5
 	sendCopyPacketToBRAMStateB0, -- 6
 	sendCopyPacketToBRAMStateB4, -- 7
-	sendCopyPacketToBRAMStateB8 -- 8
+	sendCopyPacketToBRAMStateB8, -- 8
+	sendSafeToResetSession -- 9
 );
 
 type RecvParseSessionPacket is
@@ -195,7 +210,7 @@ type RecvParseSessionPacket is
 	recvParseSessionDWORD2, -- 3 -- The third DWORD contains the 4 bytes of the host's IPv4 address
 	recvParseSessionRemainingData, -- 4
 	recvParseSessionPushNewSubpacket, -- 5
-	recvParseSessionDiscardBadPacket -- 6
+	recvParseSessionSafeToReset -- 6 -- It is now safe to reset our session
 );
 
 type SessionState is record
@@ -350,11 +365,11 @@ begin
 	retPacket.deviceMACAddress(5*8-1 downto 4*8) := to_unsigned(16#78#, 8);
 	retPacket.deviceMACAddress(6*8-1 downto 5*8) := to_unsigned(16#F1#, 8);
 
-	-- Device's IP address: 192.168.1.170
+	-- Device's IP address: 192.168.1.171
 	retPacket.deviceIPv4Address(1*8-1 downto 0*8) := to_unsigned(192, 8); -- TODO: Don't hardcode this
 	retPacket.deviceIPv4Address(2*8-1 downto 1*8) := to_unsigned(168, 8);
 	retPacket.deviceIPv4Address(3*8-1 downto 2*8) := to_unsigned(1, 8);
-	retPacket.deviceIPv4Address(4*8-1 downto 3*8) := to_unsigned(170, 8);
+	retPacket.deviceIPv4Address(4*8-1 downto 3*8) := to_unsigned(171, 8);
 
 	retPacket.numBroadcastsSinceReset := broadcastsSinceReset;
 
@@ -492,24 +507,26 @@ begin
 	end case;
 end function;
 
-pure function ExpandSubPacketToFullPacket(inSubpacket : unsigned(8*9-1 downto 0) ) return unsigned is
+-- Expand the "shrunk" subpacket size (9 bytes) to the "fully expanded" subpacket size (11 bytes) by appending the correct "magic" byte and a fake subpacket checksum byte:
+pure function ExpandSubPacketToFullPacket(inSubpacket : unsigned(8*SIMPLIFIED_PACKET_SIZE_IN_BYTES-1 downto 0) ) return unsigned is
 begin
 	return inSubpacket & -- Rest of our packet goes here.
 		X"00" & -- Zero the checksum. The Command Processor doesn't use this and trusts that it's been checked already by the packet system.
 		to_unsigned(MAGIC_PACKET_BYTE_VALUE, 8); -- Magic byte is always 'C'
 end function;
 
+-- Shrink the "fully expanded" subpacket size (11 bytes) down to the shrunk subpacket size (9 bytes) by stripping off the "magic" byte and the subpacket checksum byte:
 pure function ShrinkFullPacketToSubPacket(inFullPacket : unsigned(8*PACKET_SIZE_IN_BYTES-1 downto 0) ) return unsigned is
 begin
 	return inFullPacket(8*PACKET_SIZE_IN_BYTES-1 downto 8*2);
 end function;
 
-pure function ExtractDWORDFromSubpacketBytes(inSubpacket : unsigned(8*9-1 downto 0); dwordIndex : natural) return unsigned is
+pure function ExtractDWORDFromSubpacketBytes(inSubpacket : unsigned(8*SIMPLIFIED_PACKET_SIZE_IN_BYTES-1 downto 0); dwordIndex : natural) return unsigned is
 begin
 	return inSubpacket( (dwordIndex+1)*32-1 downto dwordIndex*32);
 end function;
 
-pure function ExtractByteFromSubpacketBytes(inSubpacket : unsigned(8*9-1 downto 0); byteIndex : natural) return unsigned is
+pure function ExtractByteFromSubpacketBytes(inSubpacket : unsigned(8*SIMPLIFIED_PACKET_SIZE_IN_BYTES-1 downto 0); byteIndex : natural) return unsigned is
 begin
 	return inSubpacket( (byteIndex+1)*8-1 downto byteIndex*8);
 end function;
@@ -531,7 +548,7 @@ signal sendReplyAck : std_logic := '0'; -- Ack to the recv process that we've re
 signal sendHandlingReply : std_logic := '0';
 signal sendLastSentPacketHeader : NetSessionPacketHeader;
 signal sendHasRepliedSuccessfulConnection : std_logic := '0';
-signal sendCyclesBetweenAutoResends : unsigned(23 downto 0) := (others => '0');
+signal sendCyclesBetweenAutoResends : unsigned(27 downto 0) := (others => '0');
 signal sendHasUnackedSentPacket : std_logic := '0';
 
 -- Packet recv state machine signals:
@@ -540,15 +557,25 @@ signal recvLastSendAckedPacketID : unsigned(15 downto 0) := (others => '0');
 signal recvFIFOAccess : FIFOAccessState := accessIdle;
 signal recvCurrentPacket : EthernetPacketHeaderInfo := DefaultPacketHeaderInfo;
 signal recvParseState : RecvParseSessionPacket := recvParseSessionIdle;
-signal recvPacketHeaderBuffer : unsigned(8*8-1 downto 0) := (others => '0');
+signal recvPacketSessionValid : std_logic_vector(3 downto 0) := (others => '0'); -- Validity bits for our current incoming received packet (each bit is a different validity check with 0 being "fail" and 1 being "pass")
+signal recvPacketAllValid : std_logic := '0'; -- Is our current incoming received packet completely valid (ie. is recvPacketSessionValid set to all 1's?)
+signal recvPacketCanProcess : std_logic := '0';
+signal recvPacketHeaderBuffer : unsigned(8*8-1 downto 0) := (others => '0'); -- 8-byte buffer that stores the Packet header (not including the initial Magic byte)
 signal recvCurrentSubpacketBuffer : unsigned(8*9-1 downto 0) := (others => '0');
 signal recvNextSubpacketOverflowBytes : unsigned(8*3-1 downto 0) := (others => '0');
 signal recvCurrentSubpacketIndex : unsigned(7 downto 0) := (others => '0');
+signal recvCurrentSubpacketCount : unsigned(7 downto 0) := (others => '0');
 signal recvCurrentSubpacketOffset : unsigned(3 downto 0) := (others => '0');
-signal recvDiscardBadPacketReadCountBytes : unsigned(15 downto 0) := (others => '0');
 signal recvPumpFIFO : std_logic := '0';
 signal recvSendReplyPacket : std_logic := '0';
+signal recvSessionDisconnectSignal : std_logic := '0'; -- When this signal is raised high, it indicates to all of the subsystems that they need to disconnect and reset our session (clear all session data)
 signal recvReplyStatus : SessionConnectRequestReplyStatus := acceptNewSession;
+
+-- Stat signals:
+signal stat_send_session_packets : unsigned(31 downto 0) := (others => '0');
+signal stat_recv_session_packets_valid : unsigned(31 downto 0) := (others => '0');
+signal stat_recv_session_packets_invalid : unsigned(31 downto 0) := (others => '0');
+signal stat_recv_session_packets_dropped : unsigned(31 downto 0) := (others => '0');
 
 -- Tell the auto-FSM encoding optimizer not to touch our state enums so that we can use them for debugging!
 ATTRIBUTE FSM_ENCODING of currentState: SIGNAL is "user_encoding";
@@ -557,6 +584,11 @@ ATTRIBUTE FSM_ENCODING of recvFIFOAccess: SIGNAL is "user_encoding";
 ATTRIBUTE FSM_ENCODING of recvParseState: SIGNAL is "user_encoding";
 
 begin
+
+STAT_SendSessionPackets <= std_logic_vector(stat_send_session_packets);
+STAT_RecvSessionPacketsValid <= std_logic_vector(stat_recv_session_packets_valid);
+STAT_RecvSessionPacketsInvalid <= std_logic_vector(stat_recv_session_packets_invalid);
+STAT_RecvSessionPacketsDropped <= std_logic_vector(stat_recv_session_packets_dropped);
 
 DBG_NetPkt_State <= std_logic_vector(to_unsigned(NetPktStateType'pos(currentState), 5) );
 DBG_SendFIFOState <= std_logic_vector(to_unsigned(FIFOAccessState'pos(sendFIFOAccess), 5) );
@@ -574,11 +606,15 @@ DBG_sendCyclesBetweenAutoResends <= std_logic_vector(sendCyclesBetweenAutoResend
 DBG_recvCurrentSubpacketIndex <= std_logic_vector(recvCurrentSubpacketIndex);
 DBG_returnPacketsFIFO_empty <= returnPacketsFIFO_empty;
 DBG_returnPacketsFIFO_rd_data <= returnPacketsFIFO_rd_data;
+DBG_recvValid_Session <= recvPacketSessionValid;
 
 DBG_recvPacketData <= std_logic_vector(recvPacketHeaderBuffer);
 DBG_recvCurrentSubpacketOffset <= std_logic_vector(recvCurrentSubpacketOffset);
 DBG_recvCurrentSubpacket <= std_logic_vector(recvCurrentSubpacketBuffer);
 DBG_recvCurrentPacketLength <= std_logic_vector(recvCurrentPacket.packetLength);
+
+DBG_sendHasUnackedSentPacket <= sendHasUnackedSentPacket;
+DBG_send_pkt_header_prog_full <= send_pkt_header_prog_full;
 
 sendBRAM_clka <= clk333_250;
 sendBRAM_clkb <= clk333_250;
@@ -607,7 +643,13 @@ sendBRAM_enb <= '1';
 					end if;
 
 				when sessionConnectedReady =>
+					if (recvParseState = recvParseSessionSafeToReset and
+						sendPacketState = sendSafeToResetSession) then
+						currentState <= sessionIsResetting;
+					end if;
 
+				when sessionIsResetting =>			
+					currentState <= unconnectedSendingNonSessionBroadcasts;
 			end case;
 		end if;
 	end process mainStateMachine;
@@ -751,7 +793,7 @@ sendBRAM_enb <= '1';
 				when sessionConnectedReady =>
 					sendNumBroadcastsSinceReset <= (others => '0');
 					-- TODO: Send normal sessioned packets
-					-- For now, don't worry about Nagling or trying to wait for more packets in order to batch them better.
+					-- For now, don't worry about Nagling or trying to wait for more outgoing packets in order to batch them better.
 
 					case sendPacketState is
 						when sendControllerState =>
@@ -773,7 +815,7 @@ sendBRAM_enb <= '1';
 									if (recvLastAckedPacketID /= sendLastSentPacketHeader.lastAckedPacketID) then -- If we have received a packet recently and haven't ack'd it yet
 										if ( (send_pkt_header_prog_full = '0') and 
 											(to_integer(unsigned(send_pkt_data_count) ) + GetDWORDCountFromKnownLength(NetSessionPacketHeaderMinPacketLength) < SEND_PKT_DATA_CAPACITY_DWORDS) ) then
-											-- Set the send BRAM packet size to 0 and send an "blank ack" packet.
+											-- Set the send BRAM packet size to 0 and send an "empty ack" packet.
 											sendLastSentPacketHeader.packetType <= to_unsigned(ePacketType'pos(PT_SESSIONCOMBOPACKET), 8);
 											sendLastSentPacketHeader.packetFlags <= (others => '0');
 											sendLastSentPacketHeader.thisPacketID <= sendLastSendPacketID;
@@ -811,6 +853,8 @@ sendBRAM_enb <= '1';
 								send_pkt_header_wr_data <= std_logic_vector(GetSessionPacketHeaderInfoFirstDWORD(to_unsigned(NetSessionPacketHeaderMinPacketLengthNonEmpty, 16), currentSessionState) );
 							end if;
 
+							stat_send_session_packets <= stat_send_session_packets + 1;
+
 							send_pkt_data_wr_en <= '1';
 							send_pkt_data_wr_data <= std_logic_vector(HToNL(SerializeNetSessionPacketFirstDWORD(sendLastSentPacketHeader) ) );
 							sendLastSentPacketHeader.packetChecksum <= CalcNetSessionPacketHeaderChecksum(SerializeNetSessionPacketSecondDWORD(sendLastSentPacketHeader) & SerializeNetSessionPacketFirstDWORD(sendLastSentPacketHeader) );
@@ -832,7 +876,12 @@ sendBRAM_enb <= '1';
 
 							if (sendLastSentPacketHeader.subpacketCount = 0) then
 								send_pkt_data_wr_en <= '0';
-								sendPacketState <= sendControllerState;
+
+								if (recvSessionDisconnectSignal = '1') then
+									sendPacketState <= sendSafeToResetSession;
+								else
+									sendPacketState <= sendControllerState;
+								end if;
 							else
 								send_pkt_data_wr_en <= '1';
 								sendBRAM_addrb <= std_logic_vector(to_unsigned(2, 9) );
@@ -850,7 +899,12 @@ sendBRAM_enb <= '1';
 							sendBRAM_addrb <= std_logic_vector(to_unsigned(4, 9) );
 							send_pkt_data_wr_data <= sendBRAM_doutb;
 							send_pkt_data_wr_en <= '1';
-							sendPacketState <= sendControllerState;
+
+							if (recvSessionDisconnectSignal = '1') then
+								sendPacketState <= sendSafeToResetSession;
+							else
+								sendPacketState <= sendControllerState;
+							end if;
 
 						when sendCopyPacketToBRAMStateB0 =>
 							sendBRAM_addra <= (others => '0');
@@ -858,7 +912,7 @@ sendBRAM_enb <= '1';
 							if (sendLastSentPacketHeader.subpacketCount = 0) then
 								sendBRAM_dina <= (others => '0');
 							else
-								sendBRAM_dina <= std_logic_vector(ExtractDWORDFromSubpacketBytes(ShrinkFullPacketToSubPacket(unsigned(returnPacketsFIFO_rd_data) ), 0) );
+								sendBRAM_dina <= std_logic_vector(HToNL(ExtractDWORDFromSubpacketBytes(ShrinkFullPacketToSubPacket(unsigned(returnPacketsFIFO_rd_data) ), 0) ) );
 							end if;
 							sendPacketState <= sendCopyPacketToBRAMStateB4;
 
@@ -868,7 +922,7 @@ sendBRAM_enb <= '1';
 							if (sendLastSentPacketHeader.subpacketCount = 0) then
 								sendBRAM_dina <= (others => '0');
 							else
-								sendBRAM_dina <= std_logic_vector(ExtractDWORDFromSubpacketBytes(ShrinkFullPacketToSubPacket(unsigned(returnPacketsFIFO_rd_data) ), 1) );
+								sendBRAM_dina <= std_logic_vector(HToNL(ExtractDWORDFromSubpacketBytes(ShrinkFullPacketToSubPacket(unsigned(returnPacketsFIFO_rd_data) ), 1) ) );
 							end if;
 							sendPacketState <= sendCopyPacketToBRAMStateB8;
 
@@ -878,13 +932,19 @@ sendBRAM_enb <= '1';
 							if (sendLastSentPacketHeader.subpacketCount = 0) then
 								sendBRAM_dina <= (others => '0');
 							else
-								sendBRAM_dina <= X"000000" & std_logic_vector(ExtractByteFromSubpacketBytes(ShrinkFullPacketToSubPacket(unsigned(returnPacketsFIFO_rd_data) ), 8) );
+								sendBRAM_dina <= std_logic_vector(HToNL(X"000000" & ExtractByteFromSubpacketBytes(ShrinkFullPacketToSubPacket(unsigned(returnPacketsFIFO_rd_data) ), 8) ) );
 								returnPacketsFIFO_rd_en <= '1';
 								DBG_returnPacketsFIFO_rd_en <= '1';
 							end if;
 							sendLastSentPacketHeader.lastAckedPacketID <= recvLastAckedPacketID; -- Be sure to update our last-recv'd packet ID right before we fire off a new outgoing packet with an ACK on it
 							sendPacketState <= sendPacketFromBRAMStateH0;
+
+						when sendSafeToResetSession =>
+							
 					end case;
+
+				when sessionIsResetting =>
+					-- Do nothing
 
 					-- If the other end hasn't yet acked our last sent packet, then we may not send any new packets until it has received it.
 					-- Wait for our resend timer to expire, then resend the last sent packet again (with updated fresh local ack packet ID). Go to the resend packet data state.
@@ -916,6 +976,7 @@ sendBRAM_enb <= '1';
 					recv_pkt_data_rd_en <= '0';
 					recvSendReplyPacket <= '0';
 					recvLastAckedPacketID <= (others => '0');
+					recvPacketSessionValid <= (others => '0');
 
 				when waitForNetSystemReady =>
 					-- Do nothing while we wait for the net system to be ready.
@@ -1031,6 +1092,7 @@ sendBRAM_enb <= '1';
 								end if;
 
 							when recvParseSessionDWORD0 => -- 1
+								recvPacketSessionValid <= (others => '0');
 								if (recv_pkt_header_empty = '0' and recv_pkt_data_empty = '0') then
 									LoadPacketHeaderInfoFirstDWORD(recvCurrentPacket, unsigned(recv_pkt_header_rd_data) );
 									recvPacketHeaderBuffer(4*8-1 downto 0) <= unsigned(recv_pkt_data_rd_data);
@@ -1055,45 +1117,80 @@ sendBRAM_enb <= '1';
 									LoadPacketHeaderInfoThirdDWORD(recvCurrentPacket, unsigned(recv_pkt_header_rd_data) );
 									recv_pkt_header_rd_en <= '1';
 
-									recvParseState <= recvParseSessionRemainingData;
-
 									-- TODO: Handle the case of PT_DISCONNECT packets here too
 
 									DBG_recvHeaderChecksum <= std_logic_vector(CalcNetSessionPacketHeaderChecksum(recvPacketHeaderBuffer) );
 									DBG_discardPacketReason <= X"0";
+									recvCurrentSubpacketCount <= (others => '0');
+									recvPacketAllValid <= '1';
+									recvPacketCanProcess <= '0';
+									stat_recv_session_packets_valid <= stat_recv_session_packets_valid + 1;
+									stat_recv_session_packets_invalid <= stat_recv_session_packets_invalid;
 
-									-- Validate our packet header checksum here. If it fails the checksum, then mark the whole packet as failed:
-									if (CalcNetSessionPacketHeaderChecksum(recvPacketHeaderBuffer) /= DeserializeNetSessionPacket(recvPacketHeaderBuffer).packetChecksum) then
-										recvDiscardBadPacketReadCountBytes <= (others => '0');
-										DBG_discardPacketReason <= X"1";
-										recvParseState <= recvParseSessionDiscardBadPacket;
-									end if;
+									case ePacketType'val(to_integer(DeserializeNetSessionPacket(recvPacketHeaderBuffer).packetType) ) is
+										when PT_SESSIONCOMBOPACKET =>
+											-- Validate our packet header checksum here. If it fails the checksum, then mark the whole packet as failed:
+											if (CalcNetSessionPacketHeaderChecksum(recvPacketHeaderBuffer) /= DeserializeNetSessionPacket(recvPacketHeaderBuffer).packetChecksum) then
+												recvPacketSessionValid(0) <= '0';
+												recvPacketAllValid <= '0';
+												DBG_discardPacketReason <= X"1";
+												stat_recv_session_packets_valid <= stat_recv_session_packets_valid;
+												stat_recv_session_packets_invalid <= stat_recv_session_packets_invalid + 1;
+											else
+												recvPacketSessionValid(0) <= '1';
+											end if;
 
-									-- Validate that this packet is not out of order. If it is, then drop it just like we would with a failed-checksum packet:
-									if (DeserializeNetSessionPacket(recvPacketHeaderBuffer).thisPacketID /= (recvLastAckedPacketID + 1) ) then
-										recvDiscardBadPacketReadCountBytes <= (others => '0');
-										DBG_discardPacketReason <= X"2";
-										recvParseState <= recvParseSessionDiscardBadPacket;
-									end if;
+											-- Validate that this packet is not out of order. If it is, then drop it just like we would with a failed-checksum packet:
+											if (DeserializeNetSessionPacket(recvPacketHeaderBuffer).thisPacketID /= (recvLastAckedPacketID + 1) ) then
+												recvPacketSessionValid(1) <= '0';
+												recvPacketAllValid <= '0';
+												DBG_discardPacketReason <= X"2";
+												stat_recv_session_packets_valid <= stat_recv_session_packets_valid;
+												stat_recv_session_packets_invalid <= stat_recv_session_packets_invalid + 1;
+											else
+												recvPacketSessionValid(1) <= '1';
+											end if;
 
-									-- Validate that this packet's subpacket count is valid (from 0 to 161. 0 is a valid value):
-									if (DeserializeNetSessionPacket(recvPacketHeaderBuffer).subpacketCount > NetSessionPacketMaxSubpacketCount) then
-										recvDiscardBadPacketReadCountBytes <= (others => '0');
-										DBG_discardPacketReason <= X"3";
-										recvParseState <= recvParseSessionDiscardBadPacket;
-									end if;
+											-- Validate that this packet's subpacket count is valid (from 0 to 161). "0" is a valid and commonly-used value:
+											if (DeserializeNetSessionPacket(recvPacketHeaderBuffer).subpacketCount > NetSessionPacketMaxSubpacketCount) then
+												recvPacketSessionValid(2) <= '0';
+												recvPacketAllValid <= '0';
+												DBG_discardPacketReason <= X"3";
+												stat_recv_session_packets_valid <= stat_recv_session_packets_valid;
+												stat_recv_session_packets_invalid <= stat_recv_session_packets_invalid + 1;
+											else
+												recvPacketSessionValid(2) <= '1';
+											end if;
 
-									-- Validate that this packet's packet type is valid (from 0 to PT_MAX_PACKET_TYPES-1 is a valid value):
-									if (DeserializeNetSessionPacket(recvPacketHeaderBuffer).packetType >= ePacketType'pos(PT_MAX_PACKET_TYPES) ) then
-										recvDiscardBadPacketReadCountBytes <= (others => '0');
-										DBG_discardPacketReason <= X"4";
-										recvParseState <= recvParseSessionDiscardBadPacket;
-									end if;
+											-- Validate that this packet's packet type is valid (expecting PT_SESSIONCOMBOPACKET or PT_DISCONNECT only at this time):
+											recvPacketSessionValid(3) <= '1';
+
+											-- Validate that we have enough room in the ValidPacketsFIFO to store a worst-case sized packet with the max number of subpackets:
+											if (validPacketsFIFO_prog_full = '1') then
+												DBG_discardPacketReason <= X"5";
+												stat_recv_session_packets_dropped <= stat_recv_session_packets_dropped + 1;
+											else
+												recvPacketCanProcess <= '1';
+											end if;
+
+											recvCurrentSubpacketCount <= DeserializeNetSessionPacket(recvPacketHeaderBuffer).subpacketCount;
+										when PT_DISCONNECT =>
+											recvPacketSessionValid(3) <= '1';
+											recvSessionDisconnectSignal <= '1';
+
+										when others =>
+											-- Validate that this packet's packet type is valid (expecting PT_SESSIONCOMBOPACKET or PT_DISCONNECT only at this time):
+											recvPacketSessionValid <= (others => '0');
+											recvPacketAllValid <= '0';
+											DBG_discardPacketReason <= X"4";
+									end case;
 
 									recvCurrentSubpacketIndex <= (others => '0');
 									recvCurrentSubpacketOffset <= (others => '0');
 
 									recvPumpFIFO <= '1';
+
+									recvParseState <= recvParseSessionRemainingData;
 								end if;
 
 							when recvParseSessionRemainingData => -- 4
@@ -1101,20 +1198,30 @@ sendBRAM_enb <= '1';
 								recv_pkt_header_rd_en <= '0';
 								recv_pkt_data_rd_en <= '0';
 
-								-- Do not update our expected packet ID for "empty" ack-only packets
-								if (DeserializeNetSessionPacket(recvPacketHeaderBuffer).subpacketCount /= 0) then
-									recvLastAckedPacketID <= DeserializeNetSessionPacket(recvPacketHeaderBuffer).thisPacketID;
+								-- Note that it's very important that we process the incoming packet header for valid packets even if we do not have enough
+								-- space in the validPacketsFIFO to store the payload data. If we don't properly handle ACK's here then we risk
+								-- deadlocking the NetProtoPacketProcessor!
+								if (recvPacketAllValid = '1' and DeserializeNetSessionPacket(recvPacketHeaderBuffer).packetType = ePacketType'pos(PT_SESSIONCOMBOPACKET) ) then
+									-- Do not update our expected packet ID for "empty" ack-only packets. Only data packets will increment the packet ID.
+									-- Also do not update our H2D packet ID if we cannot actually process this packet due to not having space in our FIFO.
+									if (DeserializeNetSessionPacket(recvPacketHeaderBuffer).subpacketCount /= 0 and recvPacketCanProcess = '1') then
+										recvLastAckedPacketID <= DeserializeNetSessionPacket(recvPacketHeaderBuffer).thisPacketID;
+									end if;
+									recvLastSendAckedPacketID <= DeserializeNetSessionPacket(recvPacketHeaderBuffer).lastAckedPacketID;
 								end if;
 
-								recvLastSendAckedPacketID <= DeserializeNetSessionPacket(recvPacketHeaderBuffer).lastAckedPacketID;
-
-								if (recvCurrentSubpacketIndex = DeserializeNetSessionPacket(recvPacketHeaderBuffer).subpacketCount) then
+								if (recvCurrentSubpacketIndex = recvCurrentSubpacketCount) then
 									if (recvCurrentPacket.packetLength(1 downto 0) /= "00") then
 										-- Give it one extra read to clear the 1-3 padding bytes that are used to make sure that our packets always start on a DWORD-aligned boundary in the FIFO
 										recv_pkt_data_rd_en <= '1';
 									end if;
-									-- We're done! Break out of our loop.
-									recvParseState <= recvParseSessionIdle;
+
+									-- We're done! Break out of our loop:
+									if (recvSessionDisconnectSignal = '1') then
+										recvParseState <= recvParseSessionSafeToReset;
+									else
+										recvParseState <= recvParseSessionIdle;
+									end if;
 								elsif (recv_pkt_data_empty = '0') then
 									recvCurrentSubpacketBuffer <= ReadSubpacketDWORD(recvCurrentSubpacketBuffer, unsigned(recv_pkt_data_rd_data), recvCurrentSubpacketOffset);
 									if (recvCurrentSubpacketOffset + 4 >= 9) then
@@ -1133,42 +1240,28 @@ sendBRAM_enb <= '1';
 							when recvParseSessionPushNewSubpacket => -- 5
 								recv_pkt_data_rd_en <= '0';
 
-								if (validPacketsFIFO_full = '0') then
-									-- PACKET_SIZE_IN_BYTES is 11 bytes, we need to stuff the remaining 2 bytes with data:
-									validPacketsFIFO_wr_data <= std_logic_vector(ExpandSubPacketToFullPacket(recvCurrentSubpacketBuffer) );
-									case recvCurrentSubpacketOffset is
-										when X"1" =>
-											recvCurrentSubpacketBuffer(7 downto 0) <= recvNextSubpacketOverflowBytes(23 downto 16);
-										when X"2" =>
-											recvCurrentSubpacketBuffer(15 downto 0) <= recvNextSubpacketOverflowBytes(23 downto 8);
-										when X"3" =>
-											recvCurrentSubpacketBuffer(23 downto 0) <= recvNextSubpacketOverflowBytes(23 downto 0);
-										when others => -- when X"0"
-									end case;
-									validPacketsFIFO_wr_en <= '1';
-									recvParseState <= recvParseSessionRemainingData;
-								else
-									validPacketsFIFO_wr_en <= '0';
-								end if;
+								-- PACKET_SIZE_IN_BYTES is 11 bytes, we need to stuff the remaining 2 bytes with data:
+								validPacketsFIFO_wr_data <= std_logic_vector(ExpandSubPacketToFullPacket(recvCurrentSubpacketBuffer) );
+								case recvCurrentSubpacketOffset is
+									when X"1" =>
+										recvCurrentSubpacketBuffer(7 downto 0) <= recvNextSubpacketOverflowBytes(23 downto 16);
+									when X"2" =>
+										recvCurrentSubpacketBuffer(15 downto 0) <= recvNextSubpacketOverflowBytes(23 downto 8);
+									when X"3" =>
+										recvCurrentSubpacketBuffer(23 downto 0) <= recvNextSubpacketOverflowBytes(23 downto 0);
+									when others => -- when X"0"
+								end case;
+								validPacketsFIFO_wr_en <= recvPacketAllValid and recvPacketCanProcess;
+								recvParseState <= recvParseSessionRemainingData;
 
-							when recvParseSessionDiscardBadPacket => -- 6
-								recv_pkt_data_rd_en <= '0';
-								if (recvDiscardBadPacketReadCountBytes <= recvCurrentPacket.packetLength) then
-									if (recv_pkt_data_empty = '0') then
-										recvDiscardBadPacketReadCountBytes <= recvDiscardBadPacketReadCountBytes + 4;
-										recv_pkt_data_rd_en <= '1'; -- Read another DWORD of packet data from the read data FIFO
-									end if;
-								else
-									if (recvCurrentPacket.packetLength(1 downto 0) /= "00") then
-										-- Give it one extra read to clear the 1-3 padding bytes that are used to make sure that our packets always start on a DWORD-aligned boundary in the FIFO
-										recv_pkt_data_rd_en <= '1';
-									end if;
+							when recvParseSessionSafeToReset =>
+								
 
-									-- We're done discarding our bad packet!
-									recvParseState <= recvParseSessionIdle;
-								end if;
 						end case;
 					end if;
+
+				when sessionIsResetting =>
+					-- Do nothing
 			end case;
 		end if;
 	end process recv_data_process;

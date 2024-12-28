@@ -4518,7 +4518,10 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawPrimiti
 		DeclarationSemanticMapping vertexDeclMapping;
 		vertexDeclMapping.ClearSemanticMapping();
 		vertexDeclMapping.ComputeMappingVS(currentState.currentVertexDecl, currentState.currentVertexShader);
-		InitVertexShader(currentState, currentState.currentVertexShader->GetShaderInfo() );
+		if (GetEnableSoftwareRenderingVisualization() )
+		{
+			InitVertexShader(currentState, currentState.currentVertexShader->GetShaderInfo() );
+		}
 
 		SetupCurrentDrawCallVertexData(vertexDeclMapping);
 
@@ -6035,7 +6038,10 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawIndexed
 		DeclarationSemanticMapping vertexDeclMapping;
 		vertexDeclMapping.ClearSemanticMapping();
 		vertexDeclMapping.ComputeMappingVS(currentState.currentVertexDecl, currentState.currentVertexShader);
-		InitVertexShader(currentState, currentState.currentVertexShader->GetShaderInfo() );
+		if (GetEnableSoftwareRenderingVisualization() )
+		{
+			InitVertexShader(currentState, currentState.currentVertexShader->GetShaderInfo() );
+		}
 
 		SetupCurrentDrawCallVertexData(vertexDeclMapping);
 
@@ -10853,7 +10859,10 @@ void IDirect3DDevice9Hook::DrawPrimitiveUBPretransformedSkipVS(const D3DPRIMITIV
 	DeclarationSemanticMapping vertexDeclMapping;
 	vertexDeclMapping.ClearSemanticMapping();
 	vertexDeclMapping.ComputeMappingPS(currentState.currentVertexDecl, currentState.currentPixelShader);
-	InitPixelShader(currentState, currentState.currentPixelShader->GetShaderInfo() );
+	if (GetEnableSoftwareRenderingVisualization() )
+	{
+		InitPixelShader(currentState, currentState.currentPixelShader->GetShaderInfo() );
+	}
 
 	SetupCurrentDrawCallPixelData(false, &vertexDeclMapping);
 
@@ -11090,7 +11099,10 @@ void IDirect3DDevice9Hook::DrawPrimitiveUB(const D3DPRIMITIVETYPE PrimitiveType,
 	vStoPSMapping.ClearSemanticMapping();
 	vStoPSMapping.ComputeMappingVSToPS(currentState.currentVertexShader, currentState.currentPixelShader);
 
-	InitPixelShader(currentState, currentState.currentPixelShader->GetShaderInfo() );
+	if (GetEnableSoftwareRenderingVisualization() )
+	{
+		InitPixelShader(currentState, currentState.currentPixelShader->GetShaderInfo() );
+	}
 	SetupCurrentDrawCallPixelData(true, &vStoPSMapping);
 
 	const float fWidth = currentState.cachedViewport.fWidth;

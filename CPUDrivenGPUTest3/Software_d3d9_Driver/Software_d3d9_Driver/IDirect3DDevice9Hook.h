@@ -1088,7 +1088,7 @@ public:
 	// void StoreVertexOutputElement(const DebuggableD3DVERTEXELEMENT9& element, unsigned char* const outputPtr, const D3DDECLUSAGE usage, const unsigned usageIndex) const;
 
 	static const int FindExistingVertDataBuffer(const deviceAllocatedBuffer& newBuffer, const std::vector<deviceAllocatedBuffer>& cachedDeviceBuffers);
-	static const int FindExistingCommandList(const GPUCommandList& newCommandList, const unsigned __int64 newCommandListHash, const std::vector<GPUCommandList>& cachedCommandLists);
+	static const int FindExistingCommandList(const GPUCommandList* const newCommandList, const unsigned __int64 newCommandListHash, const std::vector<GPUCommandList*>& cachedCommandLists);
 
 	// Returns true if this is a fresh allocation, or false if it is a reused identically matching buffer
 	const bool CreateOrUseCachedVertDataBuffer(deviceAllocatedBuffer& newBuffer, std::vector<deviceAllocatedBuffer>& cachedDeviceBuffers
@@ -1098,7 +1098,7 @@ public:
 	);
 
 	// Returns true if this is a fresh allocation, or false if it is a reused identically matching buffer
-	const bool CreateOrUseCachedCommandList(GPUCommandList& newCommandList, std::vector<GPUCommandList>& cachedDeviceCommandLists);
+	const bool CreateOrUseCachedCommandList(GPUCommandList*& newCommandList, std::vector<GPUCommandList*>& cachedDeviceCommandLists);
 
 	const float4 GetDeviceViewportConstantF() const;
 
@@ -1642,6 +1642,16 @@ public:
 		overrideTexMode = newTexModeOverride;
 	}
 
+	const TexFilterOverrideSettings GetTexFilterOverride() const
+	{
+		return overrideTexFilter;
+	}
+
+	void SetTexFilterOverride(const TexFilterOverrideSettings newTexFilterOverride)
+	{
+		overrideTexFilter = newTexFilterOverride;
+	}
+
 	const setScanoutPointerCommand::eDisplayChannelSwizzle GetScanoutSwizzleR() const
 	{
 		return scanoutRedSwizzle;
@@ -1758,6 +1768,7 @@ protected:
 	AlphaTestOverrideSettings overrideAlphaTest;
 	TexAddressOverrideSettings overrideTexAddress;
 	TexModeOverrideSettings overrideTexMode;
+	TexFilterOverrideSettings overrideTexFilter;
 
 	unsigned drawCallSleepMicros;
 	bool singleStepDrawCallMode;
@@ -1776,7 +1787,7 @@ protected:
 	std::vector<deviceAllocatedBuffer> cachedVertexColorBuffers;
 	std::vector<deviceAllocatedBuffer> cachedIndexBuffers;
 	std::vector<deviceAllocatedBuffer> cachedConstantBuffers;
-	std::vector<GPUCommandList> cachedCommandLists;
+	std::vector<GPUCommandList*> cachedCommandLists;
 };
 
 // Translates a given FVF code into an array of D3DVERTEXELEMENT9 elements. The return value is the number of used vertex elements:

@@ -186,7 +186,9 @@ static void UpdateInput()
 
 #ifdef USE_PLAYBACK_LOCAL_MEMORY
 // This large 1GB region of memory is used as a mirror for the GPU's VRAM:
-__declspec(align(128) ) BYTE LocalMemory[GPU_DRAM_TOTAL_CAPACITY_BYTES] = {0};
+static __declspec(align(128) ) BYTE LocalMemory[GPU_DRAM_TOTAL_CAPACITY_BYTES] = {0};
+static BYTE* currentBatchMemoryWritePtr = LocalMemory;
+static DWORD currentBatchWriteData[8] = {0};
 #endif // #ifdef USE_PLAYBACK_LOCAL_MEMORY
 
 static const unsigned numSimplifiedPacketsPerDRAMLine = GPU_DRAM_TRANSACTION_SIZE_BYTES / sizeof(SimplifiedCommandPacket);
@@ -499,6 +501,53 @@ int main(const unsigned argc, const char* const argv[])
 #endif // #ifdef USE_PLAYBACK_LOCAL_MEMORY
 		}
 			continue;
+		case command::PT_WRITEMEMBATCHCONFIG:
+		{
+#ifdef USE_PLAYBACK_LOCAL_MEMORY
+			const writeMemBatchConfigCommand* const writeMemBatchConfigPacket = reinterpret_cast<const writeMemBatchConfigCommand* const>(&nextPacket);
+			currentBatchMemoryWritePtr = LocalMemory + writeMemBatchConfigPacket->writeBeginAddr;
+#endif // #ifdef USE_PLAYBACK_LOCAL_MEMORY
+		}
+			continue;
+		case command::PT_WRITEMEMBATCH0:
+		{
+#ifdef USE_PLAYBACK_LOCAL_MEMORY
+			const writeMemBatchData0Command* const writeMemBatchData0Packet = reinterpret_cast<const writeMemBatchData0Command* const>(&nextPacket);
+			currentBatchWriteData[0] = writeMemBatchData0Packet->writeDWORDData0;
+			currentBatchWriteData[1] = writeMemBatchData0Packet->writeDWORDData1;
+#endif // #ifdef USE_PLAYBACK_LOCAL_MEMORY
+		}
+			continue;
+		case command::PT_WRITEMEMBATCH1:
+		{
+#ifdef USE_PLAYBACK_LOCAL_MEMORY
+			const writeMemBatchData1Command* const writeMemBatchData1Packet = reinterpret_cast<const writeMemBatchData1Command* const>(&nextPacket);
+			currentBatchWriteData[2] = writeMemBatchData1Packet->writeDWORDData2;
+			currentBatchWriteData[3] = writeMemBatchData1Packet->writeDWORDData3;
+#endif // #ifdef USE_PLAYBACK_LOCAL_MEMORY
+		}
+			continue;
+		case command::PT_WRITEMEMBATCH2:
+		{
+#ifdef USE_PLAYBACK_LOCAL_MEMORY
+			const writeMemBatchData2Command* const writeMemBatchData2Packet = reinterpret_cast<const writeMemBatchData2Command* const>(&nextPacket);
+			currentBatchWriteData[4] = writeMemBatchData2Packet->writeDWORDData4;
+			currentBatchWriteData[5] = writeMemBatchData2Packet->writeDWORDData5;
+#endif // #ifdef USE_PLAYBACK_LOCAL_MEMORY
+		}
+			continue;
+		case command::PT_WRITEMEMBATCH3WRITE:
+		{
+#ifdef USE_PLAYBACK_LOCAL_MEMORY
+			const writeMemBatchData3WriteCommand* const writeMemBatchData3WritePacket = reinterpret_cast<const writeMemBatchData3WriteCommand* const>(&nextPacket);
+			currentBatchWriteData[6] = writeMemBatchData3WritePacket->writeDWORDData6;
+			currentBatchWriteData[7] = writeMemBatchData3WritePacket->writeDWORDData7;
+
+			memcpy(currentBatchMemoryWritePtr, currentBatchWriteData, sizeof(currentBatchWriteData) );
+			currentBatchMemoryWritePtr += 32;
+#endif // #ifdef USE_PLAYBACK_LOCAL_MEMORY
+		}
+			continue;
 		case command::PT_RUNCOMMANDLIST:
 		{
 #ifdef USE_PLAYBACK_LOCAL_MEMORY
@@ -741,6 +790,12 @@ int main(const unsigned argc, const char* const argv[])
 		}
 	}
 	while (bInfiniteLoop);
+
+	// Call ShutdownEndpoint() to destruct our endpoint before we call FreeLibrary() to unload the DLL:
+	(*dllInfo.H2DFunctions.ShutdownEndpoint)();
+
+	FreeLibrary(loadedDLL);
+	loadedDLL = NULL;
 
     return 0;
 }

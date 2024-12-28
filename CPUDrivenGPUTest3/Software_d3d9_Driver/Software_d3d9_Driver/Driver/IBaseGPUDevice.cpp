@@ -664,7 +664,9 @@ static inline const unsigned GetLog2ExactFloat(const float f)
 	return ret;
 }
 
-HRESULT __stdcall IBaseGPUDevice::DeviceSetTriSetupState(const float viewportHalfWidth, const float viewportHalfHeight, const float viewportZScale, const float viewportZOffset,
+HRESULT __stdcall IBaseGPUDevice::DeviceSetTriSetupState(const float viewportHalfWidth, const float viewportHalfHeight,
+	const float viewportXOffset, const float viewportYOffset,
+	const float viewportZScale, const float viewportZOffset,
 	const unsigned short scissorRectLeft, const unsigned short scissorRectRight, const unsigned short scissorRectTop, const unsigned short scissorRectBottom)
 {
 	if (viewportHalfWidth < 0.5f || viewportHalfHeight < 0.5f)
@@ -686,6 +688,8 @@ HRESULT __stdcall IBaseGPUDevice::DeviceSetTriSetupState(const float viewportHal
 	TriangleSetupStateBlock newTriSetupState;
 	newTriSetupState.deviceCachedViewportHalfWidth = viewportHalfWidth;
 	newTriSetupState.deviceCachedViewportHalfHeight = viewportHalfHeight;
+	newTriSetupState.deviceCachedViewportXOffset = viewportXOffset;
+	newTriSetupState.deviceCachedViewportYOffset = viewportYOffset;
 	newTriSetupState.deviceCachedViewportZScale = viewportZScale;
 	newTriSetupState.deviceCachedViewportZOffset = viewportZOffset;
 	newTriSetupState.deviceCachedScissorLeft = scissorRectLeft;
@@ -702,6 +706,17 @@ HRESULT __stdcall IBaseGPUDevice::DeviceSetTriSetupState(const float viewportHal
 	setViewport0.checksum = command::ComputeChecksum(&setViewport0, sizeof(setViewport0) );
 #ifdef _DEBUG
 	if (!command::IsValidPacket(&setViewport0, sizeof(setViewport0) ) )
+	{
+		__debugbreak();
+	}
+#endif
+
+	setViewportStateXYCommand setViewportXY;
+	setViewportXY.viewportXOffset = viewportXOffset;
+	setViewportXY.viewportYOffset = viewportYOffset;
+	setViewportXY.checksum = command::ComputeChecksum(&setViewportXY, sizeof(setViewportXY) );
+#ifdef _DEBUG
+	if (!command::IsValidPacket(&setViewportXY, sizeof(setViewportXY) ) )
 	{
 		__debugbreak();
 	}
@@ -732,14 +747,17 @@ HRESULT __stdcall IBaseGPUDevice::DeviceSetTriSetupState(const float viewportHal
 #endif
 
 	const HRESULT hRetViewport0 = SendOrStorePacket(&setViewport0);
+	const HRESULT hRetViewportXY = SendOrStorePacket(&setViewportXY);
 	const HRESULT hRetViewport1 = SendOrStorePacket(&setViewport1);
 	const HRESULT hRetScissorRect = SendOrStorePacket(&setScissorRect);
-	if (SUCCEEDED(hRetViewport0) && SUCCEEDED(hRetViewport1) && SUCCEEDED(hRetScissorRect) && DoCacheDeviceState() )
+	if (SUCCEEDED(hRetViewport0) && SUCCEEDED(hRetViewportXY) && SUCCEEDED(hRetViewport1) && SUCCEEDED(hRetScissorRect) && DoCacheDeviceState() )
 	{
 		currentCachedState.deviceCachedTriSetupState = newTriSetupState;
 	}
 	if (FAILED(hRetViewport0) )
 		return hRetViewport0;
+	if (FAILED(hRetViewportXY) )
+		return hRetViewportXY;
 	if (FAILED(hRetViewport1) )
 		return hRetViewport1;
 	if (FAILED(hRetScissorRect) )
@@ -1755,7 +1773,7 @@ const unsigned CompressFloat(float component)
 		compressedBits = (0x01 << 0); // Negative bit
 
 	// Strip off the negative bit
-	component = fabs(component);
+	component = fabsf(component);
 
 	int foundIndex = -1;
 
@@ -2518,10 +2536,16 @@ const bool IBaseGPUDevice::PacketIsValidForRecording(const command::ePacketType 
 	case command::PT_SETCLIPSTATE:
 	case command::PT_ISSUEQUERY:
 	case command::PT_SETVIEWPORTPARAMS0:
+	case command::PT_SETVIEWPORTPARAMSXY:
 	case command::PT_SETVIEWPORTPARAMS1:
 	case command::PT_SETSCISSORRECT:
 	case command::PT_SETSTATSEVENTCONFIG:
 	case command::PT_SETINTERPOLATORSTATE:
+	case command::PT_WRITEMEMBATCHCONFIG:
+	case command::PT_WRITEMEMBATCH0:
+	case command::PT_WRITEMEMBATCH1:
+	case command::PT_WRITEMEMBATCH2:
+	case command::PT_WRITEMEMBATCH3WRITE:
 		return true;
 	default:
 #ifdef _DEBUG
@@ -2529,7 +2553,6 @@ const bool IBaseGPUDevice::PacketIsValidForRecording(const command::ePacketType 
 #endif
 	// Disallow all of the packet types that return data or read back data from the GPU to the CPU, since when executing a recorded command list
 	// there won't be anybody listening to acknowledge that data:
-	case command::PT_REMOVED7: // Don't allow removed packets in our recorded command buffers
 	case command::PT_READMEM:
 	case command::PT_READMEMRESPONSE:
 	case command::PT_WAITFORDEVICEIDLE:
@@ -2538,9 +2561,16 @@ const bool IBaseGPUDevice::PacketIsValidForRecording(const command::ePacketType 
 	case command::PT_ENDFRAME:
 	case command::PT_RUNCOMMANDLIST: // No recursive recorded command lists allowed!
 	case command::PT_DEBUGSHADERNEXTDRAWCALL:
+
+	// These networking-only packets should not show up at all in recorded command lists!
+	case command::PT_CONNBROADCAST:
+	case command::PT_CONNREQUEST:
+	case command::PT_CONNRESPONSE:
+	case command::PT_SESSIONCOMBOPACKET:
+	case command::PT_DISCONNECT:
 		return false;
 	}
-	static_assert(command::PT_MAX_PACKET_TYPES == 40, "Reminder: Need to update this switch statement with new cases when adding new packets!");
+	static_assert(command::PT_MAX_PACKET_TYPES == 45, "Reminder: Need to update this switch statement with new cases when adding new packets!");
 }
 
 HRESULT IBaseGPUDevice::SendOrStorePacket(const command* const sendPacket)

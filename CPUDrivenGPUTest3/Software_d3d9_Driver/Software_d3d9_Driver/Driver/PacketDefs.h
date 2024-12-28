@@ -21,7 +21,7 @@ struct command
 		PT_CLEARMEM = 4,
 		PT_CLEARBACKBUFFER = 5,
 		PT_CLEARZSTENCILBUFFER = 6,
-		PT_REMOVED7 = 7,//PT_LOADVERTSTREAMDATA = 7, This packet has been removed, feel free to reuse it!
+		PT_SETVIEWPORTPARAMSXY = 7,
 		PT_LOADTEXCACHEDATA = 8,
 		PT_SETALPHATESTANDRTADDRESSSTATE = 9,
 		PT_SETTEXTURESTATE = 10,
@@ -54,6 +54,11 @@ struct command
 		PT_SETVIEWPORTPARAMS1 = 37,
 		PT_SETSCISSORRECT = 38,
 		PT_SETINTERPOLATORSTATE = 39,
+		PT_WRITEMEMBATCHCONFIG = 40,
+		PT_WRITEMEMBATCH0 = 41,
+		PT_WRITEMEMBATCH1 = 42,
+		PT_WRITEMEMBATCH2 = 43,
+		PT_WRITEMEMBATCH3WRITE = 44,
 
 		PT_MAX_PACKET_TYPES // This must always be last
 	};
@@ -137,6 +142,56 @@ struct command
 	ePacketType type = PT_DONOTHING; // Packets may be freely discarded if the packet type is unrecognized or out of range.
 };
 
+const char* const packetTypeStrings[] =
+{
+	"PT_DONOTHING", // 0 // DONOTHING is meant as a no-op packet that does nothing
+	"PT_WRITEMEM", // 1
+	"PT_READMEM", // 2
+	"PT_READMEMRESPONSE", // 3
+	"PT_CLEARMEM", // 4
+	"PT_CLEARBACKBUFFER", // 5
+	"PT_CLEARZSTENCILBUFFER", // 6
+	"PT_SETVIEWPORTPARAMSXY", // 7
+	"PT_LOADTEXCACHEDATA", // 8
+	"PT_SETALPHATESTANDRTADDRESSSTATE", // 9
+	"PT_SETTEXTURESTATE", // 10
+	"PT_WAITFORDEVICEIDLE", // 11
+	"PT_WAITRESPONSE", // 12
+	"PT_DRAWINDEXED", // 13
+	"PT_SETSCANOUTPOINTER", // 14
+	"PT_SETIASTATE", // 15
+	"PT_FLUSHROPCACHE", // 16
+	"PT_ENDFRAMESTATS", // 17
+	"PT_ENDFRAME", // 18
+	"PT_RUNCOMMANDLIST", // 19
+	"PT_LOADSHADERINSTRUCTIONS", // 20
+	"PT_SETSHADERCONSTANT", // 21
+	"PT_SETVERTEXSTREAMDATA", // 22
+	"PT_SETSTATSEVENTCONFIG", // 23
+	"PT_SETSHADERCONSTANTSPECIAL", // 24
+	"PT_SETSHADERSTARTADDRESS", // 25
+	"PT_DEBUGSHADERNEXTDRAWCALL", // 26
+	"PT_SETDEPTHSTATE", // 27
+	"PT_SETBLENDSTATE", // 28
+	"PT_CONNBROADCAST", // 29
+	"PT_CONNREQUEST", // 30
+	"PT_CONNRESPONSE", // 31
+	"PT_SESSIONCOMBOPACKET", // 32
+	"PT_DISCONNECT", // 33
+	"PT_SETCLIPSTATE", // 34
+	"PT_ISSUEQUERY", // 35
+	"PT_SETVIEWPORTPARAMS0", // 36
+	"PT_SETVIEWPORTPARAMS1", // 37
+	"PT_SETSCISSORRECT", // 38
+	"PT_SETINTERPOLATORSTATE", // 39
+	"PT_WRITEMEMBATCHCONFIG", // 40
+	"PT_WRITEMEMBATCH0", // 41
+	"PT_WRITEMEMBATCH1", // 42
+	"PT_WRITEMEMBATCH2", // 43
+	"PT_WRITEMEMBATCH3WRITE", // 44
+};
+static_assert(ARRAYSIZE(packetTypeStrings) == command::PT_MAX_PACKET_TYPES, "Error: Mismatch between string table and enum!");
+
 // This packet is used for being reinterpret-cast into all the other packet types
 struct genericCommand : command
 {
@@ -172,7 +227,7 @@ struct writeMemCommand : command
 	}
 
 	// Payload 0:
-	DWORD writeDWORDAddr = 0x00000000; // The write address, in BYTE's from the start of the RAM (must be DRAM_LINE aligned!)
+	DWORD writeDWORDAddr = 0x00000000; // The write address, in BYTE's from the start of the RAM (must be DWORD aligned!)
 
 	// Payload 1:
 	DWORD writeVal = 0; // The value to write into the DWORD
@@ -1070,6 +1125,20 @@ struct setViewportState0Command : command
 };
 
 // This configures part of the triangle setup state
+struct setViewportStateXYCommand : command
+{
+	setViewportStateXYCommand() : command(PT_SETVIEWPORTPARAMSXY)
+	{
+	}
+
+	// Payload 0:
+	float viewportXOffset = 0.0f; // 31 downto 0
+
+	// Payload 1:
+	float viewportYOffset = 0.0f; // 31 downto 0
+};
+
+// This configures part of the triangle setup state
 struct setViewportState1Command : command
 {
 	setViewportState1Command() : command(PT_SETVIEWPORTPARAMS1)
@@ -1140,6 +1209,72 @@ struct setAttrInterpolatorStateCommand : command
 	DWORD padding1;
 };
 
+struct writeMemBatchConfigCommand : command
+{
+	writeMemBatchConfigCommand() : command(PT_WRITEMEMBATCHCONFIG)
+	{
+	}
+
+	// Payload 0:
+	DWORD writeBeginAddr = 0x00000000; // The initial write address, in BYTE's from the start of the RAM (must be 32-byte aligned!)
+
+	// Payload 1:
+	DWORD unused0 = 0x00000000; // Not used
+};
+
+struct writeMemBatchData0Command : command
+{
+	writeMemBatchData0Command() : command(PT_WRITEMEMBATCH0)
+	{
+	}
+
+	// Payload 0:
+	DWORD writeDWORDData0 = 0x00000000; // The first DWORD of write data for this DRAM row (bytes 0, 1, 2, 3)
+
+	// Payload 1:
+	DWORD writeDWORDData1 = 0x00000000; // The second DWORD of write data for this DRAM row (bytes 4, 5, 6, 7)
+};
+
+struct writeMemBatchData1Command : command
+{
+	writeMemBatchData1Command() : command(PT_WRITEMEMBATCH1)
+	{
+	}
+
+	// Payload 0:
+	DWORD writeDWORDData2 = 0x00000000; // The third DWORD of write data for this DRAM row (bytes 8, 9, 10, 11)
+
+	// Payload 1:
+	DWORD writeDWORDData3 = 0x00000000; // The fourth DWORD of write data for this DRAM row (bytes 12, 13, 14, 15)
+};
+
+struct writeMemBatchData2Command : command
+{
+	writeMemBatchData2Command() : command(PT_WRITEMEMBATCH2)
+	{
+	}
+
+	// Payload 0:
+	DWORD writeDWORDData4 = 0x00000000; // The fifth DWORD of write data for this DRAM row (bytes 16, 17, 18, 19)
+
+	// Payload 1:
+	DWORD writeDWORDData5 = 0x00000000; // The sixth DWORD of write data for this DRAM row (bytes 20, 21, 22, 23)
+};
+
+// Once the command processor receives the PT_WRITEMEMBATCH3WRITE packet, then the write pointer is automatically advanced by one DWORD row (+32 bytes), and the batch memory write is committed to DRAM.
+struct writeMemBatchData3WriteCommand : command
+{
+	writeMemBatchData3WriteCommand() : command(PT_WRITEMEMBATCH3WRITE)
+	{
+	}
+
+	// Payload 0:
+	DWORD writeDWORDData6 = 0x00000000; // The seventh DWORD of write data for this DRAM row (bytes 24, 25, 26, 27)
+
+	// Payload 1:
+	DWORD writeDWORDData7 = 0x00000000; // The eighth DWORD of write data for this DRAM row (bytes 28, 29, 30, 31)
+};
+
 // TODO: One day implement variable-sized packets and then this can go away
 static_assert(sizeof(genericCommand) == sizeof(doNothingCommand) &&
 	sizeof(genericCommand) == sizeof(writeMemCommand) &&
@@ -1171,10 +1306,16 @@ static_assert(sizeof(genericCommand) == sizeof(doNothingCommand) &&
 	sizeof(genericCommand) == sizeof(setClipperStateCommand) &&
 	sizeof(genericCommand) == sizeof(issueQueryCommand) &&
 	sizeof(genericCommand) == sizeof(setViewportState0Command) &&
+	sizeof(genericCommand) == sizeof(setViewportStateXYCommand) &&
 	sizeof(genericCommand) == sizeof(setViewportState1Command) &&
 	sizeof(genericCommand) == sizeof(setScissorRectCommand) &&
 	sizeof(genericCommand) == sizeof(setStatsEventConfigCommand) &&
 	sizeof(genericCommand) == sizeof(setAttrInterpolatorStateCommand) &&
+	sizeof(genericCommand) == sizeof(writeMemBatchConfigCommand) &&
+	sizeof(genericCommand) == sizeof(writeMemBatchData0Command) &&
+	sizeof(genericCommand) == sizeof(writeMemBatchData1Command) &&
+	sizeof(genericCommand) == sizeof(writeMemBatchData2Command) &&
+	sizeof(genericCommand) == sizeof(writeMemBatchData3WriteCommand) &&
 	sizeof(genericCommand) == 11, "Error: Unexpected struct size!");
 
 #pragma pack(pop) // End pragma pack 1 region

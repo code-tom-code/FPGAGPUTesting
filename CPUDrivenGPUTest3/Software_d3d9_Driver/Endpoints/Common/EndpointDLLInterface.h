@@ -14,7 +14,8 @@ enum DLLEndpointMajorVersions : unsigned short
 // These options must always be a power of 2 so that they can be bitwise-OR'd together:
 enum EndpointOptionsFlags : unsigned
 {
-	NoWindow = 1, // This endpoint does not spawn a window. Do not call the SpawnWindow() function for it
+	NoWindow = 0x1, // This endpoint does not spawn a window. Do not call the SpawnWindow() function for it
+	NoMemReadSupport = 0x2, // This endpoint does not support memory reads. All memory read requests sent to this endpoint will return 0x00000000 because it does not support VRAM emulation!
 };
 
 static const unsigned DLLINFO_MAGIC = 'EDLL';
@@ -41,6 +42,7 @@ struct DLLInfo
 		bool (__stdcall *SpawnWindow)(void* hwndPtrOut); // Host calls this to create a window for this DLL. Returns true on success, or false on failure. Do not call this function if this is a windowless endpoint!
 		void (__stdcall *ProcessNewMessage)(const genericCommand* H2DCommandPacket); // Host calls this function every time a new message needs to be processed
 		void (__stdcall *ShutdownEndpoint)(); // Call this before calling FreeLibrary() to unload this DLL
+		void (__stdcall *ProcessIdle)(void); // Host calls this when there's no messages to be processed (throttled to not spam-call it). It's fine to implement this as a function that simply does nothing.
 	} H2DFunctions = {0};
 
 	EndpointOptionsFlags endpointOptions = (const EndpointOptionsFlags)0;

@@ -161,3 +161,8 @@ ILocalEndpointDLLComms::ILocalEndpointDLLComms(const char* const endpointDLL) : 
 	localResponsePackets.clear();
 	return S_OK;
 }
+
+/*virtual*/ bool ILocalEndpointDLLComms::EndpointSupportsMemReadback() const /*override*/
+{
+	return (endpointInfo.endpointOptions & EndpointOptionsFlags::NoMemReadSupport) ? false : true;
+}

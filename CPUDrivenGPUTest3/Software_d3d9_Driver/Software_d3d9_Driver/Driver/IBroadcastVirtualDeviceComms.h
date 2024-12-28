@@ -22,6 +22,7 @@ __declspec(align(16) ) struct IBroadcastVirtualDeviceComms : public IBaseDeviceC
 	virtual void IncrementRecvPacket(const unsigned packetSizeBytes) override;
 	virtual void StoreSentPacket(const genericCommand& sentPacket) override;
 	virtual void StoreRecvdPacket(const genericCommand& recvdPacket) override;
+	virtual bool EndpointSupportsMemReadback() const override;
 
 private:
 	std::vector<IBaseDeviceComms*> broadcastTargets;

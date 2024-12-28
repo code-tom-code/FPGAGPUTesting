@@ -19,7 +19,7 @@ enum DepthOverrideSettings : unsigned char
 	DOS_OverrideZEnableZWriteEnable, // All depth testing and all depth writing is always enabled
 	DOS_OverrideZEnableZWriteDisable, // All depth testing is always enabled, all depth writing is always disabled (except for depth Clear() calls)
 
-	DOS_NUM_ENTRIES
+	DOS_NUM_ENTRIES // This must always be last
 };
 
 enum StencilOverrideSettings : unsigned char
@@ -28,7 +28,7 @@ enum StencilOverrideSettings : unsigned char
 	SOS_OverrideStencilDisable, // All stencil testing and all stencil writing is disabled (except for stencil Clear() calls)
 	SOS_OverrideStencilEnable, // Stencil testing is always enabled
 
-	SOS_NUM_ENTRIES
+	SOS_NUM_ENTRIES // This must always be last
 };
 
 enum FillModeOverrideSettings : unsigned char
@@ -38,7 +38,7 @@ enum FillModeOverrideSettings : unsigned char
 	FMOS_OverrideFillWireframe, // Always use D3DFILL_WIREFRAME
 	FMOS_OverrideFillPoint, // Always use D3DFILL_POINT
 
-	FMOS_NUM_ENTRIES
+	FMOS_NUM_ENTRIES // This must always be last
 };
 
 enum ShadeModeOverrideSettings : unsigned char
@@ -47,7 +47,7 @@ enum ShadeModeOverrideSettings : unsigned char
 	SMOS_OverrideShadeFlat, // Always use D3DSHADE_FLAT
 	SMOS_OverrideShadeGouraud, // Always use D3DSHADE_GOURAUD
 
-	SMOS_NUM_ENTRIES
+	SMOS_NUM_ENTRIES // This must always be last
 };
 
 enum CullModeOverrideSettings : unsigned char
@@ -57,7 +57,7 @@ enum CullModeOverrideSettings : unsigned char
 	CMOS_OverrideCullCCW, // Always use D3DCULL_CCW
 	CMOS_OverrideCullNone, // Always use D3DCULL_NONE
 
-	CMOS_NUM_ENTRIES
+	CMOS_NUM_ENTRIES // This must always be last
 };
 
 enum FogModeOverrideSettings : unsigned char
@@ -67,7 +67,7 @@ enum FogModeOverrideSettings : unsigned char
 	FOGOS_OverrideFog_PixelFogEnable, // Pixel fogging is force-enabled
 	FOGOS_OverrideFog_VertexFogEnable, // Vertex fogging is force-enabled
 
-	FOGOS_NUM_ENTRIES
+	FOGOS_NUM_ENTRIES // This must always be last
 };
 
 enum AlphaBlendOverrideSettings : unsigned char
@@ -79,7 +79,7 @@ enum AlphaBlendOverrideSettings : unsigned char
 	ABOS_OverrideAlphaBlendAlpha, // Alpha blending is forced to use Alpha Blending
 	ABOS_OverrideAlphaBlendMod2x, // Alpha blending is forced to use Mod2x Blending
 
-	ABOS_NUM_ENTRIES
+	ABOS_NUM_ENTRIES // This must always be last
 };
 
 enum AlphaTestOverrideSettings : unsigned char
@@ -91,7 +91,7 @@ enum AlphaTestOverrideSettings : unsigned char
 	ATOS_OverrideAlphaTestEqual255, // Alpha testing is forced enabled and the test is configured for = 255
 	ATOS_OverrideAlphaTestNotEqual0, // Alpha testing is forced enabled and the test is configured for != 0
 
-	ATOS_NUM_ENTRIES
+	ATOS_NUM_ENTRIES // This must always be last
 };
 
 enum TexAddressOverrideSettings : unsigned char
@@ -106,7 +106,7 @@ enum TexAddressOverrideSettings : unsigned char
 	TAOS_OverrideBorderTransparentBlack, // All texture addressing modes are set to D3DTADDRESS_BORDER (border color set to 0x00000000)
 	TAOS_OverrideBorderOpaqueWhite, // All texture addressing modes are set to D3DTADDRESS_BORDER (border color set to 0xFFFFFFFF)
 
-	TAOS_NUM_ENTRIES
+	TAOS_NUM_ENTRIES // This must always be last
 };
 
 enum TexModeOverrideSettings : unsigned char
@@ -122,5 +122,17 @@ enum TexModeOverrideSettings : unsigned char
 	TMOS_OverrideDepth, // Force output the depth value for debugging
 	TMOS_OverrideStencil, // Force output the stencil value for debugging
 
-	TMOS_NUM_ENTRIES
+	TMOS_NUM_ENTRIES // This must always be last
+};
+
+enum TexFilterOverrideSettings : unsigned char
+{
+	TFOS_Default = 0,
+	TFOS_OverridePoint, // Force point sampling
+	TFOS_OverrideMinMagLinearMipPoint, // Force min/mag = bilinear, mip = point
+	TFOS_OverrideMinMagPointMipLinear, // Force min/mag = point, mip = linear
+	TFOS_OverrideTrilinear, // Force trilinear sampling
+	TFOS_OverrideAnisotropic, // Force anisotropic sampling
+
+	TFOS_NUM_ENTRIES // This must always be last
 };

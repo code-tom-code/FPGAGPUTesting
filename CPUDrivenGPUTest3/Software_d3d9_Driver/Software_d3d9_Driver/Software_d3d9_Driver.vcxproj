@@ -23,27 +23,27 @@
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>Software_d3d9_Driver</RootNamespace>
     <ProjectName>d3d9</ProjectName>
-    <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
     <SpectreMitigation>false</SpectreMitigation>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
     <SpectreMitigation>false</SpectreMitigation>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>NotSet</CharacterSet>
     <SpectreMitigation>false</SpectreMitigation>
@@ -51,7 +51,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>NotSet</CharacterSet>
     <SpectreMitigation>false</SpectreMitigation>
@@ -61,15 +61,23 @@
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\Props\GlobalIncludes.props" />
+    <Import Project="..\Props\D3DXLibs_x86.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\Props\GlobalIncludes.props" />
+    <Import Project="..\Props\D3DXLibs_x64.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\Props\GlobalIncludes.props" />
+    <Import Project="..\Props\D3DXLibs_x86.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\Props\GlobalIncludes.props" />
+    <Import Project="..\Props\D3DXLibs_x64.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -196,6 +204,7 @@
     <ClCompile Include="Driver\IRemoteProcessIPCComms.cpp" />
     <ClCompile Include="Driver\ISerialDeviceComms.cpp" />
     <ClCompile Include="Driver\IVirtualDeviceComms.cpp" />
+    <ClCompile Include="Driver\NetSession\NetSession.cpp" />
     <ClCompile Include="FixedFunctionToPixelShader.cpp" />
     <ClCompile Include="FixedFunctionToShader.cpp" />
     <ClCompile Include="FixedFunctionToVertexShader.cpp" />
@@ -230,6 +239,7 @@
     <ClCompile Include="SharedMemIPC\SharedMemIPC.cpp" />
     <ClCompile Include="VShaderEngine_InterpreterExec1.cpp" />
     <ClCompile Include="VShaderEngine_InterpreterExec4.cpp" />
+    <None Include="Driver\NetSession\FPGA_RUDP_Dissector.lua" />
     <None Include="FixedFuncEmu\FFPS\Include\FFPS_ApplyColorStage.fxh" />
     <None Include="FixedFuncEmu\FFPS\Include\FFPS_ArgumentSelector.fxh" />
     <None Include="FixedFuncEmu\FFPS\Include\FFPS_TexLoad.fxh" />
@@ -261,6 +271,7 @@
     <ClInclude Include="Driver\IRemoteProcessIPCComms.h" />
     <ClInclude Include="Driver\ISerialDeviceComms.h" />
     <ClInclude Include="Driver\IVirtualDeviceComms.h" />
+    <ClInclude Include="Driver\NetSession\NetSession.h" />
     <ClInclude Include="Driver\PacketDefs.h" />
     <ClInclude Include="Driver\PacketTypes.h" />
     <ClInclude Include="FixedFunctionToShader.h" />

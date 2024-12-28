@@ -1,11 +1,12 @@
 #include "d3d9include.h"
 #include "LiveResourcesRegistry.h"
 #include "..\\..\\Software_d3d9_Driver\\Driver\\GPUAllocator.h"
+#include <unordered_map>
 
 #include "ReverseShaderCompilerD3D9.h"
 
-// Global D3D9 device:
-extern LPDIRECT3DDEVICE9 d3d9dev;
+// Global D3D9EX device:
+extern LPDIRECT3DDEVICE9EX d3d9dev;
 extern __declspec(align(128) ) BYTE LocalMemory[GPU_DRAM_TOTAL_CAPACITY_BYTES];
 extern __declspec(align(128) ) DWORD LocalMemoryWriteDWORDsBitmap[GPU_DRAM_TOTAL_CAPACITY_BYTES / (sizeof(DWORD) * 32)];
 extern __declspec(align(128) ) DWORD LocalMemoryPagesDirtyBitmap[GPU_DRAM_TOTAL_CAPACITY_BYTES / GPU_PAGE_SIZE_BYTES / (sizeof(DWORD) * 8)];
@@ -308,14 +309,119 @@ void LiveResourcesRegistry::CreateNewResourceAtAddress(const unsigned gpuAddress
 	allLiveResources.insert(std::make_pair(gpuAddress, newLiveResource) );
 }
 
+struct StagingTexParams
+{
+	unsigned short Width;
+	unsigned short Height;
+	unsigned char MipLevels;
+	unsigned char FormatHash;
+
+	void InitParams(const unsigned _Width, const unsigned _Height, const unsigned _MipLevels, const D3DFORMAT format)
+	{
+		Width = (const unsigned short)_Width;
+		Height = (const unsigned short)_Height;
+		MipLevels = (const unsigned char)_MipLevels;
+		FormatHash = HashFormat(format);
+	}
+
+	inline const bool operator==(const StagingTexParams& rhs) const
+	{
+		return Width == rhs.Width &&
+			Height == rhs.Height &&
+			MipLevels == rhs.MipLevels &&
+			FormatHash == rhs.FormatHash;
+	}
+
+	// Try to compress the 32-bit D3DFORMAT into an 8-bit value:
+	static const unsigned char HashFormat(const D3DFORMAT fmt)
+	{
+		if (fmt < 200)
+		{
+			return (const unsigned char)fmt;
+		}
+
+		switch (fmt)
+		{
+		case D3DFMT_DXT1:
+			return 201;
+		case D3DFMT_DXT2:
+			return 202;
+		case D3DFMT_DXT3:
+			return 203;
+		case D3DFMT_DXT4:
+			return 204;
+		case D3DFMT_DXT5:
+			return 205;
+		case D3DFMT_UYVY:
+			return 206;
+		case D3DFMT_YUY2:
+			return 207;
+		case D3DFMT_R8G8_B8G8:
+			return 208;
+		case D3DFMT_G8R8_G8B8:
+			return 209;
+		case D3DFMT_MULTI2_ARGB8:
+			return 210;
+		default:
+			return 255;
+		}
+	}
+};
+
+template <>
+struct std::hash<StagingTexParams>
+{
+	std::size_t operator()(const StagingTexParams& key) const
+	{
+		std::size_t ret0 = 0;
+		ret0 |= key.Width;
+		ret0 |= ( (const unsigned)key.Height) << 16;
+		ret0 |= ( (const unsigned)key.MipLevels) << 8;
+		ret0 |= ( (const unsigned)key.FormatHash) << 24;
+		std::size_t ret1 = 0;
+		ret1 |= key.Width;
+		ret1 = _rotl(ret1, 13);
+		ret1 ^= key.Height;
+		ret1 = _rotl(ret1, 17);
+		ret1 ^= key.MipLevels;
+		ret1 = _rotl(ret1, 17);
+		ret1 ^= key.FormatHash;
+		return ret0 ^ ret1;
+	}
+};
+
+// Cache our CPU-side staging textures so that we don't have to constantly recreate & delete them all the time
+static std::unordered_map<StagingTexParams, LPDIRECT3DTEXTURE9> StagingTexturesCache;
+
+LPDIRECT3DTEXTURE9 GetCreateCachedStagingTexture(const unsigned short width, const unsigned short height, const unsigned char mipLevels, const D3DFORMAT format)
+{
+	StagingTexParams texParams;
+	texParams.InitParams(width, height, mipLevels, format);
+
+	std::unordered_map<StagingTexParams, LPDIRECT3DTEXTURE9>::iterator findIt = StagingTexturesCache.find(texParams);
+	if (findIt != StagingTexturesCache.end() )
+	{
+		return findIt->second;
+	}
+
+	LPDIRECT3DTEXTURE9 newTex = NULL;
+	d3d9dev->CreateTexture(width, height, mipLevels, 0, format, D3DPOOL_SYSTEMMEM, &newTex, NULL);
+
+	StagingTexturesCache.insert(std::make_pair(texParams, newTex) );
+
+	return newTex;
+}
+
 static void UpdateTextureData(LPDIRECT3DTEXTURE9 pTex, const unsigned gpuAddress, const unsigned short width, const unsigned short height, const unsigned char mipLevels, const D3DFORMAT format)
 {
+	LPDIRECT3DTEXTURE9 tempCPUTex = GetCreateCachedStagingTexture(width, height, mipLevels, format);
+
 	const unsigned mipLevelLinearSize = GetSingleElementSizeBytes(format) * (const unsigned)width * (const unsigned)height;
 	unsigned gpuMemoryOffset = gpuAddress;
 	for (unsigned mipLevel = 0; mipLevel < mipLevels; ++mipLevel)
 	{
 		D3DLOCKED_RECT d3dlr = {0};
-		pTex->LockRect(mipLevel, &d3dlr, NULL, 0);
+		tempCPUTex->LockRect(mipLevel, &d3dlr, NULL, 0);
 		BYTE* currentLockedRowStartAddress = reinterpret_cast<BYTE* const>(d3dlr.pBits);
 		const D3DCOLOR* const mipLevelStartAddress = reinterpret_cast<const D3DCOLOR* const>(LocalMemory + gpuMemoryOffset);
 		const unsigned texelRowLinearSize = GetSingleElementSizeBytes(format) * (const unsigned)width;
@@ -325,9 +431,14 @@ static void UpdateTextureData(LPDIRECT3DTEXTURE9 pTex, const unsigned gpuAddress
 			memcpy(currentLockedRowStartAddress, texelRowStartAddress, texelRowLinearSize);
 			currentLockedRowStartAddress += d3dlr.Pitch; // The row Pitch is in bytes
 		}
-		pTex->UnlockRect(mipLevel);
+		tempCPUTex->UnlockRect(mipLevel);
 
 		gpuMemoryOffset += mipLevelLinearSize;
+	}
+
+	if (FAILED(d3d9dev->UpdateTexture(tempCPUTex, pTex) ) )
+	{
+		__debugbreak();
 	}
 }
 
@@ -371,11 +482,11 @@ LPDIRECT3DTEXTURE9 LiveResourcesRegistry::GetFindOrCreateTextureAtAddress(const 
 	}
 
 	LPDIRECT3DTEXTURE9 newlyCreatedTex = NULL;
-	if (FAILED(d3d9dev->CreateTexture(width, height, mipLevels, 0, format, D3DPOOL_MANAGED, &newlyCreatedTex, NULL) ) )
+	if (FAILED(d3d9dev->CreateTexture(width, height, mipLevels, 0, format, D3DPOOL_DEFAULT, &newlyCreatedTex, NULL) ) )
 	{
-#ifdef _DEBUG
+//#ifdef _DEBUG
 		__debugbreak(); // Failed to create a new texture!
-#endif
+//#endif
 		return NULL;
 	}
 

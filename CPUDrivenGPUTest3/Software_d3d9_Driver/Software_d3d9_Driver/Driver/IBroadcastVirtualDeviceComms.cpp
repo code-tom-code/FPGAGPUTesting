@@ -91,3 +91,8 @@ __declspec(nothrow) /*virtual*/ void IBroadcastVirtualDeviceComms::EndFrame() /*
 	}
 	primaryComms->StoreRecvdPacket(recvdPacket);
 }
+
+/*virtual*/ bool IBroadcastVirtualDeviceComms::EndpointSupportsMemReadback() const /*override*/
+{
+	return primaryComms->EndpointSupportsMemReadback();
+}

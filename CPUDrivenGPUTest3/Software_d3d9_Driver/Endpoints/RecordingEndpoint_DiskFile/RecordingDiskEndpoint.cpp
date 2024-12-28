@@ -9,7 +9,7 @@
 #include <vector>
 
 static HANDLE hRecordingFile = INVALID_HANDLE_VALUE;
-static const char* const RecordingDirectoryBase = "E:\\CommandStreamRecordings";
+static const char* const RecordingDirectoryBase = "C:\\CommandStreamRecordings";
 static std::vector<genericCommand> bufferedWritePackets;
 
 const bool InitRecording()
@@ -89,7 +89,7 @@ void RecordNewIncomingPacket(const genericCommand* H2DCommandPacket)
 		{
 			// Return the value to the Host so that it knows we're done processing:
 			waitResponse response;
-			response.value = waitForDeviceIdlePacket->returnCPUValue;
+			response.value = waitForDeviceIdlePacket->returnValueToCPU;
 			response.checksum = 0;
 			response.checksum = command::ComputeChecksum(&response, sizeof(response) );
 			(*E2HReturnMessageCallback)(reinterpret_cast<const genericCommand* const>(&response) );

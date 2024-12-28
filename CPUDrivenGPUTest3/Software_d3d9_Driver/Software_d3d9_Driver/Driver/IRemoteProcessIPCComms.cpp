@@ -1,14 +1,24 @@
 #include "IRemoteProcessIPCComms.h"
 #include "..\SharedMemIPC\SharedMemIPC.h"
 #include <stdio.h>
+#include <string>
 
 // TODO: Don't hardcode this path:
 static const char* const IPCEndpointHostProcessPath = 
-#ifdef _DEBUG
-"C:\\Users\\Tom\\Documents\\Visual Studio 2017\\Projects\\Software_d3d9_Driver\\Debug\\Endpoints\\EndpointDLL_IPCHost.exe";
+#ifdef _M_X64
+	#ifdef _DEBUG
+		"C:\\Users\\Tom\\Documents\\Visual Studio 2022\\Projects\\Software_d3d9_Driver\\x64\\Debug\\Endpoints\\EndpointDLL_IPCHost.exe" // TODO: Do not hardcode these paths!
+	#else
+		"C:\\Users\\Tom\\Documents\\Visual Studio 2022\\Projects\\Software_d3d9_Driver\\x64\\Release\\Endpoints\\EndpointDLL_IPCHost.exe"
+	#endif
 #else
-"C:\\Users\\Tom\\Documents\\Visual Studio 2017\\Projects\\Software_d3d9_Driver\\Release\\Endpoints\\EndpointDLL_IPCHost.exe";
+	#ifdef _DEBUG
+		"C:\\Users\\Tom\\Documents\\Visual Studio 2022\\Projects\\Software_d3d9_Driver\\Debug\\Endpoints\\EndpointDLL_IPCHost.exe" // TODO: Do not hardcode these paths!
+	#else
+		"C:\\Users\\Tom\\Documents\\Visual Studio 2022\\Projects\\Software_d3d9_Driver\\Release\\Endpoints\\EndpointDLL_IPCHost.exe"
+	#endif
 #endif
+	;
 
 IRemoteProcessIPCComms::IRemoteProcessIPCComms() : IBaseDeviceComms(), remoteConnectionsManager(new IPC_ConnectionManager(IPCM_Server) )
 {

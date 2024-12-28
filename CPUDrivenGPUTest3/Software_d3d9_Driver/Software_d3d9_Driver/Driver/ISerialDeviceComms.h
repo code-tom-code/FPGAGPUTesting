@@ -13,6 +13,7 @@ __declspec(align(16) ) struct ISerialDeviceComms : public IBaseDeviceComms
 
 	virtual __declspec(nothrow) HRESULT __stdcall SendLoop(const BYTE* const sendBuffer, const unsigned len) override;
 	virtual __declspec(nothrow) HRESULT __stdcall RecvLoop(BYTE* const recvBuffer, const unsigned len) override;
+	virtual bool EndpointSupportsMemReadback() const override;
 
 private:
 	__declspec(nothrow) HRESULT __stdcall InternalInitComms();

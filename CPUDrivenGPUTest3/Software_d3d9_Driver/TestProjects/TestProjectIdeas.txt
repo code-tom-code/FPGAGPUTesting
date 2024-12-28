@@ -1,0 +1,57 @@
+Neat tutorials/demos to emulate (ideas came from NeHe OpenGL tutorials, the DirectX SDK's, DrunkenHyena's tutorials, etc.)
+Done - Clear color cycler
+Done - Draw a triangle and a square as two separate draw calls as a solid color (probably white or black) against the clear color background
+Done - Draw one object with flat shading and another with Gourouad shading
+Done - Do a primitives demo that shows off non-indexed triangle lists, strips, and fans as well as indexed triangle lists, strips, and fans. Be sure to also exercise the vertex offset feature (for non-indexed draw calls) and the index buffer offset (for indexed draw calls) also.
+Done - Draw a 3D rotating cube with texture-mapping (point-sampling) on each face
+- Draw one object using a solid per-material color, and another object using per-vertex color
+- Make a texture addressing testbench scene (wrap, clamp, mirror, mirroronce, border color modes mixing U and V directions with both linear and point-sampled textures used)
+Done - Draw the same cube with bilinear-interpolation
+- Draw a very simple heightmapped static terrain demo
+- Do an input assembler stress-test (using humungous vertices with holes in them, compared to packed verts, and using a bunch of different vertex formats)
+- Draw a very simple heightmapped static terrain using actual vertex texture fetch demo
+- Do a demo that showcases pretransformed vertices (D3DFVF_XYZRHW/POSITIONT). Make sure to test that triangle clipping works when pretransformed vertices are used as well.
+- Do a (fixed-function) specular vertex lighting demo
+Done - Do a mipmapping demo
+- Make a depth buffering testbench scene (make sure to test depth biasing in both D16 and D24S8/X8 formats, test reversed depth buffer and infinite far-plane tricks as well to make sure that they work)
+- Do a bitmapped font text demo
+- Do a CPU-driven particle simulation demo to test dynamic vertex buffers
+- Do a texture formats demo that shows off the same texture using different texture formats (A8R8G8B8, X8R8G8B8, R5G6B5, A1R5G5B5, A4R4G4B4, R3G3B2, A8, A8R3G3B2, X4R4G4B4, DXT1, DXT3, DXT5)
+Done - Do a demo that shows off cursor sprite rendering in both software and hardware modes
+Done - Do a demo that shows off alpha-testing (alpha-tested chain link fence, alpha-tested grass, dissolve effect, etc.)
+- Do a (vertex) fog demo
+- Do a (pixel) fog demo (Morrowind seems to use pixel fog). May be useful to combine the vertex fog and pixel fog demos together for comparison.
+- Do a planar mirror reflections demo using custom user clip-planes
+- Do a multiple viewports demo (fullscreen, "rear-view" viewport, 2D first-person viewport with squished depth range, etc.)
+- Do a fixed-function lighting demo (ambient light/s, directional light/s, spot light/s, and point light/s)
+- Do a multitexturing demo (maybe with lightmapping?)
+- Do a demo with queries (timestamp, event, occlusion queries)
+- Do a cubemapping demo
+- Do a billboarding demo (using D3D model transforms to orient the objects to always face the camera) with bushes, trees, clouds, and grass
+- Do a point sprites particle system demo
+- Do a scissor rect demo
+- Do a demo that shows off rendering lines
+- Do a demo that draws a simple (non-point-sprites) point particle system using different point colors
+- Do a stencil buffer planar reflections demo with a "water plane" (one-bit stencil masking out the reflected region)
+- Do a stencil buffer overdraw demo (D3DSDK calls this the "Stencil Depth Complexity")
+- Do a stencil shadows demo
+- Do a stencil buffer scene-to-scene wipe effect
+- Do a demo with stencil buffer decals
+- Do a demo with stencil buffer outlines
+- Do a demo that shows off two-sided stencil
+- Do a stretchrect demo that stretches a source texture onto the screen
+- Do a shadow map demo
+- Do a vertex shaders demo showing off various effects (rippling water, waving flags, scrolling UV's, planar clipping, skinned animation, simple shell offsetting in the normals direction for fur/grass/fuzz, etc.)
+- Draw a very simple 2D game that is drawn using reused tiles for the background and sprites for the characters and effects
+- Do an animated palette demo (where the image stays the same, but the color palette changes which produces an animating effect)
+- Do a volume texture demo
+- Do a projected texture demo (like the projector in the Office map in Counter-Strike)
+- Do a skinned mesh demo showing off skinned character models (can compare 1-morph, 2-morph, 3-morph, 4-morph, and N-morph blending)
+- Maybe do a depth-peeling demo if it's not too crazy?
+- Do an instancing demo (hardware instancing, shader instancing, etc.)
+- Do an alpha-blended geo demo (stained glass for alpha-blend, fire/lightning for additive blend, fog puffs for multiplicative blend, etc.)
+- Do a demo that compares and contrasts whole-material alpha, per-vertex alpha, and texture alpha
+- Do a compressed textures demo (DXT1/DXT3/DXT5)
+- Do a simple movie player to test out dynamic CPU-written dynamic texture updates
+- Do a simple render-to-texture demo (maybe a picture-in-picture thing, or a projector/CCTV scene, or even so far as a UT2004/HL2-style render-to-skybox scene?)
+- Do a lens flare effect that uses occlusion queries to determine the flare fade

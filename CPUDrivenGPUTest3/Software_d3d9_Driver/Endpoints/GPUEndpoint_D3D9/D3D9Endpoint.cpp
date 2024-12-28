@@ -17,8 +17,16 @@
 	#pragma comment (lib, "d3dx9.lib")
 #endif
 
-static LPDIRECT3D9 d3d9 = NULL;
-LPDIRECT3DDEVICE9 d3d9dev = NULL;
+#ifdef _M_X64
+	#define USE_PIX 1
+	#pragma comment(lib, "WinPixEventRuntime/WinPixEventRuntime.lib")
+#endif
+
+#include "WinPixEventRuntime/pix3.h"
+
+static LPDIRECT3D9EX d3d9ex = NULL;
+LPDIRECT3DDEVICE9EX d3d9dev = NULL;
+static HWND renderWindow_g = NULL;
 static LPDIRECT3DSURFACE9 originalBackbuffer = NULL;
 static LPDIRECT3DQUERY9 mainEventQuery = NULL;
 static bool begunSceneState = false;
@@ -28,6 +36,7 @@ static bool hasModifiedVertexDecl = true;
 static D3DVERTEXELEMENT9 buildingVertexDecl[24] = {D3DDECL_END(),D3DDECL_END(),D3DDECL_END(),D3DDECL_END(),D3DDECL_END(),D3DDECL_END(),D3DDECL_END(),D3DDECL_END(),D3DDECL_END(),D3DDECL_END(),D3DDECL_END(),D3DDECL_END(),D3DDECL_END(),D3DDECL_END(),D3DDECL_END(),D3DDECL_END(),D3DDECL_END(),D3DDECL_END(),D3DDECL_END(),D3DDECL_END(),D3DDECL_END(),D3DDECL_END(),D3DDECL_END(),D3DDECL_END()};
 static unsigned currentTextureWidthLog2 = 0;
 static unsigned currentTextureHeightLog2 = 0;
+static double ldFreq = 0.0;
 
 struct streamSourceStruct
 {
@@ -69,6 +78,9 @@ __declspec(align(128) ) DWORD LocalMemoryPagesDirtyBitmap[GPU_DRAM_TOTAL_CAPACIT
 
 // This array tracks what vertex shader programs are assigned to which slots in shader instruction-memory:
 static __declspec(align(128) ) LPDIRECT3DVERTEXSHADER9 ShaderInstructionMemory[512] = {NULL};
+
+static __declspec(align(128) ) BYTE* currentBatchWritePtr = LocalMemory;
+static __declspec(align(128) ) DWORD currentBatchWriteData[8] = {0};
 
 static LiveResourcesRegistry resourcesRegistry;
 
@@ -717,9 +729,40 @@ static void HandlePacket(const endFrameStatsResponse* const typedPacket)
 
 static void HandlePacket(const endFrameCommand* const typedPacket)
 {
+	PIXScopedEvent(PIX_COLOR_INDEX(0), "HandlePacket(endFrameCommand)");
+
 	if (begunSceneState)
 		d3d9dev->EndScene();
-	d3d9dev->Present(NULL, NULL, NULL, NULL);
+	HRESULT hrPresent = d3d9dev->Present(NULL, NULL, NULL, NULL);
+	if (FAILED(hrPresent) )
+	{
+		__debugbreak();
+		printf("%u", hrPresent);
+	}
+
+	PIXSetMarker(PIX_COLOR_INDEX(0), "End Frame Present");
+
+	static LARGE_INTEGER lastPresentTime = {0};
+
+	LARGE_INTEGER currentTime = {0};
+	QueryPerformanceCounter(&currentTime);
+
+	unsigned __int64 deltaTime = currentTime.QuadPart - lastPresentTime.QuadPart;
+	const double deltaSeconds = deltaTime / ldFreq;
+	const double deltaMilliseconds = deltaSeconds * 1000.0;
+
+	static unsigned frameCount = 0;
+
+	char buffer[256] = {0};
+	sprintf_s(buffer, "GPURenderer_D3D9 - Frame %u - %3.3f FPS (%4.3fms)", frameCount, 1.0 / deltaSeconds, deltaMilliseconds);
+	SetWindowTextA(renderWindow_g, buffer);
+
+	++frameCount;
+
+	lastPresentTime = currentTime;
+
+	PumpWindowsMessageLoop(renderWindow_g);
+
 	d3d9dev->BeginScene();
 	begunSceneState = true;
 }
@@ -1150,6 +1193,14 @@ static void HandlePacket(const setViewportState0Command* const typedPacket)
 	// Do not call SetViewport() from here. Wait until the driver sends us the next packet and then we'll set up our viewport.
 }
 
+static void HandlePacket(const setViewportStateXYCommand* const typedPacket)
+{
+	buildingViewport.X = (const DWORD)(typedPacket->viewportXOffset); // TODO: Watch out for this one in case we add the +0.5f half-pixel offset to it for D3D9 in the future
+	buildingViewport.Y = (const DWORD)(typedPacket->viewportYOffset);
+
+	// Do not call SetViewport() from here. Wait until the driver sends us the next packet and then we'll set up our viewport.
+}
+
 static void HandlePacket(const setViewportState1Command* const typedPacket)
 {
 #ifdef _DEBUG
@@ -1208,6 +1259,68 @@ static void HandlePacket(const setAttrInterpolatorStateCommand* const typedPacke
 	CachedSetSamplerState(0, D3DSAMP_ADDRESSV, addressV);
 }
 
+static void HandlePacket(const writeMemBatchConfigCommand* const typedPacket)
+{
+#ifdef _DEBUG
+	if (typedPacket->writeBeginAddr % 32 != 0)
+	{
+		__debugbreak(); // Error: Unaligned DRAM row write address
+	}
+	if (typedPacket->writeBeginAddr > (GPU_DRAM_TOTAL_CAPACITY_BYTES - 32) )
+	{
+		__debugbreak(); // Error: Cannot set the write pointer to be out of bounds!
+	}
+#endif
+	currentBatchWritePtr = LocalMemory + typedPacket->writeBeginAddr;
+}
+
+static void HandlePacket(const writeMemBatchData0Command* const typedPacket)
+{
+	currentBatchWriteData[0] = typedPacket->writeDWORDData0;
+	currentBatchWriteData[1] = typedPacket->writeDWORDData1;
+}
+
+static void HandlePacket(const writeMemBatchData1Command* const typedPacket)
+{
+	currentBatchWriteData[2] = typedPacket->writeDWORDData2;
+	currentBatchWriteData[3] = typedPacket->writeDWORDData3;
+}
+
+static void HandlePacket(const writeMemBatchData2Command* const typedPacket)
+{
+	currentBatchWriteData[4] = typedPacket->writeDWORDData4;
+	currentBatchWriteData[5] = typedPacket->writeDWORDData5;
+}
+
+static void HandlePacket(const writeMemBatchData3WriteCommand* const typedPacket)
+{
+	if (currentBatchWritePtr >= (LocalMemory + sizeof(LocalMemory) ) )
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Error: Cannot write out of bounds!
+#endif
+		currentBatchWritePtr = LocalMemory;
+	}
+
+	currentBatchWriteData[6] = typedPacket->writeDWORDData6;
+	currentBatchWriteData[7] = typedPacket->writeDWORDData7;
+
+	memcpy(currentBatchWritePtr, currentBatchWriteData, sizeof(currentBatchWriteData) );
+
+	// Track our writes in the DWORD writes bitmap:
+	const DWORD currentWritePtrOffset = currentBatchWritePtr - LocalMemory;
+	AddMemoryBitmapDWORDWrite(currentWritePtrOffset);
+	AddMemoryBitmapDWORDWrite(currentWritePtrOffset + 4);
+	AddMemoryBitmapDWORDWrite(currentWritePtrOffset + 8);
+	AddMemoryBitmapDWORDWrite(currentWritePtrOffset + 12);
+	AddMemoryBitmapDWORDWrite(currentWritePtrOffset + 16);
+	AddMemoryBitmapDWORDWrite(currentWritePtrOffset + 20);
+	AddMemoryBitmapDWORDWrite(currentWritePtrOffset + 24);
+	AddMemoryBitmapDWORDWrite(currentWritePtrOffset + 28);
+
+	currentBatchWritePtr += 32;
+}
+
 template <typename packetStructType>
 static
 #ifndef _DEBUG
@@ -1223,6 +1336,7 @@ void D3D9HandleIncomingPacket(const genericCommand* const newGenericPacket)
 {
 	if (newGenericPacket->type < command::PT_MAX_PACKET_TYPES)
 	{
+		PIXScopedEvent(PIX_COLOR_INDEX(0), "HandlePacket(%s)", packetTypeStrings[newGenericPacket->type]);
 		const unsigned char computedChecksum = command::ComputeChecksum(newGenericPacket, sizeof(genericCommand) );
 		if (newGenericPacket->checksum == computedChecksum)
 		{
@@ -1232,12 +1346,6 @@ void D3D9HandleIncomingPacket(const genericCommand* const newGenericPacket)
 #ifdef _DEBUG
 			{
 				__debugbreak(); // Should never be here! We already checked for out-of-range packet type earlier!
-			}
-#endif
-			case command::PT_REMOVED7:
-#ifdef _DEBUG
-			{
-				__debugbreak(); // Should never be here! Don't send packets with removed enum values!
 			}
 #endif
 			case command::PT_DONOTHING:
@@ -1372,6 +1480,10 @@ void D3D9HandleIncomingPacket(const genericCommand* const newGenericPacket)
 				CallHandlePacket<setViewportState0Command>(newGenericPacket);
 				break;
 
+			case command::PT_SETVIEWPORTPARAMSXY:
+				CallHandlePacket<setViewportStateXYCommand>(newGenericPacket);
+				break;
+
 			case command::PT_SETVIEWPORTPARAMS1:
 				CallHandlePacket<setViewportState1Command>(newGenericPacket);
 				break;
@@ -1382,6 +1494,26 @@ void D3D9HandleIncomingPacket(const genericCommand* const newGenericPacket)
 
 			case command::PT_SETINTERPOLATORSTATE:
 				CallHandlePacket<setAttrInterpolatorStateCommand>(newGenericPacket);
+				break;
+
+			case command::PT_WRITEMEMBATCHCONFIG:
+				CallHandlePacket<writeMemBatchConfigCommand>(newGenericPacket);
+				break;
+
+			case command::PT_WRITEMEMBATCH0:
+				CallHandlePacket<writeMemBatchData0Command>(newGenericPacket);
+				break;
+
+			case command::PT_WRITEMEMBATCH1:
+				CallHandlePacket<writeMemBatchData1Command>(newGenericPacket);
+				break;
+
+			case command::PT_WRITEMEMBATCH2:
+				CallHandlePacket<writeMemBatchData2Command>(newGenericPacket);
+				break;
+
+			case command::PT_WRITEMEMBATCH3WRITE:
+				CallHandlePacket<writeMemBatchData3WriteCommand>(newGenericPacket);
 				break;
 			}
 		}
@@ -1544,8 +1676,12 @@ static void SetInitialState()
 
 const bool D3D9CreateDevice(HWND renderWindow, const unsigned windowWidth, const unsigned windowHeight)
 {
+	LARGE_INTEGER freq = {0};
+	QueryPerformanceFrequency(&freq);
+	ldFreq = (const double)freq.QuadPart;
+
 #ifdef _DEBUG
-	if (d3d9 != NULL)
+	if (d3d9ex != NULL)
 	{
 		__debugbreak(); // Only call this function once!
 	}
@@ -1554,10 +1690,9 @@ const bool D3D9CreateDevice(HWND renderWindow, const unsigned windowWidth, const
 		__debugbreak(); // Only call this function once!
 	}
 #endif
-	d3d9 = Direct3DCreate9(D3D_SDK_VERSION);
-	if (!d3d9)
+	if (FAILED(Direct3DCreate9Ex(D3D_SDK_VERSION, &d3d9ex) ) || !d3d9ex)
 	{
-		printf("Error in Direct3DCreate9(). GLE: %u\n", GetLastError() );
+		printf("Error in Direct3DCreate9Ex(). GLE: %u\n", GetLastError() );
 		return false;
 	}
 
@@ -1566,13 +1701,13 @@ const bool D3D9CreateDevice(HWND renderWindow, const unsigned windowWidth, const
 	d3dpp.BackBufferHeight = windowHeight;
 	d3dpp.BackBufferFormat = D3DFMT_X8R8G8B8;
 	d3dpp.BackBufferCount = 1;
-	d3dpp.SwapEffect = D3DSWAPEFFECT_COPY;
+	d3dpp.SwapEffect = D3DSWAPEFFECT_FLIPEX;
 	d3dpp.hDeviceWindow = renderWindow;
 	d3dpp.Windowed = TRUE;
 	d3dpp.EnableAutoDepthStencil = TRUE;
 	d3dpp.AutoDepthStencilFormat = D3DFMT_D24S8;
 	d3dpp.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
-	HRESULT createDeviceHR = d3d9->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, renderWindow, D3DCREATE_HARDWARE_VERTEXPROCESSING, &d3dpp, &d3d9dev);
+	HRESULT createDeviceHR = d3d9ex->CreateDeviceEx(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, renderWindow, D3DCREATE_HARDWARE_VERTEXPROCESSING, &d3dpp, NULL, &d3d9dev);
 	if (FAILED(createDeviceHR) || !d3d9dev)
 	{
 		printf("Error in CreateDevice(). HRESULT: 0x%08X. GLE: %u\n", createDeviceHR, GetLastError() );
@@ -1596,6 +1731,8 @@ const bool D3D9CreateDevice(HWND renderWindow, const unsigned windowWidth, const
 
 	SetInitialState();
 
+	renderWindow_g = renderWindow;
+
 	return true;
 }
 
@@ -1604,16 +1741,16 @@ void D3D9ShutdownDevice()
 #ifdef _DEBUG
 	if (d3d9dev == NULL)
 	{
-		__debugbreak(); // Can't shutdown the D3D9 device if it has never been initialized in the first place!
+		__debugbreak(); // Can't shutdown the D3D9EX device if it has never been initialized in the first place!
 	}
-	if (d3d9 == NULL)
+	if (d3d9ex == NULL)
 	{
-		__debugbreak(); // Can't shutdown the D3D9 interface if it has never been initialized in the first place!
+		__debugbreak(); // Can't shutdown the D3D9EX interface if it has never been initialized in the first place!
 	}
 #endif
 	d3d9dev->Release();
 	d3d9dev = NULL;
 
-	d3d9->Release();
-	d3d9 = NULL;
+	d3d9ex->Release();
+	d3d9ex = NULL;
 }

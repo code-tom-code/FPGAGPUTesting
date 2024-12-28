@@ -61,16 +61,68 @@ __declspec(nothrow) HRESULT __stdcall IBaseDeviceComms::DeviceMemSet(gpuvoid* co
 	}
 
 	const unsigned numDwords = dwByteLength / sizeof(DWORD);
-	for (unsigned dwordID = 0; dwordID < numDwords; ++dwordID)
+	bool hasConfiguredBatchWrites = false;
+	for (unsigned dwordID = 0; dwordID < numDwords;)
 	{
-		writeMemCommand newWriteMemPacket;
-		newWriteMemPacket.writeDWORDAddr = dwordID * sizeof(DWORD) + (const DWORD)deviceDestAddr;
-		newWriteMemPacket.writeVal = dwSetVal;
-		newWriteMemPacket.SetComputeChecksum(&newWriteMemPacket);
+		const DWORD thisWriteAddr = dwordID * sizeof(DWORD) + (const DWORD)deviceDestAddr;
+		if (thisWriteAddr % GPU_DRAM_TRANSACTION_SIZE_BYTES == 0 && 
+			numDwords - dwordID >= 8) // Aligned batched writes of entire DRAM rows:
+		{
+			BYTE stackPackets[sizeof(genericCommand) * 5];
+			if (hasConfiguredBatchWrites == false)
+			{
+				writeMemBatchConfigCommand* const batchConfigPacket = new (stackPackets) writeMemBatchConfigCommand();
+				batchConfigPacket->writeBeginAddr = thisWriteAddr;
+				batchConfigPacket->SetComputeChecksum(batchConfigPacket);
+			}
 
-		HRESULT sendHR = SendLoop( (const BYTE* const)&newWriteMemPacket, sizeof(newWriteMemPacket) );
-		if (FAILED(sendHR) )
-			return sendHR;
+			writeMemBatchData0Command* const writeData0Packet = new (stackPackets + sizeof(genericCommand) * 1) writeMemBatchData0Command();
+			writeMemBatchData1Command* const writeData1Packet = new (stackPackets + sizeof(genericCommand) * 2) writeMemBatchData1Command();
+			writeMemBatchData2Command* const writeData2Packet = new (stackPackets + sizeof(genericCommand) * 3) writeMemBatchData2Command();
+			writeMemBatchData3WriteCommand* const writeData3Packet = new (stackPackets + sizeof(genericCommand) * 4) writeMemBatchData3WriteCommand();
+
+			writeData0Packet->writeDWORDData0 = dwSetVal;
+			writeData0Packet->writeDWORDData1 = dwSetVal;
+			writeData1Packet->writeDWORDData2 = dwSetVal;
+			writeData1Packet->writeDWORDData3 = dwSetVal;
+			writeData2Packet->writeDWORDData4 = dwSetVal;
+			writeData2Packet->writeDWORDData5 = dwSetVal;
+			writeData3Packet->writeDWORDData6 = dwSetVal;
+			writeData3Packet->writeDWORDData7 = dwSetVal;
+			writeData0Packet->SetComputeChecksum(writeData0Packet);
+			writeData1Packet->SetComputeChecksum(writeData1Packet);
+			writeData2Packet->SetComputeChecksum(writeData2Packet);
+			writeData3Packet->SetComputeChecksum(writeData3Packet);
+
+			if (hasConfiguredBatchWrites == false)
+			{
+				HRESULT sendHR = SendLoop(stackPackets, sizeof(genericCommand) * 5);
+				if (FAILED(sendHR) )
+					return sendHR;
+				hasConfiguredBatchWrites = true;
+			}
+			else
+			{
+				HRESULT sendHR = SendLoop(stackPackets + sizeof(genericCommand), sizeof(genericCommand) * 4);
+				if (FAILED(sendHR) )
+					return sendHR;
+			}
+
+			dwordID += 8;
+		}
+		else
+		{
+			writeMemCommand newWriteMemPacket;
+			newWriteMemPacket.writeDWORDAddr = thisWriteAddr;
+			newWriteMemPacket.writeVal = dwSetVal;
+			newWriteMemPacket.SetComputeChecksum(&newWriteMemPacket);
+
+			HRESULT sendHR = SendLoop( (const BYTE* const)&newWriteMemPacket, sizeof(newWriteMemPacket) );
+			if (FAILED(sendHR) )
+				return sendHR;
+
+			++dwordID;
+		}
 	}
 
 	return S_OK;
@@ -139,21 +191,71 @@ __declspec(nothrow) HRESULT __stdcall IBaseDeviceComms::DeviceMemCopy(gpuvoid* c
 
 	const DWORD* const readMem = (const DWORD* const)sourceCPUAddr;
 	const unsigned numDwords = dwByteLength / sizeof(DWORD);
-	for (unsigned dwordID = 0; dwordID < numDwords; ++dwordID)
+	bool hasConfiguredBatchWrites = false;
+	for (unsigned dwordID = 0; dwordID < numDwords;)
 	{
-		const DWORD newVal = readMem[dwordID];
-		writeMemCommand newWriteMemPacket;
-		newWriteMemPacket.writeDWORDAddr = dwordID * sizeof(DWORD) + (const DWORD)deviceDestAddr;
-		newWriteMemPacket.writeVal = newVal;
-		newWriteMemPacket.SetComputeChecksum(&newWriteMemPacket);
+		const DWORD thisWriteAddr = dwordID * sizeof(DWORD) + (const DWORD)deviceDestAddr;
+		if (thisWriteAddr % GPU_DRAM_TRANSACTION_SIZE_BYTES == 0 && 
+			numDwords - dwordID >= 8) // Aligned batched writes of entire DRAM rows:
+		{
+			BYTE stackPackets[sizeof(genericCommand) * 5];
+			if (hasConfiguredBatchWrites == false)
+			{
+				writeMemBatchConfigCommand* const batchConfigPacket = new (stackPackets) writeMemBatchConfigCommand();
+				batchConfigPacket->writeBeginAddr = thisWriteAddr;
+				batchConfigPacket->SetComputeChecksum(batchConfigPacket);
+			}
 
-		HRESULT sendHR = SendLoop( (const BYTE* const)&newWriteMemPacket, sizeof(newWriteMemPacket) );
-		if (FAILED(sendHR) )
-			return sendHR;
+			writeMemBatchData0Command* const writeData0Packet = new (stackPackets + sizeof(genericCommand) * 1) writeMemBatchData0Command();
+			writeMemBatchData1Command* const writeData1Packet = new (stackPackets + sizeof(genericCommand) * 2) writeMemBatchData1Command();
+			writeMemBatchData2Command* const writeData2Packet = new (stackPackets + sizeof(genericCommand) * 3) writeMemBatchData2Command();
+			writeMemBatchData3WriteCommand* const writeData3Packet = new (stackPackets + sizeof(genericCommand) * 4) writeMemBatchData3WriteCommand();
+
+			writeData0Packet->writeDWORDData0 = readMem[dwordID + 0];
+			writeData0Packet->writeDWORDData1 = readMem[dwordID + 1];
+			writeData1Packet->writeDWORDData2 = readMem[dwordID + 2];
+			writeData1Packet->writeDWORDData3 = readMem[dwordID + 3];
+			writeData2Packet->writeDWORDData4 = readMem[dwordID + 4];
+			writeData2Packet->writeDWORDData5 = readMem[dwordID + 5];
+			writeData3Packet->writeDWORDData6 = readMem[dwordID + 6];
+			writeData3Packet->writeDWORDData7 = readMem[dwordID + 7];
+			writeData0Packet->SetComputeChecksum(writeData0Packet);
+			writeData1Packet->SetComputeChecksum(writeData1Packet);
+			writeData2Packet->SetComputeChecksum(writeData2Packet);
+			writeData3Packet->SetComputeChecksum(writeData3Packet);
+
+			if (hasConfiguredBatchWrites == false)
+			{
+				HRESULT sendHR = SendLoop(stackPackets, sizeof(genericCommand) * 5);
+				if (FAILED(sendHR) )
+					return sendHR;
+				hasConfiguredBatchWrites = true;
+			}
+			else
+			{
+				HRESULT sendHR = SendLoop(stackPackets + sizeof(genericCommand), sizeof(genericCommand) * 4);
+				if (FAILED(sendHR) )
+					return sendHR;
+			}
+
+			dwordID += 8;
+		}
+		else // Single-DWORD writes
+		{
+			const DWORD newVal = readMem[dwordID];
+			writeMemCommand newWriteMemPacket;
+			newWriteMemPacket.writeDWORDAddr = thisWriteAddr;
+			newWriteMemPacket.writeVal = newVal;
+			newWriteMemPacket.SetComputeChecksum(&newWriteMemPacket);
+
+			HRESULT sendHR = SendLoop( (const BYTE* const)&newWriteMemPacket, sizeof(newWriteMemPacket) );
+			if (FAILED(sendHR) )
+				return sendHR;
+			++dwordID;
+		}
 	}
 
 	// Validate copies by reading the values back and then comparing the memory for equality:
-
 #ifdef _DEBUG
 	if (FAILED(DeviceValidateMemory(deviceDestAddr, sourceCPUAddr, dwByteLength) ) )
 		return E_FAIL;
@@ -221,6 +323,12 @@ __declspec(nothrow) HRESULT __stdcall IBaseDeviceComms::ReadFromDevice(const gpu
 		__debugbreak();
 #endif
 		return E_INVALIDARG;
+	}
+
+	// Skip the actual memory readback in case this endpoint doesn't support it:
+	if (!EndpointSupportsMemReadback() )
+	{
+		return S_OK;
 	}
 
 #ifdef PRINT_COMMS
@@ -354,13 +462,18 @@ __declspec(nothrow) HRESULT __stdcall IBaseDeviceComms::DeviceValidateMemory(con
 	std::vector<BYTE> gpuBytes;
 	gpuBytes.resize(dwByteLength);
 	const HRESULT hrReadResult = ReadFromDevice(deviceSrcAddr, &(gpuBytes.front() ), dwByteLength);
-	if (memcmp(&(gpuBytes.front() ), compareCPUAddr, dwByteLength) != 0)
+	if (EndpointSupportsMemReadback() )
 	{
+		if (memcmp(&(gpuBytes.front() ), compareCPUAddr, dwByteLength) != 0)
+		{
 #ifdef _DEBUG
-		__debugbreak();
+			__debugbreak();
 #endif
-		return E_FAIL;
+			return E_FAIL;
+		}
+		else
+			return hrReadResult;
 	}
 	else
-		return hrReadResult;
+		return S_OK;
 }

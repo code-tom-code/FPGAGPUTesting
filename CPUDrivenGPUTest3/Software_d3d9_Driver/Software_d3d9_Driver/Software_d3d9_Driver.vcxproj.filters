@@ -61,6 +61,18 @@
     <Filter Include="Source Files\SharedMemIPC">
       <UniqueIdentifier>{2f3d4144-e1d9-4021-9990-645d63add7aa}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Driver\NetSession">
+      <UniqueIdentifier>{386d697e-061a-462b-8e34-917d1cbecea7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Driver\NetSession">
+      <UniqueIdentifier>{88040923-b503-44fc-8240-e9c604292e46}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\Driver">
+      <UniqueIdentifier>{606a1611-8699-4cf5-8281-6cd6bd3927c8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\Driver\NetSession">
+      <UniqueIdentifier>{7bb87fc8-ddf1-4f69-ba0b-d1823acec281}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="hookd3d9.cpp">
@@ -216,6 +228,9 @@
     <ClCompile Include="SharedMemIPC\SharedMemIPC.cpp">
       <Filter>Source Files\SharedMemIPC</Filter>
     </ClCompile>
+    <ClCompile Include="Driver\NetSession\NetSession.cpp">
+      <Filter>Source Files\Driver\NetSession</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Source.def">
@@ -238,6 +253,9 @@
     </None>
     <None Include="FixedFuncEmu\FFVS\Include\FFVS_CalculateSingleLight.fxh">
       <Filter>Resource Files\FixedFunctionEmu\FFVS\Include</Filter>
+    </None>
+    <None Include="Driver\NetSession\FPGA_RUDP_Dissector.lua">
+      <Filter>Resource Files\Driver\NetSession</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -405,6 +423,9 @@
     </ClInclude>
     <ClInclude Include="Driver\GPUTypes.h">
       <Filter>Header Files\Driver</Filter>
+    </ClInclude>
+    <ClInclude Include="Driver\NetSession\NetSession.h">
+      <Filter>Header Files\Driver\NetSession</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

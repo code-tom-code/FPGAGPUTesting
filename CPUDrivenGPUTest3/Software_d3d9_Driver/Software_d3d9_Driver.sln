@@ -32,6 +32,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RecordingPlayback", "Endpoi
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GPUEndpoint_Serial", "Endpoints\GPUEndpoint_Serial\GPUEndpoint_Serial.vcxproj", "{4689050F-282F-4F97-B218-4005A29A2294}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GPUEndpoint_Network", "Endpoints\GPUEndpoint_Network\GPUEndpoint_Network.vcxproj", "{4689050F-282F-4F97-B218-4005A29A2299}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -112,6 +114,14 @@ Global
 		{4689050F-282F-4F97-B218-4005A29A2294}.Release|Win32.Build.0 = Release|Win32
 		{4689050F-282F-4F97-B218-4005A29A2294}.Release|x64.ActiveCfg = Release|x64
 		{4689050F-282F-4F97-B218-4005A29A2294}.Release|x64.Build.0 = Release|x64
+		{4689050F-282F-4F97-B218-4005A29A2299}.Debug|Win32.ActiveCfg = Debug|Win32
+		{4689050F-282F-4F97-B218-4005A29A2299}.Debug|Win32.Build.0 = Debug|Win32
+		{4689050F-282F-4F97-B218-4005A29A2299}.Debug|x64.ActiveCfg = Debug|x64
+		{4689050F-282F-4F97-B218-4005A29A2299}.Debug|x64.Build.0 = Debug|x64
+		{4689050F-282F-4F97-B218-4005A29A2299}.Release|Win32.ActiveCfg = Release|Win32
+		{4689050F-282F-4F97-B218-4005A29A2299}.Release|Win32.Build.0 = Release|Win32
+		{4689050F-282F-4F97-B218-4005A29A2299}.Release|x64.ActiveCfg = Release|x64
+		{4689050F-282F-4F97-B218-4005A29A2299}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -122,6 +132,7 @@ Global
 		{0BFA64C1-0009-482E-AE28-A97846D412EA} = {B618D558-7FCF-4232-AA55-336A38C0977E}
 		{11E17A51-E5A8-4AE6-B4A2-9C800C60D94E} = {B618D558-7FCF-4232-AA55-336A38C0977E}
 		{4689050F-282F-4F97-B218-4005A29A2294} = {B618D558-7FCF-4232-AA55-336A38C0977E}
+		{4689050F-282F-4F97-B218-4005A29A2299} = {B618D558-7FCF-4232-AA55-336A38C0977E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {5E04EDFD-1D25-4070-891C-F7243B95D719}

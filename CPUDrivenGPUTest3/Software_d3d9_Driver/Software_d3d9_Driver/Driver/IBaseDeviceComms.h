@@ -116,6 +116,11 @@ __declspec(align(16) ) struct __declspec(novtable) IBaseDeviceComms
 		recvdPacketsThisFrame.push_back(recvdPacket);
 	}
 
+	virtual bool EndpointSupportsMemReadback() const
+	{
+		return false;
+	}
+
 protected:
 	static void SetGlobalDeviceComms(IBaseDeviceComms* const newGlobalDeviceComms)
 	{

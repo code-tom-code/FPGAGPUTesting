@@ -15,6 +15,7 @@ __declspec(align(16) ) struct ILocalEndpointDLLComms : public IBaseDeviceComms
 
 	virtual __declspec(nothrow) HRESULT __stdcall SendLoop(const BYTE* const sendBuffer, const unsigned len) override;
 	virtual __declspec(nothrow) HRESULT __stdcall RecvLoop(BYTE* const recvBuffer, const unsigned len) override;
+	virtual bool EndpointSupportsMemReadback() const override;
 
 	static void __stdcall ReturnMessageHandlerFunc(const genericCommand* const D2HReplyPacket);
 

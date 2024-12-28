@@ -20,6 +20,7 @@
 #include "Overlay/DebugOverlay.h"
 #include "Driver/ISerialDeviceComms.h"
 #include "Driver/IRemoteProcessIPCComms.h"
+#include "Driver/INetSocketDeviceComms.h"
 #include "Driver/ILocalEndpointDLLComms.h"
 #include "Driver/IBroadcastVirtualDeviceComms.h"
 #include "Driver/GPUAllocator.h"
@@ -55,7 +56,7 @@ static const D3DXVECTOR4 vertShaderInputRegisterDefault(0.0f, 0.0f, 0.0f, 1.0f);
 
 static const unsigned twoVecBytes[4] = { 0x2, 0x2, 0x2, 0x2 };
 static const __m128i twoVec = *(const __m128i* const)twoVecBytes;
-static const unsigned intBoundsQuadAlignVecBytes[4] = { ~0x1, ~0x1, ~0x0, ~0x0 };
+static const unsigned intBoundsQuadAlignVecBytes[4] = { ~0x1u, ~0x1u, ~0x0u, ~0x0u };
 static const __m128i intBoundsQuadAlignVec = *(const __m128i* const)intBoundsQuadAlignVecBytes;
 
 static const D3DXVECTOR4 staticColorWhiteOpaque(1.0f, 1.0f, 1.0f, 1.0f);
@@ -1216,7 +1217,7 @@ static inline const bool IsHoldingEndToSkipDrawCalls(void)
 	const DWORD currentTime = GetTickCount();
 	if (currentTime != lastCheckedTicks)
 	{
-		if ( (GetAsyncKeyState(VK_END) & 0x8000) )
+		if ( (GetKeyState(VK_END) & 0x8000) )
 			lastCheckedIsHoldingDownEnd = true;
 		else
 			lastCheckedIsHoldingDownEnd = false;
@@ -1267,7 +1268,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::Present(THI
 	ResetHoldingDownEndToSkip();
 #endif // ENABLE_END_TO_SKIP_DRAWS
 
-	if (GetPrintScreenCapturesScreenshot() && GetAsyncKeyState(VK_SNAPSHOT) )
+	if (false)//if (GetPrintScreenCapturesScreenshot() && GetAsyncKeyState(VK_SNAPSHOT) )
 	{
 		static const char* const outputFilename = "ScreencapDump.tga";
 		printf("Dumping file to \"%s\" (please be patient)...\n", outputFilename);
@@ -1307,7 +1308,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::Present(THI
 		PlaySoundA("C:\\Windows\\Media\\tada.wav", GetModuleHandleA(NULL), SND_FILENAME); // Play a sound file to indicate that the copy has finished!
 	}
 
-	if (GetAsyncKeyState(VK_F11) && !IsDebuggerPresent() ) // We can't use F5, F10, or F11 while debugging or else our GetAsyncKeyState()'s get triggered every time you step in the debugger
+	if (false)//if (GetAsyncKeyState(VK_F11) && !IsDebuggerPresent() ) // We can't use F5, F10, or F11 while debugging or else our GetAsyncKeyState()'s get triggered every time you step in the debugger
 	{
 		GetDeviceStats().ArmCollectEventDataNextFrame();
 	}
@@ -1319,6 +1320,13 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::Present(THI
 #ifdef SURFACE_MAGIC_COOKIE
 	ValidateSurfaceMagicCookie(implicitSwapChain->GetInternalBackBuffer()->GetSurfaceBytes() );
 #endif
+
+	unsigned allocsThisFrame = 0;
+	unsigned allocBytesThisFrame = 0;
+	unsigned freesThisFrame = 0;
+	unsigned freeBytesThisFrame = 0;
+	unsigned rollingAvgNumPlacements = 0;
+	GPUAlloc_EndFrame(allocsThisFrame, allocBytesThisFrame, freesThisFrame, freeBytesThisFrame, rollingAvgNumPlacements);
 
 	static LARGE_INTEGER lastPresentTime = {0};
 	if (lastPresentTime.QuadPart == 0)
@@ -1338,7 +1346,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::Present(THI
 		{
 			static DWORD lastPrintTime = 0;
 			const unsigned currentTime = GetTickCount();
-			//if (currentTime - lastPrintTime > 33)
+			if (currentTime - lastPrintTime > 1)
 			{
 				HWND mainWindowWnd = NULL;
 				if (initialCreateFocusWindow)
@@ -1346,14 +1354,17 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::Present(THI
 				else
 					mainWindowWnd = initialCreateDeviceWindow;
 
-				char buffer[64] = {0};
+				char buffer[128] = {0};
 #pragma warning(push)
 #pragma warning(disable:4996)
-				const unsigned len = sprintf(buffer, "%s%03.3fms per frame (%03.3fFPS)\n", 
-					(GetKeyState(VK_SCROLL) & 0x0001) ? "[Paused] " : "", 
-					timeDeltaSeconds * 1000.0f, 1.0f / timeDeltaSeconds);
+				//const unsigned len = sprintf(buffer, "%s%03.3fms per frame (%03.3fFPS)\n", 
+					///*(GetKeyState(VK_SCROLL) & 0x0001) ? "[Paused] " :*/ "", 
+					//timeDeltaSeconds * 1000.0f, 1.0f / timeDeltaSeconds);
+				sprintf(buffer, "Allocs: %u bytes (%u allocs); Frees: %u bytes (%u frees); NumPlacementsAvg: %u\n", allocBytesThisFrame, allocsThisFrame, freeBytesThisFrame, freesThisFrame, rollingAvgNumPlacements);
 #pragma warning(pop)
 				DWORD numCharsWritten = 0;
+
+				OutputDebugStringA(buffer);
 
 				SetWindowTextA(mainWindowWnd, buffer);
 				lastPrintTime = currentTime;
@@ -1361,7 +1372,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::Present(THI
 		}
 
 		// While SCROLL LOCK is toggled on
-		while (GetKeyState(VK_SCROLL) & 0x0001)
+		while (false)//GetKeyState(VK_SCROLL) & 0x0001)
 		{
 			// Sleep to not burn all of our CPU cycles doing nothing
 			Sleep(8);
@@ -2989,14 +3000,14 @@ void IDirect3DDevice9Hook::ApplyViewportTransform(D3DXVECTOR4& positionT) const
 	const float reciprocalHomogenousW = 1.0f / positionT.w;
 
 	// Scale [-1, 1] space to [0.5, width + 0.5] space
-	positionT.x = positionT.x * reciprocalHomogenousW * currentState.cachedViewport.halfWidthF + currentState.cachedViewport.halfWidthF
+	positionT.x = positionT.x * reciprocalHomogenousW * currentState.cachedViewport.halfWidthF + currentState.cachedViewport.halfWidthF + currentState.cachedViewport.fLeft
 #ifdef ADD_D3D9_HALFPIXEL_OFFSET
 		+ 0.5f
 #endif
 		;
 
 	// Scale [-1, 1] space to [0.5, height + 0.5] space
-	positionT.y = positionT.y * reciprocalHomogenousW * -currentState.cachedViewport.halfHeightF + currentState.cachedViewport.halfHeightF // Note, do the Y-flip here
+	positionT.y = positionT.y * reciprocalHomogenousW * -currentState.cachedViewport.halfHeightF + currentState.cachedViewport.halfHeightF + currentState.cachedViewport.fTop // Note, do the Y-flip here
 #ifdef ADD_D3D9_HALFPIXEL_OFFSET
 		+ 0.5f
 #endif
@@ -3035,6 +3046,10 @@ void IDirect3DDevice9Hook::ApplyViewportTransform4(D3DXVECTOR4* (&positionT4)[4]
 	positionT4[1]->x += currentState.cachedViewport.halfWidthF;
 	positionT4[2]->x += currentState.cachedViewport.halfWidthF;
 	positionT4[3]->x += currentState.cachedViewport.halfWidthF;
+	positionT4[0]->x += currentState.cachedViewport.fLeft;
+	positionT4[1]->x += currentState.cachedViewport.fLeft;
+	positionT4[2]->x += currentState.cachedViewport.fLeft;
+	positionT4[3]->x += currentState.cachedViewport.fLeft;
 #ifdef ADD_D3D9_HALFPIXEL_OFFSET
 	positionT4[0]->x += 0.5f;
 	positionT4[1]->x += 0.5f;
@@ -3055,6 +3070,10 @@ void IDirect3DDevice9Hook::ApplyViewportTransform4(D3DXVECTOR4* (&positionT4)[4]
 	positionT4[1]->y += currentState.cachedViewport.halfHeightF;
 	positionT4[2]->y += currentState.cachedViewport.halfHeightF;
 	positionT4[3]->y += currentState.cachedViewport.halfHeightF;
+	positionT4[0]->y += currentState.cachedViewport.fTop;
+	positionT4[1]->y += currentState.cachedViewport.fTop;
+	positionT4[2]->y += currentState.cachedViewport.fTop;
+	positionT4[3]->y += currentState.cachedViewport.fTop;
 #ifdef ADD_D3D9_HALFPIXEL_OFFSET
 	positionT4[0]->y += 0.5f;
 	positionT4[1]->y += 0.5f;
@@ -4525,8 +4544,8 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawPrimiti
 #endif
 
 	{
-		GPUCommandList newRecordingCommandList;
-		baseDevice->BeginRecordingCommandList(&newRecordingCommandList);
+		GPUCommandList* newRecordingCommandList = new GPUCommandList;
+		baseDevice->BeginRecordingCommandList(newRecordingCommandList);
 		DeviceSetCurrentState(PrimitiveType, NULL); // Update the device state
 		DeviceSetVertexShader(); // Set our current vertex shader on the device (has the side effect of overwriting the 0th stream source register, so make sure to call this before DeviceSetVertexStreamsAndDecl() )
 		DeviceSetVertexStreamsAndDecl(); // Bind our current vertex streams and set up our vertex decl
@@ -4534,7 +4553,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawPrimiti
 
 		CreateOrUseCachedCommandList(newRecordingCommandList, cachedCommandLists);
 		DeviceSetUsedVertexShaderConstants(); // Copy over and set our vertex shader constant registers
-		CallRunCommandList(newRecordingCommandList);
+		CallRunCommandList(*newRecordingCommandList);
 	}
 
 	if (GetDeviceStats().IsCollectingEventDataThisFrame() )
@@ -4644,28 +4663,29 @@ const bool IDirect3DDevice9Hook::CreateOrUseCachedVertDataBuffer(deviceAllocated
 	return true;
 }
 
-/*static*/ const int IDirect3DDevice9Hook::FindExistingCommandList(const GPUCommandList& newCommandList, const unsigned __int64 newCommandListHash, const std::vector<GPUCommandList>& cachedCommandLists)
+/*static*/ const int IDirect3DDevice9Hook::FindExistingCommandList(const GPUCommandList* const newCommandList, const unsigned __int64 newCommandListHash, const std::vector<GPUCommandList*>& cachedCommandLists)
 {
 	const int numExistingBuffers = cachedCommandLists.size();
 	
 	// Walk the array backwards since our most recently-accessed elements start at the end and they are most likely to be used!
 	for (int x = numExistingBuffers - 1; x >= 0; --x)
 	{
-		const GPUCommandList& compareCommandList = cachedCommandLists[x];
-		if (newCommandListHash == compareCommandList.commandsHash &&
-			newCommandList.commands.size() == compareCommandList.commands.size() )
+		const GPUCommandList* const compareCommandList = cachedCommandLists[x];
+		if (newCommandListHash == compareCommandList->commandsHash &&
+			newCommandList->commands.size() == compareCommandList->commands.size() )
 			return x;
 	}
 	return -1;
 }
 
 // Returns true if this is a fresh allocation, or false if it is a reused identically matching buffer
-const bool IDirect3DDevice9Hook::CreateOrUseCachedCommandList(GPUCommandList& newCommandList, std::vector<GPUCommandList>& cachedDeviceCommandLists)
+const bool IDirect3DDevice9Hook::CreateOrUseCachedCommandList(GPUCommandList*& newCommandList, std::vector<GPUCommandList*>& cachedDeviceCommandLists)
 {
-	const unsigned __int64 recordingListHash = newCommandList.ComputeCommandsHash();
+	const unsigned __int64 recordingListHash = newCommandList->ComputeCommandsHash();
 	const int foundIndex = FindExistingCommandList(newCommandList, recordingListHash, cachedDeviceCommandLists);
 	if (foundIndex >= 0)
 	{
+		delete newCommandList;
 		newCommandList = cachedDeviceCommandLists[foundIndex];
 		cachedDeviceCommandLists.erase(cachedDeviceCommandLists.begin() + foundIndex);
 		cachedDeviceCommandLists.insert(cachedDeviceCommandLists.end(), newCommandList); // Move our found element to the end of the vector so we know that it's the most recently used element
@@ -4677,12 +4697,13 @@ const bool IDirect3DDevice9Hook::CreateOrUseCachedCommandList(GPUCommandList& ne
 
 	if (cachedDeviceCommandLists.size() >= 2048)
 	{
-		GPUCommandList& deleteOldestBuffer = cachedDeviceCommandLists.front();
-		GPUFree(deleteOldestBuffer.gpuAllocatedAddress); // Delete our buffer from the GPU device
+		GPUCommandList* const deleteOldestBuffer = cachedDeviceCommandLists.front();
+		GPUFree(deleteOldestBuffer->gpuAllocatedAddress); // Delete our buffer from the GPU device
 		cachedDeviceCommandLists.erase(cachedDeviceCommandLists.begin() ); // Delete our buffer from the cache
+		delete deleteOldestBuffer;
 	}
 
-	newCommandList.commandsHash = recordingListHash;
+	newCommandList->commandsHash = recordingListHash;
 
 	baseDevice->CompleteRecordingCommandList();
 	cachedDeviceCommandLists.push_back(newCommandList);
@@ -5744,6 +5765,8 @@ void IDirect3DDevice9Hook::DeviceSetCurrentState(const D3DPRIMITIVETYPE primType
 	// Set the viewport/scissor rect states:
 	const float viewportHalfWidth = currentState.cachedViewport.halfWidthF;
 	const float viewportHalfHeight = currentState.cachedViewport.halfHeightF;
+	const float viewportXOffset = currentState.cachedViewport.fLeft;
+	const float viewportYOffset = currentState.cachedViewport.fTop;
 	const float viewportZScale = currentState.cachedViewport.zScale;
 	const float viewportZOffset = currentState.cachedViewport.viewport.MinZ;
 #ifdef _DEBUG
@@ -5768,7 +5791,7 @@ void IDirect3DDevice9Hook::DeviceSetCurrentState(const D3DPRIMITIVETYPE primType
 	const unsigned short scissorRight = (const unsigned short)currentState.currentScissorRect.scissorRect.right;
 	const unsigned short scissorTop = (const unsigned short)currentState.currentScissorRect.scissorRect.top;
 	const unsigned short scissorBottom = (const unsigned short)currentState.currentScissorRect.scissorRect.bottom;
-	baseDevice->DeviceSetTriSetupState(viewportHalfWidth, viewportHalfHeight, viewportZScale, viewportZOffset, scissorLeft, scissorRight, scissorTop, scissorBottom);
+	baseDevice->DeviceSetTriSetupState(viewportHalfWidth, viewportHalfHeight, viewportXOffset, viewportYOffset, viewportZScale, viewportZOffset, scissorLeft, scissorRight, scissorTop, scissorBottom);
 
 	// Set the alpha-testing, render target, and blend states:
 	bool alphaTestEnable;
@@ -5806,7 +5829,33 @@ void IDirect3DDevice9Hook::DeviceSetCurrentState(const D3DPRIMITIVETYPE primType
 		unsigned dontCareX = 0;
 		unsigned dontCareY = 0;
 		const unsigned reducedDimensions = surface0hook->GetReducedTextureDimensions(dontCareX, dontCareY);
-		const bool useBilinear = currentState.currentSamplerStates[0].stateUnion.namedStates.minFilter >= D3DTEXF_LINEAR;
+		bool useBilinear; // Are we using bilinear texture filtering?
+		bool mipLinear; // Are we interpolating mip-levels as well?
+		switch (overrideTexFilter)
+		{
+		default:
+		case TFOS_Default:
+			useBilinear = currentState.currentSamplerStates[0].stateUnion.namedStates.minFilter >= D3DTEXF_LINEAR;
+			mipLinear = currentState.currentSamplerStates[0].stateUnion.namedStates.mipFilter >= D3DTEXF_LINEAR;
+			break;
+		case TFOS_OverridePoint:
+			useBilinear = false;
+			mipLinear = false;
+			break;
+		case TFOS_OverrideMinMagPointMipLinear:
+			useBilinear = false;
+			mipLinear = true;
+			break;
+		case TFOS_OverrideMinMagLinearMipPoint:
+			useBilinear = true;
+			mipLinear = false;
+			break;
+		case TFOS_OverrideTrilinear:
+		case TFOS_OverrideAnisotropic:
+			useBilinear = true;
+			mipLinear = true;
+			break;
+		}
 		const eTexFormat deviceFormat = ConvertToDeviceTextureFormat(surface0hook->GetInternalFormat() );
 		eTexChannelMUX rChannel = tcm_r;
 		eTexChannelMUX gChannel = tcm_g;
@@ -5846,11 +5895,6 @@ void IDirect3DDevice9Hook::HandleDrawCallSingleStepMode() const
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawIndexedPrimitive(THIS_ D3DPRIMITIVETYPE PrimitiveType, INT BaseVertexIndex, UINT MinVertexIndex, UINT NumVertices, UINT startIndex, UINT primCount)
 {
 	SIMPLE_FUNC_SCOPE();
-
-	// Hack for now!
-	// Get rid of all of the awfully huge overlay text that's spamming fresh vertex and index buffers every single frame!
-	if (MinVertexIndex > 0 && startIndex > 0)
-		return S_OK;
 
 	if (!currentState.currentVertexDecl)
 		return D3DERR_INVALIDCALL;
@@ -6002,8 +6046,8 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawIndexed
 	// baseDevice->DeviceWaitForIdle( (const waitForDeviceIdleCommand::waitForDeviceSubsystem)(waitForDeviceIdleCommand::waitForIAIdle | waitForDeviceIdleCommand::waitForClipIdle) );
 
 	{
-		GPUCommandList newRecordingCommandList;
-		baseDevice->BeginRecordingCommandList(&newRecordingCommandList);
+		GPUCommandList* newRecordingCommandList = new GPUCommandList;
+		baseDevice->BeginRecordingCommandList(newRecordingCommandList);
 
 		currentState.currentIndexBuffer->UpdateDataToGPU();
 		DeviceSetCurrentState(PrimitiveType, currentState.currentIndexBuffer); // Update the device state
@@ -6061,7 +6105,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawIndexed
 
 		DeviceSetUsedVertexShaderConstants(); // Copy over and set our vertex shader constant registers
 
-		CallRunCommandList(newRecordingCommandList);
+		CallRunCommandList(*newRecordingCommandList);
 	}
 
 	if (GetDeviceStats().IsCollectingEventDataThisFrame() )
@@ -11556,6 +11600,8 @@ void IDirect3DDevice9Hook::InitializeState(const D3DPRESENT_PARAMETERS& d3dpp, c
 	const D3DCOLOR blendFactorARGB = D3DCOLOR_ARGB(255, 255, 255, 255);
 	const float viewportHalfWidth = 640.0f / 2.0f;
 	const float viewportHalfHeight = 480.0f / 2.0f;
+	const float viewportXOffset = 0.0f;
+	const float viewportYOffset = 0.0f;
 	const float viewportZScale = 1.0f;
 	const float viewportZOffset = 0.0f;
 	const unsigned short scissorLeft = 0;
@@ -11569,7 +11615,7 @@ void IDirect3DDevice9Hook::InitializeState(const D3DPRESENT_PARAMETERS& d3dpp, c
 	baseDevice->DeviceClearRendertarget(backbufferSurfaceHook->GetDeviceSurfaceBytes(), D3DCOLOR_ARGB(255, 0, 0, 0), renderTargetWidth, renderTargetHeight); // Perform initial device clear so that our backbuffer doesn't start out as garbage
 	baseDevice->DeviceSetNullTextureState(TF_bilinearFilter, tcm_r, tcm_g, tcm_b, tcm_a, cbm_textureModulateVertexColor, cbm_textureModulateVertexColor);
 	baseDevice->DeviceSetClipState(depthClipEnable, useOpenGLNearZClip, guardBandXScale, guardBandYScale, clippingEnabled);
-	baseDevice->DeviceSetTriSetupState(viewportHalfWidth, viewportHalfHeight, viewportZScale, viewportZOffset, scissorLeft, scissorRight, scissorTop, scissorBottom);
+	baseDevice->DeviceSetTriSetupState(viewportHalfWidth, viewportHalfHeight, viewportXOffset, viewportYOffset, viewportZScale, viewportZOffset, scissorLeft, scissorRight, scissorTop, scissorBottom);
 	baseDevice->DeviceSetDepthState(zEnable, zWriteEnable, colorWritesEnabled, ConvertToDeviceCmpFunc(zCmpFunc), ConvertToDeviceDepthFormat(defaultZFormat), defaultDepthBias);
 	baseDevice->DeviceSetAttrInterpolatorState(useFlatShadingColor, ConvertToDeviceTexAddressMode(defaultTextureAddressMode), ConvertToDeviceTexAddressMode(defaultTextureAddressMode) );
 	baseDevice->DeviceClearDepthStencil(currentState.currentDepthStencil ? currentState.currentDepthStencil->GetDeviceSurfaceBytes() : NULL, clearDepth, clearStencil, clearZValue, clearStencilValue);
@@ -11685,19 +11731,20 @@ IDirect3DDevice9Hook::IDirect3DDevice9Hook(LPDIRECT3DDEVICE9 _d3d9dev, IDirect3D
 
 	// Using a single global comms object won't work too well for processes that create multiple IDirect3DDevice9's, but it's fine for testing for now
 	//ISerialDeviceComms* const serialDeviceComms = new ISerialDeviceComms("COM3", 921600, ODDPARITY);
+	//INetSocketDeviceComms* const networkDeviceComms = new INetSocketDeviceComms();
 	IRemoteProcessIPCComms* const remoteProcessesIPCComms = new IRemoteProcessIPCComms();
 	if (!remoteProcessesIPCComms->LaunchNewRemoteIPCProcess(
 #ifdef _M_X64
 	#ifdef _DEBUG
-		"C:\\Users\\Tom\\Documents\\Visual Studio 2017\\Projects\\Software_d3d9_Driver\\x64\\Debug\\Endpoints\\GPUEndpoint_D3D9.dll" // TODO: Do not hardcode these paths!
+		"C:\\Users\\Tom\\Documents\\Visual Studio 2022\\Projects\\Software_d3d9_Driver\\x64\\Debug\\Endpoints\\GPUEndpoint_D3D9.dll" // TODO: Do not hardcode these paths!
 	#else
-		"C:\\Users\\Tom\\Documents\\Visual Studio 2017\\Projects\\Software_d3d9_Driver\\x64\\Release\\Endpoints\\GPUEndpoint_D3D9.dll"
+		"C:\\Users\\Tom\\Documents\\Visual Studio 2022\\Projects\\Software_d3d9_Driver\\x64\\Release\\Endpoints\\GPUEndpoint_D3D9.dll"
 	#endif
 #else
 	#ifdef _DEBUG
-		"C:\\Users\\Tom\\Documents\\Visual Studio 2017\\Projects\\Software_d3d9_Driver\\Debug\\Endpoints\\GPUEndpoint_D3D9.dll" // TODO: Do not hardcode these paths!
+		"C:\\Users\\Tom\\Documents\\Visual Studio 2022\\Projects\\Software_d3d9_Driver\\Debug\\Endpoints\\GPUEndpoint_D3D9.dll" // TODO: Do not hardcode these paths!
 	#else
-		"C:\\Users\\Tom\\Documents\\Visual Studio 2017\\Projects\\Software_d3d9_Driver\\Release\\Endpoints\\GPUEndpoint_D3D9.dll"
+		"C:\\Users\\Tom\\Documents\\Visual Studio 2022\\Projects\\Software_d3d9_Driver\\Release\\Endpoints\\GPUEndpoint_D3D9.dll"
 	#endif
 #endif
 	) )
@@ -11709,21 +11756,21 @@ IDirect3DDevice9Hook::IDirect3DDevice9Hook(LPDIRECT3DDEVICE9 _d3d9dev, IDirect3D
 	ILocalEndpointDLLComms* localRecorderEndpointComms = new ILocalEndpointDLLComms(
 #ifdef _M_X64
 	#ifdef _DEBUG
-		"C:\\Users\\Tom\\Documents\\Visual Studio 2017\\Projects\\Software_d3d9_Driver\\x64\\Debug\\Endpoints\\RecordingEndpoint_DiskFile.dll" // TODO: Do not hardcode these paths!
+		"C:\\Users\\Tom\\Documents\\Visual Studio 2022\\Projects\\Software_d3d9_Driver\\x64\\Debug\\Endpoints\\RecordingEndpoint_DiskFile.dll" // TODO: Do not hardcode these paths!
 	#else
-		"C:\\Users\\Tom\\Documents\\Visual Studio 2017\\Projects\\Software_d3d9_Driver\\x64\\Release\\Endpoints\\RecordingEndpoint_DiskFile.dll"
+		"C:\\Users\\Tom\\Documents\\Visual Studio 2022\\Projects\\Software_d3d9_Driver\\x64\\Release\\Endpoints\\RecordingEndpoint_DiskFile.dll"
 	#endif
 #else
 	#ifdef _DEBUG
-		"C:\\Users\\Tom\\Documents\\Visual Studio 2017\\Projects\\Software_d3d9_Driver\\Debug\\Endpoints\\RecordingEndpoint_DiskFile.dll" // TODO: Do not hardcode these paths!
+		"C:\\Users\\Tom\\Documents\\Visual Studio 2022\\Projects\\Software_d3d9_Driver\\Debug\\Endpoints\\RecordingEndpoint_DiskFile.dll" // TODO: Do not hardcode these paths!
 	#else
-		"C:\\Users\\Tom\\Documents\\Visual Studio 2017\\Projects\\Software_d3d9_Driver\\Release\\Endpoints\\RecordingEndpoint_DiskFile.dll"
+		"C:\\Users\\Tom\\Documents\\Visual Studio 2022\\Projects\\Software_d3d9_Driver\\Release\\Endpoints\\RecordingEndpoint_DiskFile.dll"
 	#endif
 #endif
 	);
-	IBroadcastVirtualDeviceComms* const broadcastDeviceComms = new IBroadcastVirtualDeviceComms(/*serialDeviceComms*/remoteProcessesIPCComms);
-	//broadcastDeviceComms->AddNewSecondaryBroadcastTarget(remoteProcessesIPCComms);
-	broadcastDeviceComms->AddNewSecondaryBroadcastTarget(localRecorderEndpointComms);
+	IBroadcastVirtualDeviceComms* const broadcastDeviceComms = new IBroadcastVirtualDeviceComms(localRecorderEndpointComms);
+	broadcastDeviceComms->AddNewSecondaryBroadcastTarget(remoteProcessesIPCComms);
+	//broadcastDeviceComms->AddNewSecondaryBroadcastTarget(localRecorderEndpointComms);
 
 	deviceComms = broadcastDeviceComms;
 	baseDevice = new IBaseGPUDevice(broadcastDeviceComms);

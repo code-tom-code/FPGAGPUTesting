@@ -121,7 +121,7 @@ static const D3DQUERYTYPE ConvertQueryType(const eQueryType deviceQueryType)
 	case eQTOcclusion:
 	case eQTBinaryOcclusion: // D3D9 doesn't support binary occlusion queries, so just treat this as a regular occlusion query for now
 		return D3DQUERYTYPE_OCCLUSION;
-	case eQTTimestamp: // D3D9 doesn't support binary occlusion queries, so just treat this as a regular occlusion query for now
+	case eQTTimestamp:
 		return D3DQUERYTYPE_TIMESTAMP;
 	}
 }

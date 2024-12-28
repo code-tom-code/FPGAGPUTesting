@@ -3,6 +3,7 @@
 #include "ShaderJIT.h"
 #include "IDirect3DDevice9Hook.h"
 #include "ShaderJIT_HLSL_to_CPP_Tables.h"
+#include <string>
 
 #pragma warning(push)
 #pragma warning(disable:4996) // We use sprintf a lot in this file and don't want to keep having to manually escape every call-site, so this whole file is 4996-disabled

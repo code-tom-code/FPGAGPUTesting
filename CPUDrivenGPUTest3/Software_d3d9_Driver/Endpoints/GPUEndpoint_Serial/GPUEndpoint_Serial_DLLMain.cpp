@@ -137,6 +137,11 @@ void __stdcall ProcessNewMessageImpl(const genericCommand* H2DCommandPacket)
 	serialDevice->SendLoop(reinterpret_cast<const BYTE* const>(H2DCommandPacket), sizeof(genericCommand) );
 }
 
+void __stdcall ProcessIdleImpl()
+{
+	return; // Do nothing
+}
+
 void __stdcall ShutdownEndpointImpl()
 {
 #ifdef _DEBUG
@@ -203,6 +208,7 @@ extern "C" bool __stdcall GetDLLInfo(DLLInfo* const outDLLInfo)
 	endpointDLLInfo.H2DFunctions.SpawnWindow = NULL;
 	endpointDLLInfo.H2DFunctions.ProcessNewMessage = &ProcessNewMessageImpl;
 	endpointDLLInfo.H2DFunctions.ShutdownEndpoint = &ShutdownEndpointImpl;
+	endpointDLLInfo.H2DFunctions.ProcessIdle = &ProcessIdleImpl;
 
 #pragma warning(push)
 #pragma warning(disable:4996)

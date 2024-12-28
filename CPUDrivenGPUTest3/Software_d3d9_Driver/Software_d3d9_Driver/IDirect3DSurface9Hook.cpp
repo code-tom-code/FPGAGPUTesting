@@ -492,7 +492,7 @@ void IDirect3DSurface9Hook::DecompressSurfaceDXT1()
 #endif
 				c2 = D3DCOLOR_XRGB(r2, g2, b2);
 
-				// c2 = (1/3)c0 + (2/3)c1
+				// c3 = (1/3)c0 + (2/3)c1
 				const unsigned r3 = (r0 + r1 + r1 + 1) / 3;
 				const unsigned g3 = (g0 + g1 + g1 + 1) / 3;
 				const unsigned b3 = (b0 + b1 + b1 + 1) / 3;

@@ -178,3 +178,8 @@ __declspec(nothrow) HRESULT __stdcall ISerialDeviceComms::InternalInitComms()
 
 	return S_OK;
 }
+
+/*virtual*/ bool ISerialDeviceComms::EndpointSupportsMemReadback() const /*override*/
+{
+	return true;
+}

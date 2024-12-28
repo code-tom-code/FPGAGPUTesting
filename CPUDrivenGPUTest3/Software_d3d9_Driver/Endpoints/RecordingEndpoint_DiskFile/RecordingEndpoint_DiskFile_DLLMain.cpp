@@ -124,6 +124,11 @@ void __stdcall ProcessNewMessageImpl(const genericCommand* H2DCommandPacket)
 	RecordNewIncomingPacket(H2DCommandPacket);
 }
 
+void __stdcall ProcessIdleImpl()
+{
+	return; // Do nothing
+}
+
 void __stdcall ShutdownEndpointImpl()
 {
 #ifdef _DEBUG
@@ -189,9 +194,11 @@ extern "C" bool __stdcall GetDLLInfo(DLLInfo* const outDLLInfo)
 	endpointDLLInfo.H2DFunctions.SpawnWindow = NULL;
 	endpointDLLInfo.H2DFunctions.ProcessNewMessage = &ProcessNewMessageImpl;
 	endpointDLLInfo.H2DFunctions.ShutdownEndpoint = &ShutdownEndpointImpl;
+	endpointDLLInfo.H2DFunctions.ProcessIdle = &ProcessIdleImpl;
 
-	// This is a window-less endpoint:
-	endpointDLLInfo.endpointOptions = NoWindow;
+	// This is a window-less endpoint.
+	// This endpoint does not support memory readback (it doesn't implement VRAM emulation).
+	endpointDLLInfo.endpointOptions = (EndpointOptionsFlags)(NoWindow | NoMemReadSupport);
 
 #pragma warning(push)
 #pragma warning(disable:4996)

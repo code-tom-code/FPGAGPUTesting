@@ -71,6 +71,8 @@
 #define IDC_CMD_STAT1                   1038
 #define IDC_CMB_OVERRIDESTENCIL         1038
 #define IDC_CMD_STAT2                   1039
+#define IDC_CMB_OVERRIDETEXTURING2      1039
+#define IDC_CMB_OVERRIDEFILTERING       1039
 #define IDC_MEMREAD_STAT1               1040
 #define IDC_MEMREAD_STAT2               1041
 #define IDC_MEMWRITE_STAT1              1042

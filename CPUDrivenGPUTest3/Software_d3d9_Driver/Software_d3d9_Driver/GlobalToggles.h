@@ -127,7 +127,7 @@
 #endif
 
 // Uncomment this to enable holding the "END" key to skip draw calls (very useful in debug mode where draw calls can take a very long time to complete)
-#define ENABLE_END_TO_SKIP_DRAWS 1
+//#define ENABLE_END_TO_SKIP_DRAWS 1
 
 // Comment this out to allow the early Z testing optimization
 //#define DISALLOW_EARLY_Z_TESTING 1

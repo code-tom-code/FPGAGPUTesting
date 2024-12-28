@@ -1,12 +1,13 @@
 #include "INetSocketDeviceComms.h"
 #include "PacketDefs.h"
-#include <stdio.h>
-
-#pragma comment(lib, "ws2_32.lib")
+#include "GPUCommandList.h"
 
 INetSocketDeviceComms::INetSocketDeviceComms()
 {
-	__debugbreak(); // Net socket device comms is not yet implemented!
+	if (FAILED(InternalInitComms() ) )
+	{
+		__debugbreak(); // Error out if we failed to initialize!
+	}
 
 	if (GetGlobalDeviceComms() != NULL)
 	{
@@ -14,6 +15,34 @@ INetSocketDeviceComms::INetSocketDeviceComms()
 		__debugbreak();
 	}
 	SetGlobalDeviceComms(this);
+}
+
+/*virtual*/ INetSocketDeviceComms::~INetSocketDeviceComms()
+{
+	if (session)
+	{
+		session->~NetSession(); // Using placement new means we need to invoke manual destructor
+
+		VirtualFree(session, 0, MEM_RELEASE | MEM_DECOMMIT);
+	}
+
+	IBaseDeviceComms::~IBaseDeviceComms();
+}
+
+__declspec(nothrow) HRESULT __stdcall INetSocketDeviceComms::InternalInitComms()
+{
+	if (session != NULL)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Cannot double-init the session!
+#endif
+		return E_FAIL;
+	}
+
+	// Aligned alloc + placement new:
+	session = new (VirtualAlloc(NULL, sizeof(NetSession), MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE) ) NetSession();
+
+	return S_OK;
 }
 
 /*virtual*/ __declspec(nothrow) HRESULT __stdcall INetSocketDeviceComms::SendLoop(const BYTE* const sendBuffer, const unsigned len) /*override*/
@@ -34,87 +63,85 @@ INetSocketDeviceComms::INetSocketDeviceComms()
 		return E_INVALIDARG;
 	}
 
+#ifdef _DEBUG
+	if (!session)
+	{
+		__debugbreak(); // Illegal to call this function if we have not initialized the session first!
+	}
+#endif
+
+	while (!session->IsSessionConnected() )
+	{
+		// Wait for a connection to be established before we try to send any packets
+		Sleep(1);
+	}
+
 	IncrementSentPacket(len);
 
-	if (len >= sizeof(genericCommand) )
+	const unsigned numSubpackets = len / sizeof(genericCommand);
+	if (numSubpackets)
 	{
 		const genericCommand* const genericPacket = (const genericCommand* const)sendBuffer;
 		sentPacketsThisFrame.push_back(*genericPacket);
+
+		if (convertedSubpackets.capacity() < numSubpackets)
+		{
+			convertedSubpackets.resize(numSubpackets);
+		}
+		Subpacket* const subpacketBuffer = reinterpret_cast<Subpacket* const>(&convertedSubpackets.front() );
+		for (unsigned x = 0; x < numSubpackets; ++x)
+		{
+			GPUCommandList::ConvertCommandPacketToSimplifiedCommandPacket(genericPacket + x, reinterpret_cast<SimplifiedCommandPacket* const>(subpacketBuffer + x) );
+		}
+		session->SendBatchSubpackets(numSubpackets, subpacketBuffer);
+		convertedSubpackets.clear();
 	}
 
-	const BYTE* buffer = (const BYTE* const)sendBuffer;
-	unsigned remainingSize = len;
-	while (remainingSize > 0)
-	{
-		DWORD numBytesWritten = 0;
-		const int sendRet = sendto(connectedSocket, (const char* const)buffer, remainingSize, 0, (const sockaddr* const)&deviceAddr, sizeof(deviceAddr) );
-		if (sendRet >= 0)
-		{
-			numBytesWritten = sendRet;
-			remainingSize -= numBytesWritten;
-			buffer += numBytesWritten;
-		}
-		else
-		{
-			printf("Error in sendto(). GLE: %i\n", WSAGetLastError() );
-#ifdef _DEBUG
-			__debugbreak();
-#endif
-			return E_FAIL;
-		}
-	}
-
-#ifdef PRINT_PACKET_CONTENTS
-	printf("Send %u bytes: [", startingSize);
-	for (unsigned x = 0; x < startingSize; ++x)
-	{
-		const unsigned char byteVal = ( (const BYTE* const)sendBuffer)[x];
-		printf("%02X", byteVal);
-	}
-	printf("]\n");
-#endif // #ifdef PRINT_PACKET_CONTENTS
 	return S_OK;
 }
 
 /*virtual*/ __declspec(nothrow) HRESULT __stdcall INetSocketDeviceComms::RecvLoop(BYTE* const recvBuffer, const unsigned len) /*override*/
 {
+#ifdef _DEBUG
+	if (!session)
+	{
+		__debugbreak(); // Illegal to call this function if we have not initialized the session first!
+	}
+#endif
+
+	if (len < sizeof(genericCommand) )
+	{
+#ifdef _DEBUG
+		__debugbreak();
+#endif
+		return E_INVALIDARG;
+	}
+	genericCommand* const writeCommand = reinterpret_cast<genericCommand* const>(recvBuffer);
+
+	while (!session->IsSessionConnected() )
+	{
+		// Wait for a connection to be established before we try to receive any packets
+		Sleep(1);
+	}
+
 	IncrementRecvPacket(len);
 
-	BYTE* buffer = (BYTE* const)recvBuffer;
-	unsigned remainingSize = len;
-	while (remainingSize > 0)
+	if (incomingReadSubPackets.empty() )
 	{
-		SOCKADDR_IN fromAddr = {0};
-		int fromLen = sizeof(fromAddr);
-		const int recvRet = recvfrom(connectedSocket, (char* const)buffer, remainingSize, 0, (sockaddr* const)&fromAddr, &fromLen);
-		if (recvRet > 0)
+		while (session->GetReadPacketsD2H(incomingReadSubPackets) == 0)
 		{
-			remainingSize -= recvRet;
-			buffer += recvRet;
-		}
-		else if (recvRet == 0)
-		{
-			printf("Error: Socket has been closed from the other side!\n");
-#ifdef _DEBUG
-			__debugbreak();
-#endif
-			return E_FAIL;
-		}
-		else
-		{
-			printf("Socket error in recvfrom(). GLE: %i\n", WSAGetLastError() );
-#ifdef _DEBUG
-			__debugbreak();
-#endif
-			return E_FAIL;
+			session->WaitForReadPacketsAvailable();
 		}
 	}
+	GPUCommandList::ConvertSimplifiedCommandPacketToCommandPacket(reinterpret_cast<const SimplifiedCommandPacket* const>(&incomingReadSubPackets.front() ), writeCommand);
+	incomingReadSubPackets.erase(incomingReadSubPackets.begin() );
 
-	if (len >= sizeof(genericCommand) )
-	{
-		const genericCommand* const genericPacket = (const genericCommand* const)recvBuffer;
-		recvdPacketsThisFrame.push_back(*genericPacket);
-	}
+	recvdPacketsThisFrame.push_back(*writeCommand);
 
 	return S_OK;
+}
+
+/*virtual*/ bool INetSocketDeviceComms::EndpointSupportsMemReadback() const /*override*/
+{
+	return true;
 }

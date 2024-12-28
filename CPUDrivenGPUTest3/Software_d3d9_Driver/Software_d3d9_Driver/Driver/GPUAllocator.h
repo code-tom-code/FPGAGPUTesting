@@ -165,6 +165,9 @@ const unsigned GPUGetUsableFreeMemory();
 // Returns the current generation index of the allocator (used mainly for the driver's stats page to know when to redraw when the generation changes)
 const unsigned GPUGetAllocatorGeneration();
 
+// Ends the current frame and resets the per-frame counters:
+__declspec(noinline) void GPUAlloc_EndFrame(unsigned& outNumAllocsThisFrame, unsigned& outBytesAllocThisFrame, unsigned& outNumFreesThisFrame, unsigned& outBytesFreedThisFrame, unsigned& outRollingNumPlacementsAvg);
+
 // Returns NULL if allocation fails (due to out of GPU memory, cannot fit allocation at the requested address, out of GPU address space, etc.)
 gpuvoid* GPUAllocAtAddress(gpuvoid* const placementAddress, const unsigned allocationSizeBytes,
 	const unsigned width, const unsigned short height, const unsigned short depth, const unsigned char numMipLevels, const allocationUsage usage, const gpuFormat format

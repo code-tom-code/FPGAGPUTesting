@@ -6,6 +6,7 @@
 #include <Windows.h>
 #include <d3d9.h>
 #include <map>
+#include <unordered_set>
 
 static bool GPUAllocInitialized = false;
 static CRITICAL_SECTION GPUAllocCS = {0};
@@ -13,10 +14,11 @@ static CRITICAL_SECTION GPUAllocCS = {0};
 static const char* GPUAllocCS_OwnerString = NULL;
 static const char* GPUAllocCS_DebugAllocationString = NULL;
 #endif
+const constexpr unsigned GPU_PAGES_MEMORY_MASK = (GPU_DRAM_TOTAL_CAPACITY_BYTES - 1) ^ (GPU_PAGE_SIZE_BYTES - 1);
 
 struct GlobalAllocatorStats
 {
-	GlobalAllocatorStats() : freeBytesTotal(GPU_DRAM_TOTAL_CAPACITY_BYTES), usableFreeBytesTotal(GPU_DRAM_TOTAL_CAPACITY_BYTES), numLiveAllocations(0)
+	GlobalAllocatorStats()
 	{
 	}
 
@@ -24,6 +26,15 @@ struct GlobalAllocatorStats
 	unsigned usableFreeBytesTotal = GPU_DRAM_TOTAL_CAPACITY_BYTES; // Counts how many usable free bytes are available (not counting bytes unavailable due to alignment)
 	unsigned numLiveAllocations = 0;
 	unsigned currentGeneration = 1; // This is incremented once for each alloc/free to indicate to the driver UI that it needs to refresh its stats page
+
+	// These per-frame metrics get reset at the end of each frame (during the Present() )
+	unsigned numAllocationsThisFrame = 0;
+	unsigned bytesAllocatedThisFrame = 0;
+	unsigned numFreesThisFrame = 0;
+	unsigned bytesFreedThisFrame = 0;
+
+	unsigned rollingNumPlacementTests[64] = {0};
+	unsigned char rollingPlacementID = 0;
 	float allocatorFreePercent = 100.0f;
 } globalStats; // Only modify this if you currently hold the allocator critical section!
 
@@ -31,10 +42,414 @@ struct GlobalAllocatorStats
 static bool occupiedColumnsMap[GPU_DRAM_TOTAL_CAPACITY_BYTES / GPU_COL_SIZE_BYTES] = { false };
 
 // A zero bit means that a page is *free*, a 1 bit means that a page is *occupied*!
-static uint16_t occupiedPagesBitmap[GPU_DRAM_TOTAL_CAPACITY_BYTES / GPU_PAGE_SIZE_BYTES / (sizeof(uint16_t) * 8)] = { 0 };
+static uint32_t occupiedPagesBitmap[GPU_DRAM_TOTAL_CAPACITY_BYTES / GPU_PAGE_SIZE_BYTES / (sizeof(uint32_t) * 8)] = { 0 };
 
 // Only access this if you currently hold the allocator critical section!
 static std::map<gpuvoid*, liveAllocation> liveAllocationsMap;
+
+struct _FreeTree
+{
+	struct FreeList
+	{
+		const unsigned regionSize_bytes;
+		std::unordered_set<gpuvoid*> freeRegions; // List of free regions in blocks of size regionSize
+	};
+
+	FreeList lists[20] =
+	{
+		{1 * 1024 * 1024 * 1024}, // 1GB (all of VRAM)
+		{512 * 1024 * 1024}, // 512MB
+		{256 * 1024 * 1024}, // 256MB
+		{128 * 1024 * 1024}, // 128MB
+		{64 * 1024 * 1024}, // 64MB
+		{32 * 1024 * 1024}, // 32MB
+		{16 * 1024 * 1024}, // 16MB
+		{8 * 1024 * 1024}, // 8MB
+		{4 * 1024 * 1024}, // 4MB
+		{2 * 1024 * 1024}, // 2MB
+		{1 * 1024 * 1024}, // 1MB (one memory column)
+		{512 * 1024}, // 512KB
+		{256 * 1024}, // 256KB
+		{128 * 1024}, // 128KB
+		{64 * 1024}, // 64KB
+		{32 * 1024}, // 32KB (one memory row)
+		{16 * 1024}, // 16KB
+		{8 * 1024}, // 8KB
+		{4 * 1024}, // 4KB
+		{2 * 1024} // 2KB (one memory page)
+	};
+
+	_FreeTree()
+	{
+		// Initialize our tree with one single block that is 1GB in size to represent all of VRAM:
+		FreeBlock( (gpuvoid* const)0x00000000, GPU_DRAM_TOTAL_CAPACITY_BYTES);
+	}
+
+	static const unsigned RoundUpToPowerOf2(const unsigned xVal)
+	{
+		if (xVal == 1)
+			return 1;
+		else
+			return 1 << (32 - __lzcnt(xVal - 1) );
+	}
+
+	// Returns the smallest block size that fits the given allocSize and alignment
+	static const unsigned GetFittingBlockSize(const unsigned allocSize, const unsigned alignSize = GPU_PAGE_SIZE_BYTES)
+	{
+#ifdef _DEBUG
+		if (__popcnt(alignSize) != 1)
+		{
+			__debugbreak(); // alignSize must be a power of 2!
+		}
+#endif
+		if (alignSize >= allocSize)
+			return alignSize;
+		else
+			return RoundUpToPowerOf2(allocSize);
+	}
+
+	// Takes one larger block and splits it until it has generated a new block of the smaller size block
+	void SplitBlocksDownToX(const unsigned splitBlockListIndex, const unsigned splitDowntoListIndex)
+	{
+#ifdef _DEBUG
+		if (splitDowntoListIndex <= splitBlockListIndex)
+		{
+			__debugbreak();
+		}
+		if (splitBlockListIndex >= ARRAYSIZE(lists) )
+		{
+			__debugbreak();
+		}
+		if (splitDowntoListIndex >= ARRAYSIZE(lists) )
+		{
+			__debugbreak();
+		}
+		if (lists[splitBlockListIndex].freeRegions.empty() )
+		{
+			__debugbreak();
+		}
+#endif
+		for (unsigned currentListIndex = splitBlockListIndex; currentListIndex < splitDowntoListIndex; ++currentListIndex)
+		{
+			FreeList& largerBlocksList = lists[currentListIndex];
+			const unsigned largerBlocksSize = largerBlocksList.regionSize_bytes;
+			std::unordered_set<gpuvoid*>::iterator splitIter = largerBlocksList.freeRegions.begin();
+			gpuvoid* const splitLargeBase = *splitIter;
+			largerBlocksList.freeRegions.erase(splitIter);
+			gpuvoid* const splitLeft = splitLargeBase;
+			gpuvoid* const splitRight = (gpuvoid* const)( (char* const)splitLargeBase + (largerBlocksSize >> 1) );
+
+			FreeList& smallerBlocksList = lists[currentListIndex + 1];
+			smallerBlocksList.freeRegions.insert(splitLeft);
+			smallerBlocksList.freeRegions.insert(splitRight);
+		}
+	}
+
+	// May return false if there are no regions currently available in the given searchList that contain the provided address
+	static bool FindRegionContainingAddress(const FreeList& searchList, gpuvoid* const searchAddr, gpuvoid*& outFoundRegionBaseAddr)
+	{
+		for (std::unordered_set<gpuvoid*>::iterator searchIt = searchList.freeRegions.begin(); searchIt != searchList.freeRegions.end(); ++searchIt)
+		{
+			gpuvoid* const regionBeginAddr = *searchIt;
+			if (regionBeginAddr <= searchAddr &&
+				reinterpret_cast<gpuvoid* const>( (char* const)regionBeginAddr + searchList.regionSize_bytes) > searchAddr)
+			{
+				outFoundRegionBaseAddr = regionBeginAddr;
+				return true;
+			}
+		}
+		return false;
+	}
+
+	// Takes one larger block and splits it until it has generated a new block of the smaller size block
+	void SplitBlocksDownToXWithAddress(const unsigned splitBlockListIndex, const unsigned splitDowntoListIndex, gpuvoid* const splitAddr)
+	{
+#ifdef _DEBUG
+		if (splitDowntoListIndex <= splitBlockListIndex)
+		{
+			__debugbreak();
+		}
+		if (splitBlockListIndex >= ARRAYSIZE(lists) )
+		{
+			__debugbreak();
+		}
+		if (splitDowntoListIndex >= ARRAYSIZE(lists) )
+		{
+			__debugbreak();
+		}
+		if (lists[splitBlockListIndex].freeRegions.empty() )
+		{
+			__debugbreak();
+		}
+#endif
+		for (unsigned currentListIndex = splitBlockListIndex; currentListIndex < splitDowntoListIndex; ++currentListIndex)
+		{
+			FreeList& largerBlocksList = lists[currentListIndex];
+			const unsigned largerBlocksSize = largerBlocksList.regionSize_bytes;
+			gpuvoid* containingRegionAddr = NULL;
+			bool foundRegionContainingAddr = FindRegionContainingAddress(largerBlocksList, splitAddr, containingRegionAddr);
+#ifdef _DEBUG
+			if (!foundRegionContainingAddr)
+			{
+				__debugbreak(); // Error: No splits found containing the provided address
+			}
+#endif
+			std::unordered_set<gpuvoid*>::iterator splitIter = largerBlocksList.freeRegions.find(containingRegionAddr);
+			gpuvoid* const splitLargeBase = *splitIter;
+			largerBlocksList.freeRegions.erase(splitIter);
+			gpuvoid* const splitLeft = splitLargeBase;
+			gpuvoid* const splitRight = (gpuvoid* const)( (char* const)splitLargeBase + (largerBlocksSize >> 1) );
+
+			FreeList& smallerBlocksList = lists[currentListIndex + 1];
+			smallerBlocksList.freeRegions.insert(splitLeft);
+			smallerBlocksList.freeRegions.insert(splitRight);
+		}
+	}
+
+	void SplitReclaimRemainingAllocSpace(gpuvoid* const address, const unsigned allocSize, const FreeList& baseList)
+	{
+		gpuvoid* const postAllocAddr = reinterpret_cast<gpuvoid* const>( (char* const)address + allocSize);
+		unsigned splitRemainingAllocs = baseList.regionSize_bytes - allocSize;
+		gpuvoid* rightSidePtr = reinterpret_cast<gpuvoid* const>( (char* const)address + baseList.regionSize_bytes);
+		while (splitRemainingAllocs != 0)
+		{
+			const unsigned numLeadingZeroesRemaining = __lzcnt(splitRemainingAllocs);
+			const unsigned freeListIndexRemaining = numLeadingZeroesRemaining - 1;
+			const FreeList& splitRemainingFreeList = lists[freeListIndexRemaining];
+			rightSidePtr = reinterpret_cast<gpuvoid* const>( (char* const)rightSidePtr - splitRemainingFreeList.regionSize_bytes);
+			FreeBlock(rightSidePtr, splitRemainingFreeList.regionSize_bytes);
+			splitRemainingAllocs = splitRemainingAllocs & (~splitRemainingFreeList.regionSize_bytes);
+		}
+	}
+
+	gpuvoid* AllocAtAddress(gpuvoid* const address, const unsigned allocSize)
+	{
+#ifdef _DEBUG
+		if (allocSize & GPU_PAGE_SIZE_BYTES)
+		{
+			__debugbreak(); // allocSize must already be rounded up to the next largest page-size multiple
+		}
+#endif
+		const unsigned blockSize = GetFittingBlockSize(allocSize);
+		const unsigned numLeadingZeroes = __lzcnt(blockSize);
+		const unsigned freeListIndex = numLeadingZeroes - 1;
+		FreeList& thisList = lists[freeListIndex];
+
+		std::unordered_set<gpuvoid*>::iterator findIt = thisList.freeRegions.find(address);
+		if (findIt == thisList.freeRegions.end() )
+		{
+			// We need to try to split this region out of larger blocks if it isn't already immediately available
+			bool foundRegion = false;
+			gpuvoid* foundRegionAddress = NULL;
+			unsigned searchListIndex = freeListIndex - 1;
+			while (searchListIndex != 0xFFFFFFFF)
+			{
+				FreeList& searchList = lists[searchListIndex];
+				const bool foundRegionContainingAddress = FindRegionContainingAddress(searchList, address, foundRegionAddress);
+				if (foundRegionContainingAddress)
+				{
+					foundRegion = true;
+					break;
+				}
+
+				--searchListIndex;
+			}
+
+			if (foundRegion)
+			{
+				SplitBlocksDownToXWithAddress(searchListIndex, freeListIndex, address);
+			}
+
+			findIt = thisList.freeRegions.find(address);
+		}
+
+		// We couldn't find a suitable splitting region from a larger block, we can't fit this allocation at the requested address! Bail out!
+		if (findIt == thisList.freeRegions.end() )
+		{
+#ifdef _DEBUG
+			__debugbreak();
+#endif
+			return NULL;
+		}
+
+		thisList.freeRegions.erase(findIt);
+
+		// Split the empty space after this allocation before the end of the blockSize into smaller blocks so as to not waste the space
+		if (allocSize != thisList.regionSize_bytes)
+		{
+			SplitReclaimRemainingAllocSpace(address, allocSize, thisList);
+		}
+
+		return address;
+	}
+
+	gpuvoid* Alloc(const unsigned allocSize, const unsigned alignSize = GPU_PAGE_SIZE_BYTES)
+	{
+#ifdef _DEBUG
+		if (allocSize & (GPU_PAGE_SIZE_BYTES - 1) )
+		{
+			__debugbreak(); // allocSize must already be rounded up to the next largest page-size multiple
+		}
+#endif
+		const unsigned blockSize = GetFittingBlockSize(allocSize, alignSize);
+		const unsigned numLeadingZeroes = __lzcnt(blockSize);
+		const unsigned freeListIndex = numLeadingZeroes - 1;
+		FreeList& thisList = lists[freeListIndex];
+
+		if (thisList.freeRegions.empty() )
+		{
+			unsigned splitFreeListIndex = freeListIndex - 1;
+#ifdef _DEBUG
+			bool foundSuitableSplit = false;
+#endif
+			while (splitFreeListIndex != 0xFFFFFFFF)
+			{
+				FreeList& splitList = lists[splitFreeListIndex];
+				if (!splitList.freeRegions.empty() )
+				{
+					SplitBlocksDownToX(splitFreeListIndex, freeListIndex);
+#ifdef _DEBUG
+					foundSuitableSplit = true;
+#endif
+					break;
+				}
+				else
+				{
+					--splitFreeListIndex;
+				}
+			}
+#ifdef _DEBUG
+			if (!foundSuitableSplit)
+			{
+				__debugbreak(); // Error: Couldn't find any suitable blocks larger than the current one to split off of to generate more blocks from! We're out of memory!
+			}
+#endif
+		}
+
+		if (!thisList.freeRegions.empty() )
+		{
+			std::unordered_set<gpuvoid*>::iterator allocIter = thisList.freeRegions.begin();
+			gpuvoid* const thisAddr = *allocIter;
+			thisList.freeRegions.erase(allocIter);
+
+			// Split the empty space after this allocation before the end of the blockSize into smaller blocks so as to not waste the space
+			if (allocSize != thisList.regionSize_bytes)
+			{
+				SplitReclaimRemainingAllocSpace(thisAddr, allocSize, thisList);
+			}
+
+			return thisAddr;
+		}
+		else
+		{
+#ifdef _DEBUG
+			__debugbreak(); // Error! Failed allocation due to no found free memory regions!
+#endif
+			return NULL;
+		}
+	}
+
+	// Computes the address of the buddy-block for the given address and blockSize
+	static gpuvoid* const GetBuddyBlock(gpuvoid* const blockStartAddr, const unsigned blockSize)
+	{
+#ifdef _DEBUG
+		if (__popcnt(blockSize) != 1)
+		{
+			__debugbreak(); // blockSize must be a power of 2!
+		}
+#endif
+
+		gpuvoid* const buddyBlockPtr = reinterpret_cast<gpuvoid* const>(reinterpret_cast<unsigned long>(blockStartAddr) ^ blockSize);
+		return buddyBlockPtr;
+	}
+
+	void FreeBlock(gpuvoid* const blockStartAddr, const unsigned blockSize)
+	{
+#ifdef _DEBUG
+		if (__popcnt(blockSize) != 1)
+		{
+			__debugbreak(); // blockSize must be a power of 2!
+		}
+		if (reinterpret_cast<unsigned long>(blockStartAddr) & (blockSize - 1) )
+		{
+			__debugbreak(); // The address we were given to free is not aligned to the blockSize provided
+		}
+#endif
+
+		const unsigned numLeadingZeroes = __lzcnt(blockSize);
+		const unsigned freeListIndex = numLeadingZeroes - 1;
+
+#ifdef _DEBUG
+		if (freeListIndex >= ARRAYSIZE(lists) )
+		{
+			__debugbreak();
+		}
+#endif
+
+		FreeList& returnList = lists[freeListIndex];
+#ifdef _DEBUG
+		if (returnList.regionSize_bytes != blockSize)
+		{
+			__debugbreak();
+		}
+#endif
+
+		gpuvoid* const buddyBlock = GetBuddyBlock(blockStartAddr, blockSize);
+		std::unordered_set<gpuvoid*>::iterator buddyIt = returnList.freeRegions.find(buddyBlock);
+		if (buddyIt != returnList.freeRegions.end() )
+		{
+			// Coalesce our two smaller memory blocks together into a larger one!
+			returnList.freeRegions.erase(buddyIt);
+			gpuvoid* const coalescedBlockAddr = blockStartAddr < buddyBlock ? blockStartAddr : buddyBlock;
+			FreeBlock(coalescedBlockAddr, blockSize << 1);
+		}
+		else
+		{
+			returnList.freeRegions.insert(blockStartAddr);
+		}
+	}
+
+	void FreeAlloc(gpuvoid* allocAddr, unsigned allocSize)
+	{
+		while (allocSize != 0)
+		{
+			const unsigned numLeadingZeroes = __lzcnt(allocSize);
+			const unsigned freeListIndex = numLeadingZeroes - 1;
+			const unsigned freeListBlockSize = 1 << (32 - numLeadingZeroes - 1);
+
+#ifdef _DEBUG
+			if (freeListIndex >= ARRAYSIZE(lists) )
+			{
+				__debugbreak();
+			}
+			if (freeListBlockSize != lists[freeListIndex].regionSize_bytes)
+			{
+				__debugbreak();
+			}
+#endif
+
+			FreeBlock(allocAddr, freeListBlockSize);
+
+#ifdef _DEBUG
+			if (freeListBlockSize > allocSize)
+			{
+				__debugbreak();
+			}
+#endif
+
+			allocAddr = (gpuvoid*)( ( (char* const)allocAddr) + freeListBlockSize);
+
+#ifdef _DEBUG
+			if (allocAddr > (gpuvoid* const)0x40000000)
+			{
+				__debugbreak();
+			}
+#endif
+
+			allocSize -= freeListBlockSize;
+		}
+	}
+} FreeTree;
 
 // Returns true if the given 1MB column index is currently occupied (allocated), or false if it is free
 static inline const bool IsGPUColumnOccupied(const unsigned gpuColumnIndex)
@@ -62,33 +477,229 @@ static inline void SetGPUColumnOccupied(const unsigned gpuColumnIndex, const boo
 // Returns true if the given 2KB page index is currently occupied (allocated), or false if it is free
 static inline const bool IsGPUPageOccupied(const unsigned gpuPageIndex)
 {
-	const unsigned bitmapIndex = gpuPageIndex / (sizeof(uint16_t) * 8);
+	const unsigned bitmapIndex = gpuPageIndex / (sizeof(uint32_t) * 8);
 #ifdef _DEBUG
 	if (bitmapIndex >= std::size(occupiedPagesBitmap) )
 	{
 		__debugbreak(); // Out of bounds!
 	}
 #endif
-	const uint16_t gpuPageBitmap = occupiedPagesBitmap[bitmapIndex];
-	const uint16_t bitMask = 1 << (gpuPageIndex % (sizeof(uint16_t) * 8) );
+	const uint32_t gpuPageBitmap = occupiedPagesBitmap[bitmapIndex];
+	const uint32_t bitMask = 1 << (gpuPageIndex % (sizeof(uint32_t) * 8) );
 	return (gpuPageBitmap & bitMask) != 0;
 }
 
 static inline void SetGPUPageOccupied(const unsigned gpuPageIndex, const bool isOccupied)
 {
-	const unsigned bitmapIndex = gpuPageIndex / (sizeof(uint16_t) * 8);
+	const unsigned bitmapIndex = gpuPageIndex / (sizeof(uint32_t) * 8);
 #ifdef _DEBUG
 	if (bitmapIndex >= std::size(occupiedPagesBitmap) )
 	{
 		__debugbreak(); // Out of bounds!
 	}
 #endif
-	uint16_t& gpuPageBitmap = occupiedPagesBitmap[bitmapIndex];
-	const uint16_t bitMask = 1 << (gpuPageIndex % (sizeof(uint16_t) * 8) );
+	uint32_t& gpuPageBitmap = occupiedPagesBitmap[bitmapIndex];
+	const uint32_t bitMask = 1 << (gpuPageIndex % (sizeof(uint32_t) * 8) );
 	if (isOccupied)
 		gpuPageBitmap |= bitMask;
 	else
 		gpuPageBitmap &= (~bitMask);
+}
+
+// Returns true if all consecutive pages queried are free, or false otherwise. Runs more efficiently than calling IsGPUPageOccupied() in a loop by performing batch page testing
+static const bool AreAllGPUPagesFree(const unsigned gpuStartingPageIndex, unsigned numPages)
+{
+#ifdef _DEBUG
+	if (numPages == 0)
+	{
+		__debugbreak(); // Not a valid page count!
+	}
+#endif
+	if (numPages == 1)
+	{
+		return IsGPUPageOccupied(gpuStartingPageIndex) == false;
+	}
+
+	unsigned bitmapIndex = gpuStartingPageIndex / (sizeof(uint32_t) * 8);
+	const unsigned endingBitmapIndex = (gpuStartingPageIndex + numPages - 1) / (sizeof(uint32_t) * 8);
+#ifdef _DEBUG
+	if (bitmapIndex >= std::size(occupiedPagesBitmap) )
+	{
+		__debugbreak(); // Out of bounds!
+	}
+	if (endingBitmapIndex >= std::size(occupiedPagesBitmap) )
+	{
+		__debugbreak(); // Out of bounds!
+	}
+#endif
+
+	unsigned pageOffset = gpuStartingPageIndex % (sizeof(uint32_t) * 8);
+	while (numPages > 0)
+	{
+		unsigned numPagesThisSet;
+		if (numPages + pageOffset > 32)
+			numPagesThisSet = 32 - pageOffset;
+		else
+			numPagesThisSet = numPages;
+
+		const unsigned checkShift = (const unsigned)(1llu << numPagesThisSet); // If we don't do this, then trying to shift a 32-bit value by 32 bits will bug out on x86 as the shift amount gets masked away
+		const unsigned checkMask = (checkShift - 1u) << pageOffset;
+		if (checkMask & occupiedPagesBitmap[bitmapIndex])
+		{
+			return false;
+		}
+
+		numPages -= numPagesThisSet;
+		pageOffset = 0;
+		++bitmapIndex;
+	}
+
+	return true;
+}
+
+// Returns true if all consecutive pages queried are occupied, or false otherwise. Runs more efficiently than calling IsGPUPageOccupied() in a loop by performing batch page testing
+static const bool AreAllGPUPagesOccupied(const unsigned gpuStartingPageIndex, unsigned numPages)
+{
+#ifdef _DEBUG
+	if (numPages == 0)
+	{
+		__debugbreak(); // Not a valid page count!
+	}
+#endif
+	if (numPages == 1)
+	{
+		return IsGPUPageOccupied(gpuStartingPageIndex) == true;
+	}
+
+	unsigned bitmapIndex = gpuStartingPageIndex / (sizeof(uint32_t) * 8);
+	const unsigned endingBitmapIndex = (gpuStartingPageIndex + numPages - 1) / (sizeof(uint32_t) * 8);
+#ifdef _DEBUG
+	if (bitmapIndex >= std::size(occupiedPagesBitmap) )
+	{
+		__debugbreak(); // Out of bounds!
+	}
+	if (endingBitmapIndex >= std::size(occupiedPagesBitmap) )
+	{
+		__debugbreak(); // Out of bounds!
+	}
+#endif
+
+	unsigned pageOffset = gpuStartingPageIndex % (sizeof(uint32_t) * 8);
+	while (numPages > 0)
+	{
+		unsigned numPagesThisSet;
+		if (numPages + pageOffset > 32)
+			numPagesThisSet = 32 - pageOffset;
+		else
+			numPagesThisSet = numPages;
+
+		const unsigned checkShift = (const unsigned)(1llu << numPagesThisSet); // If we don't do this, then trying to shift a 32-bit value by 32 bits will bug out on x86 as the shift amount gets masked away
+		const unsigned checkMask = (checkShift - 1u) << pageOffset;
+		if ( (checkMask & occupiedPagesBitmap[bitmapIndex]) != checkMask)
+		{
+			return false;
+		}
+
+		numPages -= numPagesThisSet;
+		pageOffset = 0;
+		++bitmapIndex;
+	}
+
+	return true;
+}
+
+// This is more efficient than calling SetGPUPageOccupied(true) in a loop.
+static void BulkSetGPUPagesOccupied(const unsigned gpuStartingPageIndex, unsigned numPages)
+{
+#ifdef _DEBUG
+	if (numPages == 0)
+	{
+		__debugbreak(); // Not a valid page count!
+	}
+#endif
+	if (numPages == 1)
+	{
+		SetGPUPageOccupied(gpuStartingPageIndex, true);
+		return;
+	}
+
+	unsigned bitmapIndex = gpuStartingPageIndex / (sizeof(uint32_t) * 8);
+	const unsigned endingBitmapIndex = (gpuStartingPageIndex + numPages - 1) / (sizeof(uint32_t) * 8);
+#ifdef _DEBUG
+	if (bitmapIndex >= std::size(occupiedPagesBitmap) )
+	{
+		__debugbreak(); // Out of bounds!
+	}
+	if (endingBitmapIndex >= std::size(occupiedPagesBitmap) )
+	{
+		__debugbreak(); // Out of bounds!
+	}
+#endif
+
+	unsigned pageOffset = gpuStartingPageIndex % (sizeof(uint32_t) * 8);
+	while (numPages > 0)
+	{
+		unsigned numPagesThisSet;
+		if (numPages + pageOffset > 32)
+			numPagesThisSet = 32 - pageOffset;
+		else
+			numPagesThisSet = numPages;
+
+		const unsigned setShift = (const unsigned)(1llu << numPagesThisSet); // If we don't do this, then trying to shift a 32-bit value by 32 bits will bug out on x86 as the shift amount gets masked away
+		const unsigned setMask = (setShift - 1u) << pageOffset;
+		occupiedPagesBitmap[bitmapIndex] |= setMask;
+
+		numPages -= numPagesThisSet;
+		pageOffset = 0;
+		++bitmapIndex;
+	}
+}
+
+// This is more efficient than calling SetGPUPageOccupied(false) in a loop.
+static void BulkSetGPUPagesUnoccupied(const unsigned gpuStartingPageIndex, unsigned numPages)
+{
+#ifdef _DEBUG
+	if (numPages == 0)
+	{
+		__debugbreak(); // Not a valid page count!
+	}
+#endif
+	if (numPages == 1)
+	{
+		SetGPUPageOccupied(gpuStartingPageIndex, false);
+		return;
+	}
+
+	unsigned bitmapIndex = gpuStartingPageIndex / (sizeof(uint32_t) * 8);
+	const unsigned endingBitmapIndex = (gpuStartingPageIndex + numPages - 1) / (sizeof(uint32_t) * 8);
+#ifdef _DEBUG
+	if (bitmapIndex >= std::size(occupiedPagesBitmap) )
+	{
+		__debugbreak(); // Out of bounds!
+	}
+	if (endingBitmapIndex >= std::size(occupiedPagesBitmap) )
+	{
+		__debugbreak(); // Out of bounds!
+	}
+#endif
+
+	unsigned pageOffset = gpuStartingPageIndex % (sizeof(uint32_t) * 8);
+	while (numPages > 0)
+	{
+		unsigned numPagesThisSet;
+		if (numPages + pageOffset > 32)
+			numPagesThisSet = 32 - pageOffset;
+		else
+			numPagesThisSet = numPages;
+
+		const unsigned clearShift = (const unsigned)(1llu << numPagesThisSet); // If we don't do this, then trying to shift a 32-bit value by 32 bits will bug out on x86 as the shift amount gets masked away
+		const unsigned clearMask = ~( (clearShift - 1u) << pageOffset);
+		occupiedPagesBitmap[bitmapIndex] &= clearMask;
+
+		numPages -= numPagesThisSet;
+		pageOffset = 0;
+		++bitmapIndex;
+	}
 }
 
 class ScopeLockCS
@@ -189,6 +800,35 @@ const unsigned GPUGetAllocatorGeneration()
 	);
 
 	return globalStats.currentGeneration;
+}
+
+// Ends the current frame and resets the per-frame counters:
+__declspec(noinline) void GPUAlloc_EndFrame(unsigned& outNumAllocsThisFrame, unsigned& outBytesAllocThisFrame, unsigned& outNumFreesThisFrame, unsigned& outBytesFreedThisFrame, unsigned& outRollingNumPlacementsAvg)
+{
+	const ScopeLockCS lockAllocScope(&GPUAllocCS
+#ifdef _DEBUG
+		, GPUAllocCS_OwnerString, __FUNCTION__
+		, GPUAllocCS_DebugAllocationString, __FUNCTION__
+#endif
+	);
+
+	outNumAllocsThisFrame = globalStats.numAllocationsThisFrame;
+	outBytesAllocThisFrame = globalStats.bytesAllocatedThisFrame;
+	outNumFreesThisFrame = globalStats.numFreesThisFrame;
+	outBytesFreedThisFrame = globalStats.bytesFreedThisFrame;
+
+	unsigned sumTotalRollingAllocsCount = 0;
+	for (unsigned x = 0; x < ARRAYSIZE(globalStats.rollingNumPlacementTests); ++x)
+	{
+		sumTotalRollingAllocsCount += globalStats.rollingNumPlacementTests[x];
+	}
+	outRollingNumPlacementsAvg = sumTotalRollingAllocsCount / ARRAYSIZE(globalStats.rollingNumPlacementTests);
+
+	// Reset out per-frame stats:
+	globalStats.numAllocationsThisFrame = 0;
+	globalStats.bytesAllocatedThisFrame = 0;
+	globalStats.numFreesThisFrame = 0;
+	globalStats.bytesFreedThisFrame = 0;
 }
 
 // Returns how much usable free memory is available, in bytes
@@ -435,15 +1075,7 @@ static const bool ValidateAllocationFits(gpuvoid* const gpuAddr, const unsigned 
 	const unsigned gpuStartingPageIndex = (const unsigned)gpuAddr / GPU_PAGE_SIZE_BYTES;
 	const unsigned allocationSizeRoundedUpToNextPageSize = RoundUpSizeToNextPage(allocationSize);
 	const unsigned numPagesUsed = allocationSizeRoundedUpToNextPageSize / GPU_PAGE_SIZE_BYTES;
-	for (unsigned gpuPageIndexOffset = 0; gpuPageIndexOffset < numPagesUsed; ++gpuPageIndexOffset)
-	{
-		const unsigned testPageIndex = gpuStartingPageIndex + gpuPageIndexOffset;
-		if (IsGPUPageOccupied(testPageIndex) )
-		{
-			return false;
-		}
-	}
-	return true;
+	return AreAllGPUPagesFree(gpuStartingPageIndex, numPagesUsed);
 }
 
 // Actually places the allocation at the specified address. Cannot fail, since we have already locked the critical section and verified that there are enough free pages at this address
@@ -453,7 +1085,7 @@ static void GPUPlaceAllocation_Internal(gpuvoid* const placementAddress, const u
 #ifdef _DEBUG
 	, const char* const debugAllocationString
 #endif
-	, const ScopeLockCS& lockedScope)
+	, const unsigned numPlacementTestsBeforeSuccess, const ScopeLockCS& lockedScope)
 {
 	const unsigned startingColumnIndex = (const unsigned)placementAddress / GPU_COL_SIZE_BYTES;
 	const unsigned endingColumnIndex = ( (const unsigned)placementAddress + (allocationSizeBytes-1) ) / GPU_COL_SIZE_BYTES;
@@ -500,16 +1132,13 @@ static void GPUPlaceAllocation_Internal(gpuvoid* const placementAddress, const u
 		SetGPUColumnOccupied(columnIndex, true);
 	}
 
-	for (unsigned pageIndex = startingPageIndex; pageIndex <= endingPageIndex; ++pageIndex)
-	{
 #ifdef _DEBUG
-		if (IsGPUPageOccupied(pageIndex) != false)
-		{
-			__debugbreak(); // We should never be here 'cuz we should have already checked for this prior to calling this function!
-		}
-#endif
-		SetGPUPageOccupied(pageIndex, true);
+	if (AreAllGPUPagesFree(startingPageIndex, endingPageIndex - startingPageIndex + 1) == false)
+	{
+		__debugbreak(); // We should never be here 'cuz we should have already checked for this prior to calling this function!
 	}
+#endif
+	BulkSetGPUPagesOccupied(startingPageIndex, endingPageIndex - startingPageIndex + 1);
 
 #ifdef _DEBUG
 	if (globalStats.numLiveAllocations >= GPU_DRAM_TOTAL_CAPACITY_BYTES / GPU_PAGE_SIZE_BYTES)
@@ -526,8 +1155,13 @@ static void GPUPlaceAllocation_Internal(gpuvoid* const placementAddress, const u
 	}
 #endif
 
+	globalStats.rollingNumPlacementTests[globalStats.rollingPlacementID] = numPlacementTestsBeforeSuccess;
+	globalStats.rollingPlacementID = (globalStats.rollingPlacementID + 1) % ARRAYSIZE(globalStats.rollingNumPlacementTests);
+
 	++globalStats.currentGeneration;
 	++globalStats.numLiveAllocations;
+	++globalStats.numAllocationsThisFrame;
+	globalStats.bytesAllocatedThisFrame += allocationSizeBytes;
 	globalStats.freeBytesTotal -= allocationSizeBytes;
 	globalStats.usableFreeBytesTotal -= newAlloc.allocSize;
 	globalStats.allocatorFreePercent = globalStats.usableFreeBytesTotal / (const float)GPU_DRAM_TOTAL_CAPACITY_BYTES * 100.0f;
@@ -558,6 +1192,8 @@ static gpuvoid* GPUAlloc_Internal(const unsigned allocationSizeBytes,
 #endif
 	);
 
+	/*unsigned numPlacementTests = 0;
+
 	if (requiredAlignmentBytes == GPU_COL_SIZE_BYTES) // We are forced by our alignment restrictions to use the large page allocation scheme
 	{
 		// First try looking for a totally free range of columns that matches our size:
@@ -568,6 +1204,8 @@ static gpuvoid* GPUAlloc_Internal(const unsigned allocationSizeBytes,
 				bool isColumnRangeFree = true;
 				for (unsigned columnIndexOffset = 1; columnIndexOffset < allocColumnCount; ++columnIndexOffset)
 				{
+					++numPlacementTests;
+
 					if (IsGPUColumnOccupied(columnIndex + columnIndexOffset) )
 					{
 						isColumnRangeFree = false;
@@ -582,7 +1220,7 @@ static gpuvoid* GPUAlloc_Internal(const unsigned allocationSizeBytes,
 #ifdef _DEBUG
 						, debugAllocationString
 #endif
-						, lockAllocScope);
+						, numPlacementTests, lockAllocScope);
 					return placementAddress;
 				}
 			}
@@ -594,15 +1232,9 @@ static gpuvoid* GPUAlloc_Internal(const unsigned allocationSizeBytes,
 			const unsigned startingPageIndex = alignedTestAddress / GPU_PAGE_SIZE_BYTES;
 			const unsigned endingPageIndex = (alignedTestAddress + roundedUpAllocSize) / GPU_PAGE_SIZE_BYTES;
 
-			bool allPagesFree = true;
-			for (unsigned pageIndex = startingPageIndex; pageIndex <= endingPageIndex; ++pageIndex)
-			{
-				if (IsGPUPageOccupied(pageIndex) )
-				{
-					allPagesFree = false;
-					break;
-				}
-			}
+			++numPlacementTests;
+
+			const bool allPagesFree = AreAllGPUPagesFree(startingPageIndex, allocPageCount);
 
 			if (allPagesFree)
 			{
@@ -611,7 +1243,7 @@ static gpuvoid* GPUAlloc_Internal(const unsigned allocationSizeBytes,
 #ifdef _DEBUG
 					, debugAllocationString
 #endif
-					, lockAllocScope);
+					, numPlacementTests, lockAllocScope);
 				return placementAddress;
 			}
 		}
@@ -633,18 +1265,12 @@ static gpuvoid* GPUAlloc_Internal(const unsigned allocationSizeBytes,
 			const gpuvoid* const columnEndAddress = (const gpuvoid* const)( ( (columnIndex + 1) * GPU_COL_SIZE_BYTES) - requiredAlignmentBytes);
 			for (unsigned testAddress = (const unsigned)columnStartAddress; testAddress < (const unsigned)columnEndAddress; testAddress += requiredAlignmentBytes)
 			{
-				bool allPagesFree = true;
 				const unsigned startingPage = testAddress / GPU_PAGE_SIZE_BYTES;
 				const unsigned endingPage = startingPage + allocPageCount;
-				for (unsigned pageIndex = startingPage; pageIndex < endingPage; ++pageIndex)
-				{
-					if (IsGPUPageOccupied(pageIndex) )
-					{
-						allPagesFree = false;
-						break;
-					}
-				}
 
+				++numPlacementTests;
+
+				const bool allPagesFree = AreAllGPUPagesFree(startingPage, allocPageCount);
 				if (allPagesFree)
 				{
 					gpuvoid* const placementAddress = (gpuvoid* const)testAddress;
@@ -652,7 +1278,7 @@ static gpuvoid* GPUAlloc_Internal(const unsigned allocationSizeBytes,
 #ifdef _DEBUG
 						, debugAllocationString
 #endif
-						, lockAllocScope);
+						, numPlacementTests, lockAllocScope);
 					return placementAddress;
 				}
 			}
@@ -665,16 +1291,9 @@ static gpuvoid* GPUAlloc_Internal(const unsigned allocationSizeBytes,
 		const unsigned startingPageIndex = alignedTestAddress / GPU_PAGE_SIZE_BYTES;
 		const unsigned endingPageIndex = (alignedTestAddress + roundedUpAllocSize) / GPU_PAGE_SIZE_BYTES;
 
-		bool allPagesFree = true;
-		for (unsigned pageIndex = startingPageIndex; pageIndex <= endingPageIndex; ++pageIndex)
-		{
-			if (IsGPUPageOccupied(pageIndex) )
-			{
-				allPagesFree = false;
-				break;
-			}
-		}
+		++numPlacementTests;
 
+		const bool allPagesFree = AreAllGPUPagesFree(startingPageIndex, allocPageCount);
 		if (allPagesFree)
 		{
 			gpuvoid* const placementAddress = (gpuvoid* const)alignedTestAddress;
@@ -682,7 +1301,7 @@ static gpuvoid* GPUAlloc_Internal(const unsigned allocationSizeBytes,
 #ifdef _DEBUG
 				, debugAllocationString
 #endif
-				, lockAllocScope);
+				, numPlacementTests, lockAllocScope);
 			return placementAddress;
 		}
 	}
@@ -691,7 +1310,15 @@ static gpuvoid* GPUAlloc_Internal(const unsigned allocationSizeBytes,
 	__debugbreak(); // Uh oh, we couldn't find a spot where this allocation fits!
 #endif
 	// Oh no, we couldn't find an allocation!
-	return NULL;
+	return NULL;*/
+
+	gpuvoid* const placementAddress = FreeTree.Alloc(roundedUpAllocSize, requiredAlignmentBytes);
+	GPUPlaceAllocation_Internal(placementAddress, allocationSizeBytes, width, height, depth, numMipLevels, usage, format
+#ifdef _DEBUG
+		, debugAllocationString
+#endif
+		, 1, lockAllocScope);
+	return placementAddress;
 }
 
 // Returns the base address of the allocation the range is contained in, or NULL otherwise. The range may not straddle multiple adjacent allocations.
@@ -745,6 +1372,9 @@ const gpuvoid* const ValidateMemoryRangeExistsInsideAllocation(const gpuvoid* co
 		return NULL;
 	}
 
+	// Early out for now for optimization testing:
+	return (const gpuvoid* const)1;
+
 	const unsigned startingColumnIndex = (const unsigned)rangeBegin / GPU_COL_SIZE_BYTES;
 	const unsigned endingColumnIndex = ( (const unsigned)rangeBegin + (rangeLengthBytes-1) ) / GPU_COL_SIZE_BYTES;
 	const unsigned startingPageIndex = (const unsigned)rangeBegin / GPU_PAGE_SIZE_BYTES;
@@ -764,19 +1394,16 @@ const gpuvoid* const ValidateMemoryRangeExistsInsideAllocation(const gpuvoid* co
 #ifdef _DEBUG
 			__debugbreak();
 #endif
-			return false;
+			return NULL;
 		}
 	}
 
-	for (unsigned pageID = startingPageIndex; pageID <= endingPageIndex; ++pageID)
+	if (!AreAllGPUPagesOccupied(startingPageIndex, endingPageIndex - startingPageIndex + 1) )
 	{
-		if (!IsGPUPageOccupied(pageID) )
-		{
 #ifdef _DEBUG
-			__debugbreak();
+		__debugbreak();
 #endif
-			return false;
-		}
+		return NULL;
 	}
 
 	// First check for the simple, common case of the range coinciding with the allocation beginning
@@ -889,8 +1516,8 @@ static inline void CheckSetColumnEmpty(const unsigned gpuColumnIndex, const Scop
 {
 	const gpuvoid* const startingColumnAddress = (const gpuvoid* const)(gpuColumnIndex * GPU_COL_SIZE_BYTES);
 	const unsigned startingPageIndex = (const unsigned)startingColumnAddress / GPU_PAGE_SIZE_BYTES;
-	const unsigned startingBitmapIndex = startingPageIndex / (sizeof(uint16_t) * 8);
-	const unsigned numBitmapsPerColumn = GPU_NUM_PAGES_PER_COLUMN / (sizeof(uint16_t) * 8);
+	const unsigned startingBitmapIndex = startingPageIndex / (sizeof(uint32_t) * 8);
+	const unsigned numBitmapsPerColumn = GPU_NUM_PAGES_PER_COLUMN / (sizeof(uint32_t) * 8);
 	for (unsigned bitmapIndexOffset = 0; bitmapIndexOffset < numBitmapsPerColumn; ++bitmapIndexOffset)
 	{
 		const unsigned bitmapIndex = startingBitmapIndex + bitmapIndexOffset;
@@ -947,17 +1574,13 @@ static void GPUFree_Internal(gpuvoid* gpuAlloc)
 	}
 #endif
 	const unsigned allocPageCount = foundExistingAllocation.allocSize / GPU_PAGE_SIZE_BYTES;
-	for (unsigned pageIndexOffset = 0; pageIndexOffset < allocPageCount; ++pageIndexOffset)
-	{
-		const unsigned pageIndex = allocStartingPageIndex + pageIndexOffset;
 #ifdef _DEBUG
-		if (!IsGPUPageOccupied(pageIndex) )
-		{
-			__debugbreak(); // Error: The original allocation was not fully allocated!
-		}
-#endif
-		SetGPUPageOccupied(pageIndex, false);
+	if (!AreAllGPUPagesOccupied(allocStartingPageIndex, allocPageCount) )
+	{
+		__debugbreak(); // Error: The original allocation was not fully allocated!
 	}
+#endif
+	BulkSetGPUPagesUnoccupied(allocStartingPageIndex, allocPageCount);
 
 	// Check to see if the entire column is now freed, and mark it as such if that's the case:
 	const unsigned allocColumnCount = RoundUpSizeToNextColumn(foundExistingAllocation.allocSize) / GPU_COL_SIZE_BYTES;
@@ -966,6 +1589,9 @@ static void GPUFree_Internal(gpuvoid* gpuAlloc)
 		const unsigned columnIndex = allocStartingColumnIndex + columnIndexOffset;
 		CheckSetColumnEmpty(columnIndex, lockAllocScope);
 	}
+
+	// Add the freed memory pages back into our free lists:
+	FreeTree.FreeAlloc(gpuAlloc, foundExistingAllocation.allocSize);
 
 	// Update our global stats:
 #ifdef _DEBUG
@@ -976,6 +1602,8 @@ static void GPUFree_Internal(gpuvoid* gpuAlloc)
 #endif
 	++globalStats.currentGeneration;
 	--globalStats.numLiveAllocations;
+	++globalStats.numFreesThisFrame;
+	globalStats.bytesFreedThisFrame += foundExistingAllocation.allocSize;
 	globalStats.freeBytesTotal += foundExistingAllocation.requestedSize;
 	globalStats.usableFreeBytesTotal += foundExistingAllocation.allocSize;
 	globalStats.allocatorFreePercent = globalStats.usableFreeBytesTotal / (const float)GPU_DRAM_TOTAL_CAPACITY_BYTES * 100.0f;
@@ -1048,6 +1676,12 @@ static gpuvoid* GPUAllocAtAddress_Internal(gpuvoid* const placementAddress, cons
 		return NULL; // There's already an existing allocation at this address, cannot allocate here!
 	}
 
+	// Remove our allocation region from the FreeTree:
+	if (!FreeTree.AllocAtAddress(placementAddress, allocationSizeBytes) )
+	{
+		return NULL; // Our requested address is not available in the FreeTree
+	}
+
 	// First perform the trivial allocation check of all of the columns being empty for this allocation:
 	bool allColumnsFree = true;
 	for (unsigned gpuColumnIndex = startingColumnIndex; gpuColumnIndex <= endingColumnIndex; ++gpuColumnIndex)
@@ -1066,17 +1700,14 @@ static gpuvoid* GPUAllocAtAddress_Internal(gpuvoid* const placementAddress, cons
 #ifdef _DEBUG
 			, debugAllocationString
 #endif
-			, lockAllocScope);
+			, 1, lockAllocScope);
 		return placementAddress;
 	}
 
 	// We have to perform the more complicated per-page scan at this point:
-	for (unsigned gpuPageIndex = startingPageIndex; gpuPageIndex <= endingPageIndex; ++gpuPageIndex)
+	if (!AreAllGPUPagesFree(startingPageIndex, allocationSizeBytes / GPU_PAGE_SIZE_BYTES) )
 	{
-		if (IsGPUPageOccupied(gpuPageIndex) )
-		{
-			return NULL; // Cannot allocate here as we already have an overlapping allocation
-		}
+		return NULL;
 	}
 
 	// Looks like our page scan succeeded, we can allocate here!
@@ -1084,7 +1715,7 @@ static gpuvoid* GPUAllocAtAddress_Internal(gpuvoid* const placementAddress, cons
 #ifdef _DEBUG
 		, debugAllocationString
 #endif
-		, lockAllocScope);
+		, 1, lockAllocScope);
 	return placementAddress;
 }
 

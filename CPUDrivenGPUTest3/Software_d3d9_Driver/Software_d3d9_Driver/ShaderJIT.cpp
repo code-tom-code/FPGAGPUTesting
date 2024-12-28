@@ -117,9 +117,9 @@ static inline const bool JITBATFile(const ShaderInfo& shaderInfo, const char* co
 	{
 		// TODO: Don't hardcode this path...
 #ifdef _M_X64
-		static const char* const invokeVSDevCmd = "call \"C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Enterprise\\VC\\Auxiliary\\Build\\vcvars64.bat\"\r\n";
+		static const char* const invokeVSDevCmd = "call \"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Auxiliary\\Build\\vcvars64.bat\"\r\n";
 #else
-		static const char* const invokeVSDevCmd = "call \"C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Enterprise\\Common7\\Tools\\VsDevCmd.bat\"\r\n";
+		static const char* const invokeVSDevCmd = "call \"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\Tools\\VsDevCmd.bat\"\r\n";
 #endif
 		AppendString(batfile, invokeVSDevCmd);
 	}

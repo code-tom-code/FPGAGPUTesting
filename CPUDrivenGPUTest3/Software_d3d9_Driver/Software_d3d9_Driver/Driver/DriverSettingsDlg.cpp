@@ -118,6 +118,17 @@ static const char* const texModeOverrideStrings[] =
 };
 static_assert(ARRAYSIZE(texModeOverrideStrings) == TexModeOverrideSettings::TMOS_NUM_ENTRIES, "Error: String table/enum mismatch!");
 
+static const char* const texFilterOverrideStrings[] =
+{
+	"Default",
+	"Point",
+	"Linear/Point",
+	"Point/Linear",
+	"Trilinear",
+	"Anisotropic",
+};
+static_assert(ARRAYSIZE(texFilterOverrideStrings) == TexFilterOverrideSettings::TFOS_NUM_ENTRIES, "Error: String table/enum mismatch!");
+
 static void PopulateDropdownListFromStringTable(_In_ HWND hWnd, _In_ const int dialogItemID, const char* const * const stringTable, const unsigned numEntries)
 {
 	for (unsigned x = 0; x < numEntries; ++x)
@@ -162,6 +173,7 @@ static INT_PTR CALLBACK DriverSettingsDialogProc(_In_ HWND hWnd, _In_ UINT MSG, 
 			PopulateDropdownListFromStringTable(hWnd, IDC_CMB_OVERRIDEALPHATEST, alphaTestOverrideStrings, AlphaTestOverrideSettings::ATOS_NUM_ENTRIES);
 			PopulateDropdownListFromStringTable(hWnd, IDC_CMB_OVERRIDETEXTUREADDRESSING, texAddressOverrideStrings, TexAddressOverrideSettings::TAOS_NUM_ENTRIES);
 			PopulateDropdownListFromStringTable(hWnd, IDC_CMB_OVERRIDETEXTURING, texModeOverrideStrings, TexModeOverrideSettings::TMOS_NUM_ENTRIES);
+			PopulateDropdownListFromStringTable(hWnd, IDC_CMB_OVERRIDEFILTERING, texFilterOverrideStrings, TexFilterOverrideSettings::TFOS_NUM_ENTRIES);
 
 			SendDlgItemMessageA(hWnd, IDC_CMB_SCANOUTSWIZZLER, CB_SETCURSEL, d3d9devhook->GetScanoutSwizzleR(), 0);
 			SendDlgItemMessageA(hWnd, IDC_CMB_SCANOUTSWIZZLEG, CB_SETCURSEL, d3d9devhook->GetScanoutSwizzleG(), 0);
@@ -177,6 +189,7 @@ static INT_PTR CALLBACK DriverSettingsDialogProc(_In_ HWND hWnd, _In_ UINT MSG, 
 			SendDlgItemMessageA(hWnd, IDC_CMB_OVERRIDEALPHATEST, CB_SETCURSEL, d3d9devhook->GetAlphaTestOverride(), 0);
 			SendDlgItemMessageA(hWnd, IDC_CMB_OVERRIDETEXTUREADDRESSING, CB_SETCURSEL, d3d9devhook->GetTexAddressOverride(), 0);
 			SendDlgItemMessageA(hWnd, IDC_CMB_OVERRIDETEXTURING, CB_SETCURSEL, d3d9devhook->GetTexModeOverride(), 0);
+			SendDlgItemMessageA(hWnd, IDC_CMB_OVERRIDEFILTERING, CB_SETCURSEL, d3d9devhook->GetTexFilterOverride(), 0);
 
 			char textBuffer[256] = {0};
 #pragma warning(push)
@@ -351,6 +364,15 @@ static INT_PTR CALLBACK DriverSettingsDialogProc(_In_ HWND hWnd, _In_ UINT MSG, 
 				}
 			}
 				return TRUE;
+			case IDC_CMB_OVERRIDEFILTERING:
+			{
+				const LRESULT comboboxIndex = SendDlgItemMessageA(hWnd, IDC_CMB_OVERRIDEFILTERING, CB_GETCURSEL, 0, 0);
+				if (comboboxIndex >= 0)
+				{
+					d3d9devhook->SetTexFilterOverride( (const TexFilterOverrideSettings)comboboxIndex);
+				}
+			}
+				return TRUE;
 			case IDC_EDIT_DRAWSLEEPMICROS:
 			{
 				char buffer[256] = {0};
@@ -381,8 +403,6 @@ void DriverSettingsDlg::InitDialog(HWND initialCreateFocusWindow, HWND initialCr
 	else
 		driverOptionsDlgParentWnd = initialCreateDeviceWindow;
 
-	return;
-
 	if (driverOptionsDlgParentWnd != NULL)
 	{
 		HMODULE currentDLLModule = NULL;
@@ -394,7 +414,7 @@ void DriverSettingsDlg::InitDialog(HWND initialCreateFocusWindow, HWND initialCr
 #endif
 			return;
 		}
-		driverOptionsDlgWnd = CreateDialogA(currentDLLModule, MAKEINTRESOURCEA(IDD_DRIVEROPTIONS), /*driverOptionsDlgParentWnd*/NULL, &DriverSettingsDialogProc);
+		driverOptionsDlgWnd = NULL;//CreateDialogA(currentDLLModule, MAKEINTRESOURCEA(IDD_DRIVEROPTIONS), /*driverOptionsDlgParentWnd*/NULL, &DriverSettingsDialogProc);
 		if (driverOptionsDlgWnd)
 		{
 			SetWindowLongPtrA(driverOptionsDlgWnd, DWLP_USER, (const LONG_PTR)d3d9devhook);

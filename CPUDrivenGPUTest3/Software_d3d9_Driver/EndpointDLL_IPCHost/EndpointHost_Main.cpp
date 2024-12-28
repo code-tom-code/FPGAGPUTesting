@@ -185,6 +185,20 @@ int main(const unsigned argc, const char* const argv[])
 					(*dllInfo.H2DFunctions.ProcessNewMessage)(&thisReadPacket);
 				}
 			}
+			else
+			{
+				static DWORD lastIdleUpdateTimestamp = 0;
+				const DWORD currentTimestamp = GetTickCount();
+				if (currentTimestamp > lastIdleUpdateTimestamp)
+				{
+					lastIdleUpdateTimestamp = currentTimestamp;
+
+					if (dllInfo.H2DFunctions.ProcessIdle)
+					{
+						(*dllInfo.H2DFunctions.ProcessIdle)();
+					}
+				}
+			}
 		}
 	}
 

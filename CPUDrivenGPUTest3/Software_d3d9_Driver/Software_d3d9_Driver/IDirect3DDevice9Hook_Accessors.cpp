@@ -1996,203 +1996,185 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::GetVertexSh
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::SetVertexShaderConstantF(THIS_ UINT StartRegister, CONST float* pConstantData, UINT Vector4fCount)
 {
-	HRESULT ret = d3d9dev->SetVertexShaderConstantF(StartRegister, pConstantData, Vector4fCount);
-	if (FAILED(ret) )
-		return ret;
-
 #ifdef _DEBUG
 	if (StartRegister > ARRAYSIZE(currentState.vertexShaderRegisters.floats) )
 	{
 		DbgBreakPrint("Error: Vertex shader constant index out of range");
 	}
+#endif
 	if (StartRegister + Vector4fCount > ARRAYSIZE(currentState.vertexShaderRegisters.floats) )
 	{
 		DbgBreakPrint("Error: Vertex shader constant range extends out of range");
+		return D3DERR_INVALIDCALL;
+	}
+
+#ifdef _DEBUG
+	if (pConstantData == NULL)
+	{
+		DbgBreakPrint("Error: NULL pointer passed to SetVertexShaderConstantF");
 	}
 #endif
-
-	if (pConstantData != NULL)
+	DeviceState* targetDeviceState;
+	if (IsCurrentlyRecordingStateBlock() )
 	{
-		DeviceState* targetDeviceState;
-		if (IsCurrentlyRecordingStateBlock() )
-		{
-			targetDeviceState = currentlyRecordingStateBlock->GetDeviceStateForWrite();
-			const unsigned finalSetRegister = StartRegister + Vector4fCount;
-			for (unsigned constantIndex = StartRegister; constantIndex < finalSetRegister; ++constantIndex)
-				currentlyRecordingStateBlock->MarkSetVertexShaderConstantF(constantIndex);
-		}
-		else
-			targetDeviceState = &currentState;
-
-		memcpy(targetDeviceState->vertexShaderRegisters.floats + StartRegister, pConstantData, Vector4fCount * sizeof(float4) );
+		targetDeviceState = currentlyRecordingStateBlock->GetDeviceStateForWrite();
+		const unsigned finalSetRegister = StartRegister + Vector4fCount;
+		for (unsigned constantIndex = StartRegister; constantIndex < finalSetRegister; ++constantIndex)
+			currentlyRecordingStateBlock->MarkSetVertexShaderConstantF(constantIndex);
 	}
+	else
+		targetDeviceState = &currentState;
 
-	return ret;
+	memcpy(targetDeviceState->vertexShaderRegisters.floats + StartRegister, pConstantData, Vector4fCount * sizeof(float4) );
+
+	return D3D_OK;
 }
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::GetVertexShaderConstantF(THIS_ UINT StartRegister, float* pConstantData, UINT Vector4fCount)
 {
-	HRESULT ret = d3d9dev->GetVertexShaderConstantF(StartRegister, pConstantData, Vector4fCount);
-	if (FAILED(ret) )
-		return ret;
-
 #ifdef _DEBUG
 	if (StartRegister > ARRAYSIZE(currentState.vertexShaderRegisters.floats) )
 	{
 		DbgBreakPrint("Error: Vertex shader constant index out of range");
 	}
+#endif
 	if (StartRegister + Vector4fCount > ARRAYSIZE(currentState.vertexShaderRegisters.floats) )
 	{
 		DbgBreakPrint("Error: Vertex shader constant range extends out of range");
+		return D3DERR_INVALIDCALL;
 	}
-#endif
 
-	if (pConstantData != NULL)
-	{
 #ifdef _DEBUG
-		if (memcmp(currentState.vertexShaderRegisters.floats + StartRegister, pConstantData, Vector4fCount * sizeof(float4) ) != 0)
-		{
-			DbgBreakPrint("Error: Internal vertex shader constant doesn't match vertex shader constant");
-		}
-#endif
-		memcpy(pConstantData, currentState.vertexShaderRegisters.floats + StartRegister, Vector4fCount * sizeof(float4) );
+	if (pConstantData == NULL)
+	{
+		DbgBreakPrint("Error: NULL pointer passed to GetVertexShaderConstantF");
 	}
+#endif
+	memcpy(pConstantData, currentState.vertexShaderRegisters.floats + StartRegister, Vector4fCount * sizeof(float4) );
 
-	return ret;
+	return D3D_OK;
 }
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::SetVertexShaderConstantI(THIS_ UINT StartRegister, CONST int* pConstantData, UINT Vector4iCount)
 {
-	HRESULT ret = d3d9dev->SetVertexShaderConstantI(StartRegister, pConstantData, Vector4iCount);
-	if (FAILED(ret) )
-		return ret;
-
 #ifdef _DEBUG
 	if (StartRegister > ARRAYSIZE(currentState.vertexShaderRegisters.ints) )
 	{
 		DbgBreakPrint("Error: Vertex shader constant index out of range");
 	}
+#endif
 	if (StartRegister + Vector4iCount > ARRAYSIZE(currentState.vertexShaderRegisters.ints) )
 	{
 		DbgBreakPrint("Error: Vertex shader constant range extends out of range");
+		return D3DERR_INVALIDCALL;
+	}
+
+#ifdef _DEBUG
+	if (pConstantData == NULL)
+	{
+		DbgBreakPrint("Error: NULL pointer passed to SetVertexShaderConstantI");
 	}
 #endif
-
-	if (pConstantData != NULL)
+	DeviceState* targetDeviceState;
+	if (IsCurrentlyRecordingStateBlock() )
 	{
-		DeviceState* targetDeviceState;
-		if (IsCurrentlyRecordingStateBlock() )
-		{
-			targetDeviceState = currentlyRecordingStateBlock->GetDeviceStateForWrite();
-			const unsigned finalSetRegister = StartRegister + Vector4iCount;
-			for (unsigned constantIndex = StartRegister; constantIndex < finalSetRegister; ++constantIndex)
-				currentlyRecordingStateBlock->MarkSetVertexShaderConstantI(constantIndex);
-		}
-		else
-			targetDeviceState = &currentState;
-
-		memcpy(targetDeviceState->vertexShaderRegisters.ints + StartRegister, pConstantData, Vector4iCount * sizeof(int4) );
+		targetDeviceState = currentlyRecordingStateBlock->GetDeviceStateForWrite();
+		const unsigned finalSetRegister = StartRegister + Vector4iCount;
+		for (unsigned constantIndex = StartRegister; constantIndex < finalSetRegister; ++constantIndex)
+			currentlyRecordingStateBlock->MarkSetVertexShaderConstantI(constantIndex);
 	}
+	else
+		targetDeviceState = &currentState;
 
-	return ret;
+	memcpy(targetDeviceState->vertexShaderRegisters.ints + StartRegister, pConstantData, Vector4iCount * sizeof(int4) );
+
+	return D3D_OK;
 }
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::GetVertexShaderConstantI(THIS_ UINT StartRegister, int* pConstantData, UINT Vector4iCount)
 {
-	HRESULT ret = d3d9dev->GetVertexShaderConstantI(StartRegister, pConstantData, Vector4iCount);
-	if (FAILED(ret) )
-		return ret;
-
 #ifdef _DEBUG
 	if (StartRegister > ARRAYSIZE(currentState.vertexShaderRegisters.ints) )
 	{
 		DbgBreakPrint("Error: Vertex shader constant index out of range");
 	}
+#endif
 	if (StartRegister + Vector4iCount > ARRAYSIZE(currentState.vertexShaderRegisters.ints) )
 	{
 		DbgBreakPrint("Error: Vertex shader constant range extends out of range");
+		return D3DERR_INVALIDCALL;
 	}
-#endif
 
-	if (pConstantData != NULL)
-	{
 #ifdef _DEBUG
-		if (memcmp(currentState.vertexShaderRegisters.ints + StartRegister, pConstantData, Vector4iCount * sizeof(int4) ) != 0)
-		{
-			DbgBreakPrint("Error: Internal vertex shader constant doesn't match vertex shader constant");
-		}
-#endif
-		memcpy(pConstantData, currentState.vertexShaderRegisters.ints + StartRegister, Vector4iCount * sizeof(int4) );
+	if (pConstantData == NULL)
+	{
+		DbgBreakPrint("Error: NULL pointer passed to GetVertexShaderConstantI");
 	}
+#endif
+	memcpy(pConstantData, currentState.vertexShaderRegisters.ints + StartRegister, Vector4iCount * sizeof(int4) );
 
-	return ret;
+	return D3D_OK;
 }
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::SetVertexShaderConstantB(THIS_ UINT StartRegister, CONST BOOL* pConstantData, UINT BoolCount)
 {
-	HRESULT ret = d3d9dev->SetVertexShaderConstantB(StartRegister, pConstantData, BoolCount);
-	if (FAILED(ret) )
-		return ret;
-
 #ifdef _DEBUG
 	if (StartRegister > ARRAYSIZE(currentState.vertexShaderRegisters.bools) )
 	{
 		DbgBreakPrint("Error: Vertex shader constant index out of range");
 	}
+#endif
 	if (StartRegister + BoolCount > ARRAYSIZE(currentState.vertexShaderRegisters.bools) )
 	{
 		DbgBreakPrint("Error: Vertex shader constant range extends out of range");
+		return D3DERR_INVALIDCALL;
+	}
+
+#ifdef _DEBUG
+	if (pConstantData == NULL)
+	{
+		DbgBreakPrint("Error: NULL pointer passed to SetVertexShaderConstantB");
 	}
 #endif
-
-	if (pConstantData != NULL)
+	DeviceState* targetDeviceState;
+	if (IsCurrentlyRecordingStateBlock() )
 	{
-		DeviceState* targetDeviceState;
-		if (IsCurrentlyRecordingStateBlock() )
-		{
-			targetDeviceState = currentlyRecordingStateBlock->GetDeviceStateForWrite();
-			const unsigned finalSetRegister = StartRegister + BoolCount;
-			for (unsigned constantIndex = StartRegister; constantIndex < finalSetRegister; ++constantIndex)
-				currentlyRecordingStateBlock->MarkSetVertexShaderConstantB(constantIndex);
-		}
-		else
-			targetDeviceState = &currentState;
-
-		memcpy(targetDeviceState->vertexShaderRegisters.bools + StartRegister, pConstantData, BoolCount * sizeof(BOOL) );
+		targetDeviceState = currentlyRecordingStateBlock->GetDeviceStateForWrite();
+		const unsigned finalSetRegister = StartRegister + BoolCount;
+		for (unsigned constantIndex = StartRegister; constantIndex < finalSetRegister; ++constantIndex)
+			currentlyRecordingStateBlock->MarkSetVertexShaderConstantB(constantIndex);
 	}
+	else
+		targetDeviceState = &currentState;
 
-	return ret;
+	memcpy(targetDeviceState->vertexShaderRegisters.bools + StartRegister, pConstantData, BoolCount * sizeof(BOOL) );
+
+	return D3D_OK;
 }
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::GetVertexShaderConstantB(THIS_ UINT StartRegister, BOOL* pConstantData, UINT BoolCount)
 {
-	HRESULT ret = d3d9dev->GetVertexShaderConstantB(StartRegister, pConstantData, BoolCount);
-	if (FAILED(ret) )
-		return ret;
-
 #ifdef _DEBUG
 	if (StartRegister > ARRAYSIZE(currentState.vertexShaderRegisters.bools) )
 	{
 		DbgBreakPrint("Error: Vertex shader constant index out of range");
 	}
+#endif
 	if (StartRegister + BoolCount > ARRAYSIZE(currentState.vertexShaderRegisters.bools) )
 	{
 		DbgBreakPrint("Error: Vertex shader constant range extends out of range");
+		return D3DERR_INVALIDCALL;
 	}
-#endif
 
-	if (pConstantData != NULL)
-	{
 #ifdef _DEBUG
-		if (memcmp(currentState.vertexShaderRegisters.bools + StartRegister, pConstantData, BoolCount * sizeof(BOOL) ) != 0)
-		{
-			DbgBreakPrint("Error: Internal vertex shader constant doesn't match vertex shader constant");
-		}
-#endif
-		memcpy(pConstantData, currentState.vertexShaderRegisters.bools + StartRegister, BoolCount * sizeof(BOOL) );
+	if (pConstantData == NULL)
+	{
+		DbgBreakPrint("Error: NULL pointer passed to GetVertexShaderConstantB");
 	}
+#endif
+	memcpy(pConstantData, currentState.vertexShaderRegisters.bools + StartRegister, BoolCount * sizeof(BOOL) );
 
-	return ret;
+	return D3D_OK;
 }
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::SetStreamSource(THIS_ UINT StreamNumber, IDirect3DVertexBuffer9* pStreamData, UINT OffsetInBytes, UINT Stride)
@@ -2468,203 +2450,185 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::GetPixelSha
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::SetPixelShaderConstantF(THIS_ UINT StartRegister, CONST float* pConstantData, UINT Vector4fCount)
 {
-	HRESULT ret = d3d9dev->SetPixelShaderConstantF(StartRegister, pConstantData, Vector4fCount);
-	if (FAILED(ret) )
-		return ret;
-
 #ifdef _DEBUG
 	if (StartRegister > ARRAYSIZE(currentState.pixelShaderRegisters.floats) )
 	{
 		DbgBreakPrint("Error: Pixel shader constant index out of range");
 	}
+#endif
 	if (StartRegister + Vector4fCount > ARRAYSIZE(currentState.pixelShaderRegisters.floats) )
 	{
 		DbgBreakPrint("Error: Pixel shader constant range extends out of range");
+		return D3DERR_INVALIDCALL;
+	}
+
+#ifdef _DEBUG
+	if (pConstantData == NULL)
+	{
+		DbgBreakPrint("Error: NULL pointer passed to SetPixelShaderConstantF");
 	}
 #endif
-
-	if (pConstantData != NULL)
+	DeviceState* targetDeviceState;
+	if (IsCurrentlyRecordingStateBlock() )
 	{
-		DeviceState* targetDeviceState;
-		if (IsCurrentlyRecordingStateBlock() )
-		{
-			targetDeviceState = currentlyRecordingStateBlock->GetDeviceStateForWrite();
-			const unsigned finalSetRegister = StartRegister + Vector4fCount;
-			for (unsigned constantIndex = StartRegister; constantIndex < finalSetRegister; ++constantIndex)
-				currentlyRecordingStateBlock->MarkSetPixelShaderConstantF(constantIndex);
-		}
-		else
-			targetDeviceState = &currentState;
-
-		memcpy(targetDeviceState->pixelShaderRegisters.floats + StartRegister, pConstantData, Vector4fCount * sizeof(float4) );
+		targetDeviceState = currentlyRecordingStateBlock->GetDeviceStateForWrite();
+		const unsigned finalSetRegister = StartRegister + Vector4fCount;
+		for (unsigned constantIndex = StartRegister; constantIndex < finalSetRegister; ++constantIndex)
+			currentlyRecordingStateBlock->MarkSetPixelShaderConstantF(constantIndex);
 	}
+	else
+		targetDeviceState = &currentState;
 
-	return ret;
+	memcpy(targetDeviceState->pixelShaderRegisters.floats + StartRegister, pConstantData, Vector4fCount * sizeof(float4) );
+
+	return D3D_OK;
 }
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::GetPixelShaderConstantF(THIS_ UINT StartRegister, float* pConstantData, UINT Vector4fCount)
 {
-	HRESULT ret = d3d9dev->GetPixelShaderConstantF(StartRegister, pConstantData, Vector4fCount);
-	if (FAILED(ret) )
-		return ret;
-
 #ifdef _DEBUG
 	if (StartRegister > ARRAYSIZE(currentState.pixelShaderRegisters.floats) )
 	{
 		DbgBreakPrint("Error: Pixel shader constant index out of range");
 	}
+#endif
 	if (StartRegister + Vector4fCount > ARRAYSIZE(currentState.pixelShaderRegisters.floats) )
 	{
 		DbgBreakPrint("Error: Pixel shader constant range extends out of range");
+		return D3DERR_INVALIDCALL;
 	}
-#endif
 
-	if (pConstantData != NULL)
-	{
 #ifdef _DEBUG
-		if (memcmp(currentState.pixelShaderRegisters.floats + StartRegister, pConstantData, Vector4fCount * sizeof(float4) ) != 0)
-		{
-			DbgBreakPrint("Error: Internal pixel shader constant doesn't match pixel shader constant");
-		}
-#endif
-		memcpy(pConstantData, currentState.pixelShaderRegisters.floats + StartRegister, Vector4fCount * sizeof(float4) );
+	if (pConstantData == NULL)
+	{
+		DbgBreakPrint("Error: NULL pointer passed to GetPixelShaderConstantF");
 	}
+#endif
+	memcpy(pConstantData, currentState.pixelShaderRegisters.floats + StartRegister, Vector4fCount * sizeof(float4) );
 
-	return ret;
+	return D3D_OK;
 }
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::SetPixelShaderConstantI(THIS_ UINT StartRegister, CONST int* pConstantData, UINT Vector4iCount)
 {
-	HRESULT ret = d3d9dev->SetPixelShaderConstantI(StartRegister, pConstantData, Vector4iCount);
-	if (FAILED(ret) )
-		return ret;
-
 #ifdef _DEBUG
 	if (StartRegister > ARRAYSIZE(currentState.pixelShaderRegisters.ints) )
 	{
 		DbgBreakPrint("Error: Pixel shader constant index out of range");
 	}
+#endif
 	if (StartRegister + Vector4iCount > ARRAYSIZE(currentState.pixelShaderRegisters.ints) )
 	{
 		DbgBreakPrint("Error: Pixel shader constant range extends out of range");
+		return D3DERR_INVALIDCALL;
+	}
+
+#ifdef _DEBUG
+	if (pConstantData == NULL)
+	{
+		DbgBreakPrint("Error: NULL pointer passed to SetPixelShaderConstantI");
 	}
 #endif
-
-	if (pConstantData != NULL)
+	DeviceState* targetDeviceState;
+	if (IsCurrentlyRecordingStateBlock() )
 	{
-		DeviceState* targetDeviceState;
-		if (IsCurrentlyRecordingStateBlock() )
-		{
-			targetDeviceState = currentlyRecordingStateBlock->GetDeviceStateForWrite();
-			const unsigned finalSetRegister = StartRegister + Vector4iCount;
-			for (unsigned constantIndex = StartRegister; constantIndex < finalSetRegister; ++constantIndex)
-				currentlyRecordingStateBlock->MarkSetPixelShaderConstantI(constantIndex);
-		}
-		else
-			targetDeviceState = &currentState;
-
-		memcpy(targetDeviceState->pixelShaderRegisters.ints + StartRegister, pConstantData, Vector4iCount * sizeof(int4) );
+		targetDeviceState = currentlyRecordingStateBlock->GetDeviceStateForWrite();
+		const unsigned finalSetRegister = StartRegister + Vector4iCount;
+		for (unsigned constantIndex = StartRegister; constantIndex < finalSetRegister; ++constantIndex)
+			currentlyRecordingStateBlock->MarkSetPixelShaderConstantI(constantIndex);
 	}
+	else
+		targetDeviceState = &currentState;
 
-	return ret;
+	memcpy(targetDeviceState->pixelShaderRegisters.ints + StartRegister, pConstantData, Vector4iCount * sizeof(int4) );
+
+	return D3D_OK;
 }
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::GetPixelShaderConstantI(THIS_ UINT StartRegister, int* pConstantData, UINT Vector4iCount)
 {
-	HRESULT ret = d3d9dev->GetPixelShaderConstantI(StartRegister, pConstantData, Vector4iCount);
-	if (FAILED(ret) )
-		return ret;
-
 #ifdef _DEBUG
 	if (StartRegister > ARRAYSIZE(currentState.pixelShaderRegisters.ints) )
 	{
 		DbgBreakPrint("Error: Pixel shader constant index out of range");
 	}
+#endif
 	if (StartRegister + Vector4iCount > ARRAYSIZE(currentState.pixelShaderRegisters.ints) )
 	{
 		DbgBreakPrint("Error: Pixel shader constant range extends out of range");
+		return D3DERR_INVALIDCALL;
 	}
-#endif
 
-	if (pConstantData != NULL)
-	{
 #ifdef _DEBUG
-		if (memcmp(currentState.pixelShaderRegisters.ints + StartRegister, pConstantData, Vector4iCount * sizeof(int4) ) != 0)
-		{
-			DbgBreakPrint("Error: Internal pixel shader constant doesn't match pixel shader constant");
-		}
-#endif
-		memcpy(pConstantData, currentState.pixelShaderRegisters.ints + StartRegister, Vector4iCount * sizeof(int4) );
+	if (pConstantData == NULL)
+	{
+		DbgBreakPrint("Error: NULL pointer passed to GetPixelShaderConstantI");
 	}
+#endif
+	memcpy(pConstantData, currentState.pixelShaderRegisters.ints + StartRegister, Vector4iCount * sizeof(int4) );
 
-	return ret;
+	return D3D_OK;
 }
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::SetPixelShaderConstantB(THIS_ UINT StartRegister, CONST BOOL* pConstantData, UINT BoolCount)
 {
-	HRESULT ret = d3d9dev->SetPixelShaderConstantB(StartRegister, pConstantData, BoolCount);
-	if (FAILED(ret) )
-		return ret;
-
 #ifdef _DEBUG
 	if (StartRegister > ARRAYSIZE(currentState.pixelShaderRegisters.bools) )
 	{
 		DbgBreakPrint("Error: Pixel shader constant index out of range");
 	}
+#endif
 	if (StartRegister + BoolCount > ARRAYSIZE(currentState.pixelShaderRegisters.bools) )
 	{
 		DbgBreakPrint("Error: Pixel shader constant range extends out of range");
+		return D3DERR_INVALIDCALL;
+	}
+
+#ifdef _DEBUG
+	if (pConstantData == NULL)
+	{
+		DbgBreakPrint("Error: NULL pointer passed to SetPixelShaderConstantB");
 	}
 #endif
-
-	if (pConstantData != NULL)
+	DeviceState* targetDeviceState;
+	if (IsCurrentlyRecordingStateBlock() )
 	{
-		DeviceState* targetDeviceState;
-		if (IsCurrentlyRecordingStateBlock() )
-		{
-			targetDeviceState = currentlyRecordingStateBlock->GetDeviceStateForWrite();
-			const unsigned finalSetRegister = StartRegister + BoolCount;
-			for (unsigned constantIndex = StartRegister; constantIndex < finalSetRegister; ++constantIndex)
-				currentlyRecordingStateBlock->MarkSetPixelShaderConstantB(constantIndex);
-		}
-		else
-			targetDeviceState = &currentState;
-
-		memcpy(targetDeviceState->pixelShaderRegisters.bools + StartRegister, pConstantData, BoolCount * sizeof(BOOL) );
+		targetDeviceState = currentlyRecordingStateBlock->GetDeviceStateForWrite();
+		const unsigned finalSetRegister = StartRegister + BoolCount;
+		for (unsigned constantIndex = StartRegister; constantIndex < finalSetRegister; ++constantIndex)
+			currentlyRecordingStateBlock->MarkSetPixelShaderConstantB(constantIndex);
 	}
+	else
+		targetDeviceState = &currentState;
 
-	return ret;
+	memcpy(targetDeviceState->pixelShaderRegisters.bools + StartRegister, pConstantData, BoolCount * sizeof(BOOL) );
+
+	return D3D_OK;
 }
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::GetPixelShaderConstantB(THIS_ UINT StartRegister, BOOL* pConstantData, UINT BoolCount)
 {
-	HRESULT ret = d3d9dev->GetPixelShaderConstantB(StartRegister, pConstantData, BoolCount);
-	if (FAILED(ret) )
-		return ret;
-
 #ifdef _DEBUG
 	if (StartRegister > ARRAYSIZE(currentState.pixelShaderRegisters.bools) )
 	{
 		DbgBreakPrint("Error: Pixel shader constant index out of range");
 	}
+#endif
 	if (StartRegister + BoolCount > ARRAYSIZE(currentState.pixelShaderRegisters.bools) )
 	{
 		DbgBreakPrint("Error: Pixel shader constant range extends out of range");
+		return D3DERR_INVALIDCALL;
 	}
-#endif
 
-	if (pConstantData != NULL)
-	{
 #ifdef _DEBUG
-		if (memcmp(currentState.pixelShaderRegisters.bools + StartRegister, pConstantData, BoolCount * sizeof(BOOL) ) != 0)
-		{
-			DbgBreakPrint("Error: Internal pixel shader constant doesn't match pixel shader constant");
-		}
-#endif
-		memcpy(pConstantData, currentState.pixelShaderRegisters.bools + StartRegister, BoolCount * sizeof(BOOL) );
+	if (pConstantData == NULL)
+	{
+		DbgBreakPrint("Error: NULL pointer passed to GetPixelShaderConstantB");
 	}
+#endif
+	memcpy(pConstantData, currentState.pixelShaderRegisters.bools + StartRegister, BoolCount * sizeof(BOOL) );
 
-	return ret;
+	return D3D_OK;
 }
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::SetRenderTarget(THIS_ DWORD RenderTargetIndex, IDirect3DSurface9* pRenderTarget)

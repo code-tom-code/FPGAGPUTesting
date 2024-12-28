@@ -1,0 +1,69 @@
+{
+   ExpandedHierarchyInLayout: "",
+   guistr: "# # String gsaved with Nlview 6.8.5  2018-01-30 bk=1.4354 VDI=40 GEI=35 GUI=JA:1.6 non-TLS
+#  -string -flagsOSRD
+preplace port portB_en_0 -pg 1 -y 380 -defaultsOSRD
+preplace port portW_en_0 -pg 1 -y 460 -defaultsOSRD
+preplace port portA_en_0 -pg 1 -y 300 -defaultsOSRD
+preplace port clk_0 -pg 1 -y 70 -defaultsOSRD
+preplace portBus portB_regChan_0 -pg 1 -y 440 -defaultsOSRD
+preplace portBus portA_regType_0 -pg 1 -y 320 -defaultsOSRD
+preplace portBus portW_regChan_0 -pg 1 -y 520 -defaultsOSRD
+preplace portBus portB_readOutData_0 -pg 1 -y 850 -defaultsOSRD
+preplace portBus portW_writeInData_0 -pg 1 -y 540 -defaultsOSRD
+preplace portBus portW_regType_0 -pg 1 -y 480 -defaultsOSRD
+preplace portBus writeQuadIndex_0 -pg 1 -y 280 -defaultsOSRD
+preplace portBus portA_readOutData_0 -pg 1 -y 870 -defaultsOSRD
+preplace portBus portB_regIdx_0 -pg 1 -y 420 -defaultsOSRD
+preplace portBus portA_regChan_0 -pg 1 -y 360 -defaultsOSRD
+preplace portBus readQuadIndex_0 -pg 1 -y 260 -defaultsOSRD
+preplace portBus portA_regIdx_0 -pg 1 -y 340 -defaultsOSRD
+preplace portBus portW_regIdx_0 -pg 1 -y 500 -defaultsOSRD
+preplace portBus portB_regType_0 -pg 1 -y 400 -defaultsOSRD
+preplace inst blk_mem_gen_7 -pg 1 -lvl 2 -y 780 -defaultsOSRD
+preplace inst GPRQuad2_0 -pg 1 -lvl 1 -y 390 -defaultsOSRD
+preplace inst blk_mem_gen_0 -pg 1 -lvl 2 -y -60 -defaultsOSRD
+preplace inst blk_mem_gen_1 -pg 1 -lvl 2 -y 60 -defaultsOSRD
+preplace inst blk_mem_gen_2 -pg 1 -lvl 2 -y 180 -defaultsOSRD
+preplace inst blk_mem_gen_3 -pg 1 -lvl 2 -y 300 -defaultsOSRD
+preplace inst blk_mem_gen_4 -pg 1 -lvl 2 -y 420 -defaultsOSRD
+preplace inst blk_mem_gen_5 -pg 1 -lvl 2 -y 540 -defaultsOSRD
+preplace inst blk_mem_gen_6 -pg 1 -lvl 2 -y 660 -defaultsOSRD
+preplace netloc GPRQuad2_0_BRAM5R 1 1 1 500
+preplace netloc GPRQuad2_0_BRAM1W 1 1 1 470
+preplace netloc portB_regType_0_1 1 0 1 NJ
+preplace netloc portA_en_0_1 1 0 1 NJ
+preplace netloc portB_en_0_1 1 0 1 NJ
+preplace netloc GPRQuad2_0_BRAM7W 1 1 1 470
+preplace netloc GPRQuad2_0_BRAM4R 1 1 1 520
+preplace netloc GPRQuad2_0_BRAM0W 1 1 1 450
+preplace netloc clk_0_1 1 0 1 20J
+preplace netloc GPRQuad2_0_BRAM6W 1 1 1 490
+preplace netloc portA_regType_0_1 1 0 1 NJ
+preplace netloc portW_en_0_1 1 0 1 NJ
+preplace netloc GPRQuad2_0_BRAM5W 1 1 1 510
+preplace netloc GPRQuad2_0_BRAM3R 1 1 1 530
+preplace netloc GPRQuad2_0_portB_readOutData 1 1 2 440J 850 NJ
+preplace netloc portW_writeInData_0_1 1 0 1 NJ
+preplace netloc GPRQuad2_0_BRAM4W 1 1 1 530
+preplace netloc GPRQuad2_0_BRAM2R 1 1 1 510
+preplace netloc portW_regType_0_1 1 0 1 NJ
+preplace netloc GPRQuad2_0_BRAM1R 1 1 1 480
+preplace netloc writeQuadIndex_0_1 1 0 1 NJ
+preplace netloc GPRQuad2_0_BRAM7R 1 1 1 460
+preplace netloc GPRQuad2_0_BRAM3W 1 1 1 520
+preplace netloc GPRQuad2_0_BRAM0R 1 1 1 460
+preplace netloc portA_regIdx_0_1 1 0 1 NJ
+preplace netloc portA_regChan_0_1 1 0 1 NJ
+preplace netloc portB_regChan_0_1 1 0 1 NJ
+preplace netloc portB_regIdx_0_1 1 0 1 NJ
+preplace netloc portW_regChan_0_1 1 0 1 NJ
+preplace netloc readQuadIndex_0_1 1 0 1 NJ
+preplace netloc GPRQuad2_0_BRAM6R 1 1 1 480
+preplace netloc GPRQuad2_0_BRAM2W 1 1 1 500
+preplace netloc GPRQuad2_0_portA_readOutData 1 1 2 450J 870 NJ
+preplace netloc portW_regIdx_0_1 1 0 1 NJ
+levelinfo -pg 1 0 230 630 750 -top -970 -bot 1030
+",
+}
+0

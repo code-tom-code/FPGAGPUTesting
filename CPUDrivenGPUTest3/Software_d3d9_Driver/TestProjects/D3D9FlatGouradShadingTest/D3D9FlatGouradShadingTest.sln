@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.2017
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "D3D9FlatGouradShadingTest", "D3D9FlatGouradShadingTest\D3D9FlatGouradShadingTest.vcxproj", "{705FD509-A8E1-4397-A355-A1A3461F42D2}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{705FD509-A8E1-4397-A355-A1A3461F42D2}.Debug|x86.ActiveCfg = Debug|Win32
+		{705FD509-A8E1-4397-A355-A1A3461F42D2}.Debug|x86.Build.0 = Debug|Win32
+		{705FD509-A8E1-4397-A355-A1A3461F42D2}.Release|x86.ActiveCfg = Release|Win32
+		{705FD509-A8E1-4397-A355-A1A3461F42D2}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {7995F220-98D5-4E9C-8533-32A19D784C7C}
+	EndGlobalSection
+EndGlobal

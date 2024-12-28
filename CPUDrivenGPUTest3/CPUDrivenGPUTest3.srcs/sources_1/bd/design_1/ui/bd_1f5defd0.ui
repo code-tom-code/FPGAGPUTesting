@@ -1,0 +1,731 @@
+{
+   Display-PortTypeClock: "true",
+   Display-PortTypeReset: "true",
+   ExpandedHierarchyInLayout: "",
+   commentid: "",
+   guistr: "# # String gsaved with Nlview 6.8.5  2018-01-30 bk=1.4354 VDI=40 GEI=35 GUI=JA:1.6 non-TLS
+#  -string -flagsOSRD
+preplace port tmds_green_n -pg 1 -y 550 -defaultsOSRD
+preplace port tmds_cl_n -pg 1 -y 640 -defaultsOSRD
+preplace port tmds_green_p -pg 1 -y 530 -defaultsOSRD
+preplace port tmds_cl_p -pg 1 -y 660 -defaultsOSRD
+preplace port default_sysclk1_300 -pg 1 -y 330 -defaultsOSRD
+preplace port sgmii_phyclk -pg 1 -y -3470 -defaultsOSRD
+preplace port tmds_blue_n -pg 1 -y 510 -defaultsOSRD
+preplace port tmds_blue_p -pg 1 -y 490 -defaultsOSRD
+preplace port tmds_red_n -pg 1 -y 590 -defaultsOSRD
+preplace port tmds_red_p -pg 1 -y 570 -defaultsOSRD
+preplace port ext_mdio_pcs_pma_0_0 -pg 1 -y -2010 -defaultsOSRD
+preplace port ddr4_sdram_c1 -pg 1 -y 280 -defaultsOSRD
+preplace port reset -pg 1 -y 350 -defaultsOSRD
+preplace port sgmii_0_0 -pg 1 -y -1800 -defaultsOSRD
+preplace inst xlconstant_7 -pg 1 -lvl 24 -y -1280 -defaultsOSRD
+preplace inst ClipUnit_0 -pg 1 -lvl 7 -y -2600 -defaultsOSRD
+preplace inst DepthBuffer_URAM -pg 1 -lvl 18 -y -1710 -defaultsOSRD
+preplace inst CLIP_FPU_ADD_0 -pg 1 -lvl 8 -y -3000 -defaultsOSRD
+preplace inst CLIP_FPU_ADD_1 -pg 1 -lvl 8 -y -2840 -defaultsOSRD
+preplace inst DepthInterpStateBlock -pg 1 -lvl 15 -y -3170 -defaultsOSRD
+preplace inst DINTERP_FPU_MUL -pg 1 -lvl 16 -y -2970 -defaultsOSRD
+preplace inst AttrInterp_FPU_CNV0 -pg 1 -lvl 22 -y -930 -defaultsOSRD
+preplace inst TEXSAMP_FIFO -pg 1 -lvl 23 -y -750 -defaultsOSRD
+preplace inst TexSampleStateBlock -pg 1 -lvl 24 -y -1490 -defaultsOSRD
+preplace inst AttrInterp_FPU_CNV1 -pg 1 -lvl 22 -y -760 -defaultsOSRD
+preplace inst TriSetup_0 -pg 1 -lvl 10 -y -430 -defaultsOSRD
+preplace inst ROPStateBlock -pg 1 -lvl 26 -y -1160 -defaultsOSRD
+preplace inst MemorySystem -pg 1 -lvl 5 -y 700 -defaultsOSRD
+preplace inst ILA_IA -pg 1 -lvl 9 -y 380 -defaultsOSRD
+preplace inst DINTERP_FPU_SPEC -pg 1 -lvl 16 -y -2470 -defaultsOSRD
+preplace inst ILA_TexSampler -pg 1 -lvl 24 -y -250 -defaultsOSRD
+preplace inst VBO_INDEX_FIFO -pg 1 -lvl 5 -y -2210 -defaultsOSRD
+preplace inst TRISETUP_FPU_ADD -pg 1 -lvl 11 -y -430 -defaultsOSRD
+preplace inst TRISETUP_FPU_CNV -pg 1 -lvl 11 -y 110 -defaultsOSRD
+preplace inst TriSetupStateBlock -pg 1 -lvl 10 -y -1490 -defaultsOSRD
+preplace inst ROP_FIFO -pg 1 -lvl 25 -y -780 -defaultsOSRD
+preplace inst CLIP_FPU_SPEC_0 -pg 1 -lvl 8 -y -2370 -defaultsOSRD
+preplace inst ATTRINTERP_TRIDATA_FIFO -pg 1 -lvl 19 -y -1430 -defaultsOSRD
+preplace inst DINTERP_FPU_CNV0 -pg 1 -lvl 16 -y -2810 -defaultsOSRD
+preplace inst DepthInterpolator_0 -pg 1 -lvl 15 -y -2200 -defaultsOSRD
+preplace inst ScanoutSystem -pg 1 -lvl 24 -y 620 -defaultsOSRD
+preplace inst TRISETUP_FPU_SPEC -pg 1 -lvl 11 -y -70 -defaultsOSRD
+preplace inst DINTERP_FPU_CNV1 -pg 1 -lvl 16 -y -2630 -defaultsOSRD
+preplace inst TRISETUP_FPU_MUL -pg 1 -lvl 11 -y -270 -defaultsOSRD
+preplace inst ATTR_FIFO -pg 1 -lvl 21 -y -1850 -defaultsOSRD
+preplace inst ClipUnitStateBlock -pg 1 -lvl 7 -y -3580 -defaultsOSRD
+preplace inst placeholder_texcfg -pg 1 -lvl 3 -y -260 -defaultsOSRD
+preplace inst VBO_FIFO -pg 1 -lvl 5 -y -1890 -defaultsOSRD
+preplace inst proc_sys_reset_0 -pg 1 -lvl 3 -y 340 -defaultsOSRD
+preplace inst TextureCache_128x128x32bits -pg 1 -lvl 24 -y -1080 -defaultsOSRD
+preplace inst Rasterizer_0 -pg 1 -lvl 14 -y -470 -defaultsOSRD
+preplace inst ClearBlock_0 -pg 1 -lvl 20 -y 30 -defaultsOSRD
+preplace inst InputAssemblerStateBlock -pg 1 -lvl 6 -y -3170 -defaultsOSRD
+preplace inst VertexBatchBuilder_0 -pg 1 -lvl 2 -y -1750 -defaultsOSRD
+preplace inst ROP_0 -pg 1 -lvl 26 -y -650 -defaultsOSRD
+preplace inst AttrInterp_FPU_MUL -pg 1 -lvl 22 -y -1110 -defaultsOSRD
+preplace inst ILA_TriSetup -pg 1 -lvl 13 -y -440 -defaultsOSRD
+preplace inst AttrInterpStateBlock -pg 1 -lvl 21 -y -1090 -defaultsOSRD
+preplace inst rast_out_fifo -pg 1 -lvl 17 -y -890 -defaultsOSRD
+preplace inst ResetN_UntilClockLoc_0 -pg 1 -lvl 4 -y 400 -defaultsOSRD
+preplace inst CommandProcessor_0 -pg 1 -lvl 14 -y 830 -defaultsOSRD
+preplace inst AttrInterpolator_0 -pg 1 -lvl 21 -y -590 -defaultsOSRD
+preplace inst TexSample_0 -pg 1 -lvl 24 -y -770 -defaultsOSRD
+preplace inst ila_333_250 -pg 1 -lvl 14 -y 2340 -defaultsOSRD
+preplace inst ShaderCoreSystem -pg 1 -lvl 4 -y -1760 -defaultsOSRD
+preplace inst StatsCollector_0 -pg 1 -lvl 18 -y 1160 -defaultsOSRD
+preplace inst InputAssembler2_0 -pg 1 -lvl 6 -y -2460 -defaultsOSRD
+preplace inst DepthBuffer_0 -pg 1 -lvl 17 -y -2000 -defaultsOSRD
+preplace inst DepthBuffer_AlwaysEnable -pg 1 -lvl 18 -y -2090 -defaultsOSRD
+preplace inst xlconstant_0 -pg 1 -lvl 12 -y 1350 -defaultsOSRD
+preplace inst xlconstant_1 -pg 1 -lvl 13 -y 2030 -defaultsOSRD
+preplace inst xlconstant_2 -pg 1 -lvl 9 -y -510 -defaultsOSRD
+preplace inst ILA_AttrInterpolator -pg 1 -lvl 21 -y 290 -defaultsOSRD
+preplace inst CLIP_FPU_MUL_0 -pg 1 -lvl 8 -y -2680 -defaultsOSRD
+preplace inst VBB_StateBlock -pg 1 -lvl 2 -y -2380 -defaultsOSRD
+preplace inst TriWorkCache2_0 -pg 1 -lvl 19 -y -720 -defaultsOSRD
+preplace inst constant_always_locked -pg 1 -lvl 3 -y 550 -defaultsOSRD
+preplace inst IndexBufferCache_0 -pg 1 -lvl 2 -y -2100 -defaultsOSRD
+preplace inst CLIP_FPU_MUL_1 -pg 1 -lvl 8 -y -2520 -defaultsOSRD
+preplace inst DINTERP_TRIDATA_FIFO -pg 1 -lvl 19 -y -1220 -defaultsOSRD
+preplace inst NetworkPacketSystem -pg 1 -lvl 18 -y 210 -defaultsOSRD
+preplace inst xlconstant_5 -pg 1 -lvl 13 -y 1760 -defaultsOSRD
+preplace inst StatsWriteOrderNibblesFIFO -pg 1 -lvl 20 -y 1220 -defaultsOSRD
+preplace inst VBB_FIFO -pg 1 -lvl 3 -y -1830 -defaultsOSRD
+preplace inst xlconstant_6 -pg 1 -lvl 1 -y -1720 -defaultsOSRD
+preplace netloc InputAssembler2_0_CLIP_tex0_X 1 6 1 4210
+preplace netloc MemorySystem_STAT_MemReadCountTransactions 1 5 13 NJ 790 NJ 790 NJ 790 6970J 1260 NJ 1260 NJ 1260 N 1260 N 1260 11590 3100 14330 1840 N 1840 N 1840 16990
+preplace netloc TriWorkCache2_0_DINTERP_outZ0 1 14 6 14380 -2670 15450J -2320 NJ -2320 NJ -2320 NJ -2320 18970
+preplace netloc VertexBatchBuilder_0_STATE_ConsumeStateSlot 1 1 2 -80 -2540 530
+preplace netloc DepthInterpStateBlock_STAGE_NextDrawID 1 14 2 14140 -2910 15160
+preplace netloc InputAssembler2_0_CLIP_tex0_Y 1 6 1 4240
+preplace netloc Rasterizer_0_TRICACHE_TX10 1 14 5 NJ -610 NJ -610 NJ -610 NJ -610 18300
+preplace netloc xlconstant_1_dout 1 13 1 11560
+preplace netloc CommandProcessor_0_CLIP_NewStateDrawEventID 1 6 9 4640 3480 NJ 3480 NJ 3480 NJ 3480 NJ 3480 NJ 3480 NJ 3480 NJ 3480 13670
+preplace netloc Rasterizer_0_TRICACHE_Z20 1 14 5 13890J -770 NJ -770 NJ -770 NJ -770 18260
+preplace netloc CMD_LoadProgramAddr_0_1 1 3 12 1280 -950 1910J -980 NJ -980 NJ -980 6270J -1790 NJ -1790 NJ -1790 NJ -1790 N -1790 N -1790 N -1790 13670
+preplace netloc ScanoutSystem_out_cl_p_0 1 24 3 22420J 660 NJ 660 NJ
+preplace netloc CommandProcessor_0_CLIP_EndFrameReset 1 6 9 4620 3470 NJ 3470 NJ 3470 NJ 3470 NJ 3470 NJ 3470 NJ 3470 NJ 3470 13700
+preplace netloc ScanoutSystem_out_blue_n_0 1 24 3 22360J 510 NJ 510 NJ
+preplace netloc AttrInterpolator_0_DBG_AttrInterpolator_State 1 13 9 12350J -1540 NJ -1540 NJ -1540 NJ -1540 16550J -1550 18160J -1560 NJ -1560 19750J -200 20530
+preplace netloc ShaderCoreSystem_douta 1 4 5 2060 -950 NJ -950 NJ -950 NJ -950 7310J
+preplace netloc TriWorkCache2_0_DINTERP_TRIDATA_WR 1 18 2 18320 -1050 18910
+preplace netloc ROP_0_ROPReadResponses 1 4 23 2350 -3400 NJ -3400 4560J -3370 5870J -3390 NJ -3390 NJ -3390 NJ -3390 NJ -3390 NJ -3390 NJ -3390 NJ -3390 NJ -3390 NJ -3390 NJ -3390 NJ -3390 NJ -3390 NJ -3390 NJ -3390 NJ -3390 NJ -3390 NJ -3390 N -3390 23480
+preplace netloc DepthInterpolator_0_FPU_CNV1_Mode 1 15 1 15360
+preplace netloc ClipUnit_0_DBG_CurrentState 1 7 6 6050 -2010 NJ -2010 NJ -2010 NJ -2010 NJ -2010 10890J
+preplace netloc TriSetup_0_RAST_t0_out_x 1 10 4 N -960 N -960 10970 -1140 11840
+preplace netloc TriWorkCache2_0_DINTERP_outInvW10 1 14 6 14350 -2690 15470J -2360 NJ -2360 NJ -2360 NJ -2360 19000
+preplace netloc TriSetup_0_RAST_v10_out_invW 1 10 4 9320J -1580 N -1580 10550 -1600 12270
+preplace netloc CommandProcessor_0_DBG_LAST_OUT_PACKET 1 13 2 12540 3200 13560
+preplace netloc ShaderCoreSystem_DBG_ReadRegisterOutDataReady 1 4 10 2040J -1490 NJ -1490 4230J -1550 NJ -1550 7170J -1660 NJ -1660 NJ -1660 N -1660 N -1660 12070
+preplace netloc TriSetup_0_RAST_t0_out_y 1 10 4 N -940 N -940 10950 -1110 11830
+preplace netloc refclk625_in_0_1 1 0 18 NJ -3470 NJ -3470 590J -3450 NJ -3450 NJ -3450 NJ -3450 4590J -3390 5860J -3380 NJ -3380 NJ -3380 NJ -3380 NJ -3380 N -3380 N -3380 N -3380 N -3380 N -3380 17070
+preplace netloc ClipUnit_0_TRISETUP_outv0rgba 1 7 3 NJ -3140 7170 -3080 8110
+preplace netloc ScanoutSystem_out_blue_p_0 1 24 3 22350J 490 NJ 490 NJ
+preplace netloc ResetN_UntilClockLoc_0_resetn 1 4 10 1900 1100 N 1100 N 1100 N 1100 N 1100 8100 450 N 450 N 450 N 450 N
+preplace netloc ClipUnit_0_DBG_V0PosW 1 7 6 5860 -1960 NJ -1960 NJ -1960 NJ -1960 NJ -1960 10680J
+preplace netloc ClipUnit_0_DBG_V0PosX 1 7 6 5890 -2000 NJ -2000 NJ -2000 NJ -2000 NJ -2000 10850J
+preplace netloc TriSetup_0_RAST_v20_out_Z 1 10 4 N -1040 NJ -1040 10990J -1320 12010
+preplace netloc CommandProcessor_0_DEPTH_ClearDepthBuffer 1 14 3 13860 -2710 15410 -1930 N
+preplace netloc TriSetup_0_DBG_MaxX 1 10 3 9540 -580 N -580 10770
+preplace netloc CMD_LoadProgramLen_0_1 1 3 12 1240 -990 1910J -1010 NJ -1010 NJ -1010 6250J -1780 NJ -1780 NJ -1780 NJ -1780 N -1780 N -1780 N -1780 13660
+preplace netloc TriSetup_0_DBG_TriSetup_State 1 10 4 9530 -570 N -570 11020 -1340 11820
+preplace netloc ROPStateBlock_STAGE_StateBitsAtDrawID 1 25 2 22820 -990 23370
+preplace netloc ClipUnit_0_DBG_V0PosY 1 7 6 5880 -1980 NJ -1980 NJ -1980 NJ -1980 NJ -1980 10760J
+preplace netloc ShaderCoreSystem_FPUALL_ISPEC_GO 1 4 5 1930J -2350 3250 -1810 4190 -1530 N -1530 7610
+preplace netloc TriSetup_0_DBG_MaxY 1 10 3 9590 -150 10100 -340 N
+preplace netloc TriSetup_0_STAT_CyclesWaitingForOutput 1 10 8 9370J -1370 N -1370 10540 -1550 12340 -1510 13770 -1360 N -1360 N -1360 16620
+preplace netloc Rasterizer_0_TRICACHE_TX0 1 14 5 NJ -630 NJ -630 NJ -630 NJ -630 18260
+preplace netloc ClipUnit_0_DBG_V0PosZ 1 7 6 5870 -1950 NJ -1950 NJ -1950 NJ -1950 NJ -1950 10670J
+preplace netloc MemorySystem_DBG_ReadControlState 1 5 9 3190 520 NJ 520 NJ 520 7040J 1330 NJ 1330 NJ 1330 10090J 1440 11120J 1950 11670J
+preplace netloc ClipUnit_0_TRISETUP_outv2tx 1 7 3 6060J -3210 N -3210 8350
+preplace netloc StateBlock_1_STAGE_NextDrawID 1 20 2 19940 -1250 20510
+preplace netloc TriSetup_0_FPU_CNV_Mode 1 10 1 9440
+preplace netloc ClipUnit_0_TRISETUP_outv2ty 1 7 3 5980J -3330 7550 -3050 8080
+preplace netloc ROP_0_STAT_CyclesWaitingForOutput 1 17 10 17180J 440 NJ 440 NJ 440 19620J 530 NJ 530 NJ 530 21550J 440 NJ 440 N 440 23440
+preplace netloc ShaderCoreSystem_VERTOUT_FIFO_0 1 4 1 2270
+preplace netloc ShaderCoreSystem_STAT_CyclesWaitingForOutput 1 4 14 2240J -1200 NJ -1200 NJ -1200 NJ -1200 7390J -1210 NJ -1210 NJ -1210 NJ -1210 10880J -1430 NJ -1430 13530J -1320 NJ -1320 N -1320 16670
+preplace netloc VertexBatchBuilder_0_DBG_CurrentBatchLength 1 2 7 490J -1650 1090J -860 NJ -860 N -860 N -860 N -860 7210
+preplace netloc TexSample_0_INTERP_IN_FIFO 1 22 3 21080 -2030 N -2030 22290
+preplace netloc DepthBuffer_0_RAST_PixelPassedDepthTest 1 14 4 14020 -2920 15290J -3140 N -3140 16540
+preplace netloc ShaderCoreSystem_DBG_CurrentState 1 4 5 N -2100 3330J -1930 4150J -260 6200J -20 NJ
+preplace netloc ShaderCoreSystem_DBG_CurrentFetchWave 1 4 5 NJ -1580 N -1580 N -1580 N -1580 7290
+preplace netloc Rasterizer_0_TRICACHE_Z10 1 14 5 13610J -720 NJ -720 NJ -720 16680J -780 18250
+preplace netloc Rasterizer_0_TRICACHE_InvW0 1 14 5 13900J -760 NJ -760 NJ -760 NJ -760 18270
+preplace netloc StateBlock_0_CMD_NumFreeSlots1 1 7 7 NJ -3680 7730J -3140 NJ -3140 NJ -3140 NJ -3140 NJ -3140 12110
+preplace netloc CommandProcessor_0_CommandProcReadResponses 1 4 11 2390 -3430 NJ -3430 4610 -3420 5830 -3410 N -3410 N -3410 N -3410 N -3410 N -3410 N -3410 13690
+preplace netloc ClipUnit_0_FPU_Mul1_A 1 7 1 6210
+preplace netloc CMD_SetConstantData_0_1 1 3 12 1190 -830 NJ -830 NJ -830 NJ -830 NJ -830 7720J -890 8400J -1770 NJ -1770 N -1770 N -1770 N -1770 13710
+preplace netloc ClipUnit_0_FPU_Mul1_B 1 7 1 6200
+preplace netloc TriSetup_0_RAST_v20_out_colorRGBA 1 10 4 N -800 N -800 11060 -1450 12030
+preplace netloc Rasterizer_0_TRICACHE_VertColor0 1 14 5 NJ -510 NJ -510 NJ -510 NJ -510 18340
+preplace netloc TriSetup_0_RAST_outInitialBarycentricRowResetA 1 10 4 N -700 N -700 11140 -1220 12120
+preplace netloc TriWorkCache2_0_INTERP_outColorRGBA20 1 19 2 NJ -540 19740
+preplace netloc DepthInterpolator_0_FPU_SPEC_A 1 15 1 15390
+preplace netloc ClipUnit_0_FPU_Add0_IADD_GO 1 7 1 6150
+preplace netloc InputAssembler2_0_CLIP_v0PosW 1 6 1 4190
+preplace netloc CMD_SetVertexStreamDWORDCount_0_1 1 3 12 1290 -940 2260J -1080 NJ -1080 NJ -1080 NJ -1080 7350J -1310 NJ -1310 NJ -1310 N -1310 10650 -1480 N -1480 13630
+preplace netloc TriSetup_0_RAST_outInitialBarycentricRowResetB 1 10 4 9300 -670 N -670 11110 -1230 12130
+preplace netloc InputAssembler2_0_CLIP_v1PosW 1 6 1 4280
+preplace netloc InputAssembler2_0_CLIP_v0PosX 1 6 1 4150
+preplace netloc ROP_0_DBG_ROP_State 1 13 14 12330J 3560 NJ 3560 NJ 3560 NJ 3560 NJ 3560 NJ 3560 NJ 3560 NJ 3560 NJ 3560 NJ 3560 NJ 3560 NJ 3560 N 3560 23410
+preplace netloc TriSetup_0_RAST_outInitialBarycentricRowResetC 1 10 4 N -660 N -660 11090 -1240 12140
+preplace netloc AttrInterpolator_0_FPU_CNV1_GO 1 21 1 20750
+preplace netloc InputAssembler2_0_CLIP_v1PosX 1 6 1 4200
+preplace netloc InputAssembler2_0_CLIP_v0PosY 1 6 1 4160
+preplace netloc TexSample_0_ROP_OutFIFO_wr_data 1 23 2 21560 100 22360
+preplace netloc ShaderCoreSystem_GPR0_PortB_regChan 1 4 5 NJ -1500 N -1500 4180 -1560 N -1560 7450
+preplace netloc ShaderCoreSystem_CB_RegIndex 1 4 5 1990J -2090 3310 -1920 4330 -1660 N -1660 7050
+preplace netloc InputAssembler2_0_CLIP_v1PosY 1 6 1 4220
+preplace netloc InputAssembler2_0_CLIP_v0PosZ 1 6 1 4170
+preplace netloc DepthBuffer_0_URAM_wea 1 17 4 17010J -1400 18200J -1600 NJ -1600 19760J
+preplace netloc ClipUnit_0_STAT_CyclesIdle 1 7 11 6080J -3300 7160J -2990 NJ -2990 NJ -2990 NJ -2990 NJ -2990 NJ -2990 NJ -2990 15230J -3160 N -3160 16930
+preplace netloc InputAssembler2_0_CLIP_v1PosZ 1 6 1 4260
+preplace netloc ShaderCoreSystem_STAT_CyclesExecShaderCode 1 4 14 2220J -1230 3340J -1240 NJ -1240 NJ -1240 NJ -1240 8170J -2960 NJ -2960 NJ -2960 NJ -2960 NJ -2960 NJ -2960 15260J -3130 N -3130 16990
+preplace netloc Rasterizer_0_DBG_MinX 1 13 2 12390 -950 13590
+preplace netloc CommandProcessor_0_VBB_SetNewState 1 1 14 -220 3650 NJ 3650 NJ 3650 NJ 3650 NJ 3650 NJ 3650 NJ 3650 NJ 3650 NJ 3650 NJ 3650 NJ 3650 NJ 3650 NJ 3650 13780
+preplace netloc InputAssemblerStateBlock_STAGE_StateIsValid 1 5 2 3390 -3370 4070
+preplace netloc Rasterizer_0_DBG_MinY 1 13 2 12420 -920 13570
+preplace netloc MemorySystem_STAT_MemReadCountNonScanoutBytesTransferred 1 5 13 NJ 850 NJ 850 NJ 850 6930J 1240 NJ 1240 NJ 1240 N 1240 N 1240 11570 3300 14350 1860 N 1860 N 1860 17090
+preplace netloc ShaderCoreSystem_VSC_ReadDWORDAddr 1 4 5 2110 120 NJ 120 NJ 120 NJ 120 NJ
+preplace netloc ShaderCoreSystem_portA_readOutData_0 1 4 5 NJ -1640 N -1640 4160 -1590 N -1590 7420
+preplace netloc InputAssembler2_0_DBG_IA_VertexIDPerBatch 1 6 7 4380 -1700 NJ -1700 NJ -1700 NJ -1700 N -1700 N -1700 10790
+preplace netloc ROP_0_DBG_CurrentPixelAddr 1 13 14 12440J 3550 NJ 3550 NJ 3550 NJ 3550 NJ 3550 NJ 3550 NJ 3550 NJ 3550 NJ 3550 NJ 3550 NJ 3550 NJ 3550 N 3550 23380
+preplace netloc AttrInterpolator_0_STAT_CyclesWaitingForOutput 1 17 5 17170J -90 NJ -90 NJ -90 NJ -90 20570
+preplace netloc TriWorkCache2_0_DINTERP_outBarycentricInverse 1 14 6 14370 -2810 15270J -3230 NJ -3230 NJ -3230 NJ -3230 18980
+preplace netloc CommandProcessor_0_INTERP_SetNewState 1 14 7 13990 -1120 NJ -1120 NJ -1120 NJ -1120 NJ -1120 NJ -1120 NJ
+preplace netloc CMD_SetVertexStreamDWORDOffset_0_1 1 3 12 1200 -930 1920J -1070 NJ -1070 NJ -1070 NJ -1070 7380J -1300 NJ -1300 NJ -1300 N -1300 10690 -1470 N -1470 13650
+preplace netloc TriSetup_0_STATE_ConsumeStateSlot 1 9 2 8590 -1810 9280
+preplace netloc rd_clk_1 1 4 21 2460 3280 NJ 3280 NJ 3280 NJ 3280 NJ 3280 NJ 3280 NJ 3280 NJ 3280 NJ 3280 NJ 3280 NJ 3280 NJ 3280 NJ 3280 NJ 3280 NJ 3280 NJ 3280 NJ 3280 NJ 3280 N 3280 N 3280 22180
+preplace netloc StatsCollector_0_StatsWriteOrderNibblesFIFO_WR 1 18 2 N 1000 19050
+preplace netloc ShaderCoreSystem_VERTBATCH_FIFO_0 1 2 3 630 -2610 N -2610 1900
+preplace netloc ROP_0_TEXSAMP_InFIFO_rd_en 1 24 3 22410 -1350 NJ -1350 23470
+preplace netloc CommandProcessor_0_DBG_IdleSignalsVector 1 13 2 12610 3180 13540
+preplace netloc TexSample_0_TexCache 1 23 2 21600 -1160 22190
+preplace netloc StatsWriteOrderNibblesFIFO_empty 1 13 7 12640 3140 14360 3100 N 3100 N 3100 N 3100 18200 1230 N
+preplace netloc InputAssembler2_0_CLIP_tex2_X 1 6 1 4370
+preplace netloc StateBlock_0_STAGE_StateIsValid1 1 6 2 4750 -1790 5780
+preplace netloc InputAssembler2_0_CLIP_tex2_Y 1 6 1 4380
+preplace netloc VertexBatchBuilder_0_STAT_CyclesWaitingForOutput 1 2 16 630J -1710 1140J -880 2310J -940 NJ -940 NJ -940 NJ -940 NJ -940 8320J -1240 NJ -1240 NJ -1240 10820J -1460 NJ -1460 13560J -1380 NJ -1380 N -1380 16750
+preplace netloc DepthBuffer_0_URAM_dina 1 17 4 17030J -1410 18180J -1640 NJ -1640 19830J
+preplace netloc TriSetupStateBlock_STAGE_StateIsValid 1 9 2 8500 -1820 9270
+preplace netloc StateBlock_1_CMD_NumFreeSlots 1 13 9 12340 3240 NJ 3240 NJ 3240 NJ 3240 NJ 3240 NJ 3240 NJ 3240 NJ 3240 20640
+preplace netloc xlconstant_6_dout 1 1 1 -230
+preplace netloc xlconstant_5_dout 1 13 1 11640
+preplace netloc ROP_0_TEXSAMP_IN_FIFO 1 24 3 22390 -2020 N -2020 23510
+preplace netloc StatsCollector_0_STAT_ResetWriteOrderNibblesFIFO 1 18 2 N 1220 18910
+preplace netloc ClipUnit_0_DBG_AlreadyClippedPlanes 1 7 6 5820 -1910 NJ -1910 NJ -1910 NJ -1910 NJ -1910 10580J
+preplace netloc ClipUnit_0_FPU_Rcp0_A 1 7 1 6180
+preplace netloc StandaloneFloatALU_A_0_OADD 1 9 3 8520 -1870 NJ -1870 10070
+preplace netloc DepthInterpolator_0_DEPTH_PosX 1 15 2 N -2230 16030
+preplace netloc ShaderCoreSystem_VBO_IsIndexedDrawCall 1 4 2 2010J -2440 N
+preplace netloc Rasterizer_0_STAT_CyclesIdle 1 14 4 14130 -370 N -370 N -370 16580
+preplace netloc CommandProcessor_0_CLEAR_ClearColorRGBA 1 14 6 14180 230 NJ 230 NJ 230 16740J 100 NJ 100 19040J
+preplace netloc MemorySystem_STAT_MemReadCyclesIdle 1 5 13 NJ 690 NJ 690 NJ 690 6990J 1300 NJ 1300 NJ 1300 10120 1410 N 1410 11540 3110 14300 1740 N 1740 N 1740 16570
+preplace netloc ClipUnit_0_DBG_ClipOutcodes0 1 7 6 5850 -1940 NJ -1940 NJ -1940 NJ -1940 NJ -1940 10750J
+preplace netloc DepthInterpolator_0_DEPTH_PosY 1 15 2 15260 -2200 15930
+preplace netloc TexSample_0_STAT_CyclesIdle 1 17 8 17190J 450 NJ 450 NJ 450 19600J 560 NJ 560 N 560 21610 450 22210
+preplace netloc TexSample_0_TexSampReadResponses 1 4 21 2460 -900 NJ -900 NJ -900 NJ -900 NJ -900 8230J -3330 NJ -3330 NJ -3330 NJ -3330 NJ -3330 NJ -3330 NJ -3330 NJ -3330 NJ -3330 NJ -3330 NJ -3330 NJ -3330 NJ -3330 N -3330 N -3330 22310
+preplace netloc AttrInterpolator_0_FPU_CNV1_A 1 21 1 20720
+preplace netloc VBB_StateBlock_STAGE_StateIsValid 1 1 2 -130 -2550 500
+preplace netloc StateBlock_1_STAGE_StateBitsAtDrawID 1 20 2 19910 -1270 20550
+preplace netloc ClipUnit_0_DBG_ClipOutcodes1 1 7 6 5840 -1930 NJ -1930 NJ -1930 NJ -1930 NJ -1930 10710J
+preplace netloc AttrInterpolator_0_DBG_CurrentDrawEvent 1 20 2 19930 -10 20540
+preplace netloc ATTR_FIFO_dout 1 20 2 19900 -1990 20610
+preplace netloc CommandProcessor_0_DINTERP_SetNewState 1 14 1 13820
+preplace netloc ClipUnit_0_DBG_ClipOutcodes2 1 7 6 5830 -1920 NJ -1920 NJ -1920 NJ -1920 NJ -1920 10660J
+preplace netloc MemorySystem_DBG_LastWriteData 1 5 9 NJ 630 N 630 N 630 7110 1150 N 1150 N 1150 N 1150 N 1150 11780
+preplace netloc ShaderCoreSystem_DBG_PortW_MUX 1 4 5 1910J -1370 N -1370 4060 -1380 N -1380 7710
+preplace netloc ShaderCoreSystem_CB_WriteInData 1 4 5 2020J -1620 N -1620 N -1620 N -1620 7440
+preplace netloc CommandProcessor_0_DBG_PACKETSTATE 1 13 2 12500 3220 13580
+preplace netloc MemorySystem_STAT_MemWriteCountTransactions 1 5 13 NJ 830 NJ 830 NJ 830 6920J 1270 NJ 1270 NJ 1270 N 1270 N 1270 11650 3000 14320 1920 N 1920 N 1920 17140
+preplace netloc TriSetupStateBlock_CMD_NumFreeSlots 1 10 4 9290J -1560 NJ -1560 NJ -1560 11930
+preplace netloc StandaloneFloatALU_A_1_OADD 1 6 3 4680J -1160 NJ -1160 6990
+preplace netloc InputAssembler2_0_CLIP_tex1_X 1 6 1 4330
+preplace netloc ROP_0_CMD_ClearSignalAck 1 13 14 12240J 3700 NJ 3700 NJ 3700 NJ 3700 NJ 3700 NJ 3700 NJ 3700 NJ 3700 NJ 3700 NJ 3700 NJ 3700 NJ 3700 N 3700 23490
+preplace netloc IndexBufferCache_0_IBCacheReadRequests 1 2 3 580J -2560 NJ -2560 2170
+preplace netloc InputAssembler2_0_CLIP_tex1_Y 1 6 1 4350
+preplace netloc DepthInterpolator_0_RASTOUT_FIFO 1 15 2 15440J -2310 16010
+preplace netloc AttrInterpolator_0_FPU_MUL_A 1 20 2 19940 -30 20710
+preplace netloc ClipUnit_0_TRISETUP_outv0tx 1 7 3 5960J -3190 N -3190 8390
+preplace netloc InputAssembler2_0_CLIP_AABBTriOverlapsViewport 1 6 1 4440
+preplace netloc ShaderCoreSystem_VBO_Pushed_0 1 4 2 1910 -2500 NJ
+preplace netloc TriWorkCache2_0_INTERP_TRIDATA_RD 1 18 2 18330 -1090 18930
+preplace netloc AttrInterpolator_0_FPU_MUL_B 1 21 1 20660
+preplace netloc ClipUnit_0_TRISETUP_outv0ty 1 7 3 6000J -3120 N -3120 8220
+preplace netloc TriSetup_0_RAST_v10_out_colorRGBA 1 10 4 N -820 N -820 11070 -1440 12020
+preplace netloc TriSetup_0_RAST_triSetupDataIsValid 1 10 4 9440 -640 N -640 11050 -1130 12060
+preplace netloc ROPStateBlock_STAGE_StateIsValid 1 25 2 22800 -1340 23400
+preplace netloc StateBlock_1_STAGE_StateIsValid 1 20 2 19880 -1280 20560
+preplace netloc StatsCollector_0_StatsWriteOrderNibblesFIFO_RD 1 18 2 N 1080 18970
+preplace netloc VertexBatchBuilder_0_CMD_ReadyState 1 2 12 570J -2600 NJ -2600 1910J -3330 3260J -3350 4530J -3330 5890J -3320 NJ -3320 NJ -3320 NJ -3320 N -3320 N -3320 12160
+preplace netloc ROP_FIFO_dout 1 24 3 22400 -1370 NJ -1370 23500
+preplace netloc DepthBuffer_0_URAM_addra 1 17 4 17050 -1580 N -1580 N -1580 19720
+preplace netloc IndexBufferCache_0_VBB_ReadReady 1 1 2 -170 -2590 540
+preplace netloc DepthBuffer_0_URAM_addrb 1 17 4 17000 -1570 18050 -1740 N -1740 19800
+preplace netloc ShaderCoreSystem_CB_RegComponent 1 4 5 2020J -2040 3280 -1950 4340 -1650 N -1650 7650
+preplace netloc DepthInterpStateBlock_STAGE_StateIsValid 1 14 2 14210 -2850 15170
+preplace netloc TriWorkCache2_0_DINTERP_outInvW0 1 14 6 14340 -2800 15320J -3200 NJ -3200 NJ -3200 NJ -3200 19010
+preplace netloc VBO_FIFO_empty 1 4 10 2440 -3320 3380J -3330 4130 -3320 5870 -3310 7650 -3230 N -3230 N -3230 N -3230 N -3230 12200
+preplace netloc InputAssembler2_0_STAT_CurrentDrawEventID 1 6 18 4390J -1690 NJ -1690 NJ -1690 NJ -1690 NJ -1690 NJ -1690 NJ -1690 NJ -1690 NJ -1690 NJ -1690 NJ -1690 16960J -1560 18100J -1630 NJ -1630 NJ -1630 NJ -1630 N -1630 21480
+preplace netloc ClipUnit_0_TRISETUP_outv0w 1 7 3 5920J -3250 N -3250 8460
+preplace netloc TriSetup_0_CLIP_readyForNewTri 1 6 5 4720J -1800 6230J -1900 NJ -1900 NJ -1900 9300
+preplace netloc StatsCollector_0_STAT_WriteOrderNibblesFIFO_wr_en 1 18 2 N 1040 19000
+preplace netloc ClipUnit_0_TRISETUP_outv0x 1 7 3 5910J -3240 7290 -3070 8410
+preplace netloc VertexBatchBuilder_0_DBG_LastPolygonIndices 1 2 7 NJ -1560 1070J -820 NJ -820 N -820 N -820 N -820 7320
+preplace netloc TriSetup_0_STAT_CyclesSpentWorking 1 10 8 9390J -1350 N -1350 10570 -1520 12320 -1450 13540 -1350 N -1350 N -1350 16610
+preplace netloc ShaderCoreSystem_GPR0_PortW_writeInData 1 4 5 NJ -1360 N -1360 4070 -1370 N -1370 7700
+preplace netloc ClipUnit_0_TRISETUP_outv0y 1 7 3 5930J -3230 7130 -3060 8370
+preplace netloc ClipUnit_0_TRISETUP_outv0z 1 7 3 NJ -3180 N -3180 8440
+preplace netloc CMD_SetNumVertexStreams_0_1 1 3 12 1250 -980 1890J -1020 NJ -1020 NJ -1020 NJ -1020 7400J -1320 NJ -1320 NJ -1320 N -1320 10640 -1490 N -1490 13620
+preplace netloc DepthInterpolator_0_FPU_CNV0_Mode 1 15 1 15370
+preplace netloc CommandProcessor_0_TEXSAMP_NewStateDrawEventID 1 14 10 14030 -1410 NJ -1410 NJ -1410 16830J -1370 18270J -1340 NJ -1340 NJ -1340 NJ -1340 NJ -1340 21440J
+preplace netloc AttrInterpolator_0_FPU_CNV0_Mode 1 21 1 20680
+preplace netloc Rasterizer_0_TRICACHE_BarycentricInverse 1 14 5 13880J -1010 NJ -1010 NJ -1010 NJ -1010 18240
+preplace netloc StatsCollector_0_STAT_WriteOrderNibblesFIFO_rd_en 1 18 2 N 1120 18940
+preplace netloc DepthInterpolator_0_STAT_DepthOnlyPixelsPassed 1 13 3 12220 3680 NJ 3680 15160
+preplace netloc ClipUnit_0_STAT_CyclesSpentWorking 1 7 11 6090J -3290 7220J -3010 8400J -3000 NJ -3000 NJ -3000 NJ -3000 NJ -3000 NJ -3000 15210J -3190 N -3190 16950
+preplace netloc reset_1 1 0 5 N 350 N 350 570 240 1080 870 NJ
+preplace netloc AttrInterp_FPU_CNV1_OCNV 1 20 3 19930 -210 NJ -210 21030
+preplace netloc CommandProcessor_0_IA_NewStateBits 1 5 10 3420 3420 NJ 3420 NJ 3420 NJ 3420 NJ 3420 NJ 3420 NJ 3420 NJ 3420 NJ 3420 13730
+preplace netloc InputAssemblerStateBlock_STAGE_NextDrawID 1 5 2 3440 -3000 4060
+preplace netloc Rasterizer_0_DBG_PixelYPos 1 13 2 12490 -890 13550
+preplace netloc ShaderCoreSystem_VBO_NumVertices 1 4 5 NJ -1320 3170 -1210 N -1210 N -1210 7370
+preplace netloc ShaderCoreSystem_DBG_ReadRegisterOutData 1 4 10 2050J -1480 NJ -1480 4250J -1520 NJ -1520 NJ -1520 8210J -1330 NJ -1330 N -1330 10620 -1500 11920
+preplace netloc ShaderCoreSystem_GPR0_WriteQuadIndex 1 4 5 2180J -1770 N -1770 4110 -1350 N -1350 7220
+preplace netloc AttrInterpolator_0_TEXSAMP_OUT_FIFO 1 21 2 20690 -670 21050
+preplace netloc CommandProcessor_0_TRISETUP_EndFrameReset 1 9 6 8530 3510 NJ 3510 NJ 3510 NJ 3510 NJ 3510 13690
+preplace netloc ROP_0_STATE_ConsumeStateSlot 1 25 2 22820 -1330 23460
+preplace netloc DepthBuffer_0_CMD_DepthIsIdle 1 13 8 12300J 3320 14280J 320 N 320 N 320 16650 320 N 320 N 320 19710
+preplace netloc TriSetup_0_RAST_outBarycentricYDeltaA 1 10 4 9490 -540 N -540 10960 -1420 12250
+preplace netloc ShaderCoreSystem_portB_readOutData_0 1 4 5 2040J -1340 N -1340 4060 -1330 N -1330 7510
+preplace netloc TriSetup_0_RAST_outBarycentricYDeltaB 1 10 4 9320 -690 N -690 11030 -1360 12170
+preplace netloc Rasterizer_0_TRICACHE_VertColor10 1 14 5 NJ -490 NJ -490 NJ -490 NJ -490 18350
+preplace netloc MemorySystem_STAT_MemWriteCyclesSpentWorking 1 5 13 NJ 750 NJ 750 NJ 750 6940J 1290 NJ 1290 NJ 1290 N 1290 N 1290 11620 3030 14270 1800 N 1800 N 1800 16880
+preplace netloc CommandProcessor_0_VBB_CommandArg0 1 1 14 -110J 1360 NJ 1360 NJ 1360 NJ 1360 NJ 1360 NJ 1360 NJ 1360 NJ 1360 NJ 1360 NJ 1360 10060 1470 10700 2090 11530 3070 13630
+preplace netloc TriSetup_0_RAST_outBarycentricYDeltaC 1 10 4 9360 -680 N -680 11000 -1370 12180
+preplace netloc TriWorkCache2_0_INTERP_outT10X 1 19 2 NJ -660 19620
+preplace netloc DepthInterpolator_0_RASTOUT_FIFO_rd_en 1 15 2 15340J -2190 15940
+preplace netloc VertexBatchBuilder_0_IBC_InvalidateIndexCache 1 1 2 -80 -2220 490
+preplace netloc TriSetup_0_RAST_v0_out_colorRGBA 1 10 4 N -840 N -840 11130 -1300 11900
+preplace netloc CommandProcessor_0_VBB_CommandArg1 1 1 14 -100J 1370 NJ 1370 NJ 1370 NJ 1370 NJ 1370 NJ 1370 NJ 1370 NJ 1370 NJ 1370 NJ 1370 10050 1480 10570 2100 11520 3080 13620
+preplace netloc TriWorkCache2_0_INTERP_outT10Y 1 19 2 NJ -640 19630
+preplace netloc CommandProcessor_0_TEXSAMP_SetNewState 1 13 11 12630 3060 14140 -1400 NJ -1400 NJ -1400 16670J -1420 18250J -1530 NJ -1530 NJ -1530 NJ -1530 NJ -1530 21490J
+preplace netloc Rasterizer_0_STAT_CurrentDrawEventID 1 14 10 NJ -330 NJ -330 N -330 16540 -140 N -140 N -140 19820 -150 N -150 N -150 21440
+preplace netloc CommandProcessor_0_VBB_CommandArg2 1 1 14 -90J 2110 NJ 2110 NJ 2110 NJ 2110 NJ 2110 NJ 2110 NJ 2110 NJ 2110 NJ 2110 NJ 2110 NJ 2110 NJ 2110 11500 3090 13600
+preplace netloc AttrInterpolator_0_STAT_CyclesIdle 1 17 5 17150J -110 NJ -110 NJ -110 NJ -110 20590
+preplace netloc MemorySystem_DBG_LastWriteDataDWORDEnables 1 5 9 NJ 650 N 650 N 650 7100 1140 N 1140 N 1140 N 1140 N 1140 11790
+preplace netloc CommandProcessor_0_VBB_NewStateBits 1 1 14 -160 3370 NJ 3370 NJ 3370 NJ 3370 NJ 3370 NJ 3370 NJ 3370 NJ 3370 NJ 3370 NJ 3370 NJ 3370 NJ 3370 NJ 3370 13660
+preplace netloc MemorySystem_DBG_ReadResponsesFullBitmask 1 5 9 NJ 950 NJ 950 NJ 950 6960J 1180 NJ 1180 NJ 1180 N 1180 N 1180 11690
+preplace netloc ClearBlock_0_DBG_LastWrittenClearData 1 13 8 12430J 3460 NJ 3460 NJ 3460 NJ 3460 NJ 3460 NJ 3460 N 3460 19570
+preplace netloc TriSetup_0_CMD_TriSetupIsIdle 1 10 4 9410J -750 NJ -750 10930J -1330 11860
+preplace netloc CommandProcessor_0_SCANOUT_RenderTargetBaseAddr 1 14 10 14190 380 N 380 N 380 N 380 N 380 N 380 19640 570 N 570 N 570 N
+preplace netloc ShaderCoreSystem_CB_WriteMode 1 4 5 1910J -1610 N -1610 N -1610 N -1610 7430
+preplace netloc CommandProcessor_0_CommandProcWriteRequests 1 4 11 2400 -3420 NJ -3420 4580 -3410 5820 -3450 N -3450 N -3450 N -3450 N -3450 N -3450 N -3450 13760
+preplace netloc InputAssembler2_0_CLIP_newTriBegin 1 6 1 4310
+preplace netloc DepthInterpolator_0_DEPTH_OutPixelDepth 1 15 6 15260 -2180 15950 -2200 N -2200 N -2200 N -2200 19850
+preplace netloc ddr4_0_addn_ui_clkout1 1 2 22 620 230 N 230 N 230 3170 480 N 480 N 480 7060 1350 N 1350 N 1350 10070 1460 10790 1970 11510 3160 14310 430 N 430 N 430 N 430 N 430 N 430 19580 590 N 590 N 590 N
+preplace netloc ScanoutSystem_out_red_n_0 1 24 3 22400J 590 NJ 590 NJ
+preplace netloc StandaloneFloatALU_C_0_OCNV 1 9 3 8560 -1830 NJ -1830 10060
+preplace netloc DepthInterpolator_0_DEPTH_PixelReady 1 15 6 N -2250 16040 -2220 N -2220 N -2220 N -2220 19770
+preplace netloc TexSample_0_DBG_TexSample_State 1 13 12 12510J -60 NJ -60 NJ -60 NJ -60 16710J -70 NJ -70 NJ -70 19600J -60 NJ -60 N -60 21470 90 22190
+preplace netloc AttrInterpolator_0_FPU_CNV1_Mode 1 21 1 20740
+preplace netloc DepthInterpolator_0_TRICACHE_PopTriangleSlot 1 15 4 15430J -2350 NJ -2350 NJ -2350 18260
+preplace netloc TriSetupStateBlock_STAGE_StateBitsAtDrawID 1 9 2 8570 -1650 9260
+preplace netloc ClipUnit_0_TRISETUP_outv1w 1 7 3 6020J -3150 N -3150 8420
+preplace netloc StatsCollector_0_DBG_CurrentState 1 13 6 12560J 3330 NJ 3330 N 3330 N 3330 N 3330 18050
+preplace netloc ClipUnit_0_TRISETUP_outv1x 1 7 3 5950J -3220 N -3220 8450
+preplace netloc MemorySystem_DBG_LastReadAddress 1 5 9 NJ 670 N 670 N 670 7130 1110 N 1110 N 1110 N 1110 N 1110 11800
+preplace netloc VertexBatchBuilder_0_STAT_CyclesSpentWorking 1 2 16 640J -1700 1110J -840 NJ -840 NJ -840 NJ -840 6300J -1680 NJ -1680 NJ -1680 NJ -1680 NJ -1680 NJ -1680 NJ -1680 NJ -1680 NJ -1680 N -1680 16820
+preplace netloc VertexBatchBuilder_0_STAT_CurrentDrawEventID 1 2 22 550J -1680 1120J -970 2210J -1090 NJ -1090 4100J -1110 NJ -1110 NJ -1110 8330J -1230 NJ -1230 NJ -1230 10630J -1580 NJ -1580 NJ -1580 NJ -1580 N -1580 16780 120 N 120 19050 130 19840 -20 N -20 N -20 N
+preplace netloc ClipUnit_0_TRISETUP_outv1y 1 7 3 6030J -3110 N -3110 8380
+preplace netloc ShaderCoreSystem_FPUALL_ICMP_GO 1 4 5 1980J -2030 3180 -1860 4200 -1470 N -1470 7570
+preplace netloc DINTERP_FPU_CNV_OCNV 1 14 3 14060 -2890 15350J -3060 15940
+preplace netloc CommandProcessor_0_VBB_NewDrawEventID 1 1 14 -120 3380 NJ 3380 NJ 3380 NJ 3380 NJ 3380 NJ 3380 NJ 3380 NJ 3380 NJ 3380 NJ 3380 NJ 3380 NJ 3380 NJ 3380 13710
+preplace netloc ClipUnit_0_FPU_Mul0_IMUL_GO 1 7 1 6210
+preplace netloc ClipUnit_0_TRISETUP_outv1z 1 7 3 6050J -3100 N -3100 8340
+preplace netloc MemorySystem_STAT_MemReadCountBytesTransferred 1 5 13 NJ 770 NJ 770 NJ 770 7010J 1230 NJ 1230 NJ 1230 N 1230 N 1230 11600 3290 14340 1820 N 1820 N 1820 16930
+preplace netloc ShaderCoreSystem_VSC_ReadReady 1 4 5 2200 -1190 NJ -1190 NJ -1190 NJ -1190 7530J
+preplace netloc CMD_SetConstantIndex_0_1 1 3 12 1230 -1010 1900J -1710 NJ -1710 NJ -1710 6230J -1770 NJ -1770 8280J -1760 NJ -1760 N -1760 N -1760 N -1760 13640
+preplace netloc DepthInterpolator_0_FPU_CNV1_GO 1 15 1 15230
+preplace netloc DepthInterpStateBlock_CMD_NumFreeSlots 1 13 3 12260 3660 NJ 3660 15190
+preplace netloc TriSetup_0_RAST_v0_out_Z 1 10 4 N -1080 NJ -1080 11210J -1290 11980
+preplace netloc Rasterizer_0_CMD_Rasterizer_Idle 1 13 2 12570 -900 13540
+preplace netloc ddr4_0_c0_ddr4_ui_clk 1 1 25 -90 -2560 510 -2520 1160 -2520 2290 -2520 3260 -1800 4520 -1750 6220 -1750 7730 -1540 8470 -1250 9500 -1250 N -1250 11080 -1530 12150 -2040 13770 -2790 15580 -2080 16020 -1000 17050 -1000 18310 -980 19030 -980 19870 -1290 20700 -650 21090 -630 21460 130 22410 -660 22760
+preplace netloc MemorySystem_STAT_MemReadCyclesSpentWorking 1 5 13 NJ 710 NJ 710 NJ 710 6950J 1310 NJ 1310 NJ 1310 10110 1420 N 1420 11580 3010 14240 1760 N 1760 N 1760 16710
+preplace netloc TriWorkCache2_0_INTERP_outT20X 1 19 2 NJ -620 19650
+preplace netloc TexSample_0_STAT_CyclesSpentWorking 1 17 8 17150J 1870 NJ 1870 NJ 1870 NJ 1870 NJ 1870 N 1870 N 1870 22260
+preplace netloc ShaderCoreSystem_VSC_StreamVBAddress 1 4 5 2210 -1180 NJ -1180 NJ -1180 NJ -1180 7470J
+preplace netloc TriWorkCache2_0_INTERP_outT20Y 1 19 2 NJ -600 19660
+preplace netloc StateBlock_0_DBG_CurrentWriteSlotIndex 1 23 2 21540 -1690 22220
+preplace netloc ShaderCoreSystem_OUT_RESULT 1 4 5 2160J -1350 N -1350 4070 -1340 N -1340 7270
+preplace netloc StateBlock_0_STAGE_StateBitsAtDrawID 1 23 2 21560 -1700 22180
+preplace netloc TexSample_0_DBG_TexCache_addra 1 23 2 21620 70 22170
+preplace netloc AttrInterpolator_0_STAT_CyclesSpentWorking 1 17 5 17160J -100 NJ -100 NJ -100 NJ -100 20580
+preplace netloc NetworkPacketSystem_ext_mdio_pcs_pma_0_0 1 18 9 18220J -2010 NJ -2010 NJ -2010 NJ -2010 NJ -2010 NJ -2010 NJ -2010 NJ -2010 NJ
+preplace netloc CommandProcessor_0_validPacketsFIFO 1 14 4 14120 190 NJ 190 NJ 190 16680J
+preplace netloc ShaderCoreSystem_VBCacheReadResponses_0 1 4 1 2120
+preplace netloc CommandProcessor_0_ROP_NewStateDrawEventID 1 14 12 14080 -1470 NJ -1470 NJ -1470 NJ -1470 18110J -1700 NJ -1700 19620J -1710 20670J -1780 NJ -1780 NJ -1780 NJ -1780 22780J
+preplace netloc CommandProcessor_0_CLEAR_ClearDRAMLineCount 1 14 6 14210 240 NJ 240 NJ 240 16770J 110 NJ 110 19050J
+preplace netloc TexSample_0_STAT_CyclesWaitingForOutput 1 17 8 17160J 1880 NJ 1880 NJ 1880 NJ 1880 NJ 1880 N 1880 N 1880 22250
+preplace netloc StatsCollector_0_StatsWriteRequestsFIFO 1 4 15 2440 -920 NJ -920 NJ -920 NJ -920 NJ -920 8200J -3340 NJ -3340 NJ -3340 NJ -3340 NJ -3340 NJ -3340 NJ -3340 NJ -3340 NJ -3340 18040
+preplace netloc TriWorkCache2_0_INTERP_outColorRGBA0 1 19 2 NJ -580 19710
+preplace netloc InputAssembler2_0_DBG_IA_CurrentTriIndices 1 6 7 4370 -1720 NJ -1720 NJ -1720 NJ -1720 N -1720 N -1720 10830
+preplace netloc TriSetup_0_RAST_outMaxX 1 10 4 9300 -770 N -770 11230 -1150 12040
+preplace netloc CommandProcessor_0_ROP_SetClearColor 1 14 12 13970 -1460 NJ -1460 NJ -1460 NJ -1460 18140J -1680 NJ -1680 19720J -1700 20640J -1790 NJ -1790 NJ -1790 NJ -1790 22790
+preplace netloc Rasterizer_0_TRICACHE_VertColor20 1 14 5 NJ -470 NJ -470 NJ -470 NJ -470 18360
+preplace netloc TriSetup_0_FPU_CNV_GO 1 10 1 9380
+preplace netloc TriSetup_0_RAST_outMaxY 1 10 4 N -720 N -720 11200 -1160 11990
+preplace netloc MemorySystem_STAT_MemWriteCyclesIdle 1 5 13 NJ 730 NJ 730 NJ 730 6980J 1280 NJ 1280 NJ 1280 N 1280 N 1280 11630 3020 14260 1780 N 1780 N 1780 16830
+preplace netloc InputAssembler2_0_STAT_CyclesSpentWorking 1 6 12 4410 -1820 NJ -1820 7220J -2060 NJ -2060 NJ -2060 N -2060 N -2060 N -2060 13800 -2730 15560 -2380 N -2380 16910
+preplace netloc MemorySystem_DBG_LastWriteMemoryClientIndex 1 5 9 NJ 890 NJ 890 NJ 890 7020J 1160 NJ 1160 NJ 1160 N 1160 N 1160 11750
+preplace netloc TriWorkCache2_0_INTERP_TRIDATA_WR 1 18 2 18330 -1520 18940
+preplace netloc DepthInterpolator_0_FPU_MUL_A 1 15 1 15380
+preplace netloc InputAssemblerStateBlock_STAGE_StateBitsAtDrawID 1 5 2 3410 -3380 4080
+preplace netloc TriSetup_0_DBG_XProdProd0 1 10 3 9430 -160 10110 -240 N
+preplace netloc TriSetup_0_RAST_outIsTopLeftEdgeA 1 10 4 9300 -650 N -650 11150 -1180 11950
+preplace netloc AttrInterpolator_0_ATTR_FIFO 1 20 2 19950 -1970 20580
+preplace netloc Rasterizer_0_TRICACHE_Z0 1 14 5 13610J -740 NJ -740 NJ -740 16660J -790 18240
+preplace netloc DepthInterpolator_0_FPU_MUL_B 1 15 1 15460
+preplace netloc TriSetup_0_DBG_XProdProd1 1 10 3 9420 -180 10120 -220 N
+preplace netloc TriSetup_0_RAST_outIsTopLeftEdgeB 1 10 4 9300 -630 N -630 11120 -1190 11960
+preplace netloc ShaderCoreSystem_GPR0_PortB_regIdx 1 4 5 NJ -1520 N -1520 4070 -1400 N -1400 7260
+preplace netloc IndexBufferCache_0_IBCacheReadResponses 1 2 3 600J -2550 NJ -2550 2150
+preplace netloc StandaloneFloatALU_M_0_OMUL1 1 6 3 4690J -1150 NJ -1150 6950
+preplace netloc CommandProcessor_0_DEPTH_ClearDepthValue 1 14 3 13870 -2700 15290 -1910 N
+preplace netloc TriSetup_0_RAST_outIsTopLeftEdgeC 1 10 4 9330 -620 N -620 11100 -1200 11970
+preplace netloc TriSetup_0_STAT_CyclesIdle 1 10 8 9340J -1360 N -1360 10550 -1540 12330 -1500 13550 -1330 N -1330 N -1330 16600
+preplace netloc VertexBatchBuilder_0_VertexBatchFIFO 1 2 1 610
+preplace netloc TexSample_0_TexSampReadRequestsFIFO 1 4 21 2450 -910 NJ -910 NJ -910 NJ -910 NJ -910 8300J -2940 NJ -2940 NJ -2940 NJ -2940 NJ -2940 NJ -2940 15300J -3120 NJ -3120 NJ -3120 NJ -3120 NJ -3120 NJ -3120 NJ -3120 21060 -2020 N -2020 22300
+preplace netloc StandaloneFloatALU_M_0_OMUL2 1 20 3 19900 -1320 NJ -1320 21040
+preplace netloc CommandProcessor_0_TRISETUP_SetNewState 1 9 6 8480 3620 NJ 3620 NJ 3620 NJ 3620 NJ 3620 13720
+preplace netloc TexSample_0_INTERP_InFIFO_rd_en 1 22 3 21100J -1170 NJ -1170 22170
+preplace netloc InputAssembler2_0_STATE_ConsumeStateSlot 1 5 2 3440 -3010 4070
+preplace netloc ClipUnit_0_FPU_Add1_A 1 7 1 6160
+preplace netloc TriSetup_0_FPU_CNV_A 1 10 1 9470
+preplace netloc ClearBlock_0_DBG_ClearBlock_State 1 13 8 12360J -1520 NJ -1520 NJ -1520 NJ -1520 16600J -1530 18090J -1670 N -1670 19570
+preplace netloc ROP_0_STAT_CyclesIdle 1 17 10 17120J 360 NJ 360 NJ 360 19690J 550 20680J 480 NJ 480 21440J 390 NJ 390 N 390 23400
+preplace netloc TriSetup_0_RAST_outBarycentricXDeltaA 1 10 4 9400 -590 N -590 11040 -1380 12220
+preplace netloc DepthInterpolator_0_FPU_CNV0_GO 1 15 1 15530
+preplace netloc StandaloneFloatALU_M_0_OMUL3 1 14 3 14280 -2830 15370J -3070 16010
+preplace netloc StateBlock_0_STAGE_StateBitsAtDrawID1 1 6 2 4730 -1760 5810
+preplace netloc TriSetup_0_RAST_CurrentDrawEventID 1 10 4 9310J -760 NJ -760 10910J -1350 12290
+preplace netloc ClipUnit_0_FPU_Add1_B 1 7 1 6170
+preplace netloc Rasterizer_0_STAT_CyclesSpentWorking 1 14 4 14120 -360 N -360 N -360 16570
+preplace netloc TriSetup_0_RAST_outBarycentricXDeltaB 1 10 4 N -560 N -560 11010 -1400 12230
+preplace netloc rast_out_fifo_dout 1 15 2 15420J -2300 15980
+preplace netloc TexSample_0_STATE_ConsumeStateSlot 1 23 2 21510 110 22220
+preplace netloc ShaderCoreSystem_STAT_CurrentDrawEventID 1 4 20 1910J -1270 NJ -1270 NJ -1270 NJ -1270 NJ -1270 8130J -2970 NJ -2970 NJ -2970 NJ -2970 NJ -2970 NJ -2970 15280J -3100 N -3100 16970 -130 N -130 N -130 19730 -40 N -40 N -40 N
+preplace netloc InputAssembler2_0_CLIP_v0ClipCodes 1 6 1 4340
+preplace netloc ROP_0_CMD_ROPIsIdle 1 13 14 12270J 3540 NJ 3540 NJ 3540 NJ 3540 NJ 3540 NJ 3540 NJ 3540 NJ 3540 NJ 3540 NJ 3540 NJ 3540 NJ 3540 N 3540 23470
+preplace netloc TriSetup_0_RAST_outBarycentricXDeltaC 1 10 4 9480 -550 N -550 10980 -1410 12240
+preplace netloc DINTERP_FPU_CNV1_OCNV 1 14 3 14080 -2880 15340J -3090 16040
+preplace netloc VBB_StateBlock_STAGE_NextDrawID 1 1 2 -190 -2580 520
+preplace netloc ROP_0_STAT_CurrentDrawEventID 1 13 14 12570 3040 14250 1580 N 1580 N 1580 16760 -1310 NJ -1310 NJ -1310 19840J -1300 20740J -1220 NJ -1220 21490J -1220 22350J -1320 NJ -1320 23450
+preplace netloc DepthInterpolator_0_STAT_CurrentDrawEventID 1 15 9 NJ -2030 15910 -1820 16640 -170 N -170 N -170 19840 -140 N -140 N -140 N
+preplace netloc ClipUnit_0_TRISETUP_outv2w 1 7 3 5940J -3370 7640 -3040 8160
+preplace netloc ClipUnit_0_TRISETUP_outv2x 1 7 3 5970J -3270 7040 -3000 8150
+preplace netloc InputAssembler2_0_VERTOUT_FIFO 1 4 3 2410J -3440 N -3440 4090
+preplace netloc CommandProcessor_0_TRISETUP_NewStateBits 1 9 6 8540 3520 NJ 3520 NJ 3520 NJ 3520 NJ 3520 13680
+preplace netloc ClipUnit_0_TRISETUP_outv2y 1 7 3 5880J -3460 7440 -2970 8120
+preplace netloc ddr4_0_C0_DDR4 1 5 22 N 430 N 430 N 430 7160 1080 N 1080 N 1080 N 1080 N 1080 11720 2980 14230 350 NJ 350 NJ 350 NJ 350 NJ 350 NJ 350 19700J 510 20660J 380 NJ 380 NJ 380 NJ 380 NJ 380 23550J
+preplace netloc ClipUnit_0_TRISETUP_outv2z 1 7 3 5900J -3440 7430 -2960 8090
+preplace netloc TriSetup_0_DBG_XProdSub0 1 10 3 N 20 N 20 10540
+preplace netloc Rasterizer_0_DBG_PixelXPos 1 13 2 12470 -910 13560
+preplace netloc TriSetup_0_DBG_XProdSub1 1 10 3 9590 10 N 10 11200
+preplace netloc ShaderCoreSystem_VBCacheReadRequests_0 1 4 1 2140
+preplace netloc StandaloneFloatALU_S_0_OSPEC 1 9 3 8490 -1850 NJ -1850 10090
+preplace netloc Rasterizer_0_DBG_MaxX 1 13 2 12400 -940 13580
+preplace netloc InputAssembler2_0_STAT_CyclesWaitingForOutput 1 6 12 4400 -1810 NJ -1810 7540J -2050 NJ -2050 NJ -2050 N -2050 N -2050 N -2050 13810 -2720 15540 -2370 N -2370 16870
+preplace netloc TriSetup_0_DBG_XProdSub2 1 10 3 9560 -610 N -610 10780
+preplace netloc DepthBuffer_0_DBufferRAMR 1 17 1 17040
+preplace netloc TriSetup_0_STAT_CurrentDrawEventID 1 10 14 9450J -1340 NJ -1340 10600J -1510 12310J -1310 NJ -1310 NJ -1310 N -1310 16590 -80 N -80 N -80 19740 -70 20750 -100 N -100 N
+preplace netloc AttrInterpolator_0_TEXSAMP_OutFIFO_wr_data 1 20 3 19950 0 20650 -660 21070
+preplace netloc Rasterizer_0_DBG_MaxY 1 13 2 12370 -930 13600
+preplace netloc fifo_generator_0_dout 1 2 7 640 -2530 NJ -2530 1920J -2430 3350 -1880 4090 -210 5800 10 7300
+preplace netloc TriSetup_0_DBG_XProdSub3 1 10 3 9350 -600 N -600 10730
+preplace netloc InputAssembler2_0_STAT_CyclesIdle 1 6 12 4430 -1850 NJ -1850 7160J -2080 NJ -2080 NJ -2080 N -2080 N -2080 N -2080 13780 -2750 15550 -2340 N -2340 16900
+preplace netloc ROP_FIFO_empty 1 13 14 12440 -1390 N -1390 N -1390 N -1390 N -1390 18190 -1620 N -1620 N -1620 N -1620 N -1620 21460 -1680 22370 -1360 NJ -1360 23520
+preplace netloc InputAssembler2_0_CLIP_vertColor1_RGBA 1 6 1 4360
+preplace netloc VertexBatchBuilder_0_DBG_CurrentState 1 2 7 520J -1670 1080J -250 NJ -250 N -250 N -250 6070 -10 7390
+preplace netloc InputAssembler2_0_CLIP_v2PosW 1 6 1 4470
+preplace netloc ShaderCoreSystem_GPR0_PortA_regType 1 4 5 NJ -1700 N -1700 4170 -1570 N -1570 7460
+preplace netloc Rasterizer_0_STAT_CyclesWaitingForTriWorkCache 1 14 4 14100 -340 N -340 N -340 16550
+preplace netloc DepthInterpolator_0_CMD_IsIdle 1 13 3 12210 3670 NJ 3670 15170
+preplace netloc TriSetup_0_FPU_ADD_GO 1 10 1 9550
+preplace netloc InputAssembler2_0_CLIP_v2PosX 1 6 1 4510
+preplace netloc DepthInterpolator_0_DEPTH_SetDepthParams 1 15 2 15260 -2110 16000
+preplace netloc InputAssembler2_0_CLIP_v2ClipCodes 1 6 1 4430
+preplace netloc InputAssembler2_0_CLIP_v2PosY 1 6 1 4500
+preplace netloc ROP_0_CMD_FlushCacheAck 1 13 14 12250J 3710 NJ 3710 NJ 3710 NJ 3710 NJ 3710 NJ 3710 NJ 3710 NJ 3710 NJ 3710 NJ 3710 NJ 3710 NJ 3710 N 3710 23480
+preplace netloc ScanoutSystem_out_green_p_0 1 24 3 22370J 530 NJ 530 NJ
+preplace netloc TriWorkCache2_0_DINTERP_TRIDATA_RD 1 18 2 18380 -1070 18920
+preplace netloc DepthBuffer_0_DBufferRAMW 1 17 1 17060
+preplace netloc CommandProcessor_0_INTERP_EndFrameReset 1 14 7 13980 -1130 NJ -1130 NJ -1130 NJ -1130 NJ -1130 NJ -1130 19840J
+preplace netloc InputAssembler2_0_CLIP_v2PosZ 1 6 1 4480
+preplace netloc ROP_0_STAT_CountCacheMisses 1 17 10 17110J 410 NJ 410 NJ 410 19680J 520 20720J 500 NJ 500 21470J 410 NJ 410 N 410 23360
+preplace netloc TriSetup_0_DBG_MinX 1 10 3 9570 -520 N -520 10740
+preplace netloc StandaloneFloatALU_S_0_OSPEC1 1 6 3 4710J -1130 NJ -1130 6940
+preplace netloc TriSetup_0_DBG_MinY 1 10 3 9580 -530 N -530 10720
+preplace netloc ROP_0_ROPWriteRequestsFIFO 1 4 23 2360 -3390 NJ -3390 4550J -3360 5850J -3430 NJ -3430 NJ -3430 NJ -3430 NJ -3430 NJ -3430 NJ -3430 NJ -3430 NJ -3430 NJ -3430 NJ -3430 NJ -3430 NJ -3430 NJ -3430 NJ -3430 NJ -3430 NJ -3430 NJ -3430 N -3430 23530
+preplace netloc CommandProcessor_0_CommandProcReadRequestsFIFO 1 4 11 2330 -3740 NJ -3740 N -3740 N -3740 N -3740 N -3740 N -3740 N -3740 N -3740 N -3740 13720
+preplace netloc StandaloneFloatALU_S_0_OSPEC2 1 14 3 14150 -2820 15360J -3080 16030
+preplace netloc TriSetup_0_FPU_SPEC_A 1 10 1 9460
+preplace netloc ShaderCoreSystem_DBG_InstructionPointer 1 4 5 1920 -2330 3340J -1900 4130J -230 5910J 0 7330J
+preplace netloc AttrInterp_FPU_CNV_OCNV 1 20 3 19920 -220 NJ -220 21040
+preplace netloc TriWorkCache2_0_DINTERP_outZ10 1 14 6 14160 -1110 NJ -1110 NJ -1110 NJ -1110 NJ -1110 18960
+preplace netloc DepthInterpolator_0_FPU_SPEC_GO 1 15 1 15590
+preplace netloc TriSetup_0_DBG_TwiceTriArea 1 10 3 9600 -170 N -170 11230
+preplace netloc InputAssembler2_0_CLIP_CurrentDrawEventID 1 6 12 4610J -1870 NJ -1870 7130J -2760 NJ -2760 NJ -2760 NJ -2760 NJ -2760 NJ -2760 NJ -2760 15570J -2720 N -2720 16880
+preplace netloc MemorySystem_DBG_LastReadMemoryClientIndex 1 5 9 NJ 910 NJ 910 NJ 910 7070J 1120 NJ 1120 NJ 1120 N 1120 N 1120 11760
+preplace netloc StandaloneFloatALU_A_0_OADD1 1 6 3 4670J -1170 NJ -1170 7030
+preplace netloc MemorySystem_DBG_ReadRequestsEmptyBitmask 1 5 9 NJ 930 NJ 930 NJ 930 7000J 1170 NJ 1170 NJ 1170 N 1170 N 1170 11700
+preplace netloc ScanoutSystem_out_red_p_0 1 24 3 22390J 570 NJ 570 NJ
+preplace netloc DepthInterpolator_0_FPU_CNV0_A 1 15 1 15520
+preplace netloc StatsCollector_0_DBG_EventsWriteIsReadyAck 1 13 6 12520 3360 NJ 3360 NJ 3360 NJ 3360 NJ 3360 18070
+preplace netloc CommandProcessor_0_DBG_LAST_IN_PACKET 1 13 2 12530 3190 13570
+preplace netloc ShaderCoreSystem_GPR0_PortB_regType 1 4 5 NJ -1540 N -1540 4080 -1390 N -1390 7250
+preplace netloc CommandProcessor_0_STAT_SetNewStatsConfig 1 14 4 NJ 1380 NJ 1380 N 1380 16800
+preplace netloc CommandProcessor_0_STAT_EnableEventTimestamps 1 13 5 12680 3050 14000J 1420 NJ 1420 N 1420 16840
+preplace netloc VBB_StateBlock_CMD_NumFreeSlots 1 2 12 560J -2570 1150J -2580 NJ -2580 3170J -2960 4460J -1830 NJ -1830 7420J -1860 NJ -1860 NJ -1860 NJ -1860 NJ -1860 12050
+preplace netloc ClipUnit_0_TRISETUP_CurrentDrawEventID 1 7 3 6110 -3130 NJ -3130 8140J
+preplace netloc VertexBatchBuilder_0_STAT_CyclesIdle 1 2 16 650J -1690 1130J -1000 1930J -1100 NJ -1100 4070J -1140 NJ -1140 7500J -1180 8310J -1200 NJ -1200 NJ -1200 10610J -1630 NJ -1630 NJ -1630 NJ -1630 N -1630 16810
+preplace netloc Rasterizer_0_STAT_CyclesWaitingForOutput 1 14 4 14110 -350 N -350 N -350 16560
+preplace netloc ShaderCoreSystem_FPUALL_IMUL_GO 1 4 5 1950J -2050 3300 -1960 4280 -1490 N -1490 7620
+preplace netloc VBO_FIFO_dout 1 4 9 2450 -2970 N -2970 4300 -1090 N -1090 7750 -1170 8360 -1180 N -1180 N -1180 10690
+preplace netloc VertexBatchBuilder_0_SHADER_Done 1 2 2 600J -1950 1150
+preplace netloc ClipUnit_0_TRISETUP_outNextStageIsValid 1 7 3 5890J -3260 7540 -3240 8270
+preplace netloc AttrInterpolator_0_FPU_CNV0_GO 1 21 1 20560
+preplace netloc CommandProcessor_0_TEXSAMP_NewStateBits 1 14 10 14000 -1430 NJ -1430 NJ -1430 NJ -1430 18230J -1540 NJ -1540 NJ -1540 NJ -1540 NJ -1540 21440J
+preplace netloc TriSetup_0_RAST_v10_out_Z 1 10 4 N -1060 NJ -1060 11180J -1310 12000
+preplace netloc TEXSAMP_FIFO_empty 1 13 12 12480 -1300 N -1300 N -1300 N -1300 16680 -1320 N -1320 N -1320 19860 -1310 20750 -1230 21060J -1200 NJ -1200 22210
+preplace netloc ClipUnit_0_DBG_CurrentClipPlane 1 7 6 5950 -1990 NJ -1990 NJ -1990 NJ -1990 NJ -1990 10870J
+preplace netloc CommandProcessor_0_INTERP_NewStateDrawEventID 1 14 7 14090 -1060 NJ -1060 NJ -1060 NJ -1060 NJ -1060 NJ -1060 NJ
+preplace netloc ClipUnit_0_CMD_IsIdle 1 7 7 6140J -2290 7650J -2040 NJ -2040 NJ -2040 NJ -2040 NJ -2040 11540
+preplace netloc VBO_INDEX_FIFO_dout 1 4 9 2460 -2980 N -2980 4320 -1100 N -1100 7740 -1190 N -1190 N -1190 N -1190 10700
+preplace netloc ClearBlock_0_CMD_ClearBlockIsIdle 1 13 8 12460J -1530 NJ -1530 NJ -1530 NJ -1530 16590J -1540 18060J -1730 N -1730 19580
+preplace netloc AttrInterpolator_0_FPU_CNV_A 1 20 2 19900 -50 20730
+preplace netloc ShaderCoreSystem_FPUALL_ICNV_GO 1 4 5 2000J -2020 3240 -1940 4270 -1480 N -1480 7580
+preplace netloc CommandProcessor_0_returnPacketsFIFO 1 14 4 14070 220 NJ 220 NJ 220 NJ
+preplace netloc ScanoutSystem_out_green_n_0 1 24 3 22380J 550 NJ 550 NJ
+preplace netloc Rasterizer_0_RASTOUT_FIFO 1 14 3 13890 -940 N -940 N
+preplace netloc DepthInterpolator_0_STAT_CyclesWaitingForOutput 1 15 3 NJ -2050 15920 -1810 16630
+preplace netloc Net 1 17 4 16980J -1380 18240 -1590 N -1590 19790
+preplace netloc DepthInterpolator_0_DBG_DepthInterpolator_State 1 15 6 15590J -2210 NJ -2210 NJ -2210 NJ -2210 NJ -2210 19810J
+preplace netloc IndexBufferCache_0_VBB_ReadData 1 1 8 -80 -1500 580 -890 N -890 2300 -970 N -970 N -970 N -970 7520
+preplace netloc StateBlock_0_DBG_Slot0 1 23 2 21530 -1670 22210
+preplace netloc CMD_SetVertexStreamID_0_1 1 3 12 1260 -910 2280J -1050 NJ -1050 NJ -1050 6260J -1760 NJ -1760 8240J -1750 NJ -1750 N -1750 N -1750 N -1750 13700
+preplace netloc StateBlock_0_DBG_Slot1 1 23 2 21550 -1650 22190
+preplace netloc ScanoutSystem_out_cl_n_0 1 24 3 22410J 640 NJ 640 NJ
+preplace netloc CMD_InCommand_0_1 1 3 12 1300 -960 1930J -990 NJ -990 NJ -990 6240J -1800 NJ -1800 NJ -1800 NJ -1800 N -1800 N -1800 N -1800 13680
+preplace netloc MemorySystem_CMD_MemoryControllerIsIdle 1 5 9 NJ 490 N 490 N 490 7150 1090 8210 690 N 690 N 690 N 690 N
+preplace netloc ShaderCoreSystem_readOutData 1 4 5 2030J -930 N -930 N -930 N -930 7180
+preplace netloc MemorySystem_DBG_LastWriteAddress 1 5 9 NJ 610 N 610 N 610 7140 1130 N 1130 N 1130 N 1130 N 1130 11810
+preplace netloc CMD_SetVertexStreamShaderRegIndex_0_1 1 3 12 1270 -870 2250J -1260 3180J -1320 NJ -1320 NJ -1320 7390J -1290 NJ -1290 NJ -1290 N -1290 10560 -1620 N -1620 13740
+preplace netloc ShaderCoreSystem_OUT_RESULT1 1 4 5 NJ -1400 N -1400 4060 -1410 N -1410 7600
+preplace netloc TriWorkCache2_0_DINTERP_outZ20 1 14 6 14180 -1100 NJ -1100 NJ -1100 NJ -1100 NJ -1100 18950
+preplace netloc CommandProcessor_0_VBB_NewStateDrawEventID 1 1 14 -200 3630 NJ 3630 NJ 3630 NJ 3630 NJ 3630 NJ 3630 NJ 3630 NJ 3630 NJ 3630 NJ 3630 NJ 3630 NJ 3630 NJ 3630 13750
+preplace netloc rast_out_fifo_empty 1 13 4 12430 -1570 N -1570 15240J -1570 15910
+preplace netloc StateBlock_0_DBG_Slot2 1 23 2 21630 40 22230
+preplace netloc ShaderCoreSystem_OUT_RESULT2 1 4 5 2190J -1280 N -1280 N -1280 N -1280 7190
+preplace netloc DepthInterpolator_0_DEPTH_DepthFunction 1 15 2 15210 -2090 15960
+preplace netloc StateBlock_0_DBG_Slot3 1 23 2 21580 -1190 22180
+preplace netloc ClipUnit_0_DBG_CurrentClipBitmask 1 7 6 5910 -1970 NJ -1970 NJ -1970 NJ -1970 NJ -1970 10860J
+preplace netloc TriSetup_0_RAST_t10_out_x 1 10 4 N -920 N -920 10920 -1100 11550
+preplace netloc TriSetup_0_RAST_outMinX 1 10 4 N -780 N -780 10940 -1170 12090
+preplace netloc ShaderCoreSystem_STAT_CyclesSpentWorking 1 4 14 2230J -1210 3360J -1220 NJ -1220 NJ -1220 NJ -1220 NJ -1220 NJ -1220 NJ -1220 10900J -1390 12300J -1340 NJ -1340 NJ -1340 N -1340 16720
+preplace netloc TriSetup_0_RAST_t10_out_y 1 10 4 N -900 N -900 11190 -1250 11870
+preplace netloc TriSetup_0_RAST_outMinY 1 10 4 N -740 N -740 11220 -1120 11940
+preplace netloc TEXSAMP_FIFO_prog_full 1 20 4 19890 -1330 NJ -1330 NJ -1330 21440
+preplace netloc ATTR_FIFO_prog_full 1 14 8 14000 -2900 15240J -3220 NJ -3220 NJ -3220 NJ -3220 NJ -3220 NJ -3220 20590
+preplace netloc CommandProcessor_0_DINTERP_NewStateBits 1 14 1 13840
+preplace netloc ShaderCoreSystem_CMD_IsIdle 1 4 10 1910J -1030 NJ -1030 NJ -1030 NJ -1030 7480J -1280 NJ -1280 NJ -1280 NJ -1280 NJ -1280 11850
+preplace netloc TriSetup_0_RAST_t20_out_x 1 10 4 N -880 N -880 11170 -1260 11880
+preplace netloc TriSetup_0_RAST_t20_out_y 1 10 4 N -860 N -860 11160 -1270 11890
+preplace netloc VertexBatchBuilder_0_IBC_ReadAddr 1 1 8 -150 -2610 590 80 N 80 N 80 N 80 N 80 N 80 N
+preplace netloc AttrInterpolator_0_DINTERP_FIFO_rd_en 1 20 2 19940 -1980 20600
+preplace netloc ROPStateBlock_CMD_NumFreeSlots 1 13 14 12280 3690 NJ 3690 NJ 3690 NJ 3690 NJ 3690 NJ 3690 NJ 3690 NJ 3690 NJ 3690 NJ 3690 NJ 3690 NJ 3690 NJ 3690 23540
+preplace netloc ClipUnit_0_FPU_Mul0_A 1 7 1 6190
+preplace netloc CMD_SetVertexStreamIsD3DCOLOR_0_1 1 3 12 1180 -900 2290J -1040 NJ -1040 NJ -1040 6290J -1740 NJ -1740 NJ -1740 NJ -1740 N -1740 N -1740 N -1740 13750
+preplace netloc CommandProcessor_0_STAT_WriteFrameStatsAddress 1 14 4 N 1400 N 1400 N 1400 16830
+preplace netloc AttrInterpolator_0_CMD_IsIdle 1 13 9 12450 -1550 NJ -1550 NJ -1550 NJ -1550 16540J -1500 18170J -1610 NJ -1610 NJ -1610 20620
+preplace netloc ClipUnit_0_FPU_Mul0_B 1 7 1 6200
+preplace netloc ClipUnit_0_TRISETUP_outv2rgba 1 7 3 6120J -3090 N -3090 8100
+preplace netloc ROP_0_STAT_CountCacheHits 1 17 10 17100J 400 NJ 400 NJ 400 19670J 540 20700J 490 NJ 490 21450J 400 NJ 400 N 400 23370
+preplace netloc Rasterizer_0_DBG_Rasterizer_State 1 13 2 12520 -880 13530
+preplace netloc ShaderCoreSystem_FPUALL_IN_MODE 1 4 5 NJ -2080 3200 -1850 4260 -1500 N -1500 7630
+preplace netloc ClipUnit_0_DBG_ClipDistance0 1 7 6 6000 -2020 NJ -2020 NJ -2020 NJ -2020 NJ -2020 10800J
+preplace netloc DepthInterpolator_0_STAT_CyclesIdle 1 15 3 15200J -2120 16000 -2180 16690
+preplace netloc TexSample_0_STAT_CyclesWaitingCacheLoad 1 17 8 17170J 1890 NJ 1890 NJ 1890 NJ 1890 NJ 1890 N 1890 N 1890 22240
+preplace netloc ClipUnit_0_DBG_ClipDistance1 1 7 6 5970 -2030 NJ -2030 NJ -2030 NJ -2030 NJ -2030 10810J
+preplace netloc ROP_0_STAT_CyclesSpentWorking 1 17 10 17130J 370 NJ 370 NJ 370 19650J 580 20740J 510 NJ 510 21480J 420 NJ 420 N 420 23430
+preplace netloc Rasterizer_0_TRICACHE_PushNewTriData 1 14 5 NJ -450 NJ -450 NJ -450 NJ -450 18370
+preplace netloc MemorySystem_DBG_WriteControlState 1 5 9 NJ 530 N 530 N 530 7030 1340 N 1340 N 1340 10080 1450 10930 1960 11660
+preplace netloc CommandProcessor_0_CLIP_NewStateBits 1 6 9 4650 3440 NJ 3440 NJ 3440 NJ 3440 NJ 3440 NJ 3440 NJ 3440 NJ 3440 13640
+preplace netloc InputAssembler2_0_CMD_IA_Idle 1 6 8 4440 -1860 NJ -1860 7190J -1850 8180J -1890 NJ -1890 N -1890 N -1890 12210
+preplace netloc StandaloneFloatALU_M_1_OMUL 1 6 3 4660J -1120 NJ -1120 7040
+preplace netloc ShaderCoreSystem_STAT_CyclesIdle 1 4 14 2180J -1220 3350J -1230 NJ -1230 NJ -1230 NJ -1230 8190J -2950 NJ -2950 NJ -2950 NJ -2950 NJ -2950 NJ -2950 15310J -3110 N -3110 17020
+preplace netloc ROP_0_ROPReadRequestsFIFO 1 4 23 2340 -3410 NJ -3410 4570J -3400 NJ -3400 NJ -3400 NJ -3400 NJ -3400 NJ -3400 NJ -3400 NJ -3400 NJ -3400 NJ -3400 NJ -3400 NJ -3400 NJ -3400 NJ -3400 NJ -3400 NJ -3400 NJ -3400 NJ -3400 NJ -3400 N -3400 23490
+preplace netloc AttrInterpolator_0_TRICACHE_PopTriangleSlot 1 18 4 18380 -230 NJ -230 NJ -230 20550
+preplace netloc xlconstant_3_dout 1 17 2 17170 -2150 18030
+preplace netloc InputAssembler2_0_INDEXOUT_FIFO 1 4 3 2420 -3460 N -3460 4110
+preplace netloc CommandProcessor_0_VBB_EndFrameReset 1 1 14 -210 3530 NJ 3530 NJ 3530 NJ 3530 NJ 3530 NJ 3530 NJ 3530 NJ 3530 NJ 3530 NJ 3530 NJ 3530 NJ 3530 NJ 3530 13740
+preplace netloc MemorySystem_DBG_ScanoutReadResponses_Full 1 5 9 NJ 570 N 570 N 570 7090 1210 N 1210 N 1210 N 1210 N 1210 11730
+preplace netloc Rasterizer_0_TRICACHE_InvW10 1 14 5 13920J -750 NJ -750 NJ -750 NJ -750 N
+preplace netloc CommandProcessor_0_ROP_SetNewState 1 14 12 14060 -1450 NJ -1450 NJ -1450 NJ -1450 18130J -1690 NJ -1690 NJ -1690 NJ -1690 NJ -1690 21460J -1720 NJ -1720 22740J
+preplace netloc ShaderCoreSystem_CMD_IsReadyForCommand_0 1 4 10 NJ -2340 3360J -1910 4290J -1600 NJ -1600 7160J -1670 NJ -1670 NJ -1670 N -1670 N -1670 12100
+preplace netloc VBB_FIFO_empty 1 2 12 650 -1960 1170J -2570 N -2570 3180 -2950 4490 -1880 N -1880 N -1880 N -1880 N -1880 N -1880 N -1880 12190
+preplace netloc CommandProcessor_0_SCANOUT_OutputColorChannels 1 14 10 14200J 340 NJ 340 NJ 340 NJ 340 NJ 340 NJ 340 19630J 630 N 630 N 630 21440
+preplace netloc ROP_0_STAT_CyclesWaitingForMemoryRead 1 17 10 17140J 420 NJ 420 NJ 420 19590J 600 20750J 520 NJ 520 21500J 430 NJ 430 N 430 23420
+preplace netloc TexSample_0_STAT_CurrentDrawEventID 1 17 8 17080 -120 NJ -120 NJ -120 19840J -130 NJ -130 NJ -130 21500J 120 22200
+preplace netloc ClipUnit_0_FPU_Add1_IADD_GO 1 7 1 6180
+preplace netloc TexSample_0_DBG_TexCache_dina 1 23 2 21610 80 22180
+preplace netloc ShaderCoreSystem_GPR0_PortA_regChan 1 4 5 NJ -1660 N -1660 4180 -1630 N -1630 7540
+preplace netloc MemorySystem_STAT_MemReadCountNonScanoutTransactions 1 5 13 NJ 870 NJ 870 NJ 870 6910J 1250 NJ 1250 NJ 1250 N 1250 N 1250 11550 3310 14380 1880 N 1880 N 1880 17120
+preplace netloc CommandProcessor_0_STAT_WriteEventTimestampsAddress 1 14 4 NJ 1440 NJ 1440 N 1440 16860
+preplace netloc TriSetup_0_RAST_v20_out_invW 1 10 4 9310J -1590 N -1590 10540 -1610 12280
+preplace netloc CommandProcessor_0_SCANOUT_ScanEnable 1 14 10 14220 390 NJ 390 NJ 390 NJ 390 NJ 390 NJ 390 19610J 610 NJ 610 NJ 610 NJ
+preplace netloc Rasterizer_0_TRISETUP_readyForNewTri 1 9 6 8510J -3020 NJ -3020 N -3020 N -3020 N -3020 13610
+preplace netloc CommandProcessor_0_ROP_FlushCacheSignal 1 14 12 13930 -1490 NJ -1490 NJ -1490 NJ -1490 18120J -1660 NJ -1660 NJ -1660 20740J -1760 NJ -1760 NJ -1760 NJ -1760 22730
+preplace netloc TriWorkCache2_0_RAST_IsFull 1 13 7 12510 -1370 NJ -1370 NJ -1370 NJ -1370 16790J -1360 18250J -1330 18990
+preplace netloc CommandProcessor_0_SCANOUT_InvertOutputColor 1 14 10 14170J 330 NJ 330 NJ 330 NJ 330 NJ 330 NJ 330 19660J 620 N 620 N 620 21450
+preplace netloc StatsWriteOrderNibblesFIFO_dout 1 13 7 12660 3130 14370 3110 N 3110 N 3110 N 3110 18260 1250 N
+preplace netloc StatsCollector_0_CMD_CountTimestampsOrdersMemoryWrites 1 13 6 12460 3260 NJ 3260 NJ 3260 NJ 3260 NJ 3260 18080
+preplace netloc CommandProcessor_0_IA_EndFrameReset 1 5 10 3380 3490 NJ 3490 NJ 3490 NJ 3490 NJ 3490 NJ 3490 NJ 3490 NJ 3490 NJ 3490 13770
+preplace netloc ClipUnit_0_FPU_Rcp0_ISPEC_GO 1 7 1 6160
+preplace netloc TriSetup_0_FPU_ADD_A 1 10 1 9510
+preplace netloc AttrInterpolator_0_FPU_MUL_GO 1 21 1 20670
+preplace netloc TriSetup_0_FPU_ADD_B 1 10 1 9520
+preplace netloc TexSample_0_CMD_TexSampleIsIdle 1 13 12 12310J 3270 NJ 3270 NJ 3270 NJ 3270 NJ 3270 NJ 3270 NJ 3270 NJ 3270 NJ 3270 N 3270 N 3270 22290
+preplace netloc ShaderCoreSystem_VertexCache_dina 1 4 5 2100 -960 NJ -960 NJ -960 NJ -960 7340J
+preplace netloc AttrInterpolator_0_DBG_RastBarycentricB 1 20 2 19910 -190 20520
+preplace netloc default_sysclk1_300_1 1 0 5 NJ 330 NJ 330 530J 220 NJ 220 1930J
+preplace netloc Rasterizer_0_TRICACHE_TY10 1 14 5 14050J -600 NJ -600 NJ -600 NJ -600 18310
+preplace netloc DepthInterpolator_0_FPU_MUL_GO 1 15 1 15490
+preplace netloc AttrInterpolator_0_DBG_RastBarycentricC 1 20 2 19920 -120 20510
+preplace netloc DepthInterpolator_0_FPU_CNV1_A 1 15 1 15250
+preplace netloc StatsCollector_0_STAT_WriteOrderNibblesFIFO_wr_data 1 13 7 12670 3120 N 3120 N 3120 N 3120 N 3120 18360 1170 N
+preplace netloc TEXSAMP_FIFO_dout 1 22 3 21090J -1180 NJ -1180 22180
+preplace netloc StateBlock_0_DBG_CurrentReadSlotIndex 1 23 2 21520 -1710 22230
+preplace netloc TriSetup_0_FPU_MUL_A 1 10 1 9520
+preplace netloc VBB_StateBlock_STAGE_StateBitsAtDrawID 1 1 2 -140 -2570 490
+preplace netloc DepthInterpolator_0_DEPTH_DepthWriteEnable 1 15 2 15220 -2100 15970
+preplace netloc TriSetup_0_FPU_MUL_B 1 10 1 9490
+preplace netloc StatsCollector_0_CMD_CountTimestampsMemoryWrites 1 13 6 12450 3250 NJ 3250 NJ 3250 NJ 3250 NJ 3250 18090
+preplace netloc ClipUnit_0_STATE_ConsumeStateSlot 1 6 2 4700 -1780 5770
+preplace netloc InputAssembler2_0_CLIP_vertColor0_RGBA 1 6 1 4270
+preplace netloc InputAssembler2_0_STAT_CyclesLoadingDataToCache 1 6 12 4420 -1840 NJ -1840 7170J -2070 NJ -2070 NJ -2070 N -2070 N -2070 N -2070 13790 -2740 15510 -2330 N -2330 16850
+preplace netloc StatsCollector_0_DBG_CurrentWriteEn 1 13 6 12580 3430 NJ 3430 NJ 3430 NJ 3430 NJ 3430 18060
+preplace netloc StatsCollector_0_DBG_EventsWriteIsReady 1 13 6 12510 3390 NJ 3390 NJ 3390 NJ 3390 NJ 3390 18100
+preplace netloc CommandProcessor_0_DINTERP_EndFrameReset 1 14 1 13830
+preplace netloc CommandProcessor_0_IA_NewStateDrawEventID 1 5 10 3400 3500 NJ 3500 NJ 3500 NJ 3500 NJ 3500 NJ 3500 NJ 3500 NJ 3500 NJ 3500 13760
+preplace netloc ShaderCoreSystem_FPU0_IN_A 1 4 5 1960J -2320 3230 -1820 4140 -1420 N -1420 7410
+preplace netloc ShaderCoreSystem_GPR0_ReadQuadIndex 1 4 5 2190J -1760 N -1760 4100 -1360 N -1360 7230
+preplace netloc CommandProcessor_0_SHADER_ReadRegisterOutRequest 1 3 12 1220 3610 NJ 3610 NJ 3610 NJ 3610 NJ 3610 NJ 3610 NJ 3610 NJ 3610 NJ 3610 NJ 3610 N 3610 13810
+preplace netloc ShaderCoreSystem_DBG_State 1 4 5 2250 -2110 3290J -1890 4220J -1450 NJ -1450 7690J
+preplace netloc NetworkPacketSystem_sgmii_0_0 1 18 9 18280J -1570 NJ -1570 NJ -1570 20750J -1730 NJ -1730 NJ -1730 NJ -1730 NJ -1730 23540J
+preplace netloc TriWorkCache2_0_INTERP_outColorRGBA10 1 19 2 NJ -560 19730
+preplace netloc DepthBuffer_0_RAST_PixelFailedDepthTest 1 14 4 13910 -2930 15250J -3170 N -3170 16640
+preplace netloc xlconstant_2_dout 1 8 2 7760 -350 8070
+preplace netloc ShaderCoreSystem_FPU0_IN_B 1 4 5 1970J -2310 3220 -1830 4120 -1310 N -1310 7240
+preplace netloc CommandProcessor_0_DBG_LAST_READ_DATA 1 13 2 12550 3210 13550
+preplace netloc CommandProcessor_0_ROP_NewStateBits 1 14 12 14020 -1480 NJ -1480 NJ -1480 NJ -1480 18150J -1650 NJ -1650 NJ -1650 20730J -1770 NJ -1770 NJ -1770 NJ -1770 22770J
+preplace netloc Rasterizer_0_TRICACHE_InvW20 1 14 5 13950J -730 NJ -730 NJ -730 NJ -730 N
+preplace netloc ROPStateBlock_STAGE_NextDrawID 1 25 2 22810 -1000 23360
+preplace netloc CommandProcessor_0_IA_SetNewState 1 5 10 3370 3600 NJ 3600 NJ 3600 NJ 3600 NJ 3600 NJ 3600 NJ 3600 NJ 3600 NJ 3600 13800
+preplace netloc ClipUnit_0_FPU_Add0_A 1 7 1 6130
+preplace netloc TriSetup_0_RAST_v0_out_invW 1 10 4 9330J -1570 N -1570 N -1570 12260
+preplace netloc ClearBlock_0_ClearBlockWriteRequestsFIFO 1 4 17 2320 -3470 NJ -3470 4600J -3380 5840J -3420 NJ -3420 NJ -3420 NJ -3420 NJ -3420 NJ -3420 NJ -3420 NJ -3420 NJ -3420 NJ -3420 NJ -3420 NJ -3420 N -3420 19590
+preplace netloc StateBlock_0_STAGE_NextDrawID 1 23 2 21590 50 22280
+preplace netloc ClipUnit_0_FPU_Add0_B 1 7 1 6140
+preplace netloc InputAssembler2_0_CLIP_vertColor2_RGBA 1 6 1 4390
+preplace netloc StatsCollector_0_CMD_StatsSaveComplete 1 13 6 12320J 3410 NJ 3410 N 3410 N 3410 N 3410 18110
+preplace netloc TriSetup_0_FPU_SPEC_GO 1 10 1 9400
+preplace netloc MemorySystem_DBG_ScanoutReadRequests_Empty 1 5 9 NJ 550 N 550 N 550 7120 1190 N 1190 N 1190 N 1190 N 1190 11770
+preplace netloc MemorySystem_DBG_ScanoutReadRequests_rd_en 1 5 9 NJ 590 N 590 N 590 7080 1200 N 1200 N 1200 N 1200 N 1200 11740
+preplace netloc InputAssemblerStateBlock_CMD_NumFreeSlots 1 6 8 4450 -1730 NJ -1730 NJ -1730 NJ -1730 NJ -1730 NJ -1730 NJ -1730 12080J
+preplace netloc ScanoutSystem_CMD_VSync 1 13 12 12230J 3590 NJ 3590 NJ 3590 NJ 3590 NJ 3590 NJ 3590 NJ 3590 NJ 3590 NJ 3590 N 3590 N 3590 22170
+preplace netloc ShaderCoreSystem_CB_Enable 1 4 5 2030J -2010 3270 -1970 4350 -1670 N -1670 7130
+preplace netloc ShaderCoreSystem_DBG_CurrentDWORD 1 4 5 NJ -1560 N -1560 4160 -1540 N -1540 7280
+preplace netloc CMD_SetVertexStreamDWORDStride_0_1 1 3 12 1210 -920 2270J -1060 NJ -1060 NJ -1060 NJ -1060 7490J -1260 NJ -1260 NJ -1260 N -1260 10590 -1590 N -1590 13730
+preplace netloc DepthInterpolator_0_STATE_ConsumeStateSlot 1 14 2 14150 -2840 15160
+preplace netloc CommandProcessor_0_ROP_EndFrameReset 1 14 12 13960 -1500 NJ -1500 NJ -1500 16670J -1510 18080J -1710 NJ -1710 19610J -1720 20700J -1740 NJ -1740 NJ -1740 NJ -1740 22750J
+preplace netloc CommandProcessor_0_DBG_CurrentDrawGeneration 1 13 2 12600 3170 13530
+preplace netloc ClipUnit_0_TRISETUP_outv1rgba 1 7 3 5990J -3200 N -3200 8260
+preplace netloc InputAssembler2_0_DBG_IA_State 1 6 7 4360 -1680 6280J -1710 NJ -1710 NJ -1710 N -1710 N -1710 10840
+preplace netloc ShaderCoreSystem_FPUALL_IADD_GO 1 4 5 1940J -2070 3210 -1870 4210 -1460 N -1460 7560
+preplace netloc DepthBuffer_0_RAST_DepthIsIdle 1 14 4 14030 -2870 15330J -3150 N -3150 16630
+preplace netloc ROP_0_STAT_CountPixelsPassed 1 13 14 12290 3580 NJ 3580 NJ 3580 NJ 3580 NJ 3580 NJ 3580 NJ 3580 NJ 3580 NJ 3580 NJ 3580 NJ 3580 NJ 3580 NJ 3580 23450
+preplace netloc ClipUnit_0_FPU_Mul1_IMUL_GO 1 7 1 6190
+preplace netloc xlconstant_0_dout1 1 12 2 N 1350 11710
+preplace netloc StateBlock_0_DBG_SlotsValid 1 23 2 21570 -1660 22170
+preplace netloc TriSetup_0_RAST_outBarycentricInverse 1 10 4 N -1100 N -1100 10900 -1210 11910
+preplace netloc Rasterizer_0_TRICACHE_TY20 1 14 5 NJ -530 NJ -530 NJ -530 NJ -530 18330
+preplace netloc Rasterizer_0_TRICACHE_TY0 1 14 5 14010J -620 NJ -620 NJ -620 NJ -620 18290
+preplace netloc ShaderCoreSystem_DBG_ActiveLanesBitmask 1 4 5 2040J -1250 3290 -1260 N -1260 N -1260 7170
+preplace netloc ROP_0_DBG_ReadRequestFIFOFull 1 13 14 12420J 3570 NJ 3570 NJ 3570 NJ 3570 NJ 3570 NJ 3570 NJ 3570 NJ 3570 NJ 3570 NJ 3570 NJ 3570 NJ 3570 N 3570 23390
+preplace netloc VertexBatchBuilder_0_IBC_ReadEnable 1 1 2 -100 -2600 550
+preplace netloc ShaderCoreSystem_FPU1_IN_A 1 4 5 2070J -1430 N -1430 N -1430 N -1430 7680
+preplace netloc Rasterizer_0_TRICACHE_TX20 1 14 5 NJ -590 NJ -590 NJ -590 NJ -590 18320
+preplace netloc AttrInterpolator_0_STATE_ConsumeStateSlot 1 20 2 19950 -1260 20570
+preplace netloc CommandProcessor_0_VBB_SendCommand 1 1 14 -180J 3640 NJ 3640 NJ 3640 NJ 3640 NJ 3640 NJ 3640 NJ 3640 NJ 3640 NJ 3640 NJ 3640 N 3640 N 3640 N 3640 13790
+preplace netloc ShaderCoreSystem_FPU1_IN_B 1 4 5 2080J -1440 N -1440 N -1440 N -1440 7660
+preplace netloc TexSample_0_ROP_OUT_FIFO 1 24 1 22350
+preplace netloc StatsCollector_0_DBG_CurrentWriteOrderNibbles 1 13 6 12590 3350 NJ 3350 NJ 3350 NJ 3350 NJ 3350 18040
+preplace netloc DepthInterpStateBlock_STAGE_StateBitsAtDrawID 1 14 2 14310 -2860 15180
+preplace netloc CommandProcessor_0_INTERP_NewStateBits 1 14 7 14040 -1080 NJ -1080 NJ -1080 NJ -1080 NJ -1080 NJ -1080 NJ
+preplace netloc CommandProcessor_0_CLEAR_BaseRenderTargetAddr 1 14 6 14150 200 NJ 200 NJ 200 16660J 80 NJ 80 19010J
+preplace netloc ShaderCoreSystem_GPR0_PortA_regIdx 1 4 5 NJ -1680 N -1680 4230 -1640 N -1640 7550
+preplace netloc StateBlock_0_STAGE_NextDrawID1 1 6 2 4740 -1770 5800
+preplace netloc DepthInterpolator_0_ATTR_FIFO 1 15 6 15400J -2290 NJ -2290 NJ -2290 NJ -2290 N -2290 19890
+preplace netloc ShaderCoreSystem_INDEXOUT_FIFO 1 4 1 2210
+preplace netloc CommandProcessor_0_TRISETUP_NewStateDrawEventID 1 9 6 8580 3450 NJ 3450 NJ 3450 NJ 3450 NJ 3450 13590
+preplace netloc CommandProcessor_0_DINTERP_NewStateDrawEventID 1 14 1 13850
+preplace netloc ClipUnit_0_STAT_CurrentDrawEventID 1 7 17 6100 -3280 7190J -3020 8430J -3010 NJ -3010 NJ -3010 NJ -3010 NJ -3010 NJ -3010 15200J -3210 NJ -3210 16940J -150 N -150 N -150 19780 -80 N -80 N -80 N
+preplace netloc ClipUnit_0_IA_outPreviousStageIsReady 1 5 3 3430 -1740 NJ -1740 5790
+preplace netloc ShaderCoreSystem_FPU3_IN_A 1 4 5 NJ -1240 3320 -1250 N -1250 N -1250 7670
+preplace netloc ShaderCoreSystem_VSC_ReadData 1 4 5 2130 60 NJ 60 NJ 60 NJ 60 NJ
+preplace netloc CommandProcessor_0_STAT_PresentSignal 1 14 4 N 1360 N 1360 N 1360 16790
+preplace netloc CommandProcessor_0_CLIP_SetNewState 1 6 9 4630 3400 NJ 3400 NJ 3400 NJ 3400 NJ 3400 NJ 3400 NJ 3400 NJ 3400 13650
+preplace netloc StateBlock_0_STAGE_StateIsValid 1 23 2 21600 60 22270
+preplace netloc ShaderCoreSystem_FPU3_IN_B 1 4 5 2160J -1290 N -1290 4510 -1300 N -1300 7060
+preplace netloc ShaderCoreSystem_VBO_NumIndices 1 4 5 NJ -1300 3320 -1300 4060 -1290 N -1290 7360
+preplace netloc xlconstant_0_dout 1 3 1 1120
+preplace netloc VertexBatchBuilder_0_DBG_CurrentBatchRemainingPrims 1 2 7 NJ -1660 1100J -850 NJ -850 N -850 N -850 N -850 7200
+preplace netloc ScanOut_0_ScanoutReadResponses 1 4 21 2380 -3340 NJ -3340 NJ -3340 5870J -3350 NJ -3350 NJ -3350 NJ -3350 NJ -3350 NJ -3350 NJ -3350 NJ -3350 NJ -3350 NJ -3350 NJ -3350 NJ -3350 N -3350 N -3350 N -3350 N -3350 N -3350 22330
+preplace netloc TriWorkCache2_0_INTERP_outT0X 1 19 2 NJ -700 19600
+preplace netloc TriWorkCache2_0_DINTERP_outInvW20 1 14 6 14360 -2680 15500J -2390 NJ -2390 NJ -2390 NJ -2390 19020
+preplace netloc AttrInterpolator_0_STAT_CurrentDrawEventID 1 17 7 17090 -160 NJ -160 NJ -160 NJ -160 20690 -160 N -160 N
+preplace netloc StandaloneFloatALU_M_0_OMUL 1 9 3 8550 -1840 NJ -1840 10050
+preplace netloc TriSetup_0_FPU_MUL_GO 1 10 1 9480
+preplace netloc CommandProcessor_0_STAT_CyclesSpentWorking 1 14 4 13890 1610 N 1610 N 1610 N
+preplace netloc MemorySystem_STAT_MemWriteCountBytesTransferred 1 5 13 NJ 810 NJ 810 NJ 810 6890J 1320 NJ 1320 NJ 1320 10100 1430 N 1430 11610 2990 14290 1900 N 1900 N 1900 17130
+preplace netloc placeholder_texcfg_dout 1 3 7 NJ -260 NJ -260 N -260 4060 -270 N -270 7590 -320 8070
+preplace netloc CommandProcessor_0_STAT_CyclesIdle 1 14 4 13940 1590 N 1590 N 1590 N
+preplace netloc TriWorkCache2_0_INTERP_outT0Y 1 19 2 NJ -680 19610
+preplace netloc ClipUnit_0_TRISETUP_outv1tx 1 7 3 6010J -3170 N -3170 8290
+preplace netloc ClipUnit_0_STAT_CyclesWaitingForOutput 1 7 11 6070J -3340 7420J -2980 NJ -2980 NJ -2980 NJ -2980 NJ -2980 NJ -2980 NJ -2980 15220J -3180 N -3180 16920
+preplace netloc ClipUnit_0_TRISETUP_outv1ty 1 7 3 6040J -3160 N -3160 8250
+preplace netloc xlconstant_7_dout 1 23 2 21590 -1210 22170
+preplace netloc InputAssembler2_0_VERTOUT_FIFO_rd_en 1 4 3 2430 -3310 3370J -3480 4120
+preplace netloc ShaderCoreSystem_VertexCache_addra 1 4 5 2090 -1000 NJ -1000 NJ -1000 NJ -1000 7350J
+preplace netloc ShaderCoreSystem_FPUALL_ISHFT_GO 1 4 5 NJ -2060 3190 -1840 4240 -1510 N -1510 7640
+preplace netloc VBO_Ready_0_1 1 3 4 1220 -2590 2150J -2990 NJ -2990 4060
+preplace netloc ATTR_FIFO_empty 1 13 9 12380 -2770 N -2770 15480 -2280 N -2280 N -2280 N -2280 N -2280 19870 -2000 20630
+preplace netloc StateBlock_0_CMD_NumFreeSlots 1 13 12 12410 3230 NJ 3230 NJ 3230 NJ 3230 NJ 3230 NJ 3230 NJ 3230 NJ 3230 NJ 3230 NJ 3230 NJ 3230 22320
+preplace netloc StatsCollector_0_DBG_CurrentWriteData 1 13 6 12620 3340 NJ 3340 NJ 3340 NJ 3340 NJ 3340 18030
+preplace netloc InputAssembler2_0_CLIP_v1ClipCodes 1 6 1 4400
+preplace netloc MemorySystem_DBG_WriteRequestsEmptyBitmask 1 5 9 NJ 970 NJ 970 NJ 970 6900J 1220 NJ 1220 NJ 1220 NJ 1220 NJ 1220 11680
+preplace netloc CommandProcessor_0_CLEAR_ClearBlockBeginSignal 1 14 6 14160 210 NJ 210 NJ 210 16730J 90 NJ 90 18940J
+preplace netloc CommandProcessor_0_STAT_WriteEventTimestampOrders 1 14 4 NJ 1460 NJ 1460 N 1460 16890
+preplace netloc CommandProcessor_0_TEXSAMP_EndFrameReset 1 14 10 13940 -1440 NJ -1440 NJ -1440 NJ -1440 18210J -1550 NJ -1550 NJ -1550 NJ -1550 NJ -1550 21510J
+preplace netloc DepthInterpolator_0_STAT_CyclesSpentWorking 1 15 3 NJ -2070 15990 -2190 16700
+preplace netloc CommandProcessor_0_ROP_ClearSignal 1 14 12 13910 -1510 NJ -1510 NJ -1510 16620J -1520 18070J -1720 NJ -1720 19600J -1730 20680J -1750 NJ -1750 NJ -1750 NJ -1750 22720
+preplace netloc ScanOut_0_ScanoutReadRequestsFIFO 1 4 21 2370 -3360 NJ -3360 4540J -3350 5860J -3360 NJ -3360 NJ -3360 NJ -3360 NJ -3360 NJ -3360 NJ -3360 NJ -3360 NJ -3360 NJ -3360 NJ -3360 NJ -3360 N -3360 N -3360 N -3360 N -3360 N -3360 22340
+preplace netloc StatsWriteOrderNibblesFIFO_full 1 13 7 12650 3150 N 3150 N 3150 N 3150 N 3150 18300 1150 N
+preplace netloc TriSetupStateBlock_STAGE_NextDrawID 1 9 2 8590 -1270 9260
+preplace netloc ShaderCoreSystem_VERTBATCH_FIFO_rd_en 1 2 3 620 -2540 NJ -2540 1890
+levelinfo -pg 1 -410 -310 220 890 1600 2860 3800 5480 6760 7970 8980 9910 10460 11400 13190 14890 15770 16300 17670 18650 19320 20240 20890 21270 21910 22570 23090 23570 -top -3750 -bot 4030
+",
+}
+{
+   da_axi4_cnt: "1",
+   da_board_cnt: "1",
+}

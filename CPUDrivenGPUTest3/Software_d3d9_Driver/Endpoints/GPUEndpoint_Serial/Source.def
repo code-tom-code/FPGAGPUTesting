@@ -1,0 +1,5 @@
+LIBRARY GPUEndpoint_Serial
+EXPORTS
+
+; Functions exported by name go here:
+GetDLLInfo=GetDLLInfo @1

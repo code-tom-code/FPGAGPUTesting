@@ -296,59 +296,33 @@ begin
 	return '0';
 end function;
 
--- Return values of '1' indicate that this fragment *passed* the alpha test and should be drawn.
--- Return values of '0' indicate that the fragment *failed* the alpha test and that it should be discarded.
-pure function AlphaTest(fragmentAlpha : unsigned(7 downto 0); alphaTestRefVal : unsigned(7 downto 0); alphaTestFunc : eCmpFunc) return std_logic is
+-- Return values of 'true' indicate that this fragment *passed* the alpha test and should be drawn.
+-- Return values of 'false' indicate that the fragment *failed* the alpha test and that it should be discarded.
+pure function AlphaTest(fragmentAlpha : unsigned(7 downto 0); alphaTestRefVal : unsigned(7 downto 0); alphaTestFunc : eCmpFunc) return boolean is
+	variable lessTest : boolean;
+	variable equalTest : boolean;
 begin
+	-- We only need to perform two actual comparisons to be able to support the 8 possible comparison functions using combinations of just "less" and "equal":
+	lessTest := fragmentAlpha < alphaTestRefVal;
+	equalTest := fragmentAlpha = alphaTestRefVal;
+
 	case alphaTestFunc is
-		when cmp_never =>
-			return '0';
-
 		when cmp_less =>
-			if (fragmentAlpha < alphaTestRefVal) then
-				return '1';
-			else
-				return '0';
-			end if;
-
+			return lessTest;
 		when cmp_equal =>
-			if (fragmentAlpha = alphaTestRefVal) then
-				return '1';
-			else
-				return '0';
-			end if;
-
+			return equalTest;
 		when cmp_lessequal =>
-			if (fragmentAlpha <= alphaTestRefVal) then
-				return '1';
-			else
-				return '0';
-			end if;
-
+			return lessTest or equalTest;
 		when cmp_greater =>
-			if (fragmentAlpha > alphaTestRefVal) then
-				return '1';
-			else
-				return '0';
-			end if;
-
+			return not (lessTest or equalTest);
 		when cmp_notequal =>
-			if (fragmentAlpha /= alphaTestRefVal) then
-				return '1';
-			else
-				return '0';
-			end if;
-
+			return not equalTest;
 		when cmp_greaterequal =>
-			if (fragmentAlpha >= alphaTestRefVal) then
-				return '1';
-			else
-				return '0';
-			end if;
-
+			return not lessTest;
 		when cmp_always =>
-			return '1';
-
+			return true;
+		when others => -- when cmp_never =>
+			return false;
 	end case;
 end function;
 
@@ -944,7 +918,7 @@ DBG_CurrentCacheLineDirtyFlags <= std_logic_vector(ROPCache(to_integer(currently
 					end if;
 
 				when doAlphaTest =>
-					if (AlphaTest(incomingPixelRGBA(31 downto 24), currentAlphaTestState.alphaTestRefVal, currentAlphaTestState.alphaTestFunc) = '1') then
+					if (AlphaTest(incomingPixelRGBA(31 downto 24), currentAlphaTestState.alphaTestRefVal, currentAlphaTestState.alphaTestFunc) ) then
 						currentState <= calcPixelAddress; -- We passed the alpha test, continue drawing this pixel!
 					else
 						currentState <= waitingForPixelData; -- We failed the alpha test, discard this pixel!

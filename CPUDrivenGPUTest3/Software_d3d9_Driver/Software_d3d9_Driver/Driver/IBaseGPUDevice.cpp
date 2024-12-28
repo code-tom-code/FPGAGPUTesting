@@ -654,7 +654,10 @@ HRESULT __stdcall IBaseGPUDevice::DeviceSetROPState(gpuvoid* const renderTargetM
 
 static inline const unsigned GetLog2ExactFloat(const float f)
 {
-	const unsigned ret = (const unsigned)log2f(f);
+	const unsigned uf = *(const unsigned* const)&f;
+	const unsigned biasedExponent = (uf & 0x7FFFFFFF) >> 23;
+	const int signedExponent = biasedExponent - 127;
+	const unsigned ret = (const unsigned)signedExponent;
 #ifdef _DEBUG
 	if ( (1 << ret) != f)
 	{

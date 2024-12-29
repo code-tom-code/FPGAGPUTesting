@@ -10,7 +10,7 @@ The Ethernet Controller handles the lower level layers of network packet process
 
 ### Command Processor (CMD)
 
-The Command Processor is the brain of the GPU. It runs in one of two modes - either in "single packet" mode processing one packet at a time from the [Packet Processor](#Packet-Processor-PKT), or in "command list" mode executing a command list out of DRAM. The Command Processor is also responsible for managing every other GPU system through state-setting commands (via [State Blocks](State-Blocks-STATE) ), draw commands, and barriers. The Command Processor additionally monitors the GPU systems for "idle" signals and can wait for one or more of these idle signals before proceeding.
+The Command Processor is the brain of the GPU. It runs in one of two modes - either in "single packet" mode processing one packet at a time from the [Packet Processor](#Packet-Processor-PKT), or in "command list" mode executing a command list out of DRAM. The Command Processor is also responsible for managing every other GPU system through state-setting commands (via [State Blocks](#State-Blocks-STATE) ), draw commands, and barriers. The Command Processor additionally monitors the GPU systems for "idle" signals and can wait for one or more of these idle signals before proceeding.
 
 ### State Blocks (STATE)
 

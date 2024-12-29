@@ -7,6 +7,7 @@
 #include "DeviceState.h"
 #include <vector>
 #include <map>
+#include <list>
 #include <intrin.h>
 #include "Driver/IBaseDeviceComms.h"
 #include "Driver/IBaseGPUDevice.h"
@@ -1087,18 +1088,18 @@ public:
 
 	// void StoreVertexOutputElement(const DebuggableD3DVERTEXELEMENT9& element, unsigned char* const outputPtr, const D3DDECLUSAGE usage, const unsigned usageIndex) const;
 
-	static const int FindExistingVertDataBuffer(const deviceAllocatedBuffer& newBuffer, const std::vector<deviceAllocatedBuffer>& cachedDeviceBuffers);
-	static const int FindExistingCommandList(const GPUCommandList* const newCommandList, const unsigned __int64 newCommandListHash, const std::vector<GPUCommandList*>& cachedCommandLists);
+	static const std::list<deviceAllocatedBuffer>::iterator FindExistingVertDataBuffer(const deviceAllocatedBuffer& newBuffer, std::list<deviceAllocatedBuffer>& cachedDeviceBuffers, bool& foundExistingBuffer);
+	static const std::list<GPUCommandList*>::iterator FindExistingCommandList(const GPUCommandList* const newCommandList, const unsigned __int64 newCommandListHash, std::list<GPUCommandList*>& cachedCommandLists, bool& foundExisting);
 
 	// Returns true if this is a fresh allocation, or false if it is a reused identically matching buffer
-	const bool CreateOrUseCachedVertDataBuffer(deviceAllocatedBuffer& newBuffer, std::vector<deviceAllocatedBuffer>& cachedDeviceBuffers
+	const bool CreateOrUseCachedVertDataBuffer(deviceAllocatedBuffer& newBuffer, std::list<deviceAllocatedBuffer>& cachedDeviceBuffers
 #ifdef _DEBUG
 		, const char* const debugAllocString
 #endif
 	);
 
 	// Returns true if this is a fresh allocation, or false if it is a reused identically matching buffer
-	const bool CreateOrUseCachedCommandList(GPUCommandList*& newCommandList, std::vector<GPUCommandList*>& cachedDeviceCommandLists, std::vector<GPUCommandList*>& resetCommandLists);
+	const bool CreateOrUseCachedCommandList(GPUCommandList*& newCommandList, std::list<GPUCommandList*>& cachedDeviceCommandLists, std::vector<GPUCommandList*>& resetCommandLists);
 
 	GPUCommandList* const GetNewCommandList();
 
@@ -1783,13 +1784,13 @@ protected:
 
 	std::vector<RecordedDrawCallStat> eventRecordedDrawCalls;
 
-	std::vector<deviceAllocatedBuffer> cachedVertexPositionBuffers;
-	std::vector<deviceAllocatedBuffer> cachedVertexInvZBuffers;
-	std::vector<deviceAllocatedBuffer> cachedVertexTexcoordBuffers;
-	std::vector<deviceAllocatedBuffer> cachedVertexColorBuffers;
-	std::vector<deviceAllocatedBuffer> cachedIndexBuffers;
-	std::vector<deviceAllocatedBuffer> cachedConstantBuffers;
-	std::vector<GPUCommandList*> cachedCommandLists;
+	std::list<deviceAllocatedBuffer> cachedVertexPositionBuffers;
+	std::list<deviceAllocatedBuffer> cachedVertexInvZBuffers;
+	std::list<deviceAllocatedBuffer> cachedVertexTexcoordBuffers;
+	std::list<deviceAllocatedBuffer> cachedVertexColorBuffers;
+	std::list<deviceAllocatedBuffer> cachedIndexBuffers;
+	std::list<deviceAllocatedBuffer> cachedConstantBuffers;
+	std::list<GPUCommandList*> cachedCommandLists;
 	std::vector<GPUCommandList*> resetCommandListsPool;
 };
 

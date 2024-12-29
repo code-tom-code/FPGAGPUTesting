@@ -4594,21 +4594,24 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawPrimiti
 	return ret;
 }
 
-/*static*/ const int IDirect3DDevice9Hook::FindExistingVertDataBuffer(const deviceAllocatedBuffer& newBuffer, const std::vector<deviceAllocatedBuffer>& cachedDeviceBuffers)
-{
-	const int numExistingBuffers = cachedDeviceBuffers.size();
-	
-	// Walk the array backwards since our most recently-accessed elements start at the end and they are most likely to be used!
-	for (int x = numExistingBuffers - 1; x >= 0; --x)
+/*static*/ const std::list<deviceAllocatedBuffer>::iterator IDirect3DDevice9Hook::FindExistingVertDataBuffer(const deviceAllocatedBuffer& newBuffer, std::list<deviceAllocatedBuffer>& cachedDeviceBuffers, bool& foundExistingBuffer)
+{	
+	// Walk the list backwards since our most recently-accessed elements start at the end and they are most likely to be used!
+	for (std::list<deviceAllocatedBuffer>::iterator it = cachedDeviceBuffers.end(); it != cachedDeviceBuffers.begin(); )
 	{
-		if (newBuffer == cachedDeviceBuffers[x])
-			return x;
+		--it;
+		if (newBuffer == *it)
+		{
+			foundExistingBuffer = true;
+			return it;
+		}
 	}
-	return -1;
+	foundExistingBuffer = false;
+	return cachedDeviceBuffers.end();
 }
 
 // Returns true if this is a fresh allocation, or false if it is a reused identically matching buffer
-const bool IDirect3DDevice9Hook::CreateOrUseCachedVertDataBuffer(deviceAllocatedBuffer& newBuffer, std::vector<deviceAllocatedBuffer>& cachedDeviceBuffers
+const bool IDirect3DDevice9Hook::CreateOrUseCachedVertDataBuffer(deviceAllocatedBuffer& newBuffer, std::list<deviceAllocatedBuffer>& cachedDeviceBuffers
 #ifdef _DEBUG
 	, const char* const debugAllocString
 #endif
@@ -4622,12 +4625,13 @@ const bool IDirect3DDevice9Hook::CreateOrUseCachedVertDataBuffer(deviceAllocated
 		return true;
 	}
 
-	const int foundIndex = FindExistingVertDataBuffer(newBuffer, cachedDeviceBuffers);
-	if (foundIndex >= 0)
+	bool foundCachedBuffer = false;
+	const std::list<deviceAllocatedBuffer>::iterator foundIter = FindExistingVertDataBuffer(newBuffer, cachedDeviceBuffers, foundCachedBuffer);
+	if (foundCachedBuffer)
 	{
-		newBuffer = cachedDeviceBuffers[foundIndex];
-		cachedDeviceBuffers.erase(cachedDeviceBuffers.begin() + foundIndex);
-		cachedDeviceBuffers.insert(cachedDeviceBuffers.end(), newBuffer); // Move our found element to the end of the vector so we know that it's the most recently used element
+		newBuffer = *foundIter;
+		cachedDeviceBuffers.erase(foundIter);
+		cachedDeviceBuffers.insert(cachedDeviceBuffers.end(), newBuffer); // Move our found element to the end of the list so we know that it's the most recently used element
 		return false;
 	}
 
@@ -4666,19 +4670,22 @@ const bool IDirect3DDevice9Hook::CreateOrUseCachedVertDataBuffer(deviceAllocated
 	return true;
 }
 
-/*static*/ const int IDirect3DDevice9Hook::FindExistingCommandList(const GPUCommandList* const newCommandList, const unsigned __int64 newCommandListHash, const std::vector<GPUCommandList*>& cachedCommandLists)
-{
-	const int numExistingBuffers = cachedCommandLists.size();
-	
-	// Walk the array backwards since our most recently-accessed elements start at the end and they are most likely to be used!
-	for (int x = numExistingBuffers - 1; x >= 0; --x)
+/*static*/ const std::list<GPUCommandList*>::iterator IDirect3DDevice9Hook::FindExistingCommandList(const GPUCommandList* const newCommandList, const unsigned __int64 newCommandListHash, std::list<GPUCommandList*>& cachedCommandLists, bool& foundExisting)
+{	
+	// Walk the list backwards since our most recently-accessed elements start at the end and they are most likely to be used!
+	for (std::list<GPUCommandList*>::iterator it = cachedCommandLists.end(); it != cachedCommandLists.begin();)
 	{
-		const GPUCommandList* const compareCommandList = cachedCommandLists[x];
+		--it;
+		const GPUCommandList* const compareCommandList = *it;
 		if (newCommandListHash == compareCommandList->commandsHash &&
 			newCommandList->commands.size() == compareCommandList->commands.size() )
-			return x;
+		{
+			foundExisting = true;
+			return it;
+		}
 	}
-	return -1;
+	foundExisting = false;
+	return cachedCommandLists.end();
 }
 
 GPUCommandList* const IDirect3DDevice9Hook::GetNewCommandList()
@@ -4695,19 +4702,20 @@ GPUCommandList* const IDirect3DDevice9Hook::GetNewCommandList()
 }
 
 // Returns true if this is a fresh allocation, or false if it is a reused identically matching buffer
-const bool IDirect3DDevice9Hook::CreateOrUseCachedCommandList(GPUCommandList*& newCommandList, std::vector<GPUCommandList*>& cachedDeviceCommandLists, std::vector<GPUCommandList*>& resetCommandLists)
+const bool IDirect3DDevice9Hook::CreateOrUseCachedCommandList(GPUCommandList*& newCommandList, std::list<GPUCommandList*>& cachedDeviceCommandLists, std::vector<GPUCommandList*>& resetCommandLists)
 {
 	const unsigned __int64 recordingListHash = newCommandList->ComputeCommandsHash();
-	const int foundIndex = FindExistingCommandList(newCommandList, recordingListHash, cachedDeviceCommandLists);
-	if (foundIndex >= 0)
+	bool foundExisting = false;
+	const std::list<GPUCommandList*>::iterator foundIndex = FindExistingCommandList(newCommandList, recordingListHash, cachedDeviceCommandLists, foundExisting);
+	if (foundExisting)
 	{
 		// Reset & reuse our command list in the pool:
 		newCommandList->ResetCommandListForPooling();
 		resetCommandLists.push_back(newCommandList);
 
-		newCommandList = cachedDeviceCommandLists[foundIndex];
-		cachedDeviceCommandLists.erase(cachedDeviceCommandLists.begin() + foundIndex);
-		cachedDeviceCommandLists.insert(cachedDeviceCommandLists.end(), newCommandList); // Move our found element to the end of the vector so we know that it's the most recently used element
+		newCommandList = *foundIndex;
+		cachedDeviceCommandLists.erase(foundIndex);
+		cachedDeviceCommandLists.insert(cachedDeviceCommandLists.end(), newCommandList); // Move our found element to the end of the list so we know that it's the most recently used element
 
 		baseDevice->TerminateAbortRecordingCommandList();
 

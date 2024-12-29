@@ -1,12 +1,20 @@
-# CPUDrivenGPUTest2 Hardware
+# CPUDrivenGPUTest3 Hardware
 
-### Packet Processor (PKT)
+### Network Protocol Packet Processor (NETPKT)
 
-The Packet Processor is responsible for communicating with the 1Mbit/s serial UART and reading packets off the wire, as well as sending return packets back out to the CPU. It also validates the packets (magic header byte + packet checksum validation) and discards invalid packets. Due to having to interface with the serial UART, the Packet Processor unit runs on a different clock domain (250.0MHz) than the rest of the GPU.
+The network protocol packet processor is responsible for managing the custom reliable UDP network session protocol. It runs the session state machine and handles packet ACK's and resends, and unpacks packets from packet batches to be delivered to the FIFO of incoming commands for the [Command Processor](#Command-Processor-CMD) to consume.
+
+### Ethernet Controller (ETH)
+
+The Ethernet Controller handles the lower level layers of network packet processing. It automatically computes Ethernet CRC32's, IPv4 checksums, and UDP checksums and will also discard packets that are not addressed to the local MAC or IPv4 address. It will also drop UDP packets that do not begin with the proper magic header byte. It also automatically handles ARP announcements and handles ARP request replies.
 
 ### Command Processor (CMD)
 
-The Command Processor is the brain of the GPU. It runs in one of two modes - either in "single packet" mode processing one packet at a time from the [Packet Processor](#Packet-Processor-PKT), or in "command list" mode executing a command list out of DRAM. The Command Processor is also responsible for managing every other GPU system through state-setting commands, draw commands, and barriers. The Command Processor additionally monitors the GPU systems for "idle" signals and can wait for one or more of these idle signals before proceeding.
+The Command Processor is the brain of the GPU. It runs in one of two modes - either in "single packet" mode processing one packet at a time from the [Packet Processor](#Packet-Processor-PKT), or in "command list" mode executing a command list out of DRAM. The Command Processor is also responsible for managing every other GPU system through state-setting commands (via [State Blocks](State-Blocks-STATE) ), draw commands, and barriers. The Command Processor additionally monitors the GPU systems for "idle" signals and can wait for one or more of these idle signals before proceeding.
+
+### State Blocks (STATE)
+
+State Blocks store a small, system-specific amount of GPU state that is versioned with a draw call ID so that the different parts of the GPU pipeline can all operate efficiently in parallel. The [Command Processor](#Command-Processor-CMD) is responsible for programming the State Block for each system that needs to have its GPU state change at runtime.
 
 ### Memory Controller (MEM)
 

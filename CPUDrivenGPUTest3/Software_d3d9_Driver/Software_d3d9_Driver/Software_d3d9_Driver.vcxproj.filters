@@ -427,6 +427,15 @@
     <ClInclude Include="Driver\NetSession\NetSession.h">
       <Filter>Header Files\Driver\NetSession</Filter>
     </ClInclude>
+    <ClInclude Include="LRU_GPUCommandListCache.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LRU_VertDataBufferCache.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Driver\DeviceAllocatedBuffer.h">
+      <Filter>Header Files\Driver</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="FixedFuncEmu\FFVS\Source\FixedFunctionVertexShader.hlsl">

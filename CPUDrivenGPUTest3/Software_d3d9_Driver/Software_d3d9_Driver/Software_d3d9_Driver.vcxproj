@@ -255,6 +255,7 @@
     <ClInclude Include="DebuggableEnums.h" />
     <ClInclude Include="DeviceState.h" />
     <ClInclude Include="DitherTables.h" />
+    <ClInclude Include="Driver\DeviceAllocatedBuffer.h" />
     <ClInclude Include="Driver\DeviceConversions.h" />
     <ClInclude Include="Driver\DriverSettingsDlg.h" />
     <ClInclude Include="Driver\GPUAllocator.h" />
@@ -293,6 +294,8 @@
     <ClInclude Include="IDirect3DVertexShader9Hook.h" />
     <ClInclude Include="IDirect3DVolume9Hook.h" />
     <ClInclude Include="IDirect3DVolumeTexture9Hook.h" />
+    <ClInclude Include="LRU_GPUCommandListCache.h" />
+    <ClInclude Include="LRU_VertDataBufferCache.h" />
     <ClInclude Include="Overlay\DebugOverlay.h" />
     <ClInclude Include="PShaderEngine.h" />
     <ClInclude Include="resource.h" />

@@ -4594,24 +4594,8 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawPrimiti
 	return ret;
 }
 
-/*static*/ const std::list<deviceAllocatedBuffer>::iterator IDirect3DDevice9Hook::FindExistingVertDataBuffer(const deviceAllocatedBuffer& newBuffer, std::list<deviceAllocatedBuffer>& cachedDeviceBuffers, bool& foundExistingBuffer)
-{	
-	// Walk the list backwards since our most recently-accessed elements start at the end and they are most likely to be used!
-	for (std::list<deviceAllocatedBuffer>::iterator it = cachedDeviceBuffers.end(); it != cachedDeviceBuffers.begin(); )
-	{
-		--it;
-		if (newBuffer == *it)
-		{
-			foundExistingBuffer = true;
-			return it;
-		}
-	}
-	foundExistingBuffer = false;
-	return cachedDeviceBuffers.end();
-}
-
 // Returns true if this is a fresh allocation, or false if it is a reused identically matching buffer
-const bool IDirect3DDevice9Hook::CreateOrUseCachedVertDataBuffer(deviceAllocatedBuffer& newBuffer, std::list<deviceAllocatedBuffer>& cachedDeviceBuffers
+const bool IDirect3DDevice9Hook::CreateOrUseCachedVertDataBuffer(DeviceAllocatedBuffer& newBuffer, LRU_VertDataBufferCache& cachedDeviceBuffers
 #ifdef _DEBUG
 	, const char* const debugAllocString
 #endif
@@ -4625,21 +4609,17 @@ const bool IDirect3DDevice9Hook::CreateOrUseCachedVertDataBuffer(deviceAllocated
 		return true;
 	}
 
-	bool foundCachedBuffer = false;
-	const std::list<deviceAllocatedBuffer>::iterator foundIter = FindExistingVertDataBuffer(newBuffer, cachedDeviceBuffers, foundCachedBuffer);
-	if (foundCachedBuffer)
+	DeviceAllocatedBuffer foundExistingBuffer;
+	if (cachedDeviceBuffers.FindExistingItem(newBuffer.GetCacheHash(), foundExistingBuffer) )
 	{
-		newBuffer = *foundIter;
-		cachedDeviceBuffers.erase(foundIter);
-		cachedDeviceBuffers.insert(cachedDeviceBuffers.end(), newBuffer); // Move our found element to the end of the list so we know that it's the most recently used element
+		newBuffer = foundExistingBuffer;
 		return false;
 	}
 
-	if (cachedDeviceBuffers.size() >= 1024)
+	if (cachedDeviceBuffers.GetSize() >= 1024)
 	{
-		deviceAllocatedBuffer& deleteOldestBuffer = cachedDeviceBuffers.front();
+		const DeviceAllocatedBuffer deleteOldestBuffer = cachedDeviceBuffers.PurgeLRUItem();
 		GPUFree(deleteOldestBuffer.deviceMemory); // Delete our buffer from the GPU device
-		cachedDeviceBuffers.erase(cachedDeviceBuffers.begin() ); // Delete our buffer from the cache
 	}
 
 	allocationUsage deviceAllocationUsage = GPUVAT_Unknown;
@@ -4666,26 +4646,9 @@ const bool IDirect3DDevice9Hook::CreateOrUseCachedVertDataBuffer(deviceAllocated
 		, debugAllocString
 #endif
 	);
-	cachedDeviceBuffers.push_back(newBuffer);
-	return true;
-}
 
-/*static*/ const std::list<GPUCommandList*>::iterator IDirect3DDevice9Hook::FindExistingCommandList(const GPUCommandList* const newCommandList, const unsigned __int64 newCommandListHash, std::list<GPUCommandList*>& cachedCommandLists, bool& foundExisting)
-{	
-	// Walk the list backwards since our most recently-accessed elements start at the end and they are most likely to be used!
-	for (std::list<GPUCommandList*>::iterator it = cachedCommandLists.end(); it != cachedCommandLists.begin();)
-	{
-		--it;
-		const GPUCommandList* const compareCommandList = *it;
-		if (newCommandListHash == compareCommandList->commandsHash &&
-			newCommandList->commands.size() == compareCommandList->commands.size() )
-		{
-			foundExisting = true;
-			return it;
-		}
-	}
-	foundExisting = false;
-	return cachedCommandLists.end();
+	cachedDeviceBuffers.InsertNewItem(newBuffer);
+	return true;
 }
 
 GPUCommandList* const IDirect3DDevice9Hook::GetNewCommandList()
@@ -4702,31 +4665,28 @@ GPUCommandList* const IDirect3DDevice9Hook::GetNewCommandList()
 }
 
 // Returns true if this is a fresh allocation, or false if it is a reused identically matching buffer
-const bool IDirect3DDevice9Hook::CreateOrUseCachedCommandList(GPUCommandList*& newCommandList, std::list<GPUCommandList*>& cachedDeviceCommandLists, std::vector<GPUCommandList*>& resetCommandLists)
+const bool IDirect3DDevice9Hook::CreateOrUseCachedCommandList(GPUCommandList*& newCommandList, LRU_GPUCommandListCache& cachedDeviceCommandLists, std::vector<GPUCommandList*>& resetCommandLists)
 {
 	const unsigned __int64 recordingListHash = newCommandList->ComputeCommandsHash();
+	const unsigned recordingListSize = newCommandList->GetCommandListCommandCount();
 	bool foundExisting = false;
-	const std::list<GPUCommandList*>::iterator foundIndex = FindExistingCommandList(newCommandList, recordingListHash, cachedDeviceCommandLists, foundExisting);
-	if (foundExisting)
+	GPUCommandList* foundExistingCommandList = NULL;
+	if (cachedDeviceCommandLists.FindExistingItem(recordingListHash, recordingListSize, foundExistingCommandList) )
 	{
 		// Reset & reuse our command list in the pool:
 		newCommandList->ResetCommandListForPooling();
 		resetCommandLists.push_back(newCommandList);
 
-		newCommandList = *foundIndex;
-		cachedDeviceCommandLists.erase(foundIndex);
-		cachedDeviceCommandLists.insert(cachedDeviceCommandLists.end(), newCommandList); // Move our found element to the end of the list so we know that it's the most recently used element
+		newCommandList = foundExistingCommandList;
 
 		baseDevice->TerminateAbortRecordingCommandList();
-
 		return false;
 	}
 
-	if (cachedDeviceCommandLists.size() >= 2048)
+	if (cachedDeviceCommandLists.GetSize() >= 2048)
 	{
-		GPUCommandList* const deleteOldestBuffer = cachedDeviceCommandLists.front();
+		GPUCommandList* const deleteOldestBuffer = cachedDeviceCommandLists.PurgeLRUItem();
 		GPUFree(deleteOldestBuffer->gpuAllocatedAddress); // Delete our buffer from the GPU device
-		cachedDeviceCommandLists.erase(cachedDeviceCommandLists.begin() ); // Delete our buffer from the cache
 		deleteOldestBuffer->ResetCommandListForPooling();
 		resetCommandLists.push_back(deleteOldestBuffer);
 	}
@@ -4734,7 +4694,7 @@ const bool IDirect3DDevice9Hook::CreateOrUseCachedCommandList(GPUCommandList*& n
 	newCommandList->commandsHash = recordingListHash;
 
 	baseDevice->CompleteRecordingCommandList();
-	cachedDeviceCommandLists.push_back(newCommandList);
+	cachedDeviceCommandLists.InsertNewItem(newCommandList, recordingListHash, recordingListSize);
 	return true;
 }
 
@@ -5202,6 +5162,7 @@ void IDirect3DDevice9Hook::DeviceSetUsedVertexShaderConstants()
 		else
 			targetDeviceState = &currentState;
 		std::vector<float4> constRegisterData;
+		constRegisterData.reserve(numUsedConstFRegisters + (deviceShaderInfo->deviceShaderInfo.vsViewportTransformConstRegisterF >= 0 ? 1 : 0) );
 
 		std::vector<constantRegisterRange> registerRanges;
 		bool isInRange = false;
@@ -5256,10 +5217,10 @@ void IDirect3DDevice9Hook::DeviceSetUsedVertexShaderConstants()
 		}
 	#endif
 
-		deviceAllocatedBuffer constantBufferAllocation;
+		DeviceAllocatedBuffer constantBufferAllocation;
 		constantBufferAllocation.deviceSizeBytes = (const unsigned short)( (constRegisterData.size() + numPaddingFloat4s) * sizeof(float4) );
 		constantBufferAllocation.format = GPUFMT_ConstFBufferData;
-		constantBufferAllocation.bufferHash = deviceAllocatedBuffer::ComputeHash(&constRegisterData.front(), (const unsigned short)(constRegisterData.size() * sizeof(float4) ) );
+		constantBufferAllocation.bufferHash = DeviceAllocatedBuffer::ComputeHash(&constRegisterData.front(), (const unsigned short)(constRegisterData.size() * sizeof(float4) ) );
 
 		if (CreateOrUseCachedVertDataBuffer(constantBufferAllocation, cachedConstantBuffers
 	#ifdef _DEBUG
@@ -5321,10 +5282,10 @@ void IDirect3DDevice9Hook::DeviceSetUsedVertexShaderConstants()
 		}
 		else
 		{
-			deviceAllocatedBuffer shaderDEFConstantAllocation;
+			DeviceAllocatedBuffer shaderDEFConstantAllocation;
 			shaderDEFConstantAllocation.deviceSizeBytes = sizeof(float4);
 			shaderDEFConstantAllocation.format = GPUFMT_ConstFBufferData;
-			shaderDEFConstantAllocation.bufferHash = deviceAllocatedBuffer::ComputeHash(&(thisInitialConst.initialValue), shaderDEFConstantAllocation.deviceSizeBytes);
+			shaderDEFConstantAllocation.bufferHash = DeviceAllocatedBuffer::ComputeHash(&(thisInitialConst.initialValue), shaderDEFConstantAllocation.deviceSizeBytes);
 
 			if (CreateOrUseCachedVertDataBuffer(shaderDEFConstantAllocation, cachedConstantBuffers
 		#ifdef _DEBUG

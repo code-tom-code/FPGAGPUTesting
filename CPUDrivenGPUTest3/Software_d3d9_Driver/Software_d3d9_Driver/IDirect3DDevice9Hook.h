@@ -14,6 +14,8 @@
 #include "Driver/GPUStats.h"
 #include "Driver/DriverSettingsDlg.h"
 #include "Driver/GPUMemoryMapDlg.h"
+#include "LRU_GPUCommandListCache.h"
+#include "LRU_VertDataBufferCache.h"
 
 #include "SimpleInstrumentedProfiler.h"
 
@@ -158,60 +160,6 @@ struct StreamDataTypeEndPointers
 	const void* dataTypeStreamEnds[MAXD3DDECLTYPE];
 	const BYTE* streamEndAbsolute;
 	bool dirty; // The dirty bit can be set either by calling SetStreamSource() on this stream, or by calling SetVertexDeclarataion() with a new decl (or calling SetFVF() with a new FVF, although SetFVF internally calls SetVertexDeclaration)
-};
-
-struct deviceAllocatedBuffer
-{
-	unsigned __int64 bufferHash = 0;
-	gpuvoid* deviceMemory = nullptr;
-	unsigned short deviceSizeBytes = 0;
-	gpuFormat format = GPUFMT_Unknown;
-
-	static const unsigned __int64 ComputeHash(const void* const bufferMemory, const unsigned short sizeBytes)
-	{
-		unsigned __int64 ret = 0;
-
-		const unsigned numDWORDs = sizeBytes / sizeof(DWORD);
-		const DWORD* const dwordMemory = (const DWORD* const)bufferMemory;
-		for (unsigned x = 0; x < numDWORDs; ++x)
-		{
-			ret ^= dwordMemory[x];
-			ret = _rotl64(ret, 32 - 3);
-		}
-
-		if (sizeBytes % sizeof(DWORD) != 0)
-		{
-			const unsigned numUSHORTs = sizeBytes / sizeof(USHORT);
-			const USHORT* const ushortMemory = (const USHORT* const)bufferMemory;
-			ret ^= ushortMemory[numUSHORTs - 1];
-			ret = _rotl64(ret, 16 - 3);
-		}
-
-		return ret;
-	}
-
-	// Note that this does *not* check the address for equality!
-	inline const bool operator==(const deviceAllocatedBuffer& rhs) const
-	{
-		return (format == rhs.format && deviceSizeBytes == rhs.deviceSizeBytes && bufferHash == rhs.bufferHash);
-	}
-
-	inline const bool operator<(const deviceAllocatedBuffer& rhs) const
-	{
-		if (format != rhs.format)
-			return format < rhs.format;
-
-		if (deviceSizeBytes != rhs.deviceSizeBytes)
-			return deviceSizeBytes < rhs.deviceSizeBytes;
-
-		if (bufferHash != rhs.bufferHash)
-			return bufferHash < rhs.bufferHash;
-
-		if (deviceMemory != rhs.deviceMemory)
-			return deviceMemory < rhs.deviceMemory;
-
-		return false;
-	}
 };
 
 struct TexturePaletteEntry
@@ -1088,18 +1036,15 @@ public:
 
 	// void StoreVertexOutputElement(const DebuggableD3DVERTEXELEMENT9& element, unsigned char* const outputPtr, const D3DDECLUSAGE usage, const unsigned usageIndex) const;
 
-	static const std::list<deviceAllocatedBuffer>::iterator FindExistingVertDataBuffer(const deviceAllocatedBuffer& newBuffer, std::list<deviceAllocatedBuffer>& cachedDeviceBuffers, bool& foundExistingBuffer);
-	static const std::list<GPUCommandList*>::iterator FindExistingCommandList(const GPUCommandList* const newCommandList, const unsigned __int64 newCommandListHash, std::list<GPUCommandList*>& cachedCommandLists, bool& foundExisting);
-
 	// Returns true if this is a fresh allocation, or false if it is a reused identically matching buffer
-	const bool CreateOrUseCachedVertDataBuffer(deviceAllocatedBuffer& newBuffer, std::list<deviceAllocatedBuffer>& cachedDeviceBuffers
+	const bool CreateOrUseCachedVertDataBuffer(DeviceAllocatedBuffer& newBuffer, LRU_VertDataBufferCache& cachedDeviceBuffers
 #ifdef _DEBUG
 		, const char* const debugAllocString
 #endif
 	);
 
 	// Returns true if this is a fresh allocation, or false if it is a reused identically matching buffer
-	const bool CreateOrUseCachedCommandList(GPUCommandList*& newCommandList, std::list<GPUCommandList*>& cachedDeviceCommandLists, std::vector<GPUCommandList*>& resetCommandLists);
+	const bool CreateOrUseCachedCommandList(GPUCommandList*& newCommandList, LRU_GPUCommandListCache& cachedDeviceCommandLists, std::vector<GPUCommandList*>& resetCommandLists);
 
 	GPUCommandList* const GetNewCommandList();
 
@@ -1784,13 +1729,8 @@ protected:
 
 	std::vector<RecordedDrawCallStat> eventRecordedDrawCalls;
 
-	std::list<deviceAllocatedBuffer> cachedVertexPositionBuffers;
-	std::list<deviceAllocatedBuffer> cachedVertexInvZBuffers;
-	std::list<deviceAllocatedBuffer> cachedVertexTexcoordBuffers;
-	std::list<deviceAllocatedBuffer> cachedVertexColorBuffers;
-	std::list<deviceAllocatedBuffer> cachedIndexBuffers;
-	std::list<deviceAllocatedBuffer> cachedConstantBuffers;
-	std::list<GPUCommandList*> cachedCommandLists;
+	LRU_VertDataBufferCache cachedConstantBuffers;
+	LRU_GPUCommandListCache cachedCommandLists;
 	std::vector<GPUCommandList*> resetCommandListsPool;
 };
 

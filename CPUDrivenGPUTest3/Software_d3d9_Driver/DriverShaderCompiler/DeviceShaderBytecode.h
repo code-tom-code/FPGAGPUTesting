@@ -246,6 +246,8 @@ static const char* const InstructionOpToString(const InstructionOperation op)
 		return "frc";
 	case Op_EXPP:
 		return "expp";
+	case Op_LOGP:
+		return "logp";
 	case Op_RSQ:
 		return "rsq";
 	case Op_SLT:

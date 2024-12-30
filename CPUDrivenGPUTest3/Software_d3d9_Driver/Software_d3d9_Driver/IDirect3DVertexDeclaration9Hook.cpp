@@ -15,13 +15,16 @@ static inline const bool operator!=(const DebuggableD3DVERTEXELEMENT9& lhs, cons
 
 IDirect3DVertexDeclaration9Hook::~IDirect3DVertexDeclaration9Hook()
 {
+	if (devicePassthroughVS)
+	{
+		devicePassthroughVS->Release();
+		devicePassthroughVS = NULL;
+	}
+
 	// TODO: Remove this vertex decl from the FVFToVertDeclCache when it gets fully released
 #ifdef WIPE_ON_DESTRUCT_D3DHOOKOBJECT
 	memset(this, 0x00000000, sizeof(*this) - (sizeof(elements) + sizeof(vertShaderOutputElements) ) );
 #endif
-
-	devicePassthroughVS->Release();
-	devicePassthroughVS = NULL;
 }
 
 void IDirect3DVertexDeclaration9Hook::CreateVertexDeclaration(const DebuggableD3DVERTEXELEMENT9* const pVertexElements, const debuggableFVF _vertDeclAutoCreatedFromFVF)

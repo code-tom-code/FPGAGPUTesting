@@ -34,10 +34,17 @@ const bool InitRecording()
 		}
 	}
 
+	char exeFilepath[MAX_PATH] = {0};
+	GetModuleFileNameA(NULL, exeFilepath, ARRAYSIZE(exeFilepath) - 1);
+
+	char exeFilename[MAX_PATH] = {0};
+	_splitpath_s(exeFilepath, NULL, 0, NULL, 0, exeFilename, ARRAYSIZE(exeFilename) - 1, NULL, 0);
+
 	char recordingFilepath[MAX_PATH] = {0};
 #pragma warning(push)
 #pragma warning(disable:4996)
-	sprintf(recordingFilepath, "%s\\CommandStreamRecord_%i-%02i-%02i_%02i-%02i-%02i.rsd", RecordingDirectoryBase, 
+	sprintf(recordingFilepath, "%s\\%s_%i-%02i-%02i_%02i-%02i-%02i.rsd", RecordingDirectoryBase, 
+		exeFilename,
 		timeStruct.tm_year + 1900, // Year
 		timeStruct.tm_mon + 1, // Month
 		timeStruct.tm_mday, // Day
@@ -48,7 +55,12 @@ const bool InitRecording()
 #pragma warning(pop)
 	hRecordingFile = CreateFileA(recordingFilepath, GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (hRecordingFile == INVALID_HANDLE_VALUE)
+	{
+#ifdef _DEBUG
+		__debugbreak();
+#endif
 		return false;
+	}
 
 	return true;
 }

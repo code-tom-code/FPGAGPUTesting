@@ -70,6 +70,9 @@ bool __stdcall InitEndpointImpl(const ReturnMessageSignature D2HReplyCallback)
 	if (!InitRecording() )
 	{
 		// Oh no, we failed to init recording for some reason!
+#ifdef _DEBUG
+		__debugbreak();
+#endif
 		return false;
 	}
 

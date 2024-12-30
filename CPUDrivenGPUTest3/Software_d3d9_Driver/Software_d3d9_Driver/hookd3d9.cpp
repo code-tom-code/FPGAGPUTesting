@@ -464,7 +464,7 @@ extern "C" HRESULT WINAPI HookDirect3DCreate9Ex(_In_ UINT SDKVersion, _Out_ IDir
 	// Pre-hook code
 	HRESULT ret = (*Real_Direct3DCreate9Ex)(SDKVersion, ppD3D);
 	// Post-hook code
-	//MessageBoxA(NULL, "Direct3DCreate9Ex", NULL, NULL);
+	MessageBoxA(NULL, "Direct3DCreate9Ex called. Driver will not be run.", "Direct3DCreate9Ex", NULL);
 	return ret;
 }
 

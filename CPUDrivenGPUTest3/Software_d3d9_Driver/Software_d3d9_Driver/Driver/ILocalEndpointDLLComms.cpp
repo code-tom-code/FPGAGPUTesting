@@ -94,6 +94,9 @@ ILocalEndpointDLLComms::ILocalEndpointDLLComms(const char* const endpointDLL) : 
 	if (!(*endpointInfo.H2DFunctions.InitEndpoint)(&ReturnMessageHandlerFunc) )
 	{
 		printf("Error in InitEndpoint(). Endpoint \"%s\" failed to init!\n", endpointInfo.endpointName);
+#ifdef _DEBUG
+		__debugbreak();
+#endif
 		FreeLibrary(endpointLoadedDLL);
 		return;
 	}

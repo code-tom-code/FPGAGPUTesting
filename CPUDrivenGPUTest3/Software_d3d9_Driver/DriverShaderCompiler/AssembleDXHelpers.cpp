@@ -215,7 +215,7 @@ const unsigned GetInstructionDWORDCount(const instructionToken* const baseToken,
 	case _D3DSIO_PHASE:
 		currentOpcodeType = justOpcode;
 		break;
-	case D3DSIO_END:
+	case _D3DSIO_END:
 		currentOpcodeType = justOpcode;
 		break;
 	}
@@ -336,7 +336,7 @@ default:
 	case srcSrcSrcSrcDst: // Only ever used with D3DSIO_TEXLDD
 		return 6 + relativeTokens;
 	case customOpcode:
-		if (baseToken->opcode == D3DSIO_COMMENT)
+		if (baseToken->opcode == _D3DSIO_COMMENT)
 		{
 			const DWORD commentToken = *(const DWORD* const)baseToken;
 			const unsigned numTokensToSkip = (commentToken & D3DSI_COMMENTSIZE_MASK) >> D3DSI_COMMENTSIZE_SHIFT;

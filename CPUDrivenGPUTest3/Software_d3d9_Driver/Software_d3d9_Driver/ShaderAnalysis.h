@@ -131,13 +131,14 @@ struct WrittenOutputRegister
 struct ShaderInfo
 {
 	ShaderInfo() : parsingErrorDetected(false), isPixelShader(false), shaderMajorVersion(0), shaderMinorVersion(0), 
-		shaderLengthDWORDs(0), numArithInstructions(0), numTexInstructions(0), tempRegistersUsedBitmask(0), numUniqueTempRegistersUsed(0),
-		usesDynamicBranching(false), usesFunctionCalls(false), usesVertTextureFetch(false), hasDependentTextureFetches(false), usesMRT(false), firstInstructionToken(NULL),
-		usesIntToFloatConversions(false), usesTexkill(false), usesGradientInstructions(false), initialBytecodeToken(NULL), usedMRTMask(0), psWritesDepth(false), 
-		usesInstructionPredication(false), usesInstructionCoIssue(false), shaderBytecodeHash(0), inputRegistersUsedBitmask(0), numUniqueInputRegistersUsed(0)
 #ifdef DISASM_SHADER
-		, shaderDisasmBuffer(NULL), D3DXDisasm(NULL), D3DXDisasmString(NULL)
+		shaderDisasmBuffer(NULL), D3DXDisasm(NULL), D3DXDisasmString(NULL)
 #endif
+		, shaderLengthDWORDs(0), numArithInstructions(0), numTexInstructions(0), tempRegistersUsedBitmask(0), numUniqueTempRegistersUsed(0)
+		, inputRegistersUsedBitmask(0), numUniqueInputRegistersUsed(0)
+		, usesDynamicBranching(false), usesFunctionCalls(false), usesIntToFloatConversions(false), usesTexkill(false)
+		, usesGradientInstructions(false), usesInstructionPredication(false), usesInstructionCoIssue(false), psWritesDepth(false), usesVertTextureFetch(false)
+		, initialBytecodeToken(NULL), firstInstructionToken(NULL), shaderBytecodeHash(0), usedMRTMask(0), usesMRT(false), hasDependentTextureFetches(false)
 	{
 		initialConstantValues.clear();
 		initialConstantValuesI.clear();

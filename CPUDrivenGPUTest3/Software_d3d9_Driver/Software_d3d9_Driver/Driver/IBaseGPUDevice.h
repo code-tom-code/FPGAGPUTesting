@@ -79,19 +79,19 @@ struct ROPBlock
 		struct _bitsStruct
 		{
 			blendModeSourcesRGB blendModeSrcRGB : 3;
-			BOOL blendModeSrcRGBInvert : 1;
+			unsigned blendModeSrcRGBInvert : 1;
 			blendModeSourcesRGB blendModeDestRGB : 3;
-			BOOL blendModeDestRGBInvert : 1;
+			unsigned blendModeDestRGBInvert : 1;
 			blendOp blendOpRGB : 3;
 
 			blendModeSourcesA blendModeSrcA : 2;
-			BOOL blendModeSrcAInvert : 1;
+			unsigned blendModeSrcAInvert : 1;
 			blendModeSourcesA blendModeDestA : 2;
-			BOOL blendModeDestAInvert : 1;
+			unsigned blendModeDestAInvert : 1;
 			blendOp blendOpA : 3;
 
-			BOOL doLoadSrcColor : 1; // Should the ROP unit load the incoming pixel (src) data?
-			BOOL doLoadDestColor : 1; // Should the ROP unit load the existing framebuffer pixel (dest) data? (This one is a big bandwidth savings if it's computed as 0)
+			unsigned doLoadSrcColor : 1; // Should the ROP unit load the incoming pixel (src) data?
+			unsigned doLoadDestColor : 1; // Should the ROP unit load the existing framebuffer pixel (dest) data? (This one is a big bandwidth savings if it's computed as 0)
 
 			unsigned unusedPadding : 10;
 		} bitsStruct;

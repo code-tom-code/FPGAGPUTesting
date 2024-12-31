@@ -574,7 +574,7 @@ private:
 	CSObj H2DLock;
 	SOCKET sendSocket = INVALID_SOCKET;
 	SOCKET sendBroadcastSocket = INVALID_SOCKET; // A second send socket that is only ever used for broadcasting
-	ULONG lastSentAckID = 0;
+	//ULONG lastSentAckID = 0;
 	__declspec(align(128) ) volatile bool WakeSendThreadAtomic[NUM_WAKE_SEND_THREAD_REASONS] = { false };
 
 	// Received packets live in this buffer in case they arrive out of order (thanks, router). They are removed when we have received the in-order packets with the corresponding packet numbers.

@@ -355,7 +355,7 @@ struct setAlphaTestAndRTAddressStateCommand : command
 
 struct setBlendStateCommand : command
 {
-	setBlendStateCommand() : command(PT_SETBLENDSTATE), alphaBlendingEnabled(false), unused0(0), blendStateBlock(0x00000000), blendFactorABGR(0xFFFFFFFF)
+	setBlendStateCommand() : command(PT_SETBLENDSTATE), blendStateBlock(0x00000000), unused0(0), alphaBlendingEnabled(false), blendFactorABGR(0xFFFFFFFF)
 	{
 	}
 
@@ -413,7 +413,7 @@ struct setTextureStateCommand : command
 
 struct waitForDeviceIdleCommand : command
 {
-	waitForDeviceIdleCommand() : command(PT_WAITFORDEVICEIDLE), waitBitmask(waitForFullPipelineFlush), returnCPUValue(TRUE), unused0(0)
+	waitForDeviceIdleCommand() : command(PT_WAITFORDEVICEIDLE), waitBitmask(waitForFullPipelineFlush), unused0(0), returnCPUValue(TRUE)
 	{
 	}
 
@@ -493,8 +493,8 @@ struct waitResponse : command
 struct drawIndexedCommand : command
 {
 	drawIndexedCommand() : command(PT_DRAWINDEXED),
-		numPrimitivesToDraw(0), isIndexedDrawCall(false), BaseVertexIndex(0),
-		startIndexHigh(0), startIndexLow(0), primTopology(0)
+		numPrimitivesToDraw(0), isIndexedDrawCall(false), startIndexHigh(0),
+		startIndexLow(0), BaseVertexIndex(0), primTopology(0)
 	{
 	}
 
@@ -937,10 +937,12 @@ struct setShaderConstantCommand : command
 struct setShaderConstantSpecialCommand : command
 {
 	setShaderConstantSpecialCommand() : command(PT_SETSHADERCONSTANTSPECIAL),
-		shaderRegIndex(0), unused0(0), unused1(0),
+		shaderRegIndex(0),
 		isXNegative(false), isXPow2(false), isXSpec(false), XIndex(0),
+		unused0(0),
 		isYNegative(false), isYPow2(false), isYSpec(false), YIndex(0),
 		isZNegative(false), isZPow2(false), isZSpec(false), ZIndex(0),
+		unused1(0),
 		isWNegative(false), isWPow2(false), isWSpec(false), WIndex(0)
 	{
 	}

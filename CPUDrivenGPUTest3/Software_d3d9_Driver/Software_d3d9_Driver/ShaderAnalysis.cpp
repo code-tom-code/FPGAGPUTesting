@@ -1,5 +1,3 @@
-#pragma once
-
 #include "ShaderAnalysis.h"
 #include <intrin.h> // for popcnt()
 

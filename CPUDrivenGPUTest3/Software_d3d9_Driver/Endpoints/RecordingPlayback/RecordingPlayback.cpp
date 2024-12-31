@@ -59,7 +59,7 @@ struct registeredKey
 	const CallbackFunc onKeyUp;
 
 	registeredKey(int _vKey, const CallbackFunc keyDownCallback, const CallbackFunc keyUpCallback) :
-		vKey(_vKey), onKeyDown(keyDownCallback), onKeyUp(keyUpCallback), keyIsDown(false)
+		vKey(_vKey), keyIsDown(false), onKeyDown(keyDownCallback), onKeyUp(keyUpCallback)
 	{
 	}
 };
@@ -358,7 +358,7 @@ static void WaitUntilTime(const LARGE_INTEGER& waitStopTime)
 	}
 }
 
-int main(const unsigned argc, const char* const argv[])
+int main(const int argc, const char* const argv[])
 {
 	const char* recordingFilePath = NULL;
 	char recordingFile[MAX_PATH] = {0};

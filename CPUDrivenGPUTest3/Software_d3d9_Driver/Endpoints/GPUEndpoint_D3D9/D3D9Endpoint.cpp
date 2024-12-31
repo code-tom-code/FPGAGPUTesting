@@ -1,5 +1,3 @@
-#pragma once
-
 #include "d3d9include.h"
 
 #include "D3D9Endpoint.h"

@@ -40,7 +40,7 @@ extern "C" void __stdcall ReturnMessageImpl(const genericCommand* const D2HReply
 	}
 }
 
-int main(const unsigned argc, const char* const argv[])
+int main(const int argc, const char* const argv[])
 {
 	const char* hostedDLL = NULL;
 	char hostedDLLPath[MAX_PATH] = {0};

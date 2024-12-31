@@ -1,5 +1,3 @@
-#pragma once
-
 #ifdef _DEBUG
 	#define D3D_DEBUG_INFO 1
 #else
@@ -163,7 +161,13 @@ RenderWindow::~RenderWindow()
 void RenderWindow::DisplayLine(const void* const texelData, const unsigned lineNumber)
 {
 	D3DLOCKED_RECT d3dlr = {0};
-	dynamicTex->LockRect(0, &d3dlr, NULL, 0);
+	if (FAILED(dynamicTex->LockRect(0, &d3dlr, NULL, 0) ) || !d3dlr.pBits)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Failed lock!
+#endif
+		return;
+	}
 
 	D3DCOLOR* const targetWrite = ( (D3DCOLOR* const)d3dlr.pBits) + lineNumber * 640;
 
@@ -175,7 +179,13 @@ void RenderWindow::DisplayLine(const void* const texelData, const unsigned lineN
 void RenderWindow::DisplayTexture(const void* const texelData)
 {
 	D3DLOCKED_RECT d3dlr = {0};
-	dynamicTex->LockRect(0, &d3dlr, NULL, 0);
+	if (FAILED(dynamicTex->LockRect(0, &d3dlr, NULL, 0) ) || !d3dlr.pBits)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Failed lock!
+#endif
+		return;
+	}
 
 	memcpy(d3dlr.pBits, texelData, sizeof(D3DCOLOR) * 640 * 480);
 

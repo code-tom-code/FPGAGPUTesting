@@ -932,6 +932,12 @@ void EmulateCPUClipper(const std::vector<triSetupInput>& inputUnclippedTriangles
 
 				switch (outcodeBitmap)
 				{
+				default:
+#ifdef _DEBUG
+				{
+					__debugbreak(); // Should never be here!
+				}
+#endif
 				case 1: // 001 - A is outside, BC are inside
 					outside0 = &mainWorkingClipTriangle.geomData.v0; // BA
 					outside1 = &newChildTriangle.geomData.v0; // CA
@@ -1649,7 +1655,9 @@ const int RunTestsClipUnit(Xsi::Loader& loader, RenderWindow* renderWindow)
 		leftNoClipTri = goodclipTri;
 		leftNoClipTri.v2.xPos = -leftNoClipTri.v2.wPos * 12.333f;
 		unclippedInputTris.push_back(leftNoClipTri);
+#if defined(_MSC_VER) && !defined(__clang__)
 		static_assert(12.333f < GuardBandXScale, "Error: Out of range test for this guard band!");
+#endif
 	}
 
 	// Outside right edge, inside right guard band:
@@ -1663,7 +1671,9 @@ const int RunTestsClipUnit(Xsi::Loader& loader, RenderWindow* renderWindow)
 		rightNoClipTri = goodclipTri;
 		rightNoClipTri.v2.xPos = rightNoClipTri.v2.wPos * 13.667f;
 		unclippedInputTris.push_back(rightNoClipTri);
+#if defined(_MSC_VER) && !defined(__clang__)
 		static_assert(13.667f < GuardBandXScale, "Error: Out of range test for this guard band!");
+#endif
 	}
 
 	// Outside top edge, inside top guard band:
@@ -1677,7 +1687,9 @@ const int RunTestsClipUnit(Xsi::Loader& loader, RenderWindow* renderWindow)
 		topNoClipTri = goodclipTri;
 		topNoClipTri.v2.yPos = topNoClipTri.v2.wPos * 13.667f;
 		unclippedInputTris.push_back(topNoClipTri);
+#if defined(_MSC_VER) && !defined(__clang__)
 		static_assert(13.667f < GuardBandYScale, "Error: Out of range test for this guard band!");
+#endif
 	}
 
 	// Outside bottom edge, inside bottom guard band:
@@ -1691,7 +1703,9 @@ const int RunTestsClipUnit(Xsi::Loader& loader, RenderWindow* renderWindow)
 		bottomNoClipTri = goodclipTri;
 		bottomNoClipTri.v2.yPos = -bottomNoClipTri.v2.wPos * 12.333f;
 		unclippedInputTris.push_back(bottomNoClipTri);
+#if defined(_MSC_VER) && !defined(__clang__)
 		static_assert(12.333f < GuardBandYScale, "Error: Out of range test for this guard band!");
+#endif
 	}
 
 	EmulateCPUClipper(unclippedInputTris, clippedOutputTris);

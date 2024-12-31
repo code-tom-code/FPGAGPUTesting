@@ -120,6 +120,9 @@
     <ClCompile Include="Testbenches\TexDecompressTestbench.cpp">
       <Filter>Source Files\Testbenches</Filter>
     </ClCompile>
+    <ClCompile Include="Testbenches\TexAddressTestbench.cpp">
+      <Filter>Source Files\Testbenches</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="xsi_loader.h">
@@ -207,6 +210,9 @@
       <Filter>Header Files\Testbenches</Filter>
     </ClInclude>
     <ClInclude Include="Testbenches\TexDecompressTestbench.h">
+      <Filter>Header Files\Testbenches</Filter>
+    </ClInclude>
+    <ClInclude Include="Testbenches\TexAddressTestbench.h">
       <Filter>Header Files\Testbenches</Filter>
     </ClInclude>
   </ItemGroup>
@@ -504,6 +510,9 @@
     </None>
     <None Include="hdl_src\RGBA_Interpolator.vhd">
       <Filter>HDL</Filter>
+    </None>
+    <None Include="TexAddress.prj">
+      <Filter>Resource Files\Project Files</Filter>
     </None>
   </ItemGroup>
 </Project>

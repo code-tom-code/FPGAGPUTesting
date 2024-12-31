@@ -475,14 +475,14 @@ const int RunTestsEthernetMDIO(Xsi::Loader& loader)
 
 	unsigned short registerIndex = 0;
 
-	SMI smi;
+	SMI* const smi = new SMI;
 	while (registerIndex < 0xFFFF)
 	{
 		scoped_timestep time(loader, clkin25, 100);
 
 		const EthMDIOStateType dbgState = (const EthMDIOStateType)(DBG_EthMDIO_State.GetUint8Val() );
 
-		smi.Update(mdio_i, mdio_o, mdio_t, mdio_t_ctrl);
+		smi->Update(mdio_i, mdio_o, mdio_t, mdio_t_ctrl);
 
 		if (dbgState == waitForNewRequestState)
 		{
@@ -504,7 +504,7 @@ const int RunTestsEthernetMDIO(Xsi::Loader& loader)
 
 	for (unsigned x = 0; x < 65535-1; ++x)
 	{
-		if (smi.registerSpace[x] != 0xFFFF - x)
+		if (smi->registerSpace[x] != 0xFFFF - x)
 		{
 			__debugbreak();
 		}
@@ -527,7 +527,7 @@ const int RunTestsEthernetMDIO(Xsi::Loader& loader)
 
 		const EthMDIOStateType dbgState = (const EthMDIOStateType)(DBG_EthMDIO_State.GetUint8Val() );
 
-		smi.Update(mdio_i, mdio_o, mdio_t, mdio_t_ctrl);
+		smi->Update(mdio_i, mdio_o, mdio_t, mdio_t_ctrl);
 
 		if (dbgState == waitForNewRequestState)
 		{
@@ -546,13 +546,15 @@ const int RunTestsEthernetMDIO(Xsi::Loader& loader)
 		if (registerReadReady.GetBoolVal() )
 		{
 			const unsigned short readVal = registerReadData.GetUint16Val();
-			if (smi.registerSpace[registerIndex] != readVal)
+			if (smi->registerSpace[registerIndex] != readVal)
 			{
 				__debugbreak();
 			}
 			++registerIndex;
 		}
 	}*/
+
+	delete smi;
 
 	return successResult ? S_OK : E_FAIL;
 }

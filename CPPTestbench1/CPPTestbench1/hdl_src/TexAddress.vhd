@@ -140,11 +140,11 @@ end function;
 pure function GetLogNumBlocksPerRow(texWidthLog2 : unsigned(2 downto 0) ) return unsigned is
 begin
 	case texWidthLog2 is
-		when "111" => to_unsigned(5, 3); -- 128x128 texture: 32 (1 << 5) blocks per row
-		when "110" => to_unsigned(4, 3); -- 64x64 texture: 16 (1 << 4) blocks per row
-		when "101" => to_unsigned(3, 3); -- 32x32 texture: 8 (1 << 3) blocks per row
-		when "100" => to_unsigned(2, 3); -- 16x16 texture: 4 (1 << 2) blocks per row
-		when "011" => to_unsigned(1, 3); -- 8x8 texture: 2 (1 << 1) blocks per row
+		when "111" => return to_unsigned(5, 3); -- 128x128 texture: 32 (1 << 5) blocks per row
+		when "110" => return to_unsigned(4, 3); -- 64x64 texture: 16 (1 << 4) blocks per row
+		when "101" => return to_unsigned(3, 3); -- 32x32 texture: 8 (1 << 3) blocks per row
+		when "100" => return to_unsigned(2, 3); -- 16x16 texture: 4 (1 << 2) blocks per row
+		when "011" => return to_unsigned(1, 3); -- 8x8 texture: 2 (1 << 1) blocks per row
 		when others => return to_unsigned(0, 3); -- 1x1, 2x2, and 4x4 texture: Always 1 (1 << 0) block
 	end case;
 end function;
@@ -169,8 +169,8 @@ pure function CalculateBlockID(TX : unsigned(7 downto 0); TY : unsigned(7 downto
 	variable RowBlockCoord : unsigned(11 downto 0);
 	variable BlockCoord : unsigned(11 downto 0);
 begin
-	RowBlockCoord := resize(GetBlockCoordFromTexelCoord(TY), 12) sll GetLogNumBlocksPerRow(texWidthLog2);
-	BlockCoord := RowBlockCoord + resize(GetBlockCoordFromTexelCoord(TX), 12;
+	RowBlockCoord := resize(GetBlockCoordFromTexelCoord(TY), 12) sll to_integer(GetLogNumBlocksPerRow(texWidthLog2) );
+	BlockCoord := RowBlockCoord + resize(GetBlockCoordFromTexelCoord(TX), 12);
 	return resize(BlockCoord, 17);
 end function;
 
@@ -179,7 +179,12 @@ begin
 	return blockID(5 downto 0); -- TODO: In the future we should use a more complicated cache set calculation so that vertically adjacent blocks don't collide in the same cache set
 end function;
 
-signal TexDescriptors : texDescriptors_t := (others => (others => (others => '0') ) );
+pure function CombineBlockPixelIndices(highBit : std_logic; lowBit : std_logic) return std_logic_vector is
+begin
+	return highBit & lowBit;
+end function;
+
+signal TexDescriptors : texDescriptors_t;
 signal TX : unsigned(15 downto 0) := (others => '0');
 signal TY : unsigned(15 downto 0) := (others => '0');
 signal CurrentTexID : unsigned(5 downto 0) := (others => '0');
@@ -188,9 +193,9 @@ signal CurrentTexID3 : unsigned(5 downto 0) := (others => '0');
 signal CurrentFetchIsBilinear : std_logic := '0';
 signal CurrentFetchIsBilinear2 : std_logic := '0';
 signal CurrentFetchIsBilinear3 : std_logic := '0';
-signal CurrentTexDescriptor : TexDescriptor := (others => (others => '0') );
-signal CurrentTexDescriptor2 : TexDescriptor := (others => (others => '0') );
-signal CurrentTexDescriptor3 : TexDescriptor := (others => (others => '0') );
+signal CurrentTexDescriptor : TexDescriptor;
+signal CurrentTexDescriptor2 : TexDescriptor;
+signal CurrentTexDescriptor3 : TexDescriptor;
 signal CurrentMipLevel : unsigned(3 downto 0) := (others => '0');
 signal CurrentMipLevel2 : unsigned(3 downto 0) := (others => '0');
 signal CurrentMipLevel3 : unsigned(3 downto 0) := (others => '0');
@@ -219,7 +224,7 @@ begin
 			ReadySignal <= TEX_Ready and not ROP_AlmostFull;
 			CurrentTexDescriptor <= TexDescriptors(to_integer(unsigned(TEX_TexID) ) );
 			CurrentTexID <= unsigned(TEX_TexID);
-			CurrentMipLevel < = unsigned(TEX_MipLevel);
+			CurrentMipLevel <= unsigned(TEX_MipLevel);
 			CurrentFetchIsBilinear <= TEX_IsBilinearFetch;
 			TX <= unsigned(TEX_TX); -- TODO: It would be better to pull these off of their FIFO later rather than to pipeline them as seen here
 			TY <= unsigned(TEX_TY);
@@ -267,14 +272,14 @@ begin
 		if (rising_edge(clk) ) then
 			TEXFILTER_InterpFracX <= std_logic_vector(InterpFractionX);
 			TEXFILTER_InterpFracY <= std_logic_vector(InterpFractionY);
-			TEXFILTER_InterpFracValid := ReadySignal2;
+			TEXFILTER_InterpFracValid <= ReadySignal2;
 
 			X1 := TexelX + 1;
 			Y1 := TexelY + 1;
 			TR_X <= WrapTexelToTextureDimension(X1, MipWidthLog2);
 			BL_Y <= WrapTexelToTextureDimension(Y1, MipHeightLog2);
-			TR_WrapClampBorder <= TexelNeedsWrapClampBorder(X1);
-			BL_WrapClampBorder <= TexelNeedsWrapClampBorder(Y1);
+			TR_WrapClampBorder <= TexelNeedsWrapClampBorder(X1, MipWidthLog2);
+			BL_WrapClampBorder <= TexelNeedsWrapClampBorder(Y1, MipHeightLog2);
 			TexelX2 <= TexelX;
 			TexelY2 <= TexelY;
 			ReadySignal3 <= ReadySignal2;
@@ -311,11 +316,11 @@ begin
 			TEXCACHE_CacheSet_TR <= std_logic_vector(CalculateBlockCacheSet(TR_BlockID) );
 			TEXCACHE_CacheSet_BL <= std_logic_vector(CalculateBlockCacheSet(BL_BlockID) );
 			TEXCACHE_CacheSet_BR <= std_logic_vector(CalculateBlockCacheSet(BR_BlockID) );
-			TEXCACHE_BlockPixelIndex_TL <= std_logic_vector(TexelY2(1) & TexelX2(1) );
-			TEXCACHE_BlockPixelIndex_TR <= std_logic_vector(TexelY2(1) & TR_X(1) );
-			TEXCACHE_BlockPixelIndex_BL <= std_logic_vector(BL_Y(1) & TexelX2(1) );
-			TEXCACHE_BlockPixelIndex_BR <= std_logic_vector(BL_Y(1) & TR_X(1) );
-			TEXCACHE_BlockBankRotation <= std_logic_vector(TexelY2(0) & TexelX2(0) );
+			TEXCACHE_BlockPixelIndex_TL <= CombineBlockPixelIndices(TexelY2(1), TexelX2(1) );
+			TEXCACHE_BlockPixelIndex_TR <= CombineBlockPixelIndices(TexelY2(1), TR_X(1) );
+			TEXCACHE_BlockPixelIndex_BL <= CombineBlockPixelIndices(BL_Y(1), TexelX2(1) );
+			TEXCACHE_BlockPixelIndex_BR <= CombineBlockPixelIndices(BL_Y(1), TR_X(1) );
+			TEXCACHE_BlockBankRotation <= CombineBlockPixelIndices(TexelY2(0), TexelX2(0) );
 			if (CurrentFetchIsBilinear3 = '1') then
 				TR_Clamped := TR_WrapClampBorder and CurrentTexDescriptor3.ClampSamplerU;
 				BL_Clamped := BL_WrapClampBorder and CurrentTexDescriptor3.ClampSamplerV;

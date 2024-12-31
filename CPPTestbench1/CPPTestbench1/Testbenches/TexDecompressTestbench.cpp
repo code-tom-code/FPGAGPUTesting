@@ -893,7 +893,13 @@ const int RunTestsTexDecompress(Xsi::Loader& loader, RenderWindow* renderWindow)
 		D3DLOCKED_RECT compressedRect = {0};
 		const unsigned compressedBPP = GetBPPFromD3DFormat(thisTestPair.texFmtD3D9);
 		const unsigned compressedBytesPerRow = 4 * (compressedBPP / 8);
-		testTexture->LockRect(0, &compressedRect, NULL, D3DLOCK_READONLY);
+		if (FAILED(testTexture->LockRect(0, &compressedRect, NULL, D3DLOCK_READONLY) ) || !compressedRect.pBits)
+		{
+#ifdef _DEBUG
+			__debugbreak(); // Failed lock!
+#endif
+			return E_FAIL;
+		}
 		const BYTE* const compressedTexelBytes = reinterpret_cast<const BYTE* const>(compressedRect.pBits);
 		if (IsD3DFormatCompressed(thisTestPair.texFmtD3D9) )
 		{
@@ -935,7 +941,13 @@ const int RunTestsTexDecompress(Xsi::Loader& loader, RenderWindow* renderWindow)
 
 		D3DCOLOR D3DX9_decompressedLinearizedTexels[4*4] = {0};
 		D3DLOCKED_RECT decompressedRect = {0};
-		testTextureDecompressed->LockRect(0, &decompressedRect, NULL, D3DLOCK_READONLY);
+		if (FAILED(testTextureDecompressed->LockRect(0, &decompressedRect, NULL, D3DLOCK_READONLY) ) || !decompressedRect.pBits)
+		{
+#ifdef _DEBUG
+			__debugbreak(); // Failed lock!
+#endif
+			return E_FAIL;
+		}
 		const BYTE* const decompressedTexelBytes = reinterpret_cast<const BYTE* const>(decompressedRect.pBits);
 		memcpy(D3DX9_decompressedLinearizedTexels, decompressedTexelBytes, 4 * sizeof(D3DCOLOR) );
 		memcpy(D3DX9_decompressedLinearizedTexels + 4, decompressedTexelBytes + decompressedRect.Pitch, 4 * sizeof(D3DCOLOR) );

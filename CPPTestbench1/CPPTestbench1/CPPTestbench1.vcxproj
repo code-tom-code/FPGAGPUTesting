@@ -101,6 +101,9 @@
       <PrecompiledHeaderFile />
       <AdditionalIncludeDirectories>F:\Xilinx\Vivado\2020.2\data\xsim\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <UndefinePreprocessorDefinitions>UNICODE;_UNICODE;%(UndefinePreprocessorDefinitions)</UndefinePreprocessorDefinitions>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -123,6 +126,9 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile />
       <UndefinePreprocessorDefinitions>UNICODE;_UNICODE;%(UndefinePreprocessorDefinitions)</UndefinePreprocessorDefinitions>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -148,6 +154,9 @@
       <PrecompiledHeaderFile />
       <AdditionalIncludeDirectories>F:\Xilinx\Vivado\2020.2\data\xsim\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <UndefinePreprocessorDefinitions>UNICODE;_UNICODE;%(UndefinePreprocessorDefinitions)</UndefinePreprocessorDefinitions>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -174,6 +183,9 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile />
       <UndefinePreprocessorDefinitions>UNICODE;_UNICODE;%(UndefinePreprocessorDefinitions)</UndefinePreprocessorDefinitions>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -205,6 +217,7 @@
     <ClCompile Include="Testbenches\ROPTestbench.cpp" />
     <ClCompile Include="Testbenches\ShaderCoreTestbench.cpp" />
     <ClCompile Include="Testbenches\StateBlockTestbench.cpp" />
+    <ClCompile Include="Testbenches\TexAddressTestbench.cpp" />
     <ClCompile Include="Testbenches\TexDecompressTestbench.cpp" />
     <ClCompile Include="Testbenches\TexSamplerTestbench.cpp" />
     <ClCompile Include="Testbenches\TriSetupTestbench.cpp" />
@@ -235,6 +248,7 @@
     <ClInclude Include="Testbenches\ShaderCoreALUCommon.h" />
     <ClInclude Include="Testbenches\ShaderCoreTestbench.h" />
     <ClInclude Include="Testbenches\StateBlockTestbench.h" />
+    <ClInclude Include="Testbenches\TexAddressTestbench.h" />
     <ClInclude Include="Testbenches\TexDecompressTestbench.h" />
     <ClInclude Include="Testbenches\TexSamplerTestbench.h" />
     <ClInclude Include="Testbenches\TriSetupTestbench.h" />
@@ -336,6 +350,7 @@
     <None Include="ShaderCore.prj" />
     <None Include="StateBlock.prj" />
     <None Include="StatsCollector.prj" />
+    <None Include="TexAddress.prj" />
     <None Include="TexDecompress2.prj" />
     <None Include="TexSample.prj" />
     <None Include="TriSetup.prj" />

@@ -1626,7 +1626,7 @@ const int RunTestsShaderCore(Xsi::Loader& loader)
 	std_logic_port DBG_OStall(PD_OUT, loader, "DBG_OStall");
 	std_logic_port DBG_IStall(PD_OUT, loader, "DBG_IStall");
 
-	ShaderCore testShaderCore;
+	ShaderCore* const testShaderCore = new ShaderCore;
 
 	// Start up idling with default values for a hundred cycles:
 	for (unsigned startupCycle = 0; startupCycle < 100; ++startupCycle)
@@ -1726,7 +1726,7 @@ const int RunTestsShaderCore(Xsi::Loader& loader)
 
 	do // Wait for the shader core to return to the Ready state after loading our program
 	{
-		tickUpdate(testShaderCore);
+		tickUpdate(*testShaderCore);
 	} while (DBG_CurrentState.GetUint8Val() != readyState);
 
 	// Set shader constants using CMD_InCommand
@@ -1750,11 +1750,11 @@ const int RunTestsShaderCore(Xsi::Loader& loader)
 
 			do
 			{
-				tickUpdate(testShaderCore);
+				tickUpdate(*testShaderCore);
 				CMD_InCommand = DoNothingCommand;
 			} while (DBG_CurrentState.GetUint8Val() != readyState);
 
-			tickUpdate(testShaderCore);
+			tickUpdate(*testShaderCore);
 		}
 	};
 
@@ -1799,7 +1799,7 @@ const int RunTestsShaderCore(Xsi::Loader& loader)
 			CMD_SetVertexStreamDWORDOffset = streamDWORDOffset;
 		}
 
-		tickUpdate(testShaderCore);
+		tickUpdate(*testShaderCore);
 	};
 
 #pragma warning(push)
@@ -1830,14 +1830,14 @@ const int RunTestsShaderCore(Xsi::Loader& loader)
 	}
 	vbbEntry.indices[15] = 0xFFFF; // Keep the last entry invalid to simulate a nonfull warp of 5 triangle list polygons worth of vertices
 	vbbEntry.vertexBatchStartingIndex = vbbEntry.vertexBatchEndingIndex = 0;
-	testShaderCore.VBB.PushDataToFIFO(vbbEntry);
+	testShaderCore->VBB.PushDataToFIFO(vbbEntry);
 
 	for (unsigned x = 0; x < 15; ++x)
 	{
 		vbbEntry.indices[x] = x + 15;
 	}
 	vbbEntry.vertexBatchStartingIndex = vbbEntry.vertexBatchEndingIndex = 15;
-	testShaderCore.VBB.PushDataToFIFO(vbbEntry);
+	testShaderCore->VBB.PushDataToFIFO(vbbEntry);
 
 	for (unsigned x = 0; x < 6; ++x)
 	{
@@ -1848,7 +1848,7 @@ const int RunTestsShaderCore(Xsi::Loader& loader)
 		vbbEntry.indices[x] = 0xFFFF; // Null out the last unused entries in this batch
 	}
 	vbbEntry.vertexBatchStartingIndex = vbbEntry.vertexBatchEndingIndex = 30;
-	testShaderCore.VBB.PushDataToFIFO(vbbEntry);
+	testShaderCore->VBB.PushDataToFIFO(vbbEntry);
 
 	// Set our starting shader address to 0:
 	CMD_LoadProgramAddr = 0x00000000;
@@ -1869,7 +1869,7 @@ const int RunTestsShaderCore(Xsi::Loader& loader)
 	unsigned cyclesSpentIStalled = 0;
 	do // Wait for the shader core to enter the "running shader" state
 	{
-		tickUpdate(testShaderCore);
+		tickUpdate(*testShaderCore);
 		currentState = (const eShaderCoreState)DBG_CurrentState.GetUint8Val();
 
 		const unsigned char currentWave = DBG_CurrentFetchWave.GetUint8Val();
@@ -1943,8 +1943,8 @@ const int RunTestsShaderCore(Xsi::Loader& loader)
 
 			if (currentInstructionPointer == 2) // There's some overlap with the last GPRQuad still being written to when we first start running instructions, so wait a little bit before verifying register integrity
 			{
-				VerifyInputRegisterIntegrity(testShaderCore.RegisterFile);
-				VerifyInstructionCacheIntegrity(testShaderCore.InstructionCache);
+				VerifyInputRegisterIntegrity(testShaderCore->RegisterFile);
+				VerifyInstructionCacheIntegrity(testShaderCore->InstructionCache);
 			}
 
 			if (currentCycleOStalled)
@@ -1957,7 +1957,7 @@ const int RunTestsShaderCore(Xsi::Loader& loader)
 			}
 		}
 
-		tickUpdate(testShaderCore);
+		tickUpdate(*testShaderCore);
 
 		++cyclesSpentRunning;
 
@@ -1980,7 +1980,7 @@ const int RunTestsShaderCore(Xsi::Loader& loader)
 	} while (currentState == setupRunShader || currentState == setupRunShader2 || currentState == setupRunShader3 || currentState == setupRunShader4
 		|| currentState == runShader || currentState == waitForWritesToComplete);
 
-	VerifyOutputRegisterIntegrity(testShaderCore.RegisterFile);
+	VerifyOutputRegisterIntegrity(testShaderCore->RegisterFile);
 
 	enableDebugOutput = false; // Turn off debug printing after the shader finishes execution to avoid log-spam
 
@@ -1988,20 +1988,22 @@ const int RunTestsShaderCore(Xsi::Loader& loader)
 	{
 		currentState = (const eShaderCoreState)DBG_CurrentState.GetUint8Val();
 
-		tickUpdate(testShaderCore);
+		tickUpdate(*testShaderCore);
 	} while (currentState == collectShaderResults || currentState == submitShaderResults);
 
 	std::vector<VBO_FIFO::VBOEntry> outputProcessedVertData;
 	for (unsigned x = 0; x < 15; ++x)
 	{
 		VBO_FIFO::VBOEntry newVertData;
-		newVertData = testShaderCore.VBO.ReadDataFromFIFO();
+		newVertData = testShaderCore->VBO.ReadDataFromFIFO();
 
 		outputProcessedVertData.push_back(newVertData);
 	}
 
 	const DWORD* const processedVertDataBuffer = reinterpret_cast<const DWORD* const>(&outputProcessedVertData.front() );
 	VerifyVBOIntegrity(outputProcessedVertData);
+
+	delete testShaderCore;
 
 	if (allTestsSuccessful)
 		return S_OK;

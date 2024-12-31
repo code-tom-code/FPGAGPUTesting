@@ -573,7 +573,7 @@ struct attributeInterpOutputData
 	const bool operator==(const attributeInterpOutputData& rhs) const
 	{
 		return (pixelX == rhs.pixelX) && (pixelY == rhs.pixelY) &&
-			(abs( (const short)texcoordX - (const short)rhs.texcoordX) <= 2) && (abs( (const short)texcoordY == (const short)rhs.texcoordY) <= 2) &&
+			(abs( (const short)texcoordX - (const short)rhs.texcoordX) <= 2) && (abs( (const short)texcoordY - (const short)rhs.texcoordY) <= 2) &&
 			ChannelCompare(vertexColorRGBA & 0xFF, rhs.vertexColorRGBA & 0xFF) &&
 			ChannelCompare( (vertexColorRGBA >> 8) & 0xFF, (rhs.vertexColorRGBA >> 8) & 0xFF) &&
 			ChannelCompare( (vertexColorRGBA >> 16) & 0xFF, (rhs.vertexColorRGBA >> 16) & 0xFF) &&

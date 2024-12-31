@@ -29,13 +29,14 @@
 #include "Testbenches/HDMIScanoutTestbench.h"
 #include "Testbenches/ClipUnitTestbench.h"
 #include "Testbenches/StateBlockTestbench.h"
+#include "Testbenches/TexAddressTestbench.h"
 
 static const WCHAR* const simengine_libpath = L"C:\\Xilinx\\Vivado\\2024.2\\lib\\win64.o";
 static const WCHAR* const simengine_imageformats_libpath = L"C:\\Xilinx\\Vivado\\2024.2\\lib\\win64.o\\imageformats";
 // After Vivado 2024.2, the simengine libname has been changed to "xv_simulator_kernel". Before then, it is known as "librdi_simulator_kernel" instead:
 static const char* const simengine_libname = "xv_simulator_kernel.dll";//"librdi_simulator_kernel.dll";
 
-static const char* const design_name = "TexDecompress2";
+static const char* const design_name = "TexAddress";
 static char wdbName[] = "xsim.wdb";
 static D3DCOLOR colorsArray[640 * 480] = {0};
 static RenderWindow* renderWindow = NULL;
@@ -92,7 +93,7 @@ unsigned char TruncateConvertUNORM8(float f)
 	return (D3DSpecConvertFtoUNORM24(f) - 32768) >> 16;
 }*/
 
-int main(const unsigned argc, const char* const argv[])
+int main(const int argc, const char* const argv[])
 {
 	const std::string design_libname = getcurrentdir() + "\\xsim.dir\\" + design_name + "\\xsimk.dll";
 
@@ -155,7 +156,8 @@ int main(const unsigned argc, const char* const argv[])
 		//status = RunTestsROP(loader, renderWindow);
 		//status = RunTestsHDMIScanout(loader, renderWindow);
 		//status = RunTestsStateBlock(loader);
-		status = RunTestsTexDecompress(loader, renderWindow);
+		//status = RunTestsTexDecompress(loader, renderWindow);
+		status = RunTestsTexAddress(loader);
 
 		// Test ethernet/comms core:
 		//status = RunTestsEthernet(loader);

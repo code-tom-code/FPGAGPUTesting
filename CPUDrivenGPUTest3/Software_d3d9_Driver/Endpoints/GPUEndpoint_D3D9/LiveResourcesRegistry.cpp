@@ -467,11 +467,12 @@ LPDIRECT3DTEXTURE9 LiveResourcesRegistry::GetFindOrCreateTextureAtAddress(const 
 	textureObjectParams.objectTypeParams.textureParams.numMipLevels = mipLevels;
 	textureObjectParams.objectTypeParams.textureParams.texFormat = format;
 
+	const unsigned mipLevelLinearSize = GetSingleElementSizeBytes(format) * (const unsigned)width * (const unsigned)height;
+	const unsigned totalTextureLinearSize = mipLevelLinearSize * mipLevels;
+
 	LPDIRECT3DTEXTURE9 foundTex = static_cast<LPDIRECT3DTEXTURE9>(FindMatchingResourceAtAddress(gpuAddress, textureObjectParams) );
 	if (foundTex)
 	{
-		const unsigned mipLevelLinearSize = GetSingleElementSizeBytes(format) * (const unsigned)width * (const unsigned)height;
-		const unsigned totalTextureLinearSize = mipLevelLinearSize * mipLevels;
 		if (IsResourceDirty(gpuAddress, totalTextureLinearSize) )
 		{
 			MarkDirtyResourceClean(gpuAddress, totalTextureLinearSize);
@@ -493,6 +494,7 @@ LPDIRECT3DTEXTURE9 LiveResourcesRegistry::GetFindOrCreateTextureAtAddress(const 
 	UpdateTextureData(newlyCreatedTex, gpuAddress, width, height, mipLevels, format);
 
 	CreateNewResourceAtAddress(gpuAddress, textureObjectParams, newlyCreatedTex);
+	MarkDirtyResourceClean(gpuAddress, totalTextureLinearSize);
 	return newlyCreatedTex;
 }
 
@@ -718,6 +720,7 @@ __declspec(noinline)  LPDIRECT3DVERTEXBUFFER9 LiveResourcesRegistry::GetFindOrCr
 	UpdateVertexBufferData(newlyCreatedVB, gpuAddress, lengthBytes);
 
 	CreateNewResourceAtAddress(gpuAddress, vertexBufferObjectParams, newlyCreatedVB);
+	MarkDirtyResourceClean(gpuAddress, lengthBytes);
 	return newlyCreatedVB;
 }
 
@@ -779,6 +782,7 @@ __declspec(noinline) LPDIRECT3DINDEXBUFFER9 LiveResourcesRegistry::GetFindOrCrea
 	UpdateIndexBufferData(newlyCreatedIB, gpuAddress, lengthIndices, format);
 
 	CreateNewResourceAtAddress(gpuAddress, indexBufferObjectParams, newlyCreatedIB);
+	MarkDirtyResourceClean(gpuAddress, lengthBytes);
 	return newlyCreatedIB;
 }
 
@@ -845,6 +849,7 @@ LPDIRECT3DVERTEXSHADER9 LiveResourcesRegistry::GetFindOrCreateVertexShaderAtAddr
 		shaderBytecode = NULL;
 
 		CreateNewResourceAtAddress(gpuAddress, vertexShaderObjectParams, newLoadedVS);
+		MarkDirtyResourceClean(gpuAddress, lengthTokens);
 		return newLoadedVS;
 	}
 }

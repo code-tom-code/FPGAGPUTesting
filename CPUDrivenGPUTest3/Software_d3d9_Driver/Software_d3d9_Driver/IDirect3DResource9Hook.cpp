@@ -5,7 +5,7 @@
 /*** IUnknown methods ***/
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DResourceHook9::QueryInterface(THIS_ REFIID riid, void** ppvObj)
 {
-	HRESULT ret = realObject->QueryInterface(riid, ppvObj);
+	const HRESULT ret = realObject->QueryInterface(riid, ppvObj);
 	if (ret == NOERROR)
 	{
 		*ppvObj = this;
@@ -16,14 +16,14 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DResourceHook9::QueryInte
 
 COM_DECLSPEC_NOTHROW ULONG STDMETHODCALLTYPE IDirect3DResourceHook9::AddRef(THIS)
 {
-	ULONG ret = realObject->AddRef();
+	const ULONG ret = realObject->AddRef();
 	++refCount;
 	return ret;
 }
 
 COM_DECLSPEC_NOTHROW ULONG STDMETHODCALLTYPE IDirect3DResourceHook9::Release(THIS)
 {
-	ULONG ret = realObject->Release();
+	const ULONG ret = realObject->Release();
 	if (--refCount == 0)
 	{
 #ifdef DEBUGPRINT_D3DHOOKOBJECT_FULLRELEASES
@@ -43,7 +43,7 @@ COM_DECLSPEC_NOTHROW ULONG STDMETHODCALLTYPE IDirect3DResourceHook9::Release(THI
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DResourceHook9::GetDevice(THIS_ IDirect3DDevice9** ppDevice)
 {
 	LPDIRECT3DDEVICE9 realD3D9dev = NULL;
-	HRESULT ret = realObject->GetDevice(&realD3D9dev);
+	const HRESULT ret = realObject->GetDevice(&realD3D9dev);
 	if (FAILED(ret) )
 	{
 		*ppDevice = NULL;
@@ -63,31 +63,31 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DResourceHook9::GetDevice
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DResourceHook9::SetPrivateData(THIS_ REFGUID refguid,CONST void* pData,DWORD SizeOfData,DWORD Flags)
 {
-	HRESULT ret = realObject->SetPrivateData(refguid, pData, SizeOfData, Flags);
+	const HRESULT ret = realObject->SetPrivateData(refguid, pData, SizeOfData, Flags);
 	return ret;
 }
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DResourceHook9::GetPrivateData(THIS_ REFGUID refguid,void* pData,DWORD* pSizeOfData)
 {
-	HRESULT ret = realObject->GetPrivateData(refguid, pData, pSizeOfData);
+	const HRESULT ret = realObject->GetPrivateData(refguid, pData, pSizeOfData);
 	return ret;
 }
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DResourceHook9::FreePrivateData(THIS_ REFGUID refguid)
 {
-	HRESULT ret = realObject->FreePrivateData(refguid);
+	const HRESULT ret = realObject->FreePrivateData(refguid);
 	return ret;
 }
 
 COM_DECLSPEC_NOTHROW DWORD STDMETHODCALLTYPE IDirect3DResourceHook9::SetPriority(THIS_ DWORD PriorityNew)
 {
-	DWORD ret = realObject->SetPriority(PriorityNew);
+	const DWORD ret = realObject->SetPriority(PriorityNew);
 	return ret;
 }
 
 COM_DECLSPEC_NOTHROW DWORD STDMETHODCALLTYPE IDirect3DResourceHook9::GetPriority(THIS)
 {
-	DWORD ret = realObject->GetPriority();
+	const DWORD ret = realObject->GetPriority();
 	return ret;
 }
 
@@ -98,7 +98,7 @@ COM_DECLSPEC_NOTHROW void STDMETHODCALLTYPE IDirect3DResourceHook9::PreLoad(THIS
 
 COM_DECLSPEC_NOTHROW D3DRESOURCETYPE STDMETHODCALLTYPE IDirect3DResourceHook9::GetType(THIS)
 {
-	D3DRESOURCETYPE ret = realObject->GetType();
+	const D3DRESOURCETYPE ret = realObject->GetType();
 	return ret;
 }
 

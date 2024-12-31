@@ -586,7 +586,7 @@ void BuildVertexShader(const DeviceState& state, IDirect3DDevice9Hook* const dev
 		__debugbreak();
 	}
 
-	IDirect3DVertexShader9Hook* newVertexShaderHook = dynamic_cast<IDirect3DVertexShader9Hook*>(newVertexShader);
+	IDirect3DVertexShader9Hook* const newVertexShaderHook = dynamic_cast<IDirect3DVertexShader9Hook* const>(newVertexShader);
 	if (!newVertexShaderHook)
 	{
 		DbgBreakPrint("Error: CreateVertexShader returned a non-hooked pointer!");

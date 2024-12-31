@@ -4,7 +4,7 @@
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3D9Hook::QueryInterface(THIS_ REFIID riid, void** ppvObj) 
 {
-	HRESULT ret = d3d9->QueryInterface(riid, ppvObj);
+	const HRESULT ret = d3d9->QueryInterface(riid, ppvObj);
 	if (ret == NOERROR)
 	{
 		*ppvObj = this;
@@ -15,14 +15,14 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3D9Hook::QueryInterface(TH
 
 COM_DECLSPEC_NOTHROW ULONG STDMETHODCALLTYPE IDirect3D9Hook::AddRef(THIS) 
 {
-	ULONG ret = d3d9->AddRef();
+	const ULONG ret = d3d9->AddRef();
 	++refCount;
 	return ret;
 }
 
 COM_DECLSPEC_NOTHROW ULONG STDMETHODCALLTYPE IDirect3D9Hook::Release(THIS) 
 {
-	ULONG ret = d3d9->Release();
+	const ULONG ret = d3d9->Release();
 	if (--refCount == 0)
 	{
 #ifdef DEBUGPRINT_D3DHOOKOBJECT_FULLRELEASES
@@ -40,73 +40,73 @@ COM_DECLSPEC_NOTHROW ULONG STDMETHODCALLTYPE IDirect3D9Hook::Release(THIS)
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3D9Hook::RegisterSoftwareDevice(THIS_ void* pInitializeFunction) 
 {
-	HRESULT ret = d3d9->RegisterSoftwareDevice(pInitializeFunction);
+	const HRESULT ret = d3d9->RegisterSoftwareDevice(pInitializeFunction);
 	return ret;
 }
 
 COM_DECLSPEC_NOTHROW UINT STDMETHODCALLTYPE IDirect3D9Hook::GetAdapterCount(THIS)
 {
-	UINT ret = d3d9->GetAdapterCount();
+	const UINT ret = d3d9->GetAdapterCount();
 	return ret;
 }
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3D9Hook::GetAdapterIdentifier(THIS_ UINT Adapter, DWORD Flags, D3DADAPTER_IDENTIFIER9* pIdentifier) 
 {
-	HRESULT ret = d3d9->GetAdapterIdentifier(Adapter, Flags, pIdentifier);
+	const HRESULT ret = d3d9->GetAdapterIdentifier(Adapter, Flags, pIdentifier);
 	return ret;
 }
 
 COM_DECLSPEC_NOTHROW UINT STDMETHODCALLTYPE IDirect3D9Hook::GetAdapterModeCount(THIS_ UINT Adapter, D3DFORMAT Format)
 {
-	UINT ret = d3d9->GetAdapterModeCount(Adapter, Format);
+	const UINT ret = d3d9->GetAdapterModeCount(Adapter, Format);
 	return ret;
 }
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3D9Hook::EnumAdapterModes(THIS_ UINT Adapter, D3DFORMAT Format, UINT Mode, D3DDISPLAYMODE* pMode)
 {
-	HRESULT ret = d3d9->EnumAdapterModes(Adapter, Format, Mode, pMode);
+	const HRESULT ret = d3d9->EnumAdapterModes(Adapter, Format, Mode, pMode);
 	return ret;
 }
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3D9Hook::GetAdapterDisplayMode(THIS_ UINT Adapter, D3DDISPLAYMODE* pMode)
 {
-	HRESULT ret = d3d9->GetAdapterDisplayMode(Adapter, pMode);
+	const HRESULT ret = d3d9->GetAdapterDisplayMode(Adapter, pMode);
 	return ret;
 }
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3D9Hook::CheckDeviceType(THIS_ UINT Adapter, D3DDEVTYPE DevType, D3DFORMAT AdapterFormat, D3DFORMAT BackBufferFormat, BOOL bWindowed)
 {
-	HRESULT ret = d3d9->CheckDeviceType(Adapter, DevType, AdapterFormat, BackBufferFormat, bWindowed);
+	const HRESULT ret = d3d9->CheckDeviceType(Adapter, DevType, AdapterFormat, BackBufferFormat, bWindowed);
 	return ret;
 }
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3D9Hook::CheckDeviceFormat(THIS_ UINT Adapter, D3DDEVTYPE DeviceType, D3DFORMAT AdapterFormat, DWORD Usage, D3DRESOURCETYPE RType, D3DFORMAT CheckFormat)
 {
-	HRESULT ret = d3d9->CheckDeviceFormat(Adapter, DeviceType, AdapterFormat, Usage, RType, CheckFormat);
+	const HRESULT ret = d3d9->CheckDeviceFormat(Adapter, DeviceType, AdapterFormat, Usage, RType, CheckFormat);
 	return ret;
 }
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3D9Hook::CheckDeviceMultiSampleType(THIS_ UINT Adapter, D3DDEVTYPE DeviceType, D3DFORMAT SurfaceFormat, BOOL Windowed, D3DMULTISAMPLE_TYPE MultiSampleType, DWORD* pQualityLevels)
 {
-	HRESULT ret = d3d9->CheckDeviceMultiSampleType(Adapter, DeviceType, SurfaceFormat, Windowed, MultiSampleType, pQualityLevels);
+	const HRESULT ret = d3d9->CheckDeviceMultiSampleType(Adapter, DeviceType, SurfaceFormat, Windowed, MultiSampleType, pQualityLevels);
 	return ret;
 }
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3D9Hook::CheckDepthStencilMatch(THIS_ UINT Adapter, D3DDEVTYPE DeviceType, D3DFORMAT AdapterFormat, D3DFORMAT RenderTargetFormat, D3DFORMAT DepthStencilFormat)
 {
-	HRESULT ret = d3d9->CheckDepthStencilMatch(Adapter, DeviceType, AdapterFormat, RenderTargetFormat, DepthStencilFormat);
+	const HRESULT ret = d3d9->CheckDepthStencilMatch(Adapter, DeviceType, AdapterFormat, RenderTargetFormat, DepthStencilFormat);
 	return ret;
 }
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3D9Hook::CheckDeviceFormatConversion(THIS_ UINT Adapter, D3DDEVTYPE DeviceType, D3DFORMAT SourceFormat, D3DFORMAT TargetFormat)
 {
-	HRESULT ret = d3d9->CheckDeviceFormatConversion(Adapter, DeviceType, SourceFormat, TargetFormat);
+	const HRESULT ret = d3d9->CheckDeviceFormatConversion(Adapter, DeviceType, SourceFormat, TargetFormat);
 	return ret;
 }
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3D9Hook::GetDeviceCaps(THIS_ UINT Adapter, D3DDEVTYPE DeviceType, D3DCAPS9* pCaps)
 {
-	HRESULT ret = d3d9->GetDeviceCaps(Adapter, DeviceType, pCaps);
+	const HRESULT ret = d3d9->GetDeviceCaps(Adapter, DeviceType, pCaps);
 	if (FAILED(ret) )
 		return ret;
 
@@ -120,7 +120,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3D9Hook::GetDeviceCaps(THI
 
 COM_DECLSPEC_NOTHROW HMONITOR STDMETHODCALLTYPE IDirect3D9Hook::GetAdapterMonitor(THIS_ UINT Adapter)
 {
-	HMONITOR ret = d3d9->GetAdapterMonitor(Adapter);
+	const HMONITOR ret = d3d9->GetAdapterMonitor(Adapter);
 	return ret;
 }
 
@@ -360,7 +360,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3D9Hook::CreateDevice(THIS
 #endif
 
 	LPDIRECT3DDEVICE9 realDevice = NULL;
-	HRESULT ret = d3d9->CreateDevice(Adapter, DeviceType, hFocusWindow, BehaviorFlags, &modifiedParams, &realDevice);
+	const HRESULT ret = d3d9->CreateDevice(Adapter, DeviceType, hFocusWindow, BehaviorFlags, &modifiedParams, &realDevice);
 	if (FAILED(ret) || !realDevice)
 	{
 		*ppReturnedDeviceInterface = NULL;
@@ -377,7 +377,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3D9Hook::CreateDevice(THIS
 		else
 			sprintf(adapterString, "%u", Adapter);
 		char createDeviceSettings[4096] = {0};
-		sprintf(createDeviceSettings, "CreateDevice params:\n\tAdapter = %s\n\tDeviceType = %s\n\tBehaviorFlags = 0x%08X (%s)\n\tppBackBufferWidth = %u\n\tppBackBufferHeight = %u\n\tppBackBufferFormat = %s(%i)\n\tppBackBufferCount = %u\n\tppMultiSampleType = %u\n\tppMultiSampleQuality = %u\n\tppSwapEffect = %s\n\tppWindowed = %s\n\tppEnableAutoDepthStencil = %s\n\tppAutoDepthStencilFormat = %s (%i)\n\tppFlags = 0x%08X (%s)\n\tppFullScreen_RefreshRateInHz = %u\n\tppPresentationInterval = %s (%u)\n\n",
+		sprintf(createDeviceSettings, "CreateDevice params:\n\tAdapter = %s\n\tDeviceType = %s\n\tBehaviorFlags = 0x%08X (%s)\n\tppBackBufferWidth = %u\n\tppBackBufferHeight = %u\n\tppBackBufferFormat = %s(%i)\n\tppBackBufferCount = %u\n\tppMultiSampleType = %i\n\tppMultiSampleQuality = %u\n\tppSwapEffect = %s\n\tppWindowed = %s\n\tppEnableAutoDepthStencil = %s\n\tppAutoDepthStencilFormat = %s (%i)\n\tppFlags = 0x%08X (%s)\n\tppFullScreen_RefreshRateInHz = %u\n\tppPresentationInterval = %s (%u)\n\n",
 			adapterString, GetDeviceTypeString(DeviceType), BehaviorFlags, StaticGetDeviceBehaviorFlagsString(BehaviorFlags), modifiedParams.BackBufferWidth, modifiedParams.BackBufferHeight, GetBackbufferFormatString(modifiedParams.BackBufferFormat), modifiedParams.BackBufferFormat, modifiedParams.BackBufferCount, modifiedParams.MultiSampleType, modifiedParams.MultiSampleQuality, SwapEffectToString(modifiedParams.SwapEffect), modifiedParams.Windowed ? "TRUE" : "FALSE", modifiedParams.EnableAutoDepthStencil ? "TRUE" : "FALSE", GetDepthbufferFormatString(modifiedParams.AutoDepthStencilFormat), modifiedParams.AutoDepthStencilFormat, modifiedParams.Flags, StaticGetPresentFlagsString(modifiedParams.Flags), modifiedParams.FullScreen_RefreshRateInHz, GetPresentationIntervalString(modifiedParams.PresentationInterval), modifiedParams.PresentationInterval);
 #pragma warning(pop)
 		OutputDebugStringA(createDeviceSettings);
@@ -391,7 +391,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3D9Hook::CreateDevice(THIS
 	}
 
 	void* const alignedAlloc = _aligned_malloc(sizeof(IDirect3DDevice9Hook), 16);
-	IDirect3DDevice9Hook* newHookDevice = new (alignedAlloc) IDirect3DDevice9Hook(realDevice, this);
+	IDirect3DDevice9Hook* const newHookDevice = new (alignedAlloc) IDirect3DDevice9Hook(realDevice, this);
 	*ppReturnedDeviceInterface = newHookDevice;
 	newHookDevice->InitializeState(modifiedParams, DeviceType, BehaviorFlags, hFocusWindow);
 

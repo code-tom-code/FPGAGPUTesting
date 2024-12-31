@@ -7,7 +7,7 @@
 /*** IUnknown methods ***/
 COM_DECLSPEC_NOTHROW HRESULT IDirect3DTexture9Hook::QueryInterface(THIS_ REFIID riid, void** ppvObj)
 {
-	HRESULT ret = realObject->QueryInterface(riid, ppvObj);
+	const HRESULT ret = realObject->QueryInterface(riid, ppvObj);
 	if (ret == NOERROR)
 	{
 		*ppvObj = this;
@@ -18,14 +18,14 @@ COM_DECLSPEC_NOTHROW HRESULT IDirect3DTexture9Hook::QueryInterface(THIS_ REFIID 
 
 COM_DECLSPEC_NOTHROW ULONG IDirect3DTexture9Hook::AddRef(THIS)
 {
-	ULONG ret = realObject->AddRef();
+	const ULONG ret = realObject->AddRef();
 	++refCount;
 	return ret;
 }
 
 COM_DECLSPEC_NOTHROW ULONG IDirect3DTexture9Hook::Release(THIS)
 {
-	ULONG ret = realObject->Release();
+	const ULONG ret = realObject->Release();
 	if (--refCount == 0)
 	{
 #ifdef DEBUGPRINT_D3DHOOKOBJECT_FULLRELEASES
@@ -45,7 +45,7 @@ COM_DECLSPEC_NOTHROW ULONG IDirect3DTexture9Hook::Release(THIS)
 COM_DECLSPEC_NOTHROW HRESULT IDirect3DTexture9Hook::GetDevice(THIS_ IDirect3DDevice9** ppDevice)
 {
 	LPDIRECT3DDEVICE9 realD3D9dev = NULL;
-	HRESULT ret = realObject->GetDevice(&realD3D9dev);
+	const HRESULT ret = realObject->GetDevice(&realD3D9dev);
 	if (FAILED(ret) )
 	{
 		*ppDevice = NULL;
@@ -67,31 +67,31 @@ COM_DECLSPEC_NOTHROW HRESULT IDirect3DTexture9Hook::GetDevice(THIS_ IDirect3DDev
 
 COM_DECLSPEC_NOTHROW HRESULT IDirect3DTexture9Hook::SetPrivateData(THIS_ REFGUID refguid,CONST void* pData,DWORD SizeOfData,DWORD Flags)
 {
-	HRESULT ret = realObject->SetPrivateData(refguid, pData, SizeOfData, Flags);
+	const HRESULT ret = realObject->SetPrivateData(refguid, pData, SizeOfData, Flags);
 	return ret;
 }
 
 COM_DECLSPEC_NOTHROW HRESULT IDirect3DTexture9Hook::GetPrivateData(THIS_ REFGUID refguid,void* pData,DWORD* pSizeOfData)
 {
-	HRESULT ret = realObject->GetPrivateData(refguid, pData, pSizeOfData);
+	const HRESULT ret = realObject->GetPrivateData(refguid, pData, pSizeOfData);
 	return ret;
 }
 
 COM_DECLSPEC_NOTHROW HRESULT IDirect3DTexture9Hook::FreePrivateData(THIS_ REFGUID refguid)
 {
-	HRESULT ret = realObject->FreePrivateData(refguid);
+	const HRESULT ret = realObject->FreePrivateData(refguid);
 	return ret;
 }
 
 COM_DECLSPEC_NOTHROW DWORD IDirect3DTexture9Hook::SetPriority(THIS_ DWORD PriorityNew)
 {
-	DWORD ret = realObject->SetPriority(PriorityNew);
+	const DWORD ret = realObject->SetPriority(PriorityNew);
 	return ret;
 }
 
 COM_DECLSPEC_NOTHROW DWORD IDirect3DTexture9Hook::GetPriority(THIS)
 {
-	DWORD ret = realObject->GetPriority();
+	const DWORD ret = realObject->GetPriority();
 	return ret;
 }
 
@@ -114,25 +114,25 @@ COM_DECLSPEC_NOTHROW D3DRESOURCETYPE IDirect3DTexture9Hook::GetType(THIS)
 
 COM_DECLSPEC_NOTHROW DWORD IDirect3DTexture9Hook::SetLOD(THIS_ DWORD LODNew)
 {
-	DWORD ret = realObject->SetLOD(LODNew);
+	const DWORD ret = realObject->SetLOD(LODNew);
 	return ret;
 }
 
 COM_DECLSPEC_NOTHROW DWORD IDirect3DTexture9Hook::GetLOD(THIS)
 {
-	DWORD ret = realObject->GetLOD();
+	const DWORD ret = realObject->GetLOD();
 	return ret;
 }
 
 COM_DECLSPEC_NOTHROW DWORD IDirect3DTexture9Hook::GetLevelCount(THIS)
 {
-	DWORD ret = realObject->GetLevelCount();
+	const DWORD ret = realObject->GetLevelCount();
 	return ret;
 }
 
 COM_DECLSPEC_NOTHROW HRESULT IDirect3DTexture9Hook::SetAutoGenFilterType(THIS_ D3DTEXTUREFILTERTYPE FilterType)
 {
-	HRESULT ret = realObject->SetAutoGenFilterType(FilterType);
+	const HRESULT ret = realObject->SetAutoGenFilterType(FilterType);
 	if (FAILED(ret) )
 		return ret;
 
@@ -175,7 +175,7 @@ COM_DECLSPEC_NOTHROW HRESULT IDirect3DTexture9Hook::GetLevelDesc(THIS_ UINT Leve
 		return D3DERR_INVALIDCALL;
 	}
 
-	HRESULT ret = surfaces[Level]->GetDesc(pDesc);
+	const HRESULT ret = surfaces[Level]->GetDesc(pDesc);
 	if (FAILED(ret) )
 		return ret;
 
@@ -185,7 +185,7 @@ COM_DECLSPEC_NOTHROW HRESULT IDirect3DTexture9Hook::GetLevelDesc(THIS_ UINT Leve
 COM_DECLSPEC_NOTHROW HRESULT IDirect3DTexture9Hook::GetSurfaceLevel(THIS_ UINT Level,IDirect3DSurface9** ppSurfaceLevel)
 {
 	LPDIRECT3DSURFACE9 realSurface = NULL;
-	HRESULT ret = realObject->GetSurfaceLevel(Level, &realSurface);
+	const HRESULT ret = realObject->GetSurfaceLevel(Level, &realSurface);
 	if (FAILED(ret) )
 		return ret;
 
@@ -223,7 +223,7 @@ COM_DECLSPEC_NOTHROW HRESULT IDirect3DTexture9Hook::GetSurfaceLevel(THIS_ UINT L
 
 COM_DECLSPEC_NOTHROW HRESULT IDirect3DTexture9Hook::LockRect(THIS_ UINT Level,D3DLOCKED_RECT* pLockedRect,CONST RECT* pRect,DWORD Flags)
 {
-	/*HRESULT ret = realObject->LockRect(Level, pLockedRect, pRect, Flags);
+	/*const HRESULT ret = realObject->LockRect(Level, pLockedRect, pRect, Flags);
 	if (FAILED(ret) )
 		return ret;*/
 
@@ -235,7 +235,7 @@ COM_DECLSPEC_NOTHROW HRESULT IDirect3DTexture9Hook::LockRect(THIS_ UINT Level,D3
 		return D3DERR_INVALIDCALL;
 	}
 
-	HRESULT ret = surfaces[Level]->LockRect(pLockedRect, pRect, Flags);
+	const HRESULT ret = surfaces[Level]->LockRect(pLockedRect, pRect, Flags);
 	if (FAILED(ret) )
 		return ret;
 
@@ -244,7 +244,7 @@ COM_DECLSPEC_NOTHROW HRESULT IDirect3DTexture9Hook::LockRect(THIS_ UINT Level,D3
 
 COM_DECLSPEC_NOTHROW HRESULT IDirect3DTexture9Hook::UnlockRect(THIS_ UINT Level)
 {
-	//HRESULT ret = realObject->UnlockRect(Level);
+	//const HRESULT ret = realObject->UnlockRect(Level);
 
 	if (Level >= surfaces.size() )
 	{
@@ -254,7 +254,7 @@ COM_DECLSPEC_NOTHROW HRESULT IDirect3DTexture9Hook::UnlockRect(THIS_ UINT Level)
 		return D3DERR_INVALIDCALL;
 	}
 
-	HRESULT ret = surfaces[Level]->UnlockRect();
+	const HRESULT ret = surfaces[Level]->UnlockRect();
 	if (FAILED(ret) )
 		return ret;
 
@@ -263,7 +263,7 @@ COM_DECLSPEC_NOTHROW HRESULT IDirect3DTexture9Hook::UnlockRect(THIS_ UINT Level)
 
 COM_DECLSPEC_NOTHROW HRESULT IDirect3DTexture9Hook::AddDirtyRect(THIS_ CONST RECT* pDirtyRect)
 {
-	HRESULT ret = realObject->AddDirtyRect(pDirtyRect);
+	const HRESULT ret = realObject->AddDirtyRect(pDirtyRect);
 	return ret;
 }
 
@@ -321,7 +321,7 @@ void IDirect3DTexture9Hook::CreateTexture(const UINT _Width, const UINT _Height,
 			}
 		}
 
-		IDirect3DSurface9Hook* newSurface = new IDirect3DSurface9Hook(realSurface, parentDevice);
+		IDirect3DSurface9Hook* const newSurface = new IDirect3DSurface9Hook(realSurface, parentDevice);
 		newSurface->CreateTextureImplicitSurface(surfaceWidth, surfaceHeight, InternalFormat, InternalPool, InternalUsage, x, this);
 
 		surfaceWidth >>= 1;

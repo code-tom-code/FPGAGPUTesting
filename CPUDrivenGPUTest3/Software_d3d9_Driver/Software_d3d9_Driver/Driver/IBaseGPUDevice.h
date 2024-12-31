@@ -188,7 +188,7 @@ struct GPUDeviceState
 	unsigned deviceCachedGuardBandXScale = 4;
 	unsigned deviceCachedGuardBandYScale = 5;
 	CachedVertexStream deviceCachedVertexStreams[GPU_MAX_NUM_VERTEX_STREAMS];
-	float4 deviceCachedConstantRegisters[GPU_SHADER_MAX_NUM_CONSTANT_FLOAT_REG];
+	float4 deviceCachedConstantRegisters[GPU_SHADER_MAX_NUM_CONSTANT_FLOAT_REG] = {0};
 	TriangleSetupStateBlock deviceCachedTriSetupState;
 	DepthStateBlock deviceCachedDepthState;
 	TextureBlock deviceCachedTextureState;

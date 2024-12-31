@@ -871,7 +871,7 @@ struct endFrameStatsResponse : command
 	eSystemType system : 4; // 3 downto 0
 	unsigned char systemMetricID : 4; // 7 downto 4
 	eMetricSpace metricsType = MS_UnknownMetrics; // 15 downto 8
-	USHORT frameID; // 31 downto 16
+	USHORT frameID = 0; // 31 downto 16
 
 	// Payload 1:
 	DWORD value = 0; // The value for this stat // 31 downto 0

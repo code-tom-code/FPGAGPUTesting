@@ -223,6 +223,12 @@ int main(const unsigned argc, const char* const argv[])
 				const float* afterValue = NULL;
 				switch (thisDiffState.deltaRegisterChannel)
 				{
+				default:
+#ifdef _DEBUG
+				{
+					__debugbreak(); // Should never be here!
+				}
+#endif
 				case 0:
 					beforeValue = &(shaderTraceRFStates[x].regFileUnion.LogicalOrder.lanes[0].regTypes[thisDiffState.deltaRegisterType].regIndices[thisDiffState.deltaRegisterIndex].x.f);
 					afterValue = &(shaderTraceRFStates[x + 1].regFileUnion.LogicalOrder.lanes[0].regTypes[thisDiffState.deltaRegisterType].regIndices[thisDiffState.deltaRegisterIndex].x.f);
@@ -262,6 +268,12 @@ int main(const unsigned argc, const char* const argv[])
 					const float* currentValue = NULL;
 					switch (thisDestRegChannel)
 					{
+					default:
+#ifdef _DEBUG
+					{
+						__debugbreak(); // Should never be here!
+					}
+#endif
 					case 0:
 						currentValue = &(shaderTraceRFStates[x].regFileUnion.LogicalOrder.lanes[0].regTypes[thisDestRegType].regIndices[thisDestRegIndex].x.f);
 						break;

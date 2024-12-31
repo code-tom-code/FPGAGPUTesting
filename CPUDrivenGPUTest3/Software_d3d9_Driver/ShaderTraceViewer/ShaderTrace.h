@@ -56,12 +56,12 @@ struct DeviceRegisterFile
 
 		//const deviceRegFloat4* floatPtr = (const deviceRegFloat4* const)&regFileUnion.DeviceWriteOrder;
 		const float* floatPtr = (const float* const)&regFileUnion.DeviceWriteOrder;
-		unsigned regFileType = 0;
+		/*unsigned regFileType = 0;
 		unsigned regIndex = 0;
 		unsigned readQuad = 0;
 		unsigned channel = 0;
 
-		/*while (true)
+		while (true)
 		{
 			for (unsigned waveLaneID = 0; waveLaneID < 4; ++waveLaneID)
 			{

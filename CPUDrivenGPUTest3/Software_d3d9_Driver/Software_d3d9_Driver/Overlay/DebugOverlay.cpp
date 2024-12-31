@@ -58,7 +58,7 @@ struct vert2D
 
 perDeviceResources* const GetPerDeviceResources(const IDirect3DDevice9Hook* const hookDev)
 {
-	std::map<const IDirect3DDevice9Hook*, perDeviceResources>::iterator findDev = overlayEnabledDevicesSet.find(hookDev);
+	const std::map<const IDirect3DDevice9Hook*, perDeviceResources>::iterator findDev = overlayEnabledDevicesSet.find(hookDev);
 	if (findDev == overlayEnabledDevicesSet.end() )
 		return NULL;
 	return &(findDev->second);
@@ -166,7 +166,7 @@ static inline void InitializeOverlayResourcesForDevice(IDirect3DDevice9Hook* con
 	}
 
 	D3DLOCKED_RECT d3dlr = {0};
-	if (FAILED(thisResources.fontMapTexture->LockRect(0, &d3dlr, NULL, 0) ) )
+	if (FAILED(thisResources.fontMapTexture->LockRect(0, &d3dlr, NULL, 0) ) || !d3dlr.pBits)
 	{
 #ifdef _DEBUG
 		__debugbreak(); // This shouldn't fail if the device is in a presentable state
@@ -274,7 +274,7 @@ void OverlayDrawString(class IDirect3DDevice9Hook* const hookDev, const char* co
 	if (!str)
 		return;
 
-	const unsigned len = strlen(str);
+	const unsigned len = (const unsigned)strlen(str);
 	if (!len)
 		return;
 
@@ -488,7 +488,7 @@ void OverlaySetDeviceStateForText(class IDirect3DDevice9Hook* const hookDev)
 
 void DeleteOverlay(const class IDirect3DDevice9Hook* const hookDev)
 {
-	std::map<const IDirect3DDevice9Hook*, perDeviceResources>::iterator foundIt = overlayEnabledDevicesSet.find(hookDev);
+	const std::map<const IDirect3DDevice9Hook*, perDeviceResources>::iterator foundIt = overlayEnabledDevicesSet.find(hookDev);
 	if (foundIt == overlayEnabledDevicesSet.end() )
 		return; // This is okay, we may have a device that never created an overlay
 
@@ -504,7 +504,7 @@ void ResetOverlay(const class IDirect3DDevice9Hook* const hookDev)
 
 void SetOverlayScreenState(const class IDirect3DDevice9Hook* const hookDev, const overlayState newState)
 {
-	std::map<const IDirect3DDevice9Hook*, perDeviceResources>::iterator foundIt = overlayEnabledDevicesSet.find(hookDev);
+	const std::map<const IDirect3DDevice9Hook*, perDeviceResources>::iterator foundIt = overlayEnabledDevicesSet.find(hookDev);
 	if (foundIt == overlayEnabledDevicesSet.end() )
 	{
 #ifdef _DEBUG
@@ -518,7 +518,7 @@ void SetOverlayScreenState(const class IDirect3DDevice9Hook* const hookDev, cons
 
 void SetOverlayPerScreenData(const class IDirect3DDevice9Hook* const hookDev, void* const newScreenData)
 {
-	std::map<const IDirect3DDevice9Hook*, perDeviceResources>::iterator foundIt = overlayEnabledDevicesSet.find(hookDev);
+	const std::map<const IDirect3DDevice9Hook*, perDeviceResources>::iterator foundIt = overlayEnabledDevicesSet.find(hookDev);
 	if (foundIt == overlayEnabledDevicesSet.end() )
 	{
 #ifdef _DEBUG
@@ -536,7 +536,7 @@ void SetOverlayPerScreenData(const class IDirect3DDevice9Hook* const hookDev, vo
 
 void* const GetOverlayPerScreenData(const class IDirect3DDevice9Hook* const hookDev)
 {
-	std::map<const IDirect3DDevice9Hook*, perDeviceResources>::iterator foundIt = overlayEnabledDevicesSet.find(hookDev);
+	const std::map<const IDirect3DDevice9Hook*, perDeviceResources>::iterator foundIt = overlayEnabledDevicesSet.find(hookDev);
 	if (foundIt == overlayEnabledDevicesSet.end() )
 	{
 #ifdef _DEBUG

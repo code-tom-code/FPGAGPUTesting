@@ -231,70 +231,70 @@ default:
 		break;
 	case srcOnly:
 		sourceTokens[0] = (const srcParameterToken* const)(baseToken + 1);
-		if (sourceTokens[0]->GetRelativeAddressingType() == D3DSHADER_ADDRMODE_RELATIVE)
+		if (sourceTokens[0]->GetRelativeAddressingType() & D3DSHADER_ADDRMODE_RELATIVE)
 			++relativeTokens;
 		break;
 	case srcSrcOnly:
 		sourceTokens[0] = (const srcParameterToken* const)(baseToken + 1);
-		if (sourceTokens[0]->GetRelativeAddressingType() == D3DSHADER_ADDRMODE_RELATIVE)
+		if (sourceTokens[0]->GetRelativeAddressingType() & D3DSHADER_ADDRMODE_RELATIVE)
 			++relativeTokens;
 		sourceTokens[1] = (const srcParameterToken* const)(baseToken + 2 + relativeTokens);
-		if (sourceTokens[1]->GetRelativeAddressingType() == D3DSHADER_ADDRMODE_RELATIVE)
+		if (sourceTokens[1]->GetRelativeAddressingType() & D3DSHADER_ADDRMODE_RELATIVE)
 			++relativeTokens;
 		break;
 	case dstOnly:
 		destToken = (const dstParameterToken* const)(baseToken + 1);
-		if (destToken->GetRelativeAddressingType() == D3DSHADER_ADDRMODE_RELATIVE)
+		if (destToken->GetRelativeAddressingType() & D3DSHADER_ADDRMODE_RELATIVE)
 			++relativeTokens;
 		break;
 	case srcDst:
 		destToken = (const dstParameterToken* const)(baseToken + 1);
-		if (destToken->GetRelativeAddressingType() == D3DSHADER_ADDRMODE_RELATIVE)
+		if (destToken->GetRelativeAddressingType() & D3DSHADER_ADDRMODE_RELATIVE)
 			++relativeTokens;
 		sourceTokens[0] = (const srcParameterToken* const)(baseToken + 2 + relativeTokens);
-		if (sourceTokens[0]->GetRelativeAddressingType() == D3DSHADER_ADDRMODE_RELATIVE)
+		if (sourceTokens[0]->GetRelativeAddressingType() & D3DSHADER_ADDRMODE_RELATIVE)
 			++relativeTokens;
 		break;
 	case srcSrcDst:
 		destToken = (const dstParameterToken* const)(baseToken + 1);
-		if (destToken->GetRelativeAddressingType() == D3DSHADER_ADDRMODE_RELATIVE)
+		if (destToken->GetRelativeAddressingType() & D3DSHADER_ADDRMODE_RELATIVE)
 			++relativeTokens;
 		sourceTokens[0] = (const srcParameterToken* const)(baseToken + 2 + relativeTokens);
-		if (sourceTokens[0]->GetRelativeAddressingType() == D3DSHADER_ADDRMODE_RELATIVE)
+		if (sourceTokens[0]->GetRelativeAddressingType() & D3DSHADER_ADDRMODE_RELATIVE)
 			++relativeTokens;
 		sourceTokens[1] = (const srcParameterToken* const)(baseToken + 3 + relativeTokens);
-		if (sourceTokens[1]->GetRelativeAddressingType() == D3DSHADER_ADDRMODE_RELATIVE)
+		if (sourceTokens[1]->GetRelativeAddressingType() & D3DSHADER_ADDRMODE_RELATIVE)
 			++relativeTokens;
 		break;
 	case srcSrcSrcDst:
 		destToken = (const dstParameterToken* const)(baseToken + 1);
-		if (destToken->GetRelativeAddressingType() == D3DSHADER_ADDRMODE_RELATIVE)
+		if (destToken->GetRelativeAddressingType() & D3DSHADER_ADDRMODE_RELATIVE)
 			++relativeTokens;
 		sourceTokens[0] = (const srcParameterToken* const)(baseToken + 2 + relativeTokens);
-		if (sourceTokens[0]->GetRelativeAddressingType() == D3DSHADER_ADDRMODE_RELATIVE)
+		if (sourceTokens[0]->GetRelativeAddressingType() & D3DSHADER_ADDRMODE_RELATIVE)
 			++relativeTokens;
 		sourceTokens[1] = (const srcParameterToken* const)(baseToken + 3 + relativeTokens);
-		if (sourceTokens[1]->GetRelativeAddressingType() == D3DSHADER_ADDRMODE_RELATIVE)
+		if (sourceTokens[1]->GetRelativeAddressingType() & D3DSHADER_ADDRMODE_RELATIVE)
 			++relativeTokens;
 		sourceTokens[2] = (const srcParameterToken* const)(baseToken + 4 + relativeTokens);
-		if (sourceTokens[2]->GetRelativeAddressingType() == D3DSHADER_ADDRMODE_RELATIVE)
+		if (sourceTokens[2]->GetRelativeAddressingType() & D3DSHADER_ADDRMODE_RELATIVE)
 			++relativeTokens;
 		break;
 	case srcSrcSrcSrcDst: // Only ever used with D3DSIO_TEXLDD
 		destToken = (const dstParameterToken* const)(baseToken + 1);
-		if (destToken->GetRelativeAddressingType() == D3DSHADER_ADDRMODE_RELATIVE)
+		if (destToken->GetRelativeAddressingType() & D3DSHADER_ADDRMODE_RELATIVE)
 			++relativeTokens;
 		sourceTokens[0] = (const srcParameterToken* const)(baseToken + 2 + relativeTokens);
-		if (sourceTokens[0]->GetRelativeAddressingType() == D3DSHADER_ADDRMODE_RELATIVE)
+		if (sourceTokens[0]->GetRelativeAddressingType() & D3DSHADER_ADDRMODE_RELATIVE)
 			++relativeTokens;
 		sourceTokens[1] = (const srcParameterToken* const)(baseToken + 3 + relativeTokens);
-		if (sourceTokens[1]->GetRelativeAddressingType() == D3DSHADER_ADDRMODE_RELATIVE)
+		if (sourceTokens[1]->GetRelativeAddressingType() & D3DSHADER_ADDRMODE_RELATIVE)
 			++relativeTokens;
 		sourceTokens[2] = (const srcParameterToken* const)(baseToken + 4 + relativeTokens);
-		if (sourceTokens[2]->GetRelativeAddressingType() == D3DSHADER_ADDRMODE_RELATIVE)
+		if (sourceTokens[2]->GetRelativeAddressingType() & D3DSHADER_ADDRMODE_RELATIVE)
 			++relativeTokens;
 		sourceTokens[3] = (const srcParameterToken* const)(baseToken + 5 + relativeTokens);
-		if (sourceTokens[3]->GetRelativeAddressingType() == D3DSHADER_ADDRMODE_RELATIVE)
+		if (sourceTokens[3]->GetRelativeAddressingType() & D3DSHADER_ADDRMODE_RELATIVE)
 			++relativeTokens;
 		break;
 	case customOpcode:

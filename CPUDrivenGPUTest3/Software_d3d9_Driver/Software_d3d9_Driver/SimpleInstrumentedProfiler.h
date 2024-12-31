@@ -2,7 +2,7 @@
 
 #define ENABLE_SIMPLE_PROFILER 0
 
-#ifdef _M_X64 // The new PIX profiler only works for x64 targets
+#if defined(_M_X64) && !defined(_DEBUG) // The new PIX profiler only works for x64 targets
 	#define ENABLE_PIX_PROFILER 1
 #endif
 

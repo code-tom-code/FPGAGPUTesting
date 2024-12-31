@@ -21,8 +21,7 @@ template <>
 static inline void HashContinue(FixedFunctionStateHash& hash, const float data)
 {
 	const unsigned rotateAmount = (sizeof(float) * 8) % (sizeof(FixedFunctionStateHash) * 8);
-	if (rotateAmount != 0)
-		hash = _rotl64(hash, rotateAmount);
+	hash = _rotl64(hash, rotateAmount);
 	const DWORD dwFlt = *(const DWORD* const)&data;
 	hash ^= dwFlt;
 }

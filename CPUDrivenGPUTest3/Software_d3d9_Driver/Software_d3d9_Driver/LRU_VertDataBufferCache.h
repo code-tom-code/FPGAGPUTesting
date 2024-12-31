@@ -35,7 +35,7 @@ public:
 		if (LRU_List.empty() )
 			return DeviceAllocatedBuffer();
 
-		std::list<DeviceAllocatedBuffer>::iterator LRU_Iter = LRU_List.begin();
+		const std::list<DeviceAllocatedBuffer>::iterator LRU_Iter = LRU_List.begin();
 		const DeviceAllocatedBuffer purgeData = *LRU_Iter;
 		LRU_List.erase(LRU_Iter);
 

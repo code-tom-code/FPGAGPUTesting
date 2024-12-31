@@ -2610,6 +2610,12 @@ void DumpDeviceBytecodeToFile(const DeviceShaderInfo& inProgressShaderInfo, cons
 	}
 
 	DeviceBytecode* const tempAlloc = (DeviceBytecode* const)calloc(sizeof(DeviceBytecode) + sizeof(instructionSlot) * numInstructionTokens, 1);
+#ifdef _DEBUG
+	if (!tempAlloc)
+	{
+		__debugbreak(); // Out of memory!
+	}
+#endif
 	memcpy(&tempAlloc->deviceShaderInfo, &inProgressShaderInfo, sizeof(DeviceShaderInfo) );
 	tempAlloc->deviceShaderInfo.deviceInstructionTokenCount = numInstructionTokens;
 	memcpy(&tempAlloc->deviceInstructions, inProgressInstructionStream, numInstructionTokens * sizeof(instructionSlot) );

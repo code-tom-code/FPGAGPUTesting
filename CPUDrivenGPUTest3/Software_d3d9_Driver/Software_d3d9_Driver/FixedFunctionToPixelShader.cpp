@@ -582,7 +582,7 @@ static inline void BuildPixelStateDefines(const DeviceState& state, std::vector<
 
 	if (!defines.empty() )
 	{
-		D3DXMACRO emptyLastMacro = {0};
+		const D3DXMACRO emptyLastMacro = {0};
 		defines.push_back(emptyLastMacro);
 	}
 }
@@ -641,7 +641,7 @@ void BuildPixelShader(const DeviceState& state, IDirect3DDevice9Hook* const dev,
 		__debugbreak();
 	}
 
-	IDirect3DPixelShader9Hook* newPixelShaderHook = dynamic_cast<IDirect3DPixelShader9Hook*>(newPixelShader);
+	IDirect3DPixelShader9Hook* const newPixelShaderHook = dynamic_cast<IDirect3DPixelShader9Hook* const>(newPixelShader);
 	if (!newPixelShaderHook)
 	{
 		DbgBreakPrint("Error: CreatePixelShader returned a non-hooked pointer!");

@@ -139,7 +139,7 @@ static inline const bool JITBATFile(const ShaderInfo& shaderInfo, const char* co
 	}
 
 	DWORD numBytesWritten = 0;
-	if (!WriteFile(hBatFile, &(batfile.front() ), batfile.size(), &numBytesWritten, NULL) )
+	if (!WriteFile(hBatFile, &(batfile.front() ), (const DWORD)batfile.size(), &numBytesWritten, NULL) )
 	{
 		DbgBreakPrint("Error in WriteFile");
 		return false;
@@ -232,6 +232,7 @@ const bool JITNewShader(const ShaderInfo& shaderInfo, const char* const shaderFi
 		case ERROR_ALREADY_EXISTS:
 			// This is fine
 			break;
+		default:
 		case ERROR_PATH_NOT_FOUND:
 			// This is not fine!
 			DbgBreakPrint("Error in CreateDirectory");

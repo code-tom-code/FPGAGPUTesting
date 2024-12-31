@@ -78,7 +78,7 @@ static inline const D3DCOLOR DXT565To888(const unsigned short color565)
 /*** IUnknown methods ***/
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DSurface9Hook::QueryInterface(THIS_ REFIID riid, void** ppvObj)
 {
-	HRESULT ret = realObject->QueryInterface(riid, ppvObj);
+	const HRESULT ret = realObject->QueryInterface(riid, ppvObj);
 	if (ret == NOERROR)
 	{
 		*ppvObj = this;
@@ -89,7 +89,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DSurface9Hook::QueryInter
 
 COM_DECLSPEC_NOTHROW ULONG STDMETHODCALLTYPE IDirect3DSurface9Hook::AddRef(THIS)
 {
-	ULONG ret = realObject->AddRef();
+	const ULONG ret = realObject->AddRef();
 	++refCount;
 #ifdef _DEBUG
 	char buffer[256] = {0};
@@ -104,7 +104,7 @@ COM_DECLSPEC_NOTHROW ULONG STDMETHODCALLTYPE IDirect3DSurface9Hook::AddRef(THIS)
 
 COM_DECLSPEC_NOTHROW ULONG STDMETHODCALLTYPE IDirect3DSurface9Hook::Release(THIS)
 {
-	ULONG ret = realObject->Release();
+	const ULONG ret = realObject->Release();
 	if (--refCount == 0)
 	{
 #ifdef DEBUGPRINT_D3DHOOKOBJECT_FULLRELEASES
@@ -124,7 +124,7 @@ COM_DECLSPEC_NOTHROW ULONG STDMETHODCALLTYPE IDirect3DSurface9Hook::Release(THIS
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DSurface9Hook::GetDevice(THIS_ IDirect3DDevice9** ppDevice)
 {
 	LPDIRECT3DDEVICE9 realD3D9dev = NULL;
-	HRESULT ret = realObject->GetDevice(&realD3D9dev);
+	const HRESULT ret = realObject->GetDevice(&realD3D9dev);
 	if (FAILED(ret) )
 	{
 		*ppDevice = NULL;
@@ -144,31 +144,31 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DSurface9Hook::GetDevice(
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DSurface9Hook::SetPrivateData(THIS_ REFGUID refguid,CONST void* pData,DWORD SizeOfData,DWORD Flags)
 {
-	HRESULT ret = realObject->SetPrivateData(refguid, pData, SizeOfData, Flags);
+	const HRESULT ret = realObject->SetPrivateData(refguid, pData, SizeOfData, Flags);
 	return ret;
 }
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DSurface9Hook::GetPrivateData(THIS_ REFGUID refguid,void* pData,DWORD* pSizeOfData)
 {
-	HRESULT ret = realObject->GetPrivateData(refguid, pData, pSizeOfData);
+	const HRESULT ret = realObject->GetPrivateData(refguid, pData, pSizeOfData);
 	return ret;
 }
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DSurface9Hook::FreePrivateData(THIS_ REFGUID refguid)
 {
-	HRESULT ret = realObject->FreePrivateData(refguid);
+	const HRESULT ret = realObject->FreePrivateData(refguid);
 	return ret;
 }
 
 COM_DECLSPEC_NOTHROW DWORD STDMETHODCALLTYPE IDirect3DSurface9Hook::SetPriority(THIS_ DWORD PriorityNew)
 {
-	DWORD ret = realObject->SetPriority(PriorityNew);
+	const DWORD ret = realObject->SetPriority(PriorityNew);
 	return ret;
 }
 
 COM_DECLSPEC_NOTHROW DWORD STDMETHODCALLTYPE IDirect3DSurface9Hook::GetPriority(THIS)
 {
-	DWORD ret = realObject->GetPriority();
+	const DWORD ret = realObject->GetPriority();
 	return ret;
 }
 
@@ -179,13 +179,13 @@ COM_DECLSPEC_NOTHROW void STDMETHODCALLTYPE IDirect3DSurface9Hook::PreLoad(THIS)
 
 COM_DECLSPEC_NOTHROW D3DRESOURCETYPE STDMETHODCALLTYPE IDirect3DSurface9Hook::GetType(THIS)
 {
-	D3DRESOURCETYPE ret = realObject->GetType();
+	const D3DRESOURCETYPE ret = realObject->GetType();
 	return ret;
 }
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DSurface9Hook::GetContainer(THIS_ REFIID riid,void** ppContainer)
 {
-	HRESULT ret = realObject->GetContainer(riid, ppContainer);
+	const HRESULT ret = realObject->GetContainer(riid, ppContainer);
 	if (FAILED(ret) )
 		return ret;
 
@@ -1281,13 +1281,13 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DSurface9Hook::UnlockRect
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DSurface9Hook::GetDC(THIS_ HDC *phdc)
 {
-	HRESULT ret = realObject->GetDC(phdc);
+	const HRESULT ret = realObject->GetDC(phdc);
 	return ret;
 }
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DSurface9Hook::ReleaseDC(THIS_ HDC hdc)
 {
-	HRESULT ret = realObject->ReleaseDC(hdc);
+	const HRESULT ret = realObject->ReleaseDC(hdc);
 	return ret;
 }
 
@@ -2526,38 +2526,40 @@ static const float gamma2_2 = 2.2f;
 template <const unsigned char writeMask>
 static inline void GammaCorrectSample(D3DXVECTOR4& outColor)
 {
-	if (writeMask & 0x1)
+	if ( (writeMask & 0x1) != 0)
 		outColor.x = powf(outColor.x, gamma2_2);
-	if (writeMask & 0x2)
+	if ( (writeMask & 0x2) != 0)
 		outColor.y = powf(outColor.y, gamma2_2);
-	if (writeMask & 0x4)
+	if ( (writeMask & 0x4) != 0)
 		outColor.z = powf(outColor.z, gamma2_2);
+	// Do not gamma-correct the alpha channel
 }
 
 template <const unsigned char writeMask, const unsigned char pixelWriteMask>
 static inline void GammaCorrectSample4(D3DXVECTOR4 (&outColor4)[4])
 {
-	if (writeMask & 0x1)
+	if ( (writeMask & 0x1) != 0)
 	{
 		if (pixelWriteMask & 0x1) outColor4[0].x = powf(outColor4[0].x, gamma2_2);
 		if (pixelWriteMask & 0x2) outColor4[1].x = powf(outColor4[1].x, gamma2_2);
 		if (pixelWriteMask & 0x4) outColor4[2].x = powf(outColor4[2].x, gamma2_2);
 		if (pixelWriteMask & 0x8) outColor4[3].x = powf(outColor4[3].x, gamma2_2);
 	}
-	if (writeMask & 0x2)
+	if ( (writeMask & 0x2) != 0)
 	{
 		if (pixelWriteMask & 0x1) outColor4[0].y = powf(outColor4[0].y, gamma2_2);
 		if (pixelWriteMask & 0x2) outColor4[1].y = powf(outColor4[1].y, gamma2_2);
 		if (pixelWriteMask & 0x4) outColor4[2].y = powf(outColor4[2].y, gamma2_2);
 		if (pixelWriteMask & 0x8) outColor4[3].y = powf(outColor4[3].y, gamma2_2);
 	}
-	if (writeMask & 0x4)
+	if ( (writeMask & 0x4) != 0)
 	{
 		if (pixelWriteMask & 0x1) outColor4[0].z = powf(outColor4[0].z, gamma2_2);
 		if (pixelWriteMask & 0x2) outColor4[1].z = powf(outColor4[1].z, gamma2_2);
 		if (pixelWriteMask & 0x4) outColor4[2].z = powf(outColor4[2].z, gamma2_2);
 		if (pixelWriteMask & 0x8) outColor4[3].z = powf(outColor4[3].z, gamma2_2);
 	}
+	// Do not gamma-correct the alpha channel
 }
 
 #else
@@ -4691,7 +4693,7 @@ void IDirect3DSurface9Hook::SampleSurface4(const float (&x4)[4], const float (&y
 
 void IDirect3DSurface9Hook::FrontbufferBackbufferSwap(IDirect3DSurface9Hook* const backbufferPtr)
 {
-	IDirect3DSurface9Hook* const frontbufferPtr = this;
+	const IDirect3DSurface9Hook* const frontbufferPtr = this;
 	gpuvoid* const tempSwapSurface = frontbufferPtr->GetDeviceSurfaceBytes();
 	GPUSurfaceBytesRaw = backbufferPtr->GetDeviceSurfaceBytes();
 	backbufferPtr->GPUSurfaceBytesRaw = tempSwapSurface;

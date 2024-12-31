@@ -159,6 +159,12 @@ void IDirect3DVertexShader9Hook::CreatePretransformPassthroughVertexShader(const
 	parentDevice->UnlockDeviceCS();
 
 	DebuggableD3DVERTEXELEMENT9* const passthroughElementsCopy = (DebuggableD3DVERTEXELEMENT9* const)malloc(sizeof(DebuggableD3DVERTEXELEMENT9) * numElements);
+#ifdef _DEBUG
+	if (passthroughElementsCopy == NULL)
+	{
+		__debugbreak(); // Out of memory!
+	}
+#endif
 	memcpy(passthroughElementsCopy, pElements, sizeof(DebuggableD3DVERTEXELEMENT9) * numElements);
 	passthroughVSElements = passthroughElementsCopy;
 	passthroughVSElementsCount = numElements;
@@ -218,7 +224,7 @@ void IDirect3DVertexShader9Hook::CreatePretransformPassthroughVertexShader(const
 /*** IUnknown methods ***/
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DVertexShader9Hook::QueryInterface(THIS_ REFIID riid, void** ppvObj)
 {
-	HRESULT ret = realObject->QueryInterface(riid, ppvObj);
+	const HRESULT ret = realObject->QueryInterface(riid, ppvObj);
 	if (ret == NOERROR)
 	{
 		*ppvObj = this;
@@ -229,14 +235,14 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DVertexShader9Hook::Query
 
 COM_DECLSPEC_NOTHROW ULONG STDMETHODCALLTYPE IDirect3DVertexShader9Hook::AddRef(THIS)
 {
-	ULONG ret = realObject->AddRef();
+	const ULONG ret = realObject->AddRef();
 	++refCount;
 	return ret;
 }
 
 COM_DECLSPEC_NOTHROW ULONG STDMETHODCALLTYPE IDirect3DVertexShader9Hook::Release(THIS)
 {
-	ULONG ret = realObject->Release();
+	const ULONG ret = realObject->Release();
 	if (--refCount == 0)
 	{
 #ifdef DEBUGPRINT_D3DHOOKOBJECT_FULLRELEASES
@@ -256,7 +262,7 @@ COM_DECLSPEC_NOTHROW ULONG STDMETHODCALLTYPE IDirect3DVertexShader9Hook::Release
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DVertexShader9Hook::GetDevice(THIS_ IDirect3DDevice9** ppDevice)
 {
 	LPDIRECT3DDEVICE9 realD3D9dev = NULL;
-	HRESULT ret = realObject->GetDevice(&realD3D9dev);
+	const HRESULT ret = realObject->GetDevice(&realD3D9dev);
 	if (FAILED(ret) )
 	{
 		*ppDevice = NULL;
@@ -276,7 +282,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DVertexShader9Hook::GetDe
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DVertexShader9Hook::GetFunction(THIS_ void* pData,UINT* pSizeOfData)
 {
-	HRESULT ret = realObject->GetFunction(pData, pSizeOfData);
+	const HRESULT ret = realObject->GetFunction(pData, pSizeOfData);
 	return ret;
 }
 

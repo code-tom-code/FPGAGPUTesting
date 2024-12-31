@@ -29,7 +29,7 @@ static inline void ResolveDstParameter(const DWORD*& bytecode, ShaderInfo& shade
 	const D3DSHADER_PARAM_REGISTER_TYPE registerType = dstParameter.GetRegisterType();
 	unsigned index = dstParameter.GetRegisterIndex();
 
-	const bool usesRelativeAddressing = dstParameter.GetRelativeAddressingType() == D3DSHADER_ADDRMODE_RELATIVE;
+	const bool usesRelativeAddressing = (dstParameter.GetRelativeAddressingType() & D3DSHADER_ADDRMODE_RELATIVE) ? true : false;
 
 	const unsigned registerWriteMask = dstParameter.GetWriteMask();
 
@@ -516,7 +516,7 @@ static inline void ResolveSrcParameter(ShaderInfo& shaderInfo, const DWORD*& byt
 		break;
 	}
 
-	if (srcParameter.GetRelativeAddressingType() == D3DSHADER_ADDRMODE_RELATIVE)
+	if (srcParameter.GetRelativeAddressingType() & D3DSHADER_ADDRMODE_RELATIVE)
 	{
 		// Hack: If we're doing vs_1_* then the only register and only mask that can be used for relative addressing is the a0.x
 		if (shaderInfo.shaderMajorVersion == 1)
@@ -986,7 +986,7 @@ static inline const bool ParseCustomOpcode(const D3DSHADER_INSTRUCTION_OPCODE_TY
 // Returns true if this opcode is a TEX instruction, or false otherwise
 const bool ShaderInfo::IsOpcodeTexInstruction(const D3DSHADER_INSTRUCTION_OPCODE_TYPE opcode)
 {
-	if (opcode <= D3DSIO_BREAKP)
+	if (static_cast<unsigned>(opcode) <= D3DSIO_BREAKP)
 		return isOpcodeTexInstruction[opcode];
 	else
 		return false;
@@ -994,7 +994,7 @@ const bool ShaderInfo::IsOpcodeTexInstruction(const D3DSHADER_INSTRUCTION_OPCODE
 
 static inline const bool IsDynamicBranchingInstruction(const D3DSHADER_INSTRUCTION_OPCODE_TYPE opcode)
 {
-	if (opcode <= D3DSIO_BREAKP)
+	if (static_cast<unsigned>(opcode) <= D3DSIO_BREAKP)
 		return isDynamicBranchingInstruction[opcode];
 	else
 		return false;
@@ -1002,7 +1002,7 @@ static inline const bool IsDynamicBranchingInstruction(const D3DSHADER_INSTRUCTI
 
 static inline const int GetTabIndentModifier(const D3DSHADER_INSTRUCTION_OPCODE_TYPE opcode)
 {
-	if (opcode <= D3DSIO_BREAKP)
+	if (static_cast<unsigned>(opcode) <= D3DSIO_BREAKP)
 		return instructionTabIndents[opcode];
 	else
 		return 0;

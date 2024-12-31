@@ -17,7 +17,7 @@ const bool JITNewShader(const ShaderInfo& shaderInfo, const char* const shaderFi
 
 static inline void AppendString(std::vector<char>& cppfile, const char* const str)
 {
-	const unsigned len = strlen(str);
+	const unsigned len = (const unsigned)strlen(str);
 
 	for (unsigned x = 0; x < len; ++x)
 		cppfile.push_back(str[x]);

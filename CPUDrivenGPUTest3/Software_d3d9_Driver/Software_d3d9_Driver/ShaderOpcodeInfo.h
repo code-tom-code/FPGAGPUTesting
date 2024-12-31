@@ -129,9 +129,9 @@ static const char* const endOpcodes[] =
 // Returns the opcode as a string suitable for diassembly
 inline const char* const GetOpcodeString(const D3DSHADER_INSTRUCTION_OPCODE_TYPE opcode)
 {
-	if (opcode <= D3DSIO_BREAKP)
+	if (static_cast<unsigned>(opcode) <= D3DSIO_BREAKP)
 		return opcodeToString[opcode];
-	else if (opcode >= D3DSIO_PHASE && opcode <= D3DSIO_END)
+	else if (static_cast<unsigned>(opcode) >= D3DSIO_PHASE && static_cast<unsigned>(opcode) <= D3DSIO_END)
 		return endOpcodes[opcode - D3DSIO_PHASE];
 	else
 		return "UNKNOWN_OPCODE";
@@ -243,7 +243,7 @@ static const char* const opcodeToFunction[D3DSHADER_INSTRUCTION_OPCODE_TYPE::D3D
 // Returns the name of the function that this opcode maps to
 inline const char* const GetOpcodeFunctionString(const D3DSHADER_INSTRUCTION_OPCODE_TYPE opcode)
 {
-	if (opcode <= D3DSIO_BREAKP)
+	if (static_cast<unsigned>(opcode) <= D3DSIO_BREAKP)
 		return opcodeToFunction[opcode];
 	else
 		return "function_not_found";
@@ -663,9 +663,9 @@ static const int instructionTabIndents[D3DSHADER_INSTRUCTION_OPCODE_TYPE::D3DSIO
 
 inline const opcodeDisplayType GetOpcodeDisplayType(const D3DSHADER_INSTRUCTION_OPCODE_TYPE opcode)
 {
-	if (opcode <= D3DSIO_DEFI)
+	if (static_cast<unsigned>(opcode) <= D3DSIO_DEFI)
 		return opcodeTypes[opcode];
-	else if (opcode >= D3DSIO_TEXCOORD && opcode <= D3DSIO_BREAKP)
+	else if (static_cast<unsigned>(opcode) >= D3DSIO_TEXCOORD && static_cast<unsigned>(opcode) <= D3DSIO_BREAKP)
 		return opcodeTypes[opcode];
 	else
 		return customOpcode;

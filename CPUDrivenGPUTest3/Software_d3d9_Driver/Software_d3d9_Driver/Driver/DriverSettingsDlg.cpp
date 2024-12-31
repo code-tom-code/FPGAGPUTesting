@@ -142,6 +142,8 @@ static INT_PTR CALLBACK DriverSettingsDialogProc(_In_ HWND hWnd, _In_ UINT MSG, 
 	IDirect3DDevice9Hook* const d3d9devhook = (IDirect3DDevice9Hook* const)GetWindowLongPtrA(hWnd, DWLP_USER);
 	switch (MSG)
 	{
+	default:
+		return FALSE; // Return FALSE in case of unhandled messages
 	case WM_INITDIALOG:
 		return TRUE;
 	case WM_USER_DLG_INIT_MSG:
@@ -207,6 +209,8 @@ static INT_PTR CALLBACK DriverSettingsDialogProc(_In_ HWND hWnd, _In_ UINT MSG, 
 		{
 			switch (LOWORD(wParam) )
 			{
+			default:
+				break; // Do nothing in the case of unexpected WM_COMMAND messages
 			case IDC_CHK_SOFTWARERAST:
 				d3d9devhook->SetEnableSoftwareRenderingVisualization(IsDlgButtonChecked(hWnd, IDC_CHK_SOFTWARERAST) ? true : false);
 				return TRUE;

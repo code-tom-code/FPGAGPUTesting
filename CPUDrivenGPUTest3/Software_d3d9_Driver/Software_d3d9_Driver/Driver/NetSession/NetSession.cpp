@@ -391,7 +391,7 @@ void RIOAllocBuffer::InitBuffer(const unsigned bufferSize_bytes)
 	}
 
 	// TODO: See about using the MEM_LARGE_PAGES flag on x64 processes:
-	dataPtr = reinterpret_cast<char* const>(VirtualAlloc(NULL, bufferSize_bytes, MEM_COMMIT | MEM_RESERVE /*| MEM_LARGE_PAGES*/, PAGE_READWRITE) );
+	dataPtr = static_cast<char* const>(VirtualAlloc(NULL, bufferSize_bytes, MEM_COMMIT | MEM_RESERVE /*| MEM_LARGE_PAGES*/, PAGE_READWRITE) );
 	if (!dataPtr)
 	{
 		printf("Error: VirtualAlloc(%u bytes) failed with error code: %u\n", bufferSize_bytes, GetLastError() );
@@ -1796,6 +1796,12 @@ void NetSession::ProcessValidSessionPacket(const DeviceSessionPacket* const vali
 		const unsigned short packetLenBytes = sizeof(DeviceSessionPacket) + sizeof(Subpacket) * validSessionHeader->subpacketCount;
 
 		PacketBuffer* const newBufferedPacket = (PacketBuffer* const)malloc( (sizeof(PacketBuffer) - 1) + packetLenBytes);
+#ifdef _DEBUG
+		if (!newBufferedPacket)
+		{
+			__debugbreak(); // Out of memory!
+		}
+#endif
 		newBufferedPacket->packetNumber = validSessionHeader->thisPacketID;
 		newBufferedPacket->packetLenBytes = packetLenBytes;
 		newBufferedPacket->hasPacketBeenSent = true; // Received D2H packets have always been sent

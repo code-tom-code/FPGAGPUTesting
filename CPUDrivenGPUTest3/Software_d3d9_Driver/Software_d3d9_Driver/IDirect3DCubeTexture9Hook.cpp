@@ -5,7 +5,7 @@
 /*** IUnknown methods ***/
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DCubeTexture9Hook::QueryInterface(THIS_ REFIID riid, void** ppvObj)
 {
-	HRESULT ret = realObject->QueryInterface(riid, ppvObj);
+	const HRESULT ret = realObject->QueryInterface(riid, ppvObj);
 	if (ret == NOERROR)
 	{
 		*ppvObj = this;
@@ -16,14 +16,14 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DCubeTexture9Hook::QueryI
 
 COM_DECLSPEC_NOTHROW ULONG STDMETHODCALLTYPE IDirect3DCubeTexture9Hook::AddRef(THIS)
 {
-	ULONG ret = realObject->AddRef();
+	const ULONG ret = realObject->AddRef();
 	++refCount;
 	return ret;
 }
 
 COM_DECLSPEC_NOTHROW ULONG STDMETHODCALLTYPE IDirect3DCubeTexture9Hook::Release(THIS)
 {
-	ULONG ret = realObject->Release();
+	const ULONG ret = realObject->Release();
 	if (--refCount == 0)
 	{
 #ifdef DEBUGPRINT_D3DHOOKOBJECT_FULLRELEASES
@@ -43,7 +43,7 @@ COM_DECLSPEC_NOTHROW ULONG STDMETHODCALLTYPE IDirect3DCubeTexture9Hook::Release(
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DCubeTexture9Hook::GetDevice(THIS_ IDirect3DDevice9** ppDevice)
 {
 	LPDIRECT3DDEVICE9 realD3D9dev = NULL;
-	HRESULT ret = realObject->GetDevice(&realD3D9dev);
+	const HRESULT ret = realObject->GetDevice(&realD3D9dev);
 	if (FAILED(ret) )
 	{
 		*ppDevice = NULL;
@@ -63,31 +63,31 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DCubeTexture9Hook::GetDev
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DCubeTexture9Hook::SetPrivateData(THIS_ REFGUID refguid,CONST void* pData,DWORD SizeOfData,DWORD Flags)
 {
-	HRESULT ret = realObject->SetPrivateData(refguid, pData, SizeOfData, Flags);
+	const HRESULT ret = realObject->SetPrivateData(refguid, pData, SizeOfData, Flags);
 	return ret;
 }
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DCubeTexture9Hook::GetPrivateData(THIS_ REFGUID refguid,void* pData,DWORD* pSizeOfData)
 {
-	HRESULT ret = realObject->GetPrivateData(refguid, pData, pSizeOfData);
+	const HRESULT ret = realObject->GetPrivateData(refguid, pData, pSizeOfData);
 	return ret;
 }
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DCubeTexture9Hook::FreePrivateData(THIS_ REFGUID refguid)
 {
-	HRESULT ret = realObject->FreePrivateData(refguid);
+	const HRESULT ret = realObject->FreePrivateData(refguid);
 	return ret;
 }
 
 COM_DECLSPEC_NOTHROW DWORD STDMETHODCALLTYPE IDirect3DCubeTexture9Hook::SetPriority(THIS_ DWORD PriorityNew)
 {
-	DWORD ret = realObject->SetPriority(PriorityNew);
+	const DWORD ret = realObject->SetPriority(PriorityNew);
 	return ret;
 }
 
 COM_DECLSPEC_NOTHROW DWORD STDMETHODCALLTYPE IDirect3DCubeTexture9Hook::GetPriority(THIS)
 {
-	DWORD ret = realObject->GetPriority();
+	const DWORD ret = realObject->GetPriority();
 	return ret;
 }
 
@@ -98,37 +98,37 @@ COM_DECLSPEC_NOTHROW void STDMETHODCALLTYPE IDirect3DCubeTexture9Hook::PreLoad(T
 
 COM_DECLSPEC_NOTHROW D3DRESOURCETYPE STDMETHODCALLTYPE IDirect3DCubeTexture9Hook::GetType(THIS)
 {
-	D3DRESOURCETYPE ret = realObject->GetType();
+	const D3DRESOURCETYPE ret = realObject->GetType();
 	return ret;
 }
 
 COM_DECLSPEC_NOTHROW DWORD STDMETHODCALLTYPE IDirect3DCubeTexture9Hook::SetLOD(THIS_ DWORD LODNew)
 {
-	DWORD ret = realObject->SetLOD(LODNew);
+	const DWORD ret = realObject->SetLOD(LODNew);
 	return ret;
 }
 
 COM_DECLSPEC_NOTHROW DWORD STDMETHODCALLTYPE IDirect3DCubeTexture9Hook::GetLOD(THIS)
 {
-	DWORD ret = realObject->GetLOD();
+	const DWORD ret = realObject->GetLOD();
 	return ret;
 }
 
 COM_DECLSPEC_NOTHROW DWORD STDMETHODCALLTYPE IDirect3DCubeTexture9Hook::GetLevelCount(THIS)
 {
-	DWORD ret = realObject->GetLevelCount();
+	const DWORD ret = realObject->GetLevelCount();
 	return ret;
 }
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DCubeTexture9Hook::SetAutoGenFilterType(THIS_ D3DTEXTUREFILTERTYPE FilterType)
 {
-	HRESULT ret = realObject->SetAutoGenFilterType(FilterType);
+	const HRESULT ret = realObject->SetAutoGenFilterType(FilterType);
 	return ret;
 }
 
 COM_DECLSPEC_NOTHROW D3DTEXTUREFILTERTYPE STDMETHODCALLTYPE IDirect3DCubeTexture9Hook::GetAutoGenFilterType(THIS)
 {
-	D3DTEXTUREFILTERTYPE ret = realObject->GetAutoGenFilterType();
+	const D3DTEXTUREFILTERTYPE ret = realObject->GetAutoGenFilterType();
 	return ret;
 }
 
@@ -142,31 +142,31 @@ COM_DECLSPEC_NOTHROW void STDMETHODCALLTYPE IDirect3DCubeTexture9Hook::GenerateM
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DCubeTexture9Hook::GetLevelDesc(THIS_ UINT Level,D3DSURFACE_DESC *pDesc)
 {
-	HRESULT ret = realObject->GetLevelDesc(Level, pDesc);
+	const HRESULT ret = realObject->GetLevelDesc(Level, pDesc);
 	return ret;
 }
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DCubeTexture9Hook::GetCubeMapSurface(THIS_ D3DCUBEMAP_FACES FaceType,UINT Level,IDirect3DSurface9** ppCubeMapSurface)
 {
-	HRESULT ret = realObject->GetCubeMapSurface(FaceType, Level, ppCubeMapSurface);
+	const HRESULT ret = realObject->GetCubeMapSurface(FaceType, Level, ppCubeMapSurface);
 	return ret;
 }
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DCubeTexture9Hook::LockRect(THIS_ D3DCUBEMAP_FACES FaceType,UINT Level,D3DLOCKED_RECT* pLockedRect,CONST RECT* pRect,DWORD Flags)
 {
-	HRESULT ret = realObject->LockRect(FaceType, Level, pLockedRect, pRect, Flags);
+	const HRESULT ret = realObject->LockRect(FaceType, Level, pLockedRect, pRect, Flags);
 	return ret;
 }
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DCubeTexture9Hook::UnlockRect(THIS_ D3DCUBEMAP_FACES FaceType,UINT Level)
 {
-	HRESULT ret = realObject->UnlockRect(FaceType, Level);
+	const HRESULT ret = realObject->UnlockRect(FaceType, Level);
 	return ret;
 }
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DCubeTexture9Hook::AddDirtyRect(THIS_ D3DCUBEMAP_FACES FaceType,CONST RECT* pDirtyRect)
 {
-	HRESULT ret = realObject->AddDirtyRect(FaceType, pDirtyRect);
+	const HRESULT ret = realObject->AddDirtyRect(FaceType, pDirtyRect);
 	return ret;
 }
 

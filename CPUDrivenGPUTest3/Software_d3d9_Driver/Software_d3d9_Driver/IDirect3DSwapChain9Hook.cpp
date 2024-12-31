@@ -13,7 +13,7 @@
 /*** IUnknown methods ***/
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DSwapChain9Hook::QueryInterface(THIS_ REFIID riid, void** ppvObj)
 {
-	HRESULT ret = realObject->QueryInterface(riid, ppvObj);
+	const HRESULT ret = realObject->QueryInterface(riid, ppvObj);
 	if (ret == NOERROR)
 	{
 		*ppvObj = this;
@@ -24,14 +24,14 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DSwapChain9Hook::QueryInt
 
 COM_DECLSPEC_NOTHROW ULONG STDMETHODCALLTYPE IDirect3DSwapChain9Hook::AddRef(THIS)
 {
-	ULONG ret = realObject->AddRef();
+	const ULONG ret = realObject->AddRef();
 	++refCount;
 	return ret;
 }
 
 COM_DECLSPEC_NOTHROW ULONG STDMETHODCALLTYPE IDirect3DSwapChain9Hook::Release(THIS)
 {
-	ULONG ret = realObject->Release();
+	const ULONG ret = realObject->Release();
 	if (--refCount == 0)
 	{
 #ifdef DEBUGPRINT_D3DHOOKOBJECT_FULLRELEASES
@@ -184,7 +184,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DSwapChain9Hook::Present(
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DSwapChain9Hook::GetFrontBufferData(THIS_ IDirect3DSurface9* pDestSurface)
 {
-	const IDirect3DSurface9Hook* const hookPtr = dynamic_cast<IDirect3DSurface9Hook*>(pDestSurface);
+	const IDirect3DSurface9Hook* const hookPtr = dynamic_cast<IDirect3DSurface9Hook* const>(pDestSurface);
 	if (hookPtr)
 		pDestSurface = hookPtr->GetUnderlyingSurface();
 #ifdef _DEBUG
@@ -193,7 +193,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DSwapChain9Hook::GetFront
 		DbgBreakPrint("Error: GetFrontBufferData called with a non-hooked surface pointer");
 	}
 #endif
-	HRESULT ret = realObject->GetFrontBufferData(hookPtr ? hookPtr->GetUnderlyingSurface() : NULL);
+	const HRESULT ret = realObject->GetFrontBufferData(hookPtr ? hookPtr->GetUnderlyingSurface() : NULL);
 	if (SUCCEEDED(ret) )
 	{
 		// TODO: Implement this...
@@ -203,7 +203,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DSwapChain9Hook::GetFront
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DSwapChain9Hook::GetBackBuffer(THIS_ UINT iBackBuffer,D3DBACKBUFFER_TYPE Type,IDirect3DSurface9** ppBackBuffer)
 {
-	HRESULT ret = realObject->GetBackBuffer(iBackBuffer, Type, ppBackBuffer);
+	const HRESULT ret = realObject->GetBackBuffer(iBackBuffer, Type, ppBackBuffer);
 	if (FAILED(ret) )
 		return ret;
 
@@ -249,14 +249,14 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DSwapChain9Hook::GetBackB
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DSwapChain9Hook::GetRasterStatus(THIS_ D3DRASTER_STATUS* pRasterStatus)
 {
-	HRESULT ret = realObject->GetRasterStatus(pRasterStatus);
+	const HRESULT ret = realObject->GetRasterStatus(pRasterStatus);
 	// TODO: Implement this...
 	return ret;
 }
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DSwapChain9Hook::GetDisplayMode(THIS_ D3DDISPLAYMODE* pMode)
 {
-	HRESULT ret = realObject->GetDisplayMode(pMode);
+	const HRESULT ret = realObject->GetDisplayMode(pMode);
 	if (FAILED(ret) )
 		return ret;
 
@@ -277,7 +277,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DSwapChain9Hook::GetDispl
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DSwapChain9Hook::GetDevice(THIS_ IDirect3DDevice9** ppDevice)
 {
 	LPDIRECT3DDEVICE9 realD3D9dev = NULL;
-	HRESULT ret = realObject->GetDevice(&realD3D9dev);
+	const HRESULT ret = realObject->GetDevice(&realD3D9dev);
 	if (FAILED(ret) )
 	{
 		*ppDevice = NULL;
@@ -297,7 +297,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DSwapChain9Hook::GetDevic
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DSwapChain9Hook::GetPresentParameters(THIS_ D3DPRESENT_PARAMETERS* pPresentationParameters)
 {
-	HRESULT ret = realObject->GetPresentParameters(pPresentationParameters);
+	const HRESULT ret = realObject->GetPresentParameters(pPresentationParameters);
 	if (FAILED(ret) )
 		return ret;
 
@@ -404,7 +404,13 @@ void IDirect3DSwapChain9Hook::InternalBlit(void)
 	rawDevice->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &rawBackBuffer);
 	D3DLOCKED_RECT d3dlr = {0};
 	const BYTE* const surfaceBytesRaw = backBuffer->GetSurfaceBytesRaw();
-	tempBlitSurface->LockRect(&d3dlr, NULL, 0);
+	if (FAILED(tempBlitSurface->LockRect(&d3dlr, NULL, 0) ) || !d3dlr.pBits)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Failed lock!
+#endif
+		return;
+	}
 #ifdef _DEBUG
 	if (d3dlr.Pitch != sizeof(D3DCOLOR) * InternalDisplayMode.Width)
 	{

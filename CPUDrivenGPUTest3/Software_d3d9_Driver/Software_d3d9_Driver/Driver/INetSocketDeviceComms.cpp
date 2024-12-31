@@ -23,7 +23,7 @@ INetSocketDeviceComms::INetSocketDeviceComms()
 	{
 		session->~NetSession(); // Using placement new means we need to invoke manual destructor
 
-		VirtualFree(session, 0, MEM_RELEASE | MEM_DECOMMIT);
+		VirtualFree(session, 0, MEM_RELEASE);
 	}
 
 	IBaseDeviceComms::~IBaseDeviceComms();
@@ -88,7 +88,7 @@ __declspec(nothrow) HRESULT __stdcall INetSocketDeviceComms::InternalInitComms()
 		{
 			convertedSubpackets.resize(numSubpackets);
 		}
-		Subpacket* const subpacketBuffer = reinterpret_cast<Subpacket* const>(&convertedSubpackets.front() );
+		Subpacket* const subpacketBuffer = &convertedSubpackets.front();
 		for (unsigned x = 0; x < numSubpackets; ++x)
 		{
 			GPUCommandList::ConvertCommandPacketToSimplifiedCommandPacket(genericPacket + x, reinterpret_cast<SimplifiedCommandPacket* const>(subpacketBuffer + x) );

@@ -3,6 +3,11 @@
 #include "IDirect3DVertexDeclaration9Hook.h"
 #include "IDirect3DVertexShader9Hook.h"
 
+#ifdef D3DDECL_END
+	#undef D3DDECL_END
+	#define D3DDECL_END() {0xFF,0,D3DDECLTYPE_UNUSED,D3DDECLMETHOD_DEFAULT,D3DDECLUSAGE_POSITION,0}
+#endif
+
 static inline const bool operator==(const DebuggableD3DVERTEXELEMENT9& lhs, const DebuggableD3DVERTEXELEMENT9& rhs)
 {
 	return (lhs.Stream == rhs.Stream) && (lhs.Offset == rhs.Offset) && (lhs.Type == rhs.Type) && (lhs.Method == rhs.Method) && (lhs.Usage == rhs.Usage) && (lhs.UsageIndex == rhs.UsageIndex);
@@ -109,7 +114,7 @@ void IDirect3DVertexDeclaration9Hook::CreateVertexDeclaration(const DebuggableD3
 
 	if (skipVertexProcessing)
 	{
-		IDirect3DVertexShader9Hook* passthroughVS = new IDirect3DVertexShader9Hook(NULL, parentDevice);
+		IDirect3DVertexShader9Hook* const passthroughVS = new IDirect3DVertexShader9Hook(NULL, parentDevice);
 		passthroughVS->CreatePretransformPassthroughVertexShader(&GetElementsInternal().front(), GetElementsInternal().size() );
 		devicePassthroughVS = passthroughVS;
 	}
@@ -190,7 +195,7 @@ const UINT IDirect3DVertexDeclaration9Hook::GetElementSizeFromType(const D3DDECL
 /*** IUnknown methods ***/
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DVertexDeclaration9Hook::QueryInterface(THIS_ REFIID riid, void** ppvObj)
 {
-	HRESULT ret = realObject->QueryInterface(riid, ppvObj);
+	const HRESULT ret = realObject->QueryInterface(riid, ppvObj);
 	if (ret == NOERROR)
 	{
 		*ppvObj = this;
@@ -201,14 +206,14 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DVertexDeclaration9Hook::
 
 COM_DECLSPEC_NOTHROW ULONG STDMETHODCALLTYPE IDirect3DVertexDeclaration9Hook::AddRef(THIS)
 {
-	ULONG ret = realObject->AddRef();
+	const ULONG ret = realObject->AddRef();
 	++refCount;
 	return ret;
 }
 
 COM_DECLSPEC_NOTHROW ULONG STDMETHODCALLTYPE IDirect3DVertexDeclaration9Hook::Release(THIS)
 {
-	ULONG ret = realObject->Release();
+	const ULONG ret = realObject->Release();
 	if (--refCount == 0)
 	{
 #ifdef DEBUGPRINT_D3DHOOKOBJECT_FULLRELEASES
@@ -228,7 +233,7 @@ COM_DECLSPEC_NOTHROW ULONG STDMETHODCALLTYPE IDirect3DVertexDeclaration9Hook::Re
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DVertexDeclaration9Hook::GetDevice(THIS_ IDirect3DDevice9** ppDevice)
 {
 	LPDIRECT3DDEVICE9 realD3D9dev = NULL;
-	HRESULT ret = realObject->GetDevice(&realD3D9dev);
+	const HRESULT ret = realObject->GetDevice(&realD3D9dev);
 	if (FAILED(ret) )
 	{
 		*ppDevice = NULL;
@@ -248,7 +253,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DVertexDeclaration9Hook::
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DVertexDeclaration9Hook::GetDeclaration(THIS_ D3DVERTEXELEMENT9* pElement,UINT* pNumElements)
 {
-	HRESULT ret = realObject->GetDeclaration(pElement, pNumElements);
+	const HRESULT ret = realObject->GetDeclaration(pElement, pNumElements);
 	return ret;
 }
 

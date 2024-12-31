@@ -17,19 +17,19 @@
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::CreateAdditionalSwapChain(THIS_ D3DPRESENT_PARAMETERS* pPresentationParameters, IDirect3DSwapChain9** pSwapChain)
 {
 	// TODO: Implement this for reals
-	HRESULT ret = d3d9dev->CreateAdditionalSwapChain(pPresentationParameters, pSwapChain);
+	const HRESULT ret = d3d9dev->CreateAdditionalSwapChain(pPresentationParameters, pSwapChain);
 	return ret;
 }
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::CreateTexture(THIS_ UINT Width, UINT Height, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, IDirect3DTexture9** ppTexture, HANDLE* pSharedHandle)
 {
-	HRESULT ret = d3d9dev->CreateTexture(Width, Height, Levels, Usage, Format, Pool, ppTexture, pSharedHandle);
+	const HRESULT ret = d3d9dev->CreateTexture(Width, Height, Levels, Usage, Format, Pool, ppTexture, pSharedHandle);
 	if (FAILED(ret) )
 		return ret;
 
 	if (ppTexture)
 	{
-		IDirect3DTexture9Hook* hookRet = new IDirect3DTexture9Hook(*ppTexture, this);
+		IDirect3DTexture9Hook* const hookRet = new IDirect3DTexture9Hook(*ppTexture, this);
 		hookRet->CreateTexture(Width, Height, Levels, (const DebuggableUsage)Usage, Format, Pool);
 		*ppTexture = hookRet;
 	}
@@ -39,13 +39,13 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::CreateTextu
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::CreateVolumeTexture(THIS_ UINT Width, UINT Height, UINT Depth, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, IDirect3DVolumeTexture9** ppVolumeTexture, HANDLE* pSharedHandle)
 {
-	HRESULT ret = d3d9dev->CreateVolumeTexture(Width, Height, Depth, Levels, Usage, Format, Pool, ppVolumeTexture, pSharedHandle);
+	const HRESULT ret = d3d9dev->CreateVolumeTexture(Width, Height, Depth, Levels, Usage, Format, Pool, ppVolumeTexture, pSharedHandle);
 	if (FAILED(ret) )
 		return ret;
 
 	if (ppVolumeTexture)
 	{
-		IDirect3DVolumeTexture9Hook* hookRet = new IDirect3DVolumeTexture9Hook(*ppVolumeTexture, this);
+		IDirect3DVolumeTexture9Hook* const hookRet = new IDirect3DVolumeTexture9Hook(*ppVolumeTexture, this);
 		hookRet->CreateVolumeTexture(Width, Height, Depth, Levels, (const DebuggableUsage)Usage, Format, Pool);
 		*ppVolumeTexture = hookRet;
 	}
@@ -55,13 +55,13 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::CreateVolum
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::CreateCubeTexture(THIS_ UINT EdgeLength, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, IDirect3DCubeTexture9** ppCubeTexture, HANDLE* pSharedHandle)
 {
-	HRESULT ret = d3d9dev->CreateCubeTexture(EdgeLength, Levels, Usage, Format, Pool, ppCubeTexture, pSharedHandle);
+	const HRESULT ret = d3d9dev->CreateCubeTexture(EdgeLength, Levels, Usage, Format, Pool, ppCubeTexture, pSharedHandle);
 	if (FAILED(ret) )
 		return ret;
 
 	if (ppCubeTexture)
 	{
-		IDirect3DCubeTexture9Hook* hookRet = new IDirect3DCubeTexture9Hook(*ppCubeTexture, this);
+		IDirect3DCubeTexture9Hook* const hookRet = new IDirect3DCubeTexture9Hook(*ppCubeTexture, this);
 		hookRet->CreateCubeTexture(EdgeLength, Levels, (const DebuggableUsage)Usage, Format, Pool);
 		*ppCubeTexture = hookRet;
 	}
@@ -72,7 +72,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::CreateCubeT
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::CreateVertexBuffer(THIS_ UINT Length, DWORD Usage, DWORD FVF, D3DPOOL Pool, IDirect3DVertexBuffer9** ppVertexBuffer, HANDLE* pSharedHandle)
 {
 	LPDIRECT3DVERTEXBUFFER9 realObject = NULL;
-	HRESULT ret = d3d9dev->CreateVertexBuffer(Length, Usage, FVF, Pool, &realObject, pSharedHandle);
+	const HRESULT ret = d3d9dev->CreateVertexBuffer(Length, Usage, FVF, Pool, &realObject, pSharedHandle);
 	if (FAILED(ret) )
 		return ret;
 
@@ -107,7 +107,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::CreateIndex
 	}
 
 	LPDIRECT3DINDEXBUFFER9 realObject = NULL;
-	HRESULT ret = d3d9dev->CreateIndexBuffer(Length, Usage, Format, Pool, &realObject, pSharedHandle);
+	const HRESULT ret = d3d9dev->CreateIndexBuffer(Length, Usage, Format, Pool, &realObject, pSharedHandle);
 	if (FAILED(ret) )
 		return ret;
 
@@ -121,7 +121,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::CreateIndex
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::CreateRenderTarget(THIS_ UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Lockable, IDirect3DSurface9** ppSurface, HANDLE* pSharedHandle)
 {
 	LPDIRECT3DSURFACE9 realObject = NULL;
-	HRESULT ret = d3d9dev->CreateRenderTarget(Width, Height, Format, MultiSample, MultisampleQuality, Lockable, &realObject, pSharedHandle);
+	const HRESULT ret = d3d9dev->CreateRenderTarget(Width, Height, Format, MultiSample, MultisampleQuality, Lockable, &realObject, pSharedHandle);
 	if (FAILED(ret) )
 		return ret;
 
@@ -135,7 +135,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::CreateRende
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::CreateDepthStencilSurface(THIS_ UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Discard, IDirect3DSurface9** ppSurface, HANDLE* pSharedHandle)
 {
 	LPDIRECT3DSURFACE9 realObject = NULL;
-	HRESULT ret = d3d9dev->CreateDepthStencilSurface(Width, Height, Format, MultiSample, MultisampleQuality, Discard, &realObject, pSharedHandle);
+	const HRESULT ret = d3d9dev->CreateDepthStencilSurface(Width, Height, Format, MultiSample, MultisampleQuality, Discard, &realObject, pSharedHandle);
 	if (FAILED(ret) )
 		return ret;
 
@@ -149,7 +149,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::CreateDepth
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::CreateOffscreenPlainSurface(THIS_ UINT Width, UINT Height, D3DFORMAT Format, D3DPOOL Pool, IDirect3DSurface9** ppSurface, HANDLE* pSharedHandle)
 {
 	LPDIRECT3DSURFACE9 realObject = NULL;
-	HRESULT ret = d3d9dev->CreateOffscreenPlainSurface(Width, Height, Format, Pool, &realObject, pSharedHandle);
+	const HRESULT ret = d3d9dev->CreateOffscreenPlainSurface(Width, Height, Format, Pool, &realObject, pSharedHandle);
 	if (FAILED(ret) )
 		return ret;
 
@@ -181,7 +181,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::CreateState
 	if (ppSB)
 	{
 		LPDIRECT3DSTATEBLOCK9 realStateBlock = NULL;
-		HRESULT ret = d3d9dev->CreateStateBlock(Type, &realStateBlock);
+		const HRESULT ret = d3d9dev->CreateStateBlock(Type, &realStateBlock);
 		if (FAILED(ret) )
 			return ret;
 
@@ -190,7 +190,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::CreateState
 			return D3DERR_OUTOFVIDEOMEMORY;
 
 		const bool isCompleteStateBlock = true;
-		IDirect3DStateBlock9Hook* newStateBlock = new (newStateBlockMemory) IDirect3DStateBlock9Hook(realStateBlock, this, isCompleteStateBlock);
+		IDirect3DStateBlock9Hook* const newStateBlock = new (newStateBlockMemory) IDirect3DStateBlock9Hook(realStateBlock, this, isCompleteStateBlock);
 		newStateBlock->InitializeListAndCapture(Type);
 		*ppSB = newStateBlock;
 		return ret;
@@ -201,11 +201,11 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::CreateState
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::CreateVertexDeclaration(THIS_ CONST D3DVERTEXELEMENT9* pVertexElements, IDirect3DVertexDeclaration9** ppDecl)
 {
-	HRESULT ret = d3d9dev->CreateVertexDeclaration(pVertexElements, ppDecl);
+	const HRESULT ret = d3d9dev->CreateVertexDeclaration(pVertexElements, ppDecl);
 	if (FAILED(ret) )
 		return ret;
 
-	IDirect3DVertexDeclaration9Hook* hook = new IDirect3DVertexDeclaration9Hook(*ppDecl, this);
+	IDirect3DVertexDeclaration9Hook* const hook = new IDirect3DVertexDeclaration9Hook(*ppDecl, this);
 	debuggableFVF noFVF;
 	noFVF.rawFVF_DWORD = 0x00000000;
 	hook->CreateVertexDeclaration( (const DebuggableD3DVERTEXELEMENT9* const)pVertexElements, noFVF);
@@ -217,11 +217,11 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::CreateVerte
 // This is not an official D3D9 function, even though it looks like one. It is only used internally.
 COM_DECLSPEC_NOTHROW HRESULT IDirect3DDevice9Hook::CreateVertexDeclarationFromFVF(THIS_ CONST D3DVERTEXELEMENT9* pVertexElements, IDirect3DVertexDeclaration9** ppDecl, const debuggableFVF FVF)
 {
-	HRESULT ret = d3d9dev->CreateVertexDeclaration(pVertexElements, ppDecl);
+	const HRESULT ret = d3d9dev->CreateVertexDeclaration(pVertexElements, ppDecl);
 	if (FAILED(ret) )
 		return ret;
 
-	IDirect3DVertexDeclaration9Hook* hook = new IDirect3DVertexDeclaration9Hook(*ppDecl, this);
+	IDirect3DVertexDeclaration9Hook* const hook = new IDirect3DVertexDeclaration9Hook(*ppDecl, this);
 	hook->CreateVertexDeclaration( (const DebuggableD3DVERTEXELEMENT9* const)pVertexElements, FVF);
 	*ppDecl = hook;
 
@@ -491,6 +491,7 @@ IDirect3DVertexDeclaration9Hook* IDirect3DDevice9Hook::CreateAndSetVertexDeclFro
 	if (FAILED(CreateVertexDeclarationFromFVF(elements, (LPDIRECT3DVERTEXDECLARATION9*)&fvfVertexDecl, FVF) ) || !fvfVertexDecl)
 	{
 		DbgBreakPrint("Error: Failed to create vertex declaration");
+		return NULL;
 	}
 
 #ifndef NO_CACHING_FVF_VERT_DECLS
@@ -508,11 +509,11 @@ IDirect3DVertexDeclaration9Hook* IDirect3DDevice9Hook::CreateAndSetVertexDeclFro
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::CreateVertexShader(THIS_ CONST DWORD* pFunction, IDirect3DVertexShader9** ppShader)
 {
-	HRESULT ret = d3d9dev->CreateVertexShader(pFunction, ppShader);
+	const HRESULT ret = d3d9dev->CreateVertexShader(pFunction, ppShader);
 	if (FAILED(ret) )
 		return ret;
 
-	IDirect3DVertexShader9Hook* hookObj = new IDirect3DVertexShader9Hook(*ppShader, this);
+	IDirect3DVertexShader9Hook* const hookObj = new IDirect3DVertexShader9Hook(*ppShader, this);
 	hookObj->CreateVertexShader(pFunction);
 	*ppShader = hookObj;
 
@@ -521,11 +522,11 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::CreateVerte
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::CreatePixelShader(THIS_ CONST DWORD* pFunction, IDirect3DPixelShader9** ppShader)
 {
-	HRESULT ret = d3d9dev->CreatePixelShader(pFunction, ppShader);
+	const HRESULT ret = d3d9dev->CreatePixelShader(pFunction, ppShader);
 	if (FAILED(ret) )
 		return ret;
 
-	IDirect3DPixelShader9Hook* hookObj = new IDirect3DPixelShader9Hook(*ppShader, this);
+	IDirect3DPixelShader9Hook* const hookObj = new IDirect3DPixelShader9Hook(*ppShader, this);
 	hookObj->CreatePixelShader(pFunction);
 	*ppShader = hookObj;
 
@@ -534,7 +535,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::CreatePixel
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::CreateQuery(THIS_ D3DQUERYTYPE Type, IDirect3DQuery9** ppQuery) 
 {
-	HRESULT ret = d3d9dev->CreateQuery(Type, ppQuery);
+	const HRESULT ret = d3d9dev->CreateQuery(Type, ppQuery);
 	if (FAILED(ret) )
 		return ret;
 
@@ -557,7 +558,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::CreateQuery
 	}
 	else
 	{
-		IDirect3DQuery9Hook* newQuery = new IDirect3DQuery9Hook(*ppQuery, this);
+		IDirect3DQuery9Hook* const newQuery = new IDirect3DQuery9Hook(*ppQuery, this);
 		newQuery->CreateQuery(Type);
 		*ppQuery = newQuery;
 	}

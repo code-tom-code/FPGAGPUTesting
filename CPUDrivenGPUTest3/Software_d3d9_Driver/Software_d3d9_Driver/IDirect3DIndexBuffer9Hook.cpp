@@ -59,7 +59,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DIndexBuffer9Hook::QueryI
 {
 	if (realObject)
 	{
-		HRESULT ret = realObject->QueryInterface(riid, ppvObj);
+		const HRESULT ret = realObject->QueryInterface(riid, ppvObj);
 		if (ret == NOERROR)
 		{
 			*ppvObj = this;
@@ -73,14 +73,14 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DIndexBuffer9Hook::QueryI
 
 COM_DECLSPEC_NOTHROW ULONG STDMETHODCALLTYPE IDirect3DIndexBuffer9Hook::AddRef(THIS)
 {
-	ULONG ret = realObject ? realObject->AddRef() : (const ULONG)(refCount + 1);
+	const ULONG ret = realObject ? realObject->AddRef() : (const ULONG)(refCount + 1);
 	++refCount;
 	return ret;
 }
 
 COM_DECLSPEC_NOTHROW ULONG STDMETHODCALLTYPE IDirect3DIndexBuffer9Hook::Release(THIS)
 {
-	ULONG ret = realObject ? realObject->Release() : (const ULONG)(refCount - 1);
+	const ULONG ret = realObject ? realObject->Release() : (const ULONG)(refCount - 1);
 	if (--refCount == 0)
 	{
 #ifdef DEBUGPRINT_D3DHOOKOBJECT_FULLRELEASES
@@ -105,7 +105,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DIndexBuffer9Hook::GetDev
 	if (realObject)
 	{
 		LPDIRECT3DDEVICE9 realD3D9dev = NULL;
-		HRESULT ret = realObject->GetDevice(&realD3D9dev);
+		const HRESULT ret = realObject->GetDevice(&realD3D9dev);
 		if (FAILED(ret) )
 		{
 			*ppDevice = NULL;
@@ -133,7 +133,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DIndexBuffer9Hook::SetPri
 {
 	if (realObject)
 	{
-		HRESULT ret = realObject->SetPrivateData(refguid, pData, SizeOfData, Flags);
+		const HRESULT ret = realObject->SetPrivateData(refguid, pData, SizeOfData, Flags);
 		return ret;
 	}
 	return S_OK;
@@ -143,7 +143,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DIndexBuffer9Hook::GetPri
 {
 	if (realObject)
 	{
-		HRESULT ret = realObject->GetPrivateData(refguid, pData, pSizeOfData);
+		const HRESULT ret = realObject->GetPrivateData(refguid, pData, pSizeOfData);
 		return ret;
 	}
 	return S_OK;
@@ -153,7 +153,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DIndexBuffer9Hook::FreePr
 {
 	if (realObject)
 	{
-		HRESULT ret = realObject->FreePrivateData(refguid);
+		const HRESULT ret = realObject->FreePrivateData(refguid);
 		return ret;
 	}
 	return S_OK;
@@ -163,7 +163,7 @@ COM_DECLSPEC_NOTHROW DWORD STDMETHODCALLTYPE IDirect3DIndexBuffer9Hook::SetPrior
 {
 	if (realObject)
 	{
-		DWORD ret = realObject->SetPriority(PriorityNew);
+		const DWORD ret = realObject->SetPriority(PriorityNew);
 		return ret;
 	}
 	return S_OK;
@@ -173,7 +173,7 @@ COM_DECLSPEC_NOTHROW DWORD STDMETHODCALLTYPE IDirect3DIndexBuffer9Hook::GetPrior
 {
 	if (realObject)
 	{
-		DWORD ret = realObject->GetPriority();
+		const DWORD ret = realObject->GetPriority();
 		return ret;
 	}
 	return 0;
@@ -189,7 +189,7 @@ COM_DECLSPEC_NOTHROW D3DRESOURCETYPE STDMETHODCALLTYPE IDirect3DIndexBuffer9Hook
 {
 	if (realObject)
 	{
-		D3DRESOURCETYPE ret = realObject->GetType();
+		const D3DRESOURCETYPE ret = realObject->GetType();
 #ifdef _DEBUG
 		if (ret != D3DRTYPE_INDEXBUFFER)
 		{

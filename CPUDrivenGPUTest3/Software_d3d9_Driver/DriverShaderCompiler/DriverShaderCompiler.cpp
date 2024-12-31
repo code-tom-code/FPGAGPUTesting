@@ -212,6 +212,12 @@ const ShaderCompileResultCode __stdcall DisasmDeviceBytecodeToString(const Devic
 	}
 
 	char* const outMemory = (char* const)malloc(buildString.length() + 1);
+#ifdef _DEBUG
+	if (!outMemory)
+	{
+		__debugbreak(); // Out of memory!
+	}
+#endif
 	memcpy(outMemory, buildString.c_str(), buildString.length() + 1);
 	*outString = outMemory;
 

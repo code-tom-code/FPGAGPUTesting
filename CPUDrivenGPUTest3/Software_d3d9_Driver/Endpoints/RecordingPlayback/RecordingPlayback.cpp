@@ -421,8 +421,8 @@ int main(const unsigned argc, const char* const argv[])
 	LARGE_INTEGER fileSize = {0};
 	GetFileSizeEx(hRecordingFile, &fileSize);
 
-	readCache readFileCache;
-	readFileCache.ResetFile(hRecordingFile, fileSize.QuadPart);
+	readCache* const readFileCache = new readCache;
+	readFileCache->ResetFile(hRecordingFile, fileSize.QuadPart);
 
 	printf("Parsing recorded stream file...\n");
 
@@ -440,7 +440,7 @@ int main(const unsigned argc, const char* const argv[])
 	for (unsigned __int64 readSoFar = 0; readSoFar < (const unsigned __int64)fileSize.QuadPart; readSoFar += sizeof(genericCommand) )
 	{
 		genericCommand nextPacket;
-		if (!readFileCache.ReadBytes(hRecordingFile, &nextPacket, sizeof(nextPacket) ) )
+		if (!readFileCache->ReadBytes(hRecordingFile, &nextPacket, sizeof(nextPacket) ) )
 		{
 #ifdef _DEBUG
 			__debugbreak(); // Error reading bytes from read cache!
@@ -690,7 +690,7 @@ int main(const unsigned argc, const char* const argv[])
 #endif
 			return 1;
 		}
-		readFileCache.ResetFile(hRecordingFile, fileSize.QuadPart);
+		readFileCache->ResetFile(hRecordingFile, fileSize.QuadPart);
 
 		// Reset our frame-counter:
 		currentFrame = 0;
@@ -750,7 +750,7 @@ int main(const unsigned argc, const char* const argv[])
 			}
 
 			genericCommand nextPacket;
-			if (!readFileCache.ReadBytes(hRecordingFile, &nextPacket, sizeof(nextPacket) ) )
+			if (!readFileCache->ReadBytes(hRecordingFile, &nextPacket, sizeof(nextPacket) ) )
 			{
 #ifdef _DEBUG
 				__debugbreak(); // Error reading bytes from read cache!
@@ -793,6 +793,8 @@ int main(const unsigned argc, const char* const argv[])
 
 	// Call ShutdownEndpoint() to destruct our endpoint before we call FreeLibrary() to unload the DLL:
 	(*dllInfo.H2DFunctions.ShutdownEndpoint)();
+
+	delete readFileCache;
 
 	FreeLibrary(loadedDLL);
 	loadedDLL = NULL;

@@ -34,7 +34,7 @@ void IPC_RingBuffer::WriteData(const void* const newData, const unsigned numByte
 		YieldProcessor(); // Hot spin-loop to wait for the read pointer to advance
 	}
 
-	const unsigned char* newWriteByteData = reinterpret_cast<const unsigned char* const>(newData);
+	const unsigned char* newWriteByteData = static_cast<const unsigned char* const>(newData);
 
 	// Memcpy first half of write data (or all of it in the common case)
 	const unsigned initialWriteSlackFirstPart = ARRAYSIZE(bufferData) - writePtr;
@@ -65,7 +65,7 @@ void IPC_RingBuffer::ReadData(void* const newReadData, const unsigned numBytesTo
 	}
 #endif
 
-	unsigned char* newReadByteData = reinterpret_cast<unsigned char* const>(newReadData);
+	unsigned char* newReadByteData = static_cast<unsigned char* const>(newReadData);
 
 	// Memcpy first half of read data (or all of it in the common case)
 	const unsigned initialReadSlackFirstPart = ARRAYSIZE(bufferData) - readPtr;
@@ -149,7 +149,7 @@ void IPC_ConnectionManager::ClientRegisterWithServerDirectory()
 		}
 	}
 
-	DirectoryMappedMemory = reinterpret_cast<DirectoryStruct* const>(MapViewOfFile(DirectorySharedFile, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(DirectoryStruct) ) );
+	DirectoryMappedMemory = static_cast<DirectoryStruct* const>(MapViewOfFile(DirectorySharedFile, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(DirectoryStruct) ) );
 	if (!DirectoryMappedMemory)
 	{
 #ifdef _DEBUG
@@ -199,7 +199,7 @@ void IPC_ConnectionManager::ClientRegisterWithServerDirectory()
 		return;
 	}
 
-	ActiveConnections[0].RingBufferMappedMemory = reinterpret_cast<IPC_FileStruct* const>(MapViewOfFile(ActiveConnections[0].RingBufferFileHandle, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(IPC_FileStruct) ) );
+	ActiveConnections[0].RingBufferMappedMemory = static_cast<IPC_FileStruct* const>(MapViewOfFile(ActiveConnections[0].RingBufferFileHandle, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(IPC_FileStruct) ) );
 	if (!ActiveConnections[0].RingBufferMappedMemory)
 	{
 		const unsigned lastErr = GetLastError();
@@ -307,7 +307,7 @@ void IPC_ConnectionManager::ServerInitDirectory()
 		return;
 	}
 
-	DirectoryMappedMemory = reinterpret_cast<DirectoryStruct* const>(MapViewOfFile(DirectorySharedFile, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(DirectoryStruct) ) );
+	DirectoryMappedMemory = static_cast<DirectoryStruct* const>(MapViewOfFile(DirectorySharedFile, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(DirectoryStruct) ) );
 	if (!DirectoryMappedMemory)
 	{
 		const DWORD lastErr = GetLastError();
@@ -426,7 +426,7 @@ void IPC_ConnectionManager::ServerUpdateDirectoryAndAcceptNewClients()
 				continue;
 			}
 
-			ActiveConnections[x].RingBufferMappedMemory = reinterpret_cast<IPC_FileStruct* const>(MapViewOfFile(ActiveConnections[x].RingBufferFileHandle, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(IPC_FileStruct) ) );
+			ActiveConnections[x].RingBufferMappedMemory = static_cast<IPC_FileStruct* const>(MapViewOfFile(ActiveConnections[x].RingBufferFileHandle, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(IPC_FileStruct) ) );
 			if (!ActiveConnections[x].RingBufferMappedMemory)
 			{
 				printf("Warning: Was unable to map IPC file \"%s\". GLE: %u\n", ringBufferFilename.c_str(), GetLastError() );

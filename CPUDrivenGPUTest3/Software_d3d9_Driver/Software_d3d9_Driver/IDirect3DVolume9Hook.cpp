@@ -5,7 +5,7 @@
 /*** IUnknown methods ***/
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DVolume9Hook::QueryInterface(THIS_ REFIID riid, void** ppvObj)
 {
-	HRESULT ret = realObject->QueryInterface(riid, ppvObj);
+	const HRESULT ret = realObject->QueryInterface(riid, ppvObj);
 	if (ret == NOERROR)
 	{
 		*ppvObj = this;
@@ -16,14 +16,14 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DVolume9Hook::QueryInterf
 
 COM_DECLSPEC_NOTHROW ULONG STDMETHODCALLTYPE IDirect3DVolume9Hook::AddRef(THIS)
 {
-	ULONG ret = realObject->AddRef();
+	const ULONG ret = realObject->AddRef();
 	++refCount;
 	return ret;
 }
 
 COM_DECLSPEC_NOTHROW ULONG STDMETHODCALLTYPE IDirect3DVolume9Hook::Release(THIS)
 {
-	ULONG ret = realObject->Release();
+	const ULONG ret = realObject->Release();
 	if (--refCount == 0)
 	{
 #ifdef DEBUGPRINT_D3DHOOKOBJECT_FULLRELEASES
@@ -43,7 +43,7 @@ COM_DECLSPEC_NOTHROW ULONG STDMETHODCALLTYPE IDirect3DVolume9Hook::Release(THIS)
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DVolume9Hook::GetDevice(THIS_ IDirect3DDevice9** ppDevice)
 {
 	LPDIRECT3DDEVICE9 realD3D9dev = NULL;
-	HRESULT ret = realObject->GetDevice(&realD3D9dev);
+	const HRESULT ret = realObject->GetDevice(&realD3D9dev);
 	if (FAILED(ret) )
 	{
 		*ppDevice = NULL;
@@ -63,42 +63,42 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DVolume9Hook::GetDevice(T
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DVolume9Hook::SetPrivateData(THIS_ REFGUID refguid,CONST void* pData,DWORD SizeOfData,DWORD Flags)
 {
-	HRESULT ret = realObject->SetPrivateData(refguid, pData, SizeOfData, Flags);
+	const HRESULT ret = realObject->SetPrivateData(refguid, pData, SizeOfData, Flags);
 	return ret;
 }
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DVolume9Hook::GetPrivateData(THIS_ REFGUID refguid,void* pData,DWORD* pSizeOfData)
 {
-	HRESULT ret = realObject->GetPrivateData(refguid, pData, pSizeOfData);
+	const HRESULT ret = realObject->GetPrivateData(refguid, pData, pSizeOfData);
 	return ret;
 }
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DVolume9Hook::FreePrivateData(THIS_ REFGUID refguid)
 {
-	HRESULT ret = realObject->FreePrivateData(refguid);
+	const HRESULT ret = realObject->FreePrivateData(refguid);
 	return ret;
 }
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DVolume9Hook::GetContainer(THIS_ REFIID riid,void** ppContainer)
 {
-	HRESULT ret = realObject->GetContainer(riid, ppContainer);
+	const HRESULT ret = realObject->GetContainer(riid, ppContainer);
 	return ret;
 }
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DVolume9Hook::GetDesc(THIS_ D3DVOLUME_DESC *pDesc)
 {
-	HRESULT ret = realObject->GetDesc(pDesc);
+	const HRESULT ret = realObject->GetDesc(pDesc);
 	return ret;
 }
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DVolume9Hook::LockBox(THIS_ D3DLOCKED_BOX * pLockedVolume,CONST D3DBOX* pBox,DWORD Flags)
 {
-	HRESULT ret = realObject->LockBox(pLockedVolume, pBox, Flags);
+	const HRESULT ret = realObject->LockBox(pLockedVolume, pBox, Flags);
 	return ret;
 }
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DVolume9Hook::UnlockBox(THIS)
 {
-	HRESULT ret = realObject->UnlockBox();
+	const HRESULT ret = realObject->UnlockBox();
 	return ret;
 }

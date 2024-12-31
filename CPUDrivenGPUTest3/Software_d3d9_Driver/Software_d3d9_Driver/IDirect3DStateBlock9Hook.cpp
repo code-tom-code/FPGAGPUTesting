@@ -81,7 +81,7 @@ Known captured API's:
 /*** IUnknown methods ***/
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DStateBlock9Hook::QueryInterface(THIS_ REFIID riid, void** ppvObj)
 {
-	HRESULT ret = realObject->QueryInterface(riid, ppvObj);
+	const HRESULT ret = realObject->QueryInterface(riid, ppvObj);
 	if (ret == NOERROR)
 	{
 		*ppvObj = this;
@@ -92,14 +92,14 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DStateBlock9Hook::QueryIn
 
 COM_DECLSPEC_NOTHROW ULONG STDMETHODCALLTYPE IDirect3DStateBlock9Hook::AddRef(THIS)
 {
-	ULONG ret = realObject->AddRef();
+	const ULONG ret = realObject->AddRef();
 	++refCount;
 	return ret;
 }
 
 COM_DECLSPEC_NOTHROW ULONG STDMETHODCALLTYPE IDirect3DStateBlock9Hook::Release(THIS)
 {
-	ULONG ret = realObject->Release();
+	const ULONG ret = realObject->Release();
 	if (--refCount == 0)
 	{
 #ifdef DEBUGPRINT_D3DHOOKOBJECT_FULLRELEASES
@@ -124,7 +124,7 @@ COM_DECLSPEC_NOTHROW ULONG STDMETHODCALLTYPE IDirect3DStateBlock9Hook::Release(T
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DStateBlock9Hook::GetDevice(THIS_ IDirect3DDevice9** ppDevice)
 {
 	LPDIRECT3DDEVICE9 realD3D9dev = NULL;
-	HRESULT ret = realObject->GetDevice(&realD3D9dev);
+	const HRESULT ret = realObject->GetDevice(&realD3D9dev);
 	if (FAILED(ret) )
 	{
 		*ppDevice = NULL;
@@ -160,7 +160,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DStateBlock9Hook::Capture
 		return D3DERR_INVALIDCALL;
 	}
 
-	HRESULT ret = realObject->Capture();
+	const HRESULT ret = realObject->Capture();
 	if (FAILED(ret) )
 		return ret;
 
@@ -189,7 +189,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DStateBlock9Hook::Apply(T
 		return D3DERR_INVALIDCALL;
 	}
 
-	HRESULT ret = realObject->Apply();
+	const HRESULT ret = realObject->Apply();
 	if (FAILED(ret) )
 		return ret;
 

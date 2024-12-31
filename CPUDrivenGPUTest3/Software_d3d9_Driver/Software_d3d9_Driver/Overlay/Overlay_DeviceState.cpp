@@ -513,7 +513,7 @@ static const char* const D3DFOGMODEStrings[] =
 
 static inline const char* const GetFogModeString(const D3DFOGMODE fogMode)
 {
-	if (fogMode > D3DFOG_LINEAR)
+	if (static_cast<unsigned>(fogMode) > D3DFOG_LINEAR)
 		return "UNKNOWN";
 	else
 		return D3DFOGMODEStrings[fogMode];
@@ -1284,7 +1284,7 @@ static const char* const abbreviatedAddressModes[] =
 };
 static inline const char* const GetAbbreviatedAddressModeString(const D3DTEXTUREADDRESS textureAddressMode)
 {
-	if (textureAddressMode < D3DTADDRESS_WRAP || D3DTADDRESS_MIRRORONCE > D3DTADDRESS_MIRRORONCE)
+	if (textureAddressMode < D3DTADDRESS_WRAP || textureAddressMode > D3DTADDRESS_MIRRORONCE)
 		return "UNKNOWN";
 	return abbreviatedAddressModes[textureAddressMode];
 }
@@ -1301,7 +1301,7 @@ static const char* const abbreviatedTextureFilters[] =
 };
 static inline const char* const GetAbbreviatedTextureFilterString(const D3DTEXTUREFILTERTYPE texFilter)
 {
-	if (texFilter > D3DTEXF_CONVOLUTIONMONO)
+	if (static_cast<unsigned>(texFilter) > D3DTEXF_CONVOLUTIONMONO)
 		return "UNKNOWN";
 	return abbreviatedTextureFilters[texFilter];
 }
@@ -1363,9 +1363,9 @@ void DrawTextureState(IDirect3DDevice9Hook* const hookDev, const DeviceState& de
 		if (texID >= 16 && texID < D3DDMAPSAMPLER)
 			continue;
 
-		IDirect3DTexture9Hook* tex2D = deviceState.currentTextures[texID];
-		IDirect3DCubeTexture9Hook* texCube = deviceState.currentCubeTextures[texID];
-		IDirect3DVolumeTexture9Hook* tex3D = deviceState.currentVolumeTextures[texID];
+		IDirect3DTexture9Hook* const tex2D = deviceState.currentTextures[texID];
+		IDirect3DCubeTexture9Hook* const texCube = deviceState.currentCubeTextures[texID];
+		IDirect3DVolumeTexture9Hook* const tex3D = deviceState.currentVolumeTextures[texID];
 
 		const unsigned printedLineNumber = texID >= 16 ? texID - (D3DDMAPSAMPLER - 16) : texID;
 

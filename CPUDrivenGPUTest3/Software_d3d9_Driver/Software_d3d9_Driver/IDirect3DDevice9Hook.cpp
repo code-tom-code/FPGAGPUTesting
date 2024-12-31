@@ -1091,7 +1091,7 @@ RenderStates::RenderStates() : cachedAlphaRefFloat(0.0f)
 /*** IUnknown methods ***/
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::QueryInterface(THIS_ REFIID riid, void** ppvObj) 
 {
-	HRESULT ret = d3d9dev->QueryInterface(riid, ppvObj);
+	const HRESULT ret = d3d9dev->QueryInterface(riid, ppvObj);
 	if (ret == NOERROR)
 	{
 		*ppvObj = this;
@@ -1102,14 +1102,14 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::QueryInterf
 
 COM_DECLSPEC_NOTHROW ULONG STDMETHODCALLTYPE IDirect3DDevice9Hook::AddRef(THIS)
 {
-	ULONG ret = d3d9dev->AddRef();
+	const ULONG ret = d3d9dev->AddRef();
 	++refCount;
 	return ret;
 }
 
 COM_DECLSPEC_NOTHROW ULONG STDMETHODCALLTYPE IDirect3DDevice9Hook::Release(THIS)
 {
-	ULONG ret = d3d9dev->Release();
+	const ULONG ret = d3d9dev->Release();
 	if (--refCount == 0)
 	{
 #ifdef DEBUGPRINT_D3DHOOKOBJECT_FULLRELEASES
@@ -1128,13 +1128,13 @@ COM_DECLSPEC_NOTHROW ULONG STDMETHODCALLTYPE IDirect3DDevice9Hook::Release(THIS)
 /*** IDirect3DDevice9 methods ***/
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::TestCooperativeLevel(THIS)
 {
-	HRESULT ret = d3d9dev->TestCooperativeLevel();
+	const HRESULT ret = d3d9dev->TestCooperativeLevel();
 	return D3D_OK; // We don't really support device lost scenarios yet
 }
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::EvictManagedResources(THIS)
 {
-	HRESULT ret = d3d9dev->EvictManagedResources();
+	const HRESULT ret = d3d9dev->EvictManagedResources();
 	return ret;
 }
 
@@ -1144,7 +1144,7 @@ COM_DECLSPEC_NOTHROW BOOL STDMETHODCALLTYPE IDirect3DDevice9Hook::ShowCursor(THI
 	if (bShow == FALSE)
 		return TRUE;
 #endif
-	BOOL ret = d3d9dev->ShowCursor(bShow);
+	const BOOL ret = d3d9dev->ShowCursor(bShow);
 	return ret;
 }
 
@@ -1183,7 +1183,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::Reset(THIS_
 
 	PreReset();
 
-	HRESULT ret = d3d9dev->Reset(&modifiedParams);
+	const HRESULT ret = d3d9dev->Reset(&modifiedParams);
 	if (FAILED(ret) )
 	{
 		char resetFail[256] = {0};
@@ -1313,7 +1313,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::Present(THI
 		GetDeviceStats().ArmCollectEventDataNextFrame();
 	}
 
-	HRESULT ret = implicitSwapChain->Present(pSourceRect, pDestRect, hDestWindowOverride, pDirtyRegion, 0);
+	const HRESULT ret = implicitSwapChain->Present(pSourceRect, pDestRect, hDestWindowOverride, pDirtyRegion, 0);
 	if (FAILED(ret) )
 		return ret;
 
@@ -1362,8 +1362,6 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::Present(THI
 					//timeDeltaSeconds * 1000.0f, 1.0f / timeDeltaSeconds);
 				sprintf(buffer, "Allocs: %u bytes (%u allocs); Frees: %u bytes (%u frees); NumPlacementsAvg: %u\n", allocBytesThisFrame, allocsThisFrame, freeBytesThisFrame, freesThisFrame, rollingAvgNumPlacements);
 #pragma warning(pop)
-				DWORD numCharsWritten = 0;
-
 				OutputDebugStringA(buffer);
 
 				SetWindowTextA(mainWindowWnd, buffer);
@@ -1437,7 +1435,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::Present(THI
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::UpdateSurface(THIS_ IDirect3DSurface9* pSourceSurface, CONST RECT* pSourceRect, IDirect3DSurface9* pDestinationSurface, CONST POINT* pDestPoint)
 {
-	const IDirect3DSurface9Hook* const sourceHookPtr = dynamic_cast<IDirect3DSurface9Hook*>(pSourceSurface);
+	const IDirect3DSurface9Hook* const sourceHookPtr = dynamic_cast<IDirect3DSurface9Hook* const>(pSourceSurface);
 #ifdef _DEBUG
 	if (sourceHookPtr)
 #endif
@@ -1449,7 +1447,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::UpdateSurfa
 	}
 #endif
 
-	IDirect3DSurface9Hook* const destHookPtr = dynamic_cast<IDirect3DSurface9Hook*>(pDestinationSurface);
+	IDirect3DSurface9Hook* const destHookPtr = dynamic_cast<IDirect3DSurface9Hook* const>(pDestinationSurface);
 #ifdef _DEBUG
 	if (destHookPtr)
 #endif
@@ -1461,7 +1459,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::UpdateSurfa
 	}
 #endif
 
-	HRESULT ret = d3d9dev->UpdateSurface(pSourceSurface, pSourceRect, pDestinationSurface, pDestPoint);
+	const HRESULT ret = d3d9dev->UpdateSurface(pSourceSurface, pSourceRect, pDestinationSurface, pDestPoint);
 	if (FAILED(ret) )
 		return ret;
 
@@ -1472,7 +1470,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::UpdateSurfa
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::UpdateTexture(THIS_ IDirect3DBaseTexture9* pSourceTexture, IDirect3DBaseTexture9* pDestinationTexture)
 {
-	const IDirect3DTexture9Hook* const sourceHookPtr = dynamic_cast<IDirect3DTexture9Hook*>(pSourceTexture);
+	const IDirect3DTexture9Hook* const sourceHookPtr = dynamic_cast<IDirect3DTexture9Hook* const>(pSourceTexture);
 #ifdef _DEBUG
 	if (sourceHookPtr)
 #endif
@@ -1484,7 +1482,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::UpdateTextu
 	}
 #endif
 
-	IDirect3DTexture9Hook* const destHookPtr = dynamic_cast<IDirect3DTexture9Hook*>(pDestinationTexture);
+	IDirect3DTexture9Hook* const destHookPtr = dynamic_cast<IDirect3DTexture9Hook* const>(pDestinationTexture);
 #ifdef _DEBUG
 	if (destHookPtr)
 #endif
@@ -1496,7 +1494,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::UpdateTextu
 	}
 #endif
 
-	HRESULT ret = d3d9dev->UpdateTexture(pSourceTexture, pDestinationTexture);
+	const HRESULT ret = d3d9dev->UpdateTexture(pSourceTexture, pDestinationTexture);
 	if (FAILED(ret) )
 		return ret;
 
@@ -1536,7 +1534,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::StretchRect
 		return D3DERR_INVALIDCALL;
 	}
 
-	const IDirect3DSurface9Hook* const hookSource = dynamic_cast<IDirect3DSurface9Hook*>(pSourceSurface);
+	const IDirect3DSurface9Hook* const hookSource = dynamic_cast<IDirect3DSurface9Hook* const>(pSourceSurface);
 	if (!hookSource)
 	{
 #ifdef _DEBUG
@@ -1545,7 +1543,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::StretchRect
 		return D3DERR_INVALIDCALL;
 	}
 
-	IDirect3DSurface9Hook* const hookDest = dynamic_cast<IDirect3DSurface9Hook*>(pDestSurface);
+	IDirect3DSurface9Hook* const hookDest = dynamic_cast<IDirect3DSurface9Hook* const>(pDestSurface);
 	if (!hookDest)
 	{
 #ifdef _DEBUG
@@ -1648,7 +1646,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::StretchRect
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::ColorFill(THIS_ IDirect3DSurface9* pSurface, CONST RECT* pRect, D3DCOLOR color)
 {
-	IDirect3DSurface9Hook* hookPtr = dynamic_cast<IDirect3DSurface9Hook*>(pSurface);
+	IDirect3DSurface9Hook* const hookPtr = dynamic_cast<IDirect3DSurface9Hook* const>(pSurface);
 	if (hookPtr)
 		pSurface = hookPtr->GetUnderlyingSurface();
 #ifdef _DEBUG
@@ -1658,7 +1656,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::ColorFill(T
 	}
 #endif
 
-	HRESULT ret = d3d9dev->ColorFill(pSurface, pRect, color);
+	const HRESULT ret = d3d9dev->ColorFill(pSurface, pRect, color);
 	if (FAILED(ret) )
 		return ret;
 
@@ -1707,7 +1705,7 @@ void IDirect3DDevice9Hook::AutoResizeViewport(void)
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::BeginScene(THIS)
 {
-	HRESULT ret = d3d9dev->BeginScene();
+	const HRESULT ret = d3d9dev->BeginScene();
 	if (FAILED(ret) )
 		return ret;
 
@@ -1726,7 +1724,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::BeginScene(
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::EndScene(THIS)
 {
-	HRESULT ret = d3d9dev->EndScene();
+	const HRESULT ret = d3d9dev->EndScene();
 	if (FAILED(ret) )
 		return ret;
 
@@ -2036,7 +2034,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::BeginStateB
 		return D3DERR_INVALIDCALL;
 	}
 	
-	HRESULT ret = d3d9dev->BeginStateBlock();
+	const HRESULT ret = d3d9dev->BeginStateBlock();
 	if (FAILED(ret) )
 		return ret;
 
@@ -2072,7 +2070,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::EndStateBlo
 	if (ppSB)
 	{
 		LPDIRECT3DSTATEBLOCK9 realStateBlock = NULL;
-		HRESULT ret = d3d9dev->EndStateBlock(&realStateBlock);
+		const HRESULT ret = d3d9dev->EndStateBlock(&realStateBlock);
 		if (FAILED(ret) )
 			return ret;
 
@@ -2087,7 +2085,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::EndStateBlo
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::ValidateDevice(THIS_ DWORD* pNumPasses)
 {
-	HRESULT ret = d3d9dev->ValidateDevice(pNumPasses);
+	const HRESULT ret = d3d9dev->ValidateDevice(pNumPasses);
 	return ret;
 }
 
@@ -2420,7 +2418,7 @@ static inline void LoadElementToRegister4(D3DXVECTOR4* const (&outRegister4)[4],
 		break;
 	case D3DDECLTYPE_D3DCOLOR  : // 4D packed unsigned bytes mapped to 0. to 1. range; Input is in D3DCOLOR format (ARGB) expanded to (R, G, B, A)
 	{
-		const D3DCOLOR** const colorData4 = (const D3DCOLOR** const)data4;
+		const D3DCOLOR* const* const colorData4 = (const D3DCOLOR* const* const)data4;
 		ColorDWORDToFloat4_4(colorData4, outRegister4);
 	}
 		break;
@@ -3640,9 +3638,9 @@ const primitivePixelJobData* const IDirect3DDevice9Hook::GetNewPrimitiveJobData(
 	localInvZ.m128_f32[1] = p1.m128_f32[2];
 	localInvZ.m128_f32[2] = p2.m128_f32[2];
 
-	const __m128 zeroVec = _mm_setzero_ps();
+	const __m128 zeroM128 = _mm_setzero_ps();
 	const __m128 localZ = _mm_div_ps(oneVec, localInvZ);
-	const __m128 selectMaskZ = _mm_cmpeq_ps(zeroVec, localInvZ); // Members that equal zero will be set to 0xFF, members that don't will be set to 0x00
+	const __m128 selectMaskZ = _mm_cmpeq_ps(zeroM128, localInvZ); // Members that equal zero will be set to 0xFF, members that don't will be set to 0x00
 	const __m128 localInvZSelected = _mm_blendv_ps(localZ, maxDepth24Bit, selectMaskZ);
 	newPrimitiveData.invZ = D3DXVECTOR3(localInvZSelected.m128_f32[0], localInvZSelected.m128_f32[1], localInvZSelected.m128_f32[2]);
 
@@ -4440,7 +4438,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawPrimiti
 	if (PrimitiveType > D3DPT_TRIANGLEFAN || PrimitiveType < D3DPT_POINTLIST)
 		return D3DERR_INVALIDCALL;
 
-	HRESULT ret = S_OK;
+	const HRESULT ret = S_OK;
 
 	if (!TotalDrawCallSkipTest() )
 		return ret;
@@ -4669,9 +4667,9 @@ const bool IDirect3DDevice9Hook::CreateOrUseCachedCommandList(GPUCommandList*& n
 {
 	const unsigned __int64 recordingListHash = newCommandList->ComputeCommandsHash();
 	const unsigned recordingListSize = newCommandList->GetCommandListCommandCount();
-	bool foundExisting = false;
 	GPUCommandList* foundExistingCommandList = NULL;
-	if (cachedDeviceCommandLists.FindExistingItem(recordingListHash, recordingListSize, foundExistingCommandList) )
+	const bool foundExisting = cachedDeviceCommandLists.FindExistingItem(recordingListHash, recordingListSize, foundExistingCommandList);
+	if (foundExisting)
 	{
 		// Reset & reuse our command list in the pool:
 		newCommandList->ResetCommandListForPooling();
@@ -5256,7 +5254,7 @@ void IDirect3DDevice9Hook::DeviceSetUsedVertexShaderConstants()
 		unsigned rangeOffsetBytes = 0;
 		for (unsigned registerRangeIndex = 0; registerRangeIndex < numRegisterRanges; ++registerRangeIndex)
 		{
-			constantRegisterRange& thisRegisterRange = registerRanges[registerRangeIndex];
+			const constantRegisterRange& thisRegisterRange = registerRanges[registerRangeIndex];
 			baseDevice->DeviceSetConstantData( (const char* const)constantBufferAllocation.deviceMemory + rangeOffsetBytes, targetDeviceState->vertexShaderRegisters.floats, thisRegisterRange.rangeStartIndex, thisRegisterRange.rangeRegisterLength);
 			rangeOffsetBytes += thisRegisterRange.rangeRegisterLength * sizeof(float4);
 			if (thisRegisterRange.rangeRegisterLength % 2)
@@ -5994,7 +5992,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawIndexed
 		SetFixedFunctionVertexShaderState(currentState, this);
 	}
 
-	HRESULT ret = S_OK;
+	const HRESULT ret = S_OK;
 
 	processedVertsUsed = 0;
 
@@ -6207,13 +6205,13 @@ void IDirect3DDevice9Hook::LoadBlend(D3DXVECTOR4& outBlend, const D3DBLEND blend
 			const float as = srcColor.w;
 			const float invad = 1.0f - dstColor.w;
 			const float f = as < invad ? as : invad;
-			if (channelWriteMask & 0x1)
+			if ( (channelWriteMask & 0x1) != 0)
 				outBlend.x = f;
-			if (channelWriteMask & 0x2)
+			if ( (channelWriteMask & 0x2) != 0)
 				outBlend.y = f;
-			if (channelWriteMask & 0x4)
+			if ( (channelWriteMask & 0x4) != 0)
 				outBlend.z = f;
-			if (channelWriteMask & 0x8)
+			if ( (channelWriteMask & 0x8) != 0)
 				outBlend.w = 1.0f;
 			return;
 		}
@@ -6254,85 +6252,85 @@ void IDirect3DDevice9Hook::LoadBlend(D3DXVECTOR4& outBlend, const D3DBLEND blend
 		__assume(0);
 #endif
 	case D3DBLEND_SRCCOLOR       :
-		if (channelWriteMask & 0x1)
+		if ( (channelWriteMask & 0x1) != 0)
 			outBlend.x = srcColor.x;
-		if (channelWriteMask & 0x2)
+		if ( (channelWriteMask & 0x2) != 0)
 			outBlend.y = srcColor.y;
-		if (channelWriteMask & 0x4)
+		if ( (channelWriteMask & 0x4) != 0)
 			outBlend.z = srcColor.z;
-		if (channelWriteMask & 0x8)
+		if ( (channelWriteMask & 0x8) != 0)
 			outBlend.w = srcColor.w;
 		break;
 	case D3DBLEND_INVSRCCOLOR    :
-		if (channelWriteMask & 0x1)
+		if ( (channelWriteMask & 0x1) != 0)
 			outBlend.x = 1.0f - srcColor.x;
-		if (channelWriteMask & 0x2)
+		if ( (channelWriteMask & 0x2) != 0)
 			outBlend.y = 1.0f - srcColor.y;
-		if (channelWriteMask & 0x4)
+		if ( (channelWriteMask & 0x4) != 0)
 			outBlend.z = 1.0f - srcColor.z;
-		if (channelWriteMask & 0x8)
+		if ( (channelWriteMask & 0x8) != 0)
 			outBlend.w = 1.0f - srcColor.w;
 		break;
 	case D3DBLEND_BOTHSRCALPHA   :
 	case D3DBLEND_SRCALPHA       :
-		if (channelWriteMask & 0x1)
+		if ( (channelWriteMask & 0x1) != 0)
 			outBlend.x = srcColor.w;
-		if (channelWriteMask & 0x2)
+		if ( (channelWriteMask & 0x2) != 0)
 			outBlend.y = srcColor.w;
-		if (channelWriteMask & 0x4)
+		if ( (channelWriteMask & 0x4) != 0)
 			outBlend.z = srcColor.w;
-		if (channelWriteMask & 0x8)
+		if ( (channelWriteMask & 0x8) != 0)
 			outBlend.w = srcColor.w;
 		break;
 	case D3DBLEND_BOTHINVSRCALPHA:
 	case D3DBLEND_INVSRCALPHA    :
-		if (channelWriteMask & 0x1)
+		if ( (channelWriteMask & 0x1) != 0)
 			outBlend.x = 1.0f - srcColor.w;
-		if (channelWriteMask & 0x2)
+		if ( (channelWriteMask & 0x2) != 0)
 			outBlend.y = 1.0f - srcColor.w;
-		if (channelWriteMask & 0x4)
+		if ( (channelWriteMask & 0x4) != 0)
 			outBlend.z = 1.0f - srcColor.w;
-		if (channelWriteMask & 0x8)
+		if ( (channelWriteMask & 0x8) != 0)
 			outBlend.w = 1.0f - srcColor.w;
 		break;
 	case D3DBLEND_DESTALPHA      :
-		if (channelWriteMask & 0x1)
+		if ( (channelWriteMask & 0x1) != 0)
 			outBlend.x = dstColor.w;
-		if (channelWriteMask & 0x2)
+		if ( (channelWriteMask & 0x2) != 0)
 			outBlend.y = dstColor.w;
-		if (channelWriteMask & 0x4)
+		if ( (channelWriteMask & 0x4) != 0)
 			outBlend.z = dstColor.w;
-		if (channelWriteMask & 0x8)
+		if ( (channelWriteMask & 0x8) != 0)
 			outBlend.w = dstColor.w;
 		break;
 	case D3DBLEND_INVDESTALPHA   :
-		if (channelWriteMask & 0x1)
+		if ( (channelWriteMask & 0x1) != 0)
 			outBlend.x = 1.0f - dstColor.w;
-		if (channelWriteMask & 0x2)
+		if ( (channelWriteMask & 0x2) != 0)
 			outBlend.y = 1.0f - dstColor.w;
-		if (channelWriteMask & 0x4)
+		if ( (channelWriteMask & 0x4) != 0)
 			outBlend.z = 1.0f - dstColor.w;
-		if (channelWriteMask & 0x8)
+		if ( (channelWriteMask & 0x8) != 0)
 			outBlend.w = 1.0f - dstColor.w;
 		break;
 	case D3DBLEND_DESTCOLOR      :
-		if (channelWriteMask & 0x1)
+		if ( (channelWriteMask & 0x1) != 0)
 			outBlend.x = dstColor.x;
-		if (channelWriteMask & 0x2)
+		if ( (channelWriteMask & 0x2) != 0)
 			outBlend.y = dstColor.y;
-		if (channelWriteMask & 0x4)
+		if ( (channelWriteMask & 0x4) != 0)
 			outBlend.z = dstColor.z;
-		if (channelWriteMask & 0x8)
+		if ( (channelWriteMask & 0x8) != 0)
 			outBlend.w = dstColor.w;
 		break;
 	case D3DBLEND_INVDESTCOLOR   :
-		if (channelWriteMask & 0x1)
+		if ( (channelWriteMask & 0x1) != 0)
 			outBlend.x = 1.0f - dstColor.x;
-		if (channelWriteMask & 0x2)
+		if ( (channelWriteMask & 0x2) != 0)
 			outBlend.y = 1.0f - dstColor.y;
-		if (channelWriteMask & 0x4)
+		if ( (channelWriteMask & 0x4) != 0)
 			outBlend.z = 1.0f - dstColor.z;
-		if (channelWriteMask & 0x8)
+		if ( (channelWriteMask & 0x8) != 0)
 			outBlend.w = 1.0f - dstColor.w;
 		break;
 	case D3DBLEND_SRCALPHASAT    :
@@ -6340,34 +6338,34 @@ void IDirect3DDevice9Hook::LoadBlend(D3DXVECTOR4& outBlend, const D3DBLEND blend
 		const float as = srcColor.w;
 		const float invad = 1.0f - dstColor.w;
 		const float f = as < invad ? as : invad;
-		if (channelWriteMask & 0x1)
+		if ( (channelWriteMask & 0x1) != 0)
 			outBlend.x = f;
-		if (channelWriteMask & 0x2)
+		if ( (channelWriteMask & 0x2) != 0)
 			outBlend.y = f;
-		if (channelWriteMask & 0x4)
+		if ( (channelWriteMask & 0x4) != 0)
 			outBlend.z = f;
-		if (channelWriteMask & 0x8)
+		if ( (channelWriteMask & 0x8) != 0)
 			outBlend.w = 1.0f;
 	}
 		break;
 	case D3DBLEND_BLENDFACTOR    :
-		if (channelWriteMask & 0x1)
+		if ( (channelWriteMask & 0x1) != 0)
 			outBlend.x = currentState.currentRenderStates.cachedBlendFactor.x;
-		if (channelWriteMask & 0x2)
+		if ( (channelWriteMask & 0x2) != 0)
 			outBlend.y = currentState.currentRenderStates.cachedBlendFactor.y;
-		if (channelWriteMask & 0x4)
+		if ( (channelWriteMask & 0x4) != 0)
 			outBlend.z = currentState.currentRenderStates.cachedBlendFactor.z;
-		if (channelWriteMask & 0x8)
+		if ( (channelWriteMask & 0x8) != 0)
 			outBlend.w = currentState.currentRenderStates.cachedBlendFactor.w;
 		break;
 	case D3DBLEND_INVBLENDFACTOR :
-		if (channelWriteMask & 0x1)
+		if ( (channelWriteMask & 0x1) != 0)
 			outBlend.x = currentState.currentRenderStates.cachedInvBlendFactor.x;
-		if (channelWriteMask & 0x2)
+		if ( (channelWriteMask & 0x2) != 0)
 			outBlend.y = currentState.currentRenderStates.cachedInvBlendFactor.y;
-		if (channelWriteMask & 0x4)
+		if ( (channelWriteMask & 0x4) != 0)
 			outBlend.z = currentState.currentRenderStates.cachedInvBlendFactor.z;
-		if (channelWriteMask & 0x8)
+		if ( (channelWriteMask & 0x8) != 0)
 			outBlend.w = currentState.currentRenderStates.cachedInvBlendFactor.w;
 		break;
 	}
@@ -6473,13 +6471,13 @@ void IDirect3DDevice9Hook::LoadBlend4(D3DXVECTOR4 (&outBlend)[4], const D3DBLEND
 					const float as = srcColor[x].w;
 					const float invad = 1.0f - dstColor[x].w;
 					const float f = as < invad ? as : invad;
-					if (channelWriteMask & 0x1)
+					if ( (channelWriteMask & 0x1) != 0)
 						outBlend[x].x = f;
-					if (channelWriteMask & 0x2)
+					if ( (channelWriteMask & 0x2) != 0)
 						outBlend[x].y = f;
-					if (channelWriteMask & 0x4)
+					if ( (channelWriteMask & 0x4) != 0)
 						outBlend[x].z = f;
-					if (channelWriteMask & 0x8)
+					if ( (channelWriteMask & 0x8) != 0)
 						outBlend[x].w = 1.0f;
 				}
 			}
@@ -6536,68 +6534,68 @@ void IDirect3DDevice9Hook::LoadBlend4(D3DXVECTOR4 (&outBlend)[4], const D3DBLEND
 	case D3DBLEND_SRCCOLOR       :
 		if (pixelWriteMask & 0x1)
 		{
-			if (channelWriteMask & 0x1)	outBlend[0].x = srcColor[0].x;
-			if (channelWriteMask & 0x2)	outBlend[0].y = srcColor[0].y;
-			if (channelWriteMask & 0x4)	outBlend[0].z = srcColor[0].z;
-			if (channelWriteMask & 0x8)	outBlend[0].w = srcColor[0].w;
+			if ( (channelWriteMask & 0x1) != 0)	outBlend[0].x = srcColor[0].x;
+			if ( (channelWriteMask & 0x2) != 0)	outBlend[0].y = srcColor[0].y;
+			if ( (channelWriteMask & 0x4) != 0)	outBlend[0].z = srcColor[0].z;
+			if ( (channelWriteMask & 0x8) != 0)	outBlend[0].w = srcColor[0].w;
 		}
 		if (pixelWriteMask & 0x2)
 		{
-			if (channelWriteMask & 0x1)	outBlend[1].x = srcColor[1].x;
-			if (channelWriteMask & 0x2)	outBlend[1].y = srcColor[1].y;
-			if (channelWriteMask & 0x4)	outBlend[1].z = srcColor[1].z;
-			if (channelWriteMask & 0x8)	outBlend[1].w = srcColor[1].w;
+			if ( (channelWriteMask & 0x1) != 0)	outBlend[1].x = srcColor[1].x;
+			if ( (channelWriteMask & 0x2) != 0)	outBlend[1].y = srcColor[1].y;
+			if ( (channelWriteMask & 0x4) != 0)	outBlend[1].z = srcColor[1].z;
+			if ( (channelWriteMask & 0x8) != 0)	outBlend[1].w = srcColor[1].w;
 		}
 		if (pixelWriteMask & 0x4)
 		{
-			if (channelWriteMask & 0x1)	outBlend[2].x = srcColor[2].x;
-			if (channelWriteMask & 0x2)	outBlend[2].y = srcColor[2].y;
-			if (channelWriteMask & 0x4)	outBlend[2].z = srcColor[2].z;
-			if (channelWriteMask & 0x8)	outBlend[2].w = srcColor[2].w;
+			if ( (channelWriteMask & 0x1) != 0)	outBlend[2].x = srcColor[2].x;
+			if ( (channelWriteMask & 0x2) != 0)	outBlend[2].y = srcColor[2].y;
+			if ( (channelWriteMask & 0x4) != 0)	outBlend[2].z = srcColor[2].z;
+			if ( (channelWriteMask & 0x8) != 0)	outBlend[2].w = srcColor[2].w;
 		}
 		if (pixelWriteMask & 0x8)
 		{
-			if (channelWriteMask & 0x1)	outBlend[3].x = srcColor[3].x;
-			if (channelWriteMask & 0x2)	outBlend[3].y = srcColor[3].y;
-			if (channelWriteMask & 0x4)	outBlend[3].z = srcColor[3].z;
-			if (channelWriteMask & 0x8)	outBlend[3].w = srcColor[3].w;
+			if ( (channelWriteMask & 0x1) != 0)	outBlend[3].x = srcColor[3].x;
+			if ( (channelWriteMask & 0x2) != 0)	outBlend[3].y = srcColor[3].y;
+			if ( (channelWriteMask & 0x4) != 0)	outBlend[3].z = srcColor[3].z;
+			if ( (channelWriteMask & 0x8) != 0)	outBlend[3].w = srcColor[3].w;
 		}
 		break;
 	case D3DBLEND_INVSRCCOLOR    :
 	{
 		__m128 invSrcColor4[4];
-		if (pixelWriteMask & 0x1) invSrcColor4[0] = _mm_sub_ps(*(const __m128* const)&staticColorWhiteOpaque, *(const __m128* const)&(srcColor[0]) );
-		if (pixelWriteMask & 0x2) invSrcColor4[1] = _mm_sub_ps(*(const __m128* const)&staticColorWhiteOpaque, *(const __m128* const)&(srcColor[1]) );
-		if (pixelWriteMask & 0x4) invSrcColor4[2] = _mm_sub_ps(*(const __m128* const)&staticColorWhiteOpaque, *(const __m128* const)&(srcColor[2]) );
-		if (pixelWriteMask & 0x8) invSrcColor4[3] = _mm_sub_ps(*(const __m128* const)&staticColorWhiteOpaque, *(const __m128* const)&(srcColor[3]) );
+		if ( (pixelWriteMask & 0x1) != 0) invSrcColor4[0] = _mm_sub_ps(*(const __m128* const)&staticColorWhiteOpaque, *(const __m128* const)&(srcColor[0]) );
+		if ( (pixelWriteMask & 0x2) != 0) invSrcColor4[1] = _mm_sub_ps(*(const __m128* const)&staticColorWhiteOpaque, *(const __m128* const)&(srcColor[1]) );
+		if ( (pixelWriteMask & 0x4) != 0) invSrcColor4[2] = _mm_sub_ps(*(const __m128* const)&staticColorWhiteOpaque, *(const __m128* const)&(srcColor[2]) );
+		if ( (pixelWriteMask & 0x8) != 0) invSrcColor4[3] = _mm_sub_ps(*(const __m128* const)&staticColorWhiteOpaque, *(const __m128* const)&(srcColor[3]) );
 
 		if (pixelWriteMask & 0x1)
 		{
-			if (channelWriteMask & 0x1)	outBlend[0].x = invSrcColor4[0].m128_f32[0];
-			if (channelWriteMask & 0x2)	outBlend[0].y = invSrcColor4[0].m128_f32[1];
-			if (channelWriteMask & 0x4)	outBlend[0].z = invSrcColor4[0].m128_f32[2];
-			if (channelWriteMask & 0x8)	outBlend[0].w = invSrcColor4[0].m128_f32[3];
+			if ( (channelWriteMask & 0x1) != 0)	outBlend[0].x = invSrcColor4[0].m128_f32[0];
+			if ( (channelWriteMask & 0x2) != 0)	outBlend[0].y = invSrcColor4[0].m128_f32[1];
+			if ( (channelWriteMask & 0x4) != 0)	outBlend[0].z = invSrcColor4[0].m128_f32[2];
+			if ( (channelWriteMask & 0x8) != 0)	outBlend[0].w = invSrcColor4[0].m128_f32[3];
 		}
 		if (pixelWriteMask & 0x2)
 		{
-			if (channelWriteMask & 0x1)	outBlend[1].x = invSrcColor4[1].m128_f32[0];
-			if (channelWriteMask & 0x2)	outBlend[1].y = invSrcColor4[1].m128_f32[1];
-			if (channelWriteMask & 0x4)	outBlend[1].z = invSrcColor4[1].m128_f32[2];
-			if (channelWriteMask & 0x8)	outBlend[1].w = invSrcColor4[1].m128_f32[3];
+			if ( (channelWriteMask & 0x1) != 0)	outBlend[1].x = invSrcColor4[1].m128_f32[0];
+			if ( (channelWriteMask & 0x2) != 0)	outBlend[1].y = invSrcColor4[1].m128_f32[1];
+			if ( (channelWriteMask & 0x4) != 0)	outBlend[1].z = invSrcColor4[1].m128_f32[2];
+			if ( (channelWriteMask & 0x8) != 0)	outBlend[1].w = invSrcColor4[1].m128_f32[3];
 		}
 		if (pixelWriteMask & 0x4)
 		{
-			if (channelWriteMask & 0x1)	outBlend[2].x = invSrcColor4[2].m128_f32[0];
-			if (channelWriteMask & 0x2)	outBlend[2].y = invSrcColor4[2].m128_f32[1];
-			if (channelWriteMask & 0x4)	outBlend[2].z = invSrcColor4[2].m128_f32[2];
-			if (channelWriteMask & 0x8)	outBlend[2].w = invSrcColor4[2].m128_f32[3];
+			if ( (channelWriteMask & 0x1) != 0)	outBlend[2].x = invSrcColor4[2].m128_f32[0];
+			if ( (channelWriteMask & 0x2) != 0)	outBlend[2].y = invSrcColor4[2].m128_f32[1];
+			if ( (channelWriteMask & 0x4) != 0)	outBlend[2].z = invSrcColor4[2].m128_f32[2];
+			if ( (channelWriteMask & 0x8) != 0)	outBlend[2].w = invSrcColor4[2].m128_f32[3];
 		}
 		if (pixelWriteMask & 0x8)
 		{
-			if (channelWriteMask & 0x1)	outBlend[3].x = invSrcColor4[3].m128_f32[0];
-			if (channelWriteMask & 0x2)	outBlend[3].y = invSrcColor4[3].m128_f32[1];
-			if (channelWriteMask & 0x4)	outBlend[3].z = invSrcColor4[3].m128_f32[2];
-			if (channelWriteMask & 0x8)	outBlend[3].w = invSrcColor4[3].m128_f32[3];
+			if ( (channelWriteMask & 0x1) != 0)	outBlend[3].x = invSrcColor4[3].m128_f32[0];
+			if ( (channelWriteMask & 0x2) != 0)	outBlend[3].y = invSrcColor4[3].m128_f32[1];
+			if ( (channelWriteMask & 0x4) != 0)	outBlend[3].z = invSrcColor4[3].m128_f32[2];
+			if ( (channelWriteMask & 0x8) != 0)	outBlend[3].w = invSrcColor4[3].m128_f32[3];
 		}
 	}
 		break;
@@ -6606,31 +6604,31 @@ void IDirect3DDevice9Hook::LoadBlend4(D3DXVECTOR4 (&outBlend)[4], const D3DBLEND
 	{
 		if (pixelWriteMask & 0x1)
 		{
-			if (channelWriteMask & 0x1)	outBlend[0].x = srcColor[0].w;
-			if (channelWriteMask & 0x2)	outBlend[0].y = srcColor[0].w;
-			if (channelWriteMask & 0x4)	outBlend[0].z = srcColor[0].w;
-			if (channelWriteMask & 0x8)	outBlend[0].w = srcColor[0].w;
+			if ( (channelWriteMask & 0x1) != 0)	outBlend[0].x = srcColor[0].w;
+			if ( (channelWriteMask & 0x2) != 0)	outBlend[0].y = srcColor[0].w;
+			if ( (channelWriteMask & 0x4) != 0)	outBlend[0].z = srcColor[0].w;
+			if ( (channelWriteMask & 0x8) != 0)	outBlend[0].w = srcColor[0].w;
 		}
 		if (pixelWriteMask & 0x2)
 		{
-			if (channelWriteMask & 0x1)	outBlend[1].x = srcColor[1].w;
-			if (channelWriteMask & 0x2)	outBlend[1].y = srcColor[1].w;
-			if (channelWriteMask & 0x4)	outBlend[1].z = srcColor[1].w;
-			if (channelWriteMask & 0x8)	outBlend[1].w = srcColor[1].w;
+			if ( (channelWriteMask & 0x1) != 0)	outBlend[1].x = srcColor[1].w;
+			if ( (channelWriteMask & 0x2) != 0)	outBlend[1].y = srcColor[1].w;
+			if ( (channelWriteMask & 0x4) != 0)	outBlend[1].z = srcColor[1].w;
+			if ( (channelWriteMask & 0x8) != 0)	outBlend[1].w = srcColor[1].w;
 		}
 		if (pixelWriteMask & 0x4)
 		{
-			if (channelWriteMask & 0x1)	outBlend[2].x = srcColor[2].w;
-			if (channelWriteMask & 0x2)	outBlend[2].y = srcColor[2].w;
-			if (channelWriteMask & 0x4)	outBlend[2].z = srcColor[2].w;
-			if (channelWriteMask & 0x8)	outBlend[2].w = srcColor[2].w;
+			if ( (channelWriteMask & 0x1) != 0)	outBlend[2].x = srcColor[2].w;
+			if ( (channelWriteMask & 0x2) != 0)	outBlend[2].y = srcColor[2].w;
+			if ( (channelWriteMask & 0x4) != 0)	outBlend[2].z = srcColor[2].w;
+			if ( (channelWriteMask & 0x8) != 0)	outBlend[2].w = srcColor[2].w;
 		}
 		if (pixelWriteMask & 0x8)
 		{
-			if (channelWriteMask & 0x1)	outBlend[3].x = srcColor[3].w;
-			if (channelWriteMask & 0x2)	outBlend[3].y = srcColor[3].w;
-			if (channelWriteMask & 0x4)	outBlend[3].z = srcColor[3].w;
-			if (channelWriteMask & 0x8)	outBlend[3].w = srcColor[3].w;
+			if ( (channelWriteMask & 0x1) != 0)	outBlend[3].x = srcColor[3].w;
+			if ( (channelWriteMask & 0x2) != 0)	outBlend[3].y = srcColor[3].w;
+			if ( (channelWriteMask & 0x4) != 0)	outBlend[3].z = srcColor[3].w;
+			if ( (channelWriteMask & 0x8) != 0)	outBlend[3].w = srcColor[3].w;
 		}
 	}
 		break;
@@ -6638,176 +6636,176 @@ void IDirect3DDevice9Hook::LoadBlend4(D3DXVECTOR4 (&outBlend)[4], const D3DBLEND
 	case D3DBLEND_INVSRCALPHA    :
 	{
 		__m128 alphaVec;
-		if (pixelWriteMask & 0x1) alphaVec.m128_f32[0] = srcColor[0].w;
-		if (pixelWriteMask & 0x2) alphaVec.m128_f32[1] = srcColor[1].w;
-		if (pixelWriteMask & 0x4) alphaVec.m128_f32[2] = srcColor[2].w;
-		if (pixelWriteMask & 0x8) alphaVec.m128_f32[3] = srcColor[3].w;
+		if ( (pixelWriteMask & 0x1) != 0) alphaVec.m128_f32[0] = srcColor[0].w;
+		if ( (pixelWriteMask & 0x2) != 0) alphaVec.m128_f32[1] = srcColor[1].w;
+		if ( (pixelWriteMask & 0x4) != 0) alphaVec.m128_f32[2] = srcColor[2].w;
+		if ( (pixelWriteMask & 0x8) != 0) alphaVec.m128_f32[3] = srcColor[3].w;
 		const __m128 invAlphaVec = _mm_sub_ps(*(const __m128* const)&staticColorWhiteOpaque, alphaVec);
 
 		if (pixelWriteMask & 0x1)
 		{
-			if (channelWriteMask & 0x1)	outBlend[0].x = invAlphaVec.m128_f32[0];
-			if (channelWriteMask & 0x2)	outBlend[0].y = invAlphaVec.m128_f32[0];
-			if (channelWriteMask & 0x4)	outBlend[0].z = invAlphaVec.m128_f32[0];
-			if (channelWriteMask & 0x8)	outBlend[0].w = invAlphaVec.m128_f32[0];
+			if ( (channelWriteMask & 0x1) != 0)	outBlend[0].x = invAlphaVec.m128_f32[0];
+			if ( (channelWriteMask & 0x2) != 0)	outBlend[0].y = invAlphaVec.m128_f32[0];
+			if ( (channelWriteMask & 0x4) != 0)	outBlend[0].z = invAlphaVec.m128_f32[0];
+			if ( (channelWriteMask & 0x8) != 0)	outBlend[0].w = invAlphaVec.m128_f32[0];
 		}
 		if (pixelWriteMask & 0x2)
 		{
-			if (channelWriteMask & 0x1)	outBlend[1].x = invAlphaVec.m128_f32[1];
-			if (channelWriteMask & 0x2)	outBlend[1].y = invAlphaVec.m128_f32[1];
-			if (channelWriteMask & 0x4)	outBlend[1].z = invAlphaVec.m128_f32[1];
-			if (channelWriteMask & 0x8)	outBlend[1].w = invAlphaVec.m128_f32[1];
+			if ( (channelWriteMask & 0x1) != 0)	outBlend[1].x = invAlphaVec.m128_f32[1];
+			if ( (channelWriteMask & 0x2) != 0)	outBlend[1].y = invAlphaVec.m128_f32[1];
+			if ( (channelWriteMask & 0x4) != 0)	outBlend[1].z = invAlphaVec.m128_f32[1];
+			if ( (channelWriteMask & 0x8) != 0)	outBlend[1].w = invAlphaVec.m128_f32[1];
 		}
 		if (pixelWriteMask & 0x4)
 		{
-			if (channelWriteMask & 0x1)	outBlend[2].x = invAlphaVec.m128_f32[2];
-			if (channelWriteMask & 0x2)	outBlend[2].y = invAlphaVec.m128_f32[2];
-			if (channelWriteMask & 0x4)	outBlend[2].z = invAlphaVec.m128_f32[2];
-			if (channelWriteMask & 0x8)	outBlend[2].w = invAlphaVec.m128_f32[2];
+			if ( (channelWriteMask & 0x1) != 0)	outBlend[2].x = invAlphaVec.m128_f32[2];
+			if ( (channelWriteMask & 0x2) != 0)	outBlend[2].y = invAlphaVec.m128_f32[2];
+			if ( (channelWriteMask & 0x4) != 0)	outBlend[2].z = invAlphaVec.m128_f32[2];
+			if ( (channelWriteMask & 0x8) != 0)	outBlend[2].w = invAlphaVec.m128_f32[2];
 		}
 		if (pixelWriteMask & 0x8)
 		{
-			if (channelWriteMask & 0x1)	outBlend[3].x = invAlphaVec.m128_f32[3];
-			if (channelWriteMask & 0x2)	outBlend[3].y = invAlphaVec.m128_f32[3];
-			if (channelWriteMask & 0x4)	outBlend[3].z = invAlphaVec.m128_f32[3];
-			if (channelWriteMask & 0x8)	outBlend[3].w = invAlphaVec.m128_f32[3];
+			if ( (channelWriteMask & 0x1) != 0)	outBlend[3].x = invAlphaVec.m128_f32[3];
+			if ( (channelWriteMask & 0x2) != 0)	outBlend[3].y = invAlphaVec.m128_f32[3];
+			if ( (channelWriteMask & 0x4) != 0)	outBlend[3].z = invAlphaVec.m128_f32[3];
+			if ( (channelWriteMask & 0x8) != 0)	outBlend[3].w = invAlphaVec.m128_f32[3];
 		}
 	}
 		break;
 	case D3DBLEND_DESTALPHA      :
 		if (pixelWriteMask & 0x1)
 		{
-			if (channelWriteMask & 0x1)	outBlend[0].x = dstColor[0].w;
-			if (channelWriteMask & 0x2)	outBlend[0].y = dstColor[0].w;
-			if (channelWriteMask & 0x4)	outBlend[0].z = dstColor[0].w;
-			if (channelWriteMask & 0x8)	outBlend[0].w = dstColor[0].w;
+			if ( (channelWriteMask & 0x1) != 0)	outBlend[0].x = dstColor[0].w;
+			if ( (channelWriteMask & 0x2) != 0)	outBlend[0].y = dstColor[0].w;
+			if ( (channelWriteMask & 0x4) != 0)	outBlend[0].z = dstColor[0].w;
+			if ( (channelWriteMask & 0x8) != 0)	outBlend[0].w = dstColor[0].w;
 		}
 		if (pixelWriteMask & 0x2)
 		{
-			if (channelWriteMask & 0x1)	outBlend[1].x = dstColor[1].w;
-			if (channelWriteMask & 0x2)	outBlend[1].y = dstColor[1].w;
-			if (channelWriteMask & 0x4)	outBlend[1].z = dstColor[1].w;
-			if (channelWriteMask & 0x8)	outBlend[1].w = dstColor[1].w;
+			if ( (channelWriteMask & 0x1) != 0)	outBlend[1].x = dstColor[1].w;
+			if ( (channelWriteMask & 0x2) != 0)	outBlend[1].y = dstColor[1].w;
+			if ( (channelWriteMask & 0x4) != 0)	outBlend[1].z = dstColor[1].w;
+			if ( (channelWriteMask & 0x8) != 0)	outBlend[1].w = dstColor[1].w;
 		}
 		if (pixelWriteMask & 0x4)
 		{
-			if (channelWriteMask & 0x1)	outBlend[2].x = dstColor[2].w;
-			if (channelWriteMask & 0x2)	outBlend[2].y = dstColor[2].w;
-			if (channelWriteMask & 0x4)	outBlend[2].z = dstColor[2].w;
-			if (channelWriteMask & 0x8)	outBlend[2].w = dstColor[2].w;
+			if ( (channelWriteMask & 0x1) != 0)	outBlend[2].x = dstColor[2].w;
+			if ( (channelWriteMask & 0x2) != 0)	outBlend[2].y = dstColor[2].w;
+			if ( (channelWriteMask & 0x4) != 0)	outBlend[2].z = dstColor[2].w;
+			if ( (channelWriteMask & 0x8) != 0)	outBlend[2].w = dstColor[2].w;
 		}
 		if (pixelWriteMask & 0x8)
 		{
-			if (channelWriteMask & 0x1)	outBlend[3].x = dstColor[3].w;
-			if (channelWriteMask & 0x2)	outBlend[3].y = dstColor[3].w;
-			if (channelWriteMask & 0x4)	outBlend[3].z = dstColor[3].w;
-			if (channelWriteMask & 0x8)	outBlend[3].w = dstColor[3].w;
+			if ( (channelWriteMask & 0x1) != 0)	outBlend[3].x = dstColor[3].w;
+			if ( (channelWriteMask & 0x2) != 0)	outBlend[3].y = dstColor[3].w;
+			if ( (channelWriteMask & 0x4) != 0)	outBlend[3].z = dstColor[3].w;
+			if ( (channelWriteMask & 0x8) != 0)	outBlend[3].w = dstColor[3].w;
 		}
 		break;
 	case D3DBLEND_INVDESTALPHA   :
 	{
 		__m128 alphaVec;
-		if (pixelWriteMask & 0x1) alphaVec.m128_f32[0] = dstColor[0].w;
-		if (pixelWriteMask & 0x2) alphaVec.m128_f32[1] = dstColor[1].w;
-		if (pixelWriteMask & 0x4) alphaVec.m128_f32[2] = dstColor[2].w;
-		if (pixelWriteMask & 0x8) alphaVec.m128_f32[3] = dstColor[3].w;
+		if ( (pixelWriteMask & 0x1) != 0) alphaVec.m128_f32[0] = dstColor[0].w;
+		if ( (pixelWriteMask & 0x2) != 0) alphaVec.m128_f32[1] = dstColor[1].w;
+		if ( (pixelWriteMask & 0x4) != 0) alphaVec.m128_f32[2] = dstColor[2].w;
+		if ( (pixelWriteMask & 0x8) != 0) alphaVec.m128_f32[3] = dstColor[3].w;
 		const __m128 invAlphaVec = _mm_sub_ps(*(const __m128* const)&staticColorWhiteOpaque, alphaVec);
 
 		if (pixelWriteMask & 0x1)
 		{
-			if (channelWriteMask & 0x1)	outBlend[0].x = invAlphaVec.m128_f32[0];
-			if (channelWriteMask & 0x2)	outBlend[0].y = invAlphaVec.m128_f32[0];
-			if (channelWriteMask & 0x4)	outBlend[0].z = invAlphaVec.m128_f32[0];
-			if (channelWriteMask & 0x8)	outBlend[0].w = invAlphaVec.m128_f32[0];
+			if ( (channelWriteMask & 0x1) != 0)	outBlend[0].x = invAlphaVec.m128_f32[0];
+			if ( (channelWriteMask & 0x2) != 0)	outBlend[0].y = invAlphaVec.m128_f32[0];
+			if ( (channelWriteMask & 0x4) != 0)	outBlend[0].z = invAlphaVec.m128_f32[0];
+			if ( (channelWriteMask & 0x8) != 0)	outBlend[0].w = invAlphaVec.m128_f32[0];
 		}
 		if (pixelWriteMask & 0x2)
 		{
-			if (channelWriteMask & 0x1)	outBlend[1].x = invAlphaVec.m128_f32[1];
-			if (channelWriteMask & 0x2)	outBlend[1].y = invAlphaVec.m128_f32[1];
-			if (channelWriteMask & 0x4)	outBlend[1].z = invAlphaVec.m128_f32[1];
-			if (channelWriteMask & 0x8)	outBlend[1].w = invAlphaVec.m128_f32[1];
+			if ( (channelWriteMask & 0x1) != 0)	outBlend[1].x = invAlphaVec.m128_f32[1];
+			if ( (channelWriteMask & 0x2) != 0)	outBlend[1].y = invAlphaVec.m128_f32[1];
+			if ( (channelWriteMask & 0x4) != 0)	outBlend[1].z = invAlphaVec.m128_f32[1];
+			if ( (channelWriteMask & 0x8) != 0)	outBlend[1].w = invAlphaVec.m128_f32[1];
 		}
 		if (pixelWriteMask & 0x4)
 		{
-			if (channelWriteMask & 0x1)	outBlend[2].x = invAlphaVec.m128_f32[2];
-			if (channelWriteMask & 0x2)	outBlend[2].y = invAlphaVec.m128_f32[2];
-			if (channelWriteMask & 0x4)	outBlend[2].z = invAlphaVec.m128_f32[2];
-			if (channelWriteMask & 0x8)	outBlend[2].w = invAlphaVec.m128_f32[2];
+			if ( (channelWriteMask & 0x1) != 0)	outBlend[2].x = invAlphaVec.m128_f32[2];
+			if ( (channelWriteMask & 0x2) != 0)	outBlend[2].y = invAlphaVec.m128_f32[2];
+			if ( (channelWriteMask & 0x4) != 0)	outBlend[2].z = invAlphaVec.m128_f32[2];
+			if ( (channelWriteMask & 0x8) != 0)	outBlend[2].w = invAlphaVec.m128_f32[2];
 		}
 		if (pixelWriteMask & 0x8)
 		{
-			if (channelWriteMask & 0x1)	outBlend[3].x = invAlphaVec.m128_f32[3];
-			if (channelWriteMask & 0x2)	outBlend[3].y = invAlphaVec.m128_f32[3];
-			if (channelWriteMask & 0x4)	outBlend[3].z = invAlphaVec.m128_f32[3];
-			if (channelWriteMask & 0x8)	outBlend[3].w = invAlphaVec.m128_f32[3];
+			if ( (channelWriteMask & 0x1) != 0)	outBlend[3].x = invAlphaVec.m128_f32[3];
+			if ( (channelWriteMask & 0x2) != 0)	outBlend[3].y = invAlphaVec.m128_f32[3];
+			if ( (channelWriteMask & 0x4) != 0)	outBlend[3].z = invAlphaVec.m128_f32[3];
+			if ( (channelWriteMask & 0x8) != 0)	outBlend[3].w = invAlphaVec.m128_f32[3];
 		}
 	}
 		break;
 	case D3DBLEND_DESTCOLOR      :
 		if (pixelWriteMask & 0x1)
 		{
-			if (channelWriteMask & 0x1)	outBlend[0].x = dstColor[0].x;
-			if (channelWriteMask & 0x2)	outBlend[0].y = dstColor[0].y;
-			if (channelWriteMask & 0x4)	outBlend[0].z = dstColor[0].z;
-			if (channelWriteMask & 0x8)	outBlend[0].w = dstColor[0].w;
+			if ( (channelWriteMask & 0x1) != 0)	outBlend[0].x = dstColor[0].x;
+			if ( (channelWriteMask & 0x2) != 0)	outBlend[0].y = dstColor[0].y;
+			if ( (channelWriteMask & 0x4) != 0)	outBlend[0].z = dstColor[0].z;
+			if ( (channelWriteMask & 0x8) != 0)	outBlend[0].w = dstColor[0].w;
 		}
 		if (pixelWriteMask & 0x2)
 		{
-			if (channelWriteMask & 0x1)	outBlend[1].x = dstColor[1].x;
-			if (channelWriteMask & 0x2)	outBlend[1].y = dstColor[1].y;
-			if (channelWriteMask & 0x4)	outBlend[1].z = dstColor[1].z;
-			if (channelWriteMask & 0x8)	outBlend[1].w = dstColor[1].w;
+			if ( (channelWriteMask & 0x1) != 0)	outBlend[1].x = dstColor[1].x;
+			if ( (channelWriteMask & 0x2) != 0)	outBlend[1].y = dstColor[1].y;
+			if ( (channelWriteMask & 0x4) != 0)	outBlend[1].z = dstColor[1].z;
+			if ( (channelWriteMask & 0x8) != 0)	outBlend[1].w = dstColor[1].w;
 		}
 		if (pixelWriteMask & 0x4)
 		{
-			if (channelWriteMask & 0x1)	outBlend[2].x = dstColor[2].x;
-			if (channelWriteMask & 0x2)	outBlend[2].y = dstColor[2].y;
-			if (channelWriteMask & 0x4)	outBlend[2].z = dstColor[2].z;
-			if (channelWriteMask & 0x8)	outBlend[2].w = dstColor[2].w;
+			if ( (channelWriteMask & 0x1) != 0)	outBlend[2].x = dstColor[2].x;
+			if ( (channelWriteMask & 0x2) != 0)	outBlend[2].y = dstColor[2].y;
+			if ( (channelWriteMask & 0x4) != 0)	outBlend[2].z = dstColor[2].z;
+			if ( (channelWriteMask & 0x8) != 0)	outBlend[2].w = dstColor[2].w;
 		}
 		if (pixelWriteMask & 0x8)
 		{
-			if (channelWriteMask & 0x1)	outBlend[3].x = dstColor[3].x;
-			if (channelWriteMask & 0x2)	outBlend[3].y = dstColor[3].y;
-			if (channelWriteMask & 0x4)	outBlend[3].z = dstColor[3].z;
-			if (channelWriteMask & 0x8)	outBlend[3].w = dstColor[3].w;
+			if ( (channelWriteMask & 0x1) != 0)	outBlend[3].x = dstColor[3].x;
+			if ( (channelWriteMask & 0x2) != 0)	outBlend[3].y = dstColor[3].y;
+			if ( (channelWriteMask & 0x4) != 0)	outBlend[3].z = dstColor[3].z;
+			if ( (channelWriteMask & 0x8) != 0)	outBlend[3].w = dstColor[3].w;
 		}
 		break;
 	case D3DBLEND_INVDESTCOLOR   :
 	{
 		__m128 invDstColor4[4];
-		if (pixelWriteMask & 0x1) invDstColor4[0] = _mm_sub_ps(*(const __m128* const)&staticColorWhiteOpaque, *(const __m128* const)&(dstColor[0]) );
-		if (pixelWriteMask & 0x2) invDstColor4[1] = _mm_sub_ps(*(const __m128* const)&staticColorWhiteOpaque, *(const __m128* const)&(dstColor[1]) );
-		if (pixelWriteMask & 0x4) invDstColor4[2] = _mm_sub_ps(*(const __m128* const)&staticColorWhiteOpaque, *(const __m128* const)&(dstColor[2]) );
-		if (pixelWriteMask & 0x8) invDstColor4[3] = _mm_sub_ps(*(const __m128* const)&staticColorWhiteOpaque, *(const __m128* const)&(dstColor[3]) );
+		if ( (pixelWriteMask & 0x1) != 0) invDstColor4[0] = _mm_sub_ps(*(const __m128* const)&staticColorWhiteOpaque, *(const __m128* const)&(dstColor[0]) );
+		if ( (pixelWriteMask & 0x2) != 0) invDstColor4[1] = _mm_sub_ps(*(const __m128* const)&staticColorWhiteOpaque, *(const __m128* const)&(dstColor[1]) );
+		if ( (pixelWriteMask & 0x4) != 0) invDstColor4[2] = _mm_sub_ps(*(const __m128* const)&staticColorWhiteOpaque, *(const __m128* const)&(dstColor[2]) );
+		if ( (pixelWriteMask & 0x8) != 0) invDstColor4[3] = _mm_sub_ps(*(const __m128* const)&staticColorWhiteOpaque, *(const __m128* const)&(dstColor[3]) );
 
 		if (pixelWriteMask & 0x1)
 		{
-			if (channelWriteMask & 0x1)	outBlend[0].x = invDstColor4[0].m128_f32[0];
-			if (channelWriteMask & 0x2)	outBlend[0].y = invDstColor4[0].m128_f32[1];
-			if (channelWriteMask & 0x4)	outBlend[0].z = invDstColor4[0].m128_f32[2];
-			if (channelWriteMask & 0x8)	outBlend[0].w = invDstColor4[0].m128_f32[3];
+			if ( (channelWriteMask & 0x1) != 0)	outBlend[0].x = invDstColor4[0].m128_f32[0];
+			if ( (channelWriteMask & 0x2) != 0)	outBlend[0].y = invDstColor4[0].m128_f32[1];
+			if ( (channelWriteMask & 0x4) != 0)	outBlend[0].z = invDstColor4[0].m128_f32[2];
+			if ( (channelWriteMask & 0x8) != 0)	outBlend[0].w = invDstColor4[0].m128_f32[3];
 		}
 		if (pixelWriteMask & 0x2)
 		{
-			if (channelWriteMask & 0x1)	outBlend[1].x = invDstColor4[1].m128_f32[0];
-			if (channelWriteMask & 0x2)	outBlend[1].y = invDstColor4[1].m128_f32[1];
-			if (channelWriteMask & 0x4)	outBlend[1].z = invDstColor4[1].m128_f32[2];
-			if (channelWriteMask & 0x8)	outBlend[1].w = invDstColor4[1].m128_f32[3];
+			if ( (channelWriteMask & 0x1) != 0)	outBlend[1].x = invDstColor4[1].m128_f32[0];
+			if ( (channelWriteMask & 0x2) != 0)	outBlend[1].y = invDstColor4[1].m128_f32[1];
+			if ( (channelWriteMask & 0x4) != 0)	outBlend[1].z = invDstColor4[1].m128_f32[2];
+			if ( (channelWriteMask & 0x8) != 0)	outBlend[1].w = invDstColor4[1].m128_f32[3];
 		}
 		if (pixelWriteMask & 0x4)
 		{
-			if (channelWriteMask & 0x1)	outBlend[2].x = invDstColor4[2].m128_f32[0];
-			if (channelWriteMask & 0x2)	outBlend[2].y = invDstColor4[2].m128_f32[1];
-			if (channelWriteMask & 0x4)	outBlend[2].z = invDstColor4[2].m128_f32[2];
-			if (channelWriteMask & 0x8)	outBlend[2].w = invDstColor4[2].m128_f32[3];
+			if ( (channelWriteMask & 0x1) != 0)	outBlend[2].x = invDstColor4[2].m128_f32[0];
+			if ( (channelWriteMask & 0x2) != 0)	outBlend[2].y = invDstColor4[2].m128_f32[1];
+			if ( (channelWriteMask & 0x4) != 0)	outBlend[2].z = invDstColor4[2].m128_f32[2];
+			if ( (channelWriteMask & 0x8) != 0)	outBlend[2].w = invDstColor4[2].m128_f32[3];
 		}
 		if (pixelWriteMask & 0x8)
 		{
-			if (channelWriteMask & 0x1)	outBlend[3].x = invDstColor4[3].m128_f32[0];
-			if (channelWriteMask & 0x2)	outBlend[3].y = invDstColor4[3].m128_f32[1];
-			if (channelWriteMask & 0x4)	outBlend[3].z = invDstColor4[3].m128_f32[2];
-			if (channelWriteMask & 0x8)	outBlend[3].w = invDstColor4[3].m128_f32[3];
+			if ( (channelWriteMask & 0x1) != 0)	outBlend[3].x = invDstColor4[3].m128_f32[0];
+			if ( (channelWriteMask & 0x2) != 0)	outBlend[3].y = invDstColor4[3].m128_f32[1];
+			if ( (channelWriteMask & 0x4) != 0)	outBlend[3].z = invDstColor4[3].m128_f32[2];
+			if ( (channelWriteMask & 0x8) != 0)	outBlend[3].w = invDstColor4[3].m128_f32[3];
 		}
 	}
 		break;
@@ -6821,13 +6819,13 @@ void IDirect3DDevice9Hook::LoadBlend4(D3DXVECTOR4 (&outBlend)[4], const D3DBLEND
 				const float as = srcColor[x].w;
 				const float invad = 1.0f - dstColor[x].w;
 				const float f = as < invad ? as : invad;
-				if (channelWriteMask & 0x1)
+				if ( (channelWriteMask & 0x1) != 0)
 					outBlend[x].x = f;
-				if (channelWriteMask & 0x2)
+				if ( (channelWriteMask & 0x2) != 0)
 					outBlend[x].y = f;
-				if (channelWriteMask & 0x4)
+				if ( (channelWriteMask & 0x4) != 0)
 					outBlend[x].z = f;
-				if (channelWriteMask & 0x8)
+				if ( (channelWriteMask & 0x8) != 0)
 					outBlend[x].w = 1.0f;
 			}
 		}
@@ -6836,61 +6834,61 @@ void IDirect3DDevice9Hook::LoadBlend4(D3DXVECTOR4 (&outBlend)[4], const D3DBLEND
 	case D3DBLEND_BLENDFACTOR    :
 		if (pixelWriteMask & 0x1)
 		{
-			if (channelWriteMask & 0x1)	outBlend[0].x = currentState.currentRenderStates.cachedBlendFactor.x;
-			if (channelWriteMask & 0x2)	outBlend[0].y = currentState.currentRenderStates.cachedBlendFactor.y;
-			if (channelWriteMask & 0x4)	outBlend[0].z = currentState.currentRenderStates.cachedBlendFactor.z;
-			if (channelWriteMask & 0x8)	outBlend[0].w = currentState.currentRenderStates.cachedBlendFactor.w;
+			if ( (channelWriteMask & 0x1) != 0)	outBlend[0].x = currentState.currentRenderStates.cachedBlendFactor.x;
+			if ( (channelWriteMask & 0x2) != 0)	outBlend[0].y = currentState.currentRenderStates.cachedBlendFactor.y;
+			if ( (channelWriteMask & 0x4) != 0)	outBlend[0].z = currentState.currentRenderStates.cachedBlendFactor.z;
+			if ( (channelWriteMask & 0x8) != 0)	outBlend[0].w = currentState.currentRenderStates.cachedBlendFactor.w;
 		}
 		if (pixelWriteMask & 0x2)
 		{
-			if (channelWriteMask & 0x1)	outBlend[1].x = currentState.currentRenderStates.cachedBlendFactor.x;
-			if (channelWriteMask & 0x2)	outBlend[1].y = currentState.currentRenderStates.cachedBlendFactor.y;
-			if (channelWriteMask & 0x4)	outBlend[1].z = currentState.currentRenderStates.cachedBlendFactor.z;
-			if (channelWriteMask & 0x8)	outBlend[1].w = currentState.currentRenderStates.cachedBlendFactor.w;
+			if ( (channelWriteMask & 0x1) != 0)	outBlend[1].x = currentState.currentRenderStates.cachedBlendFactor.x;
+			if ( (channelWriteMask & 0x2) != 0)	outBlend[1].y = currentState.currentRenderStates.cachedBlendFactor.y;
+			if ( (channelWriteMask & 0x4) != 0)	outBlend[1].z = currentState.currentRenderStates.cachedBlendFactor.z;
+			if ( (channelWriteMask & 0x8) != 0)	outBlend[1].w = currentState.currentRenderStates.cachedBlendFactor.w;
 		}
 		if (pixelWriteMask & 0x4)
 		{
-			if (channelWriteMask & 0x1)	outBlend[2].x = currentState.currentRenderStates.cachedBlendFactor.x;
-			if (channelWriteMask & 0x2)	outBlend[2].y = currentState.currentRenderStates.cachedBlendFactor.y;
-			if (channelWriteMask & 0x4)	outBlend[2].z = currentState.currentRenderStates.cachedBlendFactor.z;
-			if (channelWriteMask & 0x8)	outBlend[2].w = currentState.currentRenderStates.cachedBlendFactor.w;
+			if ( (channelWriteMask & 0x1) != 0)	outBlend[2].x = currentState.currentRenderStates.cachedBlendFactor.x;
+			if ( (channelWriteMask & 0x2) != 0)	outBlend[2].y = currentState.currentRenderStates.cachedBlendFactor.y;
+			if ( (channelWriteMask & 0x4) != 0)	outBlend[2].z = currentState.currentRenderStates.cachedBlendFactor.z;
+			if ( (channelWriteMask & 0x8) != 0)	outBlend[2].w = currentState.currentRenderStates.cachedBlendFactor.w;
 		}
 		if (pixelWriteMask & 0x8)
 		{
-			if (channelWriteMask & 0x1)	outBlend[3].x = currentState.currentRenderStates.cachedBlendFactor.x;
-			if (channelWriteMask & 0x2)	outBlend[3].y = currentState.currentRenderStates.cachedBlendFactor.y;
-			if (channelWriteMask & 0x4)	outBlend[3].z = currentState.currentRenderStates.cachedBlendFactor.z;
-			if (channelWriteMask & 0x8)	outBlend[3].w = currentState.currentRenderStates.cachedBlendFactor.w;
+			if ( (channelWriteMask & 0x1) != 0)	outBlend[3].x = currentState.currentRenderStates.cachedBlendFactor.x;
+			if ( (channelWriteMask & 0x2) != 0)	outBlend[3].y = currentState.currentRenderStates.cachedBlendFactor.y;
+			if ( (channelWriteMask & 0x4) != 0)	outBlend[3].z = currentState.currentRenderStates.cachedBlendFactor.z;
+			if ( (channelWriteMask & 0x8) != 0)	outBlend[3].w = currentState.currentRenderStates.cachedBlendFactor.w;
 		}
 		break;
 	case D3DBLEND_INVBLENDFACTOR :
 		if (pixelWriteMask & 0x1)
 		{
-			if (channelWriteMask & 0x1)	outBlend[0].x = currentState.currentRenderStates.cachedInvBlendFactor.x;
-			if (channelWriteMask & 0x2)	outBlend[0].y = currentState.currentRenderStates.cachedInvBlendFactor.y;
-			if (channelWriteMask & 0x4)	outBlend[0].z = currentState.currentRenderStates.cachedInvBlendFactor.z;
-			if (channelWriteMask & 0x8)	outBlend[0].w = currentState.currentRenderStates.cachedInvBlendFactor.w;
+			if ( (channelWriteMask & 0x1) != 0)	outBlend[0].x = currentState.currentRenderStates.cachedInvBlendFactor.x;
+			if ( (channelWriteMask & 0x2) != 0)	outBlend[0].y = currentState.currentRenderStates.cachedInvBlendFactor.y;
+			if ( (channelWriteMask & 0x4) != 0)	outBlend[0].z = currentState.currentRenderStates.cachedInvBlendFactor.z;
+			if ( (channelWriteMask & 0x8) != 0)	outBlend[0].w = currentState.currentRenderStates.cachedInvBlendFactor.w;
 		}
 		if (pixelWriteMask & 0x2)
 		{
-			if (channelWriteMask & 0x1)	outBlend[1].x = currentState.currentRenderStates.cachedInvBlendFactor.x;
-			if (channelWriteMask & 0x2)	outBlend[1].y = currentState.currentRenderStates.cachedInvBlendFactor.y;
-			if (channelWriteMask & 0x4)	outBlend[1].z = currentState.currentRenderStates.cachedInvBlendFactor.z;
-			if (channelWriteMask & 0x8)	outBlend[1].w = currentState.currentRenderStates.cachedInvBlendFactor.w;
+			if ( (channelWriteMask & 0x1) != 0)	outBlend[1].x = currentState.currentRenderStates.cachedInvBlendFactor.x;
+			if ( (channelWriteMask & 0x2) != 0)	outBlend[1].y = currentState.currentRenderStates.cachedInvBlendFactor.y;
+			if ( (channelWriteMask & 0x4) != 0)	outBlend[1].z = currentState.currentRenderStates.cachedInvBlendFactor.z;
+			if ( (channelWriteMask & 0x8) != 0)	outBlend[1].w = currentState.currentRenderStates.cachedInvBlendFactor.w;
 		}
 		if (pixelWriteMask & 0x4)
 		{
-			if (channelWriteMask & 0x1)	outBlend[2].x = currentState.currentRenderStates.cachedInvBlendFactor.x;
-			if (channelWriteMask & 0x2)	outBlend[2].y = currentState.currentRenderStates.cachedInvBlendFactor.y;
-			if (channelWriteMask & 0x4)	outBlend[2].z = currentState.currentRenderStates.cachedInvBlendFactor.z;
-			if (channelWriteMask & 0x8)	outBlend[2].w = currentState.currentRenderStates.cachedInvBlendFactor.w;
+			if ( (channelWriteMask & 0x1) != 0)	outBlend[2].x = currentState.currentRenderStates.cachedInvBlendFactor.x;
+			if ( (channelWriteMask & 0x2) != 0)	outBlend[2].y = currentState.currentRenderStates.cachedInvBlendFactor.y;
+			if ( (channelWriteMask & 0x4) != 0)	outBlend[2].z = currentState.currentRenderStates.cachedInvBlendFactor.z;
+			if ( (channelWriteMask & 0x8) != 0)	outBlend[2].w = currentState.currentRenderStates.cachedInvBlendFactor.w;
 		}
 		if (pixelWriteMask & 0x8)
 		{
-			if (channelWriteMask & 0x1)	outBlend[3].x = currentState.currentRenderStates.cachedInvBlendFactor.x;
-			if (channelWriteMask & 0x2)	outBlend[3].y = currentState.currentRenderStates.cachedInvBlendFactor.y;
-			if (channelWriteMask & 0x4)	outBlend[3].z = currentState.currentRenderStates.cachedInvBlendFactor.z;
-			if (channelWriteMask & 0x8)	outBlend[3].w = currentState.currentRenderStates.cachedInvBlendFactor.w;
+			if ( (channelWriteMask & 0x1) != 0)	outBlend[3].x = currentState.currentRenderStates.cachedInvBlendFactor.x;
+			if ( (channelWriteMask & 0x2) != 0)	outBlend[3].y = currentState.currentRenderStates.cachedInvBlendFactor.y;
+			if ( (channelWriteMask & 0x4) != 0)	outBlend[3].z = currentState.currentRenderStates.cachedInvBlendFactor.z;
+			if ( (channelWriteMask & 0x8) != 0)	outBlend[3].w = currentState.currentRenderStates.cachedInvBlendFactor.w;
 		}
 		break;
 	}
@@ -6957,65 +6955,65 @@ void IDirect3DDevice9Hook::AlphaBlend(D3DXVECTOR4& outVec, const D3DBLENDOP blen
 	case D3DBLENDOP_ADD        :
 	{
 		const __m128 sum = _mm_add_ps(combinedSrc, combinedDst);
-		if (channelWriteMask & 0x1)
+		if ( (channelWriteMask & 0x1) != 0)
 			outVec.x = sum.m128_f32[0];
-		if (channelWriteMask & 0x2)
+		if ( (channelWriteMask & 0x2) != 0)
 			outVec.y = sum.m128_f32[1];
-		if (channelWriteMask & 0x4)
+		if ( (channelWriteMask & 0x4) != 0)
 			outVec.z = sum.m128_f32[2];
-		if (channelWriteMask & 0x8)
+		if ( (channelWriteMask & 0x8) != 0)
 			outVec.w = sum.m128_f32[3];
 	}
 		break;
 	case D3DBLENDOP_SUBTRACT   :
 	{
 		const __m128 difference = _mm_sub_ps(combinedSrc, combinedDst);
-		if (channelWriteMask & 0x1)
+		if ( (channelWriteMask & 0x1) != 0)
 			outVec.x = difference.m128_f32[0];
-		if (channelWriteMask & 0x2)
+		if ( (channelWriteMask & 0x2) != 0)
 			outVec.y = difference.m128_f32[1];
-		if (channelWriteMask & 0x4)
+		if ( (channelWriteMask & 0x4) != 0)
 			outVec.z = difference.m128_f32[2];
-		if (channelWriteMask & 0x8)
+		if ( (channelWriteMask & 0x8) != 0)
 			outVec.w = difference.m128_f32[3];
 	}
 		break;
 	case D3DBLENDOP_REVSUBTRACT:
 	{
 		const __m128 revDifference = _mm_sub_ps(combinedDst, combinedSrc);
-		if (channelWriteMask & 0x1)
+		if ( (channelWriteMask & 0x1) != 0)
 			outVec.x = revDifference.m128_f32[0];
-		if (channelWriteMask & 0x2)
+		if ( (channelWriteMask & 0x2) != 0)
 			outVec.y = revDifference.m128_f32[1];
-		if (channelWriteMask & 0x4)
+		if ( (channelWriteMask & 0x4) != 0)
 			outVec.z = revDifference.m128_f32[2];
-		if (channelWriteMask & 0x8)
+		if ( (channelWriteMask & 0x8) != 0)
 			outVec.w = revDifference.m128_f32[3];
 	}
 		break;
 	case D3DBLENDOP_MIN        :
 	{
 		const __m128 vecMin = _mm_min_ps(combinedSrc, combinedDst);
-		if (channelWriteMask & 0x1)
+		if ( (channelWriteMask & 0x1) != 0)
 			outVec.x = vecMin.m128_f32[0];
-		if (channelWriteMask & 0x2)
+		if ( (channelWriteMask & 0x2) != 0)
 			outVec.y = vecMin.m128_f32[1];
-		if (channelWriteMask & 0x4)
+		if ( (channelWriteMask & 0x4) != 0)
 			outVec.z = vecMin.m128_f32[2];
-		if (channelWriteMask & 0x8)
+		if ( (channelWriteMask & 0x8) != 0)
 			outVec.w = vecMin.m128_f32[3];
 	}
 		break;
 	case D3DBLENDOP_MAX        :
 	{
 		const __m128 vecMax = _mm_max_ps(combinedSrc, combinedDst);
-		if (channelWriteMask & 0x1)
+		if ( (channelWriteMask & 0x1) != 0)
 			outVec.x = vecMax.m128_f32[0];
-		if (channelWriteMask & 0x2)
+		if ( (channelWriteMask & 0x2) != 0)
 			outVec.y = vecMax.m128_f32[1];
-		if (channelWriteMask & 0x4)
+		if ( (channelWriteMask & 0x4) != 0)
 			outVec.z = vecMax.m128_f32[2];
-		if (channelWriteMask & 0x8)
+		if ( (channelWriteMask & 0x8) != 0)
 			outVec.w = vecMax.m128_f32[3];
 	}
 		break;
@@ -7143,31 +7141,31 @@ void IDirect3DDevice9Hook::AlphaBlend4(D3DXVECTOR4 (&outVec)[4], const D3DBLENDO
 
 		if (pixelWriteMask & 0x1)
 		{
-			if (channelWriteMask & 0x1)	outVec[0].x = sum4[0].m128_f32[0];
-			if (channelWriteMask & 0x2)	outVec[0].y = sum4[0].m128_f32[1];
-			if (channelWriteMask & 0x4)	outVec[0].z = sum4[0].m128_f32[2];
-			if (channelWriteMask & 0x8)	outVec[0].w = sum4[0].m128_f32[3];
+			if ( (channelWriteMask & 0x1) != 0)	outVec[0].x = sum4[0].m128_f32[0];
+			if ( (channelWriteMask & 0x2) != 0)	outVec[0].y = sum4[0].m128_f32[1];
+			if ( (channelWriteMask & 0x4) != 0)	outVec[0].z = sum4[0].m128_f32[2];
+			if ( (channelWriteMask & 0x8) != 0)	outVec[0].w = sum4[0].m128_f32[3];
 		}
 		if (pixelWriteMask & 0x2)
 		{
-			if (channelWriteMask & 0x1)	outVec[1].x = sum4[1].m128_f32[0];
-			if (channelWriteMask & 0x2)	outVec[1].y = sum4[1].m128_f32[1];
-			if (channelWriteMask & 0x4)	outVec[1].z = sum4[1].m128_f32[2];
-			if (channelWriteMask & 0x8)	outVec[1].w = sum4[1].m128_f32[3];
+			if ( (channelWriteMask & 0x1) != 0)	outVec[1].x = sum4[1].m128_f32[0];
+			if ( (channelWriteMask & 0x2) != 0)	outVec[1].y = sum4[1].m128_f32[1];
+			if ( (channelWriteMask & 0x4) != 0)	outVec[1].z = sum4[1].m128_f32[2];
+			if ( (channelWriteMask & 0x8) != 0)	outVec[1].w = sum4[1].m128_f32[3];
 		}
 		if (pixelWriteMask & 0x4)
 		{
-			if (channelWriteMask & 0x1)	outVec[2].x = sum4[2].m128_f32[0];
-			if (channelWriteMask & 0x2)	outVec[2].y = sum4[2].m128_f32[1];
-			if (channelWriteMask & 0x4)	outVec[2].z = sum4[2].m128_f32[2];
-			if (channelWriteMask & 0x8)	outVec[2].w = sum4[2].m128_f32[3];
+			if ( (channelWriteMask & 0x1) != 0)	outVec[2].x = sum4[2].m128_f32[0];
+			if ( (channelWriteMask & 0x2) != 0)	outVec[2].y = sum4[2].m128_f32[1];
+			if ( (channelWriteMask & 0x4) != 0)	outVec[2].z = sum4[2].m128_f32[2];
+			if ( (channelWriteMask & 0x8) != 0)	outVec[2].w = sum4[2].m128_f32[3];
 		}
 		if (pixelWriteMask & 0x8)
 		{
-			if (channelWriteMask & 0x1)	outVec[3].x = sum4[3].m128_f32[0];
-			if (channelWriteMask & 0x2)	outVec[3].y = sum4[3].m128_f32[1];
-			if (channelWriteMask & 0x4)	outVec[3].z = sum4[3].m128_f32[2];
-			if (channelWriteMask & 0x8)	outVec[3].w = sum4[3].m128_f32[3];
+			if ( (channelWriteMask & 0x1) != 0)	outVec[3].x = sum4[3].m128_f32[0];
+			if ( (channelWriteMask & 0x2) != 0)	outVec[3].y = sum4[3].m128_f32[1];
+			if ( (channelWriteMask & 0x4) != 0)	outVec[3].z = sum4[3].m128_f32[2];
+			if ( (channelWriteMask & 0x8) != 0)	outVec[3].w = sum4[3].m128_f32[3];
 		}
 	}
 		break;
@@ -7181,31 +7179,31 @@ void IDirect3DDevice9Hook::AlphaBlend4(D3DXVECTOR4 (&outVec)[4], const D3DBLENDO
 
 		if (pixelWriteMask & 0x1)
 		{
-			if (channelWriteMask & 0x1)	outVec[0].x = difference4[0].m128_f32[0];
-			if (channelWriteMask & 0x2)	outVec[0].y = difference4[0].m128_f32[1];
-			if (channelWriteMask & 0x4)	outVec[0].z = difference4[0].m128_f32[2];
-			if (channelWriteMask & 0x8)	outVec[0].w = difference4[0].m128_f32[3];
+			if ( (channelWriteMask & 0x1) != 0)	outVec[0].x = difference4[0].m128_f32[0];
+			if ( (channelWriteMask & 0x2) != 0)	outVec[0].y = difference4[0].m128_f32[1];
+			if ( (channelWriteMask & 0x4) != 0)	outVec[0].z = difference4[0].m128_f32[2];
+			if ( (channelWriteMask & 0x8) != 0)	outVec[0].w = difference4[0].m128_f32[3];
 		}
 		if (pixelWriteMask & 0x2)
 		{
-			if (channelWriteMask & 0x1)	outVec[1].x = difference4[1].m128_f32[0];
-			if (channelWriteMask & 0x2)	outVec[1].y = difference4[1].m128_f32[1];
-			if (channelWriteMask & 0x4)	outVec[1].z = difference4[1].m128_f32[2];
-			if (channelWriteMask & 0x8)	outVec[1].w = difference4[1].m128_f32[3];
+			if ( (channelWriteMask & 0x1) != 0)	outVec[1].x = difference4[1].m128_f32[0];
+			if ( (channelWriteMask & 0x2) != 0)	outVec[1].y = difference4[1].m128_f32[1];
+			if ( (channelWriteMask & 0x4) != 0)	outVec[1].z = difference4[1].m128_f32[2];
+			if ( (channelWriteMask & 0x8) != 0)	outVec[1].w = difference4[1].m128_f32[3];
 		}
 		if (pixelWriteMask & 0x4)
 		{
-			if (channelWriteMask & 0x1)	outVec[2].x = difference4[2].m128_f32[0];
-			if (channelWriteMask & 0x2)	outVec[2].y = difference4[2].m128_f32[1];
-			if (channelWriteMask & 0x4)	outVec[2].z = difference4[2].m128_f32[2];
-			if (channelWriteMask & 0x8)	outVec[2].w = difference4[2].m128_f32[3];
+			if ( (channelWriteMask & 0x1) != 0)	outVec[2].x = difference4[2].m128_f32[0];
+			if ( (channelWriteMask & 0x2) != 0)	outVec[2].y = difference4[2].m128_f32[1];
+			if ( (channelWriteMask & 0x4) != 0)	outVec[2].z = difference4[2].m128_f32[2];
+			if ( (channelWriteMask & 0x8) != 0)	outVec[2].w = difference4[2].m128_f32[3];
 		}
 		if (pixelWriteMask & 0x8)
 		{
-			if (channelWriteMask & 0x1)	outVec[3].x = difference4[3].m128_f32[0];
-			if (channelWriteMask & 0x2)	outVec[3].y = difference4[3].m128_f32[1];
-			if (channelWriteMask & 0x4)	outVec[3].z = difference4[3].m128_f32[2];
-			if (channelWriteMask & 0x8)	outVec[3].w = difference4[3].m128_f32[3];
+			if ( (channelWriteMask & 0x1) != 0)	outVec[3].x = difference4[3].m128_f32[0];
+			if ( (channelWriteMask & 0x2) != 0)	outVec[3].y = difference4[3].m128_f32[1];
+			if ( (channelWriteMask & 0x4) != 0)	outVec[3].z = difference4[3].m128_f32[2];
+			if ( (channelWriteMask & 0x8) != 0)	outVec[3].w = difference4[3].m128_f32[3];
 		}
 	}
 		break;
@@ -7219,31 +7217,31 @@ void IDirect3DDevice9Hook::AlphaBlend4(D3DXVECTOR4 (&outVec)[4], const D3DBLENDO
 
 		if (pixelWriteMask & 0x1)
 		{
-			if (channelWriteMask & 0x1)	outVec[0].x = revDifference4[0].m128_f32[0];
-			if (channelWriteMask & 0x2)	outVec[0].y = revDifference4[0].m128_f32[1];
-			if (channelWriteMask & 0x4)	outVec[0].z = revDifference4[0].m128_f32[2];
-			if (channelWriteMask & 0x8)	outVec[0].w = revDifference4[0].m128_f32[3];
+			if ( (channelWriteMask & 0x1) != 0)	outVec[0].x = revDifference4[0].m128_f32[0];
+			if ( (channelWriteMask & 0x2) != 0)	outVec[0].y = revDifference4[0].m128_f32[1];
+			if ( (channelWriteMask & 0x4) != 0)	outVec[0].z = revDifference4[0].m128_f32[2];
+			if ( (channelWriteMask & 0x8) != 0)	outVec[0].w = revDifference4[0].m128_f32[3];
 		}
 		if (pixelWriteMask & 0x2)
 		{
-			if (channelWriteMask & 0x1)	outVec[1].x = revDifference4[1].m128_f32[0];
-			if (channelWriteMask & 0x2)	outVec[1].y = revDifference4[1].m128_f32[1];
-			if (channelWriteMask & 0x4)	outVec[1].z = revDifference4[1].m128_f32[2];
-			if (channelWriteMask & 0x8)	outVec[1].w = revDifference4[1].m128_f32[3];
+			if ( (channelWriteMask & 0x1) != 0)	outVec[1].x = revDifference4[1].m128_f32[0];
+			if ( (channelWriteMask & 0x2) != 0)	outVec[1].y = revDifference4[1].m128_f32[1];
+			if ( (channelWriteMask & 0x4) != 0)	outVec[1].z = revDifference4[1].m128_f32[2];
+			if ( (channelWriteMask & 0x8) != 0)	outVec[1].w = revDifference4[1].m128_f32[3];
 		}
 		if (pixelWriteMask & 0x4)
 		{
-			if (channelWriteMask & 0x1)	outVec[2].x = revDifference4[2].m128_f32[0];
-			if (channelWriteMask & 0x2)	outVec[2].y = revDifference4[2].m128_f32[1];
-			if (channelWriteMask & 0x4)	outVec[2].z = revDifference4[2].m128_f32[2];
-			if (channelWriteMask & 0x8)	outVec[2].w = revDifference4[2].m128_f32[3];
+			if ( (channelWriteMask & 0x1) != 0)	outVec[2].x = revDifference4[2].m128_f32[0];
+			if ( (channelWriteMask & 0x2) != 0)	outVec[2].y = revDifference4[2].m128_f32[1];
+			if ( (channelWriteMask & 0x4) != 0)	outVec[2].z = revDifference4[2].m128_f32[2];
+			if ( (channelWriteMask & 0x8) != 0)	outVec[2].w = revDifference4[2].m128_f32[3];
 		}
 		if (pixelWriteMask & 0x8)
 		{
-			if (channelWriteMask & 0x1)	outVec[3].x = revDifference4[3].m128_f32[0];
-			if (channelWriteMask & 0x2)	outVec[3].y = revDifference4[3].m128_f32[1];
-			if (channelWriteMask & 0x4)	outVec[3].z = revDifference4[3].m128_f32[2];
-			if (channelWriteMask & 0x8)	outVec[3].w = revDifference4[3].m128_f32[3];
+			if ( (channelWriteMask & 0x1) != 0)	outVec[3].x = revDifference4[3].m128_f32[0];
+			if ( (channelWriteMask & 0x2) != 0)	outVec[3].y = revDifference4[3].m128_f32[1];
+			if ( (channelWriteMask & 0x4) != 0)	outVec[3].z = revDifference4[3].m128_f32[2];
+			if ( (channelWriteMask & 0x8) != 0)	outVec[3].w = revDifference4[3].m128_f32[3];
 		}
 	}
 		break;
@@ -7257,31 +7255,31 @@ void IDirect3DDevice9Hook::AlphaBlend4(D3DXVECTOR4 (&outVec)[4], const D3DBLENDO
 
 		if (pixelWriteMask & 0x1)
 		{
-			if (channelWriteMask & 0x1)	outVec[0].x = minVec4[0].m128_f32[0];
-			if (channelWriteMask & 0x2)	outVec[0].y = minVec4[0].m128_f32[1];
-			if (channelWriteMask & 0x4)	outVec[0].z = minVec4[0].m128_f32[2];
-			if (channelWriteMask & 0x8)	outVec[0].w = minVec4[0].m128_f32[3];
+			if ( (channelWriteMask & 0x1) != 0)	outVec[0].x = minVec4[0].m128_f32[0];
+			if ( (channelWriteMask & 0x2) != 0)	outVec[0].y = minVec4[0].m128_f32[1];
+			if ( (channelWriteMask & 0x4) != 0)	outVec[0].z = minVec4[0].m128_f32[2];
+			if ( (channelWriteMask & 0x8) != 0)	outVec[0].w = minVec4[0].m128_f32[3];
 		}
 		if (pixelWriteMask & 0x2)
 		{
-			if (channelWriteMask & 0x1)	outVec[1].x = minVec4[1].m128_f32[0];
-			if (channelWriteMask & 0x2)	outVec[1].y = minVec4[1].m128_f32[1];
-			if (channelWriteMask & 0x4)	outVec[1].z = minVec4[1].m128_f32[2];
-			if (channelWriteMask & 0x8)	outVec[1].w = minVec4[1].m128_f32[3];
+			if ( (channelWriteMask & 0x1) != 0)	outVec[1].x = minVec4[1].m128_f32[0];
+			if ( (channelWriteMask & 0x2) != 0)	outVec[1].y = minVec4[1].m128_f32[1];
+			if ( (channelWriteMask & 0x4) != 0)	outVec[1].z = minVec4[1].m128_f32[2];
+			if ( (channelWriteMask & 0x8) != 0)	outVec[1].w = minVec4[1].m128_f32[3];
 		}
 		if (pixelWriteMask & 0x4)
 		{
-			if (channelWriteMask & 0x1)	outVec[2].x = minVec4[2].m128_f32[0];
-			if (channelWriteMask & 0x2)	outVec[2].y = minVec4[2].m128_f32[1];
-			if (channelWriteMask & 0x4)	outVec[2].z = minVec4[2].m128_f32[2];
-			if (channelWriteMask & 0x8)	outVec[2].w = minVec4[2].m128_f32[3];
+			if ( (channelWriteMask & 0x1) != 0)	outVec[2].x = minVec4[2].m128_f32[0];
+			if ( (channelWriteMask & 0x2) != 0)	outVec[2].y = minVec4[2].m128_f32[1];
+			if ( (channelWriteMask & 0x4) != 0)	outVec[2].z = minVec4[2].m128_f32[2];
+			if ( (channelWriteMask & 0x8) != 0)	outVec[2].w = minVec4[2].m128_f32[3];
 		}
 		if (pixelWriteMask & 0x8)
 		{
-			if (channelWriteMask & 0x1)	outVec[3].x = minVec4[3].m128_f32[0];
-			if (channelWriteMask & 0x2)	outVec[3].y = minVec4[3].m128_f32[1];
-			if (channelWriteMask & 0x4)	outVec[3].z = minVec4[3].m128_f32[2];
-			if (channelWriteMask & 0x8)	outVec[3].w = minVec4[3].m128_f32[3];
+			if ( (channelWriteMask & 0x1) != 0)	outVec[3].x = minVec4[3].m128_f32[0];
+			if ( (channelWriteMask & 0x2) != 0)	outVec[3].y = minVec4[3].m128_f32[1];
+			if ( (channelWriteMask & 0x4) != 0)	outVec[3].z = minVec4[3].m128_f32[2];
+			if ( (channelWriteMask & 0x8) != 0)	outVec[3].w = minVec4[3].m128_f32[3];
 		}
 	}
 		break;
@@ -7295,31 +7293,31 @@ void IDirect3DDevice9Hook::AlphaBlend4(D3DXVECTOR4 (&outVec)[4], const D3DBLENDO
 
 		if (pixelWriteMask & 0x1)
 		{
-			if (channelWriteMask & 0x1)	outVec[0].x = maxVec4[0].m128_f32[0];
-			if (channelWriteMask & 0x2)	outVec[0].y = maxVec4[0].m128_f32[1];
-			if (channelWriteMask & 0x4)	outVec[0].z = maxVec4[0].m128_f32[2];
-			if (channelWriteMask & 0x8)	outVec[0].w = maxVec4[0].m128_f32[3];
+			if ( (channelWriteMask & 0x1) != 0)	outVec[0].x = maxVec4[0].m128_f32[0];
+			if ( (channelWriteMask & 0x2) != 0)	outVec[0].y = maxVec4[0].m128_f32[1];
+			if ( (channelWriteMask & 0x4) != 0)	outVec[0].z = maxVec4[0].m128_f32[2];
+			if ( (channelWriteMask & 0x8) != 0)	outVec[0].w = maxVec4[0].m128_f32[3];
 		}
 		if (pixelWriteMask & 0x2)
 		{
-			if (channelWriteMask & 0x1)	outVec[1].x = maxVec4[1].m128_f32[0];
-			if (channelWriteMask & 0x2)	outVec[1].y = maxVec4[1].m128_f32[1];
-			if (channelWriteMask & 0x4)	outVec[1].z = maxVec4[1].m128_f32[2];
-			if (channelWriteMask & 0x8)	outVec[1].w = maxVec4[1].m128_f32[3];
+			if ( (channelWriteMask & 0x1) != 0)	outVec[1].x = maxVec4[1].m128_f32[0];
+			if ( (channelWriteMask & 0x2) != 0)	outVec[1].y = maxVec4[1].m128_f32[1];
+			if ( (channelWriteMask & 0x4) != 0)	outVec[1].z = maxVec4[1].m128_f32[2];
+			if ( (channelWriteMask & 0x8) != 0)	outVec[1].w = maxVec4[1].m128_f32[3];
 		}
 		if (pixelWriteMask & 0x4)
 		{
-			if (channelWriteMask & 0x1)	outVec[2].x = maxVec4[2].m128_f32[0];
-			if (channelWriteMask & 0x2)	outVec[2].y = maxVec4[2].m128_f32[1];
-			if (channelWriteMask & 0x4)	outVec[2].z = maxVec4[2].m128_f32[2];
-			if (channelWriteMask & 0x8)	outVec[2].w = maxVec4[2].m128_f32[3];
+			if ( (channelWriteMask & 0x1) != 0)	outVec[2].x = maxVec4[2].m128_f32[0];
+			if ( (channelWriteMask & 0x2) != 0)	outVec[2].y = maxVec4[2].m128_f32[1];
+			if ( (channelWriteMask & 0x4) != 0)	outVec[2].z = maxVec4[2].m128_f32[2];
+			if ( (channelWriteMask & 0x8) != 0)	outVec[2].w = maxVec4[2].m128_f32[3];
 		}
 		if (pixelWriteMask & 0x8)
 		{
-			if (channelWriteMask & 0x1)	outVec[3].x = maxVec4[3].m128_f32[0];
-			if (channelWriteMask & 0x2)	outVec[3].y = maxVec4[3].m128_f32[1];
-			if (channelWriteMask & 0x4)	outVec[3].z = maxVec4[3].m128_f32[2];
-			if (channelWriteMask & 0x8)	outVec[3].w = maxVec4[3].m128_f32[3];
+			if ( (channelWriteMask & 0x1) != 0)	outVec[3].x = maxVec4[3].m128_f32[0];
+			if ( (channelWriteMask & 0x2) != 0)	outVec[3].y = maxVec4[3].m128_f32[1];
+			if ( (channelWriteMask & 0x4) != 0)	outVec[3].z = maxVec4[3].m128_f32[2];
+			if ( (channelWriteMask & 0x8) != 0)	outVec[3].w = maxVec4[3].m128_f32[3];
 		}
 	}
 		break;
@@ -8061,8 +8059,10 @@ void IDirect3DDevice9Hook::SetupPixel4(PShaderEngine* const pixelEngine, const v
 			{
 			case D3DCMP_NEVER:
 				stencilTestResult4 = zeroMaskVecI;
+				break;
 			case D3DCMP_ALWAYS:
 				stencilTestResult4 = oneMaskVec;
+				break;
 			default:
 				const __m128i stencil4 = currentState.currentDepthStencil->GetStencil4(x4, y4);
 				stencilTestResult4 = StencilTestNoWrite4(stencil4, stencilCmp, currentState.currentRenderStates.renderStatesUnion.namedStates.stencilRef, currentState.currentRenderStates.renderStatesUnion.namedStates.stencilMask);
@@ -9608,7 +9608,7 @@ void IDirect3DDevice9Hook::PostShadePixel4_AlphaTest(const __m128i x4, const __m
 }
 
 template <const unsigned char pixelWriteMask>
-void IDirect3DDevice9Hook::PostShadePixel4_WriteOutput(const __m128i x4, const __m128i y4, PShaderEngine* const pixelShader) const
+void IDirect3DDevice9Hook::PostShadePixel4_WriteOutput(const __m128i x4, const __m128i y4, const PShaderEngine* const pixelShader) const
 {	
 	PostShadePixel4_WriteOutputColor<pixelWriteMask>(x4, y4, pixelShader);
 
@@ -10213,11 +10213,11 @@ union TFixed
 
 	TFixed<integerBits, fractionBits, baseType> operator*(const TFixed<integerBits, fractionBits, baseType>& other) const
 	{
+		const unsigned __int64 longWhole = whole;
+		const unsigned __int64 longOtherWhole = other.whole;
+		const unsigned __int64 longProduct = longWhole * longOtherWhole;
+		const unsigned __int64 deshiftedProduct = longProduct >> fractionBits;
 		TFixed<integerBits, fractionBits, baseType> ret;
-		unsigned __int64 longWhole = whole;
-		unsigned __int64 longOtherWhole = other.whole;
-		unsigned __int64 longProduct = longWhole * longOtherWhole;
-		unsigned __int64 deshiftedProduct = longProduct >> fractionBits;
 		ret.whole = (const baseType)deshiftedProduct;
 		return ret;
 	}
@@ -10233,7 +10233,7 @@ static const float ConvertFixedToFloat(TFixed<integerBits, fractionBits, baseTyp
 {
 	float conv = 0.0f;
 
-	baseType fracStorage = fixed.splitFormat.fracPart;
+	const baseType fracStorage = fixed.splitFormat.fracPart;
 	for (unsigned x = 1; x < fractionBits; ++x)
 	{
 		if (fracStorage & (1 << (fractionBits - x) ) )
@@ -10242,7 +10242,7 @@ static const float ConvertFixedToFloat(TFixed<integerBits, fractionBits, baseTyp
 		}
 	}
 
-	float intConv = (const float)(fixed.splitFormat.intPart);
+	const float intConv = (const float)(fixed.splitFormat.intPart);
 
 	if (fixed.splitFormat.intPart & (1 << (integerBits - 1) ) )
 	{
@@ -10344,13 +10344,13 @@ static inline void TestSetMinMax(const TFixed<16, 16, unsigned>& inTestVal, sign
 TFixed<16, 16> FixedReciprocal(TFixed<16, 16> input) // +0.xxxxxxxxdec = +0.xxxxhex, Q0.16 unsigned. Value between (0.5, 1.0)
 {
 	// Initial approximation is 48/17 - 32/17 * input
-	TFixed<16, 16> approx0mul = ConvertFloatToFixed<16, 16, unsigned>(32.0f / 17.0f); // +1.8823529411764705882352941176471dec = +1.e1e1hex, Q1.16 unsigned
+	const TFixed<16, 16> approx0mul = ConvertFloatToFixed<16, 16, unsigned>(32.0f / 17.0f); // +1.8823529411764705882352941176471dec = +1.e1e1hex, Q1.16 unsigned
 
-	TFixed<16, 16> approx0add = ConvertFloatToFixed<16, 16, unsigned>(48.0f / 17.0f); // +2.8235294117647058823529411764706dec = +2.d2d2hex, Q2.16 unsigned
+	const TFixed<16, 16> approx0add = ConvertFloatToFixed<16, 16, unsigned>(48.0f / 17.0f); // +2.8235294117647058823529411764706dec = +2.d2d2hex, Q2.16 unsigned
 
-	TFixed<16, 16> approx0mulresult = (input * approx0mul); // Q0.16 * Q1.16 = Q1.16 unsigned, value range between (0.941176 and 1.882353)
+	const TFixed<16, 16> approx0mulresult = (input * approx0mul); // Q0.16 * Q1.16 = Q1.16 unsigned, value range between (0.941176 and 1.882353)
 
-	TFixed<16, 16> approx0result = approx0add - approx0mulresult; // Q2.16 - Q1.16 = Q1.16, value range between (0.941176 and 1.882353 again)
+	const TFixed<16, 16> approx0result = approx0add - approx0mulresult; // Q2.16 - Q1.16 = Q1.16, value range between (0.941176 and 1.882353 again)
 
 	TFixed<16, 16> lastIterResult = approx0result;
 	TFixed<16, 16> currentIterResult;
@@ -10359,10 +10359,10 @@ TFixed<16, 16> FixedReciprocal(TFixed<16, 16> input) // +0.xxxxxxxxdec = +0.xxxx
 	// 5 iterations here is experimentally derived as being the maximum number of iterations before the result stabilizes
 	for (unsigned iters = 0; iters < 5; ++iters)
 	{
-		TFixed<16, 16> intermedMul = input * lastIterResult; // Q0.16 * Q1.16 = Q1.16, value range for first iteration between (0.470588 and 1.882353)
+		const TFixed<16, 16> intermedMul = input * lastIterResult; // Q0.16 * Q1.16 = Q1.16, value range for first iteration between (0.470588 and 1.882353)
 
-		TFixed<16, 16, unsigned> fixedTwo = ConvertFloatToFixed<16, 16, unsigned>(2.0f); // Q2.16 unsigned (technically could be 2.0)
-		TFixed<16, 16> intermedSubtract = fixedTwo - intermedMul; // Q2.16 - Q1.16 = Q1.16, value range for first iteration between (0.117647 and 1.529411)
+		const TFixed<16, 16, unsigned> fixedTwo = ConvertFloatToFixed<16, 16, unsigned>(2.0f); // Q2.16 unsigned (technically could be 2.0)
+		const TFixed<16, 16> intermedSubtract = fixedTwo - intermedMul; // Q2.16 - Q1.16 = Q1.16, value range for first iteration between (0.117647 and 1.529411)
 
 		currentIterResult = lastIterResult * intermedSubtract; // Q1.16 * Q1.16 = Q1.16, value range for first iteration between (0.110727 and 2.878891) (don't worry this never actually goes over 1.9 in practice so it'll fit into a Q1.16)
 
@@ -10378,11 +10378,11 @@ static inline const float BarycentricInverse(const int twiceTriangleArea)
 	//return 1.0f / twiceTriangleArea;
 
 	// Fixed-point version:
-	TFixed<16, 16> input = ConvertFloatToFixed<16, 16, unsigned>( (const float)twiceTriangleArea);
+	const TFixed<16, 16> input = ConvertFloatToFixed<16, 16, unsigned>( (const float)twiceTriangleArea);
 	TFixed<16, 16> normalizedInput;
 	int normalizeFactor = 0;
 	NormalizeToRecipRange(input, normalizedInput, normalizeFactor);
-	TFixed<16, 16> recip = FixedReciprocal(normalizedInput);
+	const TFixed<16, 16> recip = FixedReciprocal(normalizedInput);
 	TFixed<16, 16, unsigned> output;
 	UnNormalizeToRecipRange(recip, output, normalizeFactor);
 	return ConvertFixedToFloat(output);
@@ -11389,7 +11389,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::ProcessVert
 	// Don't support this?
 	DbgBreakPrint("Error: ProcessVertices() is not yet supported");
 #endif
-	const IDirect3DVertexBuffer9Hook* const hookPtr = dynamic_cast<IDirect3DVertexBuffer9Hook*>(pDestBuffer);
+	const IDirect3DVertexBuffer9Hook* const hookPtr = dynamic_cast<IDirect3DVertexBuffer9Hook* const>(pDestBuffer);
 #ifdef _DEBUG
 	if (hookPtr)
 #endif
@@ -11400,7 +11400,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::ProcessVert
 		DbgBreakPrint("Error: Destination vertex buffer is not hooked!");
 	}
 #endif
-	HRESULT ret = d3d9dev->ProcessVertices(SrcStartIndex, DestIndex, VertexCount, pDestBuffer, pVertexDecl, Flags);
+	const HRESULT ret = d3d9dev->ProcessVertices(SrcStartIndex, DestIndex, VertexCount, pDestBuffer, pVertexDecl, Flags);
 
 	return ret;
 }
@@ -11410,7 +11410,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawRectPat
 	// Nope! Not gonna support tessellation in D3D9
 	DbgBreakPrint("Error: Tessellation is not yet supported");
 
-	HRESULT ret = d3d9dev->DrawRectPatch(Handle, pNumSegs, pRectPatchInfo);
+	const HRESULT ret = d3d9dev->DrawRectPatch(Handle, pNumSegs, pRectPatchInfo);
 	return ret;
 }
 
@@ -11419,7 +11419,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawTriPatc
 	// Nope! Not gonna support tessellation in D3D9
 	DbgBreakPrint("Error: Tessellation is not yet supported");
 
-	HRESULT ret = d3d9dev->DrawTriPatch(Handle, pNumSegs, pTriPatchInfo);
+	const HRESULT ret = d3d9dev->DrawTriPatch(Handle, pNumSegs, pTriPatchInfo);
 	return ret;
 }
 
@@ -11428,7 +11428,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DeletePatch
 	// Nope! Not gonna support tessellation in D3D9
 	DbgBreakPrint("Error: Tessellation is not yet supported");
 
-	HRESULT ret = d3d9dev->DeletePatch(Handle);
+	const HRESULT ret = d3d9dev->DeletePatch(Handle);
 	return ret;
 }
 
@@ -11520,7 +11520,7 @@ void IDirect3DDevice9Hook::InitializeState(const D3DPRESENT_PARAMETERS& d3dpp, c
 	}
 #endif
 
-	IDirect3DSurface9Hook* backbufferSurfaceHook = new IDirect3DSurface9Hook(realBackBuffer, this);
+	IDirect3DSurface9Hook* const backbufferSurfaceHook = new IDirect3DSurface9Hook(realBackBuffer, this);
 	backbufferSurfaceHook->CreateDeviceImplicitSurface(d3dpp);
 	backbufferSurfaceHook->AddRef();
 
@@ -11548,7 +11548,7 @@ void IDirect3DDevice9Hook::InitializeState(const D3DPRESENT_PARAMETERS& d3dpp, c
 				DbgBreakPrint("Error: Failed to retrieve real (unhooked) implicit depth-stencil surface");
 			}
 #endif
-			IDirect3DSurface9Hook* autoDepthStencilSurfaceHook = new IDirect3DSurface9Hook(realAutoDepthStencil, this);
+			IDirect3DSurface9Hook* const autoDepthStencilSurfaceHook = new IDirect3DSurface9Hook(realAutoDepthStencil, this);
 			autoDepthStencilSurfaceHook->CreateDeviceImplicitDepthStencil(d3dpp);
 			
 			currentState.currentDepthStencil = autoDepthStencilSurfaceHook;
@@ -11751,7 +11751,7 @@ IDirect3DDevice9Hook::IDirect3DDevice9Hook(LPDIRECT3DDEVICE9 _d3d9dev, IDirect3D
 		__debugbreak(); // Error: This shouldn't happen!
 #endif
 	}
-	ILocalEndpointDLLComms* localRecorderEndpointComms = new ILocalEndpointDLLComms(
+	ILocalEndpointDLLComms* const localRecorderEndpointComms = new ILocalEndpointDLLComms(
 #ifdef _M_X64
 	#ifdef _DEBUG
 		"C:\\Users\\Tom\\Documents\\Visual Studio 2022\\Projects\\Software_d3d9_Driver\\x64\\Debug\\Endpoints\\RecordingEndpoint_DiskFile.dll" // TODO: Do not hardcode these paths!

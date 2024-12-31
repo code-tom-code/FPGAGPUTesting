@@ -42,7 +42,7 @@ static inline const unsigned GetNumSourceParams(const opcodeDisplayType opcodeTy
 
 static inline const bool GetOpcodeAllowChannelSplitting(const D3DSHADER_INSTRUCTION_OPCODE_TYPE opcode)
 {
-	if (opcode <= D3DSIO_BREAKP)
+	if (static_cast<unsigned>(opcode) <= D3DSIO_BREAKP)
 		return opcodeAllowChannelSplitting[opcode];
 	else
 		return false;
@@ -50,7 +50,7 @@ static inline const bool GetOpcodeAllowChannelSplitting(const D3DSHADER_INSTRUCT
 
 static inline const bool GetOpcodeAllChannelsBroadcastSameVal(const D3DSHADER_INSTRUCTION_OPCODE_TYPE opcode)
 {
-	if (opcode <= D3DSIO_BREAKP)
+	if (static_cast<unsigned>(opcode) <= D3DSIO_BREAKP)
 		return opcodeAllChannelsBroadcastSameVal[opcode];
 	else
 		return false;
@@ -58,7 +58,7 @@ static inline const bool GetOpcodeAllChannelsBroadcastSameVal(const D3DSHADER_IN
 
 static inline const bool GetOpcodeImplementedForJIT(const D3DSHADER_INSTRUCTION_OPCODE_TYPE opcode)
 {
-	if (opcode <= D3DSIO_BREAKP)
+	if (static_cast<unsigned>(opcode) <= D3DSIO_BREAKP)
 		return opcodeImplementedForJIT[opcode];
 	else
 		switch (opcode)
@@ -294,7 +294,7 @@ static inline void ResolveSrcParameterDisasm(const ShaderInfo& shaderInfo, const
 		break;
 	}
 
-	if (srcParameter.GetRelativeAddressingType() == D3DSHADER_ADDRMODE_RELATIVE)
+	if (srcParameter.GetRelativeAddressingType() & D3DSHADER_ADDRMODE_RELATIVE)
 	{
 		DbgBreakPrint("Relative addressing not yet implemented!");
 
@@ -483,7 +483,7 @@ static inline void ResolveSrcParameterSimpleSwizzleNoSourceMods(const ShaderInfo
 	sprintf(shaderIndexBuffer, "%u", index);
 	AppendString(jitline, shaderIndexBuffer);
 
-	if (srcParameter.GetRelativeAddressingType() == D3DSHADER_ADDRMODE_RELATIVE)
+	if (srcParameter.GetRelativeAddressingType() & D3DSHADER_ADDRMODE_RELATIVE)
 	{
 		DbgBreakPrint("Relative addressing not yet implemented!");
 

@@ -257,6 +257,7 @@
     <None Include="Driver\NetSession\FPGA_RUDP_Dissector.lua">
       <Filter>Resource Files\Driver\NetSession</Filter>
     </None>
+    <None Include="d3d9.ruleset" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="IDirect3D9Hook.h">

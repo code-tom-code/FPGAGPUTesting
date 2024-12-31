@@ -392,7 +392,7 @@ static void ValidateInstructionForShaderModel(const ShaderInfo& inDXShaderInfo, 
 
 void GetRegisterPermissionsAndCount(const ShaderInfo& inDXShaderInfo, const D3DSHADER_PARAM_REGISTER_TYPE regType, registerPermissions& outRegPermissions, unsigned short& outRegCount)
 {
-	if (regType > D3DSPR_PREDICATE)
+	if (static_cast<unsigned>(regType) > D3DSPR_PREDICATE)
 	{
 		__debugbreak(); // Error: Register Type is invalid!
 		return;
@@ -880,18 +880,18 @@ static void ValidateDestModifier(const struct ShaderInfo& inDXShaderInfo, const 
 {
 	if (!inDXShaderInfo.isPixelShader) // Vertex shader checks
 	{
-		if (destMod == RM_CentroidSample)
+		if (destMod & RM_CentroidSample)
 		{
 			__debugbreak(); // Error: Cannot use Centroid Sampling from a Vertex Shader!
 		}
-		else if (destMod == RM_Saturate && inDXShaderInfo.shaderMajorVersion < 3)
+		else if ( (destMod & RM_Saturate) && inDXShaderInfo.shaderMajorVersion < 3)
 		{
 			__debugbreak(); // Error: Cannot use the _sat Saturate() destination modifier until vs_3_0 (or ps_2_0)
 		}
 	}
 	else // Pixel shader checks
 	{
-		if (destMod == RM_Saturate && inDXShaderInfo.shaderMajorVersion < 2)
+		if ( (destMod & RM_Saturate) && inDXShaderInfo.shaderMajorVersion < 2)
 		{
 			__debugbreak(); // Error: Cannot use the _sat Saturate() destination modifier until ps_2_0 (or vs_3_0)
 		}

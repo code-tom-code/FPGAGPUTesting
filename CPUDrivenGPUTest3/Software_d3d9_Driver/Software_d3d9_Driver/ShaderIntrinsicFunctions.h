@@ -354,13 +354,13 @@ static INTRINSIC_INLINE void lrp(D3DXVECTOR4& dst, const D3DXVECTOR4& src0, cons
 	else
 	{
 		const __m128 result = _mm_add_ps(_mm_mul_ps(_mm_sub_ps(src1vec, src0vec), amount4), src0vec);
-		if (writeMask & 0x1)
+		if ( (writeMask & 0x1) != 0)
 			dst.x = result.m128_f32[0];
-		if (writeMask & 0x2)
+		if ( (writeMask & 0x2) != 0)
 			dst.y = result.m128_f32[1];
-		if (writeMask & 0x4)
+		if ( (writeMask & 0x4) != 0)
 			dst.z = result.m128_f32[2];
-		if (writeMask & 0x8)
+		if ( (writeMask & 0x8) != 0)
 			dst.w = result.m128_f32[3];
 	}
 }

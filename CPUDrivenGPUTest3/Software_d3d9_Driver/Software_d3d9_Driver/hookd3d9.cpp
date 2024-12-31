@@ -380,28 +380,28 @@ BOOL WINAPI DllMain(_In_ HINSTANCE hInst, _In_ DWORD reason, _In_ LPVOID /*lpvRe
 // D3DPERF_BeginEvent
 extern "C" int WINAPI HookD3DPERF_BeginEvent(D3DCOLOR col, LPCWSTR wszName)
 {
-	int ret = (*Real_D3DPERF_BeginEvent)(col, wszName);
+	const int ret = (*Real_D3DPERF_BeginEvent)(col, wszName);
 	return ret;
 }
 
 // D3DPERF_EndEvent
 extern "C" int WINAPI HookD3DPERF_EndEvent(void)
 {
-	int ret = (*Real_D3DPERF_EndEvent)();
+	const int ret = (*Real_D3DPERF_EndEvent)();
 	return ret;
 }
 
 // D3DPERF_GetStatus
 extern "C" DWORD WINAPI HookD3DPERF_GetStatus(void)
 {
-	DWORD ret = (*Real_D3DPERF_GetStatus)();
+	const DWORD ret = (*Real_D3DPERF_GetStatus)();
 	return ret;
 }
 
 // D3DPERF_QueryRepeatFrame
 extern "C" BOOL WINAPI HookD3DPERF_QueryRepeatFrame(void)
 {
-	BOOL ret = (*Real_D3DPERF_QueryRepeatFrame)();
+	const BOOL ret = (*Real_D3DPERF_QueryRepeatFrame)();
 	return ret;
 }
 
@@ -438,7 +438,7 @@ extern "C" void WINAPI HookDebugSetMute()
 // Direct3D9EnableMaximizedWindowedModeShim
 extern "C"  HRESULT WINAPI HookDirect3D9EnableMaximizedWindowedModeShim(BOOL ShimEnable)
 {
-	HRESULT ret = (*Real_Direct3D9EnableMaximizedWindowedModeShim)(ShimEnable);
+	const HRESULT ret = (*Real_Direct3D9EnableMaximizedWindowedModeShim)(ShimEnable);
 	return ret;
 }
 
@@ -446,7 +446,7 @@ extern "C"  HRESULT WINAPI HookDirect3D9EnableMaximizedWindowedModeShim(BOOL Shi
 extern "C" IDirect3D9* WINAPI HookDirect3DCreate9(_In_ UINT SDKVersion)
 {	
 	// Pre-hook code
-	IDirect3D9* ret = (*Real_Direct3DCreate9)(SDKVersion);
+	IDirect3D9* const ret = (*Real_Direct3DCreate9)(SDKVersion);
 	// Post-hook code
 
 	if (!ret)
@@ -454,7 +454,7 @@ extern "C" IDirect3D9* WINAPI HookDirect3DCreate9(_In_ UINT SDKVersion)
 		return NULL;
 	}
 
-	IDirect3D9Hook* newHook = new IDirect3D9Hook(ret);
+	IDirect3D9Hook* const newHook = new IDirect3D9Hook(ret);
 	return newHook;
 }
 
@@ -462,7 +462,7 @@ extern "C" IDirect3D9* WINAPI HookDirect3DCreate9(_In_ UINT SDKVersion)
 extern "C" HRESULT WINAPI HookDirect3DCreate9Ex(_In_ UINT SDKVersion, _Out_ IDirect3D9Ex** ppD3D)
 {
 	// Pre-hook code
-	HRESULT ret = (*Real_Direct3DCreate9Ex)(SDKVersion, ppD3D);
+	const HRESULT ret = (*Real_Direct3DCreate9Ex)(SDKVersion, ppD3D);
 	// Post-hook code
 	MessageBoxA(NULL, "Direct3DCreate9Ex called. Driver will not be run.", "Direct3DCreate9Ex", NULL);
 	return ret;
@@ -471,7 +471,7 @@ extern "C" HRESULT WINAPI HookDirect3DCreate9Ex(_In_ UINT SDKVersion, _Out_ IDir
 // Direct3DShaderValidatorCreate9
 extern "C" IDirect3DShaderValidator9* WINAPI HookDirect3DShaderValidatorCreate9(void)
 {
-	IDirect3DShaderValidator9* ret = (*Real_Direct3DShaderValidatorCreate9)();
+	IDirect3DShaderValidator9* const ret = (*Real_Direct3DShaderValidatorCreate9)();
 	return ret;
 }
 
@@ -502,7 +502,7 @@ extern "C" void __stdcall HookDirect3D9SetMaximizedWindowedModeShim(BOOL a, BOOL
 // Direct3D9SetSwapEffectUpgradeShim
 extern "C" INT __stdcall HookDirect3D9SetSwapEffectUpgradeShim(BOOL ShimEnable)
 {
-	INT ret = (*Real_Direct3D9SetSwapEffectUpgradeShim)(ShimEnable);
+	const INT ret = (*Real_Direct3D9SetSwapEffectUpgradeShim)(ShimEnable);
 	return ret;
 }
 
@@ -520,14 +520,14 @@ extern "C" void __stdcall HookDirect3D9Force9On12(_In_ Force9On12Mode Mode)
 // Direct3DCreate9On12
 extern "C" IDirect3D9* __stdcall HookDirect3DCreate9On12(_In_ UINT SDKVersion, _In_ D3D9ON12_ARGS* pOverrideList, _In_ UINT NumOverrideEntries)
 {
-	IDirect3D9* ret = (*Real_Direct3DCreate9On12)(SDKVersion, pOverrideList, NumOverrideEntries);
+	IDirect3D9* const ret = (*Real_Direct3DCreate9On12)(SDKVersion, pOverrideList, NumOverrideEntries);
 	return ret;
 }
 
 // Direct3DCreate9On12Ex
 extern "C" HRESULT __stdcall HookDirect3DCreate9On12Ex(_In_ UINT SDKVersion, _In_ D3D9ON12_ARGS* pOverrideList, UINT NumOverrideEntries, _Inout_ IDirect3D9Ex** ppOutputInterface)
 {
-	HRESULT ret = (*Real_Direct3DCreate9On12Ex)(SDKVersion, pOverrideList, NumOverrideEntries, ppOutputInterface);
+	const HRESULT ret = (*Real_Direct3DCreate9On12Ex)(SDKVersion, pOverrideList, NumOverrideEntries, ppOutputInterface);
 	return ret;
 }
 

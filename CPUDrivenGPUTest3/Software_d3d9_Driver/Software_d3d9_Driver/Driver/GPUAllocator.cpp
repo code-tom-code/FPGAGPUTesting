@@ -133,7 +133,7 @@ struct _FreeTree
 		{
 			FreeList& largerBlocksList = lists[currentListIndex];
 			const unsigned largerBlocksSize = largerBlocksList.regionSize_bytes;
-			std::unordered_set<gpuvoid*>::iterator splitIter = largerBlocksList.freeRegions.begin();
+			const std::unordered_set<gpuvoid*>::iterator splitIter = largerBlocksList.freeRegions.begin();
 			gpuvoid* const splitLargeBase = *splitIter;
 			largerBlocksList.freeRegions.erase(splitIter);
 			gpuvoid* const splitLeft = splitLargeBase;
@@ -187,14 +187,14 @@ struct _FreeTree
 			FreeList& largerBlocksList = lists[currentListIndex];
 			const unsigned largerBlocksSize = largerBlocksList.regionSize_bytes;
 			gpuvoid* containingRegionAddr = NULL;
-			bool foundRegionContainingAddr = FindRegionContainingAddress(largerBlocksList, splitAddr, containingRegionAddr);
+			const bool foundRegionContainingAddr = FindRegionContainingAddress(largerBlocksList, splitAddr, containingRegionAddr);
 #ifdef _DEBUG
 			if (!foundRegionContainingAddr)
 			{
 				__debugbreak(); // Error: No splits found containing the provided address
 			}
 #endif
-			std::unordered_set<gpuvoid*>::iterator splitIter = largerBlocksList.freeRegions.find(containingRegionAddr);
+			const std::unordered_set<gpuvoid*>::iterator splitIter = largerBlocksList.freeRegions.find(containingRegionAddr);
 			gpuvoid* const splitLargeBase = *splitIter;
 			largerBlocksList.freeRegions.erase(splitIter);
 			gpuvoid* const splitLeft = splitLargeBase;
@@ -208,15 +208,15 @@ struct _FreeTree
 
 	void SplitReclaimRemainingAllocSpace(gpuvoid* const address, const unsigned allocSize, const FreeList& baseList)
 	{
-		gpuvoid* const postAllocAddr = reinterpret_cast<gpuvoid* const>( (char* const)address + allocSize);
+		gpuvoid* const postAllocAddr = (char* const)address + allocSize;
 		unsigned splitRemainingAllocs = baseList.regionSize_bytes - allocSize;
-		gpuvoid* rightSidePtr = reinterpret_cast<gpuvoid* const>( (char* const)address + baseList.regionSize_bytes);
+		gpuvoid* rightSidePtr = (char* const)address + baseList.regionSize_bytes;
 		while (splitRemainingAllocs != 0)
 		{
 			const unsigned numLeadingZeroesRemaining = __lzcnt(splitRemainingAllocs);
 			const unsigned freeListIndexRemaining = numLeadingZeroesRemaining - 1;
 			const FreeList& splitRemainingFreeList = lists[freeListIndexRemaining];
-			rightSidePtr = reinterpret_cast<gpuvoid* const>( (char* const)rightSidePtr - splitRemainingFreeList.regionSize_bytes);
+			rightSidePtr = (char* const)rightSidePtr - splitRemainingFreeList.regionSize_bytes;
 			FreeBlock(rightSidePtr, splitRemainingFreeList.regionSize_bytes);
 			splitRemainingAllocs = splitRemainingAllocs & (~splitRemainingFreeList.regionSize_bytes);
 		}
@@ -244,7 +244,7 @@ struct _FreeTree
 			unsigned searchListIndex = freeListIndex - 1;
 			while (searchListIndex != 0xFFFFFFFF)
 			{
-				FreeList& searchList = lists[searchListIndex];
+				const FreeList& searchList = lists[searchListIndex];
 				const bool foundRegionContainingAddress = FindRegionContainingAddress(searchList, address, foundRegionAddress);
 				if (foundRegionContainingAddress)
 				{
@@ -304,7 +304,7 @@ struct _FreeTree
 #endif
 			while (splitFreeListIndex != 0xFFFFFFFF)
 			{
-				FreeList& splitList = lists[splitFreeListIndex];
+				const FreeList& splitList = lists[splitFreeListIndex];
 				if (!splitList.freeRegions.empty() )
 				{
 					SplitBlocksDownToX(splitFreeListIndex, freeListIndex);
@@ -328,7 +328,7 @@ struct _FreeTree
 
 		if (!thisList.freeRegions.empty() )
 		{
-			std::unordered_set<gpuvoid*>::iterator allocIter = thisList.freeRegions.begin();
+			const std::unordered_set<gpuvoid*>::iterator allocIter = thisList.freeRegions.begin();
 			gpuvoid* const thisAddr = *allocIter;
 			thisList.freeRegions.erase(allocIter);
 
@@ -395,7 +395,7 @@ struct _FreeTree
 #endif
 
 		gpuvoid* const buddyBlock = GetBuddyBlock(blockStartAddr, blockSize);
-		std::unordered_set<gpuvoid*>::iterator buddyIt = returnList.freeRegions.find(buddyBlock);
+		const std::unordered_set<gpuvoid*>::iterator buddyIt = returnList.freeRegions.find(buddyBlock);
 		if (buddyIt != returnList.freeRegions.end() )
 		{
 			// Coalesce our two smaller memory blocks together into a larger one!
@@ -1557,7 +1557,7 @@ static void GPUFree_Internal(gpuvoid* gpuAlloc)
 	}
 #endif
 
-	std::map<gpuvoid*, liveAllocation>::iterator existingAllocIt = liveAllocationsMap.find(gpuAlloc);
+	const std::map<gpuvoid*, liveAllocation>::iterator existingAllocIt = liveAllocationsMap.find(gpuAlloc);
 	if (existingAllocIt == liveAllocationsMap.end() )
 	{
 #ifdef _DEBUG

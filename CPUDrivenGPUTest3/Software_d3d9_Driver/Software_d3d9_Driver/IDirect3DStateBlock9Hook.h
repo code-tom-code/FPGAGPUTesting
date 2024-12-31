@@ -484,7 +484,7 @@ public:
 		if (capturedStates.capturedLights == NULL)
 			capturedStates.capturedLights = new std::map<UINT, capturedStateBitmask::lightCaptureStruct>;
 
-		std::map<UINT, capturedStateBitmask::lightCaptureStruct>::iterator findExistingLightIt = capturedStates.capturedLights->find(lightNum);
+		const std::map<UINT, capturedStateBitmask::lightCaptureStruct>::iterator findExistingLightIt = capturedStates.capturedLights->find(lightNum);
 		if (findExistingLightIt == capturedStates.capturedLights->end() )
 		{
 			capturedStateBitmask::lightCaptureStruct newLightCapture;
@@ -506,7 +506,7 @@ public:
 		if (capturedStates.capturedLights == NULL)
 			capturedStates.capturedLights = new std::map<UINT, capturedStateBitmask::lightCaptureStruct>;
 
-		std::map<UINT, capturedStateBitmask::lightCaptureStruct>::iterator findExistingLightIt = capturedStates.capturedLights->find(lightNum);
+		const std::map<UINT, capturedStateBitmask::lightCaptureStruct>::iterator findExistingLightIt = capturedStates.capturedLights->find(lightNum);
 		if (findExistingLightIt == capturedStates.capturedLights->end() )
 		{
 			capturedStateBitmask::lightCaptureStruct newLightCapture;

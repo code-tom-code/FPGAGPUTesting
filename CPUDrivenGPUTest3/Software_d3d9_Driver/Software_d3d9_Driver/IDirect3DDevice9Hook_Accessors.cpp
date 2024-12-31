@@ -17,7 +17,7 @@
 
 COM_DECLSPEC_NOTHROW UINT STDMETHODCALLTYPE IDirect3DDevice9Hook::GetAvailableTextureMem(THIS)
 {
-	UINT ret = d3d9dev->GetAvailableTextureMem();
+	const UINT ret = d3d9dev->GetAvailableTextureMem();
 	// TODO: Implement this...
 	return ret;
 }
@@ -25,7 +25,7 @@ COM_DECLSPEC_NOTHROW UINT STDMETHODCALLTYPE IDirect3DDevice9Hook::GetAvailableTe
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::GetDirect3D(THIS_ IDirect3D9** ppD3D9)
 {
 	LPDIRECT3D9 realD3D9 = NULL;
-	HRESULT ret = d3d9dev->GetDirect3D(&realD3D9);
+	const HRESULT ret = d3d9dev->GetDirect3D(&realD3D9);
 	if (FAILED(ret) )
 		return ret;
 
@@ -85,7 +85,7 @@ COM_DECLSPEC_NOTHROW /*static*/ void IDirect3DDevice9Hook::ModifyDeviceCaps(D3DC
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::GetDeviceCaps(THIS_ D3DCAPS9* pCaps)
 {
-	HRESULT ret = d3d9dev->GetDeviceCaps(pCaps);
+	const HRESULT ret = d3d9dev->GetDeviceCaps(pCaps);
 	if (FAILED(ret) )
 		return ret;
 
@@ -101,7 +101,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::GetDisplayM
 {
 	if (iSwapChain == 0)
 	{
-		HRESULT ret = implicitSwapChain->GetDisplayMode(pMode);
+		const HRESULT ret = implicitSwapChain->GetDisplayMode(pMode);
 		return ret;
 	}
 	else
@@ -116,14 +116,14 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::GetDisplayM
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::GetCreationParameters(THIS_ D3DDEVICE_CREATION_PARAMETERS *pParameters)
 {
-	HRESULT ret = d3d9dev->GetCreationParameters(pParameters);
+	const HRESULT ret = d3d9dev->GetCreationParameters(pParameters);
 	// TODO: Implement this...
 	return ret;
 }
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::SetCursorProperties(THIS_ UINT XHotSpot, UINT YHotSpot, IDirect3DSurface9* pCursorBitmap)
 {
-	HRESULT ret = d3d9dev->SetCursorProperties(XHotSpot, YHotSpot, pCursorBitmap);
+	const HRESULT ret = d3d9dev->SetCursorProperties(XHotSpot, YHotSpot, pCursorBitmap);
 	return ret;
 }
 
@@ -135,7 +135,7 @@ COM_DECLSPEC_NOTHROW void STDMETHODCALLTYPE IDirect3DDevice9Hook::SetCursorPosit
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::GetSwapChain(THIS_ UINT iSwapChain, IDirect3DSwapChain9** pSwapChain)
 {
 	LPDIRECT3DSWAPCHAIN9 realSwapChain = NULL;
-	HRESULT ret = d3d9dev->GetSwapChain(iSwapChain, &realSwapChain);
+	const HRESULT ret = d3d9dev->GetSwapChain(iSwapChain, &realSwapChain);
 	if (FAILED(ret) )
 		return ret;
 
@@ -167,7 +167,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::GetSwapChai
 
 COM_DECLSPEC_NOTHROW UINT STDMETHODCALLTYPE IDirect3DDevice9Hook::GetNumberOfSwapChains(THIS)
 {
-	UINT ret = d3d9dev->GetNumberOfSwapChains();
+	const UINT ret = d3d9dev->GetNumberOfSwapChains();
 #ifdef _DEBUG
 	if (ret != 1)
 	{
@@ -182,7 +182,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::GetBackBuff
 {
 	if (iSwapChain == 0)
 	{
-		HRESULT ret = implicitSwapChain->GetBackBuffer(iBackBuffer, Type, ppBackBuffer);
+		const HRESULT ret = implicitSwapChain->GetBackBuffer(iBackBuffer, Type, ppBackBuffer);
 		return ret;
 	}
 	else
@@ -199,7 +199,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::GetRasterSt
 {
 	if (iSwapChain == 0)
 	{
-		HRESULT ret = implicitSwapChain->GetRasterStatus(pRasterStatus);
+		const HRESULT ret = implicitSwapChain->GetRasterStatus(pRasterStatus);
 		return ret;
 	}
 	else
@@ -214,7 +214,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::GetRasterSt
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::SetDialogBoxMode(THIS_ BOOL bEnableDialogs)
 {
-	HRESULT ret = d3d9dev->SetDialogBoxMode(bEnableDialogs);
+	const HRESULT ret = d3d9dev->SetDialogBoxMode(bEnableDialogs);
 	if (FAILED(ret) )
 		return ret;
 
@@ -260,7 +260,7 @@ COM_DECLSPEC_NOTHROW void STDMETHODCALLTYPE IDirect3DDevice9Hook::GetGammaRamp(T
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::GetRenderTargetData(THIS_ IDirect3DSurface9* pRenderTarget, IDirect3DSurface9* pDestSurface)
 {
-	const IDirect3DSurface9Hook* const renderTargetHookPtr = dynamic_cast<IDirect3DSurface9Hook*>(pRenderTarget);
+	const IDirect3DSurface9Hook* const renderTargetHookPtr = dynamic_cast<IDirect3DSurface9Hook* const>(pRenderTarget);
 	if (renderTargetHookPtr)
 		pRenderTarget = renderTargetHookPtr->GetUnderlyingSurface();
 #ifdef _DEBUG
@@ -269,7 +269,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::GetRenderTa
 		DbgBreakPrint("Error: GetRenderTargetData called with a non-hooked render target pointer");
 	}
 #endif
-	const IDirect3DSurface9Hook* const destHookPtr = dynamic_cast<IDirect3DSurface9Hook*>(pDestSurface);
+	const IDirect3DSurface9Hook* const destHookPtr = dynamic_cast<IDirect3DSurface9Hook* const>(pDestSurface);
 	if (destHookPtr)
 		pDestSurface = destHookPtr->GetUnderlyingSurface();
 #ifdef _DEBUG
@@ -278,7 +278,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::GetRenderTa
 		DbgBreakPrint("Error: GetRenderTargetData called with a non-hooked dest surface pointer");
 	}
 #endif
-	HRESULT ret = d3d9dev->GetRenderTargetData(renderTargetHookPtr ? renderTargetHookPtr->GetUnderlyingSurface() : NULL, destHookPtr ? destHookPtr->GetUnderlyingSurface() : NULL);
+	const HRESULT ret = d3d9dev->GetRenderTargetData(renderTargetHookPtr ? renderTargetHookPtr->GetUnderlyingSurface() : NULL, destHookPtr ? destHookPtr->GetUnderlyingSurface() : NULL);
 	if (SUCCEEDED(ret) )
 	{
 		// TODO: Implement this...
@@ -290,7 +290,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::GetFrontBuf
 {
 	if (iSwapChain == 0)
 	{
-		HRESULT ret = implicitSwapChain->GetFrontBufferData(pDestSurface);
+		const HRESULT ret = implicitSwapChain->GetFrontBufferData(pDestSurface);
 		return ret;
 	}
 	else
@@ -306,7 +306,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::GetFrontBuf
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::GetRenderTarget(THIS_ DWORD RenderTargetIndex, IDirect3DSurface9** ppRenderTarget)
 {
 	LPDIRECT3DSURFACE9 realSurface = NULL;
-	HRESULT ret = d3d9dev->GetRenderTarget(RenderTargetIndex, &realSurface);
+	const HRESULT ret = d3d9dev->GetRenderTarget(RenderTargetIndex, &realSurface);
 	if (FAILED(ret) )
 		return ret;
 
@@ -343,7 +343,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::GetRenderTa
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::SetDepthStencilSurface(THIS_ IDirect3DSurface9* pNewZStencil)
 {
-	IDirect3DSurface9Hook* hookPtr = dynamic_cast<IDirect3DSurface9Hook*>(pNewZStencil);
+	IDirect3DSurface9Hook* const hookPtr = dynamic_cast<IDirect3DSurface9Hook* const>(pNewZStencil);
 	if (hookPtr)
 		pNewZStencil = hookPtr->GetUnderlyingSurface();
 #ifdef _DEBUG
@@ -352,7 +352,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::SetDepthSte
 		DbgBreakPrint("Error: SetDepthStencilSurface called with a non-hooked surface pointer");
 	}
 #endif
-	HRESULT ret = d3d9dev->SetDepthStencilSurface(pNewZStencil);
+	const HRESULT ret = d3d9dev->SetDepthStencilSurface(pNewZStencil);
 	if (FAILED(ret) )
 		return ret;
 
@@ -364,7 +364,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::SetDepthSte
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::GetDepthStencilSurface(THIS_ IDirect3DSurface9** ppZStencilSurface)
 {
 	LPDIRECT3DSURFACE9 realSurface = NULL;
-	HRESULT ret = d3d9dev->GetDepthStencilSurface(&realSurface);
+	const HRESULT ret = d3d9dev->GetDepthStencilSurface(&realSurface);
 	if (FAILED(ret) )
 		return ret;
 
@@ -398,7 +398,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::GetDepthSte
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::SetTransform(THIS_ D3DTRANSFORMSTATETYPE State, CONST D3DMATRIX* pMatrix)
 {
-	HRESULT ret = d3d9dev->SetTransform(State, pMatrix);
+	const HRESULT ret = d3d9dev->SetTransform(State, pMatrix);
 	if (FAILED(ret) )
 		return ret;
 
@@ -460,7 +460,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::SetTransfor
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::GetTransform(THIS_ D3DTRANSFORMSTATETYPE State, D3DMATRIX* pMatrix)
 {
 	D3DMATRIX realMatrix = {0};
-	HRESULT ret = d3d9dev->GetTransform(State, &realMatrix);
+	const HRESULT ret = d3d9dev->GetTransform(State, &realMatrix);
 	if (FAILED(ret) )
 		return ret;
 
@@ -564,13 +564,13 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::GetTransfor
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::MultiplyTransform(THIS_ D3DTRANSFORMSTATETYPE Transform, CONST D3DMATRIX* pMatrix)
 {
-	HRESULT ret = d3d9dev->MultiplyTransform(Transform, pMatrix);
+	const HRESULT ret = d3d9dev->MultiplyTransform(Transform, pMatrix);
 	if (FAILED(ret) )
 		return ret;
 
 	if (pMatrix)
 	{
-		D3DXMATRIXA16 d3dxMatrix(*pMatrix);
+		const D3DXMATRIXA16 d3dxMatrix(*pMatrix);
 		if (Transform < D3DTS_WORLD)
 		{
 			switch (Transform)
@@ -617,7 +617,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::MultiplyTra
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::SetViewport(THIS_ CONST D3DVIEWPORT9* pViewport)
 {
-	HRESULT ret = d3d9dev->SetViewport(pViewport);
+	const HRESULT ret = d3d9dev->SetViewport(pViewport);
 	if (FAILED(ret) )
 		return ret;
 
@@ -649,7 +649,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::SetViewport
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::GetViewport(THIS_ D3DVIEWPORT9* pViewport)
 {
 	D3DVIEWPORT9 localRet = {0};
-	HRESULT ret = d3d9dev->GetViewport(&localRet);
+	const HRESULT ret = d3d9dev->GetViewport(&localRet);
 	if (FAILED(ret) )
 		return ret;
 
@@ -675,7 +675,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::GetViewport
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::SetMaterial(THIS_ CONST D3DMATERIAL9* pMaterial)
 {
-	HRESULT ret = d3d9dev->SetMaterial(pMaterial);
+	const HRESULT ret = d3d9dev->SetMaterial(pMaterial);
 	if (FAILED(ret) )
 		return ret;
 
@@ -700,7 +700,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::SetMaterial
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::GetMaterial(THIS_ D3DMATERIAL9* pMaterial)
 {
 	D3DMATERIAL9 realMaterial = {0};
-	HRESULT ret = d3d9dev->GetMaterial(&realMaterial);
+	const HRESULT ret = d3d9dev->GetMaterial(&realMaterial);
 	if (FAILED(ret) )
 		return ret;
 
@@ -722,7 +722,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::GetMaterial
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::SetLight(THIS_ DWORD Index, CONST D3DLIGHT9* pLight)
 {
-	HRESULT ret = d3d9dev->SetLight(Index, pLight);
+	const HRESULT ret = d3d9dev->SetLight(Index, pLight);
 	if (FAILED(ret) )
 		return ret;
 
@@ -737,10 +737,10 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::SetLight(TH
 		else
 			targetDeviceState = &currentState;
 
-		std::map<UINT, LightInfo*>::iterator it = targetDeviceState->lightInfoMap->find(Index);
+		const std::map<UINT, LightInfo*>::iterator it = targetDeviceState->lightInfoMap->find(Index);
 		if (it == targetDeviceState->lightInfoMap->end() )
 		{
-			LightInfo* newLightInfo = new LightInfo;
+			LightInfo* const newLightInfo = new LightInfo;
 			newLightInfo->light = *pLight;
 			targetDeviceState->lightInfoMap->insert(std::make_pair(Index, newLightInfo) );
 		}
@@ -750,7 +750,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::SetLight(TH
 				it->second->light = *pLight;
 			else
 			{
-				LightInfo* newLightInfo = new LightInfo;
+				LightInfo* const newLightInfo = new LightInfo;
 				newLightInfo->light = *pLight;
 				it->second = newLightInfo;
 			}
@@ -763,7 +763,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::SetLight(TH
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::GetLight(THIS_ DWORD Index, D3DLIGHT9* pLight)
 {
 	D3DLIGHT9 realLight = {};
-	HRESULT ret = d3d9dev->GetLight(Index, &realLight);
+	const HRESULT ret = d3d9dev->GetLight(Index, &realLight);
 	if (FAILED(ret) )
 		return ret;
 
@@ -792,7 +792,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::GetLight(TH
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::LightEnable(THIS_ DWORD Index, BOOL Enable)
 {
-	HRESULT ret = d3d9dev->LightEnable(Index, Enable);
+	const HRESULT ret = d3d9dev->LightEnable(Index, Enable);
 	if (FAILED(ret) )
 		return ret;
 
@@ -874,7 +874,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::LightEnable
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::GetLightEnable(THIS_ DWORD Index, BOOL* pEnable)
 {
 	BOOL realEnable = FALSE;
-	HRESULT ret = d3d9dev->GetLightEnable(Index, &realEnable);
+	const HRESULT ret = d3d9dev->GetLightEnable(Index, &realEnable);
 	if (FAILED(ret) )
 		return ret;
 
@@ -907,7 +907,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::GetLightEna
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::SetClipPlane(THIS_ DWORD Index, CONST float* pPlane)
 {
-	HRESULT ret = d3d9dev->SetClipPlane(Index, pPlane);
+	const HRESULT ret = d3d9dev->SetClipPlane(Index, pPlane);
 	if (FAILED(ret) )
 		return ret;
 
@@ -933,7 +933,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::SetClipPlan
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::GetClipPlane(THIS_ DWORD Index, float* pPlane)
 {
 	D3DXPLANE realPlane(0.0f, 0.0f, 0.0f, 0.0f);
-	HRESULT ret = d3d9dev->GetClipPlane(Index, (float* const)&realPlane);
+	const HRESULT ret = d3d9dev->GetClipPlane(Index, (float* const)&realPlane);
 	if (FAILED(ret) )
 		return ret;
 
@@ -1094,7 +1094,7 @@ static inline const bool DoesSrcBlendRequireDestData(const D3DBLEND srcBlend)
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::SetRenderState(THIS_ D3DRENDERSTATETYPE State, DWORD Value)
 {
-	HRESULT ret = d3d9dev->SetRenderState(State, Value);
+	const HRESULT ret = d3d9dev->SetRenderState(State, Value);
 	if (FAILED(ret) )
 		return ret;
 
@@ -1202,7 +1202,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::SetRenderSt
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::GetRenderState(THIS_ D3DRENDERSTATETYPE State, DWORD* pValue)
 {
 	DWORD stateValue = 0x00000000;
-	HRESULT ret = d3d9dev->GetRenderState(State, &stateValue);
+	const HRESULT ret = d3d9dev->GetRenderState(State, &stateValue);
 	if (FAILED(ret) )
 		return ret;
 
@@ -1243,7 +1243,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::SetClipStat
 {
 	// Don't support this
 	DbgBreakPrint("Error: SetClipStatus is unsupported");
-	HRESULT ret = d3d9dev->SetClipStatus(pClipStatus);
+	const HRESULT ret = d3d9dev->SetClipStatus(pClipStatus);
 	return ret;
 }
 
@@ -1251,7 +1251,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::GetClipStat
 {
 	// Don't support this
 	DbgBreakPrint("Error: GetClipStatus is unsupported");
-	HRESULT ret = d3d9dev->GetClipStatus(pClipStatus);
+	const HRESULT ret = d3d9dev->GetClipStatus(pClipStatus);
 	return ret;
 }
 
@@ -1273,7 +1273,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::GetTexture(
 	}
 
 	LPDIRECT3DBASETEXTURE9 realTexture = NULL;
-	HRESULT ret = d3d9dev->GetTexture(Stage, &realTexture);
+	const HRESULT ret = d3d9dev->GetTexture(Stage, &realTexture);
 	if (FAILED(ret) )
 		return ret;
 
@@ -1331,10 +1331,10 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::SetTexture(
 		return D3DERR_INVALIDCALL;
 	}
 
-	IDirect3DTexture9Hook* textureHookPtr = dynamic_cast<IDirect3DTexture9Hook*>(pTexture);
-	IDirect3DCubeTexture9Hook* cubeHookPtr = dynamic_cast<IDirect3DCubeTexture9Hook*>(pTexture);
-	IDirect3DVolumeTexture9Hook* volumeHookPtr = dynamic_cast<IDirect3DVolumeTexture9Hook*>(pTexture);
-	const IDirect3DBaseTexture9Hook* const baseHookPtr = dynamic_cast<IDirect3DBaseTexture9Hook*>(pTexture);
+	IDirect3DTexture9Hook* const textureHookPtr = dynamic_cast<IDirect3DTexture9Hook* const>(pTexture);
+	IDirect3DCubeTexture9Hook* const cubeHookPtr = dynamic_cast<IDirect3DCubeTexture9Hook* const>(pTexture);
+	IDirect3DVolumeTexture9Hook* const volumeHookPtr = dynamic_cast<IDirect3DVolumeTexture9Hook* const>(pTexture);
+	const IDirect3DBaseTexture9Hook* const baseHookPtr = dynamic_cast<IDirect3DBaseTexture9Hook* const>(pTexture);
 	if (textureHookPtr)
 		pTexture = textureHookPtr->GetUnderlyingTexture();
 	else if (cubeHookPtr)
@@ -1351,7 +1351,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::SetTexture(
 	}
 #endif
 
-	HRESULT ret = d3d9dev->SetTexture(Stage, pTexture);
+	const HRESULT ret = d3d9dev->SetTexture(Stage, pTexture);
 	if (FAILED(ret) )
 		return ret;
 
@@ -1363,7 +1363,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::SetTexture(
 		{
 			LPDIRECT3DSURFACE9 surf0 = NULL;
 			textureHookPtr->GetSurfaceLevel(0, &surf0);
-			IDirect3DSurface9Hook* surfHook = dynamic_cast<IDirect3DSurface9Hook*>(surf0);
+			IDirect3DSurface9Hook* const surfHook = dynamic_cast<IDirect3DSurface9Hook* const>(surf0);
 			if (!surfHook)
 			{
 				DbgBreakPrint("Error: Unable to GetSurfaceLevel0 from texture");
@@ -1421,7 +1421,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::SetTexture(
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::GetTextureStageState(THIS_ DWORD Stage, D3DTEXTURESTAGESTATETYPE Type, DWORD* pValue)
 {
 	DWORD realValue = 0x00000000;
-	HRESULT ret = d3d9dev->GetTextureStageState(Stage, Type, &realValue);
+	const HRESULT ret = d3d9dev->GetTextureStageState(Stage, Type, &realValue);
 	if (FAILED(ret) )
 		return ret;
 
@@ -1449,7 +1449,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::GetTextureS
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::SetTextureStageState(THIS_ DWORD Stage, D3DTEXTURESTAGESTATETYPE Type, DWORD Value)
 {
-	HRESULT ret = d3d9dev->SetTextureStageState(Stage, Type, Value);
+	const HRESULT ret = d3d9dev->SetTextureStageState(Stage, Type, Value);
 	if (FAILED(ret) )
 		return ret;
 
@@ -1476,7 +1476,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::SetTextureS
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::GetSamplerState(THIS_ DWORD Sampler, D3DSAMPLERSTATETYPE Type, DWORD* pValue)
 {
 	DWORD outVal = 0x00000000;
-	HRESULT ret = d3d9dev->GetSamplerState(Sampler, Type, &outVal);
+	const HRESULT ret = d3d9dev->GetSamplerState(Sampler, Type, &outVal);
 	if (FAILED(ret) )
 		return ret;
 
@@ -1506,7 +1506,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::GetSamplerS
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::SetSamplerState(THIS_ DWORD Sampler, D3DSAMPLERSTATETYPE Type, DWORD Value)
 {
-	HRESULT ret = d3d9dev->SetSamplerState(Sampler, Type, Value);
+	const HRESULT ret = d3d9dev->SetSamplerState(Sampler, Type, Value);
 	if (FAILED(ret) )
 		return ret;
 
@@ -1547,7 +1547,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::SetSamplerS
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::SetPaletteEntries(THIS_ UINT PaletteNumber, CONST PALETTEENTRY* pEntries)
 {
-	HRESULT ret = d3d9dev->SetPaletteEntries(PaletteNumber, pEntries);
+	const HRESULT ret = d3d9dev->SetPaletteEntries(PaletteNumber, pEntries);
 	if (FAILED(ret) )
 		return ret;
 
@@ -1574,7 +1574,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::SetPaletteE
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::GetPaletteEntries(THIS_ UINT PaletteNumber, PALETTEENTRY* pEntries)
 {
-	HRESULT ret = d3d9dev->GetPaletteEntries(PaletteNumber, pEntries);
+	const HRESULT ret = d3d9dev->GetPaletteEntries(PaletteNumber, pEntries);
 	if (FAILED(ret) )
 		return ret;
 
@@ -1606,7 +1606,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::GetPaletteE
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::SetCurrentTexturePalette(THIS_ UINT PaletteNumber)
 {
-	HRESULT ret = d3d9dev->SetCurrentTexturePalette(PaletteNumber);
+	const HRESULT ret = d3d9dev->SetCurrentTexturePalette(PaletteNumber);
 	if (FAILED(ret) )
 		return ret;
 
@@ -1634,7 +1634,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::SetCurrentT
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::GetCurrentTexturePalette(THIS_ UINT *PaletteNumber)
 {
-	HRESULT ret = d3d9dev->GetCurrentTexturePalette(PaletteNumber);
+	const HRESULT ret = d3d9dev->GetCurrentTexturePalette(PaletteNumber);
 	if (FAILED(ret) )
 		return ret;
 
@@ -1653,7 +1653,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::GetCurrentT
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::SetScissorRect(THIS_ CONST RECT* pRect)
 {
-	HRESULT ret = d3d9dev->SetScissorRect(pRect);
+	const HRESULT ret = d3d9dev->SetScissorRect(pRect);
 	if (FAILED(ret) )
 		return ret;
 
@@ -1678,7 +1678,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::SetScissorR
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::GetScissorRect(THIS_ RECT* pRect)
 {
-	HRESULT ret = d3d9dev->GetScissorRect(pRect);
+	const HRESULT ret = d3d9dev->GetScissorRect(pRect);
 	if (FAILED(ret) )
 		return ret;
 
@@ -1699,7 +1699,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::GetScissorR
 // D3D9 this API is *not* captured by state-blocks on purpose.
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::SetSoftwareVertexProcessing(THIS_ BOOL bSoftware)
 {
-	HRESULT ret = d3d9dev->SetSoftwareVertexProcessing(bSoftware);
+	const HRESULT ret = d3d9dev->SetSoftwareVertexProcessing(bSoftware);
 	if (FAILED(ret) )
 		return ret;
 
@@ -1740,7 +1740,7 @@ COM_DECLSPEC_NOTHROW BOOL STDMETHODCALLTYPE IDirect3DDevice9Hook::GetSoftwareVer
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::SetNPatchMode(THIS_ float nSegments)
 {
-	HRESULT ret = d3d9dev->SetNPatchMode(nSegments);
+	const HRESULT ret = d3d9dev->SetNPatchMode(nSegments);
 	if (FAILED(ret) )
 		return ret;
 
@@ -1773,7 +1773,7 @@ COM_DECLSPEC_NOTHROW float STDMETHODCALLTYPE IDirect3DDevice9Hook::GetNPatchMode
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::SetVertexDeclaration(THIS_ IDirect3DVertexDeclaration9* pDecl)
 {
-	IDirect3DVertexDeclaration9Hook* hook = dynamic_cast<IDirect3DVertexDeclaration9Hook*>(pDecl);
+	IDirect3DVertexDeclaration9Hook* const hook = dynamic_cast<IDirect3DVertexDeclaration9Hook* const>(pDecl);
 	if (hook)
 		pDecl = hook->GetUnderlyingVertexDeclaration();
 #ifdef _DEBUG
@@ -1783,7 +1783,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::SetVertexDe
 	}
 #endif
 
-	HRESULT ret = d3d9dev->SetVertexDeclaration(pDecl);
+	const HRESULT ret = d3d9dev->SetVertexDeclaration(pDecl);
 	if (FAILED(ret) )
 		return ret;
 
@@ -1830,7 +1830,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::SetVertexDe
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::GetVertexDeclaration(THIS_ IDirect3DVertexDeclaration9** ppDecl)
 {
 	LPDIRECT3DVERTEXDECLARATION9 realVertDecl = NULL;
-	HRESULT ret = d3d9dev->GetVertexDeclaration(&realVertDecl);
+	const HRESULT ret = d3d9dev->GetVertexDeclaration(&realVertDecl);
 	if (FAILED(ret) )
 		return ret;
 
@@ -1865,7 +1865,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::SetFVF(THIS
 	debuggableFVF dbgFVF;
 	dbgFVF.rawFVF_DWORD = FVF;
 
-	HRESULT ret = d3d9dev->SetFVF(dbgFVF.rawFVF_DWORD);
+	const HRESULT ret = d3d9dev->SetFVF(dbgFVF.rawFVF_DWORD);
 	if (FAILED(ret) )
 		return ret;
 
@@ -1926,7 +1926,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::GetFVF(THIS
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::SetVertexShader(THIS_ IDirect3DVertexShader9* pShader)
 {
-	IDirect3DVertexShader9Hook* hookPtr = dynamic_cast<IDirect3DVertexShader9Hook*>(pShader);
+	IDirect3DVertexShader9Hook* const hookPtr = dynamic_cast<IDirect3DVertexShader9Hook* const>(pShader);
 	if (hookPtr)
 		pShader = hookPtr->GetUnderlyingVertexShader();
 #ifdef _DEBUG
@@ -1966,7 +1966,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::SetVertexSh
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::GetVertexShader(THIS_ IDirect3DVertexShader9** ppShader)
 {
 	LPDIRECT3DVERTEXSHADER9 realShader = NULL;
-	HRESULT ret = d3d9dev->GetVertexShader(&realShader);
+	const HRESULT ret = d3d9dev->GetVertexShader(&realShader);
 	if (FAILED(ret) )
 		return ret;
 
@@ -2182,7 +2182,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::SetStreamSo
 	if (StreamNumber >= MAX_D3D9_STREAMS)
 		return D3DERR_INVALIDCALL;
 
-	IDirect3DVertexBuffer9Hook* hookPtr = dynamic_cast<IDirect3DVertexBuffer9Hook*>(pStreamData);
+	IDirect3DVertexBuffer9Hook* const hookPtr = dynamic_cast<IDirect3DVertexBuffer9Hook* const>(pStreamData);
 	if (hookPtr)
 		pStreamData = hookPtr->GetUnderlyingVertexBuffer();
 #ifdef _DEBUG
@@ -2195,7 +2195,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::SetStreamSo
 	if (Stride > 0xFFFF)
 		return D3DERR_INVALIDCALL;
 
-	HRESULT ret = d3d9dev->SetStreamSource(StreamNumber, pStreamData, OffsetInBytes, Stride);
+	const HRESULT ret = d3d9dev->SetStreamSource(StreamNumber, pStreamData, OffsetInBytes, Stride);
 	if (FAILED(ret) )
 		return ret;
 
@@ -2235,7 +2235,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::GetStreamSo
 		return D3DERR_INVALIDCALL;
 
 	LPDIRECT3DVERTEXBUFFER9 realStream = NULL;
-	HRESULT ret = d3d9dev->GetStreamSource(StreamNumber, &realStream, pOffsetInBytes, pStride);
+	const HRESULT ret = d3d9dev->GetStreamSource(StreamNumber, &realStream, pOffsetInBytes, pStride);
 	if (FAILED(ret) )
 		return ret;
 
@@ -2280,7 +2280,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::SetStreamSo
 	if (StreamNumber >= MAX_D3D9_STREAMS)
 		return D3DERR_INVALIDCALL;
 
-	HRESULT ret = d3d9dev->SetStreamSourceFreq(StreamNumber, Setting);
+	const HRESULT ret = d3d9dev->SetStreamSourceFreq(StreamNumber, Setting);
 	if (FAILED(ret) )
 		return ret;
 
@@ -2300,7 +2300,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::SetStreamSo
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::GetStreamSourceFreq(THIS_ UINT StreamNumber, UINT* pSetting)
 {
-	HRESULT ret = d3d9dev->GetStreamSourceFreq(StreamNumber, pSetting);
+	const HRESULT ret = d3d9dev->GetStreamSourceFreq(StreamNumber, pSetting);
 	if (FAILED(ret) )
 		return ret;
 
@@ -2316,7 +2316,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::GetStreamSo
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::SetIndices(THIS_ IDirect3DIndexBuffer9* pIndexData)
 {
-	IDirect3DIndexBuffer9Hook* hook = dynamic_cast<IDirect3DIndexBuffer9Hook*>(pIndexData);
+	IDirect3DIndexBuffer9Hook* const hook = dynamic_cast<IDirect3DIndexBuffer9Hook* const>(pIndexData);
 	if (hook)
 		pIndexData = hook->GetUnderlyingIndexBuffer();
 #ifdef _DEBUG
@@ -2354,7 +2354,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::SetIndices(
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::GetIndices(THIS_ IDirect3DIndexBuffer9** ppIndexData)
 {
 	LPDIRECT3DINDEXBUFFER9 realIndices = NULL;
-	HRESULT ret = d3d9dev->GetIndices(&realIndices);
+	const HRESULT ret = d3d9dev->GetIndices(&realIndices);
 	if (FAILED(ret) )
 		return ret;
 
@@ -2380,7 +2380,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::GetIndices(
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::SetPixelShader(THIS_ IDirect3DPixelShader9* pShader)
 {
-	IDirect3DPixelShader9Hook* hookPtr = dynamic_cast<IDirect3DPixelShader9Hook*>(pShader);
+	IDirect3DPixelShader9Hook* const hookPtr = dynamic_cast<IDirect3DPixelShader9Hook* const>(pShader);
 	if (hookPtr)
 		pShader = hookPtr->GetUnderlyingPixelShader();
 #ifdef _DEBUG
@@ -2420,7 +2420,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::SetPixelSha
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::GetPixelShader(THIS_ IDirect3DPixelShader9** ppShader)
 {
 	LPDIRECT3DPIXELSHADER9 realShader = NULL;
-	HRESULT ret = d3d9dev->GetPixelShader(&realShader);
+	const HRESULT ret = d3d9dev->GetPixelShader(&realShader);
 	if (FAILED(ret) )
 		return ret;
 
@@ -2633,7 +2633,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::GetPixelSha
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::SetRenderTarget(THIS_ DWORD RenderTargetIndex, IDirect3DSurface9* pRenderTarget)
 {
-	IDirect3DSurface9Hook* hookPtr = dynamic_cast<IDirect3DSurface9Hook*>(pRenderTarget);
+	IDirect3DSurface9Hook* const hookPtr = dynamic_cast<IDirect3DSurface9Hook* const>(pRenderTarget);
 	if (hookPtr)
 		pRenderTarget = hookPtr->GetUnderlyingSurface();
 #ifdef _DEBUG
@@ -2642,7 +2642,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::SetRenderTa
 		DbgBreakPrint("Error: SetRenderTarget called with a non-hooked surface pointer");
 	}
 #endif
-	HRESULT ret = d3d9dev->SetRenderTarget(RenderTargetIndex, pRenderTarget);
+	const HRESULT ret = d3d9dev->SetRenderTarget(RenderTargetIndex, pRenderTarget);
 	if (FAILED(ret) )
 		return ret;
 

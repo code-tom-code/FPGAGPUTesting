@@ -176,7 +176,7 @@ static void SetCachedRenderState(const D3DRENDERSTATETYPE renderState, const DWO
 
 static void CachedSetTextureStageState(const DWORD samplerIndex, const D3DTEXTURESTAGESTATETYPE stageType, const DWORD value)
 {
-	if (samplerIndex > ARRAYSIZE(currentTextureStageStates) )
+	if (samplerIndex >= ARRAYSIZE(currentTextureStageStates) )
 	{
 #ifdef _DEBUG
 		__debugbreak(); // Error: Out of bounds sampler index!
@@ -410,7 +410,7 @@ static void CachedSetSamplerState(const DWORD samplerIndex, const D3DSAMPLERSTAT
 		return;
 	}
 
-	if (samplerIndex > ARRAYSIZE(currentSamplerStates) )
+	if (samplerIndex >= ARRAYSIZE(currentSamplerStates) )
 	{
 #ifdef _DEBUG
 		__debugbreak(); // Error: Out of bounds sampler index!
@@ -1308,7 +1308,7 @@ static void HandlePacket(const writeMemBatchData3WriteCommand* const typedPacket
 	memcpy(currentBatchWritePtr, currentBatchWriteData, sizeof(currentBatchWriteData) );
 
 	// Track our writes in the DWORD writes bitmap:
-	const DWORD currentWritePtrOffset = currentBatchWritePtr - LocalMemory;
+	const DWORD currentWritePtrOffset = static_cast<DWORD>(currentBatchWritePtr - LocalMemory);
 	AddMemoryBitmapDWORDWrite(currentWritePtrOffset);
 	AddMemoryBitmapDWORDWrite(currentWritePtrOffset + 4);
 	AddMemoryBitmapDWORDWrite(currentWritePtrOffset + 8);

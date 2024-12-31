@@ -576,28 +576,28 @@ static inline void lrp4(D3DXVECTOR4 (&dst)[4], const __m128 src0, const D3DXVECT
 	if (pixelWriteMask & 0x4) result[2] = _mm_add_ps(_mm_mul_ps(_mm_sub_ps(src2vec[2], src1vec[2]), amount4[2]), src1vec[2]);
 	if (pixelWriteMask & 0x8) result[3] = _mm_add_ps(_mm_mul_ps(_mm_sub_ps(src2vec[3], src1vec[3]), amount4[3]), src1vec[3]);
 
-	if (channelWriteMask & 0x1)
+	if ( (channelWriteMask & 0x1) != 0)
 	{
 		if (pixelWriteMask & 0x1) dst[0].x = result[0].m128_f32[0];
 		if (pixelWriteMask & 0x2) dst[1].x = result[1].m128_f32[0];
 		if (pixelWriteMask & 0x4) dst[2].x = result[2].m128_f32[0];
 		if (pixelWriteMask & 0x8) dst[3].x = result[3].m128_f32[0];
 	}
-	if (channelWriteMask & 0x2)	
+	if ( (channelWriteMask & 0x2) != 0)
 	{
 		if (pixelWriteMask & 0x1) dst[0].y = result[0].m128_f32[1];
 		if (pixelWriteMask & 0x2) dst[1].y = result[1].m128_f32[1];
 		if (pixelWriteMask & 0x4) dst[2].y = result[2].m128_f32[1];
 		if (pixelWriteMask & 0x8) dst[3].y = result[3].m128_f32[1];
 	}
-	if (channelWriteMask & 0x4)
+	if ( (channelWriteMask & 0x4) != 0)
 	{
 		if (pixelWriteMask & 0x1) dst[0].z = result[0].m128_f32[2];
 		if (pixelWriteMask & 0x2) dst[1].z = result[1].m128_f32[2];
 		if (pixelWriteMask & 0x4) dst[2].z = result[2].m128_f32[2];
 		if (pixelWriteMask & 0x8) dst[3].z = result[3].m128_f32[2];
 	}
-	if (channelWriteMask & 0x8)
+	if ( (channelWriteMask & 0x8) != 0)
 	{
 		if (pixelWriteMask & 0x1) dst[0].w = result[0].m128_f32[3];
 		if (pixelWriteMask & 0x2) dst[1].w = result[1].m128_f32[3];

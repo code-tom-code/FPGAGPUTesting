@@ -421,7 +421,13 @@ static void UpdateTextureData(LPDIRECT3DTEXTURE9 pTex, const unsigned gpuAddress
 	for (unsigned mipLevel = 0; mipLevel < mipLevels; ++mipLevel)
 	{
 		D3DLOCKED_RECT d3dlr = {0};
-		tempCPUTex->LockRect(mipLevel, &d3dlr, NULL, 0);
+		if (FAILED(tempCPUTex->LockRect(mipLevel, &d3dlr, NULL, 0) ) || !d3dlr.pBits)
+		{
+#ifdef _DEBUG
+			__debugbreak(); // Failed to lock!
+#endif
+			continue;
+		}
 		BYTE* currentLockedRowStartAddress = reinterpret_cast<BYTE* const>(d3dlr.pBits);
 		const D3DCOLOR* const mipLevelStartAddress = reinterpret_cast<const D3DCOLOR* const>(LocalMemory + gpuMemoryOffset);
 		const unsigned texelRowLinearSize = GetSingleElementSizeBytes(format) * (const unsigned)width;

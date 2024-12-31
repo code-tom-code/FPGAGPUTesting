@@ -96,14 +96,14 @@ __declspec(nothrow) HRESULT __stdcall IBaseDeviceComms::DeviceMemSet(gpuvoid* co
 
 			if (hasConfiguredBatchWrites == false)
 			{
-				HRESULT sendHR = SendLoop(stackPackets, sizeof(genericCommand) * 5);
+				const HRESULT sendHR = SendLoop(stackPackets, sizeof(genericCommand) * 5);
 				if (FAILED(sendHR) )
 					return sendHR;
 				hasConfiguredBatchWrites = true;
 			}
 			else
 			{
-				HRESULT sendHR = SendLoop(stackPackets + sizeof(genericCommand), sizeof(genericCommand) * 4);
+				const HRESULT sendHR = SendLoop(stackPackets + sizeof(genericCommand), sizeof(genericCommand) * 4);
 				if (FAILED(sendHR) )
 					return sendHR;
 			}
@@ -117,7 +117,7 @@ __declspec(nothrow) HRESULT __stdcall IBaseDeviceComms::DeviceMemSet(gpuvoid* co
 			newWriteMemPacket.writeVal = dwSetVal;
 			newWriteMemPacket.SetComputeChecksum(&newWriteMemPacket);
 
-			HRESULT sendHR = SendLoop( (const BYTE* const)&newWriteMemPacket, sizeof(newWriteMemPacket) );
+			const HRESULT sendHR = SendLoop( (const BYTE* const)&newWriteMemPacket, sizeof(newWriteMemPacket) );
 			if (FAILED(sendHR) )
 				return sendHR;
 
@@ -226,14 +226,14 @@ __declspec(nothrow) HRESULT __stdcall IBaseDeviceComms::DeviceMemCopy(gpuvoid* c
 
 			if (hasConfiguredBatchWrites == false)
 			{
-				HRESULT sendHR = SendLoop(stackPackets, sizeof(genericCommand) * 5);
+				const HRESULT sendHR = SendLoop(stackPackets, sizeof(genericCommand) * 5);
 				if (FAILED(sendHR) )
 					return sendHR;
 				hasConfiguredBatchWrites = true;
 			}
 			else
 			{
-				HRESULT sendHR = SendLoop(stackPackets + sizeof(genericCommand), sizeof(genericCommand) * 4);
+				const HRESULT sendHR = SendLoop(stackPackets + sizeof(genericCommand), sizeof(genericCommand) * 4);
 				if (FAILED(sendHR) )
 					return sendHR;
 			}
@@ -248,7 +248,7 @@ __declspec(nothrow) HRESULT __stdcall IBaseDeviceComms::DeviceMemCopy(gpuvoid* c
 			newWriteMemPacket.writeVal = newVal;
 			newWriteMemPacket.SetComputeChecksum(&newWriteMemPacket);
 
-			HRESULT sendHR = SendLoop( (const BYTE* const)&newWriteMemPacket, sizeof(newWriteMemPacket) );
+			const HRESULT sendHR = SendLoop( (const BYTE* const)&newWriteMemPacket, sizeof(newWriteMemPacket) );
 			if (FAILED(sendHR) )
 				return sendHR;
 			++dwordID;
@@ -346,12 +346,12 @@ __declspec(nothrow) HRESULT __stdcall IBaseDeviceComms::ReadFromDevice(const gpu
 		newReadMemPacket.readDWORDAddr &= ~0x1F; // Mask off the bottommost 5 bits in order to align our read address to the next lowest DRAM line
 		newReadMemPacket.SetComputeChecksum(&newReadMemPacket);
 
-		HRESULT sendHR = SendLoop( (const BYTE* const)&newReadMemPacket, sizeof(newReadMemPacket) );
+		const HRESULT sendHR = SendLoop( (const BYTE* const)&newReadMemPacket, sizeof(newReadMemPacket) );
 		if (FAILED(sendHR) )
 			return sendHR;
 
 		readMemResponse memResponse;
-		HRESULT recvHR = RecvLoop( (BYTE* const)&memResponse, sizeof(memResponse) );
+		const HRESULT recvHR = RecvLoop( (BYTE* const)&memResponse, sizeof(memResponse) );
 		if (FAILED(recvHR) )
 			return recvHR;
 

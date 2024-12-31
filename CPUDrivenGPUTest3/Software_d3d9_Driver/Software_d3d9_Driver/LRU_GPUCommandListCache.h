@@ -10,7 +10,7 @@ class LRU_GPUCommandListCache
 public:
 	const bool FindExistingItem(const unsigned __int64 commandListHash, const unsigned commandListSize, GPUCommandList*& outExistingItem)
 	{
-		std::unordered_map<unsigned __int64, std::list<GPUCommandList*>::iterator>::iterator findIt = DataHashTable.find(commandListHash ^ commandListSize);
+		const std::unordered_map<unsigned __int64, std::list<GPUCommandList*>::iterator>::iterator findIt = DataHashTable.find(commandListHash ^ commandListSize);
 		if (findIt == DataHashTable.end() )
 		{
 			outExistingItem = NULL;
@@ -36,11 +36,11 @@ public:
 		if (LRU_List.empty() )
 			return NULL;
 
-		std::list<GPUCommandList*>::iterator LRU_Iter = LRU_List.begin();
+		const std::list<GPUCommandList*>::iterator LRU_Iter = LRU_List.begin();
 		GPUCommandList* const ptrData = *LRU_Iter;
 		LRU_List.erase(LRU_Iter);
 
-		std::unordered_map<unsigned __int64, std::list<GPUCommandList*>::iterator>::iterator hashFindIt = DataHashTable.find(ptrData->commandsHash ^ ptrData->GetCommandListCommandCount() );
+		const std::unordered_map<unsigned __int64, std::list<GPUCommandList*>::iterator>::iterator hashFindIt = DataHashTable.find(ptrData->commandsHash ^ ptrData->GetCommandListCommandCount() );
 #ifdef _DEBUG
 		if (hashFindIt == DataHashTable.end() )
 		{

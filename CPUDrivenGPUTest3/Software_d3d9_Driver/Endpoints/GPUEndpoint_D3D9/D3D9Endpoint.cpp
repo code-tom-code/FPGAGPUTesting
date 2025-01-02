@@ -15,13 +15,6 @@
 	#pragma comment (lib, "d3dx9.lib")
 #endif
 
-#ifdef _M_X64
-	#define USE_PIX 1
-	#pragma comment(lib, "WinPixEventRuntime/WinPixEventRuntime.lib")
-#endif
-
-#include "WinPixEventRuntime/pix3.h"
-
 static LPDIRECT3D9EX d3d9ex = NULL;
 LPDIRECT3DDEVICE9EX d3d9dev = NULL;
 static HWND renderWindow_g = NULL;
@@ -727,8 +720,6 @@ static void HandlePacket(const endFrameStatsResponse* const typedPacket)
 
 static void HandlePacket(const endFrameCommand* const typedPacket)
 {
-	PIXScopedEvent(PIX_COLOR_INDEX(0), "HandlePacket(endFrameCommand)");
-
 	if (begunSceneState)
 		d3d9dev->EndScene();
 	HRESULT hrPresent = d3d9dev->Present(NULL, NULL, NULL, NULL);
@@ -737,8 +728,6 @@ static void HandlePacket(const endFrameCommand* const typedPacket)
 		__debugbreak();
 		printf("%u", hrPresent);
 	}
-
-	PIXSetMarker(PIX_COLOR_INDEX(0), "End Frame Present");
 
 	static LARGE_INTEGER lastPresentTime = {0};
 
@@ -1334,7 +1323,6 @@ void D3D9HandleIncomingPacket(const genericCommand* const newGenericPacket)
 {
 	if (newGenericPacket->type < command::PT_MAX_PACKET_TYPES)
 	{
-		PIXScopedEvent(PIX_COLOR_INDEX(0), "HandlePacket(%s)", packetTypeStrings[newGenericPacket->type]);
 		const unsigned char computedChecksum = command::ComputeChecksum(newGenericPacket, sizeof(genericCommand) );
 		if (newGenericPacket->checksum == computedChecksum)
 		{

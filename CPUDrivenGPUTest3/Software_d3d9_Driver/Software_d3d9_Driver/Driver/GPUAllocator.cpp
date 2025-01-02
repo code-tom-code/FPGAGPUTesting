@@ -7,6 +7,7 @@
 #include <d3d9.h>
 #include <map>
 #include <unordered_set>
+#include <intrin.h>
 
 static bool GPUAllocInitialized = false;
 static CRITICAL_SECTION GPUAllocCS = {0};

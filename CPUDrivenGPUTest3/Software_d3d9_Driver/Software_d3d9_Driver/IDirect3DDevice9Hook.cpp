@@ -1328,10 +1328,9 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::Present(THI
 	unsigned rollingAvgNumPlacements = 0;
 	GPUAlloc_EndFrame(allocsThisFrame, allocBytesThisFrame, freesThisFrame, freeBytesThisFrame, rollingAvgNumPlacements);
 
-	static LARGE_INTEGER lastPresentTime = {0};
-	if (lastPresentTime.QuadPart == 0)
+	if (lastFramePresentTimestamp.QuadPart == 0)
 	{
-		QueryPerformanceCounter(&lastPresentTime);
+		QueryPerformanceCounter(&lastFramePresentTimestamp);
 		LARGE_INTEGER freq = {0};
 		QueryPerformanceFrequency(&freq);
 		ldFreq = (const long double)(freq.QuadPart);
@@ -1340,13 +1339,14 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::Present(THI
 	{
 		LARGE_INTEGER currentPresentTime = {0};
 		QueryPerformanceCounter(&currentPresentTime);
-		const LONGLONG timeDelta = currentPresentTime.QuadPart - lastPresentTime.QuadPart;
+		const LONGLONG timeDelta = currentPresentTime.QuadPart - lastFramePresentTimestamp.QuadPart;
 		const long double timeDeltaSeconds = timeDelta / ldFreq;
+		lastFrameDeltaSeconds = timeDeltaSeconds;
 
 		{
 			static DWORD lastPrintTime = 0;
 			const unsigned currentTime = GetTickCount();
-			if (currentTime - lastPrintTime > 1)
+			if (currentTime - lastPrintTime > 0) // Cap our text update to 999FPS
 			{
 				HWND mainWindowWnd = NULL;
 				if (initialCreateFocusWindow)
@@ -1357,10 +1357,10 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::Present(THI
 				char buffer[128] = {0};
 #pragma warning(push)
 #pragma warning(disable:4996)
-				//const unsigned len = sprintf(buffer, "%s%03.3fms per frame (%03.3fFPS)\n", 
-					///*(GetKeyState(VK_SCROLL) & 0x0001) ? "[Paused] " :*/ "", 
-					//timeDeltaSeconds * 1000.0f, 1.0f / timeDeltaSeconds);
-				sprintf(buffer, "Allocs: %u bytes (%u allocs); Frees: %u bytes (%u frees); NumPlacementsAvg: %u\n", allocBytesThisFrame, allocsThisFrame, freeBytesThisFrame, freesThisFrame, rollingAvgNumPlacements);
+				const unsigned len = sprintf(buffer, "%s%03.3fms per frame (%03.3fFPS)\n", 
+					/*(GetKeyState(VK_SCROLL) & 0x0001) ? "[Paused] " :*/ "", 
+					timeDeltaSeconds * 1000.0f, 1.0f / timeDeltaSeconds);
+				//sprintf(buffer, "Allocs: %u bytes (%u allocs); Frees: %u bytes (%u frees); NumPlacementsAvg: %u\n", allocBytesThisFrame, allocsThisFrame, freeBytesThisFrame, freesThisFrame, rollingAvgNumPlacements);
 #pragma warning(pop)
 				OutputDebugStringA(buffer);
 
@@ -1387,7 +1387,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::Present(THI
 			}
 		}
 
-		lastPresentTime = currentPresentTime;
+		lastFramePresentTimestamp = currentPresentTime;
 
 #ifdef PROFILE_AVERAGE_VERTEX_SHADE_TIMES
 		{
@@ -4777,13 +4777,13 @@ static const bool ValidateVertexDeclarationForDevice(const std::vector<Debuggabl
 			return false;
 		}
 
-		if (thisElement.UsageIndex > 0)
+		/*if (thisElement.UsageIndex > 0)
 		{
 #ifdef _DEBUG
 			__debugbreak(); // Usage indices are not currently supported! We can currently only have one of each Usage type in a vertex shader!
 #endif
 			return false;
-		}
+		}*/
 
 		const StreamSource& thisVertexStream = currentStreams[thisElement.Stream];
 		if (!thisVertexStream.vertexBuffer)
@@ -11651,8 +11651,11 @@ IDirect3DDevice9Hook::IDirect3DDevice9Hook(LPDIRECT3DDEVICE9 _d3d9dev, IDirect3D
 	overrideDepth(DepthOverrideSettings::DOS_Default), overrideStencil(StencilOverrideSettings::SOS_Default), overrideFillMode(FillModeOverrideSettings::FMOS_Default), overrideShadeMode(ShadeModeOverrideSettings::SMOS_Default),
 	overrideCullMode(CullModeOverrideSettings::CMOS_Default), overrideFogMode(FogModeOverrideSettings::FOGOS_Default), overrideAlphaBlend(AlphaBlendOverrideSettings::ABOS_Default), overrideAlphaTest(AlphaTestOverrideSettings::ATOS_Default),
 	overrideTexAddress(TexAddressOverrideSettings::TAOS_Default), overrideTexMode(TexModeOverrideSettings::TMOS_Default),
-	invertScanoutColors(false), drawCallSleepMicros(0), singleStepDrawCallMode(false), queueSingleStepDrawCallModeNextFrame(false), scanoutRedSwizzle(setScanoutPointerCommand::dcs_red), scanoutGreenSwizzle(setScanoutPointerCommand::dcs_green), scanoutBlueSwizzle(setScanoutPointerCommand::dcs_blue)
+	invertScanoutColors(false), drawCallSleepMicros(0), singleStepDrawCallMode(false), queueSingleStepDrawCallModeNextFrame(false), scanoutRedSwizzle(setScanoutPointerCommand::dcs_red), scanoutGreenSwizzle(setScanoutPointerCommand::dcs_green), scanoutBlueSwizzle(setScanoutPointerCommand::dcs_blue),
+	lastFrameDeltaSeconds(0.0), currentFrameIndex(0)
 {
+	lastFramePresentTimestamp = {0};
+
 #ifdef _DEBUG
 	m_FirstMember = false;
 #endif
@@ -11732,42 +11735,36 @@ IDirect3DDevice9Hook::IDirect3DDevice9Hook(LPDIRECT3DDEVICE9 _d3d9dev, IDirect3D
 	//INetSocketDeviceComms* const networkDeviceComms = new INetSocketDeviceComms();
 	IRemoteProcessIPCComms* const remoteProcessesIPCComms = new IRemoteProcessIPCComms();
 	if (!remoteProcessesIPCComms->LaunchNewRemoteIPCProcess(
+		"C:\\Users\\Tom\\Documents\\Visual Studio 2017\\Projects\\Software_d3d9_Driver\\" // TODO: Do not hardcode these paths!
 #ifdef _M_X64
-	#ifdef _DEBUG
-		"C:\\Users\\Tom\\Documents\\Visual Studio 2022\\Projects\\Software_d3d9_Driver\\x64\\Debug\\Endpoints\\GPUEndpoint_D3D9.dll" // TODO: Do not hardcode these paths!
-	#else
-		"C:\\Users\\Tom\\Documents\\Visual Studio 2022\\Projects\\Software_d3d9_Driver\\x64\\Release\\Endpoints\\GPUEndpoint_D3D9.dll"
-	#endif
-#else
-	#ifdef _DEBUG
-		"C:\\Users\\Tom\\Documents\\Visual Studio 2022\\Projects\\Software_d3d9_Driver\\Debug\\Endpoints\\GPUEndpoint_D3D9.dll" // TODO: Do not hardcode these paths!
-	#else
-		"C:\\Users\\Tom\\Documents\\Visual Studio 2022\\Projects\\Software_d3d9_Driver\\Release\\Endpoints\\GPUEndpoint_D3D9.dll"
-	#endif
+		"x64\\"	
 #endif
+#ifdef _DEBUG
+		"Debug\\"
+#else
+		"Release\\"
+#endif
+		"Endpoints\\GPUEndpoint_D3D9.dll"
 	) )
 	{
 #ifdef _DEBUG
 		__debugbreak(); // Error: This shouldn't happen!
 #endif
 	}
-	ILocalEndpointDLLComms* const localRecorderEndpointComms = new ILocalEndpointDLLComms(
+	/*ILocalEndpointDLLComms* const localRecorderEndpointComms = new ILocalEndpointDLLComms(
+		"C:\\Users\\Tom\\Documents\\Visual Studio 2017\\Projects\\Software_d3d9_Driver\\" // TODO: Do not hardcode these paths!
 #ifdef _M_X64
-	#ifdef _DEBUG
-		"C:\\Users\\Tom\\Documents\\Visual Studio 2022\\Projects\\Software_d3d9_Driver\\x64\\Debug\\Endpoints\\RecordingEndpoint_DiskFile.dll" // TODO: Do not hardcode these paths!
-	#else
-		"C:\\Users\\Tom\\Documents\\Visual Studio 2022\\Projects\\Software_d3d9_Driver\\x64\\Release\\Endpoints\\RecordingEndpoint_DiskFile.dll"
-	#endif
-#else
-	#ifdef _DEBUG
-		"C:\\Users\\Tom\\Documents\\Visual Studio 2022\\Projects\\Software_d3d9_Driver\\Debug\\Endpoints\\RecordingEndpoint_DiskFile.dll" // TODO: Do not hardcode these paths!
-	#else
-		"C:\\Users\\Tom\\Documents\\Visual Studio 2022\\Projects\\Software_d3d9_Driver\\Release\\Endpoints\\RecordingEndpoint_DiskFile.dll"
-	#endif
+		"x64\\"
 #endif
-	);
-	IBroadcastVirtualDeviceComms* const broadcastDeviceComms = new IBroadcastVirtualDeviceComms(localRecorderEndpointComms);
-	broadcastDeviceComms->AddNewSecondaryBroadcastTarget(remoteProcessesIPCComms);
+#ifdef _DEBUG
+		"Debug\\"
+#else
+		"Release\\"
+#endif
+		"Endpoints\\RecordingEndpoint_DiskFile.dll"
+	);*/
+	IBroadcastVirtualDeviceComms* const broadcastDeviceComms = new IBroadcastVirtualDeviceComms(remoteProcessesIPCComms/*localRecorderEndpointComms*//*networkDeviceComms*/);
+	//broadcastDeviceComms->AddNewSecondaryBroadcastTarget(remoteProcessesIPCComms);
 	//broadcastDeviceComms->AddNewSecondaryBroadcastTarget(localRecorderEndpointComms);
 
 	deviceComms = broadcastDeviceComms;

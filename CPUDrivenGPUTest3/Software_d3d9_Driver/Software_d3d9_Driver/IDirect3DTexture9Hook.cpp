@@ -264,6 +264,12 @@ COM_DECLSPEC_NOTHROW HRESULT IDirect3DTexture9Hook::UnlockRect(THIS_ UINT Level)
 COM_DECLSPEC_NOTHROW HRESULT IDirect3DTexture9Hook::AddDirtyRect(THIS_ CONST RECT* pDirtyRect)
 {
 	const HRESULT ret = realObject->AddDirtyRect(pDirtyRect);
+
+	if (!surfaces.empty() && surfaces[0] != NULL)
+	{
+		surfaces[0]->SetSurfaceDirty();
+	}
+
 	return ret;
 }
 

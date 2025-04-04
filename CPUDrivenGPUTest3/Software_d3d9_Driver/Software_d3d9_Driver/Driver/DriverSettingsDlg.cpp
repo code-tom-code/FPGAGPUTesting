@@ -418,7 +418,7 @@ void DriverSettingsDlg::InitDialog(HWND initialCreateFocusWindow, HWND initialCr
 #endif
 			return;
 		}
-		driverOptionsDlgWnd = NULL;//CreateDialogA(currentDLLModule, MAKEINTRESOURCEA(IDD_DRIVEROPTIONS), /*driverOptionsDlgParentWnd*/NULL, &DriverSettingsDialogProc);
+		driverOptionsDlgWnd = CreateDialogA(currentDLLModule, MAKEINTRESOURCEA(IDD_DRIVEROPTIONS), /*driverOptionsDlgParentWnd*/NULL, &DriverSettingsDialogProc);
 		if (driverOptionsDlgWnd)
 		{
 			SetWindowLongPtrA(driverOptionsDlgWnd, DWLP_USER, (const LONG_PTR)d3d9devhook);
@@ -435,7 +435,7 @@ void DriverSettingsDlg::UpdateDialog()
 	if (driverOptionsDlgWnd != NULL)
 	{
 		MSG msg = {0};
-		while (PeekMessageA(&msg, driverOptionsDlgWnd, 0, 0, PM_REMOVE) )
+		while (PeekMessageA(&msg, NULL, 0, 0, PM_REMOVE) )
 		{
 			// Dispatch message to dialog box window if it's a dialog message
 			if (IsDialogMessageA(driverOptionsDlgWnd, &msg) )

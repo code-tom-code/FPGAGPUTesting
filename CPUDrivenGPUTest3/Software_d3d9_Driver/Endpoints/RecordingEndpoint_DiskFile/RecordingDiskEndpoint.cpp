@@ -9,8 +9,84 @@
 #include <vector>
 
 static HANDLE hRecordingFile = INVALID_HANDLE_VALUE;
-static const char* const RecordingDirectoryBase = "C:\\CommandStreamRecordings";
-static std::vector<genericCommand> bufferedWritePackets;
+static const char* const RecordingDirectoryBase = "E:\\CommandStreamRecordings";
+static CRITICAL_SECTION lockCS = {0};
+static std::vector<genericCommand> callerSideWritePacketsBuffer; // This is the buffer that the caller of this endpoint writes into. It's just a simple vector push_back on a local thread, so there's no thread contention or IO.
+static std::vector<genericCommand> bufferedWritePackets; // This is the locked buffer that is contended between the endpoint thread and the IO thread.
+static HANDLE hWriterThread = NULL;
+static BOOL bDone = FALSE;
+
+static DWORD WINAPI WorkerThreadStart(LPVOID lpThreadParameter)
+{
+	std::vector<genericCommand> localCopyPackets;
+	while (!bDone)
+	{
+		if (localCopyPackets.empty() )
+		{
+			EnterCriticalSection(&lockCS);
+			bufferedWritePackets.swap(localCopyPackets);
+			LeaveCriticalSection(&lockCS);
+		}
+		else
+		{
+			EnterCriticalSection(&lockCS);
+			if (!bufferedWritePackets.empty() )
+			{
+				localCopyPackets.insert(localCopyPackets.end(), bufferedWritePackets.begin(), bufferedWritePackets.end() );
+				bufferedWritePackets.clear();
+			}
+			LeaveCriticalSection(&lockCS);
+		}
+
+		if (localCopyPackets.size() < 1024)
+		{
+			Sleep(1);
+			continue;
+		}
+
+		if (hRecordingFile != INVALID_HANDLE_VALUE)
+		{
+			DWORD numBytesWritten = 0;
+			const DWORD writeSize = (const DWORD)(localCopyPackets.size() * sizeof(genericCommand) );
+			if (!WriteFile(hRecordingFile, &localCopyPackets.front(), writeSize, &numBytesWritten, NULL) || numBytesWritten != writeSize)
+			{
+#ifdef _DEBUG
+				__debugbreak(); // Error in writing to the file!
+#endif
+			}
+		}
+#ifdef _DEBUG
+		else
+		{
+			__debugbreak(); // Should never call this after the file handle has been closed!
+		}
+#endif
+		localCopyPackets.clear();
+	}
+
+	EnterCriticalSection(&lockCS);
+	if (!bufferedWritePackets.empty() )
+	{
+		localCopyPackets.insert(localCopyPackets.end(), bufferedWritePackets.begin(), bufferedWritePackets.end() );
+		bufferedWritePackets.clear();
+	}
+	LeaveCriticalSection(&lockCS);
+
+	// Flush our buffer on shutdown!
+	if (hRecordingFile != INVALID_HANDLE_VALUE && !localCopyPackets.empty() )
+	{
+		DWORD numBytesWritten = 0;
+		const DWORD writeSize = (const DWORD)(localCopyPackets.size() * sizeof(genericCommand) );
+		if (!WriteFile(hRecordingFile, &localCopyPackets.front(), writeSize, &numBytesWritten, NULL) || numBytesWritten != writeSize)
+		{
+#ifdef _DEBUG
+			__debugbreak(); // Error in writing to the file!
+#endif
+		}
+	}
+
+	return 0;
+}
 
 const bool InitRecording()
 {
@@ -55,6 +131,17 @@ const bool InitRecording()
 #pragma warning(pop)
 	hRecordingFile = CreateFileA(recordingFilepath, GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (hRecordingFile == INVALID_HANDLE_VALUE)
+	{
+#ifdef _DEBUG
+		__debugbreak();
+#endif
+		return false;
+	}
+
+	InitializeCriticalSection(&lockCS);
+
+	hWriterThread = CreateThread(NULL, NULL, &WorkerThreadStart, NULL, 0, NULL);
+	if (hWriterThread == NULL)
 	{
 #ifdef _DEBUG
 		__debugbreak();
@@ -110,47 +197,40 @@ void RecordNewIncomingPacket(const genericCommand* H2DCommandPacket)
 		break;
 	}
 
-	bufferedWritePackets.push_back(*H2DCommandPacket);
+	callerSideWritePacketsBuffer.push_back(*H2DCommandPacket);
 
-	if (bufferedWritePackets.size() >= 5958)
+	if (callerSideWritePacketsBuffer.size() >= 64)
 	{
-		if (hRecordingFile != INVALID_HANDLE_VALUE)
-		{
-			DWORD numBytesWritten = 0;
-			const DWORD writeSize = (const DWORD)(bufferedWritePackets.size() * sizeof(genericCommand) );
-			if (!WriteFile(hRecordingFile, &bufferedWritePackets.front(), writeSize, &numBytesWritten, NULL) || numBytesWritten != writeSize)
-			{
-#ifdef _DEBUG
-				__debugbreak(); // Error in writing to the file!
-#endif
-			}
-		}
-#ifdef _DEBUG
-		else
-		{
-			__debugbreak(); // Should never call this after the file handle has been closed!
-		}
-#endif
-
-		bufferedWritePackets.clear();
+		EnterCriticalSection(&lockCS);
+		bufferedWritePackets.insert(bufferedWritePackets.end(), callerSideWritePacketsBuffer.begin(), callerSideWritePacketsBuffer.end() );
+		LeaveCriticalSection(&lockCS);
+		callerSideWritePacketsBuffer.clear();
 	}
 }
 
 void ShutdownRecording()
 {
-	// Flush our buffer on shutdown!
-	if (!bufferedWritePackets.empty() )
+	bDone = true;
+	if (hWriterThread != NULL)
 	{
-		DWORD numBytesWritten = 0;
-		const DWORD writeSize = (const DWORD)(bufferedWritePackets.size() * sizeof(genericCommand) );
-		if (!WriteFile(hRecordingFile, &bufferedWritePackets.front(), writeSize, &numBytesWritten, NULL) || numBytesWritten != writeSize)
+		if (!callerSideWritePacketsBuffer.empty() )
 		{
-#ifdef _DEBUG
-			__debugbreak(); // Error in writing to the file!
-#endif
+			EnterCriticalSection(&lockCS);
+			bufferedWritePackets.insert(bufferedWritePackets.end(), callerSideWritePacketsBuffer.begin(), callerSideWritePacketsBuffer.end() );
+			LeaveCriticalSection(&lockCS);
+			callerSideWritePacketsBuffer.clear();
 		}
-		bufferedWritePackets.clear();
+
+		WaitForSingleObject(hWriterThread, 2048);
+#ifdef _DEBUG
+		DWORD threadExitCode = 0;
+		if (!GetExitCodeThread(hWriterThread, &threadExitCode) || threadExitCode != 0)
+		{
+			__debugbreak();
+		}
+#endif
 	}
+
 	CloseHandle(hRecordingFile);
 	hRecordingFile = INVALID_HANDLE_VALUE;
 }

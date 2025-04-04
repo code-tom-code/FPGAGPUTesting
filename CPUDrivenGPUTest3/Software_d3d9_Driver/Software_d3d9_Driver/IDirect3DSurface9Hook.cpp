@@ -115,6 +115,7 @@ COM_DECLSPEC_NOTHROW ULONG STDMETHODCALLTYPE IDirect3DSurface9Hook::Release(THIS
 #pragma warning(pop)
 		OutputDebugStringA(printBuffer);
 #endif
+		GPUFree(GPUSurfaceBytesRaw);
 		delete this;
 	}
 	return ret;
@@ -406,6 +407,8 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DSurface9Hook::LockRect(T
 		__debugbreak();
 	}
 #endif // _DEBUG
+
+	lockFlags = Flags;
 
 #ifdef SURFACE_MAGIC_COOKIE
 	DWORD* const magicDword = (DWORD* const)surfaceBytesRaw + (surfaceBytes.size() / sizeof(DWORD) - 1);
@@ -1091,8 +1094,15 @@ void IDirect3DSurface9Hook::DecompressSurfaceToAuxBuffer()
 	}
 }
 
+// Called internally by IDirect3DTexture9Hook::AddDirtyRect()
+void IDirect3DSurface9Hook::SetSurfaceDirty()
+{
+	surfaceIsGPUDirty = true;
+}
+
 void IDirect3DSurface9Hook::UpdateSurfaceToGPUIfDirty()
 {
+	// TODO: Save upload bandwidth by tracking dirty regions and only reuploading the dirty regions of our textures
 	if (surfaceIsGPUDirty)
 	{
 		UpdateSurfaceToGPU();
@@ -1263,10 +1273,14 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DSurface9Hook::UnlockRect
 	}
 
 	// We need to copy the updated surface data to the GPU:
-	if (GetDeviceSurfaceBytes() != NULL && InternalPool <= D3DPOOL_MANAGED)
+	if (GetDeviceSurfaceBytes() != NULL && InternalPool <= D3DPOOL_MANAGED && (lockFlags & (D3DLOCK_READONLY | D3DLOCK_NO_DIRTY_UPDATE) ) == 0)
 	{
 		surfaceIsGPUDirty = true;
 	}
+
+#ifdef _DEBUG
+	lockFlags = 0x00000000;
+#endif
 
 #ifdef WITH_SURFACE_HASHING
 	RecomputeSurfaceHash();

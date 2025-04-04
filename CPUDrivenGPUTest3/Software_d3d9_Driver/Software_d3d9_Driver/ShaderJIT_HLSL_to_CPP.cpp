@@ -518,6 +518,76 @@ static inline void ResolveSrcParameterSimpleSwizzleNoSourceMods(const ShaderInfo
 }
 
 template <const unsigned swizzleIndex>
+static inline void PrintSourceSwizzle(const srcParameterToken& sourceToken, char* const outBuffer, const char* const baseString, const unsigned regIndex)
+{
+	static const char* const swizzleChannels[4] = 
+	{
+		".x",
+		".y",
+		".z",
+		".w"
+	};
+
+	const unsigned swizzleX = sourceToken.GetChannelSwizzleXYZW() & 0x3;
+	const unsigned swizzleY = (sourceToken.GetChannelSwizzleXYZW() >> 2) & 0x3;
+	const unsigned swizzleZ = (sourceToken.GetChannelSwizzleXYZW() >> 4) & 0x3;
+	const unsigned swizzleW = (sourceToken.GetChannelSwizzleXYZW() >> 6) & 0x3;
+
+	switch (swizzleIndex)
+	{
+	default:
+		DbgBreakPrint("Should never be here!");
+	case 0: // x
+		sprintf(outBuffer, "%s%u%s", baseString, regIndex, swizzleChannels[swizzleX]);
+		break;
+	case 1: // y
+		sprintf(outBuffer, "%s%u%s", baseString, regIndex, swizzleChannels[swizzleY]);
+		break;
+	case 2: // z
+		sprintf(outBuffer, "%s%u%s", baseString, regIndex, swizzleChannels[swizzleZ]);
+		break;
+	case 3: // w
+		sprintf(outBuffer, "%s%u%s", baseString, regIndex, swizzleChannels[swizzleW]);
+		break;
+	}
+}
+
+template <const unsigned swizzleIndex>
+static inline void PrintSourceSwizzle(const srcParameterToken& sourceToken, char* const outBuffer, const char* const baseString)
+{
+	static const char* const swizzleChannels[4] = 
+	{
+		".x",
+		".y",
+		".z",
+		".w"
+	};
+
+	const unsigned swizzleX = sourceToken.GetChannelSwizzleXYZW() & 0x3;
+	const unsigned swizzleY = (sourceToken.GetChannelSwizzleXYZW() >> 2) & 0x3;
+	const unsigned swizzleZ = (sourceToken.GetChannelSwizzleXYZW() >> 4) & 0x3;
+	const unsigned swizzleW = (sourceToken.GetChannelSwizzleXYZW() >> 6) & 0x3;
+
+	switch (swizzleIndex)
+	{
+	default:
+		DbgBreakPrint("Should never be here!");
+	case 0: // x
+		sprintf(outBuffer, "%s%s", baseString, swizzleChannels[swizzleX]);
+		break;
+	case 1: // y
+		sprintf(outBuffer, "%s%s", baseString, swizzleChannels[swizzleY]);
+		break;
+	case 2: // z
+		sprintf(outBuffer, "%s%s", baseString, swizzleChannels[swizzleZ]);
+		break;
+	case 3: // w
+		sprintf(outBuffer, "%s%s", baseString, swizzleChannels[swizzleW]);
+		break;
+	}
+}
+
+template <const unsigned swizzleIndex>
 static inline void PrintSourceRegNameAndSourceSwizzle(const srcParameterToken& sourceToken, char* const outBuffer, const ShaderInfo& shaderInfo, const srcParameterToken* const addressToken = NULL)
 {
 	unsigned index = sourceToken.GetRegisterIndex();
@@ -1087,76 +1157,6 @@ static const char* writeMaskDisasmStrings[16] =
 	".yzw", // 14
 	"", // 15
 };
-
-template <const unsigned swizzleIndex>
-static inline void PrintSourceSwizzle(const srcParameterToken& sourceToken, char* const outBuffer, const char* const baseString, const unsigned regIndex)
-{
-	static const char* const swizzleChannels[4] = 
-	{
-		".x",
-		".y",
-		".z",
-		".w"
-	};
-
-	const unsigned swizzleX = sourceToken.GetChannelSwizzleXYZW() & 0x3;
-	const unsigned swizzleY = (sourceToken.GetChannelSwizzleXYZW() >> 2) & 0x3;
-	const unsigned swizzleZ = (sourceToken.GetChannelSwizzleXYZW() >> 4) & 0x3;
-	const unsigned swizzleW = (sourceToken.GetChannelSwizzleXYZW() >> 6) & 0x3;
-
-	switch (swizzleIndex)
-	{
-	default:
-		DbgBreakPrint("Should never be here!");
-	case 0: // x
-		sprintf(outBuffer, "%s%u%s", baseString, regIndex, swizzleChannels[swizzleX]);
-		break;
-	case 1: // y
-		sprintf(outBuffer, "%s%u%s", baseString, regIndex, swizzleChannels[swizzleY]);
-		break;
-	case 2: // z
-		sprintf(outBuffer, "%s%u%s", baseString, regIndex, swizzleChannels[swizzleZ]);
-		break;
-	case 3: // w
-		sprintf(outBuffer, "%s%u%s", baseString, regIndex, swizzleChannels[swizzleW]);
-		break;
-	}
-}
-
-template <const unsigned swizzleIndex>
-static inline void PrintSourceSwizzle(const srcParameterToken& sourceToken, char* const outBuffer, const char* const baseString)
-{
-	static const char* const swizzleChannels[4] = 
-	{
-		".x",
-		".y",
-		".z",
-		".w"
-	};
-
-	const unsigned swizzleX = sourceToken.GetChannelSwizzleXYZW() & 0x3;
-	const unsigned swizzleY = (sourceToken.GetChannelSwizzleXYZW() >> 2) & 0x3;
-	const unsigned swizzleZ = (sourceToken.GetChannelSwizzleXYZW() >> 4) & 0x3;
-	const unsigned swizzleW = (sourceToken.GetChannelSwizzleXYZW() >> 6) & 0x3;
-
-	switch (swizzleIndex)
-	{
-	default:
-		DbgBreakPrint("Should never be here!");
-	case 0: // x
-		sprintf(outBuffer, "%s%s", baseString, swizzleChannels[swizzleX]);
-		break;
-	case 1: // y
-		sprintf(outBuffer, "%s%s", baseString, swizzleChannels[swizzleY]);
-		break;
-	case 2: // z
-		sprintf(outBuffer, "%s%s", baseString, swizzleChannels[swizzleZ]);
-		break;
-	case 3: // w
-		sprintf(outBuffer, "%s%s", baseString, swizzleChannels[swizzleW]);
-		break;
-	}
-}
 
 template <const unsigned swizzleIndex>
 static inline void PrintSourceRegNameAndSourceSwizzleOrTempReg(const srcParameterToken& sourceToken, const dstParameterToken& destToken, char* const outBuffer, const ShaderInfo& shaderInfo, const srcParameterToken* const addressToken = NULL)

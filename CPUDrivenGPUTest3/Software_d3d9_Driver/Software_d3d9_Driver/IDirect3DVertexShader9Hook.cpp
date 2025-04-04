@@ -253,6 +253,7 @@ COM_DECLSPEC_NOTHROW ULONG STDMETHODCALLTYPE IDirect3DVertexShader9Hook::Release
 #pragma warning(pop)
 		OutputDebugStringA(printBuffer);
 #endif
+		GPUFree(const_cast<gpuvoid*>(deviceCompiledVertexShaderBytes) );
 		delete this;
 	}
 	return ret;

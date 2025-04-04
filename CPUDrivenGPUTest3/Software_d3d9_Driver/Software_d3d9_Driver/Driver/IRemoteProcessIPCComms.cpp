@@ -5,19 +5,16 @@
 
 // TODO: Don't hardcode this path:
 static const char* const IPCEndpointHostProcessPath = 
+	"C:\\Users\\Tom\\Documents\\Visual Studio 2017\\Projects\\Software_d3d9_Driver\\" // TODO: Do not hardcode these paths!
 #ifdef _M_X64
-	#ifdef _DEBUG
-		"C:\\Users\\Tom\\Documents\\Visual Studio 2022\\Projects\\Software_d3d9_Driver\\x64\\Debug\\Endpoints\\EndpointDLL_IPCHost.exe" // TODO: Do not hardcode these paths!
-	#else
-		"C:\\Users\\Tom\\Documents\\Visual Studio 2022\\Projects\\Software_d3d9_Driver\\x64\\Release\\Endpoints\\EndpointDLL_IPCHost.exe"
-	#endif
-#else
-	#ifdef _DEBUG
-		"C:\\Users\\Tom\\Documents\\Visual Studio 2022\\Projects\\Software_d3d9_Driver\\Debug\\Endpoints\\EndpointDLL_IPCHost.exe" // TODO: Do not hardcode these paths!
-	#else
-		"C:\\Users\\Tom\\Documents\\Visual Studio 2022\\Projects\\Software_d3d9_Driver\\Release\\Endpoints\\EndpointDLL_IPCHost.exe"
-	#endif
+	"x64\\"
 #endif
+#ifdef _DEBUG
+	"Debug\\"
+#else
+	"Release\\"
+#endif
+	"Endpoints\\EndpointDLL_IPCHost.exe";
 	;
 
 IRemoteProcessIPCComms::IRemoteProcessIPCComms() : IBaseDeviceComms(), remoteConnectionsManager(new IPC_ConnectionManager(IPCM_Server) )

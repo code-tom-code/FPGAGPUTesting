@@ -215,6 +215,8 @@ public:
 	template <const unsigned char channelWriteMask, const unsigned char pixelWriteMask>
 	void SetPixelVec4(const __m128i x4, const __m128i y4, const D3DXVECTOR4 (&color)[4]);
 
+	void SetSurfaceDirty();
+
 	const D3DCOLOR GetPixel(const unsigned x, const unsigned y) const;
 	const A4R4G4B4 GetPixel4444(const unsigned x, const unsigned y) const;
 	const X4R4G4B4 GetPixel4440(const unsigned x, const unsigned y) const;
@@ -370,6 +372,7 @@ protected:
 	gpuvoid* GPUSurfaceBytesRaw = NULL;
 	UINT surfaceBytesRawSize = 0;
 	UINT auxSurfaceBytesRawSize = 0;
+	DWORD lockFlags = 0x00000000;
 	bool surfaceIsGPUDirty = true;
 
 	__declspec(align(16) ) __m128i InternalWidthSplatted; // This is in the format of (uint32[4])(InternalWidth, InternalWidth, InternalWidth, InternalWidth)

@@ -1635,6 +1635,21 @@ public:
 		return eventRecordedDrawCalls;
 	}
 
+	const LARGE_INTEGER& GetLastFramePresentTimestamp() const
+	{
+		return lastFramePresentTimestamp;
+	}
+
+	const long double GetLastFrameDurationSeconds() const
+	{
+		return lastFrameDeltaSeconds;
+	}
+
+	const unsigned GetCurrentFrameIndex() const
+	{
+		return currentFrameIndex;
+	}
+
 protected:
 	LPDIRECT3DDEVICE9 d3d9dev;
 	IDirect3D9Hook* parentHook;
@@ -1732,6 +1747,11 @@ protected:
 	LRU_VertDataBufferCache cachedConstantBuffers;
 	LRU_GPUCommandListCache cachedCommandLists;
 	std::vector<GPUCommandList*> resetCommandListsPool;
+
+	// Some present stats:
+	LARGE_INTEGER lastFramePresentTimestamp;
+	long double lastFrameDeltaSeconds;
+	unsigned currentFrameIndex;
 };
 
 // Translates a given FVF code into an array of D3DVERTEXELEMENT9 elements. The return value is the number of used vertex elements:

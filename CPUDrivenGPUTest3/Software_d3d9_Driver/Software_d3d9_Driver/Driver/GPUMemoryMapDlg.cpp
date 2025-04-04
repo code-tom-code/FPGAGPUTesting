@@ -522,6 +522,12 @@ static INT_PTR CALLBACK GPUMemoryMapDialogProc(_In_ HWND hWnd, _In_ UINT MSG, _I
 		}
 		DestroyWindow(hWnd);
 		return TRUE;
+	case WM_DESTROY:
+		if (gpuMemoryMap != NULL)
+		{
+			gpuMemoryMap->ResetDialog();
+		}
+		return TRUE;
 	case WM_COMMAND:
 		if (gpuMemoryMap != NULL)
 		{
@@ -625,9 +631,16 @@ void GPUMemoryMapDlg::PumpDialogMessages()
 
 	// Pump the window message loop:
 	MSG msg = {0};
-	while (PeekMessageA(&msg, GPUMemoryMapDialog, 0, 0, PM_REMOVE) )
+	while (GPUMemoryMapDialog != NULL && PeekMessageA(&msg, GPUMemoryMapDialog, 0, 0, PM_REMOVE) ) // Have to check for NULL here because a WM_CLOSE message could cause the window to be destroyed mid-loop!
 	{
 		// Dispatch message to dialog box window if it's a dialogue message
-		IsDialogMessageA(GPUMemoryMapDialog, &msg);
+		if (IsDialogMessageA(GPUMemoryMapDialog, &msg) )
+		{
+		}
+		else
+		{
+			TranslateMessage(&msg);
+			DispatchMessageA(&msg);
+		}
 	}
 }

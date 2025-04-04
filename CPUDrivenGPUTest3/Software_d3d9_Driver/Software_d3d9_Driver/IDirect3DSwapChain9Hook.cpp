@@ -112,7 +112,8 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DSwapChain9Hook::Present(
 	// Flush the ROP's to the back buffer in case they have outstanding writes in their caches
 	parentDevice->GetBaseDevice()->DeviceFlushROPCache();
 
-	// Request a full pipeline flush wait on each present so that the CPU doesn't get ahead of the GPU (optional VSync wait here also)
+	// Request a full pipeline flush wait on each present so that the CPU doesn't get ahead of the GPU (optional VSync wait here also).
+	// TODO: Instead of waiting on the current frame to fully complete, we should instead wait for the *previous* frame to fully complete! That'd be 1 frame of latency as per the D3D/DXGI minimum!
 	if (parentDevice->GetEnableVSyncWait() )
 		parentDevice->GetBaseDevice()->DeviceWaitForIdle(waitForDeviceIdleCommand::waitForFullPipelineFlushAndVSync, true);
 	else

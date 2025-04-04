@@ -112,6 +112,7 @@ COM_DECLSPEC_NOTHROW ULONG STDMETHODCALLTYPE IDirect3DVertexBuffer9Hook::Release
 #pragma warning(pop)
 		OutputDebugStringA(printBuffer);
 #endif
+		GPUFree(GPUBytes);
 		delete this;
 	}
 	return ret;
@@ -320,7 +321,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DVertexBuffer9Hook::Unloc
 
 	if (IsUnlocked() )
 	{
-		if ( (lockFlags & D3DLOCK_READONLY) == 0)
+		if ( (lockFlags & (D3DLOCK_READONLY | D3DLOCK_NO_DIRTY_UPDATE) ) == 0)
 		{
 			GPUBytesDirty = true;
 		}
@@ -335,6 +336,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DVertexBuffer9Hook::Unloc
 
 void IDirect3DVertexBuffer9Hook::UpdateDataToGPU()
 {
+	// TODO: Save upload bandwidth by tracking dirty regions and only reuploading the dirty regions of our buffers
 	if (GPUBytesDirty)
 	{
 		// Copy our newly locked data off from the CPU to the GPU:

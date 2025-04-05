@@ -318,8 +318,20 @@ static inline void CreateTextureResources()
 	d3d9dev->SetTexture(0, boundTexture2D);
 }
 
+void PrintWelcomeAndControlsMessage()
+{
+	printf("Simple Fixed-Function Test\n");
+	printf("\n");
+	printf("Controls:\n");
+	printf("None\n");
+	printf("\n");
+}
+
 int main(const unsigned argc, const char* const argv[])
 {
+	PrintWelcomeAndControlsMessage();
+
+
 	WNDCLASSEXA classParams = {0};
 	classParams.cbSize = sizeof(WNDCLASSEX);
 	classParams.lpfnWndProc = &MyWindowProc;

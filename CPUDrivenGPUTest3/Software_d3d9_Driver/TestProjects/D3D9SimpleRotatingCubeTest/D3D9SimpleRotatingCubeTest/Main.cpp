@@ -296,8 +296,24 @@ LPDIRECT3DVERTEXSHADER9 LoadVertexShader(const char* const filename)
 	return ret;
 }
 
+void PrintWelcomeAndControlsMessage()
+{
+	printf("Rotating Cube Test\n");
+	printf("\n");
+	printf("Controls:\n");
+	printf("[R]: Reset everything back to the default settings\n");
+	printf("[B]: Use bilinear texture filtering\n");
+	printf("[P]: Use point sampling\n");
+	printf("[W]: Use Wrap mode\n");
+	printf("[C]: Use Clamp mode\n");
+	printf("\n");
+}
+
 int main(const unsigned argc, const char* const argv[])
 {
+	PrintWelcomeAndControlsMessage();
+
+
 	WNDCLASSEXA classParams = {0};
 	classParams.cbSize = sizeof(WNDCLASSEX);
 	classParams.lpfnWndProc = &MyWindowProc;

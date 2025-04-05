@@ -291,8 +291,20 @@ LPDIRECT3DVERTEXSHADER9 LoadVertexShader(const char* const filename)
 	return ret;
 }
 
+void PrintWelcomeAndControlsMessage()
+{
+	printf("Terrain Renderer Test\n");
+	printf("\n");
+	printf("Controls:\n");
+	printf("None\n");
+	printf("\n");
+}
+
 int main(const unsigned argc, const char* const argv[])
 {
+	PrintWelcomeAndControlsMessage();
+
+
 	srand(GetTickCount() );
 
 	WNDCLASSEXA classParams = {0};

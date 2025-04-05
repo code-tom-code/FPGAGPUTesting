@@ -441,8 +441,22 @@ LPDIRECT3DVERTEXSHADER9 LoadVertexShader(const char* const filename)
 	return ret;
 }
 
+void PrintWelcomeAndControlsMessage()
+{
+	printf("Simple Render Target Test\n");
+	printf("\n");
+	printf("Controls:\n");
+	printf("[R]: Resets everything to its original state\n");
+	printf("[D]: Dumps the current fog-map to a file on disk\n");
+	printf("[Left Mouse]: Paints on the texture where the cursor is\n");
+	printf("\n");
+}
+
 int main(const unsigned argc, const char* const argv[])
 {
+	PrintWelcomeAndControlsMessage();
+
+
 	WNDCLASSEXA classParams = {0};
 	classParams.cbSize = sizeof(WNDCLASSEX);
 	classParams.lpfnWndProc = &MyWindowProc;

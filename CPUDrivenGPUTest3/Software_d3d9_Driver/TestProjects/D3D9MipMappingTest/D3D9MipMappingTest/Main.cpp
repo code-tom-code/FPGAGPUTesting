@@ -336,8 +336,20 @@ void CreateGridTextures(LPDIRECT3DTEXTURE9& inGridTexGenMips, LPDIRECT3DTEXTURE9
 	}
 }
 
+void PrintWelcomeAndControlsMessage()
+{
+	printf("Mip Mapping Test\n");
+	printf("\n");
+	printf("Controls:\n");
+	printf("[M]: Toggle mip-mapping on/off\n");
+	printf("\n");
+}
+
 int main(const unsigned argc, const char* const argv[])
 {
+	PrintWelcomeAndControlsMessage();
+
+
 	// Try to set the system timeslice quantum to 1ms
 	timeBeginPeriod(1);
 

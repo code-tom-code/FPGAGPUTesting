@@ -110,6 +110,8 @@ void RenderFrame(const long double deltaSeconds)
 	if (GetAsyncKeyState(VK_LEFT) & 0x1)
 		if (--blendOpSelect > 0x8000)
 			blendOpSelect = 4;
+	if (GetAsyncKeyState('R') & 0x1)
+		blendOpSelect = 0;
 	blendOpSelect %= 5;
 	char buffer[256] = {0};
 #pragma warning(push)
@@ -234,10 +236,18 @@ DWORD* const LoadShaderToMemory(const char* const filename)
 	{
 #pragma warning(push)
 #pragma warning(disable:4996)
+#ifdef _M_X64
+#ifdef _DEBUG
+		sprintf(buffer, "..\\x64\\Debug\\%s.cso", filename);
+#else
+		sprintf(buffer, "..\\x64\\Release\\%s.cso", filename);
+#endif
+#else
 #ifdef _DEBUG
 		sprintf(buffer, "..\\Debug\\%s.cso", filename);
 #else
 		sprintf(buffer, "..\\Release\\%s.cso", filename);
+#endif
 #endif
 #pragma warning(pop)
 		hFile = CreateFileA(buffer, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_FLAG_SEQUENTIAL_SCAN, NULL);
@@ -311,8 +321,21 @@ LPDIRECT3DPIXELSHADER9 LoadPixelShader(const char* const filename)
 	return ret;
 }
 
+void PrintWelcomeAndControlsMessage()
+{
+	printf("Blend Ops Test\n");
+	printf("\n");
+	printf("Controls:\n");
+	printf("[Right]/[Left]: Scroll the current blend-operation forwards/backwards in the list\n");
+	printf("[R]: Resets everything to the default settings\n");
+	printf("\n");
+}
+
 int main(const unsigned argc, const char* const argv[])
 {
+	PrintWelcomeAndControlsMessage();
+
+
 	WNDCLASSEXA classParams = {0};
 	classParams.cbSize = sizeof(WNDCLASSEX);
 	classParams.lpfnWndProc = &MyWindowProc;

@@ -279,8 +279,21 @@ LPDIRECT3DVERTEXSHADER9 LoadVertexShader(const char* const filename)
 	return ret;
 }
 
+void PrintWelcomeAndControlsMessage()
+{
+	printf("Simple DXT Test\n");
+	printf("\n");
+	printf("Controls:\n");
+	printf("[A]: Toggles alpha-testing on/off\n");
+	printf("[0]-[9]: Selects texture 0-9\n");
+	printf("\n");
+}
+
 int main(const unsigned argc, const char* const argv[])
 {
+	PrintWelcomeAndControlsMessage();
+
+
 	WNDCLASSEXA classParams = {0};
 	classParams.cbSize = sizeof(WNDCLASSEX);
 	classParams.lpfnWndProc = &MyWindowProc;

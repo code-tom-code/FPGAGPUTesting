@@ -424,10 +424,18 @@ DWORD* const LoadShaderToMemory(const char* const filename)
 	{
 #pragma warning(push)
 #pragma warning(disable:4996)
+#ifdef _M_X64
+#ifdef _DEBUG
+		sprintf(buffer, "..\\x64\\Debug\\%s.cso", filename);
+#else
+		sprintf(buffer, "..\\x64\\Release\\%s.cso", filename);
+#endif
+#else
 #ifdef _DEBUG
 		sprintf(buffer, "..\\Debug\\%s.cso", filename);
 #else
 		sprintf(buffer, "..\\Release\\%s.cso", filename);
+#endif
 #endif
 #pragma warning(pop)
 		hFile = CreateFileA(buffer, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_FLAG_SEQUENTIAL_SCAN, NULL);
@@ -582,8 +590,24 @@ static unsigned char FindClosestColorIndex(const D3DCOLOR color)
 	return closestColorIndex;
 }
 
+void PrintWelcomeAndControlsMessage()
+{
+	printf("Teapot Test\n");
+	printf("\n");
+	printf("Orbital Camera Controls:\n");
+	printf("[Shift]: Speed up the camera\n");
+	printf("[Control]: Slow down the camera\n");
+	printf("[Right]/[Left]/[Up]/[Down]: Rotate the camera left/right/over/under\n");
+	printf("[Space]: Raise the camera up\n");
+	printf("[C]: Lower the camera down\n");
+	printf("\n");
+}
+
 int main(const unsigned argc, const char* const argv[])
 {
+	PrintWelcomeAndControlsMessage();
+
+
 	srand(3);
 
 	WNDCLASSEXA classParams = {0};

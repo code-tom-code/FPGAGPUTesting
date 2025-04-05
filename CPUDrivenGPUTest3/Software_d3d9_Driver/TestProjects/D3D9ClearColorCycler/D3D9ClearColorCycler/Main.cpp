@@ -99,6 +99,12 @@ static const inline float saturateF(const float f)
 static inline void RenderFrame(const long double timeDelta)
 {
 	static long double time = 0.0;
+
+	if (GetAsyncKeyState('R') & 0x1)
+	{
+		time = 0.0;
+	}
+
 	time += timeDelta;
 
 	const D3DXVECTOR3 thisFrameColor = paletteColor( (const float)time / 10.0f, D3DXVECTOR3(0.5f, 0.5f, 0.5f), D3DXVECTOR3(0.5f, 0.5f, 0.5f), D3DXVECTOR3(1.0f, 1.0f, 1.0f), D3DXVECTOR3(0.0f, 1.0f / 3.0f, 2.0f / 3.0f) );
@@ -219,8 +225,20 @@ LPDIRECT3DVERTEXSHADER9 LoadVertexShader(const char* const filename)
 	return ret;
 }
 
+void PrintWelcomeAndControlsMessage()
+{
+	printf("Clear Color Cycler\n");
+	printf("\n");
+	printf("Controls:\n");
+	printf("[R]: Resets the cycle back to the beginning\n");
+	printf("\n");
+}
+
 int main(const unsigned argc, const char* const argv[])
 {
+	PrintWelcomeAndControlsMessage();
+
+
 	WNDCLASSEXA classParams = {0};
 	classParams.cbSize = sizeof(WNDCLASSEX);
 	classParams.lpfnWndProc = &MyWindowProc;

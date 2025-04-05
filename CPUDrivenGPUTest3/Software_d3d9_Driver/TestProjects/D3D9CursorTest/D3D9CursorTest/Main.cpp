@@ -582,8 +582,29 @@ void LoadCursorTexture(const faceMode faceID)
 	}
 }
 
+void PrintWelcomeAndControlsMessage()
+{
+	printf("Cursor Test\n");
+	printf("\n");
+	printf("Controls:\n");
+	printf("[R]: Resets everything to the initial state again\n");
+	printf("[Left Click]: Wink left eye\n");
+	printf("[Right Click]: Wink right eye\n");
+	printf("[0]: Default: Use default Win32 cursor with no modifications\n");
+	printf("[1]: GDI Hide: Hides the cursor using GDI\n");
+	printf("[2]: GDI Cursor: Draws a hardware cursor using GDI\n");
+	printf("[3]: D3D9 Hide: Hides the cursor using D3D9\n");
+	printf("[4]: D3D9 Cursor: Draws a hardware cursor using D3D9\n");
+	printf("[5]: D3D9 Soft StretchRect: Draws a software cursor using D3D9's StretchRect functionality\n");
+	printf("[6]: D3D9 Soft Texture: Draws a software cursor using D3D9 to perform texture sampling that can perform alpha-blending\n");
+	printf("\n");
+}
+
 int main(const unsigned argc, const char* const argv[])
 {
+	PrintWelcomeAndControlsMessage();
+
+
 	// Try to set the system timeslice quantum to 1ms
 	timeBeginPeriod(1);
 

@@ -1492,8 +1492,24 @@ LPDIRECT3DVERTEXSHADER9 LoadVertexShader(const char* const filename)
 	return ret;
 }
 
+void PrintWelcomeAndOptions()
+{
+	printf("Draw Calls Test\n");
+	printf("\n");
+	printf("Controls:\n");
+	printf("[0]-[9]: Change to scene 0-9\n");
+	printf("[R]: Reset everything to defaults (including scene)\n");
+	printf("[U]/[B]: Use the *UP variants of Draw calls instead of the normal ones\n");
+	printf("[P]/[T]: Use fully pretransformed verts (D3DFVF_XYZRHW/POSITIONT) rather than relying on the transform pipeline\n");
+	printf("[V]/[T]: Use vertex shading rather than using the core fixed-function vertex pipeline\n");
+	printf("[F]/[G]: Use Flat shading or Gouraud shading\n");
+	printf("\n");
+}
+
 int main(const unsigned argc, const char* const argv[])
 {
+	PrintWelcomeAndOptions();
+
 	WNDCLASSEXA classParams = {0};
 	classParams.cbSize = sizeof(WNDCLASSEX);
 	classParams.lpfnWndProc = &MyWindowProc;

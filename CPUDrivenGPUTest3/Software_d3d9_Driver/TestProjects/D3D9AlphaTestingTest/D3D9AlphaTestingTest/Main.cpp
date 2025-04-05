@@ -648,8 +648,21 @@ static void CreateCube()
 	cubeIB->Unlock();
 }
 
+void PrintWelcomeAndControlsMessage()
+{
+	printf("Alpha Testing Test\n");
+	printf("\n");
+	printf("Controls:\n");
+	printf("[0]-[9]: Selects scene 0-9\n");
+	printf("[R]: Resets everything to the defaults, including the scene\n");
+	printf("\n");
+}
+
 int main(const unsigned argc, const char* const argv[])
 {
+	PrintWelcomeAndControlsMessage();
+
+
 	WNDCLASSEXA classParams = {0};
 	classParams.cbSize = sizeof(WNDCLASSEX);
 	classParams.lpfnWndProc = &MyWindowProc;

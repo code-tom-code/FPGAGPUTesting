@@ -313,11 +313,11 @@ void IDirect3DVertexShader9Hook::JitLoadShader(const DWORD FVF /*= 0x00000000*/)
 {
 	DeviceBytecode* compiledVertexShaderBytecode = NULL;
 
+	triedJit = true;
+
 	if (isPretransformPassthroughVS == false)
 	{
 		const char* const jitName = ConstructShaderJITName(vertexShaderInfo);
-
-		triedJit = true;
 
 #ifndef FORCE_INTERPRETED_VERTEX_SHADER
 		char jitFilenameBuffer[MAX_PATH] = {0};

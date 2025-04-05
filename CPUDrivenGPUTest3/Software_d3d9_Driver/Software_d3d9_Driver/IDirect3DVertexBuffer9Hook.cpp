@@ -334,6 +334,20 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DVertexBuffer9Hook::Unloc
 	return S_OK;
 }
 
+void IDirect3DVertexBuffer9Hook::SoftUPReallocIfNecessary(const UINT newBufferLengthBytes, const UINT numVertices)
+{
+	if (newBufferLengthBytes > InternalLength)
+	{
+		GPUFree(GPUBytes);
+		GPUBytes = GPUAlloc(newBufferLengthBytes, numVertices, 1, 1, 1, GPUVAT_VertexStreamData, GPUFMT_VertexGeneral
+#ifdef _DEBUG
+		, debugObjectName
+#endif
+		);
+		InternalLength = newBufferLengthBytes;
+	}
+}
+
 void IDirect3DVertexBuffer9Hook::UpdateDataToGPU()
 {
 	// TODO: Save upload bandwidth by tracking dirty regions and only reuploading the dirty regions of our buffers

@@ -341,6 +341,21 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DIndexBuffer9Hook::Unlock
 	return S_OK;
 }
 
+void IDirect3DIndexBuffer9Hook::SoftUPReallocIfNecessary(const UINT newBufferLengthBytes, const UINT numIndices, const D3DFORMAT newFormat)
+{
+	const unsigned allocLengthBytes = newBufferLengthBytes % sizeof(DWORD) != 0 ? newBufferLengthBytes + sizeof(unsigned short) : newBufferLengthBytes;
+	if (allocLengthBytes > InternalLength)
+	{
+		GPUFree(GPUBytes);
+		GPUBytes = GPUAlloc(allocLengthBytes, numIndices, 1, 1, 1, GPUVAT_IndexData, ConvertD3DFormatToDeviceFormat(newFormat)
+#ifdef _DEBUG
+		, debugObjectName
+#endif
+		);
+		InternalLength = newBufferLengthBytes;
+	}
+}
+
 void IDirect3DIndexBuffer9Hook::UpdateDataToGPU()
 {
 	// TODO: Save upload bandwidth by tracking dirty regions and only reuploading the dirty regions of our buffers

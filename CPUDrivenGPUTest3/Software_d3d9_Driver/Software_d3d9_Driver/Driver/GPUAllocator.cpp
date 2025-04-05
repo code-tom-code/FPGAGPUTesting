@@ -1506,11 +1506,13 @@ gpuvoid* GPUAlloc(const unsigned allocationSizeBytes,
 		return NULL;
 	}
 
-	return GPUAlloc_Internal(allocationSizeBytes, width, height, depth, numMipLevels, usage, format
+	gpuvoid* const retAlloc = GPUAlloc_Internal(allocationSizeBytes, width, height, depth, numMipLevels, usage, format
 #ifdef _DEBUG
 		, debugAllocationString
 #endif
 	);
+
+	return retAlloc;
 }
 
 static inline void CheckSetColumnEmpty(const unsigned gpuColumnIndex, const ScopeLockCS& lockedScope)

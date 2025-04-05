@@ -1392,18 +1392,21 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::SetTexture(
 
 	if (textureHookPtr)
 	{
+		textureHookPtr->AddRef();
 		targetDeviceState->currentTextures[Stage] = textureHookPtr;
 		targetDeviceState->currentCubeTextures[Stage] = NULL;
 		targetDeviceState->currentVolumeTextures[Stage] = NULL;
 	}
 	else if (cubeHookPtr)
 	{
+		cubeHookPtr->AddRef();
 		targetDeviceState->currentTextures[Stage] = NULL;
 		targetDeviceState->currentCubeTextures[Stage] = cubeHookPtr;
 		targetDeviceState->currentVolumeTextures[Stage] = NULL;
 	}
 	else if (volumeHookPtr)
 	{
+		volumeHookPtr->AddRef();
 		targetDeviceState->currentTextures[Stage] = NULL;
 		targetDeviceState->currentCubeTextures[Stage] = NULL;
 		targetDeviceState->currentVolumeTextures[Stage] = volumeHookPtr;
@@ -2195,7 +2198,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::SetStreamSo
 	if (Stride > 0xFFFF)
 		return D3DERR_INVALIDCALL;
 
-	const HRESULT ret = d3d9dev->SetStreamSource(StreamNumber, pStreamData, OffsetInBytes, Stride);
+	const HRESULT ret = pStreamData ? d3d9dev->SetStreamSource(StreamNumber, pStreamData, OffsetInBytes, Stride) : S_OK;
 	if (FAILED(ret) )
 		return ret;
 

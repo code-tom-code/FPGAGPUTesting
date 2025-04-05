@@ -1328,6 +1328,9 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::Present(THI
 	unsigned rollingAvgNumPlacements = 0;
 	GPUAlloc_EndFrame(allocsThisFrame, allocBytesThisFrame, freesThisFrame, freeBytesThisFrame, rollingAvgNumPlacements);
 
+	// Don't forget to increment our frame index!
+	++currentFrameIndex;
+
 	if (lastFramePresentTimestamp.QuadPart == 0)
 	{
 		QueryPerformanceCounter(&lastFramePresentTimestamp);
@@ -10668,14 +10671,14 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawPrimiti
 	if (!TotalDrawCallSkipTest() )
 		return S_OK;
 
-	// For now, skip all UP() draw calls since they don't have vertex buffers that we can point to. In the future we should have a cache of dynamic VB's and IB's on the device
-	// that get automatically uploaded to and freed when full that we can use for this purpose.
-	return S_OK;
-
 	const unsigned numInputVerts = GetNumVertsUsed(PrimitiveType, PrimitiveCount);
 
 	const unsigned short shortVertexStreamZeroStride = (const unsigned short)VertexStreamZeroStride;
-	currentState.currentSoftUPStream.vertexBuffer->SoftUPSetInternalPointer( (const BYTE* const)pVertexStreamZeroData, numInputVerts * shortVertexStreamZeroStride);
+	const unsigned totalVBSize = numInputVerts * shortVertexStreamZeroStride;
+
+	currentState.currentSoftUPStream.vertexBuffer->SoftUPReallocIfNecessary(totalVBSize, numInputVerts);
+
+	currentState.currentSoftUPStream.vertexBuffer->SoftUPSetInternalPointer( (const BYTE* const)pVertexStreamZeroData, totalVBSize);
 	currentState.currentSoftUPStream.streamOffset = 0;
 	currentState.currentSoftUPStream.streamStride = shortVertexStreamZeroStride;
 	currentState.currentSoftUPStream.streamDividerFrequency = 1;
@@ -10744,17 +10747,43 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawIndexed
 	if (!TotalDrawCallSkipTest() )
 		return S_OK;
 
-	// For now, skip all UP() draw calls since they don't have vertex buffers that we can point to. In the future we should have a cache of dynamic VB's and IB's on the device
-	// that get automatically uploaded to and freed when full that we can use for this purpose.
-	return S_OK;
-
 	const unsigned short shortVertexStreamZeroStride = (const unsigned short)VertexStreamZeroStride;
+	const unsigned totalVBSize = NumVertices * shortVertexStreamZeroStride;
 
-	currentState.currentSoftUPStream.vertexBuffer->SoftUPSetInternalPointer( (const BYTE* const)pVertexStreamZeroData, NumVertices * shortVertexStreamZeroStride);
+	currentState.currentSoftUPStream.vertexBuffer->SoftUPReallocIfNecessary(totalVBSize, NumVertices);
+	currentState.currentSoftUPStream.vertexBuffer->SoftUPSetInternalPointer( (const BYTE* const)pVertexStreamZeroData, totalVBSize);
 	currentState.currentSoftUPStream.streamOffset = 0;
 	currentState.currentSoftUPStream.streamStride = shortVertexStreamZeroStride;
 	currentState.currentSoftUPStream.streamDividerFrequency = 1;
 
+	unsigned indexCount;
+	switch (PrimitiveType)
+	{
+	case D3DPT_POINTLIST:
+		indexCount = PrimitiveCount;
+		break;
+	case D3DPT_LINELIST:
+		indexCount = PrimitiveCount * 2;
+		break;
+	case D3DPT_LINESTRIP:
+		indexCount = PrimitiveCount - 1;
+		break;
+	default:
+#ifdef _DEBUG
+		__debugbreak(); // Should never be here
+#endif
+	case D3DPT_TRIANGLELIST:
+		indexCount = PrimitiveCount * 3;
+		break;
+	case D3DPT_TRIANGLESTRIP:
+	case D3DPT_TRIANGLEFAN:
+		indexCount = PrimitiveCount - 2;
+		break;
+	}
+
+	const unsigned char singleIndexSize = (IndexDataFormat == D3DFMT_INDEX16) ? 2 : 4;
+
+	currentState.currentSoftUPIndexBuffer->SoftUPReallocIfNecessary(indexCount * singleIndexSize, indexCount, IndexDataFormat);
 	currentState.currentSoftUPIndexBuffer->SoftUPSetInternalPointer(pIndexData, IndexDataFormat, PrimitiveType, PrimitiveCount);
 
 	SwapWithCopy(currentState.currentSoftUPStream, currentState.currentStreams[0]);
@@ -11751,7 +11780,7 @@ IDirect3DDevice9Hook::IDirect3DDevice9Hook(LPDIRECT3DDEVICE9 _d3d9dev, IDirect3D
 		__debugbreak(); // Error: This shouldn't happen!
 #endif
 	}
-	/*ILocalEndpointDLLComms* const localRecorderEndpointComms = new ILocalEndpointDLLComms(
+	ILocalEndpointDLLComms* const localRecorderEndpointComms = new ILocalEndpointDLLComms(
 		"C:\\Users\\Tom\\Documents\\Visual Studio 2017\\Projects\\Software_d3d9_Driver\\" // TODO: Do not hardcode these paths!
 #ifdef _M_X64
 		"x64\\"
@@ -11762,9 +11791,9 @@ IDirect3DDevice9Hook::IDirect3DDevice9Hook(LPDIRECT3DDEVICE9 _d3d9dev, IDirect3D
 		"Release\\"
 #endif
 		"Endpoints\\RecordingEndpoint_DiskFile.dll"
-	);*/
-	IBroadcastVirtualDeviceComms* const broadcastDeviceComms = new IBroadcastVirtualDeviceComms(remoteProcessesIPCComms/*localRecorderEndpointComms*//*networkDeviceComms*/);
-	//broadcastDeviceComms->AddNewSecondaryBroadcastTarget(remoteProcessesIPCComms);
+	);
+	IBroadcastVirtualDeviceComms* const broadcastDeviceComms = new IBroadcastVirtualDeviceComms(localRecorderEndpointComms/*networkDeviceComms*/);
+	broadcastDeviceComms->AddNewSecondaryBroadcastTarget(remoteProcessesIPCComms);
 	//broadcastDeviceComms->AddNewSecondaryBroadcastTarget(localRecorderEndpointComms);
 
 	deviceComms = broadcastDeviceComms;

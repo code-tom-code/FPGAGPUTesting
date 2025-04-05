@@ -77,6 +77,8 @@ public:
 		isSoftVertexBufferUP = isSoftUPVertexBuffer;
 	}
 
+	void SoftUPReallocIfNecessary(const UINT newBufferLengthBytes, const UINT numVertices);
+
 	inline void SoftUPSetInternalPointer(const BYTE* const stream0BytesUP, const UINT BufferLengthBytes)
 	{
 #ifdef _DEBUG
@@ -95,6 +97,7 @@ public:
 #endif
 		data = (BYTE* const)stream0BytesUP;
 		InternalLength = BufferLengthBytes;
+		GPUBytesDirty = true;
 	}
 
 	inline void SoftUPResetInternalPointer(void)
@@ -110,7 +113,7 @@ public:
 		}
 #endif
 		data = NULL;
-		InternalLength = 0;
+		GPUBytesDirty = true;
 	}
 
 	inline const BYTE* const GetInternalDataBuffer(void) const

@@ -53,6 +53,7 @@ static std::map<const IDirect3DDevice9Hook*, perDeviceResources> overlayEnabledD
 struct vert2D
 {
 	D3DXVECTOR4 xyzRhw;
+	D3DCOLOR color;
 	D3DXVECTOR2 texCoord;
 };
 
@@ -302,8 +303,18 @@ void OverlayDrawString(class IDirect3DDevice9Hook* const hookDev, const char* co
 
 	unsigned numUnprintedCharacters = 0;
 
-	stringVerts.resize(len * 4);
-	stringIndices.reserve(len * 6);
+	const unsigned maxNumVerts = len * 4;
+	const unsigned maxNumTris = len * 2;
+	const unsigned maxNumIndices = maxNumTris * 3;
+
+	bool useIndex16 = false;
+	if (maxNumVerts < 0xFFFF)
+	{
+		useIndex16 = true;
+	}
+
+	stringVerts.resize(maxNumVerts);
+	stringIndices.reserve(maxNumIndices);
 	for (unsigned x = 0; x < len; ++x)
 	{
 		const char thisChar = str[x];
@@ -334,6 +345,8 @@ void OverlayDrawString(class IDirect3DDevice9Hook* const hookDev, const char* co
 			const float cornerCoordNormalizedX = (const float)(y & 0x1);
 			const float cornerCoordNormalizedY = (const float)( (y >> 1) & 0x1);
 
+			thisVert.color = color;
+
 			thisVert.texCoord.x = cornerCoordNormalizedX / 16.0f + fontMapCharX;
 			thisVert.texCoord.y = cornerCoordNormalizedY / 16.0f + fontMapCharY;
 
@@ -343,12 +356,26 @@ void OverlayDrawString(class IDirect3DDevice9Hook* const hookDev, const char* co
 			thisVert.xyzRhw.w = 1.0f;
 		}
 
-		stringIndices.push_back(thisPrintedCharIndex * 4 + 0);
-		stringIndices.push_back(thisPrintedCharIndex * 4 + 1);
-		stringIndices.push_back(thisPrintedCharIndex * 4 + 2);
-		stringIndices.push_back(thisPrintedCharIndex * 4 + 1);
-		stringIndices.push_back(thisPrintedCharIndex * 4 + 3);
-		stringIndices.push_back(thisPrintedCharIndex * 4 + 2);
+		const unsigned indexTL = thisPrintedCharIndex * 4 + 0;
+		const unsigned indexTR = thisPrintedCharIndex * 4 + 1;
+		const unsigned indexBL = thisPrintedCharIndex * 4 + 2;
+		const unsigned indexBR = thisPrintedCharIndex * 4 + 3;
+
+		if (useIndex16)
+		{
+			stringIndices.push_back(indexTR << 16 | indexTL);
+			stringIndices.push_back(indexTR << 16 | indexBL);
+			stringIndices.push_back(indexBL << 16 | indexBR);
+		}
+		else
+		{
+			stringIndices.push_back(indexTL);
+			stringIndices.push_back(indexTR);
+			stringIndices.push_back(indexBL);
+			stringIndices.push_back(indexTR);
+			stringIndices.push_back(indexBR);
+			stringIndices.push_back(indexBL);
+		}
 
 		currentRowX += textCharWidth;
 	}
@@ -358,7 +385,7 @@ void OverlayDrawString(class IDirect3DDevice9Hook* const hookDev, const char* co
 		return;
 
 	hookDev->SetRenderState(D3DRS_TEXTUREFACTOR, color);
-	hookDev->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, numPrintedCharacters * 4, numPrintedCharacters * 2, &stringIndices.front(), D3DFMT_INDEX32, &stringVerts.front(), sizeof(vert2D) );
+	hookDev->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, numPrintedCharacters * 4, numPrintedCharacters * 2, &stringIndices.front(), useIndex16 ? D3DFMT_INDEX16 : D3DFMT_INDEX32, &stringVerts.front(), sizeof(vert2D) );
 }
 
 void OverlayDrawPrintString(class IDirect3DDevice9Hook* const hookDev, const unsigned xLeftChars, const unsigned yTopChars, const unsigned long color, const char* const formatStr, ...)
@@ -411,7 +438,7 @@ void OverlaySetDeviceStateForText(class IDirect3DDevice9Hook* const hookDev)
 	hookDev->SetViewport(&viewport);
 
 	// Setup our FVF and shaders for text rendering:
-	hookDev->SetFVF(D3DFVF_XYZRHW | D3DFVF_TEX1);
+	hookDev->SetFVF(D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_TEX1 | D3DFVF_TEXCOORDSIZE2(0) );
 	hookDev->SetPixelShader(NULL);
 	hookDev->SetVertexShader(NULL);
 
@@ -427,7 +454,7 @@ void OverlaySetDeviceStateForText(class IDirect3DDevice9Hook* const hookDev)
 	hookDev->SetRenderState(D3DRS_SHADEMODE, D3DSHADE_GOURAUD);
 	hookDev->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
 	hookDev->SetRenderState(D3DRS_LASTPIXEL, TRUE);
-	hookDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+	hookDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
 	hookDev->SetRenderState(D3DRS_DITHERENABLE, FALSE);
 	hookDev->SetRenderState(D3DRS_FOGENABLE, FALSE);
 	hookDev->SetRenderState(D3DRS_SPECULARENABLE, FALSE);
@@ -459,11 +486,11 @@ void OverlaySetDeviceStateForText(class IDirect3DDevice9Hook* const hookDev)
 	textMaterial.Power = 0.0f;
 	hookDev->SetMaterial(&textMaterial);
 
-	// Configure alpha-blend for alpha blending mode:
-	hookDev->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+	// Configure alpha-blend for just straight overwrite mode (no alpha blending for improved readability):
+	hookDev->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 	hookDev->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
-	hookDev->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
-	hookDev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+	hookDev->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE);
+	hookDev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ZERO);
 	hookDev->SetRenderState(D3DRS_SEPARATEALPHABLENDENABLE, FALSE);
 
 	// Setup sampler states for text rendering:

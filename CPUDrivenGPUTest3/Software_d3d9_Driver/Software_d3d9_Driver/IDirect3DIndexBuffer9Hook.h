@@ -109,6 +109,8 @@ public:
 		return GPUBytes;
 	}
 
+	void SoftUPReallocIfNecessary(const UINT newBufferLengthBytes, const UINT numIndices, const D3DFORMAT newFormat);
+
 	inline void SoftUPSetInternalPointer(const void* const stream0IndicesUP, const D3DFORMAT newFormat, const D3DPRIMITIVETYPE PrimitiveType, const UINT PrimitiveCount)
 	{
 #ifdef _DEBUG
@@ -159,6 +161,7 @@ public:
 
 		const unsigned char singleIndexSize = (newFormat == D3DFMT_INDEX16) ? 2 : 4;
 		InternalLength = indexCount * singleIndexSize;
+		GPUBytesDirty = true;
 	}
 
 	inline void SoftUPResetInternalPointer(void)
@@ -175,7 +178,7 @@ public:
 #endif
 		rawBytes.voidBytes = NULL;
 		InternalFormat = D3DFMT_UNKNOWN;
-		InternalLength = 0;
+		GPUBytesDirty = true;
 	}
 
 protected:

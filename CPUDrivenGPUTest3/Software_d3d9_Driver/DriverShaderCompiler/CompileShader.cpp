@@ -3198,7 +3198,7 @@ const ShaderCompileResultCode CompilePretransformedShaderInternal(const ShaderCo
 	// Calculate stats for the final shader (number of hardware registers used, number of cycles total, cycles spent waiting, etc.)
 	CalculateDeviceShaderStats(deviceInstructionStream, devShaderInfo, -1);
 
-	const unsigned deviceBytecodeAllocSize = (const unsigned)deviceInstructionStream.size() * sizeof(instructionSlot) + sizeof(DeviceShaderInfo);
+	const unsigned deviceBytecodeAllocSize = (const unsigned)deviceInstructionStream.size() * sizeof(instructionSlot) + sizeof(DeviceShaderInfo) + sizeof(DeviceShaderHeader);
 	DeviceBytecode* const allocatedCompiledDeviceBytecode = (DeviceBytecode* const)malloc(deviceBytecodeAllocSize);
 	if (!allocatedCompiledDeviceBytecode)
 	{
@@ -3208,6 +3208,35 @@ const ShaderCompileResultCode CompilePretransformedShaderInternal(const ShaderCo
 		return ShaderCompile_ERR_MallocFail;
 	}
 	allocatedCompiledDeviceBytecode->deviceShaderInfo = devShaderInfo;
+
+	// Fill out our shader header using constant data now:
+	// For now, these input and output registers are always hardcoded like this:
+	/*
+	const unsigned inputPositionReg = 0; // v0 = POSITION0
+	const unsigned inputDiffuseReg = 1; // v1 = COLOR0
+	const unsigned inputTexcoordReg = 2; // v2 = TEXCOORD0
+
+	const unsigned outputPositionReg = 0; // o0 = oPos = OPOSITION0
+	const unsigned outputDiffuseReg = 1; // o1 = oD0 = OCOLOR0
+	const unsigned outputTexcoordReg = 2; // o2 = oT0 = OTEXCOORD0
+	*/
+	DeviceShaderHeader devShaderHeader;
+	devShaderHeader.inputRegsData[0].usageType = UT_Position; // v0 : POSITION0
+	devShaderHeader.inputRegsData[0].usageIndex = 0;
+	devShaderHeader.inputRegsData[1].usageType = UT_Color; // v1 : COLOR0
+	devShaderHeader.inputRegsData[1].usageIndex = 0;
+	devShaderHeader.inputRegsData[2].usageType = UT_Texcoord; // v2 : TEXCOORD0
+	devShaderHeader.inputRegsData[3].usageIndex = 0;
+	devShaderHeader.outputRegsData[0].usageType = UT_Position; // o0 : OPOSITION0
+	devShaderHeader.outputRegsData[0].usageIndex = 0;
+	devShaderHeader.outputRegsData[1].usageType = UT_Color; // o1 : OCOLOR0
+	devShaderHeader.outputRegsData[1].usageIndex = 0;
+	devShaderHeader.outputRegsData[2].usageType = UT_Texcoord; // o2 : OTEXCOORD0
+	devShaderHeader.outputRegsData[2].usageIndex = 0;
+	allocatedCompiledDeviceBytecode->shaderHeader = devShaderHeader;
+	allocatedCompiledDeviceBytecode->shaderHeader.shaderLength_instructionSlots = (const unsigned short)deviceInstructionStream.size();
+	allocatedCompiledDeviceBytecode->shaderHeader.shaderHash = 0xFFFFFFFF; // Pretransformed Passthrough shaders don't have a ShaderInfo, so we don't have a real shader hash either
+
 	memcpy(&allocatedCompiledDeviceBytecode->deviceInstructions, &(deviceInstructionStream.front() ), deviceInstructionStream.size() * sizeof(instructionSlot) );
 	outCompiledDeviceBytecode = allocatedCompiledDeviceBytecode;
 

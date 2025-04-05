@@ -109,6 +109,8 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DSwapChain9Hook::Present(
 		__debugbreak();
 	}
 
+	UpdateOverlay(parentDevice);
+
 	// Flush the ROP's to the back buffer in case they have outstanding writes in their caches
 	parentDevice->GetBaseDevice()->DeviceFlushROPCache();
 
@@ -154,8 +156,6 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DSwapChain9Hook::Present(
 
 	// Make sure to wipe our end-of-frame draw events list so that it doesn't grow forever and eat up infinite memory
 	parentDevice->GetEventRecordedDrawEvents().clear();
-
-	UpdateOverlay(parentDevice);
 
 	// Blit from the software backbuffer to the hardware backbuffer:
 	if (parentDevice->GetEnableSoftwareRenderingVisualization() )

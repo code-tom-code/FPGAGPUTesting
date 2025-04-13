@@ -827,7 +827,7 @@ begin
 							newReadDWORDSelect <= localIncomingPacket.payload1(2 downto 0);
 							-- For read packets, the first payload val is the address
 							CommandProcReadRequestsFIFO_wr_data <= std_logic_vector(localIncomingPacket.payload0(29 downto 0) );
-							newReadAddr <= localIncomingPacket.payload0(29 downto 0);
+							newReadAddr <= localIncomingPacket.payload0(29 downto 5) & localIncomingPacket.payload1(2 downto 0) & "00";
 							CommandProcReadRequestsFIFO_wr_en <= '1';
 							mst_packet_state <= READMEM_WAIT_FOR_READ_DATA;
 						end if;

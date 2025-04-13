@@ -6,6 +6,8 @@
 #include <Windows.h>
 #include <stdio.h>
 #include "RecordingDiskEndpoint.h"
+#include "..\..\Software_d3d9_Driver\SimpleInstrumentedProfiler.h"
+#include "..\..\Software_d3d9_Driver\Utilities\ThreadNaming.h"
 #include <vector>
 
 static HANDLE hRecordingFile = INVALID_HANDLE_VALUE;
@@ -18,6 +20,8 @@ static BOOL bDone = FALSE;
 
 static DWORD WINAPI WorkerThreadStart(LPVOID lpThreadParameter)
 {
+	UtilSetThreadName("RecordingDiskEndpoint Worker");
+
 	std::vector<genericCommand> localCopyPackets;
 	while (!bDone)
 	{
@@ -46,6 +50,7 @@ static DWORD WINAPI WorkerThreadStart(LPVOID lpThreadParameter)
 
 		if (hRecordingFile != INVALID_HANDLE_VALUE)
 		{
+			SIMPLE_NAME_SCOPE("RecordingDiskEndpointThread:WriteFileData");
 			DWORD numBytesWritten = 0;
 			const DWORD writeSize = (const DWORD)(localCopyPackets.size() * sizeof(genericCommand) );
 			if (!WriteFile(hRecordingFile, &localCopyPackets.front(), writeSize, &numBytesWritten, NULL) || numBytesWritten != writeSize)
@@ -174,7 +179,7 @@ void RecordNewIncomingPacket(const genericCommand* H2DCommandPacket)
 
 		// Send back a return packet containing the read memory:
 		readMemResponse readResponse;
-		readResponse.readDWORDAddr = readMemPacket->readDWORDAddr;
+		readResponse.readDWORDAddr = readMemPacket->readDWORDAddr | (readMemPacket->dwordSelect << 2);
 		readResponse.value = 0x00000000; // Don't actually read the memory. Since this is a recording endpoint, we don't have access to the memory anyway.
 		readResponse.checksum = 0;
 		readResponse.checksum = command::ComputeChecksum(&readResponse, sizeof(readResponse) );
@@ -201,6 +206,7 @@ void RecordNewIncomingPacket(const genericCommand* H2DCommandPacket)
 
 	if (callerSideWritePacketsBuffer.size() >= 64)
 	{
+		SIMPLE_NAME_SCOPE("RecordingDiskEndpoint: Main Thread Flush");
 		EnterCriticalSection(&lockCS);
 		bufferedWritePackets.insert(bufferedWritePackets.end(), callerSideWritePacketsBuffer.begin(), callerSideWritePacketsBuffer.end() );
 		LeaveCriticalSection(&lockCS);

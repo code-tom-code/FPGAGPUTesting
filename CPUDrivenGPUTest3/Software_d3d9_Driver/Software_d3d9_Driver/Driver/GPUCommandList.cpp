@@ -1,68 +1,7 @@
 #include "IBaseGPUDevice.h"
 #include "GPUCommandList.h"
 
-static const unsigned numSimplifiedPacketsPerDRAMLine = GPU_DRAM_TRANSACTION_SIZE_BYTES / sizeof(SimplifiedCommandPacket);
-
-union dramLinePackedPacket
-{
-	SimplifiedCommandPacket simplifiedPackets[numSimplifiedPacketsPerDRAMLine];
-	DWORD dwords[8];
-};
-static_assert(sizeof(dramLinePackedPacket) == 32, "Error: Unexpected struct padding!");
-
-/*static*/ void GPUCommandList::ConvertCommandPacketToSimplifiedCommandPacket(const command* const inFullPacket, SimplifiedCommandPacket* const outSimplifiedPacket)
-{
-#ifdef _DEBUG
-	if (!inFullPacket)
-	{
-		__debugbreak();
-	}
-
-	if (!outSimplifiedPacket)
-	{
-		__debugbreak();
-	}
-
-	if ( (const void* const)inFullPacket == (const void* const)outSimplifiedPacket)
-	{
-		__debugbreak();
-	}
-#endif
-	const genericCommand* const packetWithData = reinterpret_cast<const genericCommand* const>(inFullPacket);
-	outSimplifiedPacket->type = packetWithData->type;
-	outSimplifiedPacket->payload0 = packetWithData->payload0;
-	outSimplifiedPacket->payload1 = packetWithData->payload1;
-}
-
-/*static*/ void GPUCommandList::ConvertSimplifiedCommandPacketToCommandPacket(const SimplifiedCommandPacket* const inSimplifiedPacket, command* const outFullPacket)
-{
-#ifdef _DEBUG
-	if (!inSimplifiedPacket)
-	{
-		__debugbreak();
-	}
-
-	if (!outFullPacket)
-	{
-		__debugbreak();
-	}
-
-	if ( (const void* const)inSimplifiedPacket == (const void* const)outFullPacket)
-	{
-		__debugbreak();
-	}
-#endif
-	genericCommand* const packetWithData = reinterpret_cast<genericCommand* const>(outFullPacket);
-
-	packetWithData->magicProtoHeader = PACKET_MAGIC_VALUE;
-	packetWithData->checksum = 0;
-	packetWithData->type = inSimplifiedPacket->type;
-	packetWithData->payload0 = inSimplifiedPacket->payload0;
-	packetWithData->payload1 = inSimplifiedPacket->payload1;
-	packetWithData->checksum = command::ComputeChecksum(packetWithData, sizeof(genericCommand) );
-}
-
-void GPUCommandList::AllocateAndUpload(IBaseDeviceComms* const deviceComms)
+void GPUCommandList::AllocateAndUpload(IBaseGPUDevice* const baseDevice)
 {
 #ifdef _DEBUG
 	if (gpuAllocatedAddress != NULL)
@@ -102,7 +41,7 @@ void GPUCommandList::AllocateAndUpload(IBaseDeviceComms* const deviceComms)
 		ConvertCommandPacketToSimplifiedCommandPacket(&thisReadPacket, &thisSimplifiedPacket);
 	}
 
-	if (FAILED(deviceComms->DeviceMemCopy(gpuAllocatedAddress, &(uploadBuffer.front() ), sizeof(dramLinePackedPacket) * uploadBuffer.size() ) ) )
+	if (FAILED(baseDevice->DeviceMemCopy(gpuAllocatedAddress, &(uploadBuffer.front() ), sizeof(dramLinePackedPacket) * uploadBuffer.size() ) ) )
 	{
 #ifdef _DEBUG
 		__debugbreak();
@@ -187,7 +126,7 @@ const unsigned __int64 GPUCommandList::ComputeCommandsHash() const
 	return ComputeMemoryHash( (const BYTE* const)&(commands.front() ), commands.size() * sizeof(genericCommand) );
 }
 
-void GPUCommandList::FinishRecordingAndUpload(IBaseDeviceComms* const deviceComms)
+void GPUCommandList::FinishRecordingAndUpload(IBaseGPUDevice* const baseDevice)
 {
 	if (recordingState != recording)
 	{
@@ -197,7 +136,7 @@ void GPUCommandList::FinishRecordingAndUpload(IBaseDeviceComms* const deviceComm
 		return;
 	}
 
-	AllocateAndUpload(deviceComms);
+	AllocateAndUpload(baseDevice);
 
 	recordingState = uploaded;
 }

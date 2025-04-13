@@ -254,7 +254,7 @@ struct readMemResponse : command
 	}
 
 	// Payload 0:
-	DWORD readDWORDAddr = 0x00000000; // The read address, in byte's from the start of the RAM (must be DRAM_LINE aligned!)
+	DWORD readDWORDAddr = 0x00000000; // The read address, in byte's from the start of the RAM (this return address will be DWORD-aligned!)
 
 	// Payload 1:
 	DWORD value = 0; // The value that was read

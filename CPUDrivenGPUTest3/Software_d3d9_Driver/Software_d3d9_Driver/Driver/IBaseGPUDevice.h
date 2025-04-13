@@ -220,65 +220,87 @@ __declspec(align(16) ) struct IBaseGPUDevice
 		deviceComms = NULL;
 	}
 
-	HRESULT __stdcall DeviceClearRendertarget(gpuvoid* const renderTargetMemory, const D3DCOLOR clearColor, const unsigned width, const unsigned height);
+	__declspec(nothrow) HRESULT __stdcall DeviceClearRendertarget(gpuvoid* const renderTargetMemory, const D3DCOLOR clearColor, const unsigned width, const unsigned height);
 
-	HRESULT __stdcall DeviceClearDepthStencil(gpuvoid* const zStencilMemory, const bool bDoClearDepth, const bool bDoClearStencil, 
+	__declspec(nothrow) HRESULT __stdcall DeviceClearDepthStencil(gpuvoid* const zStencilMemory, const bool bDoClearDepth, const bool bDoClearStencil, 
 		const float clearDepth = 1.0f, const BYTE clearStencil = 0x00);
 
-	HRESULT __stdcall DeviceSetTextureState(const unsigned texWidth, const unsigned texHeight, const eTexFilterMode filterMode, 
+	__declspec(nothrow) HRESULT __stdcall DeviceSetTextureState(const unsigned texWidth, const unsigned texHeight, const eTexFilterMode filterMode, 
 		const eTexChannelMUX rChannel, const eTexChannelMUX gChannel, const eTexChannelMUX bChannel, const eTexChannelMUX aChannel, const combinerMode cbModeColor, const combinerMode cbModeAlpha,
 		const gpuvoid* const textureMemory, const eTexFormat textureFormat);
-	HRESULT __stdcall DeviceSetNullTextureState(const eTexFilterMode filterMode, 
+	__declspec(nothrow) HRESULT __stdcall DeviceSetNullTextureState(const eTexFilterMode filterMode, 
 		const eTexChannelMUX rChannel, const eTexChannelMUX gChannel, const eTexChannelMUX bChannel, const eTexChannelMUX aChannel, const combinerMode cbModeColor, const combinerMode cbModeAlpha);
 
-	HRESULT __stdcall DeviceSetROPState(gpuvoid* const renderTargetMemory, const eBlendMask writeMask, const bool alphaTestEnabled, const BYTE alphaTestRefVal, const eCmpFunc alphaTestCmpFunc,
+	__declspec(nothrow) HRESULT __stdcall DeviceSetROPState(gpuvoid* const renderTargetMemory, const eBlendMask writeMask, const bool alphaTestEnabled, const BYTE alphaTestRefVal, const eCmpFunc alphaTestCmpFunc,
 		const bool alphaBlendingEnabled, const D3DBLEND srcColorBlend, const D3DBLEND destColorBlend, const D3DBLENDOP colorBlendOp, 
 		const D3DBLEND srcAlphaBlend, const D3DBLEND destAlphaBlend, const D3DBLENDOP alphaBlendOp, const D3DCOLOR blendFactorARGB);
 
-	HRESULT __stdcall DeviceSetTriSetupState(const float viewportHalfWidth, const float viewportHalfHeight,
+	__declspec(nothrow) HRESULT __stdcall DeviceSetTriSetupState(const float viewportHalfWidth, const float viewportHalfHeight,
 		const float viewportXOffset, const float viewportYOffset,
 		const float viewportZScale, const float viewportZOffset,
 		const unsigned short scissorRectLeft, const unsigned short scissorRectRight, const unsigned short scissorRectTop, const unsigned short scissorRectBottom);
-	HRESULT __stdcall DeviceSetClipState(const bool depthClipEnabled, const bool useOpenGLNearZClip, const float guardBandXScale, const float guardBandYScale, const bool clippingEnabled);
-	HRESULT __stdcall DeviceSetDepthState(const bool zEnabled, const bool zWriteEnabled, const bool colorWriteEnabled, const eCmpFunc zTestCmpFunc, const eDepthFormat zFormat, const float depthBias);
-	HRESULT __stdcall DeviceSetAttrInterpolatorState(const bool useFlatShadingColor, const eTexcoordAddressingMode addressU, const eTexcoordAddressingMode addressV);
+	__declspec(nothrow) HRESULT __stdcall DeviceSetClipState(const bool depthClipEnabled, const bool useOpenGLNearZClip, const float guardBandXScale, const float guardBandYScale, const bool clippingEnabled);
+	__declspec(nothrow) HRESULT __stdcall DeviceSetDepthState(const bool zEnabled, const bool zWriteEnabled, const bool colorWriteEnabled, const eCmpFunc zTestCmpFunc, const eDepthFormat zFormat, const float depthBias);
+	__declspec(nothrow) HRESULT __stdcall DeviceSetAttrInterpolatorState(const bool useFlatShadingColor, const eTexcoordAddressingMode addressU, const eTexcoordAddressingMode addressV);
 
-	HRESULT __stdcall DeviceSetIAState(const eCullMode cullMode, const ePrimTopology primTopology, const eStripCutType stripCut, const eIndexFormat indexFormat, const unsigned indexBufferLengthBytes, const gpuvoid* const indexBufferBaseAddr);
+	__declspec(nothrow) HRESULT __stdcall DeviceSetIAState(const eCullMode cullMode, const ePrimTopology primTopology, const eStripCutType stripCut, const eIndexFormat indexFormat, const unsigned indexBufferLengthBytes, const gpuvoid* const indexBufferBaseAddr);
 
-	HRESULT __stdcall DeviceSetScanoutBuffer(const gpuvoid* const renderTargetMemory, const bool bEnableScanout = true, const bool invertScanoutColors = false, 
+	__declspec(nothrow) HRESULT __stdcall DeviceSetScanoutBuffer(const gpuvoid* const renderTargetMemory, const bool bEnableScanout = true, const bool invertScanoutColors = false, 
 		const setScanoutPointerCommand::eDisplayChannelSwizzle redChannelSwizzle = setScanoutPointerCommand::dcs_red, const setScanoutPointerCommand::eDisplayChannelSwizzle greenChannelSwizzle = setScanoutPointerCommand::dcs_green, const setScanoutPointerCommand::eDisplayChannelSwizzle blueChannelSwizzle = setScanoutPointerCommand::dcs_blue);
-	HRESULT __stdcall DeviceDownloadEndOfFrameStats(const gpuvoid* const statsMemory, DWORD* const outReadbackStatsData);
-	HRESULT __stdcall DeviceEndFrame();
-	HRESULT __stdcall DeviceEndFrameAndQueueEventRecording(gpuvoid* const eventTimestampsMemory, gpuvoid* const eventOrderingMemory);
-	HRESULT __stdcall DeviceEndFrameAndFinishEventRecording(const gpuvoid* const eventTimestampsMemory, const gpuvoid* const eventOrderingMemory, DWORD* const outReadbackEventTimestamps, USHORT* const outReadbackEventOrderings, DWORD* const outReadbackEventsHeaderBlock);
+	__declspec(nothrow) HRESULT __stdcall DeviceDownloadEndOfFrameStats(const gpuvoid* const statsMemory, DWORD* const outReadbackStatsData);
+	__declspec(nothrow) HRESULT __stdcall DeviceEndFrame();
+	__declspec(nothrow) HRESULT __stdcall DeviceEndFrameAndQueueEventRecording(gpuvoid* const eventTimestampsMemory, gpuvoid* const eventOrderingMemory);
+	__declspec(nothrow) HRESULT __stdcall DeviceEndFrameAndFinishEventRecording(const gpuvoid* const eventTimestampsMemory, const gpuvoid* const eventOrderingMemory, DWORD* const outReadbackEventTimestamps, USHORT* const outReadbackEventOrderings, DWORD* const outReadbackEventsHeaderBlock);
 
-	HRESULT __stdcall DeviceIssueQuery(const gpuvoid* const queryAddress, const bool isEndEvent, const eQueryType queryType);
+	__declspec(nothrow) HRESULT __stdcall DeviceIssueQuery(const gpuvoid* const queryAddress, const bool isEndEvent, const eQueryType queryType);
 
-	HRESULT __stdcall DeviceLoadVertexShader(const gpuvoid* const vertexShaderMemory, const unsigned short numShaderTokensToLoad, const bool forceLoadVertexShader = false, const unsigned short targetAddressToLoadTo = 0);
-	HRESULT __stdcall DeviceSetVertexShaderStartAddr(const unsigned short shaderStartAddress);
+	__declspec(nothrow) HRESULT __stdcall DeviceLoadVertexShader(const gpuvoid* const vertexShaderMemory, const unsigned short numShaderTokensToLoad, const bool forceLoadVertexShader = false, const unsigned short targetAddressToLoadTo = 0);
+	__declspec(nothrow) HRESULT __stdcall DeviceSetVertexShaderStartAddr(const unsigned short shaderStartAddress);
 
-	HRESULT __stdcall DeviceSetVertexStreamData(const gpuvoid* const vertexStreamData, const unsigned vertexBufferLengthBytes, const BYTE dwordCount, const BYTE streamID, 
+	__declspec(nothrow) HRESULT __stdcall DeviceSetVertexStreamData(const gpuvoid* const vertexStreamData, const unsigned vertexBufferLengthBytes, const BYTE dwordCount, const BYTE streamID, 
 		const bool isD3DCOLOR, const BYTE shaderInputRegIndex, const BYTE dwordStride, const BYTE dwordOffset, const BYTE numVertexStreamsTotal, const D3DDECLUSAGE usage, const BYTE usageIndex);
 
-	HRESULT __stdcall DeviceSetConstantData(const gpuvoid* const constantBufferMemory, const float4* const baseCPUFloat4RegisterFile, const BYTE startingRegisterIndex, const BYTE numFloat4Registers);
+	__declspec(nothrow) HRESULT __stdcall DeviceSetConstantData(const gpuvoid* const constantBufferMemory, const float4* const baseCPUFloat4RegisterFile, const BYTE startingRegisterIndex, const BYTE numFloat4Registers);
 
-	HRESULT __stdcall DeviceSetConstantDataSingleSpecial(const float4& registerData, const BYTE registerIndex);
+	__declspec(nothrow) HRESULT __stdcall DeviceSetConstantDataSingleSpecial(const float4& registerData, const BYTE registerIndex);
 
-	HRESULT __stdcall DeviceEnableShaderDebuggingForNextDrawCall(const gpuvoid* registerFileDumpAddress);
+	__declspec(nothrow) HRESULT __stdcall DeviceEnableShaderDebuggingForNextDrawCall(const gpuvoid* registerFileDumpAddress);
 
-	HRESULT __stdcall DeviceDrawIndexedPrimitive(const D3DPRIMITIVETYPE primType, const unsigned primitiveCount, const unsigned startIndex = 0, const int BaseVertexIndex = 0);
-	HRESULT __stdcall DeviceDrawPrimitive(const D3DPRIMITIVETYPE primType, const unsigned primitiveCount, const unsigned StartVertex = 0);
+	__declspec(nothrow) HRESULT __stdcall DeviceDrawIndexedPrimitive(const D3DPRIMITIVETYPE primType, const unsigned primitiveCount, const unsigned startIndex = 0, const int BaseVertexIndex = 0);
+	__declspec(nothrow) HRESULT __stdcall DeviceDrawPrimitive(const D3DPRIMITIVETYPE primType, const unsigned primitiveCount, const unsigned StartVertex = 0);
 
 	// Runs a command list on the GPU's command processor
-	HRESULT __stdcall DeviceExecuteCommandList(const GPUCommandList& commandList);
+	__declspec(nothrow) HRESULT __stdcall DeviceExecuteCommandList(const GPUCommandList& commandList);
 
 	// Runs a command list on the CPU, rather than on the GPU
-	HRESULT __stdcall DeviceEmulateExecuteCommandList(const GPUCommandList& commandList);
+	__declspec(nothrow) HRESULT __stdcall DeviceEmulateExecuteCommandList(const GPUCommandList& commandList);
 
 	// Call this function before using a render target as a texture, or before Present()'ing the render target as a new back buffer
-	HRESULT __stdcall DeviceFlushROPCache();
+	__declspec(nothrow) HRESULT __stdcall DeviceFlushROPCache();
 
-	HRESULT __stdcall DeviceWaitForIdle(const waitForDeviceIdleCommand::waitForDeviceSubsystem waitFlags = waitForDeviceIdleCommand::waitForFullPipelineFlush, const bool printStatus = false);
+	__declspec(nothrow) HRESULT __stdcall DeviceWaitForIdle(const waitForDeviceIdleCommand::waitForDeviceSubsystem waitFlags = waitForDeviceIdleCommand::waitForFullPipelineFlush, const bool cpuGpuSync = false, const bool printStatus = false);
+
+	// Sets device memory from deviceDestAddr to deviceDestAddr + dwByteLength with the DWORD value specified in dwSetVal.
+	__declspec(nothrow) HRESULT __stdcall DeviceMemSet(gpuvoid* const deviceDestAddr, const DWORD dwSetVal, const DWORD dwByteLength);
+
+	// Copies a block of memory from host memory to device memory.
+	__declspec(nothrow) HRESULT __stdcall DeviceMemCopy(gpuvoid* const deviceDestAddr, const void* const sourceCPUAddr, const DWORD dwByteLength);
+
+	// Copies a block of memory from device memory to host memory.
+	// This function pushes read requests onto the GPU command buffer and then returns immediately. The read does not complete until you later call AsyncReadFromDeviceWaitComplete().
+	__declspec(nothrow) HRESULT __stdcall AsyncReadFromDeviceBegin(const gpuvoid* const deviceSrcAddr, const DWORD dwByteLength);
+
+	// Copies a block of memory from device memory to host memory.
+	// This function waits for the previously issued memory read from AsyncReadFromDeviceBegin() to complete. It won't return until the memory read response has been returned.
+	__declspec(nothrow) HRESULT __stdcall AsyncReadFromDeviceWaitComplete(const gpuvoid* const deviceSrcAddr, void* const destCPUAddr, const DWORD dwByteLength);
+
+	// Copies a block of memory from device memory to host memory. This function does not return until the memory has been fully read and copied into CPU memory.
+	__declspec(nothrow) HRESULT __stdcall SyncReadFromDevice(const gpuvoid* const deviceSrcAddr, void* const destCPUAddr, const DWORD dwByteLength);
+
+	// Validates that the block of memory on the device matches the data in the block of memory on the CPU.
+	// Returns S_OK if the memory is equal between the CPU and the GPU pointers or E_FAIL otherwise. It is the caller's responsibility to ensure that the GPU is not writing to this region
+	// as we are reading from it.
+	__declspec(nothrow) HRESULT __stdcall DeviceValidateMemory(const gpuvoid* const deviceSrcAddr, const void* const compareCPUAddr, const DWORD dwByteLength);
 
 	const bool GetSyncEveryCommand() const
 	{
@@ -323,7 +345,7 @@ __declspec(align(16) ) struct IBaseGPUDevice
 protected:
 	void __stdcall AssociateComms(IBaseDeviceComms* const baseComms);
 	const bool __stdcall ValidateDeviceStateIsSetForDraw() const;
-	HRESULT SendOrStorePacket(const command* const sendPacket);
+	__declspec(nothrow) HRESULT SendOrStorePacket(const command* const sendPacket);
 
 private:
 	IBaseDeviceComms* deviceComms = nullptr;
@@ -331,6 +353,8 @@ private:
 	GPUDeviceState currentCachedState;
 
 	GPUCommandList* currentlyRecordingCommandList = nullptr;
+
+	unsigned currentWaitLabel = 0;
 
 	bool disallowDeviceStateCaching = false;
 	

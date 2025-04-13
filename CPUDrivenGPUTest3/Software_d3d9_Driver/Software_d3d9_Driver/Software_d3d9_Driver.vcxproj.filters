@@ -73,6 +73,9 @@
     <Filter Include="Resource Files\Driver\NetSession">
       <UniqueIdentifier>{7bb87fc8-ddf1-4f69-ba0b-d1823acec281}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Utilities">
+      <UniqueIdentifier>{0cd78213-8f2b-4867-8d87-be16ad7272e8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="hookd3d9.cpp">
@@ -230,6 +233,9 @@
     </ClCompile>
     <ClCompile Include="Driver\NetSession\NetSession.cpp">
       <Filter>Source Files\Driver\NetSession</Filter>
+    </ClCompile>
+    <ClCompile Include="Driver\GPUReturnTracker.cpp">
+      <Filter>Source Files\Driver</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -436,6 +442,12 @@
     </ClInclude>
     <ClInclude Include="Driver\DeviceAllocatedBuffer.h">
       <Filter>Header Files\Driver</Filter>
+    </ClInclude>
+    <ClInclude Include="Driver\GPUReturnTracker.h">
+      <Filter>Header Files\Driver</Filter>
+    </ClInclude>
+    <ClInclude Include="Utilities\ThreadNaming.h">
+      <Filter>Header Files\Utilities</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -30,9 +30,6 @@
     <ClCompile Include="..\..\Software_d3d9_Driver\Driver\NetSession\NetSession.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Software_d3d9_Driver\Driver\GPUCommandList.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Source.def">

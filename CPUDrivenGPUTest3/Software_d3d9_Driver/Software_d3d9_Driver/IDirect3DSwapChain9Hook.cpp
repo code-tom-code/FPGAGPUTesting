@@ -114,12 +114,40 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DSwapChain9Hook::Present(
 	// Flush the ROP's to the back buffer in case they have outstanding writes in their caches
 	parentDevice->GetBaseDevice()->DeviceFlushROPCache();
 
-	// Request a full pipeline flush wait on each present so that the CPU doesn't get ahead of the GPU (optional VSync wait here also).
-	// TODO: Instead of waiting on the current frame to fully complete, we should instead wait for the *previous* frame to fully complete! That'd be 1 frame of latency as per the D3D/DXGI minimum!
+	// Request a full pipeline flush wait on each present for finishing the whole frame (optional VSync wait here also).
 	if (parentDevice->GetEnableVSyncWait() )
-		parentDevice->GetBaseDevice()->DeviceWaitForIdle(waitForDeviceIdleCommand::waitForFullPipelineFlushAndVSync, true);
+		parentDevice->GetBaseDevice()->DeviceWaitForIdle(waitForDeviceIdleCommand::waitForFullPipelineFlushAndVSync, false);
 	else
-		parentDevice->GetBaseDevice()->DeviceWaitForIdle(waitForDeviceIdleCommand::waitForFullPipelineFlush, true);
+		parentDevice->GetBaseDevice()->DeviceWaitForIdle(waitForDeviceIdleCommand::waitForFullPipelineFlush, false);
+
+	// Don't let the CPU get too far ahead of the GPU. Always wait for the previous frame to complete (this is equivalent to a latency of 1 as per the D3D/DXGI minimum):
+	{
+		const unsigned currentFrameEventIndex = parentDevice->GetCurrentFrameIndex() % ARRAYSIZE(endFrameQueries);
+		if (FAILED(endFrameQueries[currentFrameEventIndex]->Issue(D3DISSUE_END) ) )
+		{
+#ifdef _DEBUG
+				__debugbreak();
+#endif
+		}
+		if (parentDevice->GetCurrentFrameIndex() > 0)
+		{
+			SIMPLE_NAME_SCOPE("Wait for GPU to finish previous frame");
+			const unsigned previousFrameEventIndex = (parentDevice->GetCurrentFrameIndex() - 1) % ARRAYSIZE(endFrameQueries);
+			BOOL eventQueryData = FALSE;
+			if (FAILED(endFrameQueries[previousFrameEventIndex]->GetData(&eventQueryData, sizeof(eventQueryData), D3DGETDATA_FLUSH) ) )
+			{
+#ifdef _DEBUG
+				__debugbreak();
+#endif
+			}
+#ifdef _DEBUG
+			if (eventQueryData == FALSE) // Signaled events should always be non-FALSE
+			{
+				__debugbreak();
+			}
+#endif
+		}
+	}
 
 	// Swap our buffers if double-buffering is enabled (otherwise, just keep rendering and presenting from the one buffer)
 	const IDirect3DSurface9Hook* newScanoutBuffer = backBuffer;

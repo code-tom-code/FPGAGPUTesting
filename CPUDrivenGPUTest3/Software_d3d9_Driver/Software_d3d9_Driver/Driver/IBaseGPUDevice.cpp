@@ -7,6 +7,7 @@
 #include "GPUCommandList.h"
 #include "GPUDeviceLimits.h"
 #include "DeviceConversions.h"
+#include "GPUReturnTracker.h"
 
 // TODO: Include address alignment in this validation also
 static const bool ValidateAddress(const gpuvoid* const deviceMemoryPtr)
@@ -98,7 +99,7 @@ static const BYTE GetLog2TexDimension(const unsigned inTexDim)
 	}
 }
 
-HRESULT __stdcall IBaseGPUDevice::DeviceClearRendertarget(gpuvoid* const renderTargetMemory, const D3DCOLOR clearColor, const unsigned width, const unsigned height)
+__declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceClearRendertarget(gpuvoid* const renderTargetMemory, const D3DCOLOR clearColor, const unsigned width, const unsigned height)
 {
 	if (!ValidateAddress(renderTargetMemory) )
 		return E_INVALIDARG;
@@ -173,7 +174,7 @@ HRESULT __stdcall IBaseGPUDevice::DeviceClearRendertarget(gpuvoid* const renderT
 	return clearHR;
 }
 
-HRESULT __stdcall IBaseGPUDevice::DeviceClearDepthStencil(gpuvoid* const zStencilMemory, const bool bDoClearDepth, const bool bDoClearStencil, 
+__declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceClearDepthStencil(gpuvoid* const zStencilMemory, const bool bDoClearDepth, const bool bDoClearStencil, 
 	const float clearDepth/* = 1.0f*/, const BYTE clearStencil/* = 0x00*/)
 {
 	//if (!ValidateAddress(zStencilMemory) )
@@ -252,7 +253,7 @@ HRESULT __stdcall IBaseGPUDevice::DeviceClearDepthStencil(gpuvoid* const zStenci
 	return clearZStencilHR;
 }
 
-HRESULT __stdcall IBaseGPUDevice::DeviceSetTextureState(const unsigned texWidth, const unsigned texHeight, const eTexFilterMode filterMode, 
+__declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceSetTextureState(const unsigned texWidth, const unsigned texHeight, const eTexFilterMode filterMode, 
 		const eTexChannelMUX rChannel, const eTexChannelMUX gChannel, const eTexChannelMUX bChannel, const eTexChannelMUX aChannel, const combinerMode cbModeColor, const combinerMode cbModeAlpha,
 		const gpuvoid* const textureMemory, const eTexFormat textureFormat)
 {
@@ -386,7 +387,7 @@ HRESULT __stdcall IBaseGPUDevice::DeviceSetTextureState(const unsigned texWidth,
 	return hRetSetState;
 }
 
-HRESULT __stdcall IBaseGPUDevice::DeviceSetNullTextureState(const eTexFilterMode filterMode, 
+__declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceSetNullTextureState(const eTexFilterMode filterMode, 
 		const eTexChannelMUX rChannel, const eTexChannelMUX gChannel, const eTexChannelMUX bChannel, const eTexChannelMUX aChannel, const combinerMode cbModeColor, const combinerMode cbModeAlpha)
 {
 	if (filterMode >= TF_MAXFILTER)
@@ -486,7 +487,7 @@ HRESULT __stdcall IBaseGPUDevice::DeviceSetNullTextureState(const eTexFilterMode
 	return hRetSetState;
 }
 
-HRESULT __stdcall IBaseGPUDevice::DeviceSetROPState(gpuvoid* const renderTargetMemory, const eBlendMask writeMask, const bool alphaTestEnabled, const BYTE alphaTestRefVal, const eCmpFunc alphaTestCmpFunc,
+__declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceSetROPState(gpuvoid* const renderTargetMemory, const eBlendMask writeMask, const bool alphaTestEnabled, const BYTE alphaTestRefVal, const eCmpFunc alphaTestCmpFunc,
 		const bool alphaBlendingEnabled, const D3DBLEND srcColorBlend, const D3DBLEND destColorBlend, const D3DBLENDOP colorBlendOp, 
 		const D3DBLEND srcAlphaBlend, const D3DBLEND destAlphaBlend, const D3DBLENDOP alphaBlendOp, const D3DCOLOR blendFactorARGB)
 {
@@ -667,7 +668,7 @@ static inline const unsigned GetLog2ExactFloat(const float f)
 	return ret;
 }
 
-HRESULT __stdcall IBaseGPUDevice::DeviceSetTriSetupState(const float viewportHalfWidth, const float viewportHalfHeight,
+__declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceSetTriSetupState(const float viewportHalfWidth, const float viewportHalfHeight,
 	const float viewportXOffset, const float viewportYOffset,
 	const float viewportZScale, const float viewportZOffset,
 	const unsigned short scissorRectLeft, const unsigned short scissorRectRight, const unsigned short scissorRectTop, const unsigned short scissorRectBottom)
@@ -771,7 +772,7 @@ HRESULT __stdcall IBaseGPUDevice::DeviceSetTriSetupState(const float viewportHal
 	return hRetViewport0;
 }
 
-HRESULT __stdcall IBaseGPUDevice::DeviceSetClipState(const bool depthClipEnabled, const bool useOpenGLNearZClip, const float guardBandXScale, const float guardBandYScale, const bool clippingEnabled)
+__declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceSetClipState(const bool depthClipEnabled, const bool useOpenGLNearZClip, const float guardBandXScale, const float guardBandYScale, const bool clippingEnabled)
 {
 	if (guardBandXScale < 1.0f || guardBandXScale > 32768.0f || guardBandYScale < 1.0f || guardBandYScale > 32768.0f)
 	{
@@ -826,7 +827,7 @@ HRESULT __stdcall IBaseGPUDevice::DeviceSetClipState(const bool depthClipEnabled
 	return hRet;
 }
 
-HRESULT __stdcall IBaseGPUDevice::DeviceSetAttrInterpolatorState(const bool useFlatShadingColor, const eTexcoordAddressingMode addressU, const eTexcoordAddressingMode addressV)
+__declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceSetAttrInterpolatorState(const bool useFlatShadingColor, const eTexcoordAddressingMode addressU, const eTexcoordAddressingMode addressV)
 {
 	if (addressU >= eTexcoordAddressingMode_NUM_ADDR_MODES)
 	{
@@ -873,7 +874,7 @@ HRESULT __stdcall IBaseGPUDevice::DeviceSetAttrInterpolatorState(const bool useF
 	return hRet;
 }
 
-HRESULT __stdcall IBaseGPUDevice::DeviceSetDepthState(const bool zEnabled, const bool zWriteEnabled, const bool colorWriteEnabled, const eCmpFunc zTestCmpFunc, const eDepthFormat zFormat, const float depthBias)
+__declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceSetDepthState(const bool zEnabled, const bool zWriteEnabled, const bool colorWriteEnabled, const eCmpFunc zTestCmpFunc, const eDepthFormat zFormat, const float depthBias)
 {
 	if (zTestCmpFunc >= cmp_MAX_CMP_FUNCS)
 	{
@@ -933,7 +934,7 @@ HRESULT __stdcall IBaseGPUDevice::DeviceSetDepthState(const bool zEnabled, const
 	return hRet;
 }
 
-HRESULT __stdcall IBaseGPUDevice::DeviceSetIAState(const eCullMode cullMode, const ePrimTopology primTopology, const eStripCutType stripCut, const eIndexFormat indexFormat, const unsigned indexBufferLengthBytes, const gpuvoid* const indexBufferBaseAddr)
+__declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceSetIAState(const eCullMode cullMode, const ePrimTopology primTopology, const eStripCutType stripCut, const eIndexFormat indexFormat, const unsigned indexBufferLengthBytes, const gpuvoid* const indexBufferBaseAddr)
 {
 	if (cullMode >= eCullMode_NUM_CULL_MODES)
 	{
@@ -1049,7 +1050,7 @@ HRESULT __stdcall IBaseGPUDevice::DeviceSetIAState(const eCullMode cullMode, con
 	return hRet;
 }
 
-HRESULT __stdcall IBaseGPUDevice::DeviceSetScanoutBuffer(const gpuvoid* const renderTargetMemory, const bool bEnableScanout/* = true*/, const bool invertScanoutColors /*= false*/, 
+__declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceSetScanoutBuffer(const gpuvoid* const renderTargetMemory, const bool bEnableScanout/* = true*/, const bool invertScanoutColors /*= false*/, 
 		const setScanoutPointerCommand::eDisplayChannelSwizzle redChannelSwizzle /*= setScanoutPointerCommand::dcs_red*/, const setScanoutPointerCommand::eDisplayChannelSwizzle greenChannelSwizzle /*= setScanoutPointerCommand::dcs_green*/, const setScanoutPointerCommand::eDisplayChannelSwizzle blueChannelSwizzle /*= setScanoutPointerCommand::dcs_blue*/)
 {
 	if (!ValidateAddress(renderTargetMemory) )
@@ -1124,7 +1125,7 @@ HRESULT __stdcall IBaseGPUDevice::DeviceSetScanoutBuffer(const gpuvoid* const re
 	return hRet;
 }
 
-HRESULT __stdcall IBaseGPUDevice::DeviceDownloadEndOfFrameStats(const gpuvoid* const statsMemory, DWORD* const outReadbackStatsData)
+__declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceDownloadEndOfFrameStats(const gpuvoid* const statsMemory, DWORD* const outReadbackStatsData)
 {
 	if (currentlyRecordingCommandList != NULL)
 	{
@@ -1181,10 +1182,10 @@ HRESULT __stdcall IBaseGPUDevice::DeviceDownloadEndOfFrameStats(const gpuvoid* c
 	// Wait for the memory controller to be done working before we try to read back our stats data from the frame
 	DeviceWaitForIdle(waitForDeviceIdleCommand::waitForMemControllerIdle);
 
-	return deviceComms->ReadFromDevice(statsMemory, outReadbackStatsData, sizeof(DWORD) * endFrameStatsResponse::TotalAllStatsCount);
+	return SyncReadFromDevice(statsMemory, outReadbackStatsData, sizeof(DWORD) * endFrameStatsResponse::TotalAllStatsCount);
 }
 
-HRESULT __stdcall IBaseGPUDevice::DeviceEndFrameAndFinishEventRecording(const gpuvoid* const eventTimestampsMemory, const gpuvoid* const eventOrderingMemory, DWORD* const outReadbackEventTimestamps, USHORT* const outReadbackEventOrderings, DWORD* const outReadbackEventsHeaderBlock)
+__declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceEndFrameAndFinishEventRecording(const gpuvoid* const eventTimestampsMemory, const gpuvoid* const eventOrderingMemory, DWORD* const outReadbackEventTimestamps, USHORT* const outReadbackEventOrderings, DWORD* const outReadbackEventsHeaderBlock)
 {
 	if (currentlyRecordingCommandList != NULL)
 	{
@@ -1260,11 +1261,11 @@ HRESULT __stdcall IBaseGPUDevice::DeviceEndFrameAndFinishEventRecording(const gp
 
 	// Offset our reads by +32 bytes to account for the fact that the events header block comes first followed by the actual event data after that
 	printf("Downloading %u bytes from device for event timestamps (GPU 0x%08X -> CPU 0x%08X)...\n", (const DWORD)(sizeof(EventTimestamp) * NUM_GPU_EVENT_SYSTEMS_TRACKED * MAX_NUM_EVENTS_PER_FRAME), reinterpret_cast<const DWORD>( (const BYTE* const)eventTimestampsMemory + sizeof(EventDataHeaderBlock) ), reinterpret_cast<const DWORD>(outReadbackEventTimestamps) );
-	deviceComms->ReadFromDevice( (const gpuvoid* const)( (const BYTE* const)eventTimestampsMemory + sizeof(EventDataHeaderBlock) ), outReadbackEventTimestamps, sizeof(EventTimestamp) * NUM_GPU_EVENT_SYSTEMS_TRACKED * MAX_NUM_EVENTS_PER_FRAME);
+	SyncReadFromDevice( (const gpuvoid* const)( (const BYTE* const)eventTimestampsMemory + sizeof(EventDataHeaderBlock) ), outReadbackEventTimestamps, sizeof(EventTimestamp) * NUM_GPU_EVENT_SYSTEMS_TRACKED * MAX_NUM_EVENTS_PER_FRAME);
 	printf("Downloading %u bytes from device for event orderings (GPU 0x%08X -> CPU 0x%08X)...\n", (const DWORD)(sizeof(USHORT) * NUM_GPU_EVENT_SYSTEMS_TRACKED * MAX_NUM_EVENTS_PER_FRAME), reinterpret_cast<const DWORD>( (const BYTE* const)eventOrderingMemory + sizeof(EventDataHeaderBlock) ), reinterpret_cast<const DWORD>(outReadbackEventOrderings) );
-	deviceComms->ReadFromDevice( (const gpuvoid* const)( (const BYTE* const)eventOrderingMemory + sizeof(EventDataHeaderBlock) ), outReadbackEventOrderings, sizeof(USHORT) * NUM_GPU_EVENT_SYSTEMS_TRACKED * MAX_NUM_EVENTS_PER_FRAME);
+	SyncReadFromDevice( (const gpuvoid* const)( (const BYTE* const)eventOrderingMemory + sizeof(EventDataHeaderBlock) ), outReadbackEventOrderings, sizeof(USHORT) * NUM_GPU_EVENT_SYSTEMS_TRACKED * MAX_NUM_EVENTS_PER_FRAME);
 	printf("Downloading %u bytes from device for event block header (GPU 0x%08X -> CPU 0x%08X)...\n", (const DWORD)(sizeof(EventDataHeaderBlock) ), reinterpret_cast<const DWORD>(eventTimestampsMemory), reinterpret_cast<const DWORD>(outReadbackEventsHeaderBlock) );
-	deviceComms->ReadFromDevice(eventTimestampsMemory, outReadbackEventsHeaderBlock, sizeof(EventDataHeaderBlock) );
+	SyncReadFromDevice(eventTimestampsMemory, outReadbackEventsHeaderBlock, sizeof(EventDataHeaderBlock) );
 
 	setStatsEventConfigCommand configNoEventFrame;
 	configNoEventFrame.eventsOrStatsAddress = (const DWORD)eventTimestampsMemory;
@@ -1287,7 +1288,7 @@ HRESULT __stdcall IBaseGPUDevice::DeviceEndFrameAndFinishEventRecording(const gp
 	return hEventConfigRet;
 }
 
-HRESULT __stdcall IBaseGPUDevice::DeviceEndFrameAndQueueEventRecording(gpuvoid* const eventTimestampsMemory, gpuvoid* const eventOrderingMemory)
+__declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceEndFrameAndQueueEventRecording(gpuvoid* const eventTimestampsMemory, gpuvoid* const eventOrderingMemory)
 {
 	if (currentlyRecordingCommandList != NULL)
 	{
@@ -1333,7 +1334,7 @@ HRESULT __stdcall IBaseGPUDevice::DeviceEndFrameAndQueueEventRecording(gpuvoid* 
 	return S_OK;
 }
 
-HRESULT __stdcall IBaseGPUDevice::DeviceEndFrame()
+__declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceEndFrame()
 {
 	if (currentlyRecordingCommandList != NULL)
 	{
@@ -1379,7 +1380,7 @@ HRESULT __stdcall IBaseGPUDevice::DeviceEndFrame()
 	return S_OK;
 }
 
-HRESULT __stdcall IBaseGPUDevice::DeviceIssueQuery(const gpuvoid* const queryAddress, const bool isEndEvent, const eQueryType queryType)
+__declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceIssueQuery(const gpuvoid* const queryAddress, const bool isEndEvent, const eQueryType queryType)
 {
 	if (!ValidateAddress(queryAddress) )
 		return E_INVALIDARG;
@@ -1421,7 +1422,7 @@ HRESULT __stdcall IBaseGPUDevice::DeviceIssueQuery(const gpuvoid* const queryAdd
 	return hRet;
 }
 
-HRESULT __stdcall IBaseGPUDevice::DeviceLoadVertexShader(const gpuvoid* const vertexShaderMemory, const unsigned short numShaderTokensToLoad, const bool forceLoadVertexShader/* = false*/, const unsigned short targetAddressToLoadTo/* = 0*/)
+__declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceLoadVertexShader(const gpuvoid* const vertexShaderMemory, const unsigned short numShaderTokensToLoad, const bool forceLoadVertexShader/* = false*/, const unsigned short targetAddressToLoadTo/* = 0*/)
 {
 	if (!ValidateAddress(vertexShaderMemory) )
 		return E_INVALIDARG;
@@ -1508,7 +1509,7 @@ HRESULT __stdcall IBaseGPUDevice::DeviceLoadVertexShader(const gpuvoid* const ve
 	return loadVertexShaderHR;
 }
 
-HRESULT __stdcall IBaseGPUDevice::DeviceSetVertexShaderStartAddr(const unsigned short shaderStartAddress)
+__declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceSetVertexShaderStartAddr(const unsigned short shaderStartAddress)
 {
 	if (shaderStartAddress >= GPU_SHADER_MAX_NUM_INSTRUCTIONS)
 	{
@@ -1544,7 +1545,7 @@ HRESULT __stdcall IBaseGPUDevice::DeviceSetVertexShaderStartAddr(const unsigned 
 	return setShaderStartAddressHR;
 }
 
-HRESULT __stdcall IBaseGPUDevice::DeviceSetVertexStreamData(const gpuvoid* const vertexStreamData, const unsigned vertexBufferLengthBytes, const BYTE dwordCount, const BYTE streamID, 
+__declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceSetVertexStreamData(const gpuvoid* const vertexStreamData, const unsigned vertexBufferLengthBytes, const BYTE dwordCount, const BYTE streamID, 
 	const bool isD3DCOLOR, const BYTE shaderInputRegIndex, const BYTE dwordStride, const BYTE dwordOffset, const BYTE numVertexStreamsTotal, const D3DDECLUSAGE usage, const BYTE usageIndex)
 {
 	if (!ValidateAddress(vertexStreamData) )
@@ -1840,7 +1841,7 @@ const bool IsFloatRegCompressible(const float4& reg)
 		IsFloatCompressible(reg.z) && IsFloatCompressible(reg.w);
 }
 
-HRESULT __stdcall IBaseGPUDevice::DeviceSetConstantDataSingleSpecial(const float4& registerData, const BYTE registerIndex)
+__declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceSetConstantDataSingleSpecial(const float4& registerData, const BYTE registerIndex)
 {
 	if (!IsFloatRegCompressible(registerData) )
 	{
@@ -1906,7 +1907,7 @@ HRESULT __stdcall IBaseGPUDevice::DeviceSetConstantDataSingleSpecial(const float
 	return setShaderConstSpecialHR;
 }
 
-HRESULT __stdcall IBaseGPUDevice::DeviceSetConstantData(const gpuvoid* const constantBufferMemory, const float4* const baseCPUFloat4RegisterFile, const BYTE startingRegisterIndex, const BYTE numFloat4Registers)
+__declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceSetConstantData(const gpuvoid* const constantBufferMemory, const float4* const baseCPUFloat4RegisterFile, const BYTE startingRegisterIndex, const BYTE numFloat4Registers)
 {
 	if (!baseCPUFloat4RegisterFile)
 	{
@@ -2010,7 +2011,7 @@ static const unsigned GetIndexCountFromPrimitiveCount(const D3DPRIMITIVETYPE pri
 	}
 }
 
-HRESULT __stdcall IBaseGPUDevice::DeviceEnableShaderDebuggingForNextDrawCall(const gpuvoid* registerFileDumpAddress)
+__declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceEnableShaderDebuggingForNextDrawCall(const gpuvoid* registerFileDumpAddress)
 {
 	if (!ValidateAddress(registerFileDumpAddress) )
 		return E_INVALIDARG;
@@ -2050,7 +2051,7 @@ HRESULT __stdcall IBaseGPUDevice::DeviceEnableShaderDebuggingForNextDrawCall(con
 	return debugHR;
 }
 
-HRESULT __stdcall IBaseGPUDevice::DeviceDrawIndexedPrimitive(const D3DPRIMITIVETYPE primType, const unsigned primitiveCount, const unsigned startIndex /*= 0*/, const int BaseVertexIndex /*= 0*/)
+__declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceDrawIndexedPrimitive(const D3DPRIMITIVETYPE primType, const unsigned primitiveCount, const unsigned startIndex /*= 0*/, const int BaseVertexIndex /*= 0*/)
 {
 	if (DoCacheDeviceState() )
 	{
@@ -2157,7 +2158,7 @@ HRESULT __stdcall IBaseGPUDevice::DeviceDrawIndexedPrimitive(const D3DPRIMITIVET
 	return drawHR;
 }
 
-HRESULT __stdcall IBaseGPUDevice::DeviceDrawPrimitive(const D3DPRIMITIVETYPE primType, const unsigned primitiveCount, const unsigned StartVertex /*= 0*/)
+__declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceDrawPrimitive(const D3DPRIMITIVETYPE primType, const unsigned primitiveCount, const unsigned StartVertex /*= 0*/)
 {
 	if (DoCacheDeviceState() )
 	{
@@ -2235,7 +2236,7 @@ HRESULT __stdcall IBaseGPUDevice::DeviceDrawPrimitive(const D3DPRIMITIVETYPE pri
 	return drawHR;
 }
 
-HRESULT __stdcall IBaseGPUDevice::DeviceExecuteCommandList(const GPUCommandList& commandList)
+__declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceExecuteCommandList(const GPUCommandList& commandList)
 {
 	// Must allocate + upload command list before trying to execute it!
 	if (!ValidateAddress(commandList.gpuAllocatedAddress) )
@@ -2292,7 +2293,7 @@ HRESULT __stdcall IBaseGPUDevice::DeviceExecuteCommandList(const GPUCommandList&
 	return runCommandListHR;
 }
 
-HRESULT __stdcall IBaseGPUDevice::DeviceEmulateExecuteCommandList(const GPUCommandList& commandList)
+__declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceEmulateExecuteCommandList(const GPUCommandList& commandList)
 {
 	// Must allocate + upload command list before trying to execute it!
 	if (!ValidateAddress(commandList.gpuAllocatedAddress) )
@@ -2426,7 +2427,7 @@ const bool __stdcall IBaseGPUDevice::ValidateDeviceStateIsSetForDraw() const
 	return true;
 }
 
-HRESULT __stdcall IBaseGPUDevice::DeviceFlushROPCache()
+__declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceFlushROPCache()
 {
 	flushROPCacheCommand flushCommand;
 	flushCommand.checksum = command::ComputeChecksum(&flushCommand, sizeof(flushCommand) );
@@ -2446,7 +2447,7 @@ HRESULT __stdcall IBaseGPUDevice::DeviceFlushROPCache()
 	return hrSend;
 }
 
-HRESULT __stdcall IBaseGPUDevice::DeviceWaitForIdle(const waitForDeviceIdleCommand::waitForDeviceSubsystem waitFlags/* = waitForDeviceIdleCommand::waitForFullPipelineFlush*/, const bool printStatus /*= false*/)
+__declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceWaitForIdle(const waitForDeviceIdleCommand::waitForDeviceSubsystem waitFlags/* = waitForDeviceIdleCommand::waitForFullPipelineFlush*/, const bool cpuGpuSync /*= false*/, const bool printStatus /*= false*/)
 {
 	if (currentlyRecordingCommandList != NULL)
 	{
@@ -2457,14 +2458,17 @@ HRESULT __stdcall IBaseGPUDevice::DeviceWaitForIdle(const waitForDeviceIdleComma
 	}
 
 #ifdef PRINT_COMMS
-	if (printStatus)
+	if (printStatus && cpuGpuSync)
 		printf("Entering device wait for idle (0x%08X)...\n", waitFlags);
 #endif
 
 	waitForDeviceIdleCommand waitCommand;
 	waitCommand.waitBitmask = waitFlags;
-	waitCommand.returnCPUValue = true;
-	waitCommand.returnValueToCPU = 0x12345678;
+	waitCommand.returnCPUValue = cpuGpuSync; // Should we bother having the GPU return the wait-complete message back to the CPU after it's finished waiting?
+	if (cpuGpuSync)
+		waitCommand.returnValueToCPU = currentWaitLabel++;
+	else
+		waitCommand.returnValueToCPU = 0;
 	waitCommand.checksum = command::ComputeChecksum(&waitCommand, sizeof(waitCommand) );
 #ifdef _DEBUG
 	if (!command::IsValidPacket(&waitCommand, sizeof(waitCommand) ) )
@@ -2472,44 +2476,24 @@ HRESULT __stdcall IBaseGPUDevice::DeviceWaitForIdle(const waitForDeviceIdleComma
 		__debugbreak();
 	}
 #endif
+	if (cpuGpuSync)
+		GetReturnTrackerSingleton().RegisterNewWaitForIdleReturn(&waitCommand);
 	const HRESULT hrSend = SendOrStorePacket(&waitCommand);
 	if (FAILED(hrSend) )
 		return hrSend;
 
-	waitResponse response;
-	const DWORD startingTick = GetTickCount();
-	const HRESULT hrRecv = deviceComms->RecvLoop( (BYTE* const)&response, sizeof(response) );
-	const DWORD endingTick = GetTickCount();
+	if (cpuGpuSync)
+	{
+		const DWORD startingTick = GetTickCount();
+		GetReturnTrackerSingleton().SyncGetWaitReturn(waitCommand.returnValueToCPU, deviceComms);
+		const DWORD endingTick = GetTickCount();
 #ifdef PRINT_COMMS
-	if (printStatus)
-		printf("...Finished wait after %ums\n", endingTick - startingTick);
+		if (printStatus)
+			printf("...Finished wait after %ums\n", endingTick - startingTick);
 #endif
-
-	if (!command::IsValidPacket(&response, sizeof(response) ) )
-	{
-#ifdef _DEBUG
-		__debugbreak(); // Unexpected invalid packet received!
-#endif
-		return E_FAIL;
 	}
 
-	if (response.type != command::PT_WAITRESPONSE)
-	{
-#ifdef _DEBUG
-		__debugbreak(); // Unexpected packet type received!
-#endif
-		return E_FAIL;
-	}
-
-	if (response.value != waitCommand.returnValueToCPU)
-	{
-#ifdef _DEBUG
-		__debugbreak(); // Unexpected sequence number returned
-#endif
-		return E_FAIL;
-	}
-
-	return hrRecv;
+	return S_OK;
 }
 
 const bool IBaseGPUDevice::PacketIsValidForRecording(const command::ePacketType packetType) const
@@ -2576,7 +2560,7 @@ const bool IBaseGPUDevice::PacketIsValidForRecording(const command::ePacketType 
 	static_assert(command::PT_MAX_PACKET_TYPES == 45, "Reminder: Need to update this switch statement with new cases when adding new packets!");
 }
 
-HRESULT IBaseGPUDevice::SendOrStorePacket(const command* const sendPacket)
+__declspec(nothrow) HRESULT IBaseGPUDevice::SendOrStorePacket(const command* const sendPacket)
 {
 	if (sendPacket == NULL)
 	{
@@ -2631,7 +2615,7 @@ void IBaseGPUDevice::CompleteRecordingCommandList()
 		return;
 	}
 
-	currentlyRecordingCommandList->FinishRecordingAndUpload(deviceComms);
+	currentlyRecordingCommandList->FinishRecordingAndUpload(this);
 
 	ResetInvalidateDeviceState();
 
@@ -2656,4 +2640,524 @@ void IBaseGPUDevice::TerminateAbortRecordingCommandList()
 void IBaseGPUDevice::ResetInvalidateDeviceState()
 {
 	currentCachedState.ResetFields(GPUDeviceState() );
+}
+
+// Sets device memory from deviceDestAddr to deviceDestAddr + dwByteLength with the DWORD value specified in dwSetVal.
+__declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceMemSet(gpuvoid* const deviceDestAddr, const DWORD dwSetVal, const DWORD dwByteLength)
+{
+	if (dwByteLength % sizeof(DWORD) != 0)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Error! Can only set whole-DWORD byte lengths!
+#endif
+		return E_INVALIDARG;
+	}
+	if (dwByteLength < sizeof(DWORD) )
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Error! Can't set less than 1 DWORD's worth of data!
+#endif
+		return E_INVALIDARG;
+	}
+	if ( (const DWORD)deviceDestAddr >= GPU_DRAM_TOTAL_CAPACITY_BYTES)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Error! Out of bounds memory write start!
+#endif
+		return E_INVALIDARG;
+	}
+	if ( (const DWORD)deviceDestAddr + dwByteLength >= GPU_DRAM_TOTAL_CAPACITY_BYTES)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Error! Out of bounds memory write end!
+#endif
+		return E_INVALIDARG;
+	}
+	if ( (const DWORD)deviceDestAddr % sizeof(DWORD) != 0)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Error! Device address must be DWORD-aligned!
+#endif
+		return E_INVALIDARG;
+	}
+	if ( (const DWORD)deviceDestAddr < GPU_PAGE_SIZE_BYTES)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Error! Cannot read/write from the NULL page!
+#endif
+		return E_INVALIDARG;
+	}
+
+	if (!ValidateMemoryRangeExistsInsideAllocation(deviceDestAddr, dwByteLength) )
+	{
+#ifdef _DEBUG
+		__debugbreak();
+#endif
+		return E_INVALIDARG;
+	}
+
+	const unsigned numDwords = dwByteLength / sizeof(DWORD);
+	bool hasConfiguredBatchWrites = false;
+	for (unsigned dwordID = 0; dwordID < numDwords;)
+	{
+		const DWORD thisWriteAddr = dwordID * sizeof(DWORD) + (const DWORD)deviceDestAddr;
+		if (thisWriteAddr % GPU_DRAM_TRANSACTION_SIZE_BYTES == 0 && 
+			numDwords - dwordID >= 8) // Aligned batched writes of entire DRAM rows:
+		{
+			BYTE stackPackets[sizeof(genericCommand) * 5];
+			if (hasConfiguredBatchWrites == false)
+			{
+				writeMemBatchConfigCommand* const batchConfigPacket = new (stackPackets) writeMemBatchConfigCommand();
+				batchConfigPacket->writeBeginAddr = thisWriteAddr;
+				batchConfigPacket->SetComputeChecksum(batchConfigPacket);
+			}
+
+			writeMemBatchData0Command* const writeData0Packet = new (stackPackets + sizeof(genericCommand) * 1) writeMemBatchData0Command();
+			writeMemBatchData1Command* const writeData1Packet = new (stackPackets + sizeof(genericCommand) * 2) writeMemBatchData1Command();
+			writeMemBatchData2Command* const writeData2Packet = new (stackPackets + sizeof(genericCommand) * 3) writeMemBatchData2Command();
+			writeMemBatchData3WriteCommand* const writeData3Packet = new (stackPackets + sizeof(genericCommand) * 4) writeMemBatchData3WriteCommand();
+
+			writeData0Packet->writeDWORDData0 = dwSetVal;
+			writeData0Packet->writeDWORDData1 = dwSetVal;
+			writeData1Packet->writeDWORDData2 = dwSetVal;
+			writeData1Packet->writeDWORDData3 = dwSetVal;
+			writeData2Packet->writeDWORDData4 = dwSetVal;
+			writeData2Packet->writeDWORDData5 = dwSetVal;
+			writeData3Packet->writeDWORDData6 = dwSetVal;
+			writeData3Packet->writeDWORDData7 = dwSetVal;
+			writeData0Packet->SetComputeChecksum(writeData0Packet);
+			writeData1Packet->SetComputeChecksum(writeData1Packet);
+			writeData2Packet->SetComputeChecksum(writeData2Packet);
+			writeData3Packet->SetComputeChecksum(writeData3Packet);
+
+			if (hasConfiguredBatchWrites == false)
+			{
+				const HRESULT sendHR = deviceComms->SendLoop(stackPackets, sizeof(genericCommand) * 5);
+				if (FAILED(sendHR) )
+					return sendHR;
+				hasConfiguredBatchWrites = true;
+			}
+			else
+			{
+				const HRESULT sendHR = deviceComms->SendLoop(stackPackets + sizeof(genericCommand), sizeof(genericCommand) * 4);
+				if (FAILED(sendHR) )
+					return sendHR;
+			}
+
+			dwordID += 8;
+		}
+		else
+		{
+			writeMemCommand newWriteMemPacket;
+			newWriteMemPacket.writeDWORDAddr = thisWriteAddr;
+			newWriteMemPacket.writeVal = dwSetVal;
+			newWriteMemPacket.SetComputeChecksum(&newWriteMemPacket);
+
+			const HRESULT sendHR = deviceComms->SendLoop( (const BYTE* const)&newWriteMemPacket, sizeof(newWriteMemPacket) );
+			if (FAILED(sendHR) )
+				return sendHR;
+
+			++dwordID;
+		}
+	}
+
+	return S_OK;
+}
+
+// Copies a block of memory from host memory to device memory.
+__declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceMemCopy(gpuvoid* const deviceDestAddr, const void* const sourceCPUAddr, const DWORD dwByteLength)
+{
+	if (!sourceCPUAddr)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // NULL is not a valid source CPU address!
+#endif
+		return E_INVALIDARG;
+	}
+	if (dwByteLength % sizeof(DWORD) != 0)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Error! Can only set whole-DWORD byte lengths!
+#endif
+		return E_INVALIDARG;
+	}
+	if (dwByteLength < sizeof(DWORD) )
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Error! Can't set less than 1 DWORD's worth of data!
+#endif
+		return E_INVALIDARG;
+	}
+	if ( (const DWORD)deviceDestAddr >= GPU_DRAM_TOTAL_CAPACITY_BYTES)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Error! Out of bounds memory write start!
+#endif
+		return E_INVALIDARG;
+	}
+	if ( (const DWORD)deviceDestAddr + dwByteLength >= GPU_DRAM_TOTAL_CAPACITY_BYTES)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Error! Out of bounds memory write end!
+#endif
+		return E_INVALIDARG;
+	}
+	if ( (const DWORD)deviceDestAddr % sizeof(DWORD) != 0)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Error! Device address must be DWORD-aligned!
+#endif
+		return E_INVALIDARG;
+	}
+	if ( (const DWORD)deviceDestAddr < GPU_PAGE_SIZE_BYTES)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Error! Cannot read/write from the NULL page!
+#endif
+		return E_INVALIDARG;
+	}
+
+	if (!ValidateMemoryRangeExistsInsideAllocation(deviceDestAddr, dwByteLength) )
+	{
+#ifdef _DEBUG
+		__debugbreak();
+#endif
+		return E_INVALIDARG;
+	}
+
+	const DWORD* const readMem = (const DWORD* const)sourceCPUAddr;
+	const unsigned numDwords = dwByteLength / sizeof(DWORD);
+	bool hasConfiguredBatchWrites = false;
+	for (unsigned dwordID = 0; dwordID < numDwords;)
+	{
+		const DWORD thisWriteAddr = dwordID * sizeof(DWORD) + (const DWORD)deviceDestAddr;
+		if (thisWriteAddr % GPU_DRAM_TRANSACTION_SIZE_BYTES == 0 && 
+			numDwords - dwordID >= 8) // Aligned batched writes of entire DRAM rows:
+		{
+			BYTE stackPackets[sizeof(genericCommand) * 5];
+			if (hasConfiguredBatchWrites == false)
+			{
+				writeMemBatchConfigCommand* const batchConfigPacket = new (stackPackets) writeMemBatchConfigCommand();
+				batchConfigPacket->writeBeginAddr = thisWriteAddr;
+				batchConfigPacket->SetComputeChecksum(batchConfigPacket);
+			}
+
+			writeMemBatchData0Command* const writeData0Packet = new (stackPackets + sizeof(genericCommand) * 1) writeMemBatchData0Command();
+			writeMemBatchData1Command* const writeData1Packet = new (stackPackets + sizeof(genericCommand) * 2) writeMemBatchData1Command();
+			writeMemBatchData2Command* const writeData2Packet = new (stackPackets + sizeof(genericCommand) * 3) writeMemBatchData2Command();
+			writeMemBatchData3WriteCommand* const writeData3Packet = new (stackPackets + sizeof(genericCommand) * 4) writeMemBatchData3WriteCommand();
+
+			writeData0Packet->writeDWORDData0 = readMem[dwordID + 0];
+			writeData0Packet->writeDWORDData1 = readMem[dwordID + 1];
+			writeData1Packet->writeDWORDData2 = readMem[dwordID + 2];
+			writeData1Packet->writeDWORDData3 = readMem[dwordID + 3];
+			writeData2Packet->writeDWORDData4 = readMem[dwordID + 4];
+			writeData2Packet->writeDWORDData5 = readMem[dwordID + 5];
+			writeData3Packet->writeDWORDData6 = readMem[dwordID + 6];
+			writeData3Packet->writeDWORDData7 = readMem[dwordID + 7];
+			writeData0Packet->SetComputeChecksum(writeData0Packet);
+			writeData1Packet->SetComputeChecksum(writeData1Packet);
+			writeData2Packet->SetComputeChecksum(writeData2Packet);
+			writeData3Packet->SetComputeChecksum(writeData3Packet);
+
+			if (hasConfiguredBatchWrites == false)
+			{
+				const HRESULT sendHR = deviceComms->SendLoop(stackPackets, sizeof(genericCommand) * 5);
+				if (FAILED(sendHR) )
+					return sendHR;
+				hasConfiguredBatchWrites = true;
+			}
+			else
+			{
+				const HRESULT sendHR = deviceComms->SendLoop(stackPackets + sizeof(genericCommand), sizeof(genericCommand) * 4);
+				if (FAILED(sendHR) )
+					return sendHR;
+			}
+
+			dwordID += 8;
+		}
+		else // Single-DWORD writes
+		{
+			const DWORD newVal = readMem[dwordID];
+			writeMemCommand newWriteMemPacket;
+			newWriteMemPacket.writeDWORDAddr = thisWriteAddr;
+			newWriteMemPacket.writeVal = newVal;
+			newWriteMemPacket.SetComputeChecksum(&newWriteMemPacket);
+
+			const HRESULT sendHR = deviceComms->SendLoop( (const BYTE* const)&newWriteMemPacket, sizeof(newWriteMemPacket) );
+			if (FAILED(sendHR) )
+				return sendHR;
+			++dwordID;
+		}
+	}
+
+	// Validate copies by reading the values back and then comparing the memory for equality:
+#ifdef _DEBUG
+	if (FAILED(DeviceValidateMemory(deviceDestAddr, sourceCPUAddr, dwByteLength) ) )
+		return E_FAIL;
+#endif
+
+	return S_OK;
+}
+
+// Copies a block of memory from device memory to host memory.
+// This function pushes read requests onto the GPU command buffer and then returns immediately. The read does not complete until you later call AsyncReadFromDeviceWaitComplete().
+__declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::AsyncReadFromDeviceBegin(const gpuvoid* const deviceSrcAddr, const DWORD dwByteLength)
+{
+	if (dwByteLength % sizeof(DWORD) != 0)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Error! Can only set whole-DWORD byte lengths!
+#endif
+		return E_INVALIDARG;
+	}
+	if (dwByteLength < sizeof(DWORD) )
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Error! Can't copy less than 1 DWORD's worth of data!
+#endif
+		return E_INVALIDARG;
+	}
+	if ( (const DWORD)deviceSrcAddr >= GPU_DRAM_TOTAL_CAPACITY_BYTES)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Error! Out of bounds memory read start!
+#endif
+		return E_INVALIDARG;
+	}
+	if ( (const DWORD)deviceSrcAddr + dwByteLength >= GPU_DRAM_TOTAL_CAPACITY_BYTES)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Error! Out of bounds memory read end!
+#endif
+		return E_INVALIDARG;
+	}
+	if ( (const DWORD)deviceSrcAddr % sizeof(DWORD) != 0)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Error! Device address must be DWORD-aligned!
+#endif
+		return E_INVALIDARG;
+	}
+	if ( (const DWORD)deviceSrcAddr < GPU_PAGE_SIZE_BYTES)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Error! Cannot read/write from the NULL page!
+#endif
+		return E_INVALIDARG;
+	}
+
+	if (!ValidateMemoryRangeExistsInsideAllocation(deviceSrcAddr, dwByteLength) )
+	{
+#ifdef _DEBUG
+		__debugbreak();
+#endif
+		return E_INVALIDARG;
+	}
+
+	// Skip the actual memory readback in case this endpoint doesn't support it:
+	if (!deviceComms->EndpointSupportsMemReadback() )
+	{
+		return S_OK;
+	}
+
+	const unsigned numDwords = dwByteLength / sizeof(DWORD);
+	for (unsigned dwordID = 0; dwordID < numDwords; ++dwordID)
+	{
+		readMemCommand newReadMemPacket;
+		newReadMemPacket.readDWORDAddr = (const DWORD)deviceSrcAddr + dwordID * sizeof(DWORD);
+		newReadMemPacket.dwordSelect = (newReadMemPacket.readDWORDAddr >> 2) & 0x7; // Mask off these three bits
+		newReadMemPacket.readDWORDAddr &= ~0x1F; // Mask off the bottommost 5 bits in order to align our read address to the next lowest DRAM line
+		newReadMemPacket.SetComputeChecksum(&newReadMemPacket);
+
+		GetReturnTrackerSingleton().RegisterNewReadReturn(&newReadMemPacket);
+		const HRESULT sendHR = deviceComms->SendLoop( (const BYTE* const)&newReadMemPacket, sizeof(newReadMemPacket) );
+		if (FAILED(sendHR) )
+			return sendHR;
+	}
+
+	return S_OK;
+}
+
+// Copies a block of memory from device memory to host memory.
+// This function waits for the previously issued memory read from AsyncReadFromDeviceBegin() to complete. It won't return until the memory read response has been returned.
+__declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::AsyncReadFromDeviceWaitComplete(const gpuvoid* const deviceSrcAddr, void* const destCPUAddr, const DWORD dwByteLength)
+{
+	if (!destCPUAddr)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // NULL is not a valid dest CPU address!
+#endif
+		return E_INVALIDARG;
+	}
+	if (dwByteLength % sizeof(DWORD) != 0)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Error! Can only set whole-DWORD byte lengths!
+#endif
+		return E_INVALIDARG;
+	}
+	if (dwByteLength < sizeof(DWORD) )
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Error! Can't copy less than 1 DWORD's worth of data!
+#endif
+		return E_INVALIDARG;
+	}
+	if ( (const DWORD)deviceSrcAddr >= GPU_DRAM_TOTAL_CAPACITY_BYTES)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Error! Out of bounds memory read start!
+#endif
+		return E_INVALIDARG;
+	}
+	if ( (const DWORD)deviceSrcAddr + dwByteLength >= GPU_DRAM_TOTAL_CAPACITY_BYTES)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Error! Out of bounds memory read end!
+#endif
+		return E_INVALIDARG;
+	}
+	if ( (const DWORD)deviceSrcAddr % sizeof(DWORD) != 0)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Error! Device address must be DWORD-aligned!
+#endif
+		return E_INVALIDARG;
+	}
+	if ( (const DWORD)deviceSrcAddr < GPU_PAGE_SIZE_BYTES)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Error! Cannot read/write from the NULL page!
+#endif
+		return E_INVALIDARG;
+	}
+
+	if (!ValidateMemoryRangeExistsInsideAllocation(deviceSrcAddr, dwByteLength) )
+	{
+#ifdef _DEBUG
+		__debugbreak();
+#endif
+		return E_INVALIDARG;
+	}
+
+	// Skip the actual memory readback in case this endpoint doesn't support it:
+	if (!deviceComms->EndpointSupportsMemReadback() )
+	{
+		return S_OK;
+	}
+
+	const unsigned numDwords = dwByteLength / sizeof(DWORD);
+	DWORD* const writeMem = (DWORD* const)destCPUAddr;
+	for (unsigned dwordID = 0; dwordID < numDwords; ++dwordID)
+	{
+		DWORD readDWORDAddr = (const DWORD)deviceSrcAddr + dwordID * sizeof(DWORD);
+
+		DWORD memResponse;
+		GetReturnTrackerSingleton().SyncGetReadReturn( (const gpuvoid* const)readDWORDAddr, &memResponse, deviceComms);
+		writeMem[dwordID] = memResponse;
+	}
+
+	return S_OK;
+}
+
+// Copies a block of memory from device memory to host memory. This function does not return until the memory has been fully read and copied into CPU memory.
+__declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::SyncReadFromDevice(const gpuvoid* const deviceSrcAddr, void* const destCPUAddr, const DWORD dwByteLength)
+{
+	HRESULT hr = AsyncReadFromDeviceBegin(deviceSrcAddr, dwByteLength);
+	if (FAILED(hr) )
+	{
+#ifdef _DEBUG
+		__debugbreak();
+#endif
+		return hr;
+	}
+
+	hr = AsyncReadFromDeviceWaitComplete(deviceSrcAddr, destCPUAddr, dwByteLength);
+	return hr;
+}
+
+// Validates that the block of memory on the device matches the data in the block of memory on the CPU.
+// Note that this function contains an implied CPU-GPU synchronization (the CPU needs to stop and wait for the GPU to complete all previous commands, then to wait for the data to be returned).
+// Returns S_OK if the memory is equal between the CPU and the GPU pointers or E_FAIL otherwise. It is the caller's responsibility to ensure that the GPU is not writing to this region
+// as we are reading from it.
+__declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceValidateMemory(const gpuvoid* const deviceSrcAddr, const void* const compareCPUAddr, const DWORD dwByteLength)
+{
+	if (!compareCPUAddr)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // NULL is not a valid dest CPU address!
+#endif
+		return E_INVALIDARG;
+	}
+	if (dwByteLength % sizeof(DWORD) != 0)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Error! Can only set whole-DWORD byte lengths!
+#endif
+		return E_INVALIDARG;
+	}
+	if (dwByteLength < sizeof(DWORD) )
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Error! Can't copy less than 1 DWORD's worth of data!
+#endif
+		return E_INVALIDARG;
+	}
+	if ( (const DWORD)deviceSrcAddr >= GPU_DRAM_TOTAL_CAPACITY_BYTES)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Error! Out of bounds memory read start!
+#endif
+		return E_INVALIDARG;
+	}
+	if ( (const DWORD)deviceSrcAddr + dwByteLength >= GPU_DRAM_TOTAL_CAPACITY_BYTES)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Error! Out of bounds memory read end!
+#endif
+		return E_INVALIDARG;
+	}
+	if ( (const DWORD)deviceSrcAddr % sizeof(DWORD) != 0)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Error! Device address must be DWORD-aligned!
+#endif
+		return E_INVALIDARG;
+	}
+	if ( (const DWORD)deviceSrcAddr < GPU_PAGE_SIZE_BYTES)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Error! Cannot read/write from the NULL page!
+#endif
+		return E_INVALIDARG;
+	}
+
+	if (!ValidateMemoryRangeExistsInsideAllocation(deviceSrcAddr, dwByteLength) )
+	{
+#ifdef _DEBUG
+		__debugbreak();
+#endif
+		return E_INVALIDARG;
+	}
+
+	// It uses more memory, but it's more easily debugable to download the entire GPU memory region all at once and then analyze it on the CPU
+	// rather than performing comparisons as we go. This way, we can find errors by looking at the whole region and seeing if parts are missing or corrupted.
+	std::vector<BYTE> gpuBytes;
+	gpuBytes.resize(dwByteLength);
+	const HRESULT hrReadResult = SyncReadFromDevice(deviceSrcAddr, &(gpuBytes.front() ), dwByteLength);
+	if (deviceComms->EndpointSupportsMemReadback() )
+	{
+		if (memcmp(&(gpuBytes.front() ), compareCPUAddr, dwByteLength) != 0)
+		{
+#ifdef _DEBUG
+			__debugbreak();
+#endif
+			return E_FAIL;
+		}
+		else
+			return hrReadResult;
+	}
+	else
+		return S_OK;
 }

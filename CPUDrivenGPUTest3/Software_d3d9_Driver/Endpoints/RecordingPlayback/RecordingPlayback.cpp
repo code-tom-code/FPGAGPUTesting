@@ -191,14 +191,6 @@ static BYTE* currentBatchMemoryWritePtr = LocalMemory;
 static DWORD currentBatchWriteData[8] = {0};
 #endif // #ifdef USE_PLAYBACK_LOCAL_MEMORY
 
-static const unsigned numSimplifiedPacketsPerDRAMLine = GPU_DRAM_TRANSACTION_SIZE_BYTES / sizeof(SimplifiedCommandPacket);
-union dramLinePackedPacket
-{
-	SimplifiedCommandPacket simplifiedPackets[numSimplifiedPacketsPerDRAMLine];
-	DWORD dwords[8];
-};
-static_assert(sizeof(dramLinePackedPacket) == 32, "Error: Unexpected struct padding!");
-
 // For IO efficiency, read from our file in 64KB chunks at a time:
 static const unsigned READ_SIZE_BYTES = 64u * 1024u;
 struct readCache
@@ -299,34 +291,6 @@ static std::vector<renderEvent> renderEvents;
 void __stdcall ReturnMessageImpl(const genericCommand* const D2HReplyPacket)
 {
 	// Do nothing! Since we're just playing back a previously-recorded stream, there's nowhere for our return messages to go anyway
-}
-
-/*static*/ void GPUCommandList::ConvertSimplifiedCommandPacketToCommandPacket(const SimplifiedCommandPacket* const inSimplifiedPacket, command* const outFullPacket)
-{
-	#ifdef _DEBUG
-	if (!inSimplifiedPacket)
-	{
-		__debugbreak();
-	}
-
-	if (!outFullPacket)
-	{
-		__debugbreak();
-	}
-
-	if ( (const void* const)inSimplifiedPacket == (const void* const)outFullPacket)
-	{
-		__debugbreak();
-	}
-#endif
-	genericCommand* const packetWithData = reinterpret_cast<genericCommand* const>(outFullPacket);
-
-	packetWithData->magicProtoHeader = PACKET_MAGIC_VALUE;
-	packetWithData->checksum = 0;
-	packetWithData->type = inSimplifiedPacket->type;
-	packetWithData->payload0 = inSimplifiedPacket->payload0;
-	packetWithData->payload1 = inSimplifiedPacket->payload1;
-	packetWithData->checksum = command::ComputeChecksum(packetWithData, sizeof(genericCommand) );
 }
 
 static void WaitUntilTime(const LARGE_INTEGER& waitStopTime)

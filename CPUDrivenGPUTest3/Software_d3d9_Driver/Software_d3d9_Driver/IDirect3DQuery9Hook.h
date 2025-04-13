@@ -47,7 +47,7 @@ protected:
 	{
 		nonIssued = 0,
 		issueBegin,
-		issueEnd,
+		issueEnd
 	} queryState;
 
 	D3DQUERYTYPE queryType;

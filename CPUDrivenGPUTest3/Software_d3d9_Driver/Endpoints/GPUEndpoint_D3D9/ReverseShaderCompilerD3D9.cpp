@@ -121,9 +121,9 @@ void ReverseCompileShaderToD3D9ShaderText(const DeviceShaderHeader* const shader
 	PrintNewLine(codeLines, "struct inVert\n");
 	PrintNewLine(codeLines, "{\n");
 	PrintNewLine(codeLines, "\tfloat4 position0 : POSITION0;\n");
-	PrintNewLine(codeLines, "\tfloat4 position1 : POSITION0;\n");
-	PrintNewLine(codeLines, "\tfloat4 position2 : POSITION0;\n");
-	PrintNewLine(codeLines, "\tfloat4 position3 : POSITION0;\n");
+	PrintNewLine(codeLines, "\tfloat4 position1 : POSITION1;\n");
+	PrintNewLine(codeLines, "\tfloat4 position2 : POSITION2;\n");
+	PrintNewLine(codeLines, "\tfloat4 position3 : POSITION3;\n");
 	PrintNewLine(codeLines, "\tfloat4 texCoord0 : TEXCOORD0;\n");
 	PrintNewLine(codeLines, "\tfloat4 texCoord1 : TEXCOORD1;\n");
 	PrintNewLine(codeLines, "\tfloat4 texCoord2 : TEXCOORD2;\n");

@@ -1282,10 +1282,10 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::Present(THI
 		}
 
 		const DWORD startTicks = GetTickCount();
-		baseDevice->DeviceWaitForIdle(waitForDeviceIdleCommand::waitForFullPipelineFlush);
+		baseDevice->DeviceWaitForIdle(waitForDeviceIdleCommand::waitForFullPipelineFlush, true);
 
 		static D3DCOLOR screencapBuffer[640 * 480] = {0};
-		deviceComms->ReadFromDevice(implicitSwapChain->GetInternalFrontBuffer()->GetDeviceSurfaceBytes(), screencapBuffer, sizeof(screencapBuffer) );
+		baseDevice->SyncReadFromDevice(implicitSwapChain->GetInternalFrontBuffer()->GetDeviceSurfaceBytes(), screencapBuffer, sizeof(screencapBuffer) );
 		const DWORD endTicks = GetTickCount();
 
 		for (unsigned x = 0; x < 640 * 480; ++x)
@@ -1919,8 +1919,8 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::Clear(THIS_
 					for (unsigned y = 0; y < ARRAYSIZE(clearTestArray); ++y)
 						clearTestArray[y] = D3DColorToRGBAColor(Color);
 					baseDevice->DeviceWaitForIdle();
-					deviceComms->DeviceValidateMemory(currentRT->GetDeviceSurfaceBytes(), clearTestArray, sizeof(clearTestArray) ); // Validate the beginning and the end of the clear-region
-					deviceComms->DeviceValidateMemory( (const gpuvoid* const)( (size_t)currentRT->GetDeviceSurfaceBytes() + rtWidth * rtHeight * sizeof(D3DCOLOR) - sizeof(clearTestArray) ), clearTestArray, sizeof(clearTestArray) );
+					baseDevice->DeviceValidateMemory(currentRT->GetDeviceSurfaceBytes(), clearTestArray, sizeof(clearTestArray) ); // Validate the beginning and the end of the clear-region
+					baseDevice->DeviceValidateMemory( (const gpuvoid* const)( (size_t)currentRT->GetDeviceSurfaceBytes() + rtWidth * rtHeight * sizeof(D3DCOLOR) - sizeof(clearTestArray) ), clearTestArray, sizeof(clearTestArray) );
 #endif
 				}
 			}
@@ -1948,8 +1948,8 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::Clear(THIS_
 						for (unsigned y = 0; y < ARRAYSIZE(clearTestArray); ++y)
 							clearTestArray[y] = D3DColorToRGBAColor(Color);
 						baseDevice->DeviceWaitForIdle();
-						deviceComms->DeviceValidateMemory(currentRT->GetDeviceSurfaceBytes(), clearTestArray, sizeof(clearTestArray) );
-						deviceComms->DeviceValidateMemory( (const gpuvoid* const)( (size_t)currentRT->GetDeviceSurfaceBytes() + rtWidth * rtHeight * sizeof(D3DCOLOR) - sizeof(clearTestArray) ), clearTestArray, sizeof(clearTestArray) );
+						baseDevice->DeviceValidateMemory(currentRT->GetDeviceSurfaceBytes(), clearTestArray, sizeof(clearTestArray) );
+						baseDevice->DeviceValidateMemory( (const gpuvoid* const)( (size_t)currentRT->GetDeviceSurfaceBytes() + rtWidth * rtHeight * sizeof(D3DCOLOR) - sizeof(clearTestArray) ), clearTestArray, sizeof(clearTestArray) );
 #endif
 					}
 				}
@@ -4209,8 +4209,6 @@ static inline void ComputeCachedStreamEnd(StreamDataTypeEndPointers& thisStreamE
 
 void IDirect3DDevice9Hook::RecomputeCachedStreamEndsIfDirty()
 {
-	SIMPLE_FUNC_SCOPE();
-
 	if (!currentState.currentVertexDecl)
 	{
 		__debugbreak(); // Should never be calling this function if we don't have a vertex decl
@@ -4251,8 +4249,6 @@ void IDirect3DDevice9Hook::RecomputeCachedStreamEndsForUP(const BYTE* const stre
 // Returns true for "should draw", or false for "should skip"
 const bool IDirect3DDevice9Hook::TotalDrawCallSkipTest(void) const
 {
-	SIMPLE_FUNC_SCOPE();
-
 #ifdef ENABLE_END_TO_SKIP_DRAWS
 	// Skip this draw call if END is held down
 	if (IsHoldingEndToSkipDrawCalls() )
@@ -5231,7 +5227,7 @@ void IDirect3DDevice9Hook::DeviceSetUsedVertexShaderConstants()
 		{
 			if (numPaddingFloat4s == 0)
 			{
-				deviceComms->DeviceMemCopy(constantBufferAllocation.deviceMemory, &constRegisterData.front(), constantBufferAllocation.deviceSizeBytes);
+				baseDevice->DeviceMemCopy(constantBufferAllocation.deviceMemory, &constRegisterData.front(), constantBufferAllocation.deviceSizeBytes);
 			}
 			else
 			{
@@ -5241,11 +5237,11 @@ void IDirect3DDevice9Hook::DeviceSetUsedVertexShaderConstants()
 				{
 					const constantRegisterRange& thisRegisterRange = registerRanges[registerRangeIndex];
 					const bool isLastRegisterRange = (registerRangeIndex == numRegisterRanges - 1);
-					deviceComms->DeviceMemCopy( (char* const)constantBufferAllocation.deviceMemory + rangeOffsetBytes, &constRegisterData.front() + readConstIndex, thisRegisterRange.rangeRegisterLength * sizeof(float4) );
+					baseDevice->DeviceMemCopy( (char* const)constantBufferAllocation.deviceMemory + rangeOffsetBytes, &constRegisterData.front() + readConstIndex, thisRegisterRange.rangeRegisterLength * sizeof(float4) );
 					if (thisRegisterRange.rangeRegisterLength % 2 && !isLastRegisterRange)
 					{
 						// Zero out our padding float4's:
-						deviceComms->DeviceMemSet( (char* const)constantBufferAllocation.deviceMemory + rangeOffsetBytes + thisRegisterRange.rangeRegisterLength * sizeof(float4), 0, sizeof(float4) );
+						baseDevice->DeviceMemSet( (char* const)constantBufferAllocation.deviceMemory + rangeOffsetBytes + thisRegisterRange.rangeRegisterLength * sizeof(float4), 0, sizeof(float4) );
 						rangeOffsetBytes += sizeof(float4) * 1;
 					}
 					readConstIndex += thisRegisterRange.rangeRegisterLength;
@@ -5294,7 +5290,7 @@ void IDirect3DDevice9Hook::DeviceSetUsedVertexShaderConstants()
 		#endif
 			) )
 			{
-				deviceComms->DeviceMemCopy( (char* const)shaderDEFConstantAllocation.deviceMemory, &(thisInitialConst.initialValue), sizeof(float4) );
+				baseDevice->DeviceMemCopy( (char* const)shaderDEFConstantAllocation.deviceMemory, &(thisInitialConst.initialValue), sizeof(float4) );
 			}
 
 			baseDevice->DeviceSetConstantData( (const char* const)shaderDEFConstantAllocation.deviceMemory, (const float4* const)&(thisInitialConst.initialValue), (const BYTE)thisInitialConst.constantRegisterIndex, 1);
@@ -6064,7 +6060,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawIndexed
 				if (x > 0) // Never ever overwrite the END token or else our shader will infinite-loop!
 				{
 					gpuvoid* targetInstructionOverwrite = ( (char*)currentState.currentVertexShader->GetDeviceCompiledShaderBytecode() ) + sizeof(instructionSlot) * overwriteIPIndex;
-					deviceComms->DeviceMemSet(targetInstructionOverwrite, 0x000000C0, sizeof(instructionSlot) ); // Overwrite the instruction with a NOP instruction
+					baseDevice->DeviceMemSet(targetInstructionOverwrite, 0x000000C0, sizeof(instructionSlot) ); // Overwrite the instruction with a NOP instruction
 					const bool bForceReloadVertexShader = true;
 					DeviceSetVertexShader(bForceReloadVertexShader); // Force a reload of our newly-patched vertex shader
 					DeviceSetVertexStreamsAndDecl(); // Bind our current vertex streams and set up our vertex decl
@@ -6074,7 +6070,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawIndexed
 				baseDevice->DeviceDrawIndexedPrimitive(PrimitiveType, primCount, startIndex, BaseVertexIndex);
 				DeviceRegisterFile regFile;
 				memset(&regFile, 0, sizeof(regFile) );
-				deviceComms->ReadFromDevice(allocatedDebugShaderRegisterFile, &regFile, sizeof(regFile) );
+				baseDevice->SyncReadFromDevice(allocatedDebugShaderRegisterFile, &regFile, sizeof(regFile) );
 				regFile.SwizzleDeviceWriteOrderToLogicalOrder();
 				char filenameBuffer[MAX_PATH] = {0};
 #pragma warning(push)
@@ -11793,8 +11789,8 @@ IDirect3DDevice9Hook::IDirect3DDevice9Hook(LPDIRECT3DDEVICE9 _d3d9dev, IDirect3D
 		"Endpoints\\RecordingEndpoint_DiskFile.dll"
 	);
 	IBroadcastVirtualDeviceComms* const broadcastDeviceComms = new IBroadcastVirtualDeviceComms(localRecorderEndpointComms/*networkDeviceComms*/);
-	broadcastDeviceComms->AddNewSecondaryBroadcastTarget(remoteProcessesIPCComms);
 	//broadcastDeviceComms->AddNewSecondaryBroadcastTarget(localRecorderEndpointComms);
+	broadcastDeviceComms->AddNewSecondaryBroadcastTarget(remoteProcessesIPCComms);
 
 	deviceComms = broadcastDeviceComms;
 	baseDevice = new IBaseGPUDevice(broadcastDeviceComms);

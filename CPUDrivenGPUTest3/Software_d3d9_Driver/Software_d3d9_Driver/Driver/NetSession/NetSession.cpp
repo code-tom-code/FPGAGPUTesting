@@ -2,15 +2,11 @@
 #include <timeapi.h>
 #pragma comment(lib, "winmm.lib")
 
-//#define USE_PIX 1 // This define must be present *before* you include pix3.h
-#include "..\..\WinPixEventRuntime\pix3.h"
+#include "..\..\SimpleInstrumentedProfiler.h"
+#include "..\..\Utilities\ThreadNaming.h"
 
 #pragma comment(lib, "ws2_32.lib")
 #pragma comment(lib, "Synchronization.lib")
-
-#if defined(USE_PIX)
-	#pragma comment(lib, "..\\..\\WinPixEventRuntime.lib")
-#endif // USE_PIX
 
 // Uncomment this to have the send thread and the receive thread spin all the time rather than sleeping when there's no packets to send/receive
 // #define NO_SLEEPS_RECV 1
@@ -68,16 +64,24 @@ struct PIXScoped
 {
 	PIXScoped(const unsigned char colorIndex, const char* const eventString)
 	{
+#ifdef ENABLE_PIX_PROFILER
 		PIXBeginEvent(PIX_COLOR_INDEX(colorIndex), eventString);
+#endif
 	}
 
 	~PIXScoped()
 	{
+#ifdef ENABLE_PIX_PROFILER
 		PIXEndEvent();
+#endif
 	}
 
 private:
 };
+
+#ifndef ENABLE_PIX_PROFILER
+	#define PIX_COLOR_INDEX(x) (x)
+#endif
 
 // Rounds up the number of bytes to the next multiple of 2MB:
 static const unsigned _2MB = 2u * 1024u * 1024u;
@@ -253,49 +257,50 @@ void NetSession::WrappedSend(_In_reads_bytes_(len) const char* const buf,
 const unsigned NetSession::WrappedRecvFrom(_Out_ const char*& buf, 
 	_Out_ const SOCKADDR_IN*& fromAddr)
 {
-	PIXBeginEvent(PIX_COLOR_INDEX(3), "RIO RecvFrom");
 	RIORESULT dequeueResult = {0};
-	const unsigned numDequeued = RIOFunctionsTable.RIODequeueCompletion(recvCQueue, &dequeueResult, 1);
-	if (numDequeued == 0)
 	{
-		buf = NULL;
-		fromAddr = NULL;
-		PIXEndEvent();
-		return 0;
-	}
+		PIXScoped scopedA(PIX_COLOR_INDEX(3), "RIO RecvFrom");
 
-#ifdef _DEBUG
-	if (!(dequeueResult.RequestContext & RECVFROM_REQUEST_FLAG) )
-	{
-		__debugbreak(); // Unexpected getting back a recv() completion result rather than a recvfrom() completion result.
-	}
-#endif
+		const unsigned numDequeued = RIOFunctionsTable.RIODequeueCompletion(recvCQueue, &dequeueResult, 1);
+		if (numDequeued == 0)
+		{
+			buf = NULL;
+			fromAddr = NULL;
+			return 0;
+		}
 
-	const unsigned incomingReadSliceID = static_cast<const unsigned>(dequeueResult.RequestContext);
-	recvDataBuffer.ReleaseSlice(incomingReadSliceID);
+	#ifdef _DEBUG
+		if (!(dequeueResult.RequestContext & RECVFROM_REQUEST_FLAG) )
+		{
+			__debugbreak(); // Unexpected getting back a recv() completion result rather than a recvfrom() completion result.
+		}
+	#endif
 
-	if (dequeueResult.RequestContext & RECVFROM_REQUEST_FLAG)
-	{
-		recvAddressBuffer.ReleaseSlice(incomingReadSliceID);
-	}
+		const unsigned incomingReadSliceID = static_cast<const unsigned>(dequeueResult.RequestContext);
+		recvDataBuffer.ReleaseSlice(incomingReadSliceID);
 
-	const unsigned nextWriteSliceID = recvDataBuffer.ConsumeNextAvailableSlice();
-	const unsigned nextWriteAddrSliceID = recvAddressBuffer.ConsumeNextAvailableSlice();
-#ifdef _DEBUG
-	if (nextWriteSliceID != nextWriteAddrSliceID)
-	{
-		__debugbreak();
-	}
-#endif
+		if (dequeueResult.RequestContext & RECVFROM_REQUEST_FLAG)
+		{
+			recvAddressBuffer.ReleaseSlice(incomingReadSliceID);
+		}
+
+		const unsigned nextWriteSliceID = recvDataBuffer.ConsumeNextAvailableSlice();
+		const unsigned nextWriteAddrSliceID = recvAddressBuffer.ConsumeNextAvailableSlice();
+	#ifdef _DEBUG
+		if (nextWriteSliceID != nextWriteAddrSliceID)
+		{
+			__debugbreak();
+		}
+	#endif
 	
-	// Queue up another receiveFrom in our requests queue to replenish the previous request that we just dequeued
-	if (!RIOFunctionsTable.RIOReceiveEx(recvRQueue, &recvDataBuffer.GetSliceDescriptor(nextWriteSliceID), 1, NULL, &recvAddressBuffer.GetSliceDescriptor(nextWriteAddrSliceID), NULL, NULL, 0, reinterpret_cast<void* const>(RECVFROM_REQUEST_FLAG | (size_t)nextWriteSliceID) ) )
-	{
-		__debugbreak();
+		// Queue up another receiveFrom in our requests queue to replenish the previous request that we just dequeued
+		if (!RIOFunctionsTable.RIOReceiveEx(recvRQueue, &recvDataBuffer.GetSliceDescriptor(nextWriteSliceID), 1, NULL, &recvAddressBuffer.GetSliceDescriptor(nextWriteAddrSliceID), NULL, NULL, 0, reinterpret_cast<void* const>(RECVFROM_REQUEST_FLAG | (size_t)nextWriteSliceID) ) )
+		{
+			__debugbreak();
+		}
+		buf = recvDataBuffer.GetPacketSliceDataRead(incomingReadSliceID);
+		fromAddr = &(recvAddressBuffer.GetAddressSliceDataRead(incomingReadSliceID)->Ipv4);
 	}
-	buf = recvDataBuffer.GetPacketSliceDataRead(incomingReadSliceID);
-	fromAddr = &(recvAddressBuffer.GetAddressSliceDataRead(incomingReadSliceID)->Ipv4);
-	PIXEndEvent();
 
 	if (Verbose_PrintAllPackets && dequeueResult.BytesTransferred > 0)
 	{
@@ -326,34 +331,34 @@ const unsigned NetSession::WrappedRecvFrom(_Out_ const char*& buf,
 const unsigned NetSession::WrappedRecv(_Out_ const char*& buf,
 	_In_ const SOCKADDR_IN& recvAddr)
 {
-	PIXBeginEvent(PIX_COLOR_INDEX(2), "RIO Recv");
 	RIORESULT dequeueResult = {0};
-	const unsigned numDequeued = RIOFunctionsTable.RIODequeueCompletion(recvCQueue, &dequeueResult, 1);
-	if (numDequeued == 0)
 	{
-		buf = NULL;
-		PIXEndEvent();
-		return 0;
-	}
+		PIXScoped scopeA(PIX_COLOR_INDEX(2), "RIO Recv");
 
-	const unsigned incomingReadSliceID = static_cast<const unsigned>(dequeueResult.RequestContext & 0xFFFFFFFF);
-	recvDataBuffer.ReleaseSlice(incomingReadSliceID);
+		const unsigned numDequeued = RIOFunctionsTable.RIODequeueCompletion(recvCQueue, &dequeueResult, 1);
+		if (numDequeued == 0)
+		{
+			buf = NULL;
+			return 0;
+		}
 
-	if (dequeueResult.RequestContext & RECVFROM_REQUEST_FLAG)
-	{
-		recvAddressBuffer.ReleaseSlice(incomingReadSliceID);
-	}
+		const unsigned incomingReadSliceID = static_cast<const unsigned>(dequeueResult.RequestContext & 0xFFFFFFFF);
+		recvDataBuffer.ReleaseSlice(incomingReadSliceID);
 
-	const unsigned nextWriteSliceID = recvDataBuffer.ConsumeNextAvailableSlice();
+		if (dequeueResult.RequestContext & RECVFROM_REQUEST_FLAG)
+		{
+			recvAddressBuffer.ReleaseSlice(incomingReadSliceID);
+		}
+
+		const unsigned nextWriteSliceID = recvDataBuffer.ConsumeNextAvailableSlice();
 	
-	// Queue up another receive in our requests queue to replenish the previous request that we just dequeued
-	if (!RIOFunctionsTable.RIOReceive(recvRQueue, &recvDataBuffer.GetSliceDescriptor(nextWriteSliceID), 1, 0, reinterpret_cast<void* const>( (size_t)nextWriteSliceID) ) )
-	{
-		__debugbreak();
+		// Queue up another receive in our requests queue to replenish the previous request that we just dequeued
+		if (!RIOFunctionsTable.RIOReceive(recvRQueue, &recvDataBuffer.GetSliceDescriptor(nextWriteSliceID), 1, 0, reinterpret_cast<void* const>( (size_t)nextWriteSliceID) ) )
+		{
+			__debugbreak();
+		}
+		buf = recvDataBuffer.GetPacketSliceDataRead(incomingReadSliceID);
 	}
-	buf = recvDataBuffer.GetPacketSliceDataRead(incomingReadSliceID);
-
-	PIXEndEvent();
 
 	if (Verbose_PrintAllPackets && dequeueResult.BytesTransferred > 0)
 	{
@@ -1091,6 +1096,8 @@ void NetSession::WaitForReadPacketsAvailable()
 
 /*static*/ DWORD WINAPI NetSession::NetSessionSendThreadEntry(LPVOID thisPtr)
 {
+	UtilSetThreadName("NetSession SendThread");
+
 	NetSession* const thisNetSession = (NetSession* const)thisPtr;
 	thisNetSession->NetSessionSendThreadMain();
 	return 0;
@@ -1098,6 +1105,8 @@ void NetSession::WaitForReadPacketsAvailable()
 
 /*static*/ DWORD WINAPI NetSession::NetSessionRecvThreadEntry(LPVOID thisPtr)
 {
+	UtilSetThreadName("NetSession RecvThread");
+
 	NetSession* const thisNetSession = (NetSession* const)thisPtr;
 	thisNetSession->NetSessionRecvThreadMain();
 	return 0;
@@ -1691,7 +1700,9 @@ void NetSession::ProcessValidSessionSubpackets(const DeviceSessionPacket* const 
 		}
 		//if (ReadSubpacketsAreReady == false) // For lower wake latency, do this all the time
 		{
+#ifdef ENABLE_PIX_PROFILER
 			PIXSetMarker(PIX_COLOR_INDEX(9), "WakeMainThread (New read data is ready)");
+#endif
 			ReadSubpacketsAreReady = true;
 			WakeByAddressSingle(&ReadSubpacketsAreReady);
 		}
@@ -1742,7 +1753,9 @@ void NetSession::ProcessValidSessionPacket(const DeviceSessionPacket* const vali
 		// We should wake up the send thread at this point to reduce our ack latency
 		WakeSendThread(NewValidRecvPacket);
 
+#ifdef ENABLE_PIX_PROFILER
 		PIXSetMarker(PIX_COLOR_INDEX(9), "WakeSendThread (Ack-Only NewValidRecvPacket)");
+#endif
 
 		return; // We're done in the case of an "empty" ACK-only packet
 	}
@@ -1758,7 +1771,9 @@ void NetSession::ProcessValidSessionPacket(const DeviceSessionPacket* const vali
 		WakeSendThread(NewValidRecvPacket);
 	}
 
+#ifdef ENABLE_PIX_PROFILER
 	PIXSetMarker(PIX_COLOR_INDEX(9), "WakeSendThread (Data NewValidRecvPacket)");
+#endif
 
 	if (packetIdDelta == 0)
 	{

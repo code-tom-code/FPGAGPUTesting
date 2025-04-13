@@ -5,7 +5,7 @@
 #include <vector>
 
 // Forward-declares:
-struct IBaseDeviceComms;
+struct IBaseGPUDevice;
 
 // A simpler, smaller packet struct that we can fit more of into a 32-byte DRAM read line than our fatter over-the-wire command packet format
 #pragma pack(push)
@@ -21,6 +21,14 @@ struct SimplifiedCommandPacket
 #pragma pack(pop)
 static_assert(sizeof(SimplifiedCommandPacket) == 9, "Error: Unexpected struct padding!");
 
+static const unsigned numSimplifiedPacketsPerDRAMLine = GPU_DRAM_TRANSACTION_SIZE_BYTES / sizeof(SimplifiedCommandPacket);
+union dramLinePackedPacket
+{
+	SimplifiedCommandPacket simplifiedPackets[numSimplifiedPacketsPerDRAMLine];
+	DWORD dwords[8];
+};
+static_assert(sizeof(dramLinePackedPacket) == 32, "Error: Unexpected struct padding!");
+
 struct GPUCommandList
 {
 	unsigned __int64 commandsHash = 0;
@@ -30,11 +38,60 @@ struct GPUCommandList
 	void BeginRecording();
 	void AddPacketToCommandList(const command& newPacket);
 	const unsigned __int64 ComputeCommandsHash() const;
-	void FinishRecordingAndUpload(IBaseDeviceComms* const deviceComms);
+	void FinishRecordingAndUpload(IBaseGPUDevice* const baseDevice);
 	void ResetCommandListForPooling();
 
-	static void ConvertCommandPacketToSimplifiedCommandPacket(const command* const inFullPacket, SimplifiedCommandPacket* const outSimplifiedPacket);
-	static void ConvertSimplifiedCommandPacketToCommandPacket(const SimplifiedCommandPacket* const inSimplifiedPacket, command* const outFullPacket);
+	static void ConvertCommandPacketToSimplifiedCommandPacket(const command* const inFullPacket, SimplifiedCommandPacket* const outSimplifiedPacket)
+	{
+#ifdef _DEBUG
+		if (!inFullPacket)
+		{
+			__debugbreak();
+		}
+
+		if (!outSimplifiedPacket)
+		{
+			__debugbreak();
+		}
+
+		if ( (const void* const)inFullPacket == (const void* const)outSimplifiedPacket)
+		{
+			__debugbreak();
+		}
+#endif
+		const genericCommand* const packetWithData = reinterpret_cast<const genericCommand* const>(inFullPacket);
+		outSimplifiedPacket->type = packetWithData->type;
+		outSimplifiedPacket->payload0 = packetWithData->payload0;
+		outSimplifiedPacket->payload1 = packetWithData->payload1;
+	}
+
+	static void ConvertSimplifiedCommandPacketToCommandPacket(const SimplifiedCommandPacket* const inSimplifiedPacket, command* const outFullPacket)
+	{
+#ifdef _DEBUG
+		if (!inSimplifiedPacket)
+		{
+			__debugbreak();
+		}
+
+		if (!outFullPacket)
+		{
+			__debugbreak();
+		}
+
+		if ( (const void* const)inSimplifiedPacket == (const void* const)outFullPacket)
+		{
+			__debugbreak();
+		}
+#endif
+		genericCommand* const packetWithData = reinterpret_cast<genericCommand* const>(outFullPacket);
+
+		packetWithData->magicProtoHeader = PACKET_MAGIC_VALUE;
+		packetWithData->checksum = 0;
+		packetWithData->type = inSimplifiedPacket->type;
+		packetWithData->payload0 = inSimplifiedPacket->payload0;
+		packetWithData->payload1 = inSimplifiedPacket->payload1;
+		packetWithData->checksum = command::ComputeChecksum(packetWithData, sizeof(genericCommand) );
+	}
 
 	const unsigned GetCommandListSize_bytes() const;
 	const unsigned GetCommandListCommandCount() const { return (const unsigned)commands.size(); }
@@ -47,5 +104,5 @@ private:
 		uploaded = 2
 	} recordingState = notRecording;
 
-	void AllocateAndUpload(IBaseDeviceComms* const deviceComms);
+	void AllocateAndUpload(IBaseGPUDevice* const baseDevice);
 };

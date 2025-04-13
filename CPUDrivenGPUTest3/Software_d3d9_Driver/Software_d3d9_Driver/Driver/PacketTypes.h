@@ -3,6 +3,11 @@
 #pragma pack(push) // Start pragma pack 1 region
 #pragma pack(1)
 
+typedef unsigned long DWORD;
+typedef unsigned short USHORT;
+typedef signed short SHORT;
+typedef unsigned char BYTE;
+
 // One full DRAM line. DRAM is accessed in 256-bit lines.
 struct DRAM_LINE
 {

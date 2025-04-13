@@ -1119,7 +1119,7 @@ void IDirect3DSurface9Hook::UpdateSurfaceToGPU()
 	}
 #endif
 
-	IBaseDeviceComms* const deviceComms = IBaseDeviceComms::GetGlobalDeviceComms();
+	IBaseGPUDevice* const baseDevice = parentDevice->GetBaseDevice();
 
 	printf("Copying updated texture info to device (CPU 0x%08X -> GPU 0x%08X)...\n", (const DWORD)surfaceBytesRaw, (const DWORD)GetDeviceSurfaceBytes() );
 
@@ -1179,18 +1179,18 @@ void IDirect3DSurface9Hook::UpdateSurfaceToGPU()
 		}
 			
 		// Finally, memcpy over the resized buffer
-		deviceComms->DeviceMemCopy(GetDeviceSurfaceBytes(), resizeBuffer, resizeBufferSize);
+		baseDevice->DeviceMemCopy(GetDeviceSurfaceBytes(), resizeBuffer, resizeBufferSize);
 	}
 	else
 	{
 		// Straight memory copy from host to device:
 		if (IsCompressedFormat(InternalFormat) )
 		{
-			deviceComms->DeviceMemCopy(GetDeviceSurfaceBytes(), auxSurfaceBytesRaw, auxSurfaceBytesRawSize);
+			baseDevice->DeviceMemCopy(GetDeviceSurfaceBytes(), auxSurfaceBytesRaw, auxSurfaceBytesRawSize);
 		}
 		else
 		{
-			deviceComms->DeviceMemCopy(GetDeviceSurfaceBytes(), surfaceBytesRaw, surfaceBytesRawSize);
+			baseDevice->DeviceMemCopy(GetDeviceSurfaceBytes(), surfaceBytesRaw, surfaceBytesRawSize);
 		}
 	}
 

@@ -362,8 +362,7 @@ void IDirect3DIndexBuffer9Hook::UpdateDataToGPU()
 	if (GPUBytesDirty)
 	{
 		// Copy our newly locked data off from the CPU to the GPU:
-		IBaseDeviceComms* const deviceComms = IBaseDeviceComms::GetGlobalDeviceComms();
-		deviceComms->DeviceMemCopy(GetGPUBytes(), rawBytes.shortBytes, 
+		parentDevice->GetBaseDevice()->DeviceMemCopy(GetGPUBytes(), rawBytes.shortBytes, 
 			InternalLength % sizeof(DWORD) != 0 ? InternalLength + sizeof(unsigned short) : InternalLength); // We might need to pad the copy size out to an even multiple of sizeof(DWORD). This is fine.
 		GPUBytesDirty = false;
 	}

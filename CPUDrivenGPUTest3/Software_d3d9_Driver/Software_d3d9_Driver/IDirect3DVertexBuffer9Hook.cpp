@@ -354,8 +354,7 @@ void IDirect3DVertexBuffer9Hook::UpdateDataToGPU()
 	if (GPUBytesDirty)
 	{
 		// Copy our newly locked data off from the CPU to the GPU:
-		IBaseDeviceComms* const deviceComms = IBaseDeviceComms::GetGlobalDeviceComms();
-		deviceComms->DeviceMemCopy(GetGPUBytes(), data, InternalLength);
+		parentDevice->GetBaseDevice()->DeviceMemCopy(GetGPUBytes(), data, InternalLength);
 
 		GPUBytesDirty = false;
 	}

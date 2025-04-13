@@ -118,7 +118,7 @@ static void HandlePacket(const readMemCommand* const typedPacket)
 
 	// Send back a return packet containing the read memory:
 	readMemResponse readResponse;
-	readResponse.readDWORDAddr = typedPacket->readDWORDAddr;
+	readResponse.readDWORDAddr = typedPacket->readDWORDAddr | (typedPacket->dwordSelect << 2);
 	readResponse.value = *dwordMem;
 	readResponse.checksum = 0;
 	readResponse.checksum = command::ComputeChecksum(&readResponse, sizeof(readResponse) );
@@ -754,41 +754,6 @@ static void HandlePacket(const endFrameCommand* const typedPacket)
 	begunSceneState = true;
 }
 
-/*static*/ void GPUCommandList::ConvertSimplifiedCommandPacketToCommandPacket(const SimplifiedCommandPacket* const inSimplifiedPacket, command* const outFullPacket)
-{
-	#ifdef _DEBUG
-	if (!inSimplifiedPacket)
-	{
-		__debugbreak();
-	}
-
-	if (!outFullPacket)
-	{
-		__debugbreak();
-	}
-
-	if ( (const void* const)inSimplifiedPacket == (const void* const)outFullPacket)
-	{
-		__debugbreak();
-	}
-#endif
-	genericCommand* const packetWithData = reinterpret_cast<genericCommand* const>(outFullPacket);
-
-	packetWithData->magicProtoHeader = PACKET_MAGIC_VALUE;
-	packetWithData->checksum = 0;
-	packetWithData->type = inSimplifiedPacket->type;
-	packetWithData->payload0 = inSimplifiedPacket->payload0;
-	packetWithData->payload1 = inSimplifiedPacket->payload1;
-	packetWithData->checksum = command::ComputeChecksum(packetWithData, sizeof(genericCommand) );
-}
-
-static const unsigned numSimplifiedPacketsPerDRAMLine = GPU_DRAM_TRANSACTION_SIZE_BYTES / sizeof(SimplifiedCommandPacket);
-union dramLinePackedPacket
-{
-	SimplifiedCommandPacket simplifiedPackets[numSimplifiedPacketsPerDRAMLine];
-	DWORD dwords[8];
-};
-static_assert(sizeof(dramLinePackedPacket) == 32, "Error: Unexpected struct padding!");
 static void HandlePacket(const runCommandListCommand* const typedPacket)
 {
 #ifdef _DEBUG

@@ -155,13 +155,21 @@ ILocalEndpointDLLComms::ILocalEndpointDLLComms(const char* const endpointDLL) : 
 	{
 		__debugbreak(); // Error: Expected only packet data to be sent on this channel!
 	}
-	if (localResponsePackets.size() * sizeof(genericCommand) != len)
+	if (len > localResponsePackets.size() * sizeof(genericCommand) )
 	{
 		__debugbreak(); // Error: Read data mismatch!
 	}
 #endif
 	memcpy(recvBuffer, &localResponsePackets.front(), len);
-	localResponsePackets.clear();
+	if (localResponsePackets.size() * sizeof(genericCommand) == len)
+	{
+		localResponsePackets.clear();
+	}
+	else
+	{
+		const unsigned numElementsToRemove = len / sizeof(genericCommand);
+		localResponsePackets.erase(localResponsePackets.begin(), localResponsePackets.begin() + numElementsToRemove);
+	}
 	return S_OK;
 }
 

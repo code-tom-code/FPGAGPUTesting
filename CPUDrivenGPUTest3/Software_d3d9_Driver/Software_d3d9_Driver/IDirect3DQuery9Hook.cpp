@@ -295,33 +295,31 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DQuery9Hook::Issue(THIS_ 
 	if (QueryTypeHandledByHardware(queryType) )
 	{
 		const HRESULT ret = parentDevice->GetBaseDevice()->DeviceIssueQuery(deviceQueryAlloc, (dwIssueFlags & D3DISSUE_BEGIN) == 0, ConvertToDeviceType(queryType) );
-		switch (queryType)
+		if ( (dwIssueFlags & D3DISSUE_BEGIN) == 0)
 		{
-			case D3DQUERYTYPE_EVENT:
+			switch (queryType)
 			{
-				parentDevice->GetDeviceComms()->ReadFromDevice(deviceQueryAlloc, &queryData.eventQueryData, sizeof(queryData.eventQueryData) );
-				break;
-			}
-			case D3DQUERYTYPE_OCCLUSION:
-			{
-				LARGE_INTEGER localDownloadBuffer = {0};
-				parentDevice->GetDeviceComms()->ReadFromDevice(deviceQueryAlloc, &localDownloadBuffer, sizeof(localDownloadBuffer) );
-				const DWORD occlusionQueryStart = localDownloadBuffer.LowPart;
-				const DWORD occlusionQueryEnd = localDownloadBuffer.HighPart;
-				const DWORD occlusionDelta = occlusionQueryEnd - occlusionQueryStart;
-				queryData.occlusionQueryData = occlusionDelta;
-				break;
-			}
-			case D3DQUERYTYPE_TIMESTAMP:
-			{
-				parentDevice->GetDeviceComms()->ReadFromDevice(deviceQueryAlloc, &queryData.timestampQueryData, sizeof(queryData.timestampQueryData) );
-				break;
-			}
-			default:
+				case D3DQUERYTYPE_EVENT:
+				{
+					parentDevice->GetBaseDevice()->AsyncReadFromDeviceBegin(deviceQueryAlloc, sizeof(queryData.eventQueryData) );
+					break;
+				}
+				case D3DQUERYTYPE_OCCLUSION:
+				{
+					parentDevice->GetBaseDevice()->AsyncReadFromDeviceBegin(deviceQueryAlloc, sizeof(LARGE_INTEGER) );
+					break;
+				}
+				case D3DQUERYTYPE_TIMESTAMP:
+				{
+					parentDevice->GetBaseDevice()->AsyncReadFromDeviceBegin(deviceQueryAlloc, sizeof(queryData.timestampQueryData) );
+					break;
+				}
+				default:
 #ifdef _DEBUG
-				__debugbreak(); // Should never be here!
+					__debugbreak(); // Should never be here!
 #endif
-				break;
+					break;
+			}
 		}
 		return ret;
 	}
@@ -361,6 +359,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DQuery9Hook::GetData(THIS
 	// The method returns S_OK if the query data is available and S_FALSE if it is not. These are considered successful return values.
 	if (!pData && dwSize == 0)
 	{
+		// TODO: Return S_FALSE in case our query has been issued but the results have not been returned yet
 		return S_OK;
 	}
 
@@ -395,6 +394,32 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DQuery9Hook::GetData(THIS
 		DbgBreakPrint("Error: Mismatched GetData error code");
 	}
 #endif
+
+	if (queryState == issueEnd) // Don't double-complete our async reads. Only do this once after our read request has been issued.
+	{
+		switch (queryType)
+		{
+		case D3DQUERYTYPE_EVENT:
+			parentDevice->GetBaseDevice()->AsyncReadFromDeviceWaitComplete(deviceQueryAlloc, &queryData.eventQueryData, sizeof(queryData.eventQueryData) );
+			break;
+		case D3DQUERYTYPE_OCCLUSION:
+		{
+			LARGE_INTEGER localDownloadBuffer = {0};
+			parentDevice->GetBaseDevice()->AsyncReadFromDeviceWaitComplete(deviceQueryAlloc, &localDownloadBuffer, sizeof(localDownloadBuffer) );
+			const DWORD occlusionQueryStart = localDownloadBuffer.LowPart;
+			const DWORD occlusionQueryEnd = localDownloadBuffer.HighPart;
+			const DWORD occlusionDelta = occlusionQueryEnd - occlusionQueryStart;
+			queryData.occlusionQueryData = occlusionDelta;
+		}
+			break;
+		case D3DQUERYTYPE_TIMESTAMP:
+			parentDevice->GetBaseDevice()->AsyncReadFromDeviceWaitComplete(deviceQueryAlloc, &queryData.timestampQueryData, sizeof(queryData.timestampQueryData) );
+			break;
+		default:
+			// Don't download anything from the device. These other query types aren't yet supported by hardware.
+			break;
+		}
+	}
 
 	switch (queryType)
 	{

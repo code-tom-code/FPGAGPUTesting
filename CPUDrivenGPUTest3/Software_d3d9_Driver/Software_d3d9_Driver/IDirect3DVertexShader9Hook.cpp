@@ -305,8 +305,7 @@ void IDirect3DVertexShader9Hook::UploadShaderBytecodeToDevice(gpuvoid* const gpu
 		return;
 	}
 
-	IBaseDeviceComms* const deviceComms = IBaseDeviceComms::GetGlobalDeviceComms();
-	deviceComms->DeviceMemCopy(gpuUploadShaderAddress, &(deviceCompiledVertexShaderBytecode->shaderHeader), deviceCompiledVertexShaderBytecode->deviceShaderInfo.deviceInstructionTokenCount * sizeof(instructionSlot) + sizeof(DeviceShaderHeader) );
+	parentDevice->GetBaseDevice()->DeviceMemCopy(gpuUploadShaderAddress, &(deviceCompiledVertexShaderBytecode->shaderHeader), deviceCompiledVertexShaderBytecode->deviceShaderInfo.deviceInstructionTokenCount * sizeof(instructionSlot) + sizeof(DeviceShaderHeader) );
 }
 
 void IDirect3DVertexShader9Hook::JitLoadShader(const DWORD FVF /*= 0x00000000*/)

@@ -84,10 +84,7 @@ __declspec(nothrow) HRESULT __stdcall INetSocketDeviceComms::InternalInitComms()
 		const genericCommand* const genericPacket = (const genericCommand* const)sendBuffer;
 		sentPacketsThisFrame.push_back(*genericPacket);
 
-		if (convertedSubpackets.capacity() < numSubpackets)
-		{
-			convertedSubpackets.resize(numSubpackets);
-		}
+		convertedSubpackets.resize(numSubpackets);
 		Subpacket* const subpacketBuffer = &convertedSubpackets.front();
 		for (unsigned x = 0; x < numSubpackets; ++x)
 		{

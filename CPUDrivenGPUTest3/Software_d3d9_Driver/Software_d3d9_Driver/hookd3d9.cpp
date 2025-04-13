@@ -2,8 +2,9 @@
 
 #undef UNICODE
 #undef _UNICODE
-
-#include <windows.h>
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+#include <timeapi.h>
 #pragma pack(1)
 
 #include "d3d9include.h"

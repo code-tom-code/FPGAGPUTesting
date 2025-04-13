@@ -418,7 +418,7 @@ struct RIOAllocBuffer
 #endif
 		++availableSlices;
 #ifdef _DEBUG
-		if (availableSlices >= ARRAYSIZE(sliceDescriptors) )
+		if (availableSlices > ARRAYSIZE(sliceDescriptors) )
 		{
 			__debugbreak();
 		}
@@ -429,7 +429,7 @@ struct RIOAllocBuffer
 	{
 		availableSlices += sliceCount;
 #ifdef _DEBUG
-		if (availableSlices >= ARRAYSIZE(sliceDescriptors) )
+		if (availableSlices > ARRAYSIZE(sliceDescriptors) )
 		{
 			__debugbreak();
 		}

@@ -1,15 +1,29 @@
 #pragma once
 
 #include "IDirect3DDevice9Hook.h"
+#include "IDirect3DQuery9Hook.h"
 
 class IDirect3DSwapChain9Hook : public IDirect3DSwapChain9
 {
 public:
 	IDirect3DSwapChain9Hook(LPDIRECT3DSWAPCHAIN9 _realObject, IDirect3DDevice9Hook* _parentDevice) : realObject(_realObject), parentDevice(_parentDevice), refCount(1), backBuffer(NULL), tempBlitSurface(NULL), frontBuffer(NULL)
 	{
+		memset(endFrameQueries, 0, sizeof(endFrameQueries) );
 #ifdef _DEBUG
 		memcpy(&PresentParameters, &realObject->PresentParameters, (char*)&realObject - (char*)&PresentParameters);
 #endif
+		// Initialize our end-frame event queries:
+		for (unsigned x = 0; x < ARRAYSIZE(endFrameQueries); ++x)
+		{
+			IDirect3DQuery9Hook* newEndFrameQuery = NULL;
+			if (FAILED(parentDevice->CreateQuery(D3DQUERYTYPE_EVENT, (IDirect3DQuery9** const)&newEndFrameQuery) ) )
+			{
+#ifdef _DEBUG
+				__debugbreak();
+#endif
+			}
+			endFrameQueries[x] = newEndFrameQuery;
+		}
 
 		// Init the gamma ramp to its default value:
 		InitDefaultGammaRamp();
@@ -79,4 +93,6 @@ protected:
 	D3DDISPLAYMODE InternalDisplayMode;
 	D3DGAMMARAMP gammaRamp;
 	LPDIRECT3DSURFACE9 tempBlitSurface;
+
+	IDirect3DQuery9Hook* endFrameQueries[2];
 };

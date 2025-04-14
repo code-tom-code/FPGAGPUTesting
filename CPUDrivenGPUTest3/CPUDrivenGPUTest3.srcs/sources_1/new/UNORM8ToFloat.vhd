@@ -30,8 +30,8 @@ ATTRIBUTE X_INTERFACE_PARAMETER : STRING;
 ATTRIBUTE X_INTERFACE_INFO of clk: SIGNAL is "xilinx.com:signal:clock:1.0 clk CLK";
 ATTRIBUTE X_INTERFACE_PARAMETER of clk: SIGNAL is "FREQ_HZ 333250000";
 
-type mantissaArray is array(255 downto 0) of unsigned(22 downto 0);
-type exponentArray is array(255 downto 0) of unsigned(7 downto 0);
+type mantissaArray is array(0 to 255) of unsigned(22 downto 0);
+type exponentArray is array(0 to 255) of unsigned(7 downto 0);
 
 constant exponentBits : exponentArray :=
 (

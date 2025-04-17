@@ -8,7 +8,6 @@ New Features:
 - Implement texture palettes (P8 textures)
 - Implement log, exp, and sincos instructions
 - Implement HDMI data island TERC4 packets (whichever are necessary to enable HDMI capture card capture)
-- Finish implementing support for "passthrough" (D3DFVF_XYZRHW or POSITIONT vertex decl) vertex shaders in the driver
 - Implement stencil buffering
 - Implement hardware cursor
 - Implement vertex fog/pixel fog
@@ -38,7 +37,7 @@ Optimizations:
 - Tighten up the cycle scheduling in the ShaderCore, it's likely that 1 or 2 cycles per instruction are still available to be gained back
 - Implement DX-level shader optimization step in shader compiler
 - Implement device-level shader optimization step in shader compiler
-- Don't actually upload vertex/index buffers or vertex shaders until the first time that they are referenced in a draw call
+- Don't actually compile or upload vertex shaders until the first time that they are referenced in a draw call
 - If the driver detects that a texture uses fewer than 256 colors, then auto-convert its format to P8
 - If the driver detects that a texture is not using all of its available channels, then auto-convert it to a format with fewer channels
 - If the driver detects that a texture could be using a lower-bandwidth texture format or a smaller resolution, then convert it to that (DXT3/DXT5 with all opaque/fulltransparent texels -> DXT1, solid color texture > 4x4, all colors could be quantized to smaller format)
@@ -49,5 +48,4 @@ Optimizations:
 - See if it's possible to optimize draw calls by switching from D3DPT_TRIANGLELIST to D3DPT_TRIANGLESTRIP in some cases (saves on index buffer bandwidth)
 
 Bugfixes:
-- Figure out why depth buffer URAM takes 2 read cycles to resolve
 - Double check that Scanout isn't doing something dumb with requesting too much data

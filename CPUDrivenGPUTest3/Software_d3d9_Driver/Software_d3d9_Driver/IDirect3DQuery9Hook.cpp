@@ -5,6 +5,10 @@
 // Frequency is in units of ticks per second:
 static const unsigned __int64 DEVICE_GPU_FREQUENCY = 333250000ull; // Our GPU runs at 333.250MHz
 
+// We have a minimum alloc size for queries here. Even though most queries are smaller (EVENT is 4 bytes, TIMESTAMP is 8 bytes, etc.) we
+// still need to alloc an entire DRAM transaction for the query so that other adjacent queries don't stomp it with their writes.
+static const unsigned MIN_QUERY_ALLOC_SIZE_BYTES = 32u;
+
 static const char* const QueryTypeToString[] =
 {
 	"UNKNOWN0",
@@ -566,7 +570,7 @@ void IDirect3DQuery9Hook::CreateQuery(const D3DQUERYTYPE _queryType)
 
 	if (QueryTypeHandledByHardware(_queryType) )
 	{
-		deviceQueryAlloc = GPUAlloc(32, 
+		deviceQueryAlloc = GPUAlloc(MIN_QUERY_ALLOC_SIZE_BYTES, 
 				1, 1, 1, 1, GPUVAT_QueryMemory, GPUFMT_QueryData
 #ifdef _DEBUG
 				, debugObjectName

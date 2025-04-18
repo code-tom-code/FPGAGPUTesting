@@ -8,6 +8,8 @@
 #include "..\..\Software_d3d9_Driver\Driver\PacketDefs.h"
 #include "..\..\\Software_d3d9_Driver\\Driver\\GPUAllocator.h"
 #include "..\..\\Software_d3d9_Driver\\Driver\\GPUCommandList.h"
+#include "..\..\\Software_d3d9_Driver\\Driver\\GPUReturnTracker.h"
+#include "..\..\\Software_d3d9_Driver\\Driver\\PacketDisassembler.h"
 #include "..\..\Endpoints\Common\EndpointDLLInterface.h"
 
 static const DLLEndpointMajorVersions hostMajorVersion = InitialVersion;
@@ -16,6 +18,9 @@ static HWND endpointWindow = NULL;
 static bool bInfiniteLoop = true;
 static LARGE_INTEGER freq = {0};
 static double ldfreq = 0.0;
+
+std::vector<DWORD> thisFrameWaitForIdleIdentifiers;
+std::vector<const gpuvoid*> thisFrameWaitForReadAddresses;
 
 // Only define this option for x64 builds, since for x86 builds we won't have enough virtual address space to be able to do this:
 #ifdef _M_X64
@@ -33,6 +38,7 @@ static playbackMode currentPlaybackMode = playing;
 static unsigned playbackFramerate = 60;
 static bool playToNextFrame = true;
 static bool restartAtBeginning = false;
+static bool dumpCurrentFrameDisassembly = false;
 
 struct renderEvent
 {
@@ -155,8 +161,22 @@ static void ResetButtonCallback()
 	}
 }
 
+static void DisassembleFrameCommandStreamButtonCallback()
+{
+	if (MessageBoxA(NULL, "Disassemble current frame command list?", "Are you sure?", MB_YESNO) == IDYES)
+	{
+		dumpCurrentFrameDisassembly = true;
+	}
+}
+
+static DWORD lastInputUpdate = 0x00000000;
 static void UpdateInput()
 {
+	const DWORD currentTime = GetTickCount();
+	if (currentTime == lastInputUpdate) // Only pump input once per millisecond (1000FPS at most)
+		return;
+	lastInputUpdate = currentTime;
+
 	const unsigned numRegisteredKeys = (const unsigned)registeredKeys.size();
 	for (unsigned x = 0; x < numRegisteredKeys; ++x)
 	{
@@ -290,7 +310,7 @@ static std::vector<renderEvent> renderEvents;
 
 void __stdcall ReturnMessageImpl(const genericCommand* const D2HReplyPacket)
 {
-	// Do nothing! Since we're just playing back a previously-recorded stream, there's nowhere for our return messages to go anyway
+	GetReturnTrackerSingleton().HandleIncomingReturnPacket(D2HReplyPacket);
 }
 
 static void WaitUntilTime(const LARGE_INTEGER& waitStopTime)
@@ -322,8 +342,71 @@ static void WaitUntilTime(const LARGE_INTEGER& waitStopTime)
 	}
 }
 
+// This callback function returns true if it successfully resolved a packet from within an indirect command list, or false if it couldn't do that for any reason.
+bool __stdcall ResolveCommandListPacket(const gpuvoid* const commandListBeginGPUAddress, const unsigned commandIndex, genericCommand& resolvedPacketData)
+{
+#ifndef USE_PLAYBACK_LOCAL_MEMORY
+#ifdef _DEBUG
+	__debugbreak(); // Error: Should never be here!
+#endif
+	return false;
+#else // #ifndef USE_PLAYBACK_LOCAL_MEMORY
+	const dramLinePackedPacket* const recordedCommandListPacketDataStart = (const dramLinePackedPacket* const)(LocalMemory + (const DWORD)commandListBeginGPUAddress);
+	const unsigned dramIndex = commandIndex / numSimplifiedPacketsPerDRAMLine;
+	const unsigned localDramReadIndex = commandIndex % numSimplifiedPacketsPerDRAMLine;
+	const dramLinePackedPacket& thisDramLine = recordedCommandListPacketDataStart[dramIndex];
+	const SimplifiedCommandPacket& thisSimplifiedCommand = thisDramLine.simplifiedPackets[localDramReadIndex];
+#ifdef _DEBUG
+	if ( (const BYTE* const)(&thisSimplifiedCommand + 1) - LocalMemory > GPU_DRAM_TOTAL_CAPACITY_BYTES)
+	{
+		__debugbreak(); // Error: Reading outside of VRAM not allowed!
+	}
+#endif
+	GPUCommandList::ConvertSimplifiedCommandPacketToCommandPacket(&thisSimplifiedCommand, &resolvedPacketData);
+	return true;
+#endif // #ifndef USE_PLAYBACK_LOCAL_MEMORY
+}
+
+static void DumpCommandDisassemblyToFile(const std::vector<genericCommand>& thisFrameCommands, const char* const filenameBase, const unsigned __int64 frameID)
+{
+	char outputFilepath[MAX_PATH] = {0};
+	sprintf_s(outputFilepath, "%s_Frame%I64u.log", filenameBase, frameID);
+#pragma warning(push)
+#pragma warning(disable:4996)
+	FILE* f = fopen(outputFilepath, "wb");
+#pragma warning(pop)
+	if (!f)
+	{
+		printf("Error: Cannot open frame-dump logfile \"%s\" for writing!\n", outputFilepath);
+		return;
+	}
+
+	std::vector<const std::string*> disassembledCommandStrings;
+	const bool disassembleReferencedCommandLists =
+#ifdef USE_PLAYBACK_LOCAL_MEMORY
+		true;
+#else
+		false;
+#endif
+	DisassemblePacketsStream(disassembledCommandStrings, disassembleReferencedCommandLists, &thisFrameCommands.front(), thisFrameCommands.size() );
+
+	const unsigned numCommandStrings = disassembledCommandStrings.size();
+	for (unsigned x = 0; x < numCommandStrings; ++x)
+	{
+		const std::string* const thisCommandString = disassembledCommandStrings[x];
+		fwrite(&thisCommandString->front(), thisCommandString->length(), 1, f);
+		delete thisCommandString;
+	}
+	disassembledCommandStrings.clear();
+
+	fclose(f);
+	f = NULL;
+}
+
 int main(const int argc, const char* const argv[])
 {
+	InitPacketDisassembly(&ResolveCommandListPacket);
+
 	const char* recordingFilePath = NULL;
 	char recordingFile[MAX_PATH] = {0};
 	const char* LoadDLLPath = NULL;
@@ -382,13 +465,19 @@ int main(const int argc, const char* const argv[])
 		return 1;
 	}
 
+	char fname[_MAX_FNAME + 1] = {0};
+#pragma warning(push)
+#pragma warning(disable:4996)
+	_splitpath(recordingFilePath, NULL, NULL, fname, NULL);
+#pragma warning(pop)
+
 	LARGE_INTEGER fileSize = {0};
 	GetFileSizeEx(hRecordingFile, &fileSize);
 
 	readCache* const readFileCache = new readCache;
 	readFileCache->ResetFile(hRecordingFile, fileSize.QuadPart);
 
-	printf("Parsing recorded stream file...\n");
+	printf("Parsing recorded stream file \"%s\"...\n", recordingFilePath);
 
 #ifdef _DEBUG
 	if (fileSize.QuadPart % sizeof(genericCommand) != 0)
@@ -602,6 +691,7 @@ int main(const int argc, const char* const argv[])
 	if (!dllInfo.H2DFunctions.InitEndpoint || 
 		!dllInfo.H2DFunctions.ProcessNewMessage || 
 		!dllInfo.H2DFunctions.ShutdownEndpoint || 
+		!dllInfo.H2DFunctions.EndFrame || 
 		(!(dllInfo.endpointOptions & NoWindow) && (!dllInfo.H2DFunctions.SpawnWindow) ) )
 	{
 		printf("Error: Endpoint DLL does not implement all required functions in DLL interface!\n");
@@ -636,6 +726,9 @@ int main(const int argc, const char* const argv[])
 	registeredKeys.push_back(registeredKey(VK_NEXT, PageDownCallback, (registeredKey::CallbackFunc)NULL) );
 	registeredKeys.push_back(registeredKey(VK_PRIOR, PageUpCallback, (registeredKey::CallbackFunc)NULL) );
 	registeredKeys.push_back(registeredKey('R', ResetButtonCallback, (registeredKey::CallbackFunc)NULL) );
+	registeredKeys.push_back(registeredKey('D', DisassembleFrameCommandStreamButtonCallback, (registeredKey::CallbackFunc)NULL) );
+
+	std::vector<genericCommand> thisFrameCommands;
 
 	unsigned __int64 currentFrame = 0;
 	DWORD lastInputTimestamp = 0x00000000;
@@ -721,6 +814,8 @@ int main(const int argc, const char* const argv[])
 #endif
 			}
 
+			thisFrameCommands.push_back(nextPacket);
+
 #ifdef _DEBUG
 			if (nextPacket.magicProtoHeader != PACKET_MAGIC_VALUE)
 			{
@@ -744,13 +839,70 @@ int main(const int argc, const char* const argv[])
 				__debugbreak();
 			}
 #endif
-			if (nextPacket.type == command::PT_ENDFRAME)
+			switch (nextPacket.type)
 			{
+			case command::PT_WAITFORDEVICEIDLE:
+			{
+				const waitForDeviceIdleCommand* const nextWaitPacket = (const waitForDeviceIdleCommand* const)&nextPacket;
+				if (nextWaitPacket->returnCPUValue)
+				{
+					GetReturnTrackerSingleton().RegisterNewWaitForIdleReturn(nextWaitPacket);
+					thisFrameWaitForIdleIdentifiers.push_back(nextWaitPacket->returnValueToCPU);
+				}
+			}
+				break;
+			case command::PT_READMEM:
+			{
+				const readMemCommand* const nextReadRequestPacket = (const readMemCommand* const)&nextPacket;
+				GetReturnTrackerSingleton().RegisterNewReadReturn(nextReadRequestPacket);
+				const DWORD dwByteAddr = nextReadRequestPacket->readDWORDAddr + (nextReadRequestPacket->dwordSelect * sizeof(DWORD) );
+				thisFrameWaitForReadAddresses.push_back( (const gpuvoid* const)dwByteAddr);
+			}
+				break;
+			case command::PT_ENDFRAME:
+				if (dumpCurrentFrameDisassembly)
+				{
+					DumpCommandDisassemblyToFile(thisFrameCommands, fname, currentFrame);
+
+					dumpCurrentFrameDisassembly = false;
+				}
+
 				++currentFrame;
 				playToNextFrame = false;
+
+				thisFrameCommands.clear();
+				break;
+			default:
+				break;
 			}
 
 			(*dllInfo.H2DFunctions.ProcessNewMessage)(&nextPacket);
+
+			if (nextPacket.type == command::PT_ENDFRAME)
+			{
+				(*dllInfo.H2DFunctions.EndFrame)();
+
+				const unsigned numWaitForIdles = thisFrameWaitForIdleIdentifiers.size();
+				for (unsigned x = 0; x < numWaitForIdles; ++x)
+				{
+					while (GetReturnTrackerSingleton().AsyncTryGetWaitReturn(thisFrameWaitForIdleIdentifiers[x]) == false)
+					{
+						(*dllInfo.H2DFunctions.RecvNextPacket)();
+					}
+				}
+				thisFrameWaitForIdleIdentifiers.clear();
+
+				const unsigned numWaitForReads = thisFrameWaitForReadAddresses.size();
+				for (unsigned x = 0; x < numWaitForReads; ++x)
+				{
+					DWORD discardReadData;
+					while (GetReturnTrackerSingleton().AsyncTryGetReadReturn(thisFrameWaitForReadAddresses[x], &discardReadData) == false)
+					{
+						(*dllInfo.H2DFunctions.RecvNextPacket)();
+					}
+				}
+				thisFrameWaitForReadAddresses.clear();
+			}
 		}
 	}
 	while (bInfiniteLoop);

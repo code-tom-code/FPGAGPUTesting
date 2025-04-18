@@ -161,6 +161,18 @@ void __stdcall ShutdownEndpointImpl()
 	endpointInitialized = false;
 }
 
+void __stdcall EndFrameImpl()
+{
+	networkDevice->EndFrame();
+}
+
+void __stdcall RecvNextPacketImpl()
+{
+	genericCommand nextPacket;
+	networkDevice->RecvLoop( (BYTE* const)&nextPacket, sizeof(nextPacket) );
+	(*E2HReturnMessageCallback)(&nextPacket);
+}
+
 // It is legal for the host process to call GetDLLInfo() as many times as they would like. It should not allocate anything or change any state!
 // Function returns true on success, or false on failure.
 extern "C" bool __stdcall GetDLLInfo(DLLInfo* const outDLLInfo)
@@ -209,6 +221,8 @@ extern "C" bool __stdcall GetDLLInfo(DLLInfo* const outDLLInfo)
 	endpointDLLInfo.H2DFunctions.ProcessNewMessage = &ProcessNewMessageImpl;
 	endpointDLLInfo.H2DFunctions.ShutdownEndpoint = &ShutdownEndpointImpl;
 	endpointDLLInfo.H2DFunctions.ProcessIdle = &ProcessIdleImpl;
+	endpointDLLInfo.H2DFunctions.EndFrame = &EndFrameImpl;
+	endpointDLLInfo.H2DFunctions.RecvNextPacket = &RecvNextPacketImpl;
 
 #pragma warning(push)
 #pragma warning(disable:4996)

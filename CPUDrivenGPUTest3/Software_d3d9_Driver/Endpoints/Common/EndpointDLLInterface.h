@@ -43,6 +43,8 @@ struct DLLInfo
 		void (__stdcall *ProcessNewMessage)(const genericCommand* H2DCommandPacket); // Host calls this function every time a new message needs to be processed
 		void (__stdcall *ShutdownEndpoint)(); // Call this before calling FreeLibrary() to unload this DLL
 		void (__stdcall *ProcessIdle)(void); // Host calls this when there's no messages to be processed (throttled to not spam-call it). It's fine to implement this as a function that simply does nothing.
+		void (__stdcall *EndFrame)(void); // Host calls this once at the end of every frame. Many endpoints will want to perform cleanup of data collected throughout a frame at this point.
+		void (__stdcall *RecvNextPacket)(void);
 	} H2DFunctions = {0};
 
 	EndpointOptionsFlags endpointOptions = (const EndpointOptionsFlags)0;

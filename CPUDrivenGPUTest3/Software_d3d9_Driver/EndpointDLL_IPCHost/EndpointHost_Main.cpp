@@ -116,6 +116,7 @@ int main(const int argc, const char* const argv[])
 	if (!dllInfo.H2DFunctions.InitEndpoint || 
 		!dllInfo.H2DFunctions.ProcessNewMessage || 
 		!dllInfo.H2DFunctions.ShutdownEndpoint || 
+		!dllInfo.H2DFunctions.EndFrame || 
 		(!(dllInfo.endpointOptions & NoWindow) && (!dllInfo.H2DFunctions.SpawnWindow) ) )
 	{
 		printf("Error: Endpoint DLL does not implement all required functions in DLL interface!\n");

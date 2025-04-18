@@ -18,5 +18,11 @@
     <ClCompile Include="RecordingPlayback.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Software_d3d9_Driver\Driver\GPUReturnTracker.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Software_d3d9_Driver\Driver\PacketDisassembler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

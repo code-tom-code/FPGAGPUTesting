@@ -150,6 +150,10 @@ void __stdcall ShutdownEndpointImpl()
 	endpointInitialized = false;
 }
 
+void __stdcall EndFrameImpl()
+{
+}
+
 // It is legal for the host process to call GetDLLInfo() as many times as they would like. It should not allocate anything or change any state!
 // Function returns true on success, or false on failure.
 extern "C" bool __stdcall GetDLLInfo(DLLInfo* const outDLLInfo)
@@ -198,6 +202,7 @@ extern "C" bool __stdcall GetDLLInfo(DLLInfo* const outDLLInfo)
 	endpointDLLInfo.H2DFunctions.ProcessNewMessage = &ProcessNewMessageImpl;
 	endpointDLLInfo.H2DFunctions.ShutdownEndpoint = &ShutdownEndpointImpl;
 	endpointDLLInfo.H2DFunctions.ProcessIdle = &ProcessIdleImpl;
+	endpointDLLInfo.H2DFunctions.EndFrame = &EndFrameImpl;
 
 	// This is a window-less endpoint.
 	// This endpoint does not support memory readback (it doesn't implement VRAM emulation).

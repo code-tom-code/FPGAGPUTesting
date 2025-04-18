@@ -222,6 +222,7 @@
     <ClCompile Include="Driver\ISerialDeviceComms.cpp" />
     <ClCompile Include="Driver\IVirtualDeviceComms.cpp" />
     <ClCompile Include="Driver\NetSession\NetSession.cpp" />
+    <ClCompile Include="Driver\PacketDisassembler.cpp" />
     <ClCompile Include="FixedFunctionToPixelShader.cpp" />
     <ClCompile Include="FixedFunctionToShader.cpp" />
     <ClCompile Include="FixedFunctionToVertexShader.cpp" />
@@ -293,6 +294,7 @@
     <ClInclude Include="Driver\IVirtualDeviceComms.h" />
     <ClInclude Include="Driver\NetSession\NetSession.h" />
     <ClInclude Include="Driver\PacketDefs.h" />
+    <ClInclude Include="Driver\PacketDisassembler.h" />
     <ClInclude Include="Driver\PacketTypes.h" />
     <ClInclude Include="FixedFunctionToShader.h" />
     <ClInclude Include="GlobalToggles.h" />

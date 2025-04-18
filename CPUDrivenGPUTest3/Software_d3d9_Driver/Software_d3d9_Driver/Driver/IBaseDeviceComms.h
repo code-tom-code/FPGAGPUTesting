@@ -10,6 +10,14 @@
 
 #ifdef _DEBUG
 	#define PRINT_COMMS 1
+
+#ifdef _M_X64
+	#define MAX_SENT_PACKET_BUFFER_EVER_BYTES (1024 * 1024 * 512)
+	#define MAX_RECV_PACKET_BUFFER_EVER_BYTES MAX_SENT_PACKET_BUFFER_EVER_BYTES
+#else
+	#define MAX_SENT_PACKET_BUFFER_EVER_BYTES (1024 * 1024 * 128)
+	#define MAX_RECV_PACKET_BUFFER_EVER_BYTES MAX_SENT_PACKET_BUFFER_EVER_BYTES
+#endif
 #endif
 
 struct PacketStats
@@ -71,9 +79,33 @@ __declspec(align(16) ) struct __declspec(novtable) IBaseDeviceComms
 
 #ifdef _DEBUG
 		if (!sentPacketsThisFrame.empty() )
+		{
 			sentPacketsEver.insert(sentPacketsEver.end(), sentPacketsThisFrame.begin(), sentPacketsThisFrame.end() );
+			const unsigned currentSentPacketsBufferSize = sentPacketsEver.size() * sizeof(genericCommand);
+			if (currentSentPacketsBufferSize > MAX_SENT_PACKET_BUFFER_EVER_BYTES)
+			{
+				const unsigned trimBytes = currentSentPacketsBufferSize - MAX_SENT_PACKET_BUFFER_EVER_BYTES;
+				const unsigned trimPackets = trimBytes / sizeof(genericCommand);
+				if (trimPackets > 0)
+				{
+					sentPacketsEver.erase(sentPacketsEver.begin(), sentPacketsEver.begin() + trimPackets);
+				}
+			}
+		}
 		if (!recvdPacketsThisFrame.empty() )
+		{
 			recvdPacketsEver.insert(recvdPacketsEver.end(), recvdPacketsThisFrame.begin(), recvdPacketsThisFrame.end() );
+			const unsigned currentRecvPacketsBufferSize = recvdPacketsThisFrame.size() * sizeof(genericCommand);
+			if (currentRecvPacketsBufferSize > MAX_RECV_PACKET_BUFFER_EVER_BYTES)
+			{
+				const unsigned trimBytes = currentRecvPacketsBufferSize - MAX_RECV_PACKET_BUFFER_EVER_BYTES;
+				const unsigned trimPackets = trimBytes / sizeof(genericCommand);
+				if (trimPackets > 0)
+				{
+					recvdPacketsEver.erase(recvdPacketsEver.begin(), recvdPacketsEver.begin() + trimPackets);
+				}
+			}
+		}
 #endif
 
 		sentPacketsThisFrame.clear();

@@ -31,6 +31,12 @@ enum eTexFormat : unsigned char
 	eTexFmtR5G6B5 = 3,
 	eTexFmtA1R5G5B5 = 4,
 	eTexFmtX1R5G5B5 = 5,
+	eTexFmtX4R4G4B4 = 6,
+	eTexFmtA8 = 7,
+	eTexFmtL8 = 8,
+	eTexFmtDXT1 = 9,
+	eTexFmtDXT3 = 10,
+	eTexFmtDXT5 = 11,
 
 	eTexFmtNumFormats // This must always be last!
 };

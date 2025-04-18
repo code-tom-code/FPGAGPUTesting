@@ -82,6 +82,7 @@ ILocalEndpointDLLComms::ILocalEndpointDLLComms(const char* const endpointDLL) : 
 	if (!endpointInfo.H2DFunctions.InitEndpoint || 
 		!endpointInfo.H2DFunctions.ProcessNewMessage || 
 		!endpointInfo.H2DFunctions.ShutdownEndpoint || 
+		!endpointInfo.H2DFunctions.EndFrame || 
 		(!(endpointInfo.endpointOptions & NoWindow) && (!endpointInfo.H2DFunctions.SpawnWindow) ) )
 	{
 		printf("Error: Endpoint DLL does not implement all required functions in DLL interface!\n");

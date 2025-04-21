@@ -86,11 +86,15 @@ void IDirect3DPixelShader9Hook::CreatePixelShader(const DWORD* const pFunction)
 
 void IDirect3DPixelShader9Hook::JitLoadShader()
 {
+	SIMPLE_FUNC_SCOPE();
+
 #ifdef FORCE_INTERPRETED_PIXEL_SHADER
 	return;
 #endif
 
 	const char* const jitName = ConstructShaderJITName(pixelShaderInfo);
+	printf("Loading pixel shader \"%s\"...\n", jitName);
+
 	char jitFilenameBuffer[MAX_PATH] = {0};
 #pragma warning(push)
 #pragma warning(disable:4996)
@@ -117,6 +121,7 @@ void IDirect3DPixelShader9Hook::JitLoadShader()
 	}
 	else
 	{
+		printf("Shader cache is missing pixel shader \"%s\". Compiling shader from scratch...\n", jitName);
 		if (!JITNewShader(pixelShaderInfo, jitName) )
 		{
 			DbgBreakPrint("Error: Failed to JIT Pixel Shader");
@@ -141,6 +146,8 @@ void IDirect3DPixelShader9Hook::JitLoadShader()
 			}
 		}
 	}
+
+	printf("Shader compilation completed for pixel shader \"%s\"!\n", jitName);
 }
 
 /*** IUnknown methods ***/

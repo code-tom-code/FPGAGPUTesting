@@ -421,6 +421,8 @@ static inline const bool GetTextureTypeBoundForStage(const DeviceState& state, c
 
 static inline void BuildPixelStateDefines(const DeviceState& state, std::vector<D3DXMACRO>& defines)
 {
+	SIMPLE_FUNC_SCOPE();
+
 	if (state.currentRenderStates.renderStatesUnion.namedStates.lighting)
 	{
 		D3DXMACRO lightingMacro = {0};
@@ -589,6 +591,8 @@ static inline void BuildPixelStateDefines(const DeviceState& state, std::vector<
 
 void BuildPixelShader(const DeviceState& state, IDirect3DDevice9Hook* const dev, IDirect3DPixelShader9Hook** const outNewShader)
 {
+	SIMPLE_FUNC_SCOPE();
+
 #ifdef _DEBUG
 	if (!outNewShader)
 	{
@@ -614,6 +618,7 @@ void BuildPixelShader(const DeviceState& state, IDirect3DDevice9Hook* const dev,
 	const char* const resourceBytes = (const char* const)GetShaderResourceFile(MAKEINTRESOURCEA(IDR_HLSL_FFPS_SRC), resourceSize);
 	if (resourceBytes != NULL)
 	{
+		SIMPLE_NAME_SCOPE("D3DXCompileShader");
 		hr = D3DXCompileShader( (const char* const)resourceBytes, resourceSize, defines.empty() ? NULL : &defines.front(), D3DXIncludeHandler::GetGlobalIncludeHandlerSingleton(), 
 			"main", "ps_3_0", flags, &outBytecode, &errorMessages, NULL);
 	}
@@ -635,10 +640,13 @@ void BuildPixelShader(const DeviceState& state, IDirect3DDevice9Hook* const dev,
 #endif
 
 	IDirect3DPixelShader9* newPixelShader = NULL;
-	if (FAILED(dev->CreatePixelShader( (const DWORD* const)outBytecode->GetBufferPointer(), &newPixelShader) ) || !newPixelShader)
 	{
-		// Should never happen for fixed-function shaders!
-		__debugbreak();
+		SIMPLE_NAME_SCOPE("D3D9::CreatePixelShader");
+		if (FAILED(dev->CreatePixelShader( (const DWORD* const)outBytecode->GetBufferPointer(), &newPixelShader) ) || !newPixelShader)
+		{
+			// Should never happen for fixed-function shaders!
+			__debugbreak();
+		}
 	}
 
 	IDirect3DPixelShader9Hook* const newPixelShaderHook = dynamic_cast<IDirect3DPixelShader9Hook* const>(newPixelShader);

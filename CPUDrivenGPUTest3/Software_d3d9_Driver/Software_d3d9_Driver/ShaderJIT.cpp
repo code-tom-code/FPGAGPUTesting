@@ -81,6 +81,8 @@ const char* const ConstructShaderJITName(const ShaderInfo& shaderInfo)
 
 static inline const bool JITBATFile(const ShaderInfo& shaderInfo, const char* const shaderFilename)
 {
+	SIMPLE_FUNC_SCOPE();
+
 	char batfilename[MAX_PATH] = {0};
 	// Looks like: "shaderjit\ps_3_0_len114_hash0xD9FF5963d.bat"
 	sprintf(batfilename, "%s\\%s.bat", shaderJITTempDirectory, shaderFilename);
@@ -182,6 +184,8 @@ static inline const bool JITBATFile(const ShaderInfo& shaderInfo, const char* co
 
 static inline const bool CompileLinkDLL(const ShaderInfo& shaderInfo, const char* const shaderFilename)
 {
+	SIMPLE_FUNC_SCOPE();
+
 	char batfilename[MAX_PATH] = {0};
 	// Looks like: "ps_3_0_len114_hash0xD9FF5963d.bat"
 	sprintf(batfilename, "%s.bat", shaderFilename);
@@ -211,7 +215,10 @@ static inline const bool CompileLinkDLL(const ShaderInfo& shaderInfo, const char
 		return false;
 	}
 
-	WaitForSingleObject(pi.hProcess, INFINITE);
+	{
+		SIMPLE_NAME_SCOPE("Wait for DLL compilation process to complete...\n");
+		WaitForSingleObject(pi.hProcess, INFINITE);
+	}
 	DWORD processExitCode = STILL_ACTIVE;
 	if (!GetExitCodeProcess(pi.hProcess, &processExitCode) )
 	{
@@ -245,6 +252,8 @@ static inline const bool CompileLinkDLL(const ShaderInfo& shaderInfo, const char
 
 const bool JITNewShader(const ShaderInfo& shaderInfo, const char* const shaderFilename)
 {
+	SIMPLE_FUNC_SCOPE();
+
 	if (!CreateDirectoryA(shaderJITTempDirectory, NULL) )
 	{
 		switch (GetLastError() )

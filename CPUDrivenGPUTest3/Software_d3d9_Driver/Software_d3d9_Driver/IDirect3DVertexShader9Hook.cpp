@@ -310,14 +310,17 @@ void IDirect3DVertexShader9Hook::UploadShaderBytecodeToDevice(gpuvoid* const gpu
 
 void IDirect3DVertexShader9Hook::JitLoadShader(const DWORD FVF /*= 0x00000000*/)
 {
+	SIMPLE_FUNC_SCOPE();
+
 	DeviceBytecode* compiledVertexShaderBytecode = NULL;
 
 	triedJit = true;
 
+	const char* const jitName = ConstructShaderJITName(vertexShaderInfo);
+	printf("Loading vertex shader \"%s\"...\n", jitName);
+
 	if (isPretransformPassthroughVS == false)
 	{
-		const char* const jitName = ConstructShaderJITName(vertexShaderInfo);
-
 #ifndef FORCE_INTERPRETED_VERTEX_SHADER
 		char jitFilenameBuffer[MAX_PATH] = {0};
 #pragma warning(push)
@@ -354,6 +357,7 @@ void IDirect3DVertexShader9Hook::JitLoadShader(const DWORD FVF /*= 0x00000000*/)
 		}
 		else
 		{
+			printf("Shader cache is missing vertex shader \"%s\". Compiling shader from scratch...\n", jitName);
 			if (!JITNewShader(vertexShaderInfo, jitName) )
 			{
 				DbgBreakPrint("Error: Failed to JIT Vertex Shader");
@@ -390,6 +394,8 @@ void IDirect3DVertexShader9Hook::JitLoadShader(const DWORD FVF /*= 0x00000000*/)
 		}
 #endif // #ifndef FORCE_INTERPRETED_VERTEX_SHADER
 
+		printf("Compiling shader bytecode to device shader bytecode for vertex shader \"%s\"...\n", jitName);
+
 		ShaderCompileOptions compileFlags = (ShaderCompileOptions)(SCOption_VS_AppendViewportTransform | SCOption_VS_AppendDivideByW | SCOption_VS_OutputCompressionEnable);
 #ifdef _DEBUG
 		compileFlags = (ShaderCompileOptions)(compileFlags | SCOption_OutputEverything);
@@ -397,6 +403,7 @@ void IDirect3DVertexShader9Hook::JitLoadShader(const DWORD FVF /*= 0x00000000*/)
 		compileFlags = (ShaderCompileOptions)(compileFlags | SCOption_Optimize_D3DOptimizations | SCOption_Optimize_DeviceOptimizations | SCOption_OutputEverything);
 #endif
 
+		SIMPLE_NAME_SCOPE("CompileShaderInfoToDeviceBytecode");
 		if (CompileShaderInfoToDeviceBytecode(&GetShaderInfo(), compileFlags, &compiledVertexShaderBytecode, jitName) != ShaderCompile_OK)
 		{
 #ifdef _DEBUG
@@ -407,6 +414,7 @@ void IDirect3DVertexShader9Hook::JitLoadShader(const DWORD FVF /*= 0x00000000*/)
 	}
 	else
 	{
+		printf("Generating pretransformed passthrough vertexshader \"%s\"...\n", jitName);
 		ShaderCompileOptions compileFlags = (ShaderCompileOptions)(SCOption_VS_GeneratePassthroughShader);
 #ifdef _DEBUG
 		compileFlags = (ShaderCompileOptions)(compileFlags | SCOption_OutputEverything);
@@ -419,6 +427,7 @@ void IDirect3DVertexShader9Hook::JitLoadShader(const DWORD FVF /*= 0x00000000*/)
 	sprintf(shaderNameBuffer, "PretransformedPassthroughVS_0x%08X", GetVertexElementsHash(passthroughVSElements, passthroughVSElementsCount) );
 #pragma warning(pop)
 
+		SIMPLE_NAME_SCOPE("GenerateShaderForPretransformedVertices");
 		if (GenerateShaderForPretransformedVertices(reinterpret_cast<const D3DVERTEXELEMENT9* const>(passthroughVSElements), passthroughVSElementsCount - 1, compileFlags, &compiledVertexShaderBytecode, shaderNameBuffer) != ShaderCompile_OK)
 		{
 #ifdef _DEBUG
@@ -446,7 +455,12 @@ void IDirect3DVertexShader9Hook::JitLoadShader(const DWORD FVF /*= 0x00000000*/)
 	}
 
 	// Copy our newly compiled device-specific shader instruction bytecode over to the GPU for later loading and execution:
-	UploadShaderBytecodeToDevice(allocVertexShaderBytes);
+	{
+		SIMPLE_NAME_SCOPE("UploadShaderBytecodeToDevice");
+		UploadShaderBytecodeToDevice(allocVertexShaderBytes);
+	}
 
 	deviceCompiledVertexShaderBytes = allocVertexShaderBytes;
+
+	printf("Shader compilation completed for vertex shader \"%s\"!\n", jitName);
 }

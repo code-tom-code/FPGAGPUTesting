@@ -301,6 +301,8 @@ static inline void BuildOutputStateDefines(const DeviceState& state, std::vector
 
 static inline void BuildVertexStateDefines(const DeviceState& state, std::vector<D3DXMACRO>& defines)
 {
+	SIMPLE_FUNC_SCOPE();
+
 	{
 		D3DXMACRO diffuse_mcs = {0};
 		diffuse_mcs.Name = "DIFFUSEMATERIALSOURCE";
@@ -533,6 +535,8 @@ static inline void BuildVertexStateDefines(const DeviceState& state, std::vector
 
 void BuildVertexShader(const DeviceState& state, IDirect3DDevice9Hook* const dev, IDirect3DVertexShader9Hook** const outNewShader)
 {
+	SIMPLE_FUNC_SCOPE();
+
 #ifdef _DEBUG
 	if (!outNewShader)
 	{
@@ -558,6 +562,7 @@ void BuildVertexShader(const DeviceState& state, IDirect3DDevice9Hook* const dev
 	const char* const resourceBytes = (const char* const)GetShaderResourceFile(MAKEINTRESOURCEA(IDR_HLSL_FFVS_SRC), resourceSize);
 	if (resourceBytes != NULL)
 	{
+		SIMPLE_NAME_SCOPE("D3DXCompileShader");
 		hr = D3DXCompileShader( (const char* const)resourceBytes, resourceSize, defines.empty() ? NULL : &defines.front(), D3DXIncludeHandler::GetGlobalIncludeHandlerSingleton(), 
 			"main", "vs_3_0", flags, &outBytecode, &errorMessages, NULL);
 	}
@@ -580,10 +585,13 @@ void BuildVertexShader(const DeviceState& state, IDirect3DDevice9Hook* const dev
 #endif
 
 	IDirect3DVertexShader9* newVertexShader = NULL;
-	if (FAILED(dev->CreateVertexShader( (const DWORD* const)outBytecode->GetBufferPointer(), &newVertexShader) ) || !newVertexShader)
 	{
-		// Should never happen for fixed-function shaders!
-		__debugbreak();
+		SIMPLE_NAME_SCOPE("D3D9::CreateVertexShader");
+		if (FAILED(dev->CreateVertexShader( (const DWORD* const)outBytecode->GetBufferPointer(), &newVertexShader) ) || !newVertexShader)
+		{
+			// Should never happen for fixed-function shaders!
+			__debugbreak();
+		}
 	}
 
 	IDirect3DVertexShader9Hook* const newVertexShaderHook = dynamic_cast<IDirect3DVertexShader9Hook* const>(newVertexShader);

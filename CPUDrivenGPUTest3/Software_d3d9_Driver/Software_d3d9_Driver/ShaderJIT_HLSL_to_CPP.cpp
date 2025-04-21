@@ -1665,6 +1665,8 @@ static inline const bool ParseShaderInstructions(const ShaderInfo& shaderInfo, s
 
 static inline const bool ShaderBodyJIT(const ShaderInfo& shaderInfo, std::vector<char>& cppfile)
 {
+	SIMPLE_FUNC_SCOPE();
+
 	static std::vector<char> shaderbody;
 	shaderbody.clear();
 
@@ -1694,6 +1696,8 @@ static inline const bool ShaderBodyJIT(const ShaderInfo& shaderInfo, std::vector
 
 const bool JITCPPFileInternal(const ShaderInfo& shaderInfo, const char* const shaderFilename)
 {
+	SIMPLE_FUNC_SCOPE();
+
 	char filename[MAX_PATH] = {0};
 #pragma warning(push)
 #pragma warning(disable:4996)

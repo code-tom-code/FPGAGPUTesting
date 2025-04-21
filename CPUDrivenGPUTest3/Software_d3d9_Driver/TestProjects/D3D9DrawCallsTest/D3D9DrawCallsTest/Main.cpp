@@ -1415,10 +1415,18 @@ DWORD* const LoadShaderToMemory(const char* const filename)
 	{
 #pragma warning(push)
 #pragma warning(disable:4996)
+#ifdef _M_X64
+#ifdef _DEBUG
+		sprintf(buffer, "..\\x64\\Debug\\%s.cso", filename);
+#else
+		sprintf(buffer, "..\\x64\\Release\\%s.cso", filename);
+#endif
+#else
 #ifdef _DEBUG
 		sprintf(buffer, "..\\Debug\\%s.cso", filename);
 #else
 		sprintf(buffer, "..\\Release\\%s.cso", filename);
+#endif
 #endif
 #pragma warning(pop)
 		hFile = CreateFileA(buffer, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_FLAG_SEQUENTIAL_SCAN, NULL);

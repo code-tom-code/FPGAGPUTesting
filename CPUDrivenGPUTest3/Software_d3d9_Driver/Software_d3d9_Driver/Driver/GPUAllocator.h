@@ -29,6 +29,16 @@ const constexpr unsigned GPU_COL_SIZE_BYTES = 1024u * 1024u;
 const constexpr unsigned GPU_COL_SIZE_BITS = GPU_COL_SIZE_BYTES * 8u;
 const constexpr unsigned GPU_NUM_PAGES_PER_COLUMN = GPU_COL_SIZE_BYTES / GPU_PAGE_SIZE_BYTES;
 
+class IDirect3DDevice9Hook;
+class IDirect3DSurface9Hook;
+class IDirect3DVertexShader9Hook;
+class IDirect3DVertexBuffer9Hook;
+class IDirect3DIndexBuffer9Hook;
+class IDirect3DTexture9Hook;
+class IDirect3DQuery9Hook;
+struct GPUCommandList;
+struct GPUStats;
+
 enum allocationUsage : unsigned char
 {
 	GPUVAT_Unknown = 0u,
@@ -131,6 +141,19 @@ struct liveAllocation
 #ifdef _DEBUG
 	const char* debugAllocationName;
 #endif
+	union
+	{
+		const void* RawVoidObject;
+		const IDirect3DDevice9Hook* DeviceObject; // Devices allocate shader constant buffers, shader register file dump buffers, and screenshot download buffers
+		const IDirect3DSurface9Hook* SurfaceObject; // Surfaces allocate render targets, texture mips, and depth/stencil buffers
+		const IDirect3DVertexBuffer9Hook* VBObject;
+		const IDirect3DIndexBuffer9Hook* IBObject;
+		const IDirect3DVertexShader9Hook* VSObject; // VertexShaders allocate shader buffers
+		const IDirect3DTexture9Hook* TextureObject; // Textures usually have Surfaces handle the allocation work for them, but there's some cases where they will allocate for themselves
+		const IDirect3DQuery9Hook* QueryObject; // Queries allocate query buffers
+		const GPUCommandList* CommandListObject; // Command lists allocate command buffers
+		const GPUStats* StatsObject; // GPUStats allocate multiple different flavors of stats buffers (cycle counter buffers, timestamp buffers, and event order buffers)
+	} APIObject; // A pointer to the live API object for this alloc type (vertex buffers point to IDirect3DVertexBuffer9Hook* objects, textures point to IDirect3DTexture9Hook* objects, etc.)
 	gpuvoid* allocAddress;
 	unsigned requestedSize; // The size that the application passed to the allocator (ie. 1584 bytes)
 	unsigned allocSize; // The size that the allocator actually allocated (ie. 2048 bytes to be a whole multiple of the GPU page-size)
@@ -147,7 +170,7 @@ void GPUInitializeAllocator();
 
 // Returns NULL if allocation fails (due to out of GPU memory, out of GPU address space, etc.)
 gpuvoid* GPUAlloc(const unsigned allocationSizeBytes,
-	const unsigned width, const unsigned short height, const unsigned short depth, const unsigned char numMipLevels, const allocationUsage usage, const gpuFormat format
+	const unsigned width, const unsigned short height, const unsigned short depth, const unsigned char numMipLevels, const allocationUsage usage, const gpuFormat format, const void* const apiObjectPtr
 #ifdef _DEBUG
 	, const char* const debugAllocationString
 #endif
@@ -170,7 +193,7 @@ __declspec(noinline) void GPUAlloc_EndFrame(unsigned& outNumAllocsThisFrame, uns
 
 // Returns NULL if allocation fails (due to out of GPU memory, cannot fit allocation at the requested address, out of GPU address space, etc.)
 gpuvoid* GPUAllocAtAddress(gpuvoid* const placementAddress, const unsigned allocationSizeBytes,
-	const unsigned width, const unsigned short height, const unsigned short depth, const unsigned char numMipLevels, const allocationUsage usage, const gpuFormat format
+	const unsigned width, const unsigned short height, const unsigned short depth, const unsigned char numMipLevels, const allocationUsage usage, const gpuFormat format, const void* const apiObjectPtr
 #ifdef _DEBUG
 	, const char* const debugAllocationString
 #endif

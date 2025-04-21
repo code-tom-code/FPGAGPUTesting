@@ -1,6 +1,18 @@
 #include "IBaseGPUDevice.h"
 #include "GPUCommandList.h"
 
+/*static*/ unsigned GPUCommandList::CommandListsCreatedCounter = 0;
+
+#ifdef _DEBUG
+void PrintDebugCommandListName(char* const outString, const UINT CommandCount, const unsigned CommandListCounter)
+{
+#pragma warning(push)
+#pragma warning(disable:4996)
+	sprintf(outString, "CommandList%u (Len: %u commands)", CommandListCounter, CommandCount);
+#pragma warning(pop)
+}
+#endif // #ifdef _DEBUG
+
 void GPUCommandList::AllocateAndUpload(IBaseGPUDevice* const baseDevice)
 {
 #ifdef _DEBUG
@@ -14,9 +26,9 @@ void GPUCommandList::AllocateAndUpload(IBaseGPUDevice* const baseDevice)
 	}
 #endif
 
-	gpuAllocatedAddress = GPUAlloc(GetCommandListSize_bytes(), GetCommandListCommandCount(), 0, 0, 0, GPUVAT_CommandBuffer, GPUFMT_CommandBufferPacketData
+	gpuAllocatedAddress = GPUAlloc(GetCommandListSize_bytes(), GetCommandListCommandCount(), 0, 0, 0, GPUVAT_CommandBuffer, GPUFMT_CommandBufferPacketData, this
 #ifdef _DEBUG
-		, "CommandListAllocation"
+		, debugObjectName
 #endif
 	);
 
@@ -136,6 +148,12 @@ void GPUCommandList::FinishRecordingAndUpload(IBaseGPUDevice* const baseDevice)
 		return;
 	}
 
+#ifdef _DEBUG
+	PrintDebugCommandListName(debugObjectName, GetCommandListCommandCount(), CommandListsCreatedCounter);
+#endif
+
+	++CommandListsCreatedCounter;
+
 	AllocateAndUpload(baseDevice);
 
 	recordingState = uploaded;
@@ -146,5 +164,8 @@ void GPUCommandList::ResetCommandListForPooling()
 	commandsHash = 0;
 	gpuAllocatedAddress = NULL;
 	commands.clear();
+#ifdef _DEBUG
+	memset(debugObjectName, 0, sizeof(debugObjectName) );
+#endif
 	recordingState = notRecording;
 }

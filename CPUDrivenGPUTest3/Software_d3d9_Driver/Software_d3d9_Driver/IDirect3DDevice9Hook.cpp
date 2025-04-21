@@ -4644,7 +4644,7 @@ const bool IDirect3DDevice9Hook::CreateOrUseCachedVertDataBuffer(DeviceAllocated
 		__debugbreak(); // Should never be here!
 #endif
 	}
-	newBuffer.deviceMemory = GPUAlloc(newBuffer.deviceSizeBytes, newBuffer.deviceSizeBytes, 0, 0, 0, deviceAllocationUsage, newBuffer.format 
+	newBuffer.deviceMemory = GPUAlloc(newBuffer.deviceSizeBytes, newBuffer.deviceSizeBytes, 0, 0, 0, deviceAllocationUsage, newBuffer.format, this
 #ifdef _DEBUG
 		, debugAllocString
 #endif
@@ -11799,7 +11799,7 @@ IDirect3DDevice9Hook::IDirect3DDevice9Hook(LPDIRECT3DDEVICE9 _d3d9dev, IDirect3D
 	deviceComms = broadcastDeviceComms;
 	baseDevice = new IBaseGPUDevice(broadcastDeviceComms);
 
-	allocatedDebugShaderRegisterFile = GPUAlloc(sizeof(DeviceRegisterFile), 1, 0, 0, 0, GPUVAT_RegisterFileDumpMemory, GPUFMT_RegFileDump
+	allocatedDebugShaderRegisterFile = GPUAlloc(sizeof(DeviceRegisterFile), 1, 0, 0, 0, GPUVAT_RegisterFileDumpMemory, GPUFMT_RegFileDump, this
 #ifdef _DEBUG
 		, "DebugDeviceRegisterFileDump"
 #endif

@@ -1573,7 +1573,7 @@ void IDirect3DSurface9Hook::CreateOffscreenPlainSurface(UINT _Width, UINT _Heigh
 	else
 	{
 		GPUSurfaceBytesRaw = GPUAlloc(GetSurfaceSizeBytes(InternalWidth, InternalHeight, InternalFormat), 
-			InternalWidth, InternalHeight, 1, 1, GPUVAT_RenderTarget, ConvertD3DFormatToDeviceFormat(InternalFormat)
+			InternalWidth, InternalHeight, 1, 1, GPUVAT_RenderTarget, ConvertD3DFormatToDeviceFormat(InternalFormat), this
 #ifdef _DEBUG
 			, debugObjectName
 #endif
@@ -1628,7 +1628,7 @@ void IDirect3DSurface9Hook::CreateDepthStencilSurface(UINT _Width, UINT _Height,
 #endif
 
 	GPUSurfaceBytesRaw = GPUAlloc(GetSurfaceSizeBytes(InternalWidth, InternalHeight, InternalFormat), 
-		InternalWidth, InternalHeight, 1, 1, GPUVAT_DepthStencil, ConvertD3DFormatToDeviceFormat(InternalFormat)
+		InternalWidth, InternalHeight, 1, 1, GPUVAT_DepthStencil, ConvertD3DFormatToDeviceFormat(InternalFormat), this
 #ifdef _DEBUG
 			, debugObjectName
 #endif
@@ -1683,7 +1683,7 @@ void IDirect3DSurface9Hook::CreateRenderTarget(UINT _Width, UINT _Height, D3DFOR
 	else
 	{
 		GPUSurfaceBytesRaw = GPUAlloc(GetSurfaceSizeBytes(InternalWidth, InternalHeight, InternalFormat), 
-			InternalWidth, InternalHeight, 1, 1, GPUVAT_RenderTarget, ConvertD3DFormatToDeviceFormat(InternalFormat)
+			InternalWidth, InternalHeight, 1, 1, GPUVAT_RenderTarget, ConvertD3DFormatToDeviceFormat(InternalFormat), this
 #ifdef _DEBUG
 			, debugObjectName
 #endif
@@ -1745,7 +1745,7 @@ void IDirect3DSurface9Hook::CreateTextureImplicitSurface(UINT _Width, UINT _Heig
 		if (TextureSurfaceLevel == 0 && _Pool <= D3DPOOL_MANAGED)
 		{
 			GPUSurfaceBytesRaw = GPUAlloc(GetSurfaceSizeBytes( (InternalWidth + 3) & ~3, (InternalHeight + 3) & ~3, D3DFMT_A8R8G8B8), 
-				InternalWidth, InternalHeight, 1, 1, (_Usage & D3DUSAGE_RENDERTARGET) ? GPUVAT_RenderTarget : GPUVAT_Texture, ConvertD3DFormatToDeviceFormat(D3DFMT_A8R8G8B8)
+				InternalWidth, InternalHeight, 1, 1, (_Usage & D3DUSAGE_RENDERTARGET) ? GPUVAT_RenderTarget : GPUVAT_Texture, ConvertD3DFormatToDeviceFormat(D3DFMT_A8R8G8B8), _HookParentTexturePtr
 #ifdef _DEBUG
 				, debugObjectName
 #endif
@@ -1757,7 +1757,7 @@ void IDirect3DSurface9Hook::CreateTextureImplicitSurface(UINT _Width, UINT _Heig
 		if (TextureSurfaceLevel == 0 && _Pool <= D3DPOOL_MANAGED)
 		{
 			GPUSurfaceBytesRaw = GPUAlloc(GetSurfaceSizeBytes(InternalWidth, InternalHeight, InternalFormat), 
-				InternalWidth, InternalHeight, 1, 1, (_Usage & D3DUSAGE_RENDERTARGET) ? GPUVAT_RenderTarget : GPUVAT_Texture, ConvertD3DFormatToDeviceFormat(InternalFormat)
+				InternalWidth, InternalHeight, 1, 1, (_Usage & D3DUSAGE_RENDERTARGET) ? GPUVAT_RenderTarget : GPUVAT_Texture, ConvertD3DFormatToDeviceFormat(InternalFormat), _HookParentTexturePtr
 #ifdef _DEBUG
 				, debugObjectName
 #endif
@@ -1820,7 +1820,7 @@ void IDirect3DSurface9Hook::CreateDeviceImplicitSurface(const D3DPRESENT_PARAMET
 	{
 		// Alloc the initial implicit device backbuffer at an exact device address:
 		GPUSurfaceBytesRaw = GPUAllocAtAddress( (gpuvoid* const)0x20000000, GetSurfaceSizeBytes(InternalWidth, InternalHeight, InternalFormat), 
-			InternalWidth, InternalHeight, 1, 1, GPUVAT_RenderTarget, ConvertD3DFormatToDeviceFormat(InternalFormat)
+			InternalWidth, InternalHeight, 1, 1, GPUVAT_RenderTarget, ConvertD3DFormatToDeviceFormat(InternalFormat), this
 #ifdef _DEBUG
 			, debugObjectName
 #endif
@@ -1882,7 +1882,7 @@ void IDirect3DSurface9Hook::CreateDeviceImplicitFrontbufferSurface(const D3DPRES
 	{
 		// Alloc the initial implicit device backbuffer at an exact device address:
 		GPUSurfaceBytesRaw = GPUAllocAtAddress( (gpuvoid* const)0x30000000, GetSurfaceSizeBytes(InternalWidth, InternalHeight, InternalFormat), 
-			InternalWidth, InternalHeight, 1, 1, GPUVAT_RenderTarget, ConvertD3DFormatToDeviceFormat(InternalFormat)
+			InternalWidth, InternalHeight, 1, 1, GPUVAT_RenderTarget, ConvertD3DFormatToDeviceFormat(InternalFormat), this
 #ifdef _DEBUG
 			, debugObjectName
 #endif
@@ -1942,7 +1942,7 @@ void IDirect3DSurface9Hook::CreateDeviceImplicitDepthStencil(const D3DPRESENT_PA
 
 	// Alloc the initial implicit device depthstencil buffer at an exact device address:
 	GPUSurfaceBytesRaw = GPUAllocAtAddress( (gpuvoid* const)0x10000000, GetSurfaceSizeBytes(InternalWidth, InternalHeight, InternalFormat), 
-		InternalWidth, InternalHeight, 1, 1, GPUVAT_DepthStencil, ConvertD3DFormatToDeviceFormat(InternalFormat)
+		InternalWidth, InternalHeight, 1, 1, GPUVAT_DepthStencil, ConvertD3DFormatToDeviceFormat(InternalFormat), this
 #ifdef _DEBUG
 			, debugObjectName
 #endif

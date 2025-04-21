@@ -41,7 +41,7 @@ void IDirect3DIndexBuffer9Hook::CreateIndexBuffer(UINT _Length, const Debuggable
 #endif
 
 	GPUBytes = GPUAlloc(InternalLength % sizeof(DWORD) != 0 ? InternalLength + sizeof(unsigned short) : InternalLength, 
-		InternalLength, 1, 1, 1, GPUVAT_IndexData, ConvertD3DFormatToDeviceFormat(InternalFormat)
+		InternalLength, 1, 1, 1, GPUVAT_IndexData, ConvertD3DFormatToDeviceFormat(InternalFormat), this
 #ifdef _DEBUG
 		, debugObjectName
 #endif
@@ -347,7 +347,7 @@ void IDirect3DIndexBuffer9Hook::SoftUPReallocIfNecessary(const UINT newBufferLen
 	if (allocLengthBytes > InternalLength)
 	{
 		GPUFree(GPUBytes);
-		GPUBytes = GPUAlloc(allocLengthBytes, numIndices, 1, 1, 1, GPUVAT_IndexData, ConvertD3DFormatToDeviceFormat(newFormat)
+		GPUBytes = GPUAlloc(allocLengthBytes, numIndices, 1, 1, 1, GPUVAT_IndexData, ConvertD3DFormatToDeviceFormat(newFormat), this
 #ifdef _DEBUG
 		, debugObjectName
 #endif

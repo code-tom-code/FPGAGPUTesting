@@ -571,7 +571,7 @@ void IDirect3DQuery9Hook::CreateQuery(const D3DQUERYTYPE _queryType)
 	if (QueryTypeHandledByHardware(_queryType) )
 	{
 		deviceQueryAlloc = GPUAlloc(MIN_QUERY_ALLOC_SIZE_BYTES, 
-				1, 1, 1, 1, GPUVAT_QueryMemory, GPUFMT_QueryData
+				1, 1, 1, 1, GPUVAT_QueryMemory, GPUFMT_QueryData, this
 #ifdef _DEBUG
 				, debugObjectName
 #endif

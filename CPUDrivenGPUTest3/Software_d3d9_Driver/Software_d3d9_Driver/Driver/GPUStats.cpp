@@ -31,7 +31,7 @@ void GPUStats::InitStatsBuffer()
 		return;
 	}
 
-	GPUStatsBuffer = GPUAlloc(sizeof(CyclesCount) * endFrameStatsResponse::TotalAllStatsCount, endFrameStatsResponse::TotalAllStatsCount, 0, 0, 0, GPUVAT_StatsMemory, gpuFormat::GPUFMT_StatsBuffer
+	GPUStatsBuffer = GPUAlloc(sizeof(CyclesCount) * endFrameStatsResponse::TotalAllStatsCount, endFrameStatsResponse::TotalAllStatsCount, 0, 0, 0, GPUVAT_StatsMemory, gpuFormat::GPUFMT_StatsBuffer, this
 #ifdef _DEBUG
 		, "StatsBuffer"
 #endif
@@ -48,7 +48,7 @@ void GPUStats::InitEventsBuffers()
 		return;
 	}
 
-	GPUEventTimestampsBuffer = GPUAlloc(sizeof(EventTimestamp) * NUM_GPU_EVENT_SYSTEMS_TRACKED * MAX_NUM_EVENTS_PER_FRAME + 32 * 2, MAX_NUM_EVENTS_PER_FRAME, 0, 0, 0, GPUVAT_StatsMemory, gpuFormat::GPUFMT_EventTimestampsBuffer
+	GPUEventTimestampsBuffer = GPUAlloc(sizeof(EventTimestamp) * NUM_GPU_EVENT_SYSTEMS_TRACKED * MAX_NUM_EVENTS_PER_FRAME + 32 * 2, MAX_NUM_EVENTS_PER_FRAME, 0, 0, 0, GPUVAT_StatsMemory, gpuFormat::GPUFMT_EventTimestampsBuffer, this
 #ifdef _DEBUG
 		, "EventTimestamps"
 #endif
@@ -62,7 +62,7 @@ void GPUStats::InitEventsBuffers()
 		return;
 	}
 
-	GPUEventOrdersBuffer = GPUAlloc(sizeof(USHORT) * NUM_GPU_EVENT_SYSTEMS_TRACKED * MAX_NUM_EVENTS_PER_FRAME + 32 * 2, MAX_NUM_EVENTS_PER_FRAME, 0, 0, 0, GPUVAT_StatsMemory, gpuFormat::GPUFMT_EventOrderBuffer
+	GPUEventOrdersBuffer = GPUAlloc(sizeof(USHORT) * NUM_GPU_EVENT_SYSTEMS_TRACKED * MAX_NUM_EVENTS_PER_FRAME + 32 * 2, MAX_NUM_EVENTS_PER_FRAME, 0, 0, 0, GPUVAT_StatsMemory, gpuFormat::GPUFMT_EventOrderBuffer, this
 #ifdef _DEBUG
 		, "EventsOrder"
 #endif

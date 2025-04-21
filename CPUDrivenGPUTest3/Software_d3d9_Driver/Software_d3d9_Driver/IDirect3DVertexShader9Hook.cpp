@@ -431,7 +431,7 @@ void IDirect3DVertexShader9Hook::JitLoadShader(const DWORD FVF /*= 0x00000000*/)
 	deviceCompiledVertexShaderBytecode = compiledVertexShaderBytecode;
 
 	gpuvoid* allocVertexShaderBytes = GPUAlloc(deviceCompiledVertexShaderBytecode->deviceShaderInfo.deviceInstructionTokenCount * sizeof(instructionSlot) + sizeof(DeviceShaderHeader), 
-		deviceCompiledVertexShaderBytecode->deviceShaderInfo.deviceInstructionTokenCount, 0, 0, 0, GPUVAT_ShaderInstructionsMemory, GPUFMT_VertexShaderInstructions
+		deviceCompiledVertexShaderBytecode->deviceShaderInfo.deviceInstructionTokenCount, 0, 0, 0, GPUVAT_ShaderInstructionsMemory, GPUFMT_VertexShaderInstructions, this
 #ifdef _DEBUG
 		, debugObjectName
 #endif

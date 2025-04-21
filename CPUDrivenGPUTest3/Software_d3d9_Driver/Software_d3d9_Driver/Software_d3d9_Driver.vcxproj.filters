@@ -237,11 +237,11 @@
     <ClCompile Include="Driver\GPUReturnTracker.cpp">
       <Filter>Source Files\Driver</Filter>
     </ClCompile>
-    <ClCompile Include="INIVar.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Driver\PacketDisassembler.cpp">
       <Filter>Source Files\Driver</Filter>
+    </ClCompile>
+    <ClCompile Include="INIVar.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -452,14 +452,14 @@
     <ClInclude Include="Driver\GPUReturnTracker.h">
       <Filter>Header Files\Driver</Filter>
     </ClInclude>
-    <ClInclude Include="INIVar.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Utilities\ThreadNaming.h">
       <Filter>Header Files\Utilities</Filter>
     </ClInclude>
     <ClInclude Include="Driver\PacketDisassembler.h">
       <Filter>Header Files\Driver</Filter>
+    </ClInclude>
+    <ClInclude Include="INIVar.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

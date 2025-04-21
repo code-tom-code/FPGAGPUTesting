@@ -104,5 +104,11 @@ private:
 		uploaded = 2
 	} recordingState = notRecording;
 
+#ifdef _DEBUG
+	char debugObjectName[256] = {0};
+#endif
+
+	static unsigned CommandListsCreatedCounter;
+
 	void AllocateAndUpload(IBaseGPUDevice* const baseDevice);
 };

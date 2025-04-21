@@ -56,7 +56,7 @@ void IDirect3DVertexBuffer9Hook::CreateVertexBuffer(UINT _Length, const Debuggab
 	PrintDebugVertexBufferName(debugObjectName, _Length, _Usage, _FVF, _Pool, VertexBuffersCreatedCounter);
 #endif
 
-	GPUBytes = GPUAlloc(_Length, InternalLength, 1, 1, 1, GPUVAT_VertexStreamData, GPUFMT_VertexGeneral
+	GPUBytes = GPUAlloc(_Length, InternalLength, 1, 1, 1, GPUVAT_VertexStreamData, GPUFMT_VertexGeneral, this
 #ifdef _DEBUG
 		, debugObjectName
 #endif
@@ -339,7 +339,7 @@ void IDirect3DVertexBuffer9Hook::SoftUPReallocIfNecessary(const UINT newBufferLe
 	if (newBufferLengthBytes > InternalLength)
 	{
 		GPUFree(GPUBytes);
-		GPUBytes = GPUAlloc(newBufferLengthBytes, numVertices, 1, 1, 1, GPUVAT_VertexStreamData, GPUFMT_VertexGeneral
+		GPUBytes = GPUAlloc(newBufferLengthBytes, numVertices, 1, 1, 1, GPUVAT_VertexStreamData, GPUFMT_VertexGeneral, this
 #ifdef _DEBUG
 		, debugObjectName
 #endif

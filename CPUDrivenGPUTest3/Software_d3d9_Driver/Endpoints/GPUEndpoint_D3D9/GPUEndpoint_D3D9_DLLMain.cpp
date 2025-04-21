@@ -3,6 +3,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #include "D3D9Endpoint.h"
+#include "..\..\Software_d3d9_Driver\INIVar.h"
 
 #include <stdio.h>
 
@@ -35,6 +36,8 @@ BOOL WINAPI DllMain(
 		}
 #endif
 		dllHInst = hinstDLL;
+
+		INIRegistry::InitLoadAllINIData();
 		break;
 
 	case DLL_THREAD_ATTACH:

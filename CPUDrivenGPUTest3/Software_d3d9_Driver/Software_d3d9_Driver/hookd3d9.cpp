@@ -11,6 +11,8 @@
 
 #include "IDirect3D9Hook.h"
 
+#include "INIVar.h"
+
 #ifdef INCREASE_SYSTEM_SCHEDULER_RESOLUTION
 	#pragma comment(lib, "Winmm.lib")
 #endif // #ifdef INCREASE_SYSTEM_SCHEDULER_RESOLUTION
@@ -315,6 +317,9 @@ BOOL WINAPI DllMain(_In_ HINSTANCE hInst, _In_ DWORD reason, _In_ LPVOID /*lpvRe
 	if (reason == DLL_PROCESS_ATTACH)
 	{
 		hLThisDLL = hInst;
+
+		// Need to run this once on startup!
+		INIRegistry::InitLoadAllINIData();
 
 #ifdef _DEBUG
 		CircumventSteamAntiDebugging();

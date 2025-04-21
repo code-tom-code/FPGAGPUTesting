@@ -23,6 +23,7 @@
     <ClInclude Include="RecordingDiskEndpoint.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\Software_d3d9_Driver\INIVar.cpp" />
     <ClCompile Include="RecordingEndpoint_DiskFile_DLLMain.cpp" />
     <ClCompile Include="RecordingDiskEndpoint.cpp" />
   </ItemGroup>

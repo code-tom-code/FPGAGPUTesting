@@ -3,6 +3,30 @@
 #include "ShaderJIT.h"
 #include "IDirect3DDevice9Hook.h"
 #include "resource.h"
+#include "INIVar.h"
+
+INIVar InvokeVSDevPrompt("Software_JITShader", 
+#ifdef _M_X64
+	"VSCommandPromptPathX64"
+#else
+	"VSCommandPromptPathX86"
+#endif
+	,
+#ifdef _M_X64
+	"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Auxiliary\\Build\\vcvars64.bat"
+#else
+	"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\Tools\\VsDevCmd.bat"
+#endif
+);
+
+INIVar DXSDKIncludeDir("Software_JITShader", "DXSDKIncludeDir", "C:\\Program Files (x86)\\Microsoft DirectX SDK (June 2010)\\Include");
+#ifdef _M_X64
+	INIVar DXSDKLibDirX64("Software_JITShader", "DXSDKLibDirX64", "C:\\Program Files (x86)\\Microsoft DirectX SDK (June 2010)\\Lib\\x64");
+#else
+	INIVar DXSDKLibDirX86("Software_JITShader", "DXSDKLibDirX86", "C:\\Program Files (x86)\\Microsoft DirectX SDK (June 2010)\\Lib\\x86");
+#endif
+
+extern INIVar DriverBaseDir;
 
 extern HINSTANCE hLThisDLL;
 
@@ -85,18 +109,11 @@ static inline const bool JITBATFile(const ShaderInfo& shaderInfo, const char* co
 	" /D \"_WINDLL\"";
 #endif // #ifdef _DEBUG
 
-	// TODO: Don't hardcode these paths...
-#ifdef _DEBUG
-	static const char* const compileString = "cl.exe /c /I \"C:\\Program Files (x86)\\Microsoft DirectX SDK (June 2010)\\Include\" /FAcs /Fa /analyze- /W3 /Zc:wchar_t /ZI /Od /fp:precise /WX- /Zc:forScope /RTC1 /Gd /Oy- /MDd /EHsc /nologo /GS %s %s.cpp\r\n";
+#ifdef _DEBUG // Debug
+	static const char* const compileFlags = "/FAcs /Fa /analyze- /W3 /Zc:wchar_t /ZI /Od /fp:precise /WX- /Zc:forScope /RTC1 /Gd /Oy- /MDd /EHsc /nologo /GS";
 #else // Release
-	static const char* const compileString = "cl.exe /c /I \"C:\\Program Files (x86)\\Microsoft DirectX SDK (June 2010)\\Include\" /FAcs /Fa /analyze- /W3 /Zc:wchar_t /Zi /GS- /GL /Gy /Gm- /O2 /Ob2 /fp:fast /GF /WX- /Zc:forScope /arch:AVX2 /Gd /Oy- /Oi /MT /Ot %s %s.cpp\r\n";
+	static const char* const compileFlags = "/FAcs /Fa /analyze- /W3 /Zc:wchar_t /Zi /GS- /GL /Gy /Gm- /O2 /Ob2 /fp:fast /GF /WX- /Zc:forScope /arch:AVX2 /Gd /Oy- /Oi /MT /Ot";
 #endif // #ifdef _DEBUG
-
-#ifdef _M_X64
-	#define LIBPATH "/LIBPATH:\"C:\\Program Files (x86)\\Microsoft DirectX SDK (June 2010)\\Lib\\x64\""
-#else
-	#define LIBPATH "/LIBPATH:\"C:\\Program Files (x86)\\Microsoft DirectX SDK (June 2010)\\Lib\\x86\""
-#endif
 
 #ifdef _M_X64
 	#define MACHINE_PLATFORM "/MACHINE:X64"
@@ -106,35 +123,38 @@ static inline const bool JITBATFile(const ShaderInfo& shaderInfo, const char* co
 	#define SAFESEH_FLAG "/SAFESEH"
 #endif
 
-	// TODO: Don't hardcode these paths...
 #ifdef _DEBUG
-	static const char* const linkString = "link.exe " LIBPATH " /DEBUG /DLL " MACHINE_PLATFORM " /SUBSYSTEM:WINDOWS /NOLOGO /NXCOMPAT %s.obj\r\n";
+	static const char* const linkFlags = "/DEBUG /DLL " MACHINE_PLATFORM " /SUBSYSTEM:WINDOWS /NOLOGO /NXCOMPAT";
 #else // Release
-	static const char* const linkString = "link.exe " LIBPATH " /DEBUG /DLL " MACHINE_PLATFORM " /SUBSYSTEM:WINDOWS /NODEFAULTLIB /ENTRY:DllMain /NOLOGO /NXCOMPAT /LTCG /DLL /DYNAMICBASE \"Kernel32.lib\" \"libucrt.lib\" /OPT:REF " SAFESEH_FLAG " /INCREMENTAL:NO /OPT:ICF %s.obj\r\n";
+	static const char* const linkFlags = "/DEBUG /DLL " MACHINE_PLATFORM " /SUBSYSTEM:WINDOWS /NODEFAULTLIB /ENTRY:DllMain /NOLOGO /NXCOMPAT /LTCG /DLL /DYNAMICBASE \"Kernel32.lib\" \"libucrt.lib\" /OPT:REF " SAFESEH_FLAG " /INCREMENTAL:NO /OPT:ICF";
 #endif // #ifdef _DEBUG
 
 	// Set up VS command prompt
 	{
-		// TODO: Don't hardcode this path...
-#ifdef _M_X64
-		static const char* const invokeVSDevCmd = "call \"C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Enterprise\\VC\\Auxiliary\\Build\\vcvars64.bat\"\r\n";
-#else
-		static const char* const invokeVSDevCmd = "call \"C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Enterprise\\Common7\\Tools\\VsDevCmd.bat\"\r\n";
-#endif
-		AppendString(batfile, invokeVSDevCmd);
+		// Construct our call string that runs the VS command prompt for our platform. The string looks something like this:
+		// "call \"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\Tools\\VsDevCmd.bat\"\r\n"
+		AppendString(batfile, "call \"");
+		AppendString(batfile, InvokeVSDevPrompt.String() );
+		AppendString(batfile, "\"\r\n");
 	}
 
 	// Compile
 	{
 		char batBuffer[1024] = {0};
-		sprintf(batBuffer, compileString, compileDefines, shaderFilename);
+		sprintf(batBuffer, "cl.exe /c /I \"%s\" %s %s /D \"EXTERNAL_BASE_PATH=%s\" %s.cpp\r\n", DXSDKIncludeDir.String(), compileFlags, compileDefines, DriverBaseDir.String(), shaderFilename);
 		AppendString(batfile, batBuffer);
 	}
 
 	// Link
 	{
 		char batBuffer[1024] = {0};
-		sprintf(batBuffer, linkString, shaderFilename);
+		sprintf(batBuffer, "link.exe /LIBPATH:\"%s\" %s %s.obj\r\n", 
+#ifdef _M_X64
+			DXSDKLibDirX64.String()
+#else
+			DXSDKLibDirX86.String()
+#endif
+			, linkFlags, shaderFilename);
 		AppendString(batfile, batBuffer);
 	}
 

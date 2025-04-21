@@ -4,6 +4,7 @@
 #include <Windows.h>
 #include <stdio.h>
 #include "RecordingDiskEndpoint.h"
+#include "..\..\Software_d3d9_Driver\INIVar.h"
 
 static bool endpointInitialized = false;
 static const char* const dllEndpointName = "RecordingEndpoint_DiskFile";
@@ -28,6 +29,8 @@ BOOL WINAPI DllMain(
 		}
 #endif
 		dllHInst = hinstDLL;
+
+		INIRegistry::InitLoadAllINIData();
 		break;
 
 	case DLL_THREAD_ATTACH:

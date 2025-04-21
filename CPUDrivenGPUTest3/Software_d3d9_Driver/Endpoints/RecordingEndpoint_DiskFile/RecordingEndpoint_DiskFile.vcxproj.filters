@@ -32,6 +32,9 @@
     <ClCompile Include="RecordingEndpoint_DiskFile_DLLMain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Software_d3d9_Driver\INIVar.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Source.def">

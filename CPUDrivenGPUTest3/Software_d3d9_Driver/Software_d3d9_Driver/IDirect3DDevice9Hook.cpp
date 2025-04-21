@@ -29,6 +29,7 @@
 #include "..\DriverShaderCompiler\DriverShaderCompiler.h"
 #include "..\ShaderTraceViewer\ShaderTrace.h"
 #include <Mmsystem.h>
+#include "INIVar.h"
 
 #ifdef MULTITHREAD_SHADING
 	#if PARALLEL_LIBRARY == PARALLELLIB_CONCRT
@@ -39,6 +40,10 @@
 		#include <include/tbb/parallel_for.h>
 	#endif
 #endif
+
+// INIVars:
+INIVar DriverControlPanelEnable("Driver", "ControlPanelEnable", true);
+INIVar DriverBaseDir("Endpoints", "DriverBaseDir", "C:\\Users\\Tom\\Documents\\Visual Studio 2022\\Projects\\Software_d3d9_Driver");
 
 // Rasterizer constants:
 // TODO: Fix bug in core rasterizer loop when this is tuned > 0 (ie, when subpixel precision is enabled)
@@ -1256,7 +1261,8 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::Present(THI
 	deviceComms->EndFrame();
 
 	// Update our device settings dialog:
-	driverSettingsDlg.UpdateDialog();
+	if (DriverControlPanelEnable.Bool() )
+		driverSettingsDlg.UpdateDialog();
 
 	// Update our GPU Stats dialog:
 	deviceStats.UpdateDialog();
@@ -11667,7 +11673,28 @@ void IDirect3DDevice9Hook::InitializeState(const D3DPRESENT_PARAMETERS& d3dpp, c
 	}
 	hConsoleHandle = CreateFileA("CONOUT$", GENERIC_WRITE, FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
 
-	driverSettingsDlg.InitDialog(initialCreateFocusWindow, initialCreateDeviceWindow, this);
+	if (DriverControlPanelEnable.Bool() )
+		driverSettingsDlg.InitDialog(initialCreateFocusWindow, initialCreateDeviceWindow, this);
+}
+
+const std::string BuildEndpointDLLPath(const char* const endpointDLLName)
+{
+#ifdef _M_X64
+	#ifdef _DEBUG
+		#define ENDPOINTS_DIR "x64\\Debug\\Endpoints"
+	#else
+		#define ENDPOINTS_DIR "x64\\Release\\Endpoints"
+	#endif
+#else
+	#ifdef _DEBUG
+		#define ENDPOINTS_DIR "Debug\\Endpoints"
+	#else
+		#define ENDPOINTS_DIR "Release\\Endpoints"
+	#endif
+#endif
+	char filepath[MAX_PATH] = {0};
+	sprintf_s(filepath, "%s\\%s\\%s", DriverBaseDir.String(), ENDPOINTS_DIR, endpointDLLName);
+	return std::string(filepath);
 }
 
 IDirect3DDevice9Hook::IDirect3DDevice9Hook(LPDIRECT3DDEVICE9 _d3d9dev, IDirect3D9Hook* _parentHook) : d3d9dev(_d3d9dev), parentHook(_parentHook), refCount(1), initialDevType(D3DDEVTYPE_HAL), initialCreateFlags(D3DCREATE_HARDWARE_VERTEXPROCESSING),
@@ -11759,38 +11786,16 @@ IDirect3DDevice9Hook::IDirect3DDevice9Hook(LPDIRECT3DDEVICE9 _d3d9dev, IDirect3D
 	//ISerialDeviceComms* const serialDeviceComms = new ISerialDeviceComms("COM3", 921600, ODDPARITY);
 	//INetSocketDeviceComms* const networkDeviceComms = new INetSocketDeviceComms();
 	IRemoteProcessIPCComms* const remoteProcessesIPCComms = new IRemoteProcessIPCComms();
-	if (!remoteProcessesIPCComms->LaunchNewRemoteIPCProcess(
-		"C:\\Users\\Tom\\Documents\\Visual Studio 2017\\Projects\\Software_d3d9_Driver\\" // TODO: Do not hardcode these paths!
-#ifdef _M_X64
-		"x64\\"	
-#endif
-#ifdef _DEBUG
-		"Debug\\"
-#else
-		"Release\\"
-#endif
-		"Endpoints\\GPUEndpoint_D3D9.dll"
-	) )
+	if (!remoteProcessesIPCComms->LaunchNewRemoteIPCProcess(BuildEndpointDLLPath("GPUEndpoint_D3D9.dll").c_str() ) )
 	{
 #ifdef _DEBUG
 		__debugbreak(); // Error: This shouldn't happen!
 #endif
 	}
-	ILocalEndpointDLLComms* const localRecorderEndpointComms = new ILocalEndpointDLLComms(
-		"C:\\Users\\Tom\\Documents\\Visual Studio 2017\\Projects\\Software_d3d9_Driver\\" // TODO: Do not hardcode these paths!
-#ifdef _M_X64
-		"x64\\"
-#endif
-#ifdef _DEBUG
-		"Debug\\"
-#else
-		"Release\\"
-#endif
-		"Endpoints\\RecordingEndpoint_DiskFile.dll"
-	);
-	IBroadcastVirtualDeviceComms* const broadcastDeviceComms = new IBroadcastVirtualDeviceComms(localRecorderEndpointComms/*networkDeviceComms*/);
-	//broadcastDeviceComms->AddNewSecondaryBroadcastTarget(localRecorderEndpointComms);
+	ILocalEndpointDLLComms* const localRecorderEndpointComms = new ILocalEndpointDLLComms(BuildEndpointDLLPath("RecordingEndpoint_DiskFile.dll").c_str() );
+	IBroadcastVirtualDeviceComms* const broadcastDeviceComms = new IBroadcastVirtualDeviceComms(localRecorderEndpointComms);
 	broadcastDeviceComms->AddNewSecondaryBroadcastTarget(remoteProcessesIPCComms);
+	//broadcastDeviceComms->AddNewSecondaryBroadcastTarget(localRecorderEndpointComms);
 
 	deviceComms = broadcastDeviceComms;
 	baseDevice = new IBaseGPUDevice(broadcastDeviceComms);

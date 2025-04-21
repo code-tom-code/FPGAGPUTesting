@@ -328,6 +328,8 @@ void IDirect3DVertexShader9Hook::JitLoadShader(const DWORD FVF /*= 0x00000000*/)
 
 		static const char* const shaderMainExportName = "@VertexShaderMain@4";
 		static const char* const shaderMainExportName4 = "@VertexShaderMain4@4";
+		static const char* const shaderMainExportNameAlt = "VertexShaderMain";
+		static const char* const shaderMainExportNameAlt4 = "VertexShaderMain4";
 
 		if (hm)
 		{
@@ -335,11 +337,19 @@ void IDirect3DVertexShader9Hook::JitLoadShader(const DWORD FVF /*= 0x00000000*/)
 			jitShaderMain4 = (VSEntry)GetProcAddress(hm, shaderMainExportName4);
 			if (!jitShaderMain)
 			{
-				DbgBreakPrint("Error: Cannot find VertexShaderMain in existing JIT DLL");
+				jitShaderMain = (VSEntry)GetProcAddress(hm, shaderMainExportNameAlt);
+				if (!jitShaderMain)
+				{
+					DbgBreakPrint("Error: Cannot find VertexShaderMain in existing JIT DLL");
+				}
 			} 
-			else if (!jitShaderMain4)
+			if (!jitShaderMain4)
 			{
-				DbgPrint("Warning: Cannot find VertexShaderMain4 in existing JIT DLL");
+				jitShaderMain4 = (VSEntry)GetProcAddress(hm, shaderMainExportNameAlt4);
+				if (!jitShaderMain4)
+				{
+					DbgPrint("Warning: Cannot find VertexShaderMain4 in existing JIT DLL");
+				}
 			}
 		}
 		else
@@ -361,11 +371,19 @@ void IDirect3DVertexShader9Hook::JitLoadShader(const DWORD FVF /*= 0x00000000*/)
 					jitShaderMain4 = (VSEntry)GetProcAddress(hm2, shaderMainExportName4);
 					if (!jitShaderMain)
 					{
-						DbgBreakPrint("Error: Cannot find VertexShaderMain in newly created JIT DLL");
+						jitShaderMain = (VSEntry)GetProcAddress(hm2, shaderMainExportNameAlt);
+						if (!jitShaderMain)
+						{
+							DbgBreakPrint("Error: Cannot find VertexShaderMain in newly created JIT DLL");
+						}
 					} 
-					else if (!jitShaderMain4)
+					if (!jitShaderMain4)
 					{
-						DbgPrint("Warning: Cannot find VertexShaderMain4 in newly created JIT DLL");
+						jitShaderMain4 = (VSEntry)GetProcAddress(hm2, shaderMainExportName4);
+						if (!jitShaderMain4)
+						{
+							DbgPrint("Warning: Cannot find VertexShaderMain4 in newly created JIT DLL");
+						}
 					}
 				}
 			}

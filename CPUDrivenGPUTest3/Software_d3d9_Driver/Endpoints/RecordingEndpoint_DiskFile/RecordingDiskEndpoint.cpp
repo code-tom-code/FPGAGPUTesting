@@ -9,9 +9,10 @@
 #include "..\..\Software_d3d9_Driver\SimpleInstrumentedProfiler.h"
 #include "..\..\Software_d3d9_Driver\Utilities\ThreadNaming.h"
 #include <vector>
+#include "..\..\Software_d3d9_Driver\INIVar.h"
 
 static HANDLE hRecordingFile = INVALID_HANDLE_VALUE;
-static const char* const RecordingDirectoryBase = "E:\\CommandStreamRecordings";
+INIVar RecordingDirectoryBase("RecordingDiskEndpoint", "RecordingDirectoryBase", "C:\\CommandStreamRecordings");
 static CRITICAL_SECTION lockCS = {0};
 static std::vector<genericCommand> callerSideWritePacketsBuffer; // This is the buffer that the caller of this endpoint writes into. It's just a simple vector push_back on a local thread, so there's no thread contention or IO.
 static std::vector<genericCommand> bufferedWritePackets; // This is the locked buffer that is contended between the endpoint thread and the IO thread.
@@ -103,7 +104,7 @@ const bool InitRecording()
 	const tm timeStruct = *localtime(&currentTime);
 #pragma warning(pop)
 
-	if (!CreateDirectoryA(RecordingDirectoryBase, NULL) )
+	if (!CreateDirectoryA(RecordingDirectoryBase.String(), NULL) )
 	{
 		const DWORD lastErr = GetLastError();
 		if (lastErr != ERROR_ALREADY_EXISTS)
@@ -124,7 +125,7 @@ const bool InitRecording()
 	char recordingFilepath[MAX_PATH] = {0};
 #pragma warning(push)
 #pragma warning(disable:4996)
-	sprintf(recordingFilepath, "%s\\%s_%i-%02i-%02i_%02i-%02i-%02i.rsd", RecordingDirectoryBase, 
+	sprintf(recordingFilepath, "%s\\%s_%i-%02i-%02i_%02i-%02i-%02i.rsd", RecordingDirectoryBase.String(), 
 		exeFilename,
 		timeStruct.tm_year + 1900, // Year
 		timeStruct.tm_mon + 1, // Month

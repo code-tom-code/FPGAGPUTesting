@@ -7,14 +7,18 @@
 // Needed for DisableThreadLibraryCalls()
 #pragma comment(lib, "Kernel32.lib")
 
-// TODO: Don't hardcode these paths, it won't work on other people's computers as-is
-#include "C:\\Users\\Tom\\Documents\\Visual Studio 2017\\Projects\\Software_d3d9_Driver\\Software_d3d9_Driver\\VShaderEngine.h"
-#include "C:\\Users\\Tom\\Documents\\Visual Studio 2017\\Projects\\Software_d3d9_Driver\\Software_d3d9_Driver\\PShaderEngine.h"
-#include "C:\\Users\\Tom\\Documents\\Visual Studio 2017\\Projects\\Software_d3d9_Driver\\Software_d3d9_Driver\\ShaderAnalysis.h"
-#include "C:\\Users\\Tom\\Documents\\Visual Studio 2017\\Projects\\Software_d3d9_Driver\\Software_d3d9_Driver\\IDirect3DDevice9Hook.h"
-#include "C:\\Users\\Tom\\Documents\\Visual Studio 2017\\Projects\\Software_d3d9_Driver\\Software_d3d9_Driver\\IDirect3DPixelShader9Hook.h"
-#include "C:\\Users\\Tom\\Documents\\Visual Studio 2017\\Projects\\Software_d3d9_Driver\\Software_d3d9_Driver\\IDirect3DVertexShader9Hook.h"
-#include "C:\\Users\\Tom\\Documents\\Visual Studio 2017\\Projects\\Software_d3d9_Driver\\Software_d3d9_Driver\\IDirect3DTexture9Hook.h"
+// The EXTERNAL_BASE_PATH define gets set programatically from the calling process
+#define STRINGIFY_MACRO(x) STR(x)
+#define STR(x) #x
+#define EXPAND(x) x
+#define CONCAT(a, b) STRINGIFY_MACRO(EXPAND(a)EXPAND(b))
+#include CONCAT(EXTERNAL_BASE_PATH,\Software_d3d9_Driver\VShaderEngine.h) // #include "VShaderEngine.h"
+#include CONCAT(EXTERNAL_BASE_PATH,\Software_d3d9_Driver\PShaderEngine.h) // #include "PShaderEngine.h"
+#include CONCAT(EXTERNAL_BASE_PATH,\Software_d3d9_Driver\ShaderAnalysis.h) // #include "ShaderAnalysis.h"
+#include CONCAT(EXTERNAL_BASE_PATH,\Software_d3d9_Driver\IDirect3DDevice9Hook.h) // #include "IDirect3DDevice9Hook.h"
+#include CONCAT(EXTERNAL_BASE_PATH,\Software_d3d9_Driver\IDirect3DPixelShader9Hook.h) // #include "IDirect3DPixelShader9Hook.h"
+#include CONCAT(EXTERNAL_BASE_PATH,\Software_d3d9_Driver\IDirect3DVertexShader9Hook.h) // #include "IDirect3DVertexShader9Hook.h"
+#include CONCAT(EXTERNAL_BASE_PATH,\Software_d3d9_Driver\IDirect3DTexture9Hook.h) // #include "IDirect3DTexture9Hook.h"
 
 #pragma pack(1)
 

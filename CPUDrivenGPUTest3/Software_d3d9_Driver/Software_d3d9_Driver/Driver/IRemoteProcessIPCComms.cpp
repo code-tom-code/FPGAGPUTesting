@@ -2,20 +2,23 @@
 #include "..\SharedMemIPC\SharedMemIPC.h"
 #include <stdio.h>
 #include <string>
+#include "..\INIVar.h"
 
-// TODO: Don't hardcode this path:
-static const char* const IPCEndpointHostProcessPath = 
-	"C:\\Users\\Tom\\Documents\\Visual Studio 2017\\Projects\\Software_d3d9_Driver\\" // TODO: Do not hardcode these paths!
+extern INIVar DriverBaseDir;
+
 #ifdef _M_X64
-	"x64\\"
-#endif
-#ifdef _DEBUG
-	"Debug\\"
+	#ifdef _DEBUG
+		#define ENDPOINT_FILENAME "x64\\Debug\\Endpoints\\EndpointDLL_IPCHost.exe"
+	#else
+		#define ENDPOINT_FILENAME "x64\\Release\\Endpoints\\EndpointDLL_IPCHost.exe"
+	#endif
 #else
-	"Release\\"
+	#ifdef _DEBUG
+		#define ENDPOINT_FILENAME "Debug\\Endpoints\\EndpointDLL_IPCHost.exe"
+	#else
+		#define ENDPOINT_FILENAME "Release\\Endpoints\\EndpointDLL_IPCHost.exe"
+	#endif
 #endif
-	"Endpoints\\EndpointDLL_IPCHost.exe";
-	;
 
 IRemoteProcessIPCComms::IRemoteProcessIPCComms() : IBaseDeviceComms(), remoteConnectionsManager(new IPC_ConnectionManager(IPCM_Server) )
 {
@@ -39,8 +42,11 @@ const bool IRemoteProcessIPCComms::LaunchNewRemoteIPCProcess(const char* const e
 	processCreationFlags |= CREATE_SUSPENDED;
 #endif
 
+	char IPCEndpointEXEFilepath[MAX_PATH] = {0};
+	sprintf_s(IPCEndpointEXEFilepath, "%s\\%s", DriverBaseDir.String(), ENDPOINT_FILENAME);
+
 #ifdef _DEBUG
-	if (!IPCEndpointHostProcessPath || GetFileAttributesA(IPCEndpointHostProcessPath) == INVALID_FILE_ATTRIBUTES)
+	if (GetFileAttributesA(IPCEndpointEXEFilepath) == INVALID_FILE_ATTRIBUTES)
 	{
 		__debugbreak(); // Error: Invalid loader-EXE path, or file not found! You may need to recompile the loader EXE!
 	}
@@ -51,7 +57,7 @@ const bool IRemoteProcessIPCComms::LaunchNewRemoteIPCProcess(const char* const e
 #endif
 
 	// Make sure to enclose our DLL path in quotes or else any spaces in the path will cause the arguments parser to assume that they are separate arguments:
-	std::string endpointDLLFullPathBuilder(IPCEndpointHostProcessPath);
+	std::string endpointDLLFullPathBuilder(IPCEndpointEXEFilepath);
 	endpointDLLFullPathBuilder.insert(endpointDLLFullPathBuilder.begin(), '"');
 	endpointDLLFullPathBuilder.insert(endpointDLLFullPathBuilder.end(), '"');
 	endpointDLLFullPathBuilder.insert(endpointDLLFullPathBuilder.end(), ' ');
@@ -63,7 +69,7 @@ const bool IRemoteProcessIPCComms::LaunchNewRemoteIPCProcess(const char* const e
 	{
 		const DWORD lastErr = GetLastError();
 #ifdef _DEBUG
-		printf("Error: Failure in CreateProcessA() with process \"%s\" and command line \"%s\". GLE: %u\n", IPCEndpointHostProcessPath, endpointDLLFilepath, lastErr);
+		printf("Error: Failure in CreateProcessA() with process \"%s\" and command line \"%s\". GLE: %u\n", IPCEndpointEXEFilepath, endpointDLLFilepath, lastErr);
 #endif
 		return false;
 	}

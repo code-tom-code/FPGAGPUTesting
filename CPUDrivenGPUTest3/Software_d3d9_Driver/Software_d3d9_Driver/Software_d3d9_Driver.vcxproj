@@ -246,6 +246,7 @@
     <ClCompile Include="IDirect3DVertexShader9Hook.cpp" />
     <ClCompile Include="IDirect3DVolume9Hook.cpp" />
     <ClCompile Include="IDirect3DVolumeTexture9Hook.cpp" />
+    <ClCompile Include="INIVar.cpp" />
     <ClCompile Include="Overlay\DebugOverlay.cpp" />
     <ClCompile Include="Overlay\Overlay_DeviceState.cpp" />
     <ClCompile Include="Overlay\Overlay_WelcomeScreen.cpp" />
@@ -315,6 +316,7 @@
     <ClInclude Include="IDirect3DVertexShader9Hook.h" />
     <ClInclude Include="IDirect3DVolume9Hook.h" />
     <ClInclude Include="IDirect3DVolumeTexture9Hook.h" />
+    <ClInclude Include="INIVar.h" />
     <ClInclude Include="LRU_GPUCommandListCache.h" />
     <ClInclude Include="LRU_VertDataBufferCache.h" />
     <ClInclude Include="Overlay\DebugOverlay.h" />

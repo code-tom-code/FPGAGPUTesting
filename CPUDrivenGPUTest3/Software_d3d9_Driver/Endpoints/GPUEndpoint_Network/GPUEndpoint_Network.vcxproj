@@ -179,6 +179,7 @@
     <ClCompile Include="..\..\Software_d3d9_Driver\Driver\IBaseDeviceComms.cpp" />
     <ClCompile Include="..\..\Software_d3d9_Driver\Driver\INetSocketDeviceComms.cpp" />
     <ClCompile Include="..\..\Software_d3d9_Driver\Driver\NetSession\NetSession.cpp" />
+    <ClCompile Include="..\..\Software_d3d9_Driver\INIVar.cpp" />
     <ClCompile Include="GPUEndpoint_Network_DLLMain.cpp" />
   </ItemGroup>
   <ItemGroup>

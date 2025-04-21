@@ -30,6 +30,9 @@
     <ClCompile Include="GPUEndpoint_D3D9_DLLMain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Software_d3d9_Driver\INIVar.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ConversionHelpers_GPU_To_D3D9.h">

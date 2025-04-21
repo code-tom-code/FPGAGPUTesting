@@ -166,6 +166,7 @@
     <ClCompile Include="..\..\Software_d3d9_Driver\Driver\GPUAllocator.cpp" />
     <ClCompile Include="..\..\Software_d3d9_Driver\Driver\IBaseDeviceComms.cpp" />
     <ClCompile Include="..\..\Software_d3d9_Driver\Driver\ISerialDeviceComms.cpp" />
+    <ClCompile Include="..\..\Software_d3d9_Driver\INIVar.cpp" />
     <ClCompile Include="GPUEndpoint_Serial_DLLMain.cpp" />
   </ItemGroup>
   <ItemGroup>

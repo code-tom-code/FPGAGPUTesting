@@ -141,7 +141,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DSwapChain9Hook::Present(
 #endif
 			}
 #ifdef _DEBUG
-			if (eventQueryData == FALSE) // Signaled events should always be non-FALSE
+			if (parentDevice->GetDeviceComms()->EndpointSupportsMemReadback() && eventQueryData == FALSE) // Signaled events should always be non-FALSE
 			{
 				__debugbreak();
 			}

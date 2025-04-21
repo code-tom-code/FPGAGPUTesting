@@ -98,11 +98,8 @@ void IDirect3DPixelShader9Hook::JitLoadShader()
 #pragma warning(pop)
 	HMODULE hm = LoadLibraryA(jitFilenameBuffer);
 
-#ifdef _M_X64
 	static const char* const shaderMainExportName = "PixelShaderMain";
-#else
-	static const char* const shaderMainExportName = "@PixelShaderMain@4";
-#endif
+	static const char* const shaderMainExportNameAlt = "@PixelShaderMain@4";
 
 	triedJit = true;
 
@@ -111,7 +108,11 @@ void IDirect3DPixelShader9Hook::JitLoadShader()
 		jitShaderMain = (PSEntry)GetProcAddress(hm, shaderMainExportName);
 		if (!jitShaderMain)
 		{
-			DbgBreakPrint("Error: Cannot find PixelShaderMain in existing JIT DLL");
+			jitShaderMain = (PSEntry)GetProcAddress(hm, shaderMainExportNameAlt);
+			if (!jitShaderMain)
+			{
+				DbgBreakPrint("Error: Cannot find PixelShaderMain in existing JIT DLL");
+			}
 		}
 	}
 	else
@@ -131,8 +132,12 @@ void IDirect3DPixelShader9Hook::JitLoadShader()
 			jitShaderMain = (PSEntry)GetProcAddress(hm2, shaderMainExportName);
 			if (!jitShaderMain)
 			{
-				DbgBreakPrint("Error: Cannot find PixelShaderMain in newly created JIT DLL");
-				return;
+				jitShaderMain = (PSEntry)GetProcAddress(hm2, shaderMainExportNameAlt);
+				if (!jitShaderMain)
+				{
+					DbgBreakPrint("Error: Cannot find PixelShaderMain in newly created JIT DLL");
+					return;
+				}
 			}
 		}
 	}

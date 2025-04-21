@@ -11795,7 +11795,6 @@ IDirect3DDevice9Hook::IDirect3DDevice9Hook(LPDIRECT3DDEVICE9 _d3d9dev, IDirect3D
 	ILocalEndpointDLLComms* const localRecorderEndpointComms = new ILocalEndpointDLLComms(BuildEndpointDLLPath("RecordingEndpoint_DiskFile.dll").c_str() );
 	IBroadcastVirtualDeviceComms* const broadcastDeviceComms = new IBroadcastVirtualDeviceComms(localRecorderEndpointComms);
 	broadcastDeviceComms->AddNewSecondaryBroadcastTarget(remoteProcessesIPCComms);
-	//broadcastDeviceComms->AddNewSecondaryBroadcastTarget(localRecorderEndpointComms);
 
 	deviceComms = broadcastDeviceComms;
 	baseDevice = new IBaseGPUDevice(broadcastDeviceComms);

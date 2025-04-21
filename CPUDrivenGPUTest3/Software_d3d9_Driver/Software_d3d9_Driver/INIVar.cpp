@@ -105,17 +105,19 @@ namespace INIRegistry
 #endif
 		}
 		char moduleName[MAX_PATH] = {0};
+		char moduleDir[MAX_PATH] = {0};
+		char moduleDrive[4] = {0};
 #pragma warning(push)
 #pragma warning(disable:4996)
-		_splitpath(modulePath, NULL, NULL, moduleName, NULL);
+		_splitpath(modulePath, moduleDrive, moduleDir, moduleName, NULL);
 #pragma warning(pop)
-		char localSettingsFilename[MAX_PATH] = {0};
-		sprintf_s(localSettingsFilename, "%sLocalSettings.ini", moduleName);
+		char localSettingsFilepath[MAX_PATH] = {0};
+		sprintf_s(localSettingsFilepath, "%s%s%sLocalSettings.ini", moduleDrive, moduleDir, moduleName);
 		const std::unordered_map<unsigned, INIVar*>& CRegisteredVars = GetVarRegistrySingleton();
 		for (std::unordered_map<unsigned, INIVar*>::const_iterator it = CRegisteredVars.cbegin(); it != CRegisteredVars.cend(); ++it)
 		{
 			INIVar* const thisVar = it->second;
-			LoadINIData(*thisVar, localSettingsFilename);
+			LoadINIData(*thisVar, localSettingsFilepath);
 		}
 	}
 }

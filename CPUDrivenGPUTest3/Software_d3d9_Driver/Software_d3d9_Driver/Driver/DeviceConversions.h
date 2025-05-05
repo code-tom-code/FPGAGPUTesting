@@ -6,6 +6,7 @@
 #include "PacketDefs.h"
 
 const eCmpFunc ConvertToDeviceCmpFunc(const D3DCMPFUNC cmpFunc);
+const eStencilOp ConvertToDeviceStencilOp(const D3DSTENCILOP stencilOp);
 const eDepthFormat ConvertToDeviceDepthFormat(const D3DFORMAT zFormat);
 const eCullMode ConvertToDeviceCullMode(const D3DCULL cullMode);
 const ePrimTopology ConvertToDevicePrimTopology(const D3DPRIMITIVETYPE primType);

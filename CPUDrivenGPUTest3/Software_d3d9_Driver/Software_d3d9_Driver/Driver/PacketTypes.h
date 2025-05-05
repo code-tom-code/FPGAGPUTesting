@@ -220,6 +220,20 @@ enum eDepthFormat : unsigned char
 	eDepthFmtD15 = 2
 };
 
+enum eStencilOp : unsigned char
+{
+	sop_keep = 0,
+	sop_zero = 1,
+	sop_replace = 2,
+	sop_incr_sat = 3,
+	sop_decr_sat = 4,
+	sop_invert = 5,
+	sop_incr = 6,
+	sop_decr = 7,
+
+	sop_MAX_STENCIL_OPS // This must always be last!
+};
+
 // These are meant to be OR'd together to form a complete render target write mask
 enum eBlendMask : unsigned char
 {

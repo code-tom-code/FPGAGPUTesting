@@ -157,12 +157,12 @@ static inline const unsigned RoundUpToNextMultipleOf8(const unsigned x)
 	return ( (x + 7) / 8) * 8;
 }
 
-void GPUStats::ProcessDrawEventsData()
+void GPUStats::ProcessDrawEventsData(const LARGE_INTEGER frameBeginTimestamp, const LARGE_INTEGER frameEndTimestamp)
 {
 	// Erase the last frame's processed draw data:
 	ProcessedDrawEventData.clear();
 
-	unsigned numDrawEvents = 0;
+	/*unsigned numDrawEvents = 0;
 	const unsigned numDrawStats = (const unsigned)flippedRecordedDrawEvents.size();
 	for (unsigned x = 0; x < numDrawStats; ++x)
 	{
@@ -289,7 +289,39 @@ void GPUStats::ProcessDrawEventsData()
 		printf("INTERP, %u, %u, %u, %u\n", thisEvent.DrawEventIndex, thisEvent.EventTimestamps[ProcessedEventData::ESS_AttributeInterpolator].BeginTimestamp, thisEvent.EventTimestamps[ProcessedEventData::ESS_AttributeInterpolator].EndTimestamp, thisEvent.DrawPtr->DrawCallStatUnion.DrawData.PrimCount);
 		printf("TEXSAMP, %u, %u, %u, %u\n", thisEvent.DrawEventIndex, thisEvent.EventTimestamps[ProcessedEventData::ESS_TextureSampler].BeginTimestamp, thisEvent.EventTimestamps[ProcessedEventData::ESS_TextureSampler].EndTimestamp, thisEvent.DrawPtr->DrawCallStatUnion.DrawData.PrimCount);
 		printf("ROP, %u, %u, %u, %u\n", thisEvent.DrawEventIndex, thisEvent.EventTimestamps[ProcessedEventData::ESS_ROP].BeginTimestamp, thisEvent.EventTimestamps[ProcessedEventData::ESS_ROP].EndTimestamp, thisEvent.DrawPtr->DrawCallStatUnion.DrawData.PrimCount);
+	}*/
+	printf("EventIndex, DrawType, EndTimestamp\n");
+
+	printf("0, FRAME_BEGIN, %I64u\n", frameBeginTimestamp.QuadPart);
+
+	const unsigned numDrawStats = (const unsigned)flippedRecordedDrawEvents.size();
+	for (unsigned x = 0; x < numDrawStats; ++x)
+	{
+		const RecordedDrawCallStat& thisRecordedDrawStat = flippedRecordedDrawEvents[x];
+		const char* drawTypeString = "";
+		switch (thisRecordedDrawStat.DrawType)
+		{
+#ifdef _DEBUG
+		default:
+		{
+			__debugbreak(); // Should never be here!
+		}
+			break;
+#endif
+		case RecordedDrawCallStat::DT_Clear:
+			drawTypeString = "CLEAR";
+			break;
+		case RecordedDrawCallStat::DT_DrawPrimitive:
+			drawTypeString = "DRAWPRIMITIVE";
+			break;
+		case RecordedDrawCallStat::DT_DrawIndexedPrimitive:
+			drawTypeString = "DRAWINDEXEDPRIMITIVE";
+			break;
+		}
+		printf("%u, %s, %I64u\n", x + 1, drawTypeString, thisRecordedDrawStat.drawCallFinishGPUTimestamp.QuadPart);
 	}
+
+	printf("%u, FRAME_END, %I64u\n", numDrawStats + 2, frameEndTimestamp.QuadPart);
 }
 
 void GPUStats::FlipRecordedDrawEventsToStats(std::vector<RecordedDrawCallStat>& deviceRecordedDrawEvents)

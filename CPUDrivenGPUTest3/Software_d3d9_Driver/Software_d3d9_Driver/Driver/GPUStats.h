@@ -23,6 +23,13 @@ struct RecordedDrawCallStat
 		DT_DrawIndexedPrimitive
 	} DrawType;
 
+	// The CPU timestamp of when the program called DrawPrimitive()/DrawIndexedPrimitive()/Clear().
+	// This is used for tracking the latency between CPU and GPU timelines, as well as tracking app CPU time inbetween Draw() calls.
+	LARGE_INTEGER drawCallCPUTimestamp;
+
+	// The GPU timestamp read back from the timestamp query that is executed just after the Draw()/Clear() call is issued:
+	LARGE_INTEGER drawCallFinishGPUTimestamp;
+
 	union
 	{
 		struct
@@ -34,6 +41,7 @@ struct RecordedDrawCallStat
 			UINT MinVertexIndex;
 			UINT NumVertices;
 			UINT StartIndex;
+			D3DFORMAT IndexFormat;
 		} DrawData;
 
 		struct
@@ -260,7 +268,7 @@ struct GPUStats
 	void PrintCounterStat(const int dlgItemID, const unsigned count) const;
 
 	void FlipRecordedDrawEventsToStats(std::vector<RecordedDrawCallStat>& deviceRecordedDrawEvents);
-	void ProcessDrawEventsData();
+	void ProcessDrawEventsData(const LARGE_INTEGER frameBeginTimestamp, const LARGE_INTEGER frameEndTimestamp);
 
 	union
 	{

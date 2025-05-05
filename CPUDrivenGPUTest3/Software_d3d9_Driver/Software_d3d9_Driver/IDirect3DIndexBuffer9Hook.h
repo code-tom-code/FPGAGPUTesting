@@ -109,6 +109,11 @@ public:
 		return GPUBytes;
 	}
 
+	void BindIndexBufferForDraw()
+	{
+		lastFrameIDDrawn = parentDevice->GetCurrentFrameIndex();
+	}
+
 	void SoftUPReallocIfNecessary(const UINT newBufferLengthBytes, const UINT numIndices, const D3DFORMAT newFormat);
 
 	inline void SoftUPSetInternalPointer(const void* const stream0IndicesUP, const D3DFORMAT newFormat, const D3DPRIMITIVETYPE PrimitiveType, const UINT PrimitiveCount)
@@ -162,6 +167,7 @@ public:
 		const unsigned char singleIndexSize = (newFormat == D3DFMT_INDEX16) ? 2 : 4;
 		InternalLength = indexCount * singleIndexSize;
 		GPUBytesDirty = true;
+		lastFrameIDDirtied = parentDevice->GetCurrentFrameIndex();
 	}
 
 	inline void SoftUPResetInternalPointer(void)
@@ -179,6 +185,7 @@ public:
 		rawBytes.voidBytes = NULL;
 		InternalFormat = D3DFMT_UNKNOWN;
 		GPUBytesDirty = true;
+		lastFrameIDDirtied = parentDevice->GetCurrentFrameIndex();
 	}
 
 protected:
@@ -209,6 +216,10 @@ public:
 
 	// Dirty flag gets set on Unlock and gets cleared when we upload a fresh copy of this buffer to the GPU!
 	bool GPUBytesDirty = true;
+
+	unsigned lastFrameIDDirtied = 0xFFFFFFFF; // Tracks the last frame the CPU wrote to this resource and dirtied it
+	unsigned lastFrameIDUploaded = 0xFFFFFFFF; // Tracks the last frame that we uploaded this buffer from the CPU to GPU
+	unsigned lastFrameIDDrawn = 0xFFFFFFFF; // Tracks the last frame that we used this buffer in a Draw() call
 
 #ifdef _DEBUG
 	char debugObjectName[256] = {0};

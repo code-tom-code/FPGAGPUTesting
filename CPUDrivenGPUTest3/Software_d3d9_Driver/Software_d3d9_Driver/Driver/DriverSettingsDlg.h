@@ -7,7 +7,7 @@ struct DriverSettingsDlg
 {
 	~DriverSettingsDlg();
 	void InitDialog(HWND initialCreateFocusWindow, HWND initialCreateDeviceWindow, IDirect3DDevice9Hook* const d3d9devhook);
-	void UpdateDialog();
+	void UpdateDialog(const bool refreshEntireDialog = false);
 
 	HWND driverOptionsDlgWnd = NULL;
 };

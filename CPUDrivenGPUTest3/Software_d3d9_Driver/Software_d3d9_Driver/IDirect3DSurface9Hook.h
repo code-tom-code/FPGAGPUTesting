@@ -187,6 +187,11 @@ public:
 		return GPUSurfaceBytesRaw;
 	}
 
+	void BindSurfaceForDrawCall()
+	{
+		lastFrameIDDrawn = parentDevice->GetCurrentFrameIndex();
+	}
+
 	inline LPDIRECT3DSURFACE9 GetUnderlyingSurface(void) const
 	{
 		return realObject;
@@ -374,6 +379,9 @@ protected:
 	UINT auxSurfaceBytesRawSize = 0;
 	DWORD lockFlags = 0x00000000;
 	bool surfaceIsGPUDirty = true;
+	unsigned lastFrameIDDirtied = 0xFFFFFFFF; // Tracks the last frame the CPU wrote to this resource and dirtied it
+	unsigned lastFrameIDUploaded = 0xFFFFFFFF; // Tracks the last frame that we uploaded this buffer from the CPU to GPU
+	unsigned lastFrameIDDrawn = 0xFFFFFFFF; // Tracks the last frame that we used this buffer in a Draw() call
 
 	__declspec(align(16) ) __m128i InternalWidthSplatted; // This is in the format of (uint32[4])(InternalWidth, InternalWidth, InternalWidth, InternalWidth)
 	__declspec(align(16) ) __m128 InternalWidthSplattedF; // This is in the format of (float32[4])(InternalWidth, InternalWidth, InternalWidth, InternalWidth)

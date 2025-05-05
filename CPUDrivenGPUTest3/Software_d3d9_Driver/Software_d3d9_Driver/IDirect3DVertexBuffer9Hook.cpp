@@ -324,6 +324,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DVertexBuffer9Hook::Unloc
 		if ( (lockFlags & (D3DLOCK_READONLY | D3DLOCK_NO_DIRTY_UPDATE) ) == 0)
 		{
 			GPUBytesDirty = true;
+			lastFrameIDDirtied = parentDevice->GetCurrentFrameIndex();
 		}
 
 #ifdef _DEBUG
@@ -355,6 +356,7 @@ void IDirect3DVertexBuffer9Hook::UpdateDataToGPU()
 	{
 		// Copy our newly locked data off from the CPU to the GPU:
 		parentDevice->GetBaseDevice()->DeviceMemCopy(GetGPUBytes(), data, InternalLength);
+		lastFrameIDUploaded = parentDevice->GetCurrentFrameIndex();
 
 		GPUBytesDirty = false;
 	}

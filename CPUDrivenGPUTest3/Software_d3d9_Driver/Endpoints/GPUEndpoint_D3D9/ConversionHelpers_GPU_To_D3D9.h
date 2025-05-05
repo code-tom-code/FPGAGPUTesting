@@ -29,6 +29,35 @@ static const D3DCMPFUNC ConvertCmpFunc(const eCmpFunc deviceCmpFunc)
 	}
 }
 
+static const D3DSTENCILOP ConvertStencilOp(const eStencilOp deviceStencilOp)
+{
+	switch (deviceStencilOp)
+	{
+	default:
+#ifdef _DEBUG
+	{
+		__debugbreak(); // Out of range or invalid enum!
+	}
+#endif
+	case sop_keep:
+		return D3DSTENCILOP_KEEP;
+	case sop_zero:
+		return D3DSTENCILOP_ZERO;
+	case sop_replace:
+		return D3DSTENCILOP_REPLACE;
+	case sop_incr_sat:
+		return D3DSTENCILOP_INCRSAT;
+	case sop_decr_sat:
+		return D3DSTENCILOP_DECRSAT;
+	case sop_invert:
+		return D3DSTENCILOP_INVERT;
+	case sop_incr:
+		return D3DSTENCILOP_INCR;
+	case sop_decr:
+		return D3DSTENCILOP_DECR;
+	}
+}
+
 static const D3DBLENDOP ConvertBlendOp(const blendOp deviceBlendOp)
 {
 	switch (deviceBlendOp)

@@ -21,6 +21,27 @@ const eCmpFunc ConvertToDeviceCmpFunc(const D3DCMPFUNC cmpFunc)
 	return (const eCmpFunc)(cmpFunc - 1);
 }
 
+const eStencilOp ConvertToDeviceStencilOp(const D3DSTENCILOP stencilOp)
+{
+	if (stencilOp == 0)
+	{
+#ifdef _DEBUG
+		__debugbreak();
+#endif
+		return sop_keep;
+	}
+
+	if (stencilOp > D3DSTENCILOP_DECR)
+	{
+#ifdef _DEBUG
+		__debugbreak();
+#endif
+		return sop_keep;
+	}
+
+	return (const eStencilOp)(stencilOp - 1);
+}
+
 const eDepthFormat ConvertToDeviceDepthFormat(const D3DFORMAT zFormat)
 {
 	switch (zFormat)

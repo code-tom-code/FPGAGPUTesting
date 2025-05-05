@@ -1098,6 +1098,7 @@ void IDirect3DSurface9Hook::DecompressSurfaceToAuxBuffer()
 void IDirect3DSurface9Hook::SetSurfaceDirty()
 {
 	surfaceIsGPUDirty = true;
+	lastFrameIDDirtied = parentDevice->GetCurrentFrameIndex();
 }
 
 void IDirect3DSurface9Hook::UpdateSurfaceToGPUIfDirty()
@@ -1107,6 +1108,7 @@ void IDirect3DSurface9Hook::UpdateSurfaceToGPUIfDirty()
 	{
 		UpdateSurfaceToGPU();
 		surfaceIsGPUDirty = false;
+		lastFrameIDUploaded = parentDevice->GetCurrentFrameIndex();
 	}
 }
 
@@ -1276,6 +1278,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DSurface9Hook::UnlockRect
 	if (GetDeviceSurfaceBytes() != NULL && InternalPool <= D3DPOOL_MANAGED && (lockFlags & (D3DLOCK_READONLY | D3DLOCK_NO_DIRTY_UPDATE) ) == 0)
 	{
 		surfaceIsGPUDirty = true;
+		lastFrameIDDirtied = parentDevice->GetCurrentFrameIndex();
 	}
 
 #ifdef _DEBUG
@@ -4476,6 +4479,7 @@ void IDirect3DSurface9Hook::UpdateSurfaceInternal(const IDirect3DSurface9Hook* c
 	if (InternalPool <= D3DPOOL_MANAGED)
 	{
 		surfaceIsGPUDirty = true;
+		lastFrameIDDirtied = parentDevice->GetCurrentFrameIndex();
 	}
 
 #ifdef WITH_SURFACE_HASHING

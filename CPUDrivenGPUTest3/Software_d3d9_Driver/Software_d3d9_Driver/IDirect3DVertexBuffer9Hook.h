@@ -98,6 +98,7 @@ public:
 		data = (BYTE* const)stream0BytesUP;
 		InternalLength = BufferLengthBytes;
 		GPUBytesDirty = true;
+		lastFrameIDDirtied = parentDevice->GetCurrentFrameIndex();
 	}
 
 	inline void SoftUPResetInternalPointer(void)
@@ -114,6 +115,7 @@ public:
 #endif
 		data = NULL;
 		GPUBytesDirty = true;
+		lastFrameIDDirtied = parentDevice->GetCurrentFrameIndex();
 	}
 
 	inline const BYTE* const GetInternalDataBuffer(void) const
@@ -124,6 +126,11 @@ public:
 	gpuvoid* GetGPUBytes() const
 	{
 		return GPUBytes;
+	}
+
+	void BindVertexBufferForDraw()
+	{
+		lastFrameIDDrawn = parentDevice->GetCurrentFrameIndex();
 	}
 
 	inline const UINT GetInternalLength_Bytes(void) const
@@ -161,6 +168,10 @@ protected:
 
 	// Dirty flag gets set on Unlock and gets cleared when we upload a fresh copy of this buffer to the GPU!
 	bool GPUBytesDirty = true;
+
+	unsigned lastFrameIDDirtied = 0xFFFFFFFF; // Tracks the last frame the CPU wrote to this resource and dirtied it
+	unsigned lastFrameIDUploaded = 0xFFFFFFFF; // Tracks the last frame that we uploaded this buffer from the CPU to GPU
+	unsigned lastFrameIDDrawn = 0xFFFFFFFF; // Tracks the last frame that we used this buffer in a Draw() call
 
 #ifdef _DEBUG
 	char debugObjectName[256] = {0};

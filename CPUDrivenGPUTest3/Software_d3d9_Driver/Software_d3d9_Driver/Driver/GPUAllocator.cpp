@@ -865,6 +865,7 @@ const gpuFormat ConvertD3DFormatToDeviceFormat(const D3DFORMAT fmt)
 		return GPUFMT_TexR4G4B4A4;
 	case D3DFMT_R5G6B5:
 		return GPUFMT_TexR5G6B5;
+	case D3DFMT_A8: // Bad hack for now, but at least it doesn't crash...
 	case D3DFMT_R3G3B2:
 		return GPUFMT_TexR3G3B2;
 	case D3DFMT_DXT1:

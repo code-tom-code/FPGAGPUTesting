@@ -29,6 +29,7 @@
 #define IDC_STATIC2                     1014
 #define IDC_CHK_SINGLESTEPDRAWCALLS     1014
 #define IDC_IA_STAT1                    1015
+#define IDC_CHK_SINGLESTEPFRAMES        1015
 #define IDC_IA_STAT2                    1016
 #define IDC_IA_STAT3                    1017
 #define IDC_IA_STAT4                    1018
@@ -47,6 +48,8 @@
 #define IDC_EDIT_DRAWSLEEPMICROS        1026
 #define IDC_INTERP_STAT1                1027
 #define IDC_LST_CATEGORYLIST            1027
+#define IDC_EDIT_DRAWSLEEPMICROS2       1027
+#define IDC_EDIT_FPSLIMIT               1027
 #define IDC_INTERP_STAT2                1028
 #define IDC_LST_ALLOCINFO               1028
 #define IDC_CMB_OVERRIDEZ               1028
@@ -71,7 +74,6 @@
 #define IDC_CMD_STAT1                   1038
 #define IDC_CMB_OVERRIDESTENCIL         1038
 #define IDC_CMD_STAT2                   1039
-#define IDC_CMB_OVERRIDETEXTURING2      1039
 #define IDC_CMB_OVERRIDEFILTERING       1039
 #define IDC_MEMREAD_STAT1               1040
 #define IDC_MEMREAD_STAT2               1041

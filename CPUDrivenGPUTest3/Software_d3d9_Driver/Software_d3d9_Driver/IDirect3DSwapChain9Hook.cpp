@@ -150,7 +150,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DSwapChain9Hook::Present(
 	}
 
 	// Swap our buffers if double-buffering is enabled (otherwise, just keep rendering and presenting from the one buffer)
-	const IDirect3DSurface9Hook* newScanoutBuffer = backBuffer;
+	IDirect3DSurface9Hook* newScanoutBuffer = backBuffer;
 	if (parentDevice->GetUseDoubleBuffering() )
 	{
 		frontBuffer->FrontbufferBackbufferSwap(backBuffer);
@@ -158,6 +158,16 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DSwapChain9Hook::Present(
 	}
 	parentDevice->GetBaseDevice()->DeviceSetScanoutBuffer(newScanoutBuffer->GetDeviceSurfaceBytes(), parentDevice->GetScanoutEnabled(), parentDevice->GetInvertScanoutColors(), parentDevice->GetScanoutSwizzleR(), 
 		parentDevice->GetScanoutSwizzleG(), parentDevice->GetScanoutSwizzleB() );
+	newScanoutBuffer->BindSurfaceForDrawCall();
+
+	if (parentDevice->frameEndTimestamp == NULL && parentDevice->GetDeviceStats().IsCollectingEventDataThisFrame() )
+	{
+		parentDevice->CreateQuery(D3DQUERYTYPE_TIMESTAMP, (IDirect3DQuery9** const)&parentDevice->frameEndTimestamp);
+	}
+	if (parentDevice->frameEndTimestamp != NULL && parentDevice->GetDeviceStats().IsCollectingEventDataThisFrame())
+	{
+		parentDevice->frameEndTimestamp->Issue(D3DISSUE_END);
+	}
 
 	// Don't download stats every frame since pulling them is relatively expensive over serial UART and it will affect total frame-times:
 	if (parentDevice->DoEnableGPUStats() )
@@ -167,12 +177,33 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DSwapChain9Hook::Present(
 	}
 	else if (parentDevice->GetDeviceStats().IsCollectingEventDataThisFrame() )
 	{
+		LARGE_INTEGER beginFrameTimestampData = {0};
+		LARGE_INTEGER endFrameTimestampData = {0};
+		std::vector<RecordedDrawCallStat>& allRecordedDrawEvents = parentDevice->GetEventRecordedDrawEvents();
+		parentDevice->frameBeginTimestamp->GetData(&beginFrameTimestampData, sizeof(beginFrameTimestampData), D3DGETDATA_FLUSH);
+		parentDevice->frameEndTimestamp->GetData(&endFrameTimestampData, sizeof(endFrameTimestampData), D3DGETDATA_FLUSH);
+		for (unsigned x = 0; x < parentDevice->eventEndTimestamps.size(); ++x)
+		{
+			IDirect3DQuery9Hook* const thisEndTimestamp = parentDevice->eventEndTimestamps[x];
+			LARGE_INTEGER timestampData = {0};
+			thisEndTimestamp->GetData(&timestampData, sizeof(timestampData), D3DGETDATA_FLUSH);
+			allRecordedDrawEvents[x].drawCallFinishGPUTimestamp = timestampData;
+		}
 		parentDevice->GetDeviceStats().FinishDownloadingEndOfFrameEvents(parentDevice->GetBaseDevice() );
-		parentDevice->GetDeviceStats().FlipRecordedDrawEventsToStats(parentDevice->GetEventRecordedDrawEvents() );
-		parentDevice->GetDeviceStats().ProcessDrawEventsData();
+		parentDevice->GetDeviceStats().FlipRecordedDrawEventsToStats(allRecordedDrawEvents);
+		parentDevice->GetDeviceStats().ProcessDrawEventsData(beginFrameTimestampData, endFrameTimestampData);
 	}
 	else if (parentDevice->GetDeviceStats().IsArmedForEventCollectionNextFrame() )
 	{
+		if (parentDevice->frameBeginTimestamp == NULL)
+		{
+			parentDevice->CreateQuery(D3DQUERYTYPE_TIMESTAMP, (IDirect3DQuery9** const)&parentDevice->frameBeginTimestamp);
+		}
+		if (parentDevice->frameBeginTimestamp != NULL)
+		{
+			parentDevice->frameBeginTimestamp->Issue(D3DISSUE_END);
+		}
+
 		parentDevice->GetBaseDevice()->DeviceEndFrameAndQueueEventRecording(parentDevice->GetDeviceStats().GetEventTimestampsBuffer(), parentDevice->GetDeviceStats().GetEventsOrderBuffer() );
 		parentDevice->GetDeviceStats().CollectEventDataThisFrame();
 	}

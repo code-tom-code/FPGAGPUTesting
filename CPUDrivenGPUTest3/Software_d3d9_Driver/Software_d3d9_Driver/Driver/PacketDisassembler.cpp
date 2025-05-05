@@ -684,6 +684,29 @@ static const char* const StatsMetricSpaceToString(const endFrameStatsResponse::e
 	return StatsMetricSpaceStrings[metricSpace];
 }
 
+static const char* const StencilOpStrings[] =
+{
+	"sop_keep",
+	"sop_zero",
+	"sop_replace",
+	"sop_incr_sat",
+	"sop_decr_sat",
+	"sop_invert",
+	"sop_incr",
+	"sop_decr"
+};
+static const char* const StencilOpToString(const eStencilOp stencilOp)
+{
+	if (stencilOp >= eStencilOp::sop_MAX_STENCIL_OPS)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Out of bounds stencil op value
+#endif
+		return "sop_unknown";
+	}
+	return StencilOpStrings[stencilOp];
+}
+
 static void PrintCommandListLine(std::string& outAppendString, const unsigned char indent, _In_z_ _Printf_format_string_ const char* const formatString, ...)
 {
 	char tempBuffer[256];
@@ -1125,6 +1148,11 @@ static void DisassemblePacket(std::vector<const std::string*>& outDisassembledPa
 			PrintCommandListLine(*ret, packetMemberIndentation, "Depth Format: %s (%u)\n", DepthFormatToString( (const eDepthFormat)(typedPacket->DepthFormat) ), typedPacket->DepthFormat);
 		}
 		PrintCommandListLine(*ret, packetMemberIndentation, "Color Writes Enabled: %s (%u)\n", typedPacket->ColorWritesEnabled ? "Enabled" : "Disabled", typedPacket->ColorWritesEnabled);
+		PrintCommandListLine(*ret, packetMemberIndentation, "Stencil State Following: %s (%u)\n", typedPacket->hasStencilStateFollowing ? "Yes" : "No", typedPacket->hasStencilStateFollowing);
+		if (extraDetails)
+		{
+			PrintCommandListLine(*ret, packetMemberIndentation, "Unused1: 0x%06X\n", typedPacket->unused1);
+		}
 	}
 		break;
 	case command::PT_SETBLENDSTATE:
@@ -1320,7 +1348,26 @@ static void DisassemblePacket(std::vector<const std::string*>& outDisassembledPa
 		PrintCommandListLine(*ret, packetMemberIndentation, "DWORD 7 Data: 0x%08X (%f)\n", typedPacket->writeDWORDData7, *(const float* const)&(typedPacket->writeDWORDData7) );
 	}
 		break;
+	case command::PT_SETSTENCILSTATE:
+	{
+		const setStencilStateCommand* const typedPacket = (const setStencilStateCommand* const)packetPtr;
+		PrintCommandListLine(*ret, packetMemberIndentation, "Stencil Write Enable: %s (%u)\n", typedPacket->stencilWriteEnable ? "Enabled" : "Disabled", typedPacket->stencilWriteEnable);
+		PrintCommandListLine(*ret, packetMemberIndentation, "Stencil Compare Func: %s (%u)\n", CompareFuncToString( (const eCmpFunc)(typedPacket->stencilCmpFunc) ), typedPacket->stencilCmpFunc);
+		PrintCommandListLine(*ret, packetMemberIndentation, "Stencil Ref Value: %u (0x%02X)\n", typedPacket->stencilRefVal, typedPacket->stencilRefVal);
+		PrintCommandListLine(*ret, packetMemberIndentation, "Stencil Read Mask: 0x%02X (%u)\n", typedPacket->stencilReadMask, typedPacket->stencilReadMask);
+		PrintCommandListLine(*ret, packetMemberIndentation, "Stencil Write Mask: 0x%02X (%u)\n", typedPacket->stencilWriteMask, typedPacket->stencilWriteMask);
+		PrintCommandListLine(*ret, packetMemberIndentation, "Stencil Write Mask: 0x%02X (%u)\n", typedPacket->stencilWriteMask, typedPacket->stencilWriteMask);
+		PrintCommandListLine(*ret, packetMemberIndentation, "Stencil Fail Op: %s (%u)\n", StencilOpToString( (const eStencilOp)(typedPacket->stencilFailOp) ), typedPacket->stencilFailOp);
+		PrintCommandListLine(*ret, packetMemberIndentation, "Stencil ZFail Op: %s (%u)\n", StencilOpToString( (const eStencilOp)(typedPacket->stencilZFailOp) ), typedPacket->stencilZFailOp);
+		PrintCommandListLine(*ret, packetMemberIndentation, "Stencil Pass Op: %s (%u)\n", StencilOpToString( (const eStencilOp)(typedPacket->stencilPassOp) ), typedPacket->stencilPassOp);
+		if (extraDetails)
+		{
+			PrintCommandListLine(*ret, packetMemberIndentation, "Unused1: 0x%06X\n", typedPacket->unused1);
+		}
 	}
+		break;
+	}
+	static_assert(command::PT_MAX_PACKET_TYPES == 46, "Reminder: Need to update this switch statement with new cases when adding new packets!");
 }
 
 // After calling this function, it is the caller's responsibility to delete all of the std::string's out of the return vector

@@ -874,7 +874,9 @@ __declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceSetAttrInterpolatorS
 	return hRet;
 }
 
-__declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceSetDepthState(const bool zEnabled, const bool zWriteEnabled, const bool colorWriteEnabled, const eCmpFunc zTestCmpFunc, const eDepthFormat zFormat, const float depthBias)
+__declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceSetDepthStencilState(const bool zEnabled, const bool zWriteEnabled, const bool colorWriteEnabled, const eCmpFunc zTestCmpFunc, const eDepthFormat zFormat, const float depthBias,
+	const bool stencilWriteEnabled, const unsigned char stencilRef, const unsigned char stencilReadMask, const unsigned char stencilWriteMask, const eCmpFunc stencilFunc,
+	const eStencilOp stencilFailOp, const eStencilOp stencilZFailOp, const eStencilOp stencilPassOp)
 {
 	if (zTestCmpFunc >= cmp_MAX_CMP_FUNCS)
 	{
@@ -883,16 +885,56 @@ __declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceSetDepthState(const 
 #endif
 		return E_INVALIDARG;
 	}
+	if (stencilFunc >= cmp_MAX_CMP_FUNCS)
+	{
+#ifdef _DEBUG
+		__debugbreak();
+#endif
+		return E_INVALIDARG;
+	}
+	if (stencilFailOp >= sop_MAX_STENCIL_OPS)
+	{
+#ifdef _DEBUG
+		__debugbreak();
+#endif
+		return E_INVALIDARG;
+	}
+	if (stencilZFailOp >= sop_MAX_STENCIL_OPS)
+	{
+#ifdef _DEBUG
+		__debugbreak();
+#endif
+		return E_INVALIDARG;
+	}
+	if (stencilPassOp >= sop_MAX_STENCIL_OPS)
+	{
+#ifdef _DEBUG
+		__debugbreak();
+#endif
+		return E_INVALIDARG;
+	}
 
-	DepthStateBlock newDepthState;
-	newDepthState.deviceCachedZEnabled = zEnabled;
-	newDepthState.deviceCachedZWriteEnabled = zWriteEnabled;
-	newDepthState.deviceColorWritesEnabled = colorWriteEnabled;
-	newDepthState.deviceCachedDepthTestCmpFunc = zTestCmpFunc;
-	newDepthState.deviceDepthBias = depthBias;
-	newDepthState.deviceDepthFormat = zFormat;
+	DepthStencilStateBlock newDepthStencilState;
 
-	if (DoCacheDeviceState() && currentCachedState.deviceCachedDepthState == newDepthState)
+	// Depth states:
+	newDepthStencilState.deviceCachedZEnabled = zEnabled;
+	newDepthStencilState.deviceCachedZWriteEnabled = zWriteEnabled;
+	newDepthStencilState.deviceColorWritesEnabled = colorWriteEnabled;
+	newDepthStencilState.deviceCachedDepthTestCmpFunc = zTestCmpFunc;
+	newDepthStencilState.deviceDepthBias = depthBias;
+	newDepthStencilState.deviceDepthFormat = zFormat;
+
+	// Stencil states:
+	newDepthStencilState.deviceStencilWriteEnabled = stencilWriteEnabled;
+	newDepthStencilState.deviceStencilRef = stencilRef;
+	newDepthStencilState.deviceStencilReadMask = stencilReadMask;
+	newDepthStencilState.deviceStencilWriteMask = stencilWriteMask;
+	newDepthStencilState.deviceStencilFunc = stencilFunc;
+	newDepthStencilState.deviceStencilFailOp = stencilFailOp;
+	newDepthStencilState.deviceStencilZFailOp = stencilZFailOp;
+	newDepthStencilState.deviceStencilPassOp = stencilPassOp;
+
+	if (DoCacheDeviceState() && currentCachedState.deviceCachedDepthStencilState == newDepthStencilState)
 		return S_OK;
 
 	setDepthStateCommand setDepthState;
@@ -913,6 +955,7 @@ __declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceSetDepthState(const 
 	setDepthState.DepthBiasLowBits = ulDepthBias & ( (1 << 27) - 1);
 	setDepthState.DepthBiasHighBits = ulDepthBias >> 27;
 	setDepthState.ColorWritesEnabled = colorWriteEnabled;
+	setDepthState.hasStencilStateFollowing = newDepthStencilState.IsStencilEnabled();
 
 	setDepthState.checksum = command::ComputeChecksum(&setDepthState, sizeof(setDepthState) );
 #ifdef _DEBUG
@@ -921,17 +964,32 @@ __declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceSetDepthState(const 
 		__debugbreak();
 	}
 #endif
-	const HRESULT hRet = SendOrStorePacket(&setDepthState);
-	if (SUCCEEDED(hRet) && DoCacheDeviceState() )
+
+	setStencilStateCommand setStencilState;
+	setStencilState.stencilRefVal = stencilRef;
+	setStencilState.stencilReadMask = stencilReadMask;
+	setStencilState.stencilWriteMask = stencilWriteMask;
+	setStencilState.stencilWriteEnable = stencilWriteEnabled;
+	setStencilState.stencilCmpFunc = stencilFunc;
+	setStencilState.stencilFailOp = stencilFailOp;
+	setStencilState.stencilZFailOp = stencilZFailOp;
+	setStencilState.stencilPassOp = stencilPassOp;
+
+	HRESULT hRetDepthStencil = SendOrStorePacket(&setDepthState);
+	if (setDepthState.hasStencilStateFollowing && SUCCEEDED(hRetDepthStencil) )
 	{
-		currentCachedState.deviceCachedDepthState = newDepthState;
+		hRetDepthStencil = SendOrStorePacket(&setStencilState);
 	}
-	if (FAILED(hRet) )
-		return hRet;
+	if (SUCCEEDED(hRetDepthStencil) && DoCacheDeviceState() )
+	{
+		currentCachedState.deviceCachedDepthStencilState = newDepthStencilState;
+	}
+	if (FAILED(hRetDepthStencil) )
+		return hRetDepthStencil;
 	
 	if (DoSyncEveryCall() )
 		return DeviceWaitForIdle();
-	return hRet;
+	return hRetDepthStencil;
 }
 
 __declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceSetIAState(const eCullMode cullMode, const ePrimTopology primTopology, const eStripCutType stripCut, const eIndexFormat indexFormat, const unsigned indexBufferLengthBytes, const gpuvoid* const indexBufferBaseAddr)
@@ -2063,7 +2121,7 @@ __declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceDrawIndexedPrimitive
 			return E_INVALIDARG;
 		}
 
-		if (currentCachedState.deviceSetIndexBuffer == NULL)
+		if (currentCachedState.deviceCachedIAIndexBuffer == NULL)
 		{
 #ifdef _DEBUG
 			__debugbreak(); // Must set an index buffer before calling this function!
@@ -2533,6 +2591,7 @@ const bool IBaseGPUDevice::PacketIsValidForRecording(const command::ePacketType 
 	case command::PT_WRITEMEMBATCH1:
 	case command::PT_WRITEMEMBATCH2:
 	case command::PT_WRITEMEMBATCH3WRITE:
+	case command::PT_SETSTENCILSTATE:
 		return true;
 	default:
 #ifdef _DEBUG
@@ -2557,7 +2616,7 @@ const bool IBaseGPUDevice::PacketIsValidForRecording(const command::ePacketType 
 	case command::PT_DISCONNECT:
 		return false;
 	}
-	static_assert(command::PT_MAX_PACKET_TYPES == 45, "Reminder: Need to update this switch statement with new cases when adding new packets!");
+	static_assert(command::PT_MAX_PACKET_TYPES == 46, "Reminder: Need to update this switch statement with new cases when adding new packets!");
 }
 
 __declspec(nothrow) HRESULT IBaseGPUDevice::SendOrStorePacket(const command* const sendPacket)

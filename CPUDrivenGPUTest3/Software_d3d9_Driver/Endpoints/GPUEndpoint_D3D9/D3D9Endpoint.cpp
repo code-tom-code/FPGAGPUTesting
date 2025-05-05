@@ -1001,6 +1001,46 @@ static void HandlePacket(const setDepthStateCommand* const typedPacket)
 		SetCachedRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_BLUE | D3DCOLORWRITEENABLE_ALPHA);
 	else
 		SetCachedRenderState(D3DRS_COLORWRITEENABLE, 0x0);
+	if (!typedPacket->hasStencilStateFollowing)
+	{
+		// We need to clear out and reset the stencil state in this case
+		SetCachedRenderState(D3DRS_STENCILENABLE, FALSE);
+		SetCachedRenderState(D3DRS_STENCILPASS, D3DSTENCILOP_KEEP);
+		SetCachedRenderState(D3DRS_STENCILFAIL, D3DSTENCILOP_KEEP);
+		SetCachedRenderState(D3DRS_STENCILZFAIL, D3DSTENCILOP_KEEP);
+		SetCachedRenderState(D3DRS_STENCILFUNC, D3DCMP_ALWAYS);
+		SetCachedRenderState(D3DRS_STENCILREF, 0x00000000);
+		SetCachedRenderState(D3DRS_STENCILMASK, 0xFFFFFFFF);
+		SetCachedRenderState(D3DRS_STENCILWRITEMASK, 0xFFFFFFFF);
+	}
+}
+
+static void HandlePacket(const setStencilStateCommand* const typedPacket)
+{
+	if (typedPacket->stencilWriteEnable)
+	{
+		const bool stencilEnable = typedPacket->stencilFailOp != sop_keep || typedPacket->stencilZFailOp != sop_keep || typedPacket->stencilPassOp != sop_keep || typedPacket->stencilCmpFunc != cmp_always;
+		SetCachedRenderState(D3DRS_STENCILENABLE, stencilEnable ? TRUE : FALSE);
+
+		SetCachedRenderState(D3DRS_STENCILFAIL, ConvertStencilOp( (const eStencilOp)(typedPacket->stencilFailOp) ) );
+		SetCachedRenderState(D3DRS_STENCILZFAIL, ConvertStencilOp( (const eStencilOp)(typedPacket->stencilZFailOp) ) );
+		SetCachedRenderState(D3DRS_STENCILPASS, ConvertStencilOp( (const eStencilOp)(typedPacket->stencilPassOp) ) );
+	}
+	else
+	{
+		const bool stencilEnable = typedPacket->stencilCmpFunc != cmp_always;
+		SetCachedRenderState(D3DRS_STENCILENABLE, stencilEnable ? TRUE : FALSE);
+
+		SetCachedRenderState(D3DRS_STENCILPASS, D3DSTENCILOP_KEEP);
+		SetCachedRenderState(D3DRS_STENCILFAIL, D3DSTENCILOP_KEEP);
+		SetCachedRenderState(D3DRS_STENCILZFAIL, D3DSTENCILOP_KEEP);
+	}
+
+	const D3DCMPFUNC cmpFunc = ConvertCmpFunc(static_cast<const eCmpFunc>(typedPacket->stencilCmpFunc) );
+	SetCachedRenderState(D3DRS_STENCILFUNC, cmpFunc);
+	SetCachedRenderState(D3DRS_STENCILREF, typedPacket->stencilRefVal);
+	SetCachedRenderState(D3DRS_STENCILMASK, typedPacket->stencilReadMask);
+	SetCachedRenderState(D3DRS_STENCILWRITEMASK, typedPacket->stencilWriteMask);
 }
 
 // Blend state block data members:
@@ -1466,7 +1506,12 @@ void D3D9HandleIncomingPacket(const genericCommand* const newGenericPacket)
 			case command::PT_WRITEMEMBATCH3WRITE:
 				CallHandlePacket<writeMemBatchData3WriteCommand>(newGenericPacket);
 				break;
+
+			case command::PT_SETSTENCILSTATE:
+				CallHandlePacket<setStencilStateCommand>(newGenericPacket);
+				break;
 			}
+			static_assert(command::PT_MAX_PACKET_TYPES == 46, "Reminder: Need to update this switch statement with new cases when adding new packets!");
 		}
 		else
 		{

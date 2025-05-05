@@ -1055,7 +1055,7 @@ public:
 	void DeviceSetVertexStreamsAndDecl();
 	void DeviceSetUsedVertexShaderConstants();
 
-	void DeviceSetCurrentState(const D3DPRIMITIVETYPE primType, const IDirect3DIndexBuffer9Hook* currentIB);
+	void DeviceSetCurrentState(const D3DPRIMITIVETYPE primType, IDirect3DIndexBuffer9Hook* const currentIB);
 
 	template <const bool useIndexBuffer, typename indexFormat, const bool rasterizerUsesEarlyZTest>
 	void DrawPrimitiveUBPretransformedSkipVS(const D3DPRIMITIVETYPE PrimitiveType, INT BaseVertexIndex, UINT startIndex, UINT primCount) const;
@@ -1063,7 +1063,8 @@ public:
 	template <const bool rasterizerUsesEarlyZTest>
 	void DrawPrimitiveUB(const D3DPRIMITIVETYPE PrimitiveType, const UINT PrimitiveCount) const;
 
-	void HandleDrawCallSingleStepMode() const;
+	void HandleDrawCallSingleStepMode();
+	void HandleFrameSingleStepMode();
 
 	// Returns true for "should draw", or false for "should skip"
 	const bool TotalDrawCallSkipTest(void) const;
@@ -1431,6 +1432,16 @@ public:
 		drawCallSleepMicros = newDrawCallSleepMicros;
 	}
 
+	const float GetFPSLimiter() const
+	{
+		return frameLimiterFPS;
+	}
+
+	void SetFPSLimiter(const float newFPSLimiter)
+	{
+		frameLimiterFPS = newFPSLimiter;
+	}
+
 	const bool GetSingleStepDrawCallMode() const
 	{
 		return singleStepDrawCallMode;
@@ -1445,6 +1456,23 @@ public:
 		else
 		{
 			queueSingleStepDrawCallModeNextFrame = newSingleStepDrawCallMode;
+		}
+	}
+
+	const bool GetSingleStepFrameMode() const
+	{
+		return singleStepFrameMode;
+	}
+
+	void SetSingleStepFrameMode(const bool newSingleStepFrameMode)
+	{
+		if (singleStepFrameMode)
+		{
+			singleStepFrameMode = newSingleStepFrameMode;
+		}
+		else
+		{
+			queueSingleStepFrameModeNextFrame = newSingleStepFrameMode;
 		}
 	}
 
@@ -1650,6 +1678,10 @@ public:
 		return currentFrameIndex;
 	}
 
+	IDirect3DQuery9Hook* frameBeginTimestamp;
+	std::vector<IDirect3DQuery9Hook*> eventEndTimestamps;
+	IDirect3DQuery9Hook* frameEndTimestamp;
+
 protected:
 	LPDIRECT3DDEVICE9 d3d9dev;
 	IDirect3D9Hook* parentHook;
@@ -1733,9 +1765,12 @@ protected:
 	TexModeOverrideSettings overrideTexMode;
 	TexFilterOverrideSettings overrideTexFilter;
 
+	float frameLimiterFPS; // Limit of 0.0f means "unlimited"
 	unsigned drawCallSleepMicros;
 	bool singleStepDrawCallMode;
+	bool singleStepFrameMode;
 	bool queueSingleStepDrawCallModeNextFrame;
+	bool queueSingleStepFrameModeNextFrame;
 	setScanoutPointerCommand::eDisplayChannelSwizzle scanoutRedSwizzle;
 	setScanoutPointerCommand::eDisplayChannelSwizzle scanoutGreenSwizzle;
 	setScanoutPointerCommand::eDisplayChannelSwizzle scanoutBlueSwizzle;

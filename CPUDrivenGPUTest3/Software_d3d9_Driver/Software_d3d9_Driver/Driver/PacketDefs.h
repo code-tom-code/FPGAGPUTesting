@@ -59,6 +59,7 @@ struct command
 		PT_WRITEMEMBATCH1 = 42,
 		PT_WRITEMEMBATCH2 = 43,
 		PT_WRITEMEMBATCH3WRITE = 44,
+		PT_SETSTENCILSTATE = 45,
 
 		PT_MAX_PACKET_TYPES // This must always be last
 	};
@@ -189,6 +190,7 @@ const char* const packetTypeStrings[] =
 	"PT_WRITEMEMBATCH1", // 42
 	"PT_WRITEMEMBATCH2", // 43
 	"PT_WRITEMEMBATCH3WRITE", // 44
+	"PT_SETSTENCILSTATE", // 45
 };
 static_assert(ARRAYSIZE(packetTypeStrings) == command::PT_MAX_PACKET_TYPES, "Error: Mismatch between string table and enum!");
 
@@ -1055,7 +1057,7 @@ struct setDepthStateCommand : command
 	setDepthStateCommand() : command(PT_SETDEPTHSTATE),
 		DepthTestEnable(TRUE), DepthWriteEnable(TRUE), zFunc(cmp_lessequal),
 		DepthBiasLowBits(0x00000000), DepthBiasHighBits(0x00),
-		ColorWritesEnabled(FALSE), DepthFormat(eDepthFmtD24), unused1(0x00000000)
+		ColorWritesEnabled(FALSE), DepthFormat(eDepthFmtD24), hasStencilStateFollowing(false), unused1(0x00000000)
 	{
 	}
 
@@ -1069,7 +1071,11 @@ struct setDepthStateCommand : command
 	DWORD DepthBiasHighBits : 5; // 4 downto 0
 	DWORD ColorWritesEnabled : 1; // 5
 	DWORD DepthFormat : 2; // 7 downto 6
-	DWORD unused1 : 24; // 31 downto 8
+
+	// Denotes that there is expected to be a SetStencilState packet following this one, so don't commit the DepthStencil state until both have arrived.
+	// If false, then we can commit the DepthStencil state immediately (with stencil disabled).
+	DWORD hasStencilStateFollowing : 1; // 8
+	DWORD unused1 : 23; // 31 downto 9
 };
 
 // This configures the clipper state
@@ -1277,6 +1283,28 @@ struct writeMemBatchData3WriteCommand : command
 	DWORD writeDWORDData7 = 0x00000000; // The eighth DWORD of write data for this DRAM row (bytes 28, 29, 30, 31)
 };
 
+// Configures the stencil state and pushes the new state to the depth/stencil unit
+struct setStencilStateCommand : command
+{
+	setStencilStateCommand() : command(PT_SETSTENCILSTATE), stencilWriteEnable(false), stencilCmpFunc(cmp_always), stencilFailOp(sop_keep), stencilZFailOp(sop_keep), stencilPassOp(sop_keep), unused1(0)
+	{
+	}
+
+	// Payload 0:
+	BYTE stencilRefVal = 0x00; // 7 downto 0
+	BYTE stencilReadMask = 0xFF; // 15 downto 8
+	BYTE stencilWriteMask = 0xFF; // 23 downto 16
+	BYTE unused0 = 0x00; // 31 downto 24
+
+	// Payload 1:
+	DWORD stencilWriteEnable : 1; // 0
+	DWORD stencilCmpFunc : 3; // 3 downto 1
+	DWORD stencilFailOp : 3; // 6 downto 4
+	DWORD stencilZFailOp : 3; // 9 downto 7
+	DWORD stencilPassOp : 3; // 12 downto 10
+	DWORD unused1 : 19; // 31 downto 13
+};
+
 // TODO: One day implement variable-sized packets and then this can go away
 static_assert(sizeof(genericCommand) == sizeof(doNothingCommand) &&
 	sizeof(genericCommand) == sizeof(writeMemCommand) &&
@@ -1318,6 +1346,8 @@ static_assert(sizeof(genericCommand) == sizeof(doNothingCommand) &&
 	sizeof(genericCommand) == sizeof(writeMemBatchData1Command) &&
 	sizeof(genericCommand) == sizeof(writeMemBatchData2Command) &&
 	sizeof(genericCommand) == sizeof(writeMemBatchData3WriteCommand) &&
+	sizeof(genericCommand) == sizeof(setStencilStateCommand) &&
 	sizeof(genericCommand) == 11, "Error: Unexpected struct size!");
+static_assert(command::PT_MAX_PACKET_TYPES == 46, "Reminder: Need to update this switch statement with new cases when adding new packets!");
 
 #pragma pack(pop) // End pragma pack 1 region

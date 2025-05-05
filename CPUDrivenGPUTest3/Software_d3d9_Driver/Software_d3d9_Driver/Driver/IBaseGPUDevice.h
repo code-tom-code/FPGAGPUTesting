@@ -128,16 +128,57 @@ struct TextureBlock
 	combinerMode deviceCachedCombinerModeAlpha = cbm_MAX_NUM_COMBINER_MODES;
 };
 
-struct DepthStateBlock
+struct DepthStencilStateBlock
 {
+	// Depth states:
 	bool deviceCachedZEnabled = false;
 	bool deviceCachedZWriteEnabled = false;
 	bool deviceColorWritesEnabled = false;
 	eCmpFunc deviceCachedDepthTestCmpFunc = cmp_MAX_CMP_FUNCS;
 	float deviceDepthBias = 0.0f;
 	eDepthFormat deviceDepthFormat = eDepthFmtD24;
+	
+	// Stencil states:
+	bool deviceStencilWriteEnabled = false;
+	unsigned char deviceStencilRef = 0x00;
+	unsigned char deviceStencilReadMask = 0xFF;
+	unsigned char deviceStencilWriteMask = 0xFF;
+	eCmpFunc deviceStencilFunc = cmp_MAX_CMP_FUNCS;
+	eStencilOp deviceStencilFailOp = sop_keep;
+	eStencilOp deviceStencilZFailOp = sop_keep;
+	eStencilOp deviceStencilPassOp = sop_keep;
 
-	const bool operator==(const DepthStateBlock& rhs) const
+	const bool IsStencilEnabled() const
+	{
+		// Can safely elide stencil tests and writes in this case:
+		if (deviceStencilFunc == cmp_always && deviceStencilPassOp == sop_keep && deviceStencilFailOp == sop_keep && deviceStencilZFailOp == sop_keep && deviceStencilWriteEnabled == false)
+			return false;
+
+#ifdef _DEBUG
+		if (deviceStencilWriteEnabled)
+		{
+			if (deviceStencilWriteMask == 0x00)
+			{
+				__debugbreak(); // Error: Cannot write with a zero write-mask!
+			}
+			if (deviceStencilFailOp == sop_keep && deviceStencilZFailOp == sop_keep && deviceStencilPassOp == sop_keep)
+			{
+				__debugbreak(); // Error: This stencil state doesn't make any sense. It's writing nothing!
+			}
+		}
+		else
+		{
+			if (deviceStencilFailOp != sop_keep || deviceStencilZFailOp != sop_keep || deviceStencilPassOp != sop_keep)
+			{
+				__debugbreak(); // Error: This stencil state doesn't make any sense! It's configuring write ops while the stencil write flag is off!
+			}
+		}
+#endif
+
+		return true;
+	}
+
+	const bool operator==(const DepthStencilStateBlock& rhs) const
 	{
 		return memcmp(this, &rhs, sizeof(*this) ) == 0;
 	}
@@ -165,9 +206,8 @@ struct TriangleSetupStateBlock
 struct GPUDeviceState
 {
 	const gpuvoid* deviceCachedScanoutBuffer = nullptr;
-	const gpuvoid* deviceSetIndexBuffer = nullptr; // This is the *pre*transform index cache
 	const gpuvoid* deviceCachedRenderTarget = nullptr;
-	const gpuvoid* deviceCachedIAIndexBuffer = nullptr; // This is the *post*transform index cache
+	const gpuvoid* deviceCachedIAIndexBuffer = nullptr;
 	const gpuvoid* deviceCachedVertexShader = nullptr;
 	unsigned deviceCachedSetVertexStartAddress = 0x0000;
 	eCullMode deviceCachedCullMode = eCullMode_NUM_CULL_MODES;
@@ -190,7 +230,7 @@ struct GPUDeviceState
 	CachedVertexStream deviceCachedVertexStreams[GPU_MAX_NUM_VERTEX_STREAMS];
 	float4 deviceCachedConstantRegisters[GPU_SHADER_MAX_NUM_CONSTANT_FLOAT_REG] = {0};
 	TriangleSetupStateBlock deviceCachedTriSetupState;
-	DepthStateBlock deviceCachedDepthState;
+	DepthStencilStateBlock deviceCachedDepthStencilState;
 	TextureBlock deviceCachedTextureState;
 	ROPBlock deviceCachedROPState;
 
@@ -240,7 +280,9 @@ __declspec(align(16) ) struct IBaseGPUDevice
 		const float viewportZScale, const float viewportZOffset,
 		const unsigned short scissorRectLeft, const unsigned short scissorRectRight, const unsigned short scissorRectTop, const unsigned short scissorRectBottom);
 	__declspec(nothrow) HRESULT __stdcall DeviceSetClipState(const bool depthClipEnabled, const bool useOpenGLNearZClip, const float guardBandXScale, const float guardBandYScale, const bool clippingEnabled);
-	__declspec(nothrow) HRESULT __stdcall DeviceSetDepthState(const bool zEnabled, const bool zWriteEnabled, const bool colorWriteEnabled, const eCmpFunc zTestCmpFunc, const eDepthFormat zFormat, const float depthBias);
+	__declspec(nothrow) HRESULT __stdcall DeviceSetDepthStencilState(const bool zEnabled, const bool zWriteEnabled, const bool colorWriteEnabled, const eCmpFunc zTestCmpFunc, const eDepthFormat zFormat, const float depthBias,
+		const bool stencilWriteEnabled, const unsigned char stencilRef, const unsigned char stencilReadMask, const unsigned char stencilWriteMask, const eCmpFunc stencilFunc,
+		const eStencilOp stencilFailOp, const eStencilOp stencilZFailOp, const eStencilOp stencilPassOp);
 	__declspec(nothrow) HRESULT __stdcall DeviceSetAttrInterpolatorState(const bool useFlatShadingColor, const eTexcoordAddressingMode addressU, const eTexcoordAddressingMode addressV);
 
 	__declspec(nothrow) HRESULT __stdcall DeviceSetIAState(const eCullMode cullMode, const ePrimTopology primTopology, const eStripCutType stripCut, const eIndexFormat indexFormat, const unsigned indexBufferLengthBytes, const gpuvoid* const indexBufferBaseAddr);

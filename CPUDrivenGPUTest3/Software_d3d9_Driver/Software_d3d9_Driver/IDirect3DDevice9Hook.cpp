@@ -43,7 +43,11 @@
 
 // INIVars:
 INIVar DriverControlPanelEnable("Driver", "ControlPanelEnable", true);
+INIVar DriverEnableProfiling("Driver", "EnableProfiling", true);
 INIVar DriverBaseDir("Endpoints", "DriverBaseDir", "C:\\Users\\Tom\\Documents\\Visual Studio 2022\\Projects\\Software_d3d9_Driver");
+INIVar DriverSingleStepHotkey("Driver", "SingleStepHotkey", VK_RIGHT); // Which keyboard VK code to press to advance to the next draw call or frame (defaults to right arrow key)
+INIVar DriverSingleStepCancelHotkey("Driver", "SingleStepCancelHotkey", VK_ESCAPE); // Which keyboard VK code to press to cancel out of single-step mode
+INIVar DriverSingleStepClears("Driver", "SingleStepClears", true); // Do we single-step clears along with draws?
 
 // Rasterizer constants:
 // TODO: Fix bug in core rasterizer loop when this is tuned > 0 (ie, when subpixel precision is enabled)
@@ -1274,7 +1278,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::Present(THI
 	ResetHoldingDownEndToSkip();
 #endif // ENABLE_END_TO_SKIP_DRAWS
 
-	if (false)//if (GetPrintScreenCapturesScreenshot() && GetAsyncKeyState(VK_SNAPSHOT) )
+	if (GetPrintScreenCapturesScreenshot() && GetAsyncKeyState(VK_SNAPSHOT) )
 	{
 		static const char* const outputFilename = "ScreencapDump.tga";
 		printf("Dumping file to \"%s\" (please be patient)...\n", outputFilename);
@@ -1314,7 +1318,9 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::Present(THI
 		PlaySoundA("C:\\Windows\\Media\\tada.wav", GetModuleHandleA(NULL), SND_FILENAME); // Play a sound file to indicate that the copy has finished!
 	}
 
-	if (false)//if (GetAsyncKeyState(VK_F11) && !IsDebuggerPresent() ) // We can't use F5, F10, or F11 while debugging or else our GetAsyncKeyState()'s get triggered every time you step in the debugger
+	// We can't use F5, F10, or F11 while debugging or else our GetAsyncKeyState()'s get triggered every time you step in the debugger
+	// So let's use "Ctrl + Alt + D"
+	if (DriverEnableProfiling.Bool() && !GetDeviceStats().IsArmedForEventCollectionNextFrame() && GetAsyncKeyState(VK_CONTROL) && GetAsyncKeyState(VK_MENU) && GetAsyncKeyState('D') )
 	{
 		GetDeviceStats().ArmCollectEventDataNextFrame();
 	}
@@ -1396,6 +1402,18 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::Present(THI
 			}
 		}
 
+		// Handle FPS Limiter:
+		if (GetFPSLimiter() > 0.0f)
+		{
+			const double desiredFrameUS = (1.0 / GetFPSLimiter() ) * 1000000.0;
+			const double lastFrameUS = (const float)(timeDeltaSeconds * 1000000.0);
+			if (lastFrameUS < desiredFrameUS)
+			{
+				const double sleepTimeUS = desiredFrameUS - lastFrameUS;
+				SpinLoopForMicros( (const unsigned)sleepTimeUS);
+			}
+		}
+
 		lastFramePresentTimestamp = currentPresentTime;
 
 #ifdef PROFILE_AVERAGE_VERTEX_SHADE_TIMES
@@ -1433,10 +1451,18 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::Present(THI
 
 	SIMPLE_FRAME_END_MARKER();
 
+	HandleFrameSingleStepMode();
+
 	if (queueSingleStepDrawCallModeNextFrame)
 	{
 		singleStepDrawCallMode = true;
 		queueSingleStepDrawCallModeNextFrame = false;
+	}
+
+	if (queueSingleStepFrameModeNextFrame)
+	{
+		singleStepFrameMode = true;
+		queueSingleStepFrameModeNextFrame = false;
 	}
 
 	return ret;
@@ -1752,6 +1778,10 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::EndScene(TH
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::Clear(THIS_ DWORD Count, CONST D3DRECT* pRects, DWORD Flags, D3DCOLOR Color, float Z, DWORD Stencil)
 {
+	LARGE_INTEGER clearCallCPUTimestamp;
+	if (GetDeviceStats().IsCollectingEventDataThisFrame() )
+		QueryPerformanceCounter(&clearCallCPUTimestamp);
+
 	const unsigned validClearFlags = D3DCLEAR_STENCIL | D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER;
 	if (Flags & (~validClearFlags) )
 		return D3DERR_INVALIDCALL; // These are the only D3DCLEAR flags valid for this function call
@@ -1823,12 +1853,25 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::Clear(THIS_
 	}
 
 	// I know it isn't strictly a "draw call", but having the clear also be able to use the single-step capabilities is very useful for debugging
-	HandleDrawCallSingleStepMode();
+	if (DriverSingleStepClears.Bool() )
+	{
+		HandleDrawCallSingleStepMode();
+	}
 
 	if (GetDeviceStats().IsCollectingEventDataThisFrame() )
 	{
+		IDirect3DQuery9Hook* newQuery = NULL;
+		if (!FAILED(CreateQuery(D3DQUERYTYPE_TIMESTAMP, (IDirect3DQuery9** const)&newQuery) ) )
+		{
+			if (!FAILED(newQuery->Issue(D3DISSUE_END) ) )
+			{
+				eventEndTimestamps.push_back(newQuery);
+			}
+		}
+
 		RecordedDrawCallStat newClearEvent;
 		newClearEvent.DrawType = RecordedDrawCallStat::DT_Clear;
+		newClearEvent.drawCallCPUTimestamp = clearCallCPUTimestamp;
 		newClearEvent.DrawCallStatUnion.ClearData.ClearColor = Color;
 		newClearEvent.DrawCallStatUnion.ClearData.ClearDepth = Z;
 		newClearEvent.DrawCallStatUnion.ClearData.ClearFlags = Flags;
@@ -1919,6 +1962,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::Clear(THIS_
 					const unsigned rtWidth = currentRT->GetInternalWidth();
 					const unsigned rtHeight = currentRT->GetInternalHeight();
 					baseDevice->DeviceClearRendertarget(currentRT->GetDeviceSurfaceBytes(), Color, rtWidth, rtHeight);
+					currentRT->BindSurfaceForDrawCall();
 
 #ifdef _DEBUG
 					DWORD clearTestArray[64] = {0};
@@ -1948,6 +1992,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::Clear(THIS_
 						const unsigned rtWidth = currentRT->GetInternalWidth();
 						const unsigned rtHeight = currentRT->GetInternalHeight();
 						baseDevice->DeviceClearRendertarget(currentRT->GetDeviceSurfaceBytes(), Color, rtWidth, rtHeight); // TODO: Implement subrect clears on the device later
+						currentRT->BindSurfaceForDrawCall();
 
 #ifdef _DEBUG
 						DWORD clearTestArray[64] = {0};
@@ -2029,6 +2074,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::Clear(THIS_
 	{
 		// TODO: Support device subrect clears
 		baseDevice->DeviceClearDepthStencil(currentState.currentDepthStencil->GetDeviceSurfaceBytes(), (Flags & D3DCLEAR_ZBUFFER) != 0, (Flags & D3DCLEAR_STENCIL) != 0, Z, (const BYTE)(Stencil & 0xFF) );
+		currentState.currentDepthStencil->BindSurfaceForDrawCall();
 	}
 
 	return S_OK;
@@ -4261,17 +4307,38 @@ const bool IDirect3DDevice9Hook::TotalDrawCallSkipTest(void) const
 		return false;
 #endif // #ifdef ENABLE_END_TO_SKIP_DRAWS
 
+	const bool StencilEnabled = (currentState.currentDepthStencil != NULL) && currentState.currentRenderStates.renderStatesUnion.namedStates.stencilEnable;
+	const bool StencilWriteEnabled = StencilEnabled &&
+		(currentState.currentRenderStates.renderStatesUnion.namedStates.stencilFail != D3DSTENCILOP_KEEP ||
+		currentState.currentRenderStates.renderStatesUnion.namedStates.stencilZFail != D3DSTENCILOP_KEEP ||
+		currentState.currentRenderStates.renderStatesUnion.namedStates.stencilPass != D3DSTENCILOP_KEEP);
 	const bool DepthWriteEnabled = (currentState.currentDepthStencil != NULL) && currentState.currentRenderStates.renderStatesUnion.namedStates.zWriteEnable;
+	const bool ColorWriteEnabled = (currentState.currentRenderTargets[0] != NULL) && (currentState.currentRenderStates.renderStatesUnion.namedStates.colorWriteEnable != 0x00);
 	if (DepthWriteEnabled)
 	{
 		if (currentState.currentRenderStates.renderStatesUnion.namedStates.zFunc == D3DCMP_NEVER)
-			return false; // TODO: Check for stencil enable and stencil zFail here
+		{
+			if (StencilEnabled && currentState.currentRenderStates.renderStatesUnion.namedStates.stencilZFail != D3DSTENCILOP_KEEP)
+			{
+				// This is fine. This is the case of us using the StencilZFail stencilOp to write to the stencil buffer
+			}
+			else
+			{
+				return false;
+			}
+		}
 	}
 	else
 	{
-		// If we're only writing color (no depth), then early-out if we have no writemask
-		if (currentState.currentRenderStates.renderStatesUnion.namedStates.colorWriteEnable == 0x00)
+		if (StencilWriteEnabled == true)
+		{
+			// This is fine, we're writing out stencil even if we're not drawing to the color buffer
+		}
+		else if (ColorWriteEnabled == false)
+		{
+			// If we're only writing color (no depth and no stencil), then early-out if we have no writemask
 			return false;
+		}
 	}
 
 	if (!DepthWriteEnabled)
@@ -4434,6 +4501,10 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawPrimiti
 {
 	SIMPLE_FUNC_SCOPE();
 
+	LARGE_INTEGER drawCallCPUTimestamp;
+	if (GetDeviceStats().IsCollectingEventDataThisFrame() )
+		QueryPerformanceCounter(&drawCallCPUTimestamp);
+
 	if (!currentState.currentVertexDecl)
 		return D3DERR_INVALIDCALL;
 
@@ -4550,27 +4621,38 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawPrimiti
 #endif
 
 	{
-		GPUCommandList* newRecordingCommandList = GetNewCommandList();
-		baseDevice->BeginRecordingCommandList(newRecordingCommandList);
+		//GPUCommandList* newRecordingCommandList = GetNewCommandList();
+		//baseDevice->BeginRecordingCommandList(newRecordingCommandList);
 		DeviceSetCurrentState(PrimitiveType, NULL); // Update the device state
 		DeviceSetVertexShader(); // Set our current vertex shader on the device (has the side effect of overwriting the 0th stream source register, so make sure to call this before DeviceSetVertexStreamsAndDecl() )
 		DeviceSetVertexStreamsAndDecl(); // Bind our current vertex streams and set up our vertex decl
-		baseDevice->DeviceDrawPrimitive(PrimitiveType, PrimitiveCount, StartVertex);
 
-		CreateOrUseCachedCommandList(newRecordingCommandList, cachedCommandLists, resetCommandListsPool);
+		//CreateOrUseCachedCommandList(newRecordingCommandList, cachedCommandLists, resetCommandListsPool);
 		DeviceSetUsedVertexShaderConstants(); // Copy over and set our vertex shader constant registers
-		CallRunCommandList(*newRecordingCommandList);
+		baseDevice->DeviceDrawPrimitive(PrimitiveType, PrimitiveCount, StartVertex);
+		//CallRunCommandList(*newRecordingCommandList);
 	}
 
 	if (GetDeviceStats().IsCollectingEventDataThisFrame() )
 	{
+		IDirect3DQuery9Hook* newQuery = NULL;
+		if (!FAILED(CreateQuery(D3DQUERYTYPE_TIMESTAMP, (IDirect3DQuery9** const)&newQuery) ) )
+		{
+			if (!FAILED(newQuery->Issue(D3DISSUE_END) ) )
+			{
+				eventEndTimestamps.push_back(newQuery);
+			}
+		}
+
 		RecordedDrawCallStat newDrawEvent;
 		newDrawEvent.DrawType = RecordedDrawCallStat::DT_DrawPrimitive;
+		newDrawEvent.drawCallCPUTimestamp = drawCallCPUTimestamp;
 		newDrawEvent.DrawCallStatUnion.DrawData.BaseVertexIndex = StartVertex;
 		newDrawEvent.DrawCallStatUnion.DrawData.MinVertexIndex = 0;
 		newDrawEvent.DrawCallStatUnion.DrawData.NumVertices = 0;
 		newDrawEvent.DrawCallStatUnion.DrawData.PrimCount = PrimitiveCount;
 		newDrawEvent.DrawCallStatUnion.DrawData.StartIndex = 0;
+		newDrawEvent.DrawCallStatUnion.DrawData.IndexFormat = D3DFMT_UNKNOWN;
 		newDrawEvent.DrawCallStatUnion.DrawData.primType = (const BYTE)PrimitiveType;
 		newDrawEvent.DrawCallStatUnion.DrawData.CurrentFVF = currentState.currentFVF;
 		eventRecordedDrawCalls.push_back(newDrawEvent);
@@ -5036,6 +5118,8 @@ void IDirect3DDevice9Hook::DeviceSetVertexStreamsAndDecl()
 			thisDeviceDeclElement.dwordOffset = thisElement.Offset / sizeof(DWORD);
 			thisDeviceDeclElement.usage = thisElement.Usage;
 			thisDeviceDeclElement.usageIndex = thisElement.UsageIndex;
+
+			thisVertexStream.vertexBuffer->BindVertexBufferForDraw();
 
 			++shaderUsedElements;
 		}
@@ -5723,7 +5807,7 @@ void IDirect3DDevice9Hook::GetStateTexCombinerMode(combinerMode& colorCombiner, 
 	}
 }
 
-void IDirect3DDevice9Hook::DeviceSetCurrentState(const D3DPRIMITIVETYPE primType, const IDirect3DIndexBuffer9Hook* currentIB)
+void IDirect3DDevice9Hook::DeviceSetCurrentState(const D3DPRIMITIVETYPE primType, IDirect3DIndexBuffer9Hook* const currentIB)
 {
 	gpuvoid* deviceBackbuffer = currentState.currentRenderTargets[0]->GetDeviceSurfaceBytes();
 	const eBlendMask eWriteMask = ConvertToDeviceBlendMask(currentState.currentRenderStates.renderStatesUnion.namedStates.colorWriteEnable);
@@ -5735,6 +5819,8 @@ void IDirect3DDevice9Hook::DeviceSetCurrentState(const D3DPRIMITIVETYPE primType
 	const eIndexFormat indexFormat = ConvertToDeviceIndexFormat(currentIB, currentIB ? currentIB->GetFormat() : D3DFMT_UNKNOWN);
 
 	// Set the IA state:
+	if (currentIB != NULL)
+		currentIB->BindIndexBufferForDraw();
 	baseDevice->DeviceSetIAState(cullMode, primTopology, sct_CutDisabled, indexFormat, currentIB ? currentIB->GetInternalLength() : 0, currentIB ? currentIB->GetGPUBytes() : NULL);
 
 	// Set the depth states:
@@ -5744,7 +5830,18 @@ void IDirect3DDevice9Hook::DeviceSetCurrentState(const D3DPRIMITIVETYPE primType
 	const D3DCMPFUNC zCmpFunc = currentState.currentRenderStates.renderStatesUnion.namedStates.zFunc;
 	const float depthBias = currentState.currentRenderStates.renderStatesUnion.namedStates.depthBias;
 	const eDepthFormat depthFormat = currentState.currentDepthStencil ? ConvertToDeviceDepthFormat(currentState.currentDepthStencil->GetInternalFormat() ) : ConvertToDeviceDepthFormat(D3DFMT_D24X8);
-	baseDevice->DeviceSetDepthState(zEnable, zWriteEnable, colorWritesEnabled, ConvertToDeviceCmpFunc(zCmpFunc), depthFormat, depthBias);
+	// Set the stencil states:
+	const bool stencilWriteEnable = GetStateStencilEnable() && (currentState.currentRenderStates.renderStatesUnion.namedStates.stencilFail != D3DSTENCILOP_KEEP || 
+		currentState.currentRenderStates.renderStatesUnion.namedStates.stencilZFail != D3DSTENCILOP_KEEP || currentState.currentRenderStates.renderStatesUnion.namedStates.stencilPass != D3DSTENCILOP_KEEP);
+	const unsigned char stencilRef = (const unsigned char)(currentState.currentRenderStates.renderStatesUnion.namedStates.stencilRef);
+	const unsigned char stencilReadMask = (const unsigned char)(currentState.currentRenderStates.renderStatesUnion.namedStates.stencilMask);
+	const unsigned char stencilWriteMask = (const unsigned char)(currentState.currentRenderStates.renderStatesUnion.namedStates.stencilWriteMask);
+	const D3DCMPFUNC stencilCmpFunc = GetStateStencilEnable() ? currentState.currentRenderStates.renderStatesUnion.namedStates.stencilFunc : D3DCMP_ALWAYS;
+	const D3DSTENCILOP stencilFailOp = GetStateStencilEnable() ? currentState.currentRenderStates.renderStatesUnion.namedStates.stencilFail : D3DSTENCILOP_KEEP;
+	const D3DSTENCILOP stencilZFailOp = GetStateStencilEnable() ? currentState.currentRenderStates.renderStatesUnion.namedStates.stencilZFail : D3DSTENCILOP_KEEP;
+	const D3DSTENCILOP stencilPassOp = GetStateStencilEnable() ? currentState.currentRenderStates.renderStatesUnion.namedStates.stencilPass : D3DSTENCILOP_KEEP;
+	baseDevice->DeviceSetDepthStencilState(zEnable, zWriteEnable, colorWritesEnabled, ConvertToDeviceCmpFunc(zCmpFunc), depthFormat, depthBias, stencilWriteEnable, stencilRef, stencilReadMask, stencilWriteMask,
+		ConvertToDeviceCmpFunc(stencilCmpFunc), ConvertToDeviceStencilOp(stencilFailOp), ConvertToDeviceStencilOp(stencilZFailOp), ConvertToDeviceStencilOp(stencilPassOp) );
 
 	// Set the clipper state:
 	const bool depthClipEnable = zEnable;
@@ -5799,6 +5896,7 @@ void IDirect3DDevice9Hook::DeviceSetCurrentState(const D3DPRIMITIVETYPE primType
 	const D3DCOLOR blendFactorARGB = currentState.currentRenderStates.renderStatesUnion.namedStates.blendFactor;
 	baseDevice->DeviceSetROPState(deviceBackbuffer, eWriteMask, alphaTestEnable, alphaTestRefVal, ConvertToDeviceCmpFunc(alphaTestCmpFunc),
 		alphaBlendEnable, srcColorBlend, destColorBlend, colorBlendOp, srcAlphaBlend, destAlphaBlend, alphaBlendOp, blendFactorARGB);
+	currentState.currentRenderTargets[0]->BindSurfaceForDrawCall();
 
 	// Set our attribute interpolator state up:
 	const bool useFlatShadingColors = (GetStateShadeMode() == D3DSHADE_FLAT);
@@ -5860,6 +5958,7 @@ void IDirect3DDevice9Hook::DeviceSetCurrentState(const D3DPRIMITIVETYPE primType
 		// Note that this set texture call can be expensive, it causes the command processor to wait on the texture unit to be idle before it flushes the texture cache and
 		// reloads the new texture from DRAM!
 		baseDevice->DeviceSetTextureState(reducedDimensions & 0xFFFF, reducedDimensions >> 16, useBilinear ? TF_bilinearFilter : TF_pointFilter, rChannel, gChannel, bChannel, aChannel, cbModeColor, cbModeAlpha, surface0hook->GetDeviceSurfaceBytes(), deviceFormat);
+		surface0hook->BindSurfaceForDrawCall();
 	}
 	else
 	{
@@ -5867,16 +5966,59 @@ void IDirect3DDevice9Hook::DeviceSetCurrentState(const D3DPRIMITIVETYPE primType
 	}
 }
 
-void IDirect3DDevice9Hook::HandleDrawCallSingleStepMode() const
+void IDirect3DDevice9Hook::HandleDrawCallSingleStepMode()
 {
 	if (GetSingleStepDrawCallMode() )
 	{
 		while (true)
 		{
 			// Wait for the correct input to advance to the next draw call:
-			const SHORT rightStatus = GetAsyncKeyState(VK_RIGHT);
-			if ( (rightStatus & 0x8001) == 0x8001)
+			const SHORT stepStatus = GetAsyncKeyState(DriverSingleStepHotkey.Integer() );
+			if ( (stepStatus & 0x8001) == 0x8001)
 			{
+				return;
+			}
+
+			// Or if the user hits ESC then that'll cancel out of the single-step mode entirely:
+			const SHORT breakOutStatus = GetAsyncKeyState(DriverSingleStepCancelHotkey.Integer() );
+			if ( (breakOutStatus & 0x8001) == 0x8001)
+			{
+				SetSingleStepDrawCallMode(false);
+				if (DriverControlPanelEnable.Bool() )
+				{
+					const bool refreshAllDialog = true;
+					driverSettingsDlg.UpdateDialog(refreshAllDialog);
+				}
+				return;
+			}
+			Sleep(1);
+		}
+	}
+}
+
+void IDirect3DDevice9Hook::HandleFrameSingleStepMode()
+{
+	if (GetSingleStepFrameMode() )
+	{
+		while (true)
+		{
+			// Wait for the correct input to advance to the next frame:
+			const SHORT stepStatus = GetAsyncKeyState(DriverSingleStepHotkey.Integer() );
+			if ( (stepStatus & 0x8001) == 0x8001)
+			{
+				return;
+			}
+
+			// Or if the user hits ESC then that'll cancel out of the single-step mode entirely:
+			const SHORT breakOutStatus = GetAsyncKeyState(DriverSingleStepCancelHotkey.Integer() );
+			if ( (breakOutStatus & 0x8001) == 0x8001)
+			{
+				SetSingleStepFrameMode(false);
+				if (DriverControlPanelEnable.Bool() )
+				{
+					const bool refreshAllDialog = true;
+					driverSettingsDlg.UpdateDialog(refreshAllDialog);
+				}
 				return;
 			}
 			Sleep(1);
@@ -5887,6 +6029,10 @@ void IDirect3DDevice9Hook::HandleDrawCallSingleStepMode() const
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawIndexedPrimitive(THIS_ D3DPRIMITIVETYPE PrimitiveType, INT BaseVertexIndex, UINT MinVertexIndex, UINT NumVertices, UINT startIndex, UINT primCount)
 {
 	SIMPLE_FUNC_SCOPE();
+
+	LARGE_INTEGER drawCallCPUTimestamp;
+	if (GetDeviceStats().IsCollectingEventDataThisFrame() )
+		QueryPerformanceCounter(&drawCallCPUTimestamp);
 
 	if (!currentState.currentVertexDecl)
 		return D3DERR_INVALIDCALL;
@@ -6041,8 +6187,8 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawIndexed
 	// baseDevice->DeviceWaitForIdle( (const waitForDeviceIdleCommand::waitForDeviceSubsystem)(waitForDeviceIdleCommand::waitForIAIdle | waitForDeviceIdleCommand::waitForClipIdle) );
 
 	{
-		GPUCommandList* newRecordingCommandList = GetNewCommandList();
-		baseDevice->BeginRecordingCommandList(newRecordingCommandList);
+		//GPUCommandList* newRecordingCommandList = GetNewCommandList();
+		//baseDevice->BeginRecordingCommandList(newRecordingCommandList);
 
 		currentState.currentIndexBuffer->UpdateDataToGPU();
 		DeviceSetCurrentState(PrimitiveType, currentState.currentIndexBuffer); // Update the device state
@@ -6050,6 +6196,8 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawIndexed
 		DeviceSetVertexShader(); // Set our current vertex shader on the device (has the side effect of overwriting the 0th stream source register, so make sure to call this before DeviceSetVertexStreamsAndDecl() )
 
 		DeviceSetVertexStreamsAndDecl(); // Bind our current vertex streams and set up our vertex decl
+
+		DeviceSetUsedVertexShaderConstants(); // Copy over and set our vertex shader constant registers
 
 		static bool doShaderTrace = false;
 
@@ -6096,22 +6244,31 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawIndexed
 			baseDevice->DeviceDrawIndexedPrimitive(PrimitiveType, primCount, startIndex, BaseVertexIndex);
 		}
 
-		CreateOrUseCachedCommandList(newRecordingCommandList, cachedCommandLists, resetCommandListsPool);
+		//CreateOrUseCachedCommandList(newRecordingCommandList, cachedCommandLists, resetCommandListsPool);
 
-		DeviceSetUsedVertexShaderConstants(); // Copy over and set our vertex shader constant registers
-
-		CallRunCommandList(*newRecordingCommandList);
+		//CallRunCommandList(*newRecordingCommandList);
 	}
 
 	if (GetDeviceStats().IsCollectingEventDataThisFrame() )
 	{
+		IDirect3DQuery9Hook* newQuery = NULL;
+		if (!FAILED(CreateQuery(D3DQUERYTYPE_TIMESTAMP, (IDirect3DQuery9** const)&newQuery) ) )
+		{
+			if (!FAILED(newQuery->Issue(D3DISSUE_END) ) )
+			{
+				eventEndTimestamps.push_back(newQuery);
+			}
+		}
+
 		RecordedDrawCallStat newDrawEvent;
 		newDrawEvent.DrawType = RecordedDrawCallStat::DT_DrawIndexedPrimitive;
+		newDrawEvent.drawCallCPUTimestamp = drawCallCPUTimestamp;
 		newDrawEvent.DrawCallStatUnion.DrawData.BaseVertexIndex = BaseVertexIndex;
 		newDrawEvent.DrawCallStatUnion.DrawData.MinVertexIndex = MinVertexIndex;
 		newDrawEvent.DrawCallStatUnion.DrawData.NumVertices = NumVertices;
 		newDrawEvent.DrawCallStatUnion.DrawData.PrimCount = primCount;
 		newDrawEvent.DrawCallStatUnion.DrawData.StartIndex = startIndex;
+		newDrawEvent.DrawCallStatUnion.DrawData.IndexFormat = currentState.currentIndexBuffer->GetFormat();
 		newDrawEvent.DrawCallStatUnion.DrawData.primType = (const BYTE)PrimitiveType;
 		newDrawEvent.DrawCallStatUnion.DrawData.CurrentFVF = currentState.currentFVF;
 		eventRecordedDrawCalls.push_back(newDrawEvent);
@@ -10707,6 +10864,11 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawPrimiti
 		SetStreamSource(0, NULL, 0, 0);
 	}
 
+	// Insert a wait-for-idle on the vertex processing top part of our pipeline after every DrawPrimitiveUP() call so that 
+	// future command packets (especially future DrawPrimitiveUP() calls) don't stomp over
+	// our temporary vertex buffer data until it is fully done being read from.
+	baseDevice->DeviceWaitForIdle(waitForDeviceIdleCommand::waitForVSIdle);
+
 	return ret;
 }
 
@@ -10819,6 +10981,11 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawIndexed
 	{
 		SetIndices(NULL);
 	}
+
+	// Insert a wait-for-idle on the vertex processing top part of our pipeline after every DrawPrimitiveUP() call so that 
+	// future command packets (especially future DrawPrimitiveUP() calls) don't stomp over
+	// our temporary vertex buffer data until it is fully done being read from.
+	baseDevice->DeviceWaitForIdle(waitForDeviceIdleCommand::waitForVSIdle);
 
 	return ret;
 }
@@ -11594,6 +11761,7 @@ void IDirect3DDevice9Hook::InitializeState(const D3DPRESENT_PARAMETERS& d3dpp, c
 
 	// Set up the initial device state:
 	baseDevice->DeviceSetScanoutBuffer(backbufferSurfaceHook->GetDeviceSurfaceBytes(), enableScanout, invertScanoutColors, scanoutRedSwizzle, scanoutGreenSwizzle, scanoutBlueSwizzle);
+	backbufferSurfaceHook->BindSurfaceForDrawCall();
 
 	// Init our stats buffers:
 	deviceStats.InitStatsBuffer();
@@ -11637,17 +11805,30 @@ void IDirect3DDevice9Hook::InitializeState(const D3DPRESENT_PARAMETERS& d3dpp, c
 	const unsigned short scissorRight = 640;
 	const unsigned short scissorTop = 0;
 	const unsigned short scissorBottom = 480;
+	const bool stencilWriteEnable = false;
+	const unsigned char defaultStencilRef = 0x00;
+	const unsigned char defaultStencilReadMask = 0xFF;
+	const unsigned char defaultStencilWriteMask = 0xFF;
+	const D3DCMPFUNC defaultStencilFunc = D3DCMP_ALWAYS;
+	const D3DSTENCILOP defaultStencilFail = D3DSTENCILOP_KEEP;
+	const D3DSTENCILOP defaultStencilZFail = D3DSTENCILOP_KEEP;
+	const D3DSTENCILOP defaultStencilPass = D3DSTENCILOP_KEEP;
 	const unsigned renderTargetWidth = backbufferSurfaceHook->GetInternalWidth();
 	const unsigned renderTargetHeight = backbufferSurfaceHook->GetInternalHeight();
 	baseDevice->DeviceSetROPState(backbufferSurfaceHook->GetDeviceSurfaceBytes(), wm_writeAll, alphaTestEnable, alphaTestRefVal, ConvertToDeviceCmpFunc(alphaTestCmpFunc),
 			alphaBlendEnable, srcColorBlend, destColorBlend, colorBlendOp, srcAlphaBlend, destAlphaBlend, alphaBlendOp, blendFactorARGB);
+	backbufferSurfaceHook->BindSurfaceForDrawCall();
 	baseDevice->DeviceClearRendertarget(backbufferSurfaceHook->GetDeviceSurfaceBytes(), D3DCOLOR_ARGB(255, 0, 0, 0), renderTargetWidth, renderTargetHeight); // Perform initial device clear so that our backbuffer doesn't start out as garbage
 	baseDevice->DeviceSetNullTextureState(TF_bilinearFilter, tcm_r, tcm_g, tcm_b, tcm_a, cbm_textureModulateVertexColor, cbm_textureModulateVertexColor);
 	baseDevice->DeviceSetClipState(depthClipEnable, useOpenGLNearZClip, guardBandXScale, guardBandYScale, clippingEnabled);
 	baseDevice->DeviceSetTriSetupState(viewportHalfWidth, viewportHalfHeight, viewportXOffset, viewportYOffset, viewportZScale, viewportZOffset, scissorLeft, scissorRight, scissorTop, scissorBottom);
-	baseDevice->DeviceSetDepthState(zEnable, zWriteEnable, colorWritesEnabled, ConvertToDeviceCmpFunc(zCmpFunc), ConvertToDeviceDepthFormat(defaultZFormat), defaultDepthBias);
+	baseDevice->DeviceSetDepthStencilState(zEnable, zWriteEnable, colorWritesEnabled, ConvertToDeviceCmpFunc(zCmpFunc), ConvertToDeviceDepthFormat(defaultZFormat), defaultDepthBias, stencilWriteEnable,
+		defaultStencilRef, defaultStencilReadMask, defaultStencilWriteMask, ConvertToDeviceCmpFunc(defaultStencilFunc), 
+		ConvertToDeviceStencilOp(defaultStencilFail), ConvertToDeviceStencilOp(defaultStencilZFail), ConvertToDeviceStencilOp(defaultStencilPass) );
 	baseDevice->DeviceSetAttrInterpolatorState(useFlatShadingColor, ConvertToDeviceTexAddressMode(defaultTextureAddressMode), ConvertToDeviceTexAddressMode(defaultTextureAddressMode) );
 	baseDevice->DeviceClearDepthStencil(currentState.currentDepthStencil ? currentState.currentDepthStencil->GetDeviceSurfaceBytes() : NULL, clearDepth, clearStencil, clearZValue, clearStencilValue);
+	if (currentState.currentDepthStencil)
+		currentState.currentDepthStencil->BindSurfaceForDrawCall();
 
 	// Force an end-frame event to clear out any state that may have been hanging around if we didn't shut down cleanly last time:
 	baseDevice->DeviceEndFrame();
@@ -11703,8 +11884,8 @@ IDirect3DDevice9Hook::IDirect3DDevice9Hook(LPDIRECT3DDEVICE9 _d3d9dev, IDirect3D
 	overrideDepth(DepthOverrideSettings::DOS_Default), overrideStencil(StencilOverrideSettings::SOS_Default), overrideFillMode(FillModeOverrideSettings::FMOS_Default), overrideShadeMode(ShadeModeOverrideSettings::SMOS_Default),
 	overrideCullMode(CullModeOverrideSettings::CMOS_Default), overrideFogMode(FogModeOverrideSettings::FOGOS_Default), overrideAlphaBlend(AlphaBlendOverrideSettings::ABOS_Default), overrideAlphaTest(AlphaTestOverrideSettings::ATOS_Default),
 	overrideTexAddress(TexAddressOverrideSettings::TAOS_Default), overrideTexMode(TexModeOverrideSettings::TMOS_Default),
-	invertScanoutColors(false), drawCallSleepMicros(0), singleStepDrawCallMode(false), queueSingleStepDrawCallModeNextFrame(false), scanoutRedSwizzle(setScanoutPointerCommand::dcs_red), scanoutGreenSwizzle(setScanoutPointerCommand::dcs_green), scanoutBlueSwizzle(setScanoutPointerCommand::dcs_blue),
-	lastFrameDeltaSeconds(0.0), currentFrameIndex(0)
+	invertScanoutColors(false), drawCallSleepMicros(0), frameLimiterFPS(0.0f), singleStepDrawCallMode(false), singleStepFrameMode(false), queueSingleStepDrawCallModeNextFrame(false), queueSingleStepFrameModeNextFrame(false), scanoutRedSwizzle(setScanoutPointerCommand::dcs_red), scanoutGreenSwizzle(setScanoutPointerCommand::dcs_green), scanoutBlueSwizzle(setScanoutPointerCommand::dcs_blue),
+	lastFrameDeltaSeconds(0.0), currentFrameIndex(0), frameBeginTimestamp(NULL), frameEndTimestamp(NULL)
 {
 	lastFramePresentTimestamp = {0};
 
@@ -11793,8 +11974,9 @@ IDirect3DDevice9Hook::IDirect3DDevice9Hook(LPDIRECT3DDEVICE9 _d3d9dev, IDirect3D
 #endif
 	}
 	ILocalEndpointDLLComms* const localRecorderEndpointComms = new ILocalEndpointDLLComms(BuildEndpointDLLPath("RecordingEndpoint_DiskFile.dll").c_str() );
-	IBroadcastVirtualDeviceComms* const broadcastDeviceComms = new IBroadcastVirtualDeviceComms(localRecorderEndpointComms);
+	IBroadcastVirtualDeviceComms* const broadcastDeviceComms = new IBroadcastVirtualDeviceComms(/*networkDeviceComms*/localRecorderEndpointComms);
 	broadcastDeviceComms->AddNewSecondaryBroadcastTarget(remoteProcessesIPCComms);
+	broadcastDeviceComms->AddNewSecondaryBroadcastTarget(localRecorderEndpointComms);
 
 	deviceComms = broadcastDeviceComms;
 	baseDevice = new IBaseGPUDevice(broadcastDeviceComms);

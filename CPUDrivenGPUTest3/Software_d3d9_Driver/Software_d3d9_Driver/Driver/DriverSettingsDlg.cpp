@@ -131,6 +131,8 @@ static_assert(ARRAYSIZE(texFilterOverrideStrings) == TexFilterOverrideSettings::
 
 static void PopulateDropdownListFromStringTable(_In_ HWND hWnd, _In_ const int dialogItemID, const char* const * const stringTable, const unsigned numEntries)
 {
+	// Clear our listbox first:
+	SendDlgItemMessageA(hWnd, dialogItemID, CB_RESETCONTENT, 0, 0);
 	for (unsigned x = 0; x < numEntries; ++x)
 	{
 		SendDlgItemMessageA(hWnd, dialogItemID, CB_ADDSTRING, 0, (LPARAM)(stringTable[x]) );
@@ -160,6 +162,7 @@ static INT_PTR CALLBACK DriverSettingsDialogProc(_In_ HWND hWnd, _In_ UINT MSG, 
 			CheckDlgButton(hWnd, IDC_CHK_INVERTSCANOUTCOLORS, d3d9devhook->GetInvertScanoutColors() ? BST_CHECKED : BST_UNCHECKED);
 			CheckDlgButton(hWnd, IDC_CHK_WAITFORVSYNC, d3d9devhook->GetEnableVSyncWait() ? BST_CHECKED : BST_UNCHECKED);
 			CheckDlgButton(hWnd, IDC_CHK_SINGLESTEPDRAWCALLS, d3d9devhook->GetSingleStepDrawCallMode() ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hWnd, IDC_CHK_SINGLESTEPFRAMES, d3d9devhook->GetSingleStepFrameMode() ? BST_CHECKED : BST_UNCHECKED);
 
 			PopulateDropdownListFromStringTable(hWnd, IDC_CMB_SCANOUTSWIZZLER, scanoutSwizzleStrings, ARRAYSIZE(scanoutSwizzleStrings) );
 			PopulateDropdownListFromStringTable(hWnd, IDC_CMB_SCANOUTSWIZZLEG, scanoutSwizzleStrings, ARRAYSIZE(scanoutSwizzleStrings) );
@@ -199,6 +202,12 @@ static INT_PTR CALLBACK DriverSettingsDialogProc(_In_ HWND hWnd, _In_ UINT MSG, 
 			_itoa(d3d9devhook->GetDrawCallSleepMicros(), textBuffer, 10);
 #pragma warning(pop)
 			SetDlgItemTextA(hWnd, IDC_EDIT_DRAWSLEEPMICROS, textBuffer);
+
+#pragma warning(push)
+#pragma warning(disable:4996)
+			sprintf_s(textBuffer, "%f", d3d9devhook->GetFPSLimiter() );
+#pragma warning(pop)
+			SetDlgItemTextA(hWnd, IDC_EDIT_FPSLIMIT, textBuffer);
 		}
 		return TRUE;
 	case WM_CLOSE:
@@ -250,6 +259,9 @@ static INT_PTR CALLBACK DriverSettingsDialogProc(_In_ HWND hWnd, _In_ UINT MSG, 
 				return TRUE;
 			case IDC_CHK_SINGLESTEPDRAWCALLS:
 				d3d9devhook->SetSingleStepDrawCallMode(IsDlgButtonChecked(hWnd, IDC_CHK_SINGLESTEPDRAWCALLS) ? true : false);
+				return TRUE;
+			case IDC_CHK_SINGLESTEPFRAMES:
+				d3d9devhook->SetSingleStepFrameMode(IsDlgButtonChecked(hWnd, IDC_CHK_SINGLESTEPFRAMES) ? true : false);
 				return TRUE;
 			case IDC_CMB_SCANOUTSWIZZLER:
 			{
@@ -384,6 +396,14 @@ static INT_PTR CALLBACK DriverSettingsDialogProc(_In_ HWND hWnd, _In_ UINT MSG, 
 				d3d9devhook->SetDrawCallSleepMicros(strtoul(buffer, NULL, 10) );
 			}
 				return TRUE;
+			case IDC_EDIT_FPSLIMIT:
+			{
+				char buffer[256] = {0};
+				GetDlgItemTextA(hWnd, IDC_EDIT_FPSLIMIT, buffer, sizeof(buffer) - 1);
+				const float fpsLimit = (const float)atof(buffer);
+				d3d9devhook->SetFPSLimiter(fpsLimit);
+			}
+				return TRUE;
 			}
 			break;
 		}
@@ -429,11 +449,15 @@ void DriverSettingsDlg::InitDialog(HWND initialCreateFocusWindow, HWND initialCr
 	}
 }
 
-void DriverSettingsDlg::UpdateDialog()
+void DriverSettingsDlg::UpdateDialog(const bool refreshEntireDialog /*= false*/)
 {
 	// Process dialog messages for our driver options dialog window:
 	if (driverOptionsDlgWnd != NULL)
 	{
+		if (refreshEntireDialog)
+		{
+			SendMessageA(driverOptionsDlgWnd, WM_USER_DLG_INIT_MSG, NULL, NULL);
+		}
 		MSG msg = {0};
 		while (PeekMessageA(&msg, NULL, 0, 0, PM_REMOVE) )
 		{

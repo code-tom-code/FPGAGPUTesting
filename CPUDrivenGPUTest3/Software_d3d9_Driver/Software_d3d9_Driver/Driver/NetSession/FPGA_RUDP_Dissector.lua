@@ -130,8 +130,9 @@ function get_packettype_string(packettype)
 	stringtable[42] = "PT_WRITEMEMBATCH1"
 	stringtable[43] = "PT_WRITEMEMBATCH2"
 	stringtable[44] = "PT_WRITEMEMBATCH3WRITE"
+	stringtable[45] = "PT_SETSTENCILSTATE"
 
-	if packettype < 45 then
+	if packettype < 46 then
 		packettype_string = stringtable[packettype]
 	end
 

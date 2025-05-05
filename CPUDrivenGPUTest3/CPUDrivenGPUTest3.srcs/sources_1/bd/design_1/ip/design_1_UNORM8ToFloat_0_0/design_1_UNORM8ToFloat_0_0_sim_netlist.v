@@ -1,7 +1,7 @@
 // Copyright 1986-2018 Xilinx, Inc. All Rights Reserved.
 // --------------------------------------------------------------------------------
 // Tool Version: Vivado v.2018.1_AR73068 (win64) Build 2188600 Wed Apr  4 18:40:38 MDT 2018
-// Date        : Thu Oct 10 00:35:03 2024
+// Date        : Sun Apr 13 16:14:40 2025
 // Host        : Dragon2 running 64-bit major release  (build 9200)
 // Command     : write_verilog -force -mode funcsim
 //               D:/Xilinx/MyXilinxProjects/CPUDrivenGPUTest3/CPUDrivenGPUTest3.srcs/sources_1/bd/design_1/ip/design_1_UNORM8ToFloat_0_0/design_1_UNORM8ToFloat_0_0_sim_netlist.v
@@ -145,16 +145,16 @@ module design_1_UNORM8ToFloat_0_0_UNORM8ToFloat
     FloatYOut,
     FloatZOut,
     FloatWOut,
-    D3DColorIn,
     Enable,
-    clk);
+    clk,
+    D3DColorIn);
   output [11:0]FloatXOut;
   output [11:0]FloatYOut;
   output [11:0]FloatZOut;
   output [11:0]FloatWOut;
-  input [31:0]D3DColorIn;
   input Enable;
   input clk;
+  input [31:0]D3DColorIn;
 
   wire [31:0]D3DColorIn;
   wire Enable;
@@ -173,6 +173,7 @@ module design_1_UNORM8ToFloat_0_0_UNORM8ToFloat
   wire \FloatWOut[22]_i_3_n_0 ;
   wire \FloatWOut[23]_i_1_n_0 ;
   wire \FloatWOut[23]_i_2_n_0 ;
+  wire \FloatWOut[23]_i_3_n_0 ;
   wire \FloatWOut[24]_i_1_n_0 ;
   wire \FloatWOut[24]_i_2_n_0 ;
   wire \FloatWOut[25]_i_1_n_0 ;
@@ -183,9 +184,7 @@ module design_1_UNORM8ToFloat_0_0_UNORM8ToFloat
   wire \FloatWOut[29]_i_2_n_0 ;
   wire \FloatWOut[29]_i_3_n_0 ;
   wire \FloatWOut[29]_i_4_n_0 ;
-  wire \FloatWOut[29]_i_5_n_0 ;
   wire [11:0]FloatXOut;
-  wire \FloatXOut[16]_i_1_n_0 ;
   wire \FloatXOut[19]_i_2_n_0 ;
   wire \FloatXOut[20]_i_2_n_0 ;
   wire \FloatXOut[21]_i_2_n_0 ;
@@ -193,6 +192,7 @@ module design_1_UNORM8ToFloat_0_0_UNORM8ToFloat
   wire \FloatXOut[22]_i_3_n_0 ;
   wire \FloatXOut[23]_i_1_n_0 ;
   wire \FloatXOut[23]_i_2_n_0 ;
+  wire \FloatXOut[23]_i_3_n_0 ;
   wire \FloatXOut[24]_i_1_n_0 ;
   wire \FloatXOut[24]_i_2_n_0 ;
   wire \FloatXOut[25]_i_1_n_0 ;
@@ -203,7 +203,6 @@ module design_1_UNORM8ToFloat_0_0_UNORM8ToFloat
   wire \FloatXOut[29]_i_2_n_0 ;
   wire \FloatXOut[29]_i_3_n_0 ;
   wire \FloatXOut[29]_i_4_n_0 ;
-  wire \FloatXOut[29]_i_5_n_0 ;
   wire [11:0]FloatYOut;
   wire \FloatYOut[16]_i_1_n_0 ;
   wire \FloatYOut[17]_i_1_n_0 ;
@@ -219,6 +218,7 @@ module design_1_UNORM8ToFloat_0_0_UNORM8ToFloat
   wire \FloatYOut[22]_i_3_n_0 ;
   wire \FloatYOut[23]_i_1_n_0 ;
   wire \FloatYOut[23]_i_2_n_0 ;
+  wire \FloatYOut[23]_i_3_n_0 ;
   wire \FloatYOut[24]_i_1_n_0 ;
   wire \FloatYOut[24]_i_2_n_0 ;
   wire \FloatYOut[25]_i_1_n_0 ;
@@ -229,7 +229,6 @@ module design_1_UNORM8ToFloat_0_0_UNORM8ToFloat
   wire \FloatYOut[29]_i_2_n_0 ;
   wire \FloatYOut[29]_i_3_n_0 ;
   wire \FloatYOut[29]_i_4_n_0 ;
-  wire \FloatYOut[29]_i_5_n_0 ;
   wire [11:0]FloatZOut;
   wire \FloatZOut[16]_i_1_n_0 ;
   wire \FloatZOut[17]_i_1_n_0 ;
@@ -245,6 +244,7 @@ module design_1_UNORM8ToFloat_0_0_UNORM8ToFloat
   wire \FloatZOut[22]_i_3_n_0 ;
   wire \FloatZOut[23]_i_1_n_0 ;
   wire \FloatZOut[23]_i_2_n_0 ;
+  wire \FloatZOut[23]_i_3_n_0 ;
   wire \FloatZOut[24]_i_1_n_0 ;
   wire \FloatZOut[24]_i_2_n_0 ;
   wire \FloatZOut[25]_i_1_n_0 ;
@@ -255,90 +255,89 @@ module design_1_UNORM8ToFloat_0_0_UNORM8ToFloat
   wire \FloatZOut[29]_i_2_n_0 ;
   wire \FloatZOut[29]_i_3_n_0 ;
   wire \FloatZOut[29]_i_4_n_0 ;
-  wire \FloatZOut[29]_i_5_n_0 ;
   wire clk;
-  wire [22:17]\mantissaBits[255]_0 ;
+  wire [22:16]\mantissaBits[0]_0 ;
 
-  (* SOFT_HLUTNM = "soft_lutpair7" *) 
+  (* SOFT_HLUTNM = "soft_lutpair3" *) 
   LUT2 #(
-    .INIT(4'h1)) 
+    .INIT(4'h8)) 
     \FloatWOut[16]_i_1 
        (.I0(D3DColorIn[24]),
         .I1(D3DColorIn[31]),
         .O(\FloatWOut[16]_i_1_n_0 ));
-  (* SOFT_HLUTNM = "soft_lutpair7" *) 
+  (* SOFT_HLUTNM = "soft_lutpair3" *) 
   LUT4 #(
-    .INIT(16'h101F)) 
+    .INIT(16'hB888)) 
     \FloatWOut[17]_i_1 
-       (.I0(D3DColorIn[24]),
-        .I1(D3DColorIn[30]),
-        .I2(D3DColorIn[31]),
-        .I3(D3DColorIn[25]),
+       (.I0(D3DColorIn[25]),
+        .I1(D3DColorIn[31]),
+        .I2(D3DColorIn[24]),
+        .I3(D3DColorIn[30]),
         .O(\FloatWOut[17]_i_1_n_0 ));
   LUT6 #(
-    .INIT(64'h101F0000101FFFFF)) 
+    .INIT(64'hB8BBB888B888B888)) 
     \FloatWOut[18]_i_1 
-       (.I0(D3DColorIn[24]),
-        .I1(D3DColorIn[29]),
-        .I2(D3DColorIn[30]),
-        .I3(D3DColorIn[25]),
-        .I4(D3DColorIn[31]),
-        .I5(D3DColorIn[26]),
+       (.I0(D3DColorIn[26]),
+        .I1(D3DColorIn[31]),
+        .I2(D3DColorIn[25]),
+        .I3(D3DColorIn[30]),
+        .I4(D3DColorIn[24]),
+        .I5(D3DColorIn[29]),
         .O(\FloatWOut[18]_i_1_n_0 ));
   LUT3 #(
-    .INIT(8'h8B)) 
+    .INIT(8'hB8)) 
     \FloatWOut[19]_i_1 
-       (.I0(\FloatWOut[19]_i_2_n_0 ),
+       (.I0(D3DColorIn[27]),
         .I1(D3DColorIn[31]),
-        .I2(D3DColorIn[27]),
+        .I2(\FloatWOut[19]_i_2_n_0 ),
         .O(\FloatWOut[19]_i_1_n_0 ));
   LUT6 #(
-    .INIT(64'h101F0000101FFFFF)) 
+    .INIT(64'hB8BBB888B888B888)) 
     \FloatWOut[19]_i_2 
-       (.I0(D3DColorIn[24]),
-        .I1(D3DColorIn[28]),
-        .I2(D3DColorIn[29]),
-        .I3(D3DColorIn[25]),
-        .I4(D3DColorIn[30]),
-        .I5(D3DColorIn[26]),
+       (.I0(D3DColorIn[26]),
+        .I1(D3DColorIn[30]),
+        .I2(D3DColorIn[25]),
+        .I3(D3DColorIn[29]),
+        .I4(D3DColorIn[24]),
+        .I5(D3DColorIn[28]),
         .O(\FloatWOut[19]_i_2_n_0 ));
   LUT5 #(
-    .INIT(32'h8B008BFF)) 
+    .INIT(32'hB8BBB888)) 
     \FloatWOut[20]_i_1 
-       (.I0(\FloatWOut[20]_i_2_n_0 ),
-        .I1(D3DColorIn[30]),
+       (.I0(D3DColorIn[28]),
+        .I1(D3DColorIn[31]),
         .I2(D3DColorIn[27]),
-        .I3(D3DColorIn[31]),
-        .I4(D3DColorIn[28]),
+        .I3(D3DColorIn[30]),
+        .I4(\FloatWOut[20]_i_2_n_0 ),
         .O(\FloatWOut[20]_i_1_n_0 ));
   LUT6 #(
-    .INIT(64'h101F0000101FFFFF)) 
+    .INIT(64'hB8BBB888B888B888)) 
     \FloatWOut[20]_i_2 
-       (.I0(D3DColorIn[24]),
-        .I1(D3DColorIn[27]),
-        .I2(D3DColorIn[28]),
-        .I3(D3DColorIn[25]),
-        .I4(D3DColorIn[29]),
-        .I5(D3DColorIn[26]),
+       (.I0(D3DColorIn[26]),
+        .I1(D3DColorIn[29]),
+        .I2(D3DColorIn[25]),
+        .I3(D3DColorIn[28]),
+        .I4(D3DColorIn[24]),
+        .I5(D3DColorIn[27]),
         .O(\FloatWOut[20]_i_2_n_0 ));
   LUT5 #(
-    .INIT(32'h8B008BFF)) 
+    .INIT(32'hB8BBB888)) 
     \FloatWOut[21]_i_1 
-       (.I0(\FloatWOut[21]_i_2_n_0 ),
-        .I1(D3DColorIn[30]),
+       (.I0(D3DColorIn[29]),
+        .I1(D3DColorIn[31]),
         .I2(D3DColorIn[28]),
-        .I3(D3DColorIn[31]),
-        .I4(D3DColorIn[29]),
+        .I3(D3DColorIn[30]),
+        .I4(\FloatWOut[21]_i_2_n_0 ),
         .O(\FloatWOut[21]_i_1_n_0 ));
   LUT6 #(
-    .INIT(64'h005F0000303FFFFF)) 
+    .INIT(64'hFE55FE44BA00BA00)) 
     \FloatWOut[21]_i_2 
-       (.I0(D3DColorIn[24]),
-        .I1(D3DColorIn[25]),
-        .I2(D3DColorIn[28]),
-        .I3(D3DColorIn[26]),
-        .I4(D3DColorIn[29]),
-        .I5(D3DColorIn[27]),
+       (.I0(D3DColorIn[29]),
+        .I1(D3DColorIn[28]),
+        .I2(D3DColorIn[25]),
+        .I3(D3DColorIn[27]),
+        .I4(D3DColorIn[24]),
+        .I5(D3DColorIn[26]),
         .O(\FloatWOut[21]_i_2_n_0 ));
   LUT5 #(
     .INIT(32'hA4040000)) 
@@ -346,95 +345,100 @@ module design_1_UNORM8ToFloat_0_0_UNORM8ToFloat
        (.I0(D3DColorIn[30]),
         .I1(\FloatWOut[29]_i_3_n_0 ),
         .I2(D3DColorIn[31]),
-        .I3(\FloatWOut[29]_i_5_n_0 ),
+        .I3(\FloatWOut[23]_i_3_n_0 ),
         .I4(Enable),
         .O(\FloatWOut[22]_i_1_n_0 ));
   LUT4 #(
-    .INIT(16'hA03F)) 
+    .INIT(16'hE5E0)) 
     \FloatWOut[22]_i_2 
-       (.I0(\FloatWOut[22]_i_3_n_0 ),
+       (.I0(D3DColorIn[31]),
         .I1(D3DColorIn[29]),
-        .I2(D3DColorIn[31]),
-        .I3(D3DColorIn[30]),
+        .I2(D3DColorIn[30]),
+        .I3(\FloatWOut[22]_i_3_n_0 ),
         .O(\FloatWOut[22]_i_2_n_0 ));
   LUT6 #(
-    .INIT(64'h130F000000FFFFFF)) 
+    .INIT(64'hD9C9D9C8D8C8D8C8)) 
     \FloatWOut[22]_i_3 
-       (.I0(D3DColorIn[24]),
-        .I1(D3DColorIn[25]),
-        .I2(D3DColorIn[26]),
-        .I3(D3DColorIn[27]),
-        .I4(D3DColorIn[29]),
-        .I5(D3DColorIn[28]),
+       (.I0(D3DColorIn[29]),
+        .I1(D3DColorIn[28]),
+        .I2(D3DColorIn[27]),
+        .I3(D3DColorIn[26]),
+        .I4(D3DColorIn[24]),
+        .I5(D3DColorIn[25]),
         .O(\FloatWOut[22]_i_3_n_0 ));
-  LUT5 #(
-    .INIT(32'hFFCF0A0A)) 
+  (* SOFT_HLUTNM = "soft_lutpair4" *) 
+  LUT4 #(
+    .INIT(16'hC0EE)) 
     \FloatWOut[23]_i_1 
-       (.I0(\FloatWOut[29]_i_3_n_0 ),
-        .I1(\FloatWOut[23]_i_2_n_0 ),
-        .I2(D3DColorIn[30]),
-        .I3(\FloatWOut[29]_i_5_n_0 ),
-        .I4(D3DColorIn[31]),
+       (.I0(\FloatWOut[23]_i_2_n_0 ),
+        .I1(D3DColorIn[30]),
+        .I2(\FloatWOut[23]_i_3_n_0 ),
+        .I3(D3DColorIn[31]),
         .O(\FloatWOut[23]_i_1_n_0 ));
   LUT6 #(
-    .INIT(64'h77F7555500000000)) 
+    .INIT(64'h00000000AAAAEEFE)) 
     \FloatWOut[23]_i_2 
        (.I0(D3DColorIn[28]),
         .I1(D3DColorIn[26]),
-        .I2(D3DColorIn[25]),
-        .I3(D3DColorIn[24]),
+        .I2(D3DColorIn[24]),
+        .I3(D3DColorIn[25]),
         .I4(D3DColorIn[27]),
         .I5(D3DColorIn[29]),
         .O(\FloatWOut[23]_i_2_n_0 ));
-  (* SOFT_HLUTNM = "soft_lutpair4" *) 
-  LUT4 #(
-    .INIT(16'hC8FF)) 
+  LUT6 #(
+    .INIT(64'h8000000000000000)) 
+    \FloatWOut[23]_i_3 
+       (.I0(D3DColorIn[28]),
+        .I1(D3DColorIn[26]),
+        .I2(D3DColorIn[24]),
+        .I3(D3DColorIn[25]),
+        .I4(D3DColorIn[27]),
+        .I5(D3DColorIn[29]),
+        .O(\FloatWOut[23]_i_3_n_0 ));
+  (* SOFT_HLUTNM = "soft_lutpair8" *) 
+  LUT3 #(
+    .INIT(8'hF2)) 
     \FloatWOut[24]_i_1 
        (.I0(\FloatWOut[24]_i_2_n_0 ),
         .I1(D3DColorIn[30]),
-        .I2(\FloatWOut[29]_i_5_n_0 ),
-        .I3(D3DColorIn[31]),
+        .I2(D3DColorIn[31]),
         .O(\FloatWOut[24]_i_1_n_0 ));
   LUT6 #(
-    .INIT(64'h55D5FFFF00000000)) 
+    .INIT(64'h00000000FFFFAABA)) 
     \FloatWOut[24]_i_2 
        (.I0(D3DColorIn[28]),
         .I1(D3DColorIn[26]),
-        .I2(D3DColorIn[25]),
-        .I3(D3DColorIn[24]),
+        .I2(D3DColorIn[24]),
+        .I3(D3DColorIn[25]),
         .I4(D3DColorIn[27]),
         .I5(D3DColorIn[29]),
         .O(\FloatWOut[24]_i_2_n_0 ));
-  (* SOFT_HLUTNM = "soft_lutpair5" *) 
-  LUT4 #(
-    .INIT(16'hFBFF)) 
+  (* SOFT_HLUTNM = "soft_lutpair8" *) 
+  LUT3 #(
+    .INIT(8'hFE)) 
     \FloatWOut[25]_i_1 
        (.I0(\FloatWOut[25]_i_2_n_0 ),
         .I1(D3DColorIn[30]),
-        .I2(\FloatWOut[29]_i_5_n_0 ),
-        .I3(D3DColorIn[31]),
+        .I2(D3DColorIn[31]),
         .O(\FloatWOut[25]_i_1_n_0 ));
   LUT6 #(
-    .INIT(64'h00800000FFFFFFFF)) 
+    .INIT(64'hFFFFFFFF00000010)) 
     \FloatWOut[25]_i_2 
        (.I0(D3DColorIn[28]),
         .I1(D3DColorIn[26]),
-        .I2(D3DColorIn[25]),
-        .I3(D3DColorIn[24]),
+        .I2(D3DColorIn[24]),
+        .I3(D3DColorIn[25]),
         .I4(D3DColorIn[27]),
         .I5(D3DColorIn[29]),
         .O(\FloatWOut[25]_i_2_n_0 ));
-  (* SOFT_HLUTNM = "soft_lutpair5" *) 
-  LUT4 #(
-    .INIT(16'hEAFF)) 
+  LUT2 #(
+    .INIT(4'hE)) 
     \FloatWOut[26]_i_1 
        (.I0(\FloatWOut[26]_i_2_n_0 ),
-        .I1(D3DColorIn[30]),
-        .I2(\FloatWOut[29]_i_5_n_0 ),
-        .I3(D3DColorIn[31]),
+        .I1(D3DColorIn[31]),
         .O(\FloatWOut[26]_i_1_n_0 ));
   LUT6 #(
-    .INIT(64'h7FFFFFFFFFFFFFFF)) 
+    .INIT(64'hFFFFFFFFFFFFFFFE)) 
     \FloatWOut[26]_i_2 
        (.I0(D3DColorIn[29]),
         .I1(D3DColorIn[27]),
@@ -452,13 +456,12 @@ module design_1_UNORM8ToFloat_0_0_UNORM8ToFloat
         .I3(Enable),
         .O(\FloatWOut[29]_i_1_n_0 ));
   (* SOFT_HLUTNM = "soft_lutpair4" *) 
-  LUT4 #(
-    .INIT(16'hFBFF)) 
+  LUT3 #(
+    .INIT(8'hFE)) 
     \FloatWOut[29]_i_2 
        (.I0(\FloatWOut[29]_i_4_n_0 ),
         .I1(D3DColorIn[30]),
-        .I2(\FloatWOut[29]_i_5_n_0 ),
-        .I3(D3DColorIn[31]),
+        .I2(D3DColorIn[31]),
         .O(\FloatWOut[29]_i_2_n_0 ));
   LUT6 #(
     .INIT(64'h0000000000000001)) 
@@ -471,7 +474,7 @@ module design_1_UNORM8ToFloat_0_0_UNORM8ToFloat
         .I5(D3DColorIn[29]),
         .O(\FloatWOut[29]_i_3_n_0 ));
   LUT6 #(
-    .INIT(64'h7FFFFFFFFFFFFFFF)) 
+    .INIT(64'hFFFFFFFFFFFFFFFE)) 
     \FloatWOut[29]_i_4 
        (.I0(D3DColorIn[28]),
         .I1(D3DColorIn[26]),
@@ -480,16 +483,6 @@ module design_1_UNORM8ToFloat_0_0_UNORM8ToFloat
         .I4(D3DColorIn[27]),
         .I5(D3DColorIn[29]),
         .O(\FloatWOut[29]_i_4_n_0 ));
-  LUT6 #(
-    .INIT(64'h8000000000000000)) 
-    \FloatWOut[29]_i_5 
-       (.I0(D3DColorIn[28]),
-        .I1(D3DColorIn[26]),
-        .I2(D3DColorIn[24]),
-        .I3(D3DColorIn[25]),
-        .I4(D3DColorIn[27]),
-        .I5(D3DColorIn[29]),
-        .O(\FloatWOut[29]_i_5_n_0 ));
   FDRE #(
     .INIT(1'b0)) 
     \FloatWOut_reg[16] 
@@ -588,83 +581,83 @@ module design_1_UNORM8ToFloat_0_0_UNORM8ToFloat
         .R(\FloatWOut[29]_i_1_n_0 ));
   (* SOFT_HLUTNM = "soft_lutpair2" *) 
   LUT2 #(
-    .INIT(4'h1)) 
+    .INIT(4'h8)) 
     \FloatXOut[16]_i_1 
        (.I0(D3DColorIn[16]),
         .I1(D3DColorIn[23]),
-        .O(\FloatXOut[16]_i_1_n_0 ));
+        .O(\mantissaBits[0]_0 [16]));
   LUT4 #(
-    .INIT(16'h101F)) 
+    .INIT(16'hB888)) 
     \FloatXOut[17]_i_1 
-       (.I0(D3DColorIn[16]),
-        .I1(D3DColorIn[22]),
-        .I2(D3DColorIn[23]),
-        .I3(D3DColorIn[17]),
-        .O(\mantissaBits[255]_0 [17]));
-  LUT6 #(
-    .INIT(64'h101F0000101FFFFF)) 
-    \FloatXOut[18]_i_1 
-       (.I0(D3DColorIn[16]),
-        .I1(D3DColorIn[21]),
-        .I2(D3DColorIn[22]),
-        .I3(D3DColorIn[17]),
-        .I4(D3DColorIn[23]),
-        .I5(D3DColorIn[18]),
-        .O(\mantissaBits[255]_0 [18]));
-  LUT3 #(
-    .INIT(8'h8B)) 
-    \FloatXOut[19]_i_1 
-       (.I0(\FloatXOut[19]_i_2_n_0 ),
+       (.I0(D3DColorIn[17]),
         .I1(D3DColorIn[23]),
-        .I2(D3DColorIn[19]),
-        .O(\mantissaBits[255]_0 [19]));
+        .I2(D3DColorIn[16]),
+        .I3(D3DColorIn[22]),
+        .O(\mantissaBits[0]_0 [17]));
   LUT6 #(
-    .INIT(64'h101F0000101FFFFF)) 
+    .INIT(64'hB8BBB888B888B888)) 
+    \FloatXOut[18]_i_1 
+       (.I0(D3DColorIn[18]),
+        .I1(D3DColorIn[23]),
+        .I2(D3DColorIn[17]),
+        .I3(D3DColorIn[22]),
+        .I4(D3DColorIn[16]),
+        .I5(D3DColorIn[21]),
+        .O(\mantissaBits[0]_0 [18]));
+  LUT3 #(
+    .INIT(8'hB8)) 
+    \FloatXOut[19]_i_1 
+       (.I0(D3DColorIn[19]),
+        .I1(D3DColorIn[23]),
+        .I2(\FloatXOut[19]_i_2_n_0 ),
+        .O(\mantissaBits[0]_0 [19]));
+  LUT6 #(
+    .INIT(64'hB8BBB888B888B888)) 
     \FloatXOut[19]_i_2 
-       (.I0(D3DColorIn[16]),
-        .I1(D3DColorIn[20]),
-        .I2(D3DColorIn[21]),
-        .I3(D3DColorIn[17]),
-        .I4(D3DColorIn[22]),
-        .I5(D3DColorIn[18]),
+       (.I0(D3DColorIn[18]),
+        .I1(D3DColorIn[22]),
+        .I2(D3DColorIn[17]),
+        .I3(D3DColorIn[21]),
+        .I4(D3DColorIn[16]),
+        .I5(D3DColorIn[20]),
         .O(\FloatXOut[19]_i_2_n_0 ));
   LUT5 #(
-    .INIT(32'h8B008BFF)) 
+    .INIT(32'hB8BBB888)) 
     \FloatXOut[20]_i_1 
-       (.I0(\FloatXOut[20]_i_2_n_0 ),
-        .I1(D3DColorIn[22]),
+       (.I0(D3DColorIn[20]),
+        .I1(D3DColorIn[23]),
         .I2(D3DColorIn[19]),
-        .I3(D3DColorIn[23]),
-        .I4(D3DColorIn[20]),
-        .O(\mantissaBits[255]_0 [20]));
+        .I3(D3DColorIn[22]),
+        .I4(\FloatXOut[20]_i_2_n_0 ),
+        .O(\mantissaBits[0]_0 [20]));
   LUT6 #(
-    .INIT(64'h101F0000101FFFFF)) 
+    .INIT(64'hB8BBB888B888B888)) 
     \FloatXOut[20]_i_2 
-       (.I0(D3DColorIn[16]),
-        .I1(D3DColorIn[19]),
-        .I2(D3DColorIn[20]),
-        .I3(D3DColorIn[17]),
-        .I4(D3DColorIn[21]),
-        .I5(D3DColorIn[18]),
+       (.I0(D3DColorIn[18]),
+        .I1(D3DColorIn[21]),
+        .I2(D3DColorIn[17]),
+        .I3(D3DColorIn[20]),
+        .I4(D3DColorIn[16]),
+        .I5(D3DColorIn[19]),
         .O(\FloatXOut[20]_i_2_n_0 ));
   LUT5 #(
-    .INIT(32'h8B008BFF)) 
+    .INIT(32'hB8BBB888)) 
     \FloatXOut[21]_i_1 
-       (.I0(\FloatXOut[21]_i_2_n_0 ),
-        .I1(D3DColorIn[22]),
+       (.I0(D3DColorIn[21]),
+        .I1(D3DColorIn[23]),
         .I2(D3DColorIn[20]),
-        .I3(D3DColorIn[23]),
-        .I4(D3DColorIn[21]),
-        .O(\mantissaBits[255]_0 [21]));
+        .I3(D3DColorIn[22]),
+        .I4(\FloatXOut[21]_i_2_n_0 ),
+        .O(\mantissaBits[0]_0 [21]));
   LUT6 #(
-    .INIT(64'h005F0000303FFFFF)) 
+    .INIT(64'hFE55FE44BA00BA00)) 
     \FloatXOut[21]_i_2 
-       (.I0(D3DColorIn[16]),
-        .I1(D3DColorIn[17]),
-        .I2(D3DColorIn[20]),
-        .I3(D3DColorIn[18]),
-        .I4(D3DColorIn[21]),
-        .I5(D3DColorIn[19]),
+       (.I0(D3DColorIn[21]),
+        .I1(D3DColorIn[20]),
+        .I2(D3DColorIn[17]),
+        .I3(D3DColorIn[19]),
+        .I4(D3DColorIn[16]),
+        .I5(D3DColorIn[18]),
         .O(\FloatXOut[21]_i_2_n_0 ));
   LUT5 #(
     .INIT(32'hA4040000)) 
@@ -672,96 +665,101 @@ module design_1_UNORM8ToFloat_0_0_UNORM8ToFloat
        (.I0(D3DColorIn[22]),
         .I1(\FloatXOut[29]_i_3_n_0 ),
         .I2(D3DColorIn[23]),
-        .I3(\FloatXOut[29]_i_5_n_0 ),
+        .I3(\FloatXOut[23]_i_3_n_0 ),
         .I4(Enable),
         .O(\FloatXOut[22]_i_1_n_0 ));
   (* SOFT_HLUTNM = "soft_lutpair2" *) 
   LUT4 #(
-    .INIT(16'hA03F)) 
+    .INIT(16'hE5E0)) 
     \FloatXOut[22]_i_2 
-       (.I0(\FloatXOut[22]_i_3_n_0 ),
+       (.I0(D3DColorIn[23]),
         .I1(D3DColorIn[21]),
-        .I2(D3DColorIn[23]),
-        .I3(D3DColorIn[22]),
-        .O(\mantissaBits[255]_0 [22]));
-  LUT6 #(
-    .INIT(64'h130F000000FFFFFF)) 
-    \FloatXOut[22]_i_3 
-       (.I0(D3DColorIn[16]),
-        .I1(D3DColorIn[17]),
-        .I2(D3DColorIn[18]),
-        .I3(D3DColorIn[19]),
-        .I4(D3DColorIn[21]),
-        .I5(D3DColorIn[20]),
-        .O(\FloatXOut[22]_i_3_n_0 ));
-  LUT5 #(
-    .INIT(32'hFFCF0A0A)) 
-    \FloatXOut[23]_i_1 
-       (.I0(\FloatXOut[29]_i_3_n_0 ),
-        .I1(\FloatXOut[23]_i_2_n_0 ),
         .I2(D3DColorIn[22]),
-        .I3(\FloatXOut[29]_i_5_n_0 ),
-        .I4(D3DColorIn[23]),
+        .I3(\FloatXOut[22]_i_3_n_0 ),
+        .O(\mantissaBits[0]_0 [22]));
+  LUT6 #(
+    .INIT(64'hD9C9D8C8D9C8D8C8)) 
+    \FloatXOut[22]_i_3 
+       (.I0(D3DColorIn[21]),
+        .I1(D3DColorIn[20]),
+        .I2(D3DColorIn[19]),
+        .I3(D3DColorIn[18]),
+        .I4(D3DColorIn[17]),
+        .I5(D3DColorIn[16]),
+        .O(\FloatXOut[22]_i_3_n_0 ));
+  (* SOFT_HLUTNM = "soft_lutpair7" *) 
+  LUT4 #(
+    .INIT(16'hC0EE)) 
+    \FloatXOut[23]_i_1 
+       (.I0(\FloatXOut[23]_i_2_n_0 ),
+        .I1(D3DColorIn[22]),
+        .I2(\FloatXOut[23]_i_3_n_0 ),
+        .I3(D3DColorIn[23]),
         .O(\FloatXOut[23]_i_1_n_0 ));
   LUT6 #(
-    .INIT(64'h77F7555500000000)) 
+    .INIT(64'h00000000AAAAEEFE)) 
     \FloatXOut[23]_i_2 
        (.I0(D3DColorIn[20]),
         .I1(D3DColorIn[18]),
-        .I2(D3DColorIn[17]),
-        .I3(D3DColorIn[16]),
+        .I2(D3DColorIn[16]),
+        .I3(D3DColorIn[17]),
         .I4(D3DColorIn[19]),
         .I5(D3DColorIn[21]),
         .O(\FloatXOut[23]_i_2_n_0 ));
-  (* SOFT_HLUTNM = "soft_lutpair9" *) 
-  LUT4 #(
-    .INIT(16'hC8FF)) 
+  LUT6 #(
+    .INIT(64'h8000000000000000)) 
+    \FloatXOut[23]_i_3 
+       (.I0(D3DColorIn[20]),
+        .I1(D3DColorIn[18]),
+        .I2(D3DColorIn[17]),
+        .I3(D3DColorIn[16]),
+        .I4(D3DColorIn[19]),
+        .I5(D3DColorIn[21]),
+        .O(\FloatXOut[23]_i_3_n_0 ));
+  (* SOFT_HLUTNM = "soft_lutpair11" *) 
+  LUT3 #(
+    .INIT(8'hF2)) 
     \FloatXOut[24]_i_1 
        (.I0(\FloatXOut[24]_i_2_n_0 ),
         .I1(D3DColorIn[22]),
-        .I2(\FloatXOut[29]_i_5_n_0 ),
-        .I3(D3DColorIn[23]),
+        .I2(D3DColorIn[23]),
         .O(\FloatXOut[24]_i_1_n_0 ));
   LUT6 #(
-    .INIT(64'h55D5FFFF00000000)) 
+    .INIT(64'h00000000FFFFAABA)) 
     \FloatXOut[24]_i_2 
        (.I0(D3DColorIn[20]),
         .I1(D3DColorIn[18]),
-        .I2(D3DColorIn[17]),
-        .I3(D3DColorIn[16]),
+        .I2(D3DColorIn[16]),
+        .I3(D3DColorIn[17]),
         .I4(D3DColorIn[19]),
         .I5(D3DColorIn[21]),
         .O(\FloatXOut[24]_i_2_n_0 ));
-  (* SOFT_HLUTNM = "soft_lutpair9" *) 
-  LUT4 #(
-    .INIT(16'hFBFF)) 
+  (* SOFT_HLUTNM = "soft_lutpair11" *) 
+  LUT3 #(
+    .INIT(8'hFE)) 
     \FloatXOut[25]_i_1 
        (.I0(\FloatXOut[25]_i_2_n_0 ),
         .I1(D3DColorIn[22]),
-        .I2(\FloatXOut[29]_i_5_n_0 ),
-        .I3(D3DColorIn[23]),
+        .I2(D3DColorIn[23]),
         .O(\FloatXOut[25]_i_1_n_0 ));
   LUT6 #(
-    .INIT(64'h00800000FFFFFFFF)) 
+    .INIT(64'hFFFFFFFF00000010)) 
     \FloatXOut[25]_i_2 
        (.I0(D3DColorIn[20]),
         .I1(D3DColorIn[18]),
-        .I2(D3DColorIn[17]),
-        .I3(D3DColorIn[16]),
+        .I2(D3DColorIn[16]),
+        .I3(D3DColorIn[17]),
         .I4(D3DColorIn[19]),
         .I5(D3DColorIn[21]),
         .O(\FloatXOut[25]_i_2_n_0 ));
-  (* SOFT_HLUTNM = "soft_lutpair8" *) 
-  LUT4 #(
-    .INIT(16'hEAFF)) 
+  LUT2 #(
+    .INIT(4'hE)) 
     \FloatXOut[26]_i_1 
        (.I0(\FloatXOut[26]_i_2_n_0 ),
-        .I1(D3DColorIn[22]),
-        .I2(\FloatXOut[29]_i_5_n_0 ),
-        .I3(D3DColorIn[23]),
+        .I1(D3DColorIn[23]),
         .O(\FloatXOut[26]_i_1_n_0 ));
   LUT6 #(
-    .INIT(64'h7FFFFFFFFFFFFFFF)) 
+    .INIT(64'hFFFFFFFFFFFFFFFE)) 
     \FloatXOut[26]_i_2 
        (.I0(D3DColorIn[21]),
         .I1(D3DColorIn[19]),
@@ -778,14 +776,13 @@ module design_1_UNORM8ToFloat_0_0_UNORM8ToFloat
         .I2(D3DColorIn[22]),
         .I3(Enable),
         .O(\FloatXOut[29]_i_1_n_0 ));
-  (* SOFT_HLUTNM = "soft_lutpair8" *) 
-  LUT4 #(
-    .INIT(16'hFBFF)) 
+  (* SOFT_HLUTNM = "soft_lutpair7" *) 
+  LUT3 #(
+    .INIT(8'hFE)) 
     \FloatXOut[29]_i_2 
        (.I0(\FloatXOut[29]_i_4_n_0 ),
         .I1(D3DColorIn[22]),
-        .I2(\FloatXOut[29]_i_5_n_0 ),
-        .I3(D3DColorIn[23]),
+        .I2(D3DColorIn[23]),
         .O(\FloatXOut[29]_i_2_n_0 ));
   LUT6 #(
     .INIT(64'h0000000000000001)) 
@@ -798,7 +795,7 @@ module design_1_UNORM8ToFloat_0_0_UNORM8ToFloat
         .I5(D3DColorIn[21]),
         .O(\FloatXOut[29]_i_3_n_0 ));
   LUT6 #(
-    .INIT(64'h7FFFFFFFFFFFFFFF)) 
+    .INIT(64'hFFFFFFFFFFFFFFFE)) 
     \FloatXOut[29]_i_4 
        (.I0(D3DColorIn[20]),
         .I1(D3DColorIn[18]),
@@ -807,22 +804,12 @@ module design_1_UNORM8ToFloat_0_0_UNORM8ToFloat
         .I4(D3DColorIn[19]),
         .I5(D3DColorIn[21]),
         .O(\FloatXOut[29]_i_4_n_0 ));
-  LUT6 #(
-    .INIT(64'h8000000000000000)) 
-    \FloatXOut[29]_i_5 
-       (.I0(D3DColorIn[20]),
-        .I1(D3DColorIn[18]),
-        .I2(D3DColorIn[17]),
-        .I3(D3DColorIn[16]),
-        .I4(D3DColorIn[19]),
-        .I5(D3DColorIn[21]),
-        .O(\FloatXOut[29]_i_5_n_0 ));
   FDRE #(
     .INIT(1'b0)) 
     \FloatXOut_reg[16] 
        (.C(clk),
         .CE(Enable),
-        .D(\FloatXOut[16]_i_1_n_0 ),
+        .D(\mantissaBits[0]_0 [16]),
         .Q(FloatXOut[0]),
         .R(\FloatXOut[22]_i_1_n_0 ));
   FDRE #(
@@ -830,7 +817,7 @@ module design_1_UNORM8ToFloat_0_0_UNORM8ToFloat
     \FloatXOut_reg[17] 
        (.C(clk),
         .CE(Enable),
-        .D(\mantissaBits[255]_0 [17]),
+        .D(\mantissaBits[0]_0 [17]),
         .Q(FloatXOut[1]),
         .R(\FloatXOut[22]_i_1_n_0 ));
   FDRE #(
@@ -838,7 +825,7 @@ module design_1_UNORM8ToFloat_0_0_UNORM8ToFloat
     \FloatXOut_reg[18] 
        (.C(clk),
         .CE(Enable),
-        .D(\mantissaBits[255]_0 [18]),
+        .D(\mantissaBits[0]_0 [18]),
         .Q(FloatXOut[2]),
         .R(\FloatXOut[22]_i_1_n_0 ));
   FDRE #(
@@ -846,7 +833,7 @@ module design_1_UNORM8ToFloat_0_0_UNORM8ToFloat
     \FloatXOut_reg[19] 
        (.C(clk),
         .CE(Enable),
-        .D(\mantissaBits[255]_0 [19]),
+        .D(\mantissaBits[0]_0 [19]),
         .Q(FloatXOut[3]),
         .R(\FloatXOut[22]_i_1_n_0 ));
   FDRE #(
@@ -854,7 +841,7 @@ module design_1_UNORM8ToFloat_0_0_UNORM8ToFloat
     \FloatXOut_reg[20] 
        (.C(clk),
         .CE(Enable),
-        .D(\mantissaBits[255]_0 [20]),
+        .D(\mantissaBits[0]_0 [20]),
         .Q(FloatXOut[4]),
         .R(\FloatXOut[22]_i_1_n_0 ));
   FDRE #(
@@ -862,7 +849,7 @@ module design_1_UNORM8ToFloat_0_0_UNORM8ToFloat
     \FloatXOut_reg[21] 
        (.C(clk),
         .CE(Enable),
-        .D(\mantissaBits[255]_0 [21]),
+        .D(\mantissaBits[0]_0 [21]),
         .Q(FloatXOut[5]),
         .R(\FloatXOut[22]_i_1_n_0 ));
   FDRE #(
@@ -870,7 +857,7 @@ module design_1_UNORM8ToFloat_0_0_UNORM8ToFloat
     \FloatXOut_reg[22] 
        (.C(clk),
         .CE(Enable),
-        .D(\mantissaBits[255]_0 [22]),
+        .D(\mantissaBits[0]_0 [22]),
         .Q(FloatXOut[6]),
         .R(\FloatXOut[22]_i_1_n_0 ));
   FDRE #(
@@ -913,85 +900,86 @@ module design_1_UNORM8ToFloat_0_0_UNORM8ToFloat
         .D(\FloatXOut[29]_i_2_n_0 ),
         .Q(FloatXOut[11]),
         .R(\FloatXOut[29]_i_1_n_0 ));
-  (* SOFT_HLUTNM = "soft_lutpair0" *) 
+  (* SOFT_HLUTNM = "soft_lutpair1" *) 
   LUT2 #(
-    .INIT(4'h1)) 
+    .INIT(4'h8)) 
     \FloatYOut[16]_i_1 
        (.I0(D3DColorIn[8]),
         .I1(D3DColorIn[15]),
         .O(\FloatYOut[16]_i_1_n_0 ));
+  (* SOFT_HLUTNM = "soft_lutpair1" *) 
   LUT4 #(
-    .INIT(16'h101F)) 
+    .INIT(16'hB888)) 
     \FloatYOut[17]_i_1 
-       (.I0(D3DColorIn[8]),
-        .I1(D3DColorIn[14]),
-        .I2(D3DColorIn[15]),
-        .I3(D3DColorIn[9]),
+       (.I0(D3DColorIn[9]),
+        .I1(D3DColorIn[15]),
+        .I2(D3DColorIn[8]),
+        .I3(D3DColorIn[14]),
         .O(\FloatYOut[17]_i_1_n_0 ));
   LUT6 #(
-    .INIT(64'h101F0000101FFFFF)) 
+    .INIT(64'hB8BBB888B888B888)) 
     \FloatYOut[18]_i_1 
-       (.I0(D3DColorIn[8]),
-        .I1(D3DColorIn[13]),
-        .I2(D3DColorIn[14]),
-        .I3(D3DColorIn[9]),
-        .I4(D3DColorIn[15]),
-        .I5(D3DColorIn[10]),
+       (.I0(D3DColorIn[10]),
+        .I1(D3DColorIn[15]),
+        .I2(D3DColorIn[9]),
+        .I3(D3DColorIn[14]),
+        .I4(D3DColorIn[8]),
+        .I5(D3DColorIn[13]),
         .O(\FloatYOut[18]_i_1_n_0 ));
   LUT3 #(
-    .INIT(8'h8B)) 
+    .INIT(8'hB8)) 
     \FloatYOut[19]_i_1 
-       (.I0(\FloatYOut[19]_i_2_n_0 ),
+       (.I0(D3DColorIn[11]),
         .I1(D3DColorIn[15]),
-        .I2(D3DColorIn[11]),
+        .I2(\FloatYOut[19]_i_2_n_0 ),
         .O(\FloatYOut[19]_i_1_n_0 ));
   LUT6 #(
-    .INIT(64'h101F0000101FFFFF)) 
+    .INIT(64'hB8BBB888B888B888)) 
     \FloatYOut[19]_i_2 
-       (.I0(D3DColorIn[8]),
-        .I1(D3DColorIn[12]),
-        .I2(D3DColorIn[13]),
-        .I3(D3DColorIn[9]),
-        .I4(D3DColorIn[14]),
-        .I5(D3DColorIn[10]),
+       (.I0(D3DColorIn[10]),
+        .I1(D3DColorIn[14]),
+        .I2(D3DColorIn[9]),
+        .I3(D3DColorIn[13]),
+        .I4(D3DColorIn[8]),
+        .I5(D3DColorIn[12]),
         .O(\FloatYOut[19]_i_2_n_0 ));
   LUT5 #(
-    .INIT(32'h8B008BFF)) 
+    .INIT(32'hB8BBB888)) 
     \FloatYOut[20]_i_1 
-       (.I0(\FloatYOut[20]_i_2_n_0 ),
-        .I1(D3DColorIn[14]),
+       (.I0(D3DColorIn[12]),
+        .I1(D3DColorIn[15]),
         .I2(D3DColorIn[11]),
-        .I3(D3DColorIn[15]),
-        .I4(D3DColorIn[12]),
+        .I3(D3DColorIn[14]),
+        .I4(\FloatYOut[20]_i_2_n_0 ),
         .O(\FloatYOut[20]_i_1_n_0 ));
   LUT6 #(
-    .INIT(64'h101F0000101FFFFF)) 
+    .INIT(64'hB8BBB888B888B888)) 
     \FloatYOut[20]_i_2 
-       (.I0(D3DColorIn[8]),
-        .I1(D3DColorIn[11]),
-        .I2(D3DColorIn[12]),
-        .I3(D3DColorIn[9]),
-        .I4(D3DColorIn[13]),
-        .I5(D3DColorIn[10]),
+       (.I0(D3DColorIn[10]),
+        .I1(D3DColorIn[13]),
+        .I2(D3DColorIn[9]),
+        .I3(D3DColorIn[12]),
+        .I4(D3DColorIn[8]),
+        .I5(D3DColorIn[11]),
         .O(\FloatYOut[20]_i_2_n_0 ));
   LUT5 #(
-    .INIT(32'h8B008BFF)) 
+    .INIT(32'hB8BBB888)) 
     \FloatYOut[21]_i_1 
-       (.I0(\FloatYOut[21]_i_2_n_0 ),
-        .I1(D3DColorIn[14]),
+       (.I0(D3DColorIn[13]),
+        .I1(D3DColorIn[15]),
         .I2(D3DColorIn[12]),
-        .I3(D3DColorIn[15]),
-        .I4(D3DColorIn[13]),
+        .I3(D3DColorIn[14]),
+        .I4(\FloatYOut[21]_i_2_n_0 ),
         .O(\FloatYOut[21]_i_1_n_0 ));
   LUT6 #(
-    .INIT(64'h005F0000303FFFFF)) 
+    .INIT(64'hFE55FE44BA00BA00)) 
     \FloatYOut[21]_i_2 
-       (.I0(D3DColorIn[8]),
-        .I1(D3DColorIn[9]),
-        .I2(D3DColorIn[12]),
-        .I3(D3DColorIn[10]),
-        .I4(D3DColorIn[13]),
-        .I5(D3DColorIn[11]),
+       (.I0(D3DColorIn[13]),
+        .I1(D3DColorIn[12]),
+        .I2(D3DColorIn[9]),
+        .I3(D3DColorIn[11]),
+        .I4(D3DColorIn[8]),
+        .I5(D3DColorIn[10]),
         .O(\FloatYOut[21]_i_2_n_0 ));
   LUT5 #(
     .INIT(32'hA4040000)) 
@@ -999,96 +987,100 @@ module design_1_UNORM8ToFloat_0_0_UNORM8ToFloat
        (.I0(D3DColorIn[14]),
         .I1(\FloatYOut[29]_i_3_n_0 ),
         .I2(D3DColorIn[15]),
-        .I3(\FloatYOut[29]_i_5_n_0 ),
+        .I3(\FloatYOut[23]_i_3_n_0 ),
         .I4(Enable),
         .O(\FloatYOut[22]_i_1_n_0 ));
-  (* SOFT_HLUTNM = "soft_lutpair0" *) 
   LUT4 #(
-    .INIT(16'hA03F)) 
+    .INIT(16'hE5E0)) 
     \FloatYOut[22]_i_2 
-       (.I0(\FloatYOut[22]_i_3_n_0 ),
+       (.I0(D3DColorIn[15]),
         .I1(D3DColorIn[13]),
-        .I2(D3DColorIn[15]),
-        .I3(D3DColorIn[14]),
+        .I2(D3DColorIn[14]),
+        .I3(\FloatYOut[22]_i_3_n_0 ),
         .O(\FloatYOut[22]_i_2_n_0 ));
   LUT6 #(
-    .INIT(64'h130F000000FFFFFF)) 
+    .INIT(64'hD9C9D8C8D9C8D8C8)) 
     \FloatYOut[22]_i_3 
-       (.I0(D3DColorIn[8]),
-        .I1(D3DColorIn[9]),
-        .I2(D3DColorIn[10]),
-        .I3(D3DColorIn[11]),
-        .I4(D3DColorIn[13]),
-        .I5(D3DColorIn[12]),
+       (.I0(D3DColorIn[13]),
+        .I1(D3DColorIn[12]),
+        .I2(D3DColorIn[11]),
+        .I3(D3DColorIn[10]),
+        .I4(D3DColorIn[9]),
+        .I5(D3DColorIn[8]),
         .O(\FloatYOut[22]_i_3_n_0 ));
-  LUT5 #(
-    .INIT(32'hFFCF0A0A)) 
+  (* SOFT_HLUTNM = "soft_lutpair6" *) 
+  LUT4 #(
+    .INIT(16'hC0EE)) 
     \FloatYOut[23]_i_1 
-       (.I0(\FloatYOut[29]_i_3_n_0 ),
-        .I1(\FloatYOut[23]_i_2_n_0 ),
-        .I2(D3DColorIn[14]),
-        .I3(\FloatYOut[29]_i_5_n_0 ),
-        .I4(D3DColorIn[15]),
+       (.I0(\FloatYOut[23]_i_2_n_0 ),
+        .I1(D3DColorIn[14]),
+        .I2(\FloatYOut[23]_i_3_n_0 ),
+        .I3(D3DColorIn[15]),
         .O(\FloatYOut[23]_i_1_n_0 ));
   LUT6 #(
-    .INIT(64'h77F7555500000000)) 
+    .INIT(64'h00000000AAAAEEFE)) 
     \FloatYOut[23]_i_2 
        (.I0(D3DColorIn[12]),
         .I1(D3DColorIn[10]),
-        .I2(D3DColorIn[9]),
-        .I3(D3DColorIn[8]),
+        .I2(D3DColorIn[8]),
+        .I3(D3DColorIn[9]),
         .I4(D3DColorIn[11]),
         .I5(D3DColorIn[13]),
         .O(\FloatYOut[23]_i_2_n_0 ));
+  LUT6 #(
+    .INIT(64'h8000000000000000)) 
+    \FloatYOut[23]_i_3 
+       (.I0(D3DColorIn[12]),
+        .I1(D3DColorIn[10]),
+        .I2(D3DColorIn[9]),
+        .I3(D3DColorIn[8]),
+        .I4(D3DColorIn[11]),
+        .I5(D3DColorIn[13]),
+        .O(\FloatYOut[23]_i_3_n_0 ));
   (* SOFT_HLUTNM = "soft_lutpair10" *) 
-  LUT4 #(
-    .INIT(16'hC8FF)) 
+  LUT3 #(
+    .INIT(8'hF2)) 
     \FloatYOut[24]_i_1 
        (.I0(\FloatYOut[24]_i_2_n_0 ),
         .I1(D3DColorIn[14]),
-        .I2(\FloatYOut[29]_i_5_n_0 ),
-        .I3(D3DColorIn[15]),
+        .I2(D3DColorIn[15]),
         .O(\FloatYOut[24]_i_1_n_0 ));
   LUT6 #(
-    .INIT(64'h55D5FFFF00000000)) 
+    .INIT(64'h00000000FFFFAABA)) 
     \FloatYOut[24]_i_2 
        (.I0(D3DColorIn[12]),
         .I1(D3DColorIn[10]),
-        .I2(D3DColorIn[9]),
-        .I3(D3DColorIn[8]),
+        .I2(D3DColorIn[8]),
+        .I3(D3DColorIn[9]),
         .I4(D3DColorIn[11]),
         .I5(D3DColorIn[13]),
         .O(\FloatYOut[24]_i_2_n_0 ));
-  (* SOFT_HLUTNM = "soft_lutpair11" *) 
-  LUT4 #(
-    .INIT(16'hFBFF)) 
+  (* SOFT_HLUTNM = "soft_lutpair10" *) 
+  LUT3 #(
+    .INIT(8'hFE)) 
     \FloatYOut[25]_i_1 
        (.I0(\FloatYOut[25]_i_2_n_0 ),
         .I1(D3DColorIn[14]),
-        .I2(\FloatYOut[29]_i_5_n_0 ),
-        .I3(D3DColorIn[15]),
+        .I2(D3DColorIn[15]),
         .O(\FloatYOut[25]_i_1_n_0 ));
   LUT6 #(
-    .INIT(64'h00800000FFFFFFFF)) 
+    .INIT(64'hFFFFFFFF00000010)) 
     \FloatYOut[25]_i_2 
        (.I0(D3DColorIn[12]),
         .I1(D3DColorIn[10]),
-        .I2(D3DColorIn[9]),
-        .I3(D3DColorIn[8]),
+        .I2(D3DColorIn[8]),
+        .I3(D3DColorIn[9]),
         .I4(D3DColorIn[11]),
         .I5(D3DColorIn[13]),
         .O(\FloatYOut[25]_i_2_n_0 ));
-  (* SOFT_HLUTNM = "soft_lutpair11" *) 
-  LUT4 #(
-    .INIT(16'hEAFF)) 
+  LUT2 #(
+    .INIT(4'hE)) 
     \FloatYOut[26]_i_1 
        (.I0(\FloatYOut[26]_i_2_n_0 ),
-        .I1(D3DColorIn[14]),
-        .I2(\FloatYOut[29]_i_5_n_0 ),
-        .I3(D3DColorIn[15]),
+        .I1(D3DColorIn[15]),
         .O(\FloatYOut[26]_i_1_n_0 ));
   LUT6 #(
-    .INIT(64'h7FFFFFFFFFFFFFFF)) 
+    .INIT(64'hFFFFFFFFFFFFFFFE)) 
     \FloatYOut[26]_i_2 
        (.I0(D3DColorIn[13]),
         .I1(D3DColorIn[11]),
@@ -1105,14 +1097,13 @@ module design_1_UNORM8ToFloat_0_0_UNORM8ToFloat
         .I2(D3DColorIn[14]),
         .I3(Enable),
         .O(\FloatYOut[29]_i_1_n_0 ));
-  (* SOFT_HLUTNM = "soft_lutpair10" *) 
-  LUT4 #(
-    .INIT(16'hFBFF)) 
+  (* SOFT_HLUTNM = "soft_lutpair6" *) 
+  LUT3 #(
+    .INIT(8'hFE)) 
     \FloatYOut[29]_i_2 
        (.I0(\FloatYOut[29]_i_4_n_0 ),
         .I1(D3DColorIn[14]),
-        .I2(\FloatYOut[29]_i_5_n_0 ),
-        .I3(D3DColorIn[15]),
+        .I2(D3DColorIn[15]),
         .O(\FloatYOut[29]_i_2_n_0 ));
   LUT6 #(
     .INIT(64'h0000000000000001)) 
@@ -1125,7 +1116,7 @@ module design_1_UNORM8ToFloat_0_0_UNORM8ToFloat
         .I5(D3DColorIn[13]),
         .O(\FloatYOut[29]_i_3_n_0 ));
   LUT6 #(
-    .INIT(64'h7FFFFFFFFFFFFFFF)) 
+    .INIT(64'hFFFFFFFFFFFFFFFE)) 
     \FloatYOut[29]_i_4 
        (.I0(D3DColorIn[12]),
         .I1(D3DColorIn[10]),
@@ -1134,16 +1125,6 @@ module design_1_UNORM8ToFloat_0_0_UNORM8ToFloat
         .I4(D3DColorIn[11]),
         .I5(D3DColorIn[13]),
         .O(\FloatYOut[29]_i_4_n_0 ));
-  LUT6 #(
-    .INIT(64'h8000000000000000)) 
-    \FloatYOut[29]_i_5 
-       (.I0(D3DColorIn[12]),
-        .I1(D3DColorIn[10]),
-        .I2(D3DColorIn[9]),
-        .I3(D3DColorIn[8]),
-        .I4(D3DColorIn[11]),
-        .I5(D3DColorIn[13]),
-        .O(\FloatYOut[29]_i_5_n_0 ));
   FDRE #(
     .INIT(1'b0)) 
     \FloatYOut_reg[16] 
@@ -1240,86 +1221,85 @@ module design_1_UNORM8ToFloat_0_0_UNORM8ToFloat
         .D(\FloatYOut[29]_i_2_n_0 ),
         .Q(FloatYOut[11]),
         .R(\FloatYOut[29]_i_1_n_0 ));
-  (* SOFT_HLUTNM = "soft_lutpair1" *) 
+  (* SOFT_HLUTNM = "soft_lutpair0" *) 
   LUT2 #(
-    .INIT(4'h1)) 
+    .INIT(4'h8)) 
     \FloatZOut[16]_i_1 
        (.I0(D3DColorIn[0]),
         .I1(D3DColorIn[7]),
         .O(\FloatZOut[16]_i_1_n_0 ));
-  (* SOFT_HLUTNM = "soft_lutpair1" *) 
   LUT4 #(
-    .INIT(16'h101F)) 
+    .INIT(16'hB888)) 
     \FloatZOut[17]_i_1 
-       (.I0(D3DColorIn[0]),
-        .I1(D3DColorIn[6]),
-        .I2(D3DColorIn[7]),
-        .I3(D3DColorIn[1]),
+       (.I0(D3DColorIn[1]),
+        .I1(D3DColorIn[7]),
+        .I2(D3DColorIn[0]),
+        .I3(D3DColorIn[6]),
         .O(\FloatZOut[17]_i_1_n_0 ));
   LUT6 #(
-    .INIT(64'h101F0000101FFFFF)) 
+    .INIT(64'hB8BBB888B888B888)) 
     \FloatZOut[18]_i_1 
-       (.I0(D3DColorIn[0]),
-        .I1(D3DColorIn[5]),
-        .I2(D3DColorIn[6]),
-        .I3(D3DColorIn[1]),
-        .I4(D3DColorIn[7]),
-        .I5(D3DColorIn[2]),
+       (.I0(D3DColorIn[2]),
+        .I1(D3DColorIn[7]),
+        .I2(D3DColorIn[1]),
+        .I3(D3DColorIn[6]),
+        .I4(D3DColorIn[0]),
+        .I5(D3DColorIn[5]),
         .O(\FloatZOut[18]_i_1_n_0 ));
   LUT3 #(
-    .INIT(8'h8B)) 
+    .INIT(8'hB8)) 
     \FloatZOut[19]_i_1 
-       (.I0(\FloatZOut[19]_i_2_n_0 ),
+       (.I0(D3DColorIn[3]),
         .I1(D3DColorIn[7]),
-        .I2(D3DColorIn[3]),
+        .I2(\FloatZOut[19]_i_2_n_0 ),
         .O(\FloatZOut[19]_i_1_n_0 ));
   LUT6 #(
-    .INIT(64'h101F0000101FFFFF)) 
+    .INIT(64'hB8BBB888B888B888)) 
     \FloatZOut[19]_i_2 
-       (.I0(D3DColorIn[0]),
-        .I1(D3DColorIn[4]),
-        .I2(D3DColorIn[5]),
-        .I3(D3DColorIn[1]),
-        .I4(D3DColorIn[6]),
-        .I5(D3DColorIn[2]),
+       (.I0(D3DColorIn[2]),
+        .I1(D3DColorIn[6]),
+        .I2(D3DColorIn[1]),
+        .I3(D3DColorIn[5]),
+        .I4(D3DColorIn[0]),
+        .I5(D3DColorIn[4]),
         .O(\FloatZOut[19]_i_2_n_0 ));
   LUT5 #(
-    .INIT(32'h8B008BFF)) 
+    .INIT(32'hB8BBB888)) 
     \FloatZOut[20]_i_1 
-       (.I0(\FloatZOut[20]_i_2_n_0 ),
-        .I1(D3DColorIn[6]),
+       (.I0(D3DColorIn[4]),
+        .I1(D3DColorIn[7]),
         .I2(D3DColorIn[3]),
-        .I3(D3DColorIn[7]),
-        .I4(D3DColorIn[4]),
+        .I3(D3DColorIn[6]),
+        .I4(\FloatZOut[20]_i_2_n_0 ),
         .O(\FloatZOut[20]_i_1_n_0 ));
   LUT6 #(
-    .INIT(64'h101F0000101FFFFF)) 
+    .INIT(64'hB8BBB888B888B888)) 
     \FloatZOut[20]_i_2 
-       (.I0(D3DColorIn[0]),
-        .I1(D3DColorIn[3]),
-        .I2(D3DColorIn[4]),
-        .I3(D3DColorIn[1]),
-        .I4(D3DColorIn[5]),
-        .I5(D3DColorIn[2]),
+       (.I0(D3DColorIn[2]),
+        .I1(D3DColorIn[5]),
+        .I2(D3DColorIn[1]),
+        .I3(D3DColorIn[4]),
+        .I4(D3DColorIn[0]),
+        .I5(D3DColorIn[3]),
         .O(\FloatZOut[20]_i_2_n_0 ));
   LUT5 #(
-    .INIT(32'h8B008BFF)) 
+    .INIT(32'hB8BBB888)) 
     \FloatZOut[21]_i_1 
-       (.I0(\FloatZOut[21]_i_2_n_0 ),
-        .I1(D3DColorIn[6]),
+       (.I0(D3DColorIn[5]),
+        .I1(D3DColorIn[7]),
         .I2(D3DColorIn[4]),
-        .I3(D3DColorIn[7]),
-        .I4(D3DColorIn[5]),
+        .I3(D3DColorIn[6]),
+        .I4(\FloatZOut[21]_i_2_n_0 ),
         .O(\FloatZOut[21]_i_1_n_0 ));
   LUT6 #(
-    .INIT(64'h005F0000303FFFFF)) 
+    .INIT(64'hFE55FE44BA00BA00)) 
     \FloatZOut[21]_i_2 
-       (.I0(D3DColorIn[0]),
-        .I1(D3DColorIn[1]),
-        .I2(D3DColorIn[4]),
-        .I3(D3DColorIn[2]),
-        .I4(D3DColorIn[5]),
-        .I5(D3DColorIn[3]),
+       (.I0(D3DColorIn[5]),
+        .I1(D3DColorIn[4]),
+        .I2(D3DColorIn[1]),
+        .I3(D3DColorIn[3]),
+        .I4(D3DColorIn[0]),
+        .I5(D3DColorIn[2]),
         .O(\FloatZOut[21]_i_2_n_0 ));
   LUT5 #(
     .INIT(32'hA4040000)) 
@@ -1327,95 +1307,101 @@ module design_1_UNORM8ToFloat_0_0_UNORM8ToFloat
        (.I0(D3DColorIn[6]),
         .I1(\FloatZOut[29]_i_3_n_0 ),
         .I2(D3DColorIn[7]),
-        .I3(\FloatZOut[29]_i_5_n_0 ),
+        .I3(\FloatZOut[23]_i_3_n_0 ),
         .I4(Enable),
         .O(\FloatZOut[22]_i_1_n_0 ));
+  (* SOFT_HLUTNM = "soft_lutpair0" *) 
   LUT4 #(
-    .INIT(16'hA03F)) 
+    .INIT(16'hE5E0)) 
     \FloatZOut[22]_i_2 
-       (.I0(\FloatZOut[22]_i_3_n_0 ),
+       (.I0(D3DColorIn[7]),
         .I1(D3DColorIn[5]),
-        .I2(D3DColorIn[7]),
-        .I3(D3DColorIn[6]),
+        .I2(D3DColorIn[6]),
+        .I3(\FloatZOut[22]_i_3_n_0 ),
         .O(\FloatZOut[22]_i_2_n_0 ));
   LUT6 #(
-    .INIT(64'h130F000000FFFFFF)) 
+    .INIT(64'hD9C9D8C8D9C8D8C8)) 
     \FloatZOut[22]_i_3 
-       (.I0(D3DColorIn[0]),
-        .I1(D3DColorIn[1]),
-        .I2(D3DColorIn[2]),
-        .I3(D3DColorIn[3]),
-        .I4(D3DColorIn[5]),
-        .I5(D3DColorIn[4]),
+       (.I0(D3DColorIn[5]),
+        .I1(D3DColorIn[4]),
+        .I2(D3DColorIn[3]),
+        .I3(D3DColorIn[2]),
+        .I4(D3DColorIn[1]),
+        .I5(D3DColorIn[0]),
         .O(\FloatZOut[22]_i_3_n_0 ));
-  LUT5 #(
-    .INIT(32'hFFCF0A0A)) 
+  (* SOFT_HLUTNM = "soft_lutpair5" *) 
+  LUT4 #(
+    .INIT(16'hC0EE)) 
     \FloatZOut[23]_i_1 
-       (.I0(\FloatZOut[29]_i_3_n_0 ),
-        .I1(\FloatZOut[23]_i_2_n_0 ),
-        .I2(D3DColorIn[6]),
-        .I3(\FloatZOut[29]_i_5_n_0 ),
-        .I4(D3DColorIn[7]),
+       (.I0(\FloatZOut[23]_i_2_n_0 ),
+        .I1(D3DColorIn[6]),
+        .I2(\FloatZOut[23]_i_3_n_0 ),
+        .I3(D3DColorIn[7]),
         .O(\FloatZOut[23]_i_1_n_0 ));
   LUT6 #(
-    .INIT(64'h77F7555500000000)) 
+    .INIT(64'h00000000AAAAEEFE)) 
     \FloatZOut[23]_i_2 
        (.I0(D3DColorIn[4]),
         .I1(D3DColorIn[2]),
-        .I2(D3DColorIn[1]),
-        .I3(D3DColorIn[0]),
+        .I2(D3DColorIn[0]),
+        .I3(D3DColorIn[1]),
         .I4(D3DColorIn[3]),
         .I5(D3DColorIn[5]),
         .O(\FloatZOut[23]_i_2_n_0 ));
-  (* SOFT_HLUTNM = "soft_lutpair6" *) 
-  LUT4 #(
-    .INIT(16'hC8FF)) 
+  LUT6 #(
+    .INIT(64'h8000000000000000)) 
+    \FloatZOut[23]_i_3 
+       (.I0(D3DColorIn[4]),
+        .I1(D3DColorIn[2]),
+        .I2(D3DColorIn[1]),
+        .I3(D3DColorIn[0]),
+        .I4(D3DColorIn[3]),
+        .I5(D3DColorIn[5]),
+        .O(\FloatZOut[23]_i_3_n_0 ));
+  (* SOFT_HLUTNM = "soft_lutpair9" *) 
+  LUT3 #(
+    .INIT(8'hF2)) 
     \FloatZOut[24]_i_1 
        (.I0(\FloatZOut[24]_i_2_n_0 ),
         .I1(D3DColorIn[6]),
-        .I2(\FloatZOut[29]_i_5_n_0 ),
-        .I3(D3DColorIn[7]),
+        .I2(D3DColorIn[7]),
         .O(\FloatZOut[24]_i_1_n_0 ));
   LUT6 #(
-    .INIT(64'h55D5FFFF00000000)) 
+    .INIT(64'h00000000FFFFAABA)) 
     \FloatZOut[24]_i_2 
        (.I0(D3DColorIn[4]),
         .I1(D3DColorIn[2]),
-        .I2(D3DColorIn[1]),
-        .I3(D3DColorIn[0]),
+        .I2(D3DColorIn[0]),
+        .I3(D3DColorIn[1]),
         .I4(D3DColorIn[3]),
         .I5(D3DColorIn[5]),
         .O(\FloatZOut[24]_i_2_n_0 ));
-  (* SOFT_HLUTNM = "soft_lutpair6" *) 
-  LUT4 #(
-    .INIT(16'hFBFF)) 
+  (* SOFT_HLUTNM = "soft_lutpair9" *) 
+  LUT3 #(
+    .INIT(8'hFE)) 
     \FloatZOut[25]_i_1 
        (.I0(\FloatZOut[25]_i_2_n_0 ),
         .I1(D3DColorIn[6]),
-        .I2(\FloatZOut[29]_i_5_n_0 ),
-        .I3(D3DColorIn[7]),
+        .I2(D3DColorIn[7]),
         .O(\FloatZOut[25]_i_1_n_0 ));
   LUT6 #(
-    .INIT(64'h00800000FFFFFFFF)) 
+    .INIT(64'hFFFFFFFF00000010)) 
     \FloatZOut[25]_i_2 
        (.I0(D3DColorIn[4]),
         .I1(D3DColorIn[2]),
-        .I2(D3DColorIn[1]),
-        .I3(D3DColorIn[0]),
+        .I2(D3DColorIn[0]),
+        .I3(D3DColorIn[1]),
         .I4(D3DColorIn[3]),
         .I5(D3DColorIn[5]),
         .O(\FloatZOut[25]_i_2_n_0 ));
-  (* SOFT_HLUTNM = "soft_lutpair3" *) 
-  LUT4 #(
-    .INIT(16'hEAFF)) 
+  LUT2 #(
+    .INIT(4'hE)) 
     \FloatZOut[26]_i_1 
        (.I0(\FloatZOut[26]_i_2_n_0 ),
-        .I1(D3DColorIn[6]),
-        .I2(\FloatZOut[29]_i_5_n_0 ),
-        .I3(D3DColorIn[7]),
+        .I1(D3DColorIn[7]),
         .O(\FloatZOut[26]_i_1_n_0 ));
   LUT6 #(
-    .INIT(64'h7FFFFFFFFFFFFFFF)) 
+    .INIT(64'hFFFFFFFFFFFFFFFE)) 
     \FloatZOut[26]_i_2 
        (.I0(D3DColorIn[5]),
         .I1(D3DColorIn[3]),
@@ -1432,14 +1418,13 @@ module design_1_UNORM8ToFloat_0_0_UNORM8ToFloat
         .I2(D3DColorIn[6]),
         .I3(Enable),
         .O(\FloatZOut[29]_i_1_n_0 ));
-  (* SOFT_HLUTNM = "soft_lutpair3" *) 
-  LUT4 #(
-    .INIT(16'hFBFF)) 
+  (* SOFT_HLUTNM = "soft_lutpair5" *) 
+  LUT3 #(
+    .INIT(8'hFE)) 
     \FloatZOut[29]_i_2 
        (.I0(\FloatZOut[29]_i_4_n_0 ),
         .I1(D3DColorIn[6]),
-        .I2(\FloatZOut[29]_i_5_n_0 ),
-        .I3(D3DColorIn[7]),
+        .I2(D3DColorIn[7]),
         .O(\FloatZOut[29]_i_2_n_0 ));
   LUT6 #(
     .INIT(64'h0000000000000001)) 
@@ -1452,7 +1437,7 @@ module design_1_UNORM8ToFloat_0_0_UNORM8ToFloat
         .I5(D3DColorIn[5]),
         .O(\FloatZOut[29]_i_3_n_0 ));
   LUT6 #(
-    .INIT(64'h7FFFFFFFFFFFFFFF)) 
+    .INIT(64'hFFFFFFFFFFFFFFFE)) 
     \FloatZOut[29]_i_4 
        (.I0(D3DColorIn[4]),
         .I1(D3DColorIn[2]),
@@ -1461,16 +1446,6 @@ module design_1_UNORM8ToFloat_0_0_UNORM8ToFloat
         .I4(D3DColorIn[3]),
         .I5(D3DColorIn[5]),
         .O(\FloatZOut[29]_i_4_n_0 ));
-  LUT6 #(
-    .INIT(64'h8000000000000000)) 
-    \FloatZOut[29]_i_5 
-       (.I0(D3DColorIn[4]),
-        .I1(D3DColorIn[2]),
-        .I2(D3DColorIn[1]),
-        .I3(D3DColorIn[0]),
-        .I4(D3DColorIn[3]),
-        .I5(D3DColorIn[5]),
-        .O(\FloatZOut[29]_i_5_n_0 ));
   FDRE #(
     .INIT(1'b0)) 
     \FloatZOut_reg[16] 

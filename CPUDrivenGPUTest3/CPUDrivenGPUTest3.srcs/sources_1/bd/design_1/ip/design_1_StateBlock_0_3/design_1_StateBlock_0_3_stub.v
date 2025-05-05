@@ -1,7 +1,7 @@
 // Copyright 1986-2018 Xilinx, Inc. All Rights Reserved.
 // --------------------------------------------------------------------------------
 // Tool Version: Vivado v.2018.1_AR73068 (win64) Build 2188600 Wed Apr  4 18:40:38 MDT 2018
-// Date        : Thu Oct 10 00:58:51 2024
+// Date        : Fri Apr 25 20:02:13 2025
 // Host        : Dragon2 running 64-bit major release  (build 9200)
 // Command     : write_verilog -force -mode synth_stub
 //               D:/Xilinx/MyXilinxProjects/CPUDrivenGPUTest3/CPUDrivenGPUTest3.srcs/sources_1/bd/design_1/ip/design_1_StateBlock_0_3/design_1_StateBlock_0_3_stub.v
@@ -19,14 +19,14 @@ module design_1_StateBlock_0_3(clk, CMD_SetNewState, CMD_EndFrameReset,
   STAGE_NextDrawID, STAGE_StateIsValid, STAGE_ConsumeStateSlot, DBG_SlotsValid, 
   DBG_CurrentReadSlotIndex, DBG_CurrentWriteSlotIndex, DBG_Slot0, DBG_Slot1, DBG_Slot2, 
   DBG_Slot3)
-/* synthesis syn_black_box black_box_pad_pin="clk,CMD_SetNewState,CMD_EndFrameReset,CMD_NumFreeSlots[2:0],CMD_NewStateBits[39:0],CMD_NewStateDrawEventID[15:0],STAGE_StateBitsAtDrawID[39:0],STAGE_NextDrawID[15:0],STAGE_StateIsValid,STAGE_ConsumeStateSlot,DBG_SlotsValid[3:0],DBG_CurrentReadSlotIndex[1:0],DBG_CurrentWriteSlotIndex[1:0],DBG_Slot0[15:0],DBG_Slot1[15:0],DBG_Slot2[15:0],DBG_Slot3[15:0]" */;
+/* synthesis syn_black_box black_box_pad_pin="clk,CMD_SetNewState,CMD_EndFrameReset,CMD_NumFreeSlots[2:0],CMD_NewStateBits[76:0],CMD_NewStateDrawEventID[15:0],STAGE_StateBitsAtDrawID[76:0],STAGE_NextDrawID[15:0],STAGE_StateIsValid,STAGE_ConsumeStateSlot,DBG_SlotsValid[3:0],DBG_CurrentReadSlotIndex[1:0],DBG_CurrentWriteSlotIndex[1:0],DBG_Slot0[15:0],DBG_Slot1[15:0],DBG_Slot2[15:0],DBG_Slot3[15:0]" */;
   input clk;
   input CMD_SetNewState;
   input CMD_EndFrameReset;
   output [2:0]CMD_NumFreeSlots;
-  input [39:0]CMD_NewStateBits;
+  input [76:0]CMD_NewStateBits;
   input [15:0]CMD_NewStateDrawEventID;
-  output [39:0]STAGE_StateBitsAtDrawID;
+  output [76:0]STAGE_StateBitsAtDrawID;
   output [15:0]STAGE_NextDrawID;
   output STAGE_StateIsValid;
   input STAGE_ConsumeStateSlot;

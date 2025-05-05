@@ -1,7 +1,7 @@
 -- Copyright 1986-2018 Xilinx, Inc. All Rights Reserved.
 -- --------------------------------------------------------------------------------
 -- Tool Version: Vivado v.2018.1_AR73068 (win64) Build 2188600 Wed Apr  4 18:40:38 MDT 2018
--- Date        : Thu Oct 10 00:58:51 2024
+-- Date        : Fri Apr 25 20:02:13 2025
 -- Host        : Dragon2 running 64-bit major release  (build 9200)
 -- Command     : write_vhdl -force -mode funcsim
 --               D:/Xilinx/MyXilinxProjects/CPUDrivenGPUTest3/CPUDrivenGPUTest3.srcs/sources_1/bd/design_1/ip/design_1_StateBlock_0_3/design_1_StateBlock_0_3_sim_netlist.vhdl
@@ -28,13 +28,13 @@ entity design_1_StateBlock_0_3_StateBlock is
     DBG_Slot1 : out STD_LOGIC_VECTOR ( 15 downto 0 );
     DBG_Slot0 : out STD_LOGIC_VECTOR ( 15 downto 0 );
     STAGE_StateIsValid : out STD_LOGIC;
-    STAGE_StateBitsAtDrawID : out STD_LOGIC_VECTOR ( 39 downto 0 );
+    STAGE_StateBitsAtDrawID : out STD_LOGIC_VECTOR ( 76 downto 0 );
     STAGE_NextDrawID : out STD_LOGIC_VECTOR ( 15 downto 0 );
     CMD_EndFrameReset : in STD_LOGIC;
     CMD_SetNewState : in STD_LOGIC;
     clk : in STD_LOGIC;
     STAGE_ConsumeStateSlot : in STD_LOGIC;
-    CMD_NewStateBits : in STD_LOGIC_VECTOR ( 39 downto 0 );
+    CMD_NewStateBits : in STD_LOGIC_VECTOR ( 76 downto 0 );
     CMD_NewStateDrawEventID : in STD_LOGIC_VECTOR ( 15 downto 0 )
   );
   attribute ORIG_REF_NAME : string;
@@ -135,84 +135,84 @@ architecture STRUCTURE of design_1_StateBlock_0_3_StateBlock is
   signal \slotsData[3][SlotIsValid]7_out\ : STD_LOGIC;
   signal \slotsData[3][SlotIsValid]_i_1_n_0\ : STD_LOGIC;
   signal \slotsData[3][SlotIsValid]_i_2_n_0\ : STD_LOGIC;
-  signal \slotsData_reg[0][SlotData]\ : STD_LOGIC_VECTOR ( 39 downto 0 );
-  signal \slotsData_reg[1][SlotData]\ : STD_LOGIC_VECTOR ( 39 downto 0 );
-  signal \slotsData_reg[2][SlotData]\ : STD_LOGIC_VECTOR ( 39 downto 0 );
-  signal \slotsData_reg[3][SlotData]\ : STD_LOGIC_VECTOR ( 39 downto 0 );
+  signal \slotsData_reg[0][SlotData]\ : STD_LOGIC_VECTOR ( 76 downto 0 );
+  signal \slotsData_reg[1][SlotData]\ : STD_LOGIC_VECTOR ( 76 downto 0 );
+  signal \slotsData_reg[2][SlotData]\ : STD_LOGIC_VECTOR ( 76 downto 0 );
+  signal \slotsData_reg[3][SlotData]\ : STD_LOGIC_VECTOR ( 76 downto 0 );
   attribute SOFT_HLUTNM : string;
-  attribute SOFT_HLUTNM of \CMD_NumFreeSlots[0]_INST_0\ : label is "soft_lutpair32";
-  attribute SOFT_HLUTNM of \CMD_NumFreeSlots[1]_INST_0\ : label is "soft_lutpair32";
+  attribute SOFT_HLUTNM of \CMD_NumFreeSlots[0]_INST_0\ : label is "soft_lutpair20";
+  attribute SOFT_HLUTNM of \CMD_NumFreeSlots[1]_INST_0\ : label is "soft_lutpair20";
   attribute SOFT_HLUTNM of \currentReadSlot[0]_i_1\ : label is "soft_lutpair35";
   attribute SOFT_HLUTNM of \currentReadSlot[1]_i_1\ : label is "soft_lutpair35";
   attribute SOFT_HLUTNM of \currentWriteSlot[0]_i_1\ : label is "soft_lutpair36";
   attribute SOFT_HLUTNM of \currentWriteSlot[1]_i_1\ : label is "soft_lutpair36";
-  attribute SOFT_HLUTNM of \slotsData[0][SlotDrawEventID][0]_i_1\ : label is "soft_lutpair14";
-  attribute SOFT_HLUTNM of \slotsData[0][SlotDrawEventID][10]_i_1\ : label is "soft_lutpair23";
-  attribute SOFT_HLUTNM of \slotsData[0][SlotDrawEventID][11]_i_1\ : label is "soft_lutpair24";
-  attribute SOFT_HLUTNM of \slotsData[0][SlotDrawEventID][12]_i_1\ : label is "soft_lutpair25";
-  attribute SOFT_HLUTNM of \slotsData[0][SlotDrawEventID][13]_i_1\ : label is "soft_lutpair26";
-  attribute SOFT_HLUTNM of \slotsData[0][SlotDrawEventID][14]_i_1\ : label is "soft_lutpair27";
-  attribute SOFT_HLUTNM of \slotsData[0][SlotDrawEventID][15]_i_1\ : label is "soft_lutpair28";
-  attribute SOFT_HLUTNM of \slotsData[0][SlotDrawEventID][1]_i_1\ : label is "soft_lutpair29";
-  attribute SOFT_HLUTNM of \slotsData[0][SlotDrawEventID][2]_i_1\ : label is "soft_lutpair30";
-  attribute SOFT_HLUTNM of \slotsData[0][SlotDrawEventID][3]_i_1\ : label is "soft_lutpair17";
-  attribute SOFT_HLUTNM of \slotsData[0][SlotDrawEventID][4]_i_1\ : label is "soft_lutpair18";
-  attribute SOFT_HLUTNM of \slotsData[0][SlotDrawEventID][5]_i_1\ : label is "soft_lutpair31";
-  attribute SOFT_HLUTNM of \slotsData[0][SlotDrawEventID][6]_i_1\ : label is "soft_lutpair19";
-  attribute SOFT_HLUTNM of \slotsData[0][SlotDrawEventID][7]_i_1\ : label is "soft_lutpair20";
-  attribute SOFT_HLUTNM of \slotsData[0][SlotDrawEventID][8]_i_1\ : label is "soft_lutpair21";
-  attribute SOFT_HLUTNM of \slotsData[0][SlotDrawEventID][9]_i_1\ : label is "soft_lutpair22";
+  attribute SOFT_HLUTNM of \slotsData[0][SlotDrawEventID][0]_i_1\ : label is "soft_lutpair16";
+  attribute SOFT_HLUTNM of \slotsData[0][SlotDrawEventID][10]_i_1\ : label is "soft_lutpair26";
+  attribute SOFT_HLUTNM of \slotsData[0][SlotDrawEventID][11]_i_1\ : label is "soft_lutpair27";
+  attribute SOFT_HLUTNM of \slotsData[0][SlotDrawEventID][12]_i_1\ : label is "soft_lutpair28";
+  attribute SOFT_HLUTNM of \slotsData[0][SlotDrawEventID][13]_i_1\ : label is "soft_lutpair29";
+  attribute SOFT_HLUTNM of \slotsData[0][SlotDrawEventID][14]_i_1\ : label is "soft_lutpair30";
+  attribute SOFT_HLUTNM of \slotsData[0][SlotDrawEventID][15]_i_1\ : label is "soft_lutpair31";
+  attribute SOFT_HLUTNM of \slotsData[0][SlotDrawEventID][1]_i_1\ : label is "soft_lutpair17";
+  attribute SOFT_HLUTNM of \slotsData[0][SlotDrawEventID][2]_i_1\ : label is "soft_lutpair18";
+  attribute SOFT_HLUTNM of \slotsData[0][SlotDrawEventID][3]_i_1\ : label is "soft_lutpair19";
+  attribute SOFT_HLUTNM of \slotsData[0][SlotDrawEventID][4]_i_1\ : label is "soft_lutpair32";
+  attribute SOFT_HLUTNM of \slotsData[0][SlotDrawEventID][5]_i_1\ : label is "soft_lutpair21";
+  attribute SOFT_HLUTNM of \slotsData[0][SlotDrawEventID][6]_i_1\ : label is "soft_lutpair22";
+  attribute SOFT_HLUTNM of \slotsData[0][SlotDrawEventID][7]_i_1\ : label is "soft_lutpair23";
+  attribute SOFT_HLUTNM of \slotsData[0][SlotDrawEventID][8]_i_1\ : label is "soft_lutpair24";
+  attribute SOFT_HLUTNM of \slotsData[0][SlotDrawEventID][9]_i_1\ : label is "soft_lutpair25";
   attribute SOFT_HLUTNM of \slotsData[0][SlotIsValid]_i_2\ : label is "soft_lutpair34";
-  attribute SOFT_HLUTNM of \slotsData[1][SlotDrawEventID][0]_i_1\ : label is "soft_lutpair14";
-  attribute SOFT_HLUTNM of \slotsData[1][SlotDrawEventID][10]_i_1\ : label is "soft_lutpair23";
-  attribute SOFT_HLUTNM of \slotsData[1][SlotDrawEventID][11]_i_1\ : label is "soft_lutpair24";
-  attribute SOFT_HLUTNM of \slotsData[1][SlotDrawEventID][12]_i_1\ : label is "soft_lutpair25";
-  attribute SOFT_HLUTNM of \slotsData[1][SlotDrawEventID][13]_i_1\ : label is "soft_lutpair26";
-  attribute SOFT_HLUTNM of \slotsData[1][SlotDrawEventID][14]_i_1\ : label is "soft_lutpair27";
-  attribute SOFT_HLUTNM of \slotsData[1][SlotDrawEventID][15]_i_1\ : label is "soft_lutpair28";
-  attribute SOFT_HLUTNM of \slotsData[1][SlotDrawEventID][1]_i_1\ : label is "soft_lutpair15";
-  attribute SOFT_HLUTNM of \slotsData[1][SlotDrawEventID][2]_i_1\ : label is "soft_lutpair16";
-  attribute SOFT_HLUTNM of \slotsData[1][SlotDrawEventID][3]_i_1\ : label is "soft_lutpair17";
-  attribute SOFT_HLUTNM of \slotsData[1][SlotDrawEventID][4]_i_1\ : label is "soft_lutpair18";
-  attribute SOFT_HLUTNM of \slotsData[1][SlotDrawEventID][5]_i_1\ : label is "soft_lutpair31";
-  attribute SOFT_HLUTNM of \slotsData[1][SlotDrawEventID][6]_i_1\ : label is "soft_lutpair19";
-  attribute SOFT_HLUTNM of \slotsData[1][SlotDrawEventID][7]_i_1\ : label is "soft_lutpair20";
-  attribute SOFT_HLUTNM of \slotsData[1][SlotDrawEventID][8]_i_1\ : label is "soft_lutpair21";
-  attribute SOFT_HLUTNM of \slotsData[1][SlotDrawEventID][9]_i_1\ : label is "soft_lutpair22";
+  attribute SOFT_HLUTNM of \slotsData[1][SlotDrawEventID][0]_i_1\ : label is "soft_lutpair16";
+  attribute SOFT_HLUTNM of \slotsData[1][SlotDrawEventID][10]_i_1\ : label is "soft_lutpair26";
+  attribute SOFT_HLUTNM of \slotsData[1][SlotDrawEventID][11]_i_1\ : label is "soft_lutpair27";
+  attribute SOFT_HLUTNM of \slotsData[1][SlotDrawEventID][12]_i_1\ : label is "soft_lutpair28";
+  attribute SOFT_HLUTNM of \slotsData[1][SlotDrawEventID][13]_i_1\ : label is "soft_lutpair29";
+  attribute SOFT_HLUTNM of \slotsData[1][SlotDrawEventID][14]_i_1\ : label is "soft_lutpair30";
+  attribute SOFT_HLUTNM of \slotsData[1][SlotDrawEventID][15]_i_1\ : label is "soft_lutpair31";
+  attribute SOFT_HLUTNM of \slotsData[1][SlotDrawEventID][1]_i_1\ : label is "soft_lutpair17";
+  attribute SOFT_HLUTNM of \slotsData[1][SlotDrawEventID][2]_i_1\ : label is "soft_lutpair18";
+  attribute SOFT_HLUTNM of \slotsData[1][SlotDrawEventID][3]_i_1\ : label is "soft_lutpair19";
+  attribute SOFT_HLUTNM of \slotsData[1][SlotDrawEventID][4]_i_1\ : label is "soft_lutpair32";
+  attribute SOFT_HLUTNM of \slotsData[1][SlotDrawEventID][5]_i_1\ : label is "soft_lutpair21";
+  attribute SOFT_HLUTNM of \slotsData[1][SlotDrawEventID][6]_i_1\ : label is "soft_lutpair22";
+  attribute SOFT_HLUTNM of \slotsData[1][SlotDrawEventID][7]_i_1\ : label is "soft_lutpair23";
+  attribute SOFT_HLUTNM of \slotsData[1][SlotDrawEventID][8]_i_1\ : label is "soft_lutpair24";
+  attribute SOFT_HLUTNM of \slotsData[1][SlotDrawEventID][9]_i_1\ : label is "soft_lutpair25";
   attribute SOFT_HLUTNM of \slotsData[1][SlotIsValid]_i_2\ : label is "soft_lutpair33";
-  attribute SOFT_HLUTNM of \slotsData[2][SlotDrawEventID][0]_i_1\ : label is "soft_lutpair4";
-  attribute SOFT_HLUTNM of \slotsData[2][SlotDrawEventID][10]_i_1\ : label is "soft_lutpair0";
-  attribute SOFT_HLUTNM of \slotsData[2][SlotDrawEventID][11]_i_1\ : label is "soft_lutpair1";
-  attribute SOFT_HLUTNM of \slotsData[2][SlotDrawEventID][12]_i_1\ : label is "soft_lutpair2";
-  attribute SOFT_HLUTNM of \slotsData[2][SlotDrawEventID][13]_i_1\ : label is "soft_lutpair5";
+  attribute SOFT_HLUTNM of \slotsData[2][SlotDrawEventID][0]_i_1\ : label is "soft_lutpair5";
+  attribute SOFT_HLUTNM of \slotsData[2][SlotDrawEventID][10]_i_1\ : label is "soft_lutpair15";
+  attribute SOFT_HLUTNM of \slotsData[2][SlotDrawEventID][11]_i_1\ : label is "soft_lutpair0";
+  attribute SOFT_HLUTNM of \slotsData[2][SlotDrawEventID][12]_i_1\ : label is "soft_lutpair1";
+  attribute SOFT_HLUTNM of \slotsData[2][SlotDrawEventID][13]_i_1\ : label is "soft_lutpair2";
   attribute SOFT_HLUTNM of \slotsData[2][SlotDrawEventID][14]_i_1\ : label is "soft_lutpair3";
-  attribute SOFT_HLUTNM of \slotsData[2][SlotDrawEventID][15]_i_1\ : label is "soft_lutpair6";
-  attribute SOFT_HLUTNM of \slotsData[2][SlotDrawEventID][1]_i_1\ : label is "soft_lutpair29";
-  attribute SOFT_HLUTNM of \slotsData[2][SlotDrawEventID][2]_i_1\ : label is "soft_lutpair30";
-  attribute SOFT_HLUTNM of \slotsData[2][SlotDrawEventID][3]_i_1\ : label is "soft_lutpair7";
-  attribute SOFT_HLUTNM of \slotsData[2][SlotDrawEventID][4]_i_1\ : label is "soft_lutpair8";
-  attribute SOFT_HLUTNM of \slotsData[2][SlotDrawEventID][5]_i_1\ : label is "soft_lutpair9";
+  attribute SOFT_HLUTNM of \slotsData[2][SlotDrawEventID][15]_i_1\ : label is "soft_lutpair4";
+  attribute SOFT_HLUTNM of \slotsData[2][SlotDrawEventID][1]_i_1\ : label is "soft_lutpair6";
+  attribute SOFT_HLUTNM of \slotsData[2][SlotDrawEventID][2]_i_1\ : label is "soft_lutpair7";
+  attribute SOFT_HLUTNM of \slotsData[2][SlotDrawEventID][3]_i_1\ : label is "soft_lutpair8";
+  attribute SOFT_HLUTNM of \slotsData[2][SlotDrawEventID][4]_i_1\ : label is "soft_lutpair9";
+  attribute SOFT_HLUTNM of \slotsData[2][SlotDrawEventID][5]_i_1\ : label is "soft_lutpair10";
   attribute SOFT_HLUTNM of \slotsData[2][SlotDrawEventID][6]_i_1\ : label is "soft_lutpair11";
-  attribute SOFT_HLUTNM of \slotsData[2][SlotDrawEventID][7]_i_1\ : label is "soft_lutpair10";
-  attribute SOFT_HLUTNM of \slotsData[2][SlotDrawEventID][8]_i_1\ : label is "soft_lutpair12";
-  attribute SOFT_HLUTNM of \slotsData[2][SlotDrawEventID][9]_i_1\ : label is "soft_lutpair13";
+  attribute SOFT_HLUTNM of \slotsData[2][SlotDrawEventID][7]_i_1\ : label is "soft_lutpair12";
+  attribute SOFT_HLUTNM of \slotsData[2][SlotDrawEventID][8]_i_1\ : label is "soft_lutpair13";
+  attribute SOFT_HLUTNM of \slotsData[2][SlotDrawEventID][9]_i_1\ : label is "soft_lutpair14";
   attribute SOFT_HLUTNM of \slotsData[2][SlotIsValid]_i_2\ : label is "soft_lutpair33";
-  attribute SOFT_HLUTNM of \slotsData[3][SlotDrawEventID][0]_i_1\ : label is "soft_lutpair4";
-  attribute SOFT_HLUTNM of \slotsData[3][SlotDrawEventID][10]_i_1\ : label is "soft_lutpair0";
-  attribute SOFT_HLUTNM of \slotsData[3][SlotDrawEventID][11]_i_1\ : label is "soft_lutpair1";
-  attribute SOFT_HLUTNM of \slotsData[3][SlotDrawEventID][12]_i_1\ : label is "soft_lutpair2";
-  attribute SOFT_HLUTNM of \slotsData[3][SlotDrawEventID][13]_i_1\ : label is "soft_lutpair5";
+  attribute SOFT_HLUTNM of \slotsData[3][SlotDrawEventID][0]_i_1\ : label is "soft_lutpair5";
+  attribute SOFT_HLUTNM of \slotsData[3][SlotDrawEventID][10]_i_1\ : label is "soft_lutpair15";
+  attribute SOFT_HLUTNM of \slotsData[3][SlotDrawEventID][11]_i_1\ : label is "soft_lutpair0";
+  attribute SOFT_HLUTNM of \slotsData[3][SlotDrawEventID][12]_i_1\ : label is "soft_lutpair1";
+  attribute SOFT_HLUTNM of \slotsData[3][SlotDrawEventID][13]_i_1\ : label is "soft_lutpair2";
   attribute SOFT_HLUTNM of \slotsData[3][SlotDrawEventID][14]_i_1\ : label is "soft_lutpair3";
-  attribute SOFT_HLUTNM of \slotsData[3][SlotDrawEventID][15]_i_1\ : label is "soft_lutpair6";
-  attribute SOFT_HLUTNM of \slotsData[3][SlotDrawEventID][1]_i_1\ : label is "soft_lutpair15";
-  attribute SOFT_HLUTNM of \slotsData[3][SlotDrawEventID][2]_i_1\ : label is "soft_lutpair16";
-  attribute SOFT_HLUTNM of \slotsData[3][SlotDrawEventID][3]_i_1\ : label is "soft_lutpair7";
-  attribute SOFT_HLUTNM of \slotsData[3][SlotDrawEventID][4]_i_1\ : label is "soft_lutpair8";
-  attribute SOFT_HLUTNM of \slotsData[3][SlotDrawEventID][5]_i_1\ : label is "soft_lutpair9";
+  attribute SOFT_HLUTNM of \slotsData[3][SlotDrawEventID][15]_i_1\ : label is "soft_lutpair4";
+  attribute SOFT_HLUTNM of \slotsData[3][SlotDrawEventID][1]_i_1\ : label is "soft_lutpair6";
+  attribute SOFT_HLUTNM of \slotsData[3][SlotDrawEventID][2]_i_1\ : label is "soft_lutpair7";
+  attribute SOFT_HLUTNM of \slotsData[3][SlotDrawEventID][3]_i_1\ : label is "soft_lutpair8";
+  attribute SOFT_HLUTNM of \slotsData[3][SlotDrawEventID][4]_i_1\ : label is "soft_lutpair9";
+  attribute SOFT_HLUTNM of \slotsData[3][SlotDrawEventID][5]_i_1\ : label is "soft_lutpair10";
   attribute SOFT_HLUTNM of \slotsData[3][SlotDrawEventID][6]_i_1\ : label is "soft_lutpair11";
-  attribute SOFT_HLUTNM of \slotsData[3][SlotDrawEventID][7]_i_1\ : label is "soft_lutpair10";
-  attribute SOFT_HLUTNM of \slotsData[3][SlotDrawEventID][8]_i_1\ : label is "soft_lutpair12";
-  attribute SOFT_HLUTNM of \slotsData[3][SlotDrawEventID][9]_i_1\ : label is "soft_lutpair13";
+  attribute SOFT_HLUTNM of \slotsData[3][SlotDrawEventID][7]_i_1\ : label is "soft_lutpair12";
+  attribute SOFT_HLUTNM of \slotsData[3][SlotDrawEventID][8]_i_1\ : label is "soft_lutpair13";
+  attribute SOFT_HLUTNM of \slotsData[3][SlotDrawEventID][9]_i_1\ : label is "soft_lutpair14";
   attribute SOFT_HLUTNM of \slotsData[3][SlotIsValid]_i_2\ : label is "soft_lutpair34";
 begin
   \DBG_CurrentWriteSlotIndex[1]\(1 downto 0) <= \^dbg_currentwriteslotindex[1]\(1 downto 0);
@@ -908,6 +908,136 @@ begin
       I5 => \slotsData_reg[2][SlotData]\(3),
       O => STAGE_StateBitsAtDrawID(3)
     );
+\STAGE_StateBitsAtDrawID[40]_INST_0\: unisim.vcomponents.LUT6
+    generic map(
+      INIT => X"F0AAFFCCF0AA00CC"
+    )
+        port map (
+      I0 => \slotsData_reg[1][SlotData]\(40),
+      I1 => \slotsData_reg[0][SlotData]\(40),
+      I2 => \slotsData_reg[3][SlotData]\(40),
+      I3 => \^q\(1),
+      I4 => \^q\(0),
+      I5 => \slotsData_reg[2][SlotData]\(40),
+      O => STAGE_StateBitsAtDrawID(40)
+    );
+\STAGE_StateBitsAtDrawID[41]_INST_0\: unisim.vcomponents.LUT6
+    generic map(
+      INIT => X"F0AAFFCCF0AA00CC"
+    )
+        port map (
+      I0 => \slotsData_reg[1][SlotData]\(41),
+      I1 => \slotsData_reg[0][SlotData]\(41),
+      I2 => \slotsData_reg[3][SlotData]\(41),
+      I3 => \^q\(1),
+      I4 => \^q\(0),
+      I5 => \slotsData_reg[2][SlotData]\(41),
+      O => STAGE_StateBitsAtDrawID(41)
+    );
+\STAGE_StateBitsAtDrawID[42]_INST_0\: unisim.vcomponents.LUT6
+    generic map(
+      INIT => X"F0AAFFCCF0AA00CC"
+    )
+        port map (
+      I0 => \slotsData_reg[1][SlotData]\(42),
+      I1 => \slotsData_reg[0][SlotData]\(42),
+      I2 => \slotsData_reg[3][SlotData]\(42),
+      I3 => \^q\(1),
+      I4 => \^q\(0),
+      I5 => \slotsData_reg[2][SlotData]\(42),
+      O => STAGE_StateBitsAtDrawID(42)
+    );
+\STAGE_StateBitsAtDrawID[43]_INST_0\: unisim.vcomponents.LUT6
+    generic map(
+      INIT => X"F0AAFFCCF0AA00CC"
+    )
+        port map (
+      I0 => \slotsData_reg[1][SlotData]\(43),
+      I1 => \slotsData_reg[0][SlotData]\(43),
+      I2 => \slotsData_reg[3][SlotData]\(43),
+      I3 => \^q\(1),
+      I4 => \^q\(0),
+      I5 => \slotsData_reg[2][SlotData]\(43),
+      O => STAGE_StateBitsAtDrawID(43)
+    );
+\STAGE_StateBitsAtDrawID[44]_INST_0\: unisim.vcomponents.LUT6
+    generic map(
+      INIT => X"F0AAFFCCF0AA00CC"
+    )
+        port map (
+      I0 => \slotsData_reg[1][SlotData]\(44),
+      I1 => \slotsData_reg[0][SlotData]\(44),
+      I2 => \slotsData_reg[3][SlotData]\(44),
+      I3 => \^q\(1),
+      I4 => \^q\(0),
+      I5 => \slotsData_reg[2][SlotData]\(44),
+      O => STAGE_StateBitsAtDrawID(44)
+    );
+\STAGE_StateBitsAtDrawID[45]_INST_0\: unisim.vcomponents.LUT6
+    generic map(
+      INIT => X"F0AAFFCCF0AA00CC"
+    )
+        port map (
+      I0 => \slotsData_reg[1][SlotData]\(45),
+      I1 => \slotsData_reg[0][SlotData]\(45),
+      I2 => \slotsData_reg[3][SlotData]\(45),
+      I3 => \^q\(1),
+      I4 => \^q\(0),
+      I5 => \slotsData_reg[2][SlotData]\(45),
+      O => STAGE_StateBitsAtDrawID(45)
+    );
+\STAGE_StateBitsAtDrawID[46]_INST_0\: unisim.vcomponents.LUT6
+    generic map(
+      INIT => X"F0AAFFCCF0AA00CC"
+    )
+        port map (
+      I0 => \slotsData_reg[1][SlotData]\(46),
+      I1 => \slotsData_reg[0][SlotData]\(46),
+      I2 => \slotsData_reg[3][SlotData]\(46),
+      I3 => \^q\(1),
+      I4 => \^q\(0),
+      I5 => \slotsData_reg[2][SlotData]\(46),
+      O => STAGE_StateBitsAtDrawID(46)
+    );
+\STAGE_StateBitsAtDrawID[47]_INST_0\: unisim.vcomponents.LUT6
+    generic map(
+      INIT => X"F0AAFFCCF0AA00CC"
+    )
+        port map (
+      I0 => \slotsData_reg[1][SlotData]\(47),
+      I1 => \slotsData_reg[0][SlotData]\(47),
+      I2 => \slotsData_reg[3][SlotData]\(47),
+      I3 => \^q\(1),
+      I4 => \^q\(0),
+      I5 => \slotsData_reg[2][SlotData]\(47),
+      O => STAGE_StateBitsAtDrawID(47)
+    );
+\STAGE_StateBitsAtDrawID[48]_INST_0\: unisim.vcomponents.LUT6
+    generic map(
+      INIT => X"F0AAFFCCF0AA00CC"
+    )
+        port map (
+      I0 => \slotsData_reg[1][SlotData]\(48),
+      I1 => \slotsData_reg[0][SlotData]\(48),
+      I2 => \slotsData_reg[3][SlotData]\(48),
+      I3 => \^q\(1),
+      I4 => \^q\(0),
+      I5 => \slotsData_reg[2][SlotData]\(48),
+      O => STAGE_StateBitsAtDrawID(48)
+    );
+\STAGE_StateBitsAtDrawID[49]_INST_0\: unisim.vcomponents.LUT6
+    generic map(
+      INIT => X"F0AAFFCCF0AA00CC"
+    )
+        port map (
+      I0 => \slotsData_reg[1][SlotData]\(49),
+      I1 => \slotsData_reg[0][SlotData]\(49),
+      I2 => \slotsData_reg[3][SlotData]\(49),
+      I3 => \^q\(1),
+      I4 => \^q\(0),
+      I5 => \slotsData_reg[2][SlotData]\(49),
+      O => STAGE_StateBitsAtDrawID(49)
+    );
 \STAGE_StateBitsAtDrawID[4]_INST_0\: unisim.vcomponents.LUT6
     generic map(
       INIT => X"F0AAFFCCF0AA00CC"
@@ -920,6 +1050,136 @@ begin
       I4 => \^q\(0),
       I5 => \slotsData_reg[2][SlotData]\(4),
       O => STAGE_StateBitsAtDrawID(4)
+    );
+\STAGE_StateBitsAtDrawID[50]_INST_0\: unisim.vcomponents.LUT6
+    generic map(
+      INIT => X"F0AAFFCCF0AA00CC"
+    )
+        port map (
+      I0 => \slotsData_reg[1][SlotData]\(50),
+      I1 => \slotsData_reg[0][SlotData]\(50),
+      I2 => \slotsData_reg[3][SlotData]\(50),
+      I3 => \^q\(1),
+      I4 => \^q\(0),
+      I5 => \slotsData_reg[2][SlotData]\(50),
+      O => STAGE_StateBitsAtDrawID(50)
+    );
+\STAGE_StateBitsAtDrawID[51]_INST_0\: unisim.vcomponents.LUT6
+    generic map(
+      INIT => X"F0AAFFCCF0AA00CC"
+    )
+        port map (
+      I0 => \slotsData_reg[1][SlotData]\(51),
+      I1 => \slotsData_reg[0][SlotData]\(51),
+      I2 => \slotsData_reg[3][SlotData]\(51),
+      I3 => \^q\(1),
+      I4 => \^q\(0),
+      I5 => \slotsData_reg[2][SlotData]\(51),
+      O => STAGE_StateBitsAtDrawID(51)
+    );
+\STAGE_StateBitsAtDrawID[52]_INST_0\: unisim.vcomponents.LUT6
+    generic map(
+      INIT => X"F0AAFFCCF0AA00CC"
+    )
+        port map (
+      I0 => \slotsData_reg[1][SlotData]\(52),
+      I1 => \slotsData_reg[0][SlotData]\(52),
+      I2 => \slotsData_reg[3][SlotData]\(52),
+      I3 => \^q\(1),
+      I4 => \^q\(0),
+      I5 => \slotsData_reg[2][SlotData]\(52),
+      O => STAGE_StateBitsAtDrawID(52)
+    );
+\STAGE_StateBitsAtDrawID[53]_INST_0\: unisim.vcomponents.LUT6
+    generic map(
+      INIT => X"F0AAFFCCF0AA00CC"
+    )
+        port map (
+      I0 => \slotsData_reg[1][SlotData]\(53),
+      I1 => \slotsData_reg[0][SlotData]\(53),
+      I2 => \slotsData_reg[3][SlotData]\(53),
+      I3 => \^q\(1),
+      I4 => \^q\(0),
+      I5 => \slotsData_reg[2][SlotData]\(53),
+      O => STAGE_StateBitsAtDrawID(53)
+    );
+\STAGE_StateBitsAtDrawID[54]_INST_0\: unisim.vcomponents.LUT6
+    generic map(
+      INIT => X"F0AAFFCCF0AA00CC"
+    )
+        port map (
+      I0 => \slotsData_reg[1][SlotData]\(54),
+      I1 => \slotsData_reg[0][SlotData]\(54),
+      I2 => \slotsData_reg[3][SlotData]\(54),
+      I3 => \^q\(1),
+      I4 => \^q\(0),
+      I5 => \slotsData_reg[2][SlotData]\(54),
+      O => STAGE_StateBitsAtDrawID(54)
+    );
+\STAGE_StateBitsAtDrawID[55]_INST_0\: unisim.vcomponents.LUT6
+    generic map(
+      INIT => X"F0AAFFCCF0AA00CC"
+    )
+        port map (
+      I0 => \slotsData_reg[1][SlotData]\(55),
+      I1 => \slotsData_reg[0][SlotData]\(55),
+      I2 => \slotsData_reg[3][SlotData]\(55),
+      I3 => \^q\(1),
+      I4 => \^q\(0),
+      I5 => \slotsData_reg[2][SlotData]\(55),
+      O => STAGE_StateBitsAtDrawID(55)
+    );
+\STAGE_StateBitsAtDrawID[56]_INST_0\: unisim.vcomponents.LUT6
+    generic map(
+      INIT => X"F0AAFFCCF0AA00CC"
+    )
+        port map (
+      I0 => \slotsData_reg[1][SlotData]\(56),
+      I1 => \slotsData_reg[0][SlotData]\(56),
+      I2 => \slotsData_reg[3][SlotData]\(56),
+      I3 => \^q\(1),
+      I4 => \^q\(0),
+      I5 => \slotsData_reg[2][SlotData]\(56),
+      O => STAGE_StateBitsAtDrawID(56)
+    );
+\STAGE_StateBitsAtDrawID[57]_INST_0\: unisim.vcomponents.LUT6
+    generic map(
+      INIT => X"F0AAFFCCF0AA00CC"
+    )
+        port map (
+      I0 => \slotsData_reg[1][SlotData]\(57),
+      I1 => \slotsData_reg[0][SlotData]\(57),
+      I2 => \slotsData_reg[3][SlotData]\(57),
+      I3 => \^q\(1),
+      I4 => \^q\(0),
+      I5 => \slotsData_reg[2][SlotData]\(57),
+      O => STAGE_StateBitsAtDrawID(57)
+    );
+\STAGE_StateBitsAtDrawID[58]_INST_0\: unisim.vcomponents.LUT6
+    generic map(
+      INIT => X"F0AAFFCCF0AA00CC"
+    )
+        port map (
+      I0 => \slotsData_reg[1][SlotData]\(58),
+      I1 => \slotsData_reg[0][SlotData]\(58),
+      I2 => \slotsData_reg[3][SlotData]\(58),
+      I3 => \^q\(1),
+      I4 => \^q\(0),
+      I5 => \slotsData_reg[2][SlotData]\(58),
+      O => STAGE_StateBitsAtDrawID(58)
+    );
+\STAGE_StateBitsAtDrawID[59]_INST_0\: unisim.vcomponents.LUT6
+    generic map(
+      INIT => X"F0AAFFCCF0AA00CC"
+    )
+        port map (
+      I0 => \slotsData_reg[1][SlotData]\(59),
+      I1 => \slotsData_reg[0][SlotData]\(59),
+      I2 => \slotsData_reg[3][SlotData]\(59),
+      I3 => \^q\(1),
+      I4 => \^q\(0),
+      I5 => \slotsData_reg[2][SlotData]\(59),
+      O => STAGE_StateBitsAtDrawID(59)
     );
 \STAGE_StateBitsAtDrawID[5]_INST_0\: unisim.vcomponents.LUT6
     generic map(
@@ -934,6 +1194,136 @@ begin
       I5 => \slotsData_reg[2][SlotData]\(5),
       O => STAGE_StateBitsAtDrawID(5)
     );
+\STAGE_StateBitsAtDrawID[60]_INST_0\: unisim.vcomponents.LUT6
+    generic map(
+      INIT => X"F0AAFFCCF0AA00CC"
+    )
+        port map (
+      I0 => \slotsData_reg[1][SlotData]\(60),
+      I1 => \slotsData_reg[0][SlotData]\(60),
+      I2 => \slotsData_reg[3][SlotData]\(60),
+      I3 => \^q\(1),
+      I4 => \^q\(0),
+      I5 => \slotsData_reg[2][SlotData]\(60),
+      O => STAGE_StateBitsAtDrawID(60)
+    );
+\STAGE_StateBitsAtDrawID[61]_INST_0\: unisim.vcomponents.LUT6
+    generic map(
+      INIT => X"F0AAFFCCF0AA00CC"
+    )
+        port map (
+      I0 => \slotsData_reg[1][SlotData]\(61),
+      I1 => \slotsData_reg[0][SlotData]\(61),
+      I2 => \slotsData_reg[3][SlotData]\(61),
+      I3 => \^q\(1),
+      I4 => \^q\(0),
+      I5 => \slotsData_reg[2][SlotData]\(61),
+      O => STAGE_StateBitsAtDrawID(61)
+    );
+\STAGE_StateBitsAtDrawID[62]_INST_0\: unisim.vcomponents.LUT6
+    generic map(
+      INIT => X"F0AAFFCCF0AA00CC"
+    )
+        port map (
+      I0 => \slotsData_reg[1][SlotData]\(62),
+      I1 => \slotsData_reg[0][SlotData]\(62),
+      I2 => \slotsData_reg[3][SlotData]\(62),
+      I3 => \^q\(1),
+      I4 => \^q\(0),
+      I5 => \slotsData_reg[2][SlotData]\(62),
+      O => STAGE_StateBitsAtDrawID(62)
+    );
+\STAGE_StateBitsAtDrawID[63]_INST_0\: unisim.vcomponents.LUT6
+    generic map(
+      INIT => X"F0AAFFCCF0AA00CC"
+    )
+        port map (
+      I0 => \slotsData_reg[1][SlotData]\(63),
+      I1 => \slotsData_reg[0][SlotData]\(63),
+      I2 => \slotsData_reg[3][SlotData]\(63),
+      I3 => \^q\(1),
+      I4 => \^q\(0),
+      I5 => \slotsData_reg[2][SlotData]\(63),
+      O => STAGE_StateBitsAtDrawID(63)
+    );
+\STAGE_StateBitsAtDrawID[64]_INST_0\: unisim.vcomponents.LUT6
+    generic map(
+      INIT => X"F0AAFFCCF0AA00CC"
+    )
+        port map (
+      I0 => \slotsData_reg[1][SlotData]\(64),
+      I1 => \slotsData_reg[0][SlotData]\(64),
+      I2 => \slotsData_reg[3][SlotData]\(64),
+      I3 => \^q\(1),
+      I4 => \^q\(0),
+      I5 => \slotsData_reg[2][SlotData]\(64),
+      O => STAGE_StateBitsAtDrawID(64)
+    );
+\STAGE_StateBitsAtDrawID[65]_INST_0\: unisim.vcomponents.LUT6
+    generic map(
+      INIT => X"F0AAFFCCF0AA00CC"
+    )
+        port map (
+      I0 => \slotsData_reg[1][SlotData]\(65),
+      I1 => \slotsData_reg[0][SlotData]\(65),
+      I2 => \slotsData_reg[3][SlotData]\(65),
+      I3 => \^q\(1),
+      I4 => \^q\(0),
+      I5 => \slotsData_reg[2][SlotData]\(65),
+      O => STAGE_StateBitsAtDrawID(65)
+    );
+\STAGE_StateBitsAtDrawID[66]_INST_0\: unisim.vcomponents.LUT6
+    generic map(
+      INIT => X"F0AAFFCCF0AA00CC"
+    )
+        port map (
+      I0 => \slotsData_reg[1][SlotData]\(66),
+      I1 => \slotsData_reg[0][SlotData]\(66),
+      I2 => \slotsData_reg[3][SlotData]\(66),
+      I3 => \^q\(1),
+      I4 => \^q\(0),
+      I5 => \slotsData_reg[2][SlotData]\(66),
+      O => STAGE_StateBitsAtDrawID(66)
+    );
+\STAGE_StateBitsAtDrawID[67]_INST_0\: unisim.vcomponents.LUT6
+    generic map(
+      INIT => X"F0AAFFCCF0AA00CC"
+    )
+        port map (
+      I0 => \slotsData_reg[1][SlotData]\(67),
+      I1 => \slotsData_reg[0][SlotData]\(67),
+      I2 => \slotsData_reg[3][SlotData]\(67),
+      I3 => \^q\(1),
+      I4 => \^q\(0),
+      I5 => \slotsData_reg[2][SlotData]\(67),
+      O => STAGE_StateBitsAtDrawID(67)
+    );
+\STAGE_StateBitsAtDrawID[68]_INST_0\: unisim.vcomponents.LUT6
+    generic map(
+      INIT => X"F0AAFFCCF0AA00CC"
+    )
+        port map (
+      I0 => \slotsData_reg[1][SlotData]\(68),
+      I1 => \slotsData_reg[0][SlotData]\(68),
+      I2 => \slotsData_reg[3][SlotData]\(68),
+      I3 => \^q\(1),
+      I4 => \^q\(0),
+      I5 => \slotsData_reg[2][SlotData]\(68),
+      O => STAGE_StateBitsAtDrawID(68)
+    );
+\STAGE_StateBitsAtDrawID[69]_INST_0\: unisim.vcomponents.LUT6
+    generic map(
+      INIT => X"F0AAFFCCF0AA00CC"
+    )
+        port map (
+      I0 => \slotsData_reg[1][SlotData]\(69),
+      I1 => \slotsData_reg[0][SlotData]\(69),
+      I2 => \slotsData_reg[3][SlotData]\(69),
+      I3 => \^q\(1),
+      I4 => \^q\(0),
+      I5 => \slotsData_reg[2][SlotData]\(69),
+      O => STAGE_StateBitsAtDrawID(69)
+    );
 \STAGE_StateBitsAtDrawID[6]_INST_0\: unisim.vcomponents.LUT6
     generic map(
       INIT => X"F0AAFFCCF0AA00CC"
@@ -946,6 +1336,97 @@ begin
       I4 => \^q\(0),
       I5 => \slotsData_reg[2][SlotData]\(6),
       O => STAGE_StateBitsAtDrawID(6)
+    );
+\STAGE_StateBitsAtDrawID[70]_INST_0\: unisim.vcomponents.LUT6
+    generic map(
+      INIT => X"F0AAFFCCF0AA00CC"
+    )
+        port map (
+      I0 => \slotsData_reg[1][SlotData]\(70),
+      I1 => \slotsData_reg[0][SlotData]\(70),
+      I2 => \slotsData_reg[3][SlotData]\(70),
+      I3 => \^q\(1),
+      I4 => \^q\(0),
+      I5 => \slotsData_reg[2][SlotData]\(70),
+      O => STAGE_StateBitsAtDrawID(70)
+    );
+\STAGE_StateBitsAtDrawID[71]_INST_0\: unisim.vcomponents.LUT6
+    generic map(
+      INIT => X"F0AAFFCCF0AA00CC"
+    )
+        port map (
+      I0 => \slotsData_reg[1][SlotData]\(71),
+      I1 => \slotsData_reg[0][SlotData]\(71),
+      I2 => \slotsData_reg[3][SlotData]\(71),
+      I3 => \^q\(1),
+      I4 => \^q\(0),
+      I5 => \slotsData_reg[2][SlotData]\(71),
+      O => STAGE_StateBitsAtDrawID(71)
+    );
+\STAGE_StateBitsAtDrawID[72]_INST_0\: unisim.vcomponents.LUT6
+    generic map(
+      INIT => X"F0AAFFCCF0AA00CC"
+    )
+        port map (
+      I0 => \slotsData_reg[1][SlotData]\(72),
+      I1 => \slotsData_reg[0][SlotData]\(72),
+      I2 => \slotsData_reg[3][SlotData]\(72),
+      I3 => \^q\(1),
+      I4 => \^q\(0),
+      I5 => \slotsData_reg[2][SlotData]\(72),
+      O => STAGE_StateBitsAtDrawID(72)
+    );
+\STAGE_StateBitsAtDrawID[73]_INST_0\: unisim.vcomponents.LUT6
+    generic map(
+      INIT => X"F0AAFFCCF0AA00CC"
+    )
+        port map (
+      I0 => \slotsData_reg[1][SlotData]\(73),
+      I1 => \slotsData_reg[0][SlotData]\(73),
+      I2 => \slotsData_reg[3][SlotData]\(73),
+      I3 => \^q\(1),
+      I4 => \^q\(0),
+      I5 => \slotsData_reg[2][SlotData]\(73),
+      O => STAGE_StateBitsAtDrawID(73)
+    );
+\STAGE_StateBitsAtDrawID[74]_INST_0\: unisim.vcomponents.LUT6
+    generic map(
+      INIT => X"F0AAFFCCF0AA00CC"
+    )
+        port map (
+      I0 => \slotsData_reg[1][SlotData]\(74),
+      I1 => \slotsData_reg[0][SlotData]\(74),
+      I2 => \slotsData_reg[3][SlotData]\(74),
+      I3 => \^q\(1),
+      I4 => \^q\(0),
+      I5 => \slotsData_reg[2][SlotData]\(74),
+      O => STAGE_StateBitsAtDrawID(74)
+    );
+\STAGE_StateBitsAtDrawID[75]_INST_0\: unisim.vcomponents.LUT6
+    generic map(
+      INIT => X"F0AAFFCCF0AA00CC"
+    )
+        port map (
+      I0 => \slotsData_reg[1][SlotData]\(75),
+      I1 => \slotsData_reg[0][SlotData]\(75),
+      I2 => \slotsData_reg[3][SlotData]\(75),
+      I3 => \^q\(1),
+      I4 => \^q\(0),
+      I5 => \slotsData_reg[2][SlotData]\(75),
+      O => STAGE_StateBitsAtDrawID(75)
+    );
+\STAGE_StateBitsAtDrawID[76]_INST_0\: unisim.vcomponents.LUT6
+    generic map(
+      INIT => X"F0AAFFCCF0AA00CC"
+    )
+        port map (
+      I0 => \slotsData_reg[1][SlotData]\(76),
+      I1 => \slotsData_reg[0][SlotData]\(76),
+      I2 => \slotsData_reg[3][SlotData]\(76),
+      I3 => \^q\(1),
+      I4 => \^q\(0),
+      I5 => \slotsData_reg[2][SlotData]\(76),
+      O => STAGE_StateBitsAtDrawID(76)
     );
 \STAGE_StateBitsAtDrawID[7]_INST_0\: unisim.vcomponents.LUT6
     generic map(
@@ -1064,7 +1545,7 @@ begin
       Q => \^dbg_currentwriteslotindex[1]\(1),
       R => CMD_EndFrameReset
     );
-\slotsData[0][SlotData][39]_i_1\: unisim.vcomponents.LUT3
+\slotsData[0][SlotData][76]_i_1\: unisim.vcomponents.LUT3
     generic map(
       INIT => X"02"
     )
@@ -1298,7 +1779,7 @@ begin
       I1 => \^q\(1),
       O => \slotsData[0][SlotIsValid]_i_2_n_0\
     );
-\slotsData[1][SlotData][39]_i_1\: unisim.vcomponents.LUT3
+\slotsData[1][SlotData][76]_i_1\: unisim.vcomponents.LUT3
     generic map(
       INIT => X"20"
     )
@@ -1519,7 +2000,7 @@ begin
       I1 => \^q\(1),
       O => \slotsData[1][SlotIsValid]_i_2_n_0\
     );
-\slotsData[2][SlotData][39]_i_1\: unisim.vcomponents.LUT3
+\slotsData[2][SlotData][76]_i_1\: unisim.vcomponents.LUT3
     generic map(
       INIT => X"20"
     )
@@ -1740,7 +2221,7 @@ begin
       I1 => \^q\(0),
       O => \slotsData[2][SlotIsValid]_i_2_n_0\
     );
-\slotsData[3][SlotData][39]_i_1\: unisim.vcomponents.LUT3
+\slotsData[3][SlotData][76]_i_1\: unisim.vcomponents.LUT3
     generic map(
       INIT => X"80"
     )
@@ -2335,6 +2816,116 @@ begin
       Q => \slotsData_reg[0][SlotData]\(3),
       R => CMD_EndFrameReset
     );
+\slotsData_reg[0][SlotData][40]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[0][SlotIsValid]1_out\,
+      D => CMD_NewStateBits(40),
+      Q => \slotsData_reg[0][SlotData]\(40),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[0][SlotData][41]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[0][SlotIsValid]1_out\,
+      D => CMD_NewStateBits(41),
+      Q => \slotsData_reg[0][SlotData]\(41),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[0][SlotData][42]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[0][SlotIsValid]1_out\,
+      D => CMD_NewStateBits(42),
+      Q => \slotsData_reg[0][SlotData]\(42),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[0][SlotData][43]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[0][SlotIsValid]1_out\,
+      D => CMD_NewStateBits(43),
+      Q => \slotsData_reg[0][SlotData]\(43),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[0][SlotData][44]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[0][SlotIsValid]1_out\,
+      D => CMD_NewStateBits(44),
+      Q => \slotsData_reg[0][SlotData]\(44),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[0][SlotData][45]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[0][SlotIsValid]1_out\,
+      D => CMD_NewStateBits(45),
+      Q => \slotsData_reg[0][SlotData]\(45),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[0][SlotData][46]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[0][SlotIsValid]1_out\,
+      D => CMD_NewStateBits(46),
+      Q => \slotsData_reg[0][SlotData]\(46),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[0][SlotData][47]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[0][SlotIsValid]1_out\,
+      D => CMD_NewStateBits(47),
+      Q => \slotsData_reg[0][SlotData]\(47),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[0][SlotData][48]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[0][SlotIsValid]1_out\,
+      D => CMD_NewStateBits(48),
+      Q => \slotsData_reg[0][SlotData]\(48),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[0][SlotData][49]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[0][SlotIsValid]1_out\,
+      D => CMD_NewStateBits(49),
+      Q => \slotsData_reg[0][SlotData]\(49),
+      R => CMD_EndFrameReset
+    );
 \slotsData_reg[0][SlotData][4]\: unisim.vcomponents.FDRE
     generic map(
       INIT => '0'
@@ -2344,6 +2935,116 @@ begin
       CE => \slotsData[0][SlotIsValid]1_out\,
       D => CMD_NewStateBits(4),
       Q => \slotsData_reg[0][SlotData]\(4),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[0][SlotData][50]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[0][SlotIsValid]1_out\,
+      D => CMD_NewStateBits(50),
+      Q => \slotsData_reg[0][SlotData]\(50),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[0][SlotData][51]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[0][SlotIsValid]1_out\,
+      D => CMD_NewStateBits(51),
+      Q => \slotsData_reg[0][SlotData]\(51),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[0][SlotData][52]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[0][SlotIsValid]1_out\,
+      D => CMD_NewStateBits(52),
+      Q => \slotsData_reg[0][SlotData]\(52),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[0][SlotData][53]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[0][SlotIsValid]1_out\,
+      D => CMD_NewStateBits(53),
+      Q => \slotsData_reg[0][SlotData]\(53),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[0][SlotData][54]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[0][SlotIsValid]1_out\,
+      D => CMD_NewStateBits(54),
+      Q => \slotsData_reg[0][SlotData]\(54),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[0][SlotData][55]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[0][SlotIsValid]1_out\,
+      D => CMD_NewStateBits(55),
+      Q => \slotsData_reg[0][SlotData]\(55),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[0][SlotData][56]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[0][SlotIsValid]1_out\,
+      D => CMD_NewStateBits(56),
+      Q => \slotsData_reg[0][SlotData]\(56),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[0][SlotData][57]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[0][SlotIsValid]1_out\,
+      D => CMD_NewStateBits(57),
+      Q => \slotsData_reg[0][SlotData]\(57),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[0][SlotData][58]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[0][SlotIsValid]1_out\,
+      D => CMD_NewStateBits(58),
+      Q => \slotsData_reg[0][SlotData]\(58),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[0][SlotData][59]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[0][SlotIsValid]1_out\,
+      D => CMD_NewStateBits(59),
+      Q => \slotsData_reg[0][SlotData]\(59),
       R => CMD_EndFrameReset
     );
 \slotsData_reg[0][SlotData][5]\: unisim.vcomponents.FDRE
@@ -2357,6 +3058,116 @@ begin
       Q => \slotsData_reg[0][SlotData]\(5),
       R => CMD_EndFrameReset
     );
+\slotsData_reg[0][SlotData][60]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[0][SlotIsValid]1_out\,
+      D => CMD_NewStateBits(60),
+      Q => \slotsData_reg[0][SlotData]\(60),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[0][SlotData][61]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[0][SlotIsValid]1_out\,
+      D => CMD_NewStateBits(61),
+      Q => \slotsData_reg[0][SlotData]\(61),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[0][SlotData][62]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[0][SlotIsValid]1_out\,
+      D => CMD_NewStateBits(62),
+      Q => \slotsData_reg[0][SlotData]\(62),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[0][SlotData][63]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[0][SlotIsValid]1_out\,
+      D => CMD_NewStateBits(63),
+      Q => \slotsData_reg[0][SlotData]\(63),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[0][SlotData][64]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[0][SlotIsValid]1_out\,
+      D => CMD_NewStateBits(64),
+      Q => \slotsData_reg[0][SlotData]\(64),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[0][SlotData][65]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[0][SlotIsValid]1_out\,
+      D => CMD_NewStateBits(65),
+      Q => \slotsData_reg[0][SlotData]\(65),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[0][SlotData][66]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[0][SlotIsValid]1_out\,
+      D => CMD_NewStateBits(66),
+      Q => \slotsData_reg[0][SlotData]\(66),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[0][SlotData][67]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[0][SlotIsValid]1_out\,
+      D => CMD_NewStateBits(67),
+      Q => \slotsData_reg[0][SlotData]\(67),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[0][SlotData][68]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[0][SlotIsValid]1_out\,
+      D => CMD_NewStateBits(68),
+      Q => \slotsData_reg[0][SlotData]\(68),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[0][SlotData][69]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[0][SlotIsValid]1_out\,
+      D => CMD_NewStateBits(69),
+      Q => \slotsData_reg[0][SlotData]\(69),
+      R => CMD_EndFrameReset
+    );
 \slotsData_reg[0][SlotData][6]\: unisim.vcomponents.FDRE
     generic map(
       INIT => '0'
@@ -2366,6 +3177,83 @@ begin
       CE => \slotsData[0][SlotIsValid]1_out\,
       D => CMD_NewStateBits(6),
       Q => \slotsData_reg[0][SlotData]\(6),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[0][SlotData][70]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[0][SlotIsValid]1_out\,
+      D => CMD_NewStateBits(70),
+      Q => \slotsData_reg[0][SlotData]\(70),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[0][SlotData][71]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[0][SlotIsValid]1_out\,
+      D => CMD_NewStateBits(71),
+      Q => \slotsData_reg[0][SlotData]\(71),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[0][SlotData][72]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[0][SlotIsValid]1_out\,
+      D => CMD_NewStateBits(72),
+      Q => \slotsData_reg[0][SlotData]\(72),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[0][SlotData][73]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[0][SlotIsValid]1_out\,
+      D => CMD_NewStateBits(73),
+      Q => \slotsData_reg[0][SlotData]\(73),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[0][SlotData][74]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[0][SlotIsValid]1_out\,
+      D => CMD_NewStateBits(74),
+      Q => \slotsData_reg[0][SlotData]\(74),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[0][SlotData][75]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[0][SlotIsValid]1_out\,
+      D => CMD_NewStateBits(75),
+      Q => \slotsData_reg[0][SlotData]\(75),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[0][SlotData][76]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[0][SlotIsValid]1_out\,
+      D => CMD_NewStateBits(76),
+      Q => \slotsData_reg[0][SlotData]\(76),
       R => CMD_EndFrameReset
     );
 \slotsData_reg[0][SlotData][7]\: unisim.vcomponents.FDRE
@@ -2962,6 +3850,116 @@ begin
       Q => \slotsData_reg[1][SlotData]\(3),
       R => CMD_EndFrameReset
     );
+\slotsData_reg[1][SlotData][40]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[1][SlotIsValid]3_out\,
+      D => CMD_NewStateBits(40),
+      Q => \slotsData_reg[1][SlotData]\(40),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[1][SlotData][41]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[1][SlotIsValid]3_out\,
+      D => CMD_NewStateBits(41),
+      Q => \slotsData_reg[1][SlotData]\(41),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[1][SlotData][42]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[1][SlotIsValid]3_out\,
+      D => CMD_NewStateBits(42),
+      Q => \slotsData_reg[1][SlotData]\(42),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[1][SlotData][43]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[1][SlotIsValid]3_out\,
+      D => CMD_NewStateBits(43),
+      Q => \slotsData_reg[1][SlotData]\(43),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[1][SlotData][44]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[1][SlotIsValid]3_out\,
+      D => CMD_NewStateBits(44),
+      Q => \slotsData_reg[1][SlotData]\(44),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[1][SlotData][45]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[1][SlotIsValid]3_out\,
+      D => CMD_NewStateBits(45),
+      Q => \slotsData_reg[1][SlotData]\(45),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[1][SlotData][46]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[1][SlotIsValid]3_out\,
+      D => CMD_NewStateBits(46),
+      Q => \slotsData_reg[1][SlotData]\(46),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[1][SlotData][47]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[1][SlotIsValid]3_out\,
+      D => CMD_NewStateBits(47),
+      Q => \slotsData_reg[1][SlotData]\(47),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[1][SlotData][48]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[1][SlotIsValid]3_out\,
+      D => CMD_NewStateBits(48),
+      Q => \slotsData_reg[1][SlotData]\(48),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[1][SlotData][49]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[1][SlotIsValid]3_out\,
+      D => CMD_NewStateBits(49),
+      Q => \slotsData_reg[1][SlotData]\(49),
+      R => CMD_EndFrameReset
+    );
 \slotsData_reg[1][SlotData][4]\: unisim.vcomponents.FDRE
     generic map(
       INIT => '0'
@@ -2971,6 +3969,116 @@ begin
       CE => \slotsData[1][SlotIsValid]3_out\,
       D => CMD_NewStateBits(4),
       Q => \slotsData_reg[1][SlotData]\(4),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[1][SlotData][50]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[1][SlotIsValid]3_out\,
+      D => CMD_NewStateBits(50),
+      Q => \slotsData_reg[1][SlotData]\(50),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[1][SlotData][51]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[1][SlotIsValid]3_out\,
+      D => CMD_NewStateBits(51),
+      Q => \slotsData_reg[1][SlotData]\(51),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[1][SlotData][52]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[1][SlotIsValid]3_out\,
+      D => CMD_NewStateBits(52),
+      Q => \slotsData_reg[1][SlotData]\(52),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[1][SlotData][53]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[1][SlotIsValid]3_out\,
+      D => CMD_NewStateBits(53),
+      Q => \slotsData_reg[1][SlotData]\(53),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[1][SlotData][54]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[1][SlotIsValid]3_out\,
+      D => CMD_NewStateBits(54),
+      Q => \slotsData_reg[1][SlotData]\(54),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[1][SlotData][55]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[1][SlotIsValid]3_out\,
+      D => CMD_NewStateBits(55),
+      Q => \slotsData_reg[1][SlotData]\(55),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[1][SlotData][56]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[1][SlotIsValid]3_out\,
+      D => CMD_NewStateBits(56),
+      Q => \slotsData_reg[1][SlotData]\(56),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[1][SlotData][57]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[1][SlotIsValid]3_out\,
+      D => CMD_NewStateBits(57),
+      Q => \slotsData_reg[1][SlotData]\(57),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[1][SlotData][58]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[1][SlotIsValid]3_out\,
+      D => CMD_NewStateBits(58),
+      Q => \slotsData_reg[1][SlotData]\(58),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[1][SlotData][59]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[1][SlotIsValid]3_out\,
+      D => CMD_NewStateBits(59),
+      Q => \slotsData_reg[1][SlotData]\(59),
       R => CMD_EndFrameReset
     );
 \slotsData_reg[1][SlotData][5]\: unisim.vcomponents.FDRE
@@ -2984,6 +4092,116 @@ begin
       Q => \slotsData_reg[1][SlotData]\(5),
       R => CMD_EndFrameReset
     );
+\slotsData_reg[1][SlotData][60]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[1][SlotIsValid]3_out\,
+      D => CMD_NewStateBits(60),
+      Q => \slotsData_reg[1][SlotData]\(60),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[1][SlotData][61]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[1][SlotIsValid]3_out\,
+      D => CMD_NewStateBits(61),
+      Q => \slotsData_reg[1][SlotData]\(61),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[1][SlotData][62]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[1][SlotIsValid]3_out\,
+      D => CMD_NewStateBits(62),
+      Q => \slotsData_reg[1][SlotData]\(62),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[1][SlotData][63]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[1][SlotIsValid]3_out\,
+      D => CMD_NewStateBits(63),
+      Q => \slotsData_reg[1][SlotData]\(63),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[1][SlotData][64]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[1][SlotIsValid]3_out\,
+      D => CMD_NewStateBits(64),
+      Q => \slotsData_reg[1][SlotData]\(64),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[1][SlotData][65]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[1][SlotIsValid]3_out\,
+      D => CMD_NewStateBits(65),
+      Q => \slotsData_reg[1][SlotData]\(65),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[1][SlotData][66]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[1][SlotIsValid]3_out\,
+      D => CMD_NewStateBits(66),
+      Q => \slotsData_reg[1][SlotData]\(66),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[1][SlotData][67]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[1][SlotIsValid]3_out\,
+      D => CMD_NewStateBits(67),
+      Q => \slotsData_reg[1][SlotData]\(67),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[1][SlotData][68]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[1][SlotIsValid]3_out\,
+      D => CMD_NewStateBits(68),
+      Q => \slotsData_reg[1][SlotData]\(68),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[1][SlotData][69]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[1][SlotIsValid]3_out\,
+      D => CMD_NewStateBits(69),
+      Q => \slotsData_reg[1][SlotData]\(69),
+      R => CMD_EndFrameReset
+    );
 \slotsData_reg[1][SlotData][6]\: unisim.vcomponents.FDRE
     generic map(
       INIT => '0'
@@ -2993,6 +4211,83 @@ begin
       CE => \slotsData[1][SlotIsValid]3_out\,
       D => CMD_NewStateBits(6),
       Q => \slotsData_reg[1][SlotData]\(6),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[1][SlotData][70]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[1][SlotIsValid]3_out\,
+      D => CMD_NewStateBits(70),
+      Q => \slotsData_reg[1][SlotData]\(70),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[1][SlotData][71]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[1][SlotIsValid]3_out\,
+      D => CMD_NewStateBits(71),
+      Q => \slotsData_reg[1][SlotData]\(71),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[1][SlotData][72]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[1][SlotIsValid]3_out\,
+      D => CMD_NewStateBits(72),
+      Q => \slotsData_reg[1][SlotData]\(72),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[1][SlotData][73]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[1][SlotIsValid]3_out\,
+      D => CMD_NewStateBits(73),
+      Q => \slotsData_reg[1][SlotData]\(73),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[1][SlotData][74]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[1][SlotIsValid]3_out\,
+      D => CMD_NewStateBits(74),
+      Q => \slotsData_reg[1][SlotData]\(74),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[1][SlotData][75]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[1][SlotIsValid]3_out\,
+      D => CMD_NewStateBits(75),
+      Q => \slotsData_reg[1][SlotData]\(75),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[1][SlotData][76]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[1][SlotIsValid]3_out\,
+      D => CMD_NewStateBits(76),
+      Q => \slotsData_reg[1][SlotData]\(76),
       R => CMD_EndFrameReset
     );
 \slotsData_reg[1][SlotData][7]\: unisim.vcomponents.FDRE
@@ -3589,6 +4884,116 @@ begin
       Q => \slotsData_reg[2][SlotData]\(3),
       R => CMD_EndFrameReset
     );
+\slotsData_reg[2][SlotData][40]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[2][SlotIsValid]5_out\,
+      D => CMD_NewStateBits(40),
+      Q => \slotsData_reg[2][SlotData]\(40),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[2][SlotData][41]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[2][SlotIsValid]5_out\,
+      D => CMD_NewStateBits(41),
+      Q => \slotsData_reg[2][SlotData]\(41),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[2][SlotData][42]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[2][SlotIsValid]5_out\,
+      D => CMD_NewStateBits(42),
+      Q => \slotsData_reg[2][SlotData]\(42),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[2][SlotData][43]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[2][SlotIsValid]5_out\,
+      D => CMD_NewStateBits(43),
+      Q => \slotsData_reg[2][SlotData]\(43),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[2][SlotData][44]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[2][SlotIsValid]5_out\,
+      D => CMD_NewStateBits(44),
+      Q => \slotsData_reg[2][SlotData]\(44),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[2][SlotData][45]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[2][SlotIsValid]5_out\,
+      D => CMD_NewStateBits(45),
+      Q => \slotsData_reg[2][SlotData]\(45),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[2][SlotData][46]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[2][SlotIsValid]5_out\,
+      D => CMD_NewStateBits(46),
+      Q => \slotsData_reg[2][SlotData]\(46),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[2][SlotData][47]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[2][SlotIsValid]5_out\,
+      D => CMD_NewStateBits(47),
+      Q => \slotsData_reg[2][SlotData]\(47),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[2][SlotData][48]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[2][SlotIsValid]5_out\,
+      D => CMD_NewStateBits(48),
+      Q => \slotsData_reg[2][SlotData]\(48),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[2][SlotData][49]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[2][SlotIsValid]5_out\,
+      D => CMD_NewStateBits(49),
+      Q => \slotsData_reg[2][SlotData]\(49),
+      R => CMD_EndFrameReset
+    );
 \slotsData_reg[2][SlotData][4]\: unisim.vcomponents.FDRE
     generic map(
       INIT => '0'
@@ -3598,6 +5003,116 @@ begin
       CE => \slotsData[2][SlotIsValid]5_out\,
       D => CMD_NewStateBits(4),
       Q => \slotsData_reg[2][SlotData]\(4),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[2][SlotData][50]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[2][SlotIsValid]5_out\,
+      D => CMD_NewStateBits(50),
+      Q => \slotsData_reg[2][SlotData]\(50),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[2][SlotData][51]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[2][SlotIsValid]5_out\,
+      D => CMD_NewStateBits(51),
+      Q => \slotsData_reg[2][SlotData]\(51),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[2][SlotData][52]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[2][SlotIsValid]5_out\,
+      D => CMD_NewStateBits(52),
+      Q => \slotsData_reg[2][SlotData]\(52),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[2][SlotData][53]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[2][SlotIsValid]5_out\,
+      D => CMD_NewStateBits(53),
+      Q => \slotsData_reg[2][SlotData]\(53),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[2][SlotData][54]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[2][SlotIsValid]5_out\,
+      D => CMD_NewStateBits(54),
+      Q => \slotsData_reg[2][SlotData]\(54),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[2][SlotData][55]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[2][SlotIsValid]5_out\,
+      D => CMD_NewStateBits(55),
+      Q => \slotsData_reg[2][SlotData]\(55),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[2][SlotData][56]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[2][SlotIsValid]5_out\,
+      D => CMD_NewStateBits(56),
+      Q => \slotsData_reg[2][SlotData]\(56),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[2][SlotData][57]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[2][SlotIsValid]5_out\,
+      D => CMD_NewStateBits(57),
+      Q => \slotsData_reg[2][SlotData]\(57),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[2][SlotData][58]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[2][SlotIsValid]5_out\,
+      D => CMD_NewStateBits(58),
+      Q => \slotsData_reg[2][SlotData]\(58),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[2][SlotData][59]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[2][SlotIsValid]5_out\,
+      D => CMD_NewStateBits(59),
+      Q => \slotsData_reg[2][SlotData]\(59),
       R => CMD_EndFrameReset
     );
 \slotsData_reg[2][SlotData][5]\: unisim.vcomponents.FDRE
@@ -3611,6 +5126,116 @@ begin
       Q => \slotsData_reg[2][SlotData]\(5),
       R => CMD_EndFrameReset
     );
+\slotsData_reg[2][SlotData][60]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[2][SlotIsValid]5_out\,
+      D => CMD_NewStateBits(60),
+      Q => \slotsData_reg[2][SlotData]\(60),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[2][SlotData][61]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[2][SlotIsValid]5_out\,
+      D => CMD_NewStateBits(61),
+      Q => \slotsData_reg[2][SlotData]\(61),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[2][SlotData][62]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[2][SlotIsValid]5_out\,
+      D => CMD_NewStateBits(62),
+      Q => \slotsData_reg[2][SlotData]\(62),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[2][SlotData][63]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[2][SlotIsValid]5_out\,
+      D => CMD_NewStateBits(63),
+      Q => \slotsData_reg[2][SlotData]\(63),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[2][SlotData][64]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[2][SlotIsValid]5_out\,
+      D => CMD_NewStateBits(64),
+      Q => \slotsData_reg[2][SlotData]\(64),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[2][SlotData][65]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[2][SlotIsValid]5_out\,
+      D => CMD_NewStateBits(65),
+      Q => \slotsData_reg[2][SlotData]\(65),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[2][SlotData][66]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[2][SlotIsValid]5_out\,
+      D => CMD_NewStateBits(66),
+      Q => \slotsData_reg[2][SlotData]\(66),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[2][SlotData][67]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[2][SlotIsValid]5_out\,
+      D => CMD_NewStateBits(67),
+      Q => \slotsData_reg[2][SlotData]\(67),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[2][SlotData][68]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[2][SlotIsValid]5_out\,
+      D => CMD_NewStateBits(68),
+      Q => \slotsData_reg[2][SlotData]\(68),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[2][SlotData][69]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[2][SlotIsValid]5_out\,
+      D => CMD_NewStateBits(69),
+      Q => \slotsData_reg[2][SlotData]\(69),
+      R => CMD_EndFrameReset
+    );
 \slotsData_reg[2][SlotData][6]\: unisim.vcomponents.FDRE
     generic map(
       INIT => '0'
@@ -3620,6 +5245,83 @@ begin
       CE => \slotsData[2][SlotIsValid]5_out\,
       D => CMD_NewStateBits(6),
       Q => \slotsData_reg[2][SlotData]\(6),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[2][SlotData][70]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[2][SlotIsValid]5_out\,
+      D => CMD_NewStateBits(70),
+      Q => \slotsData_reg[2][SlotData]\(70),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[2][SlotData][71]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[2][SlotIsValid]5_out\,
+      D => CMD_NewStateBits(71),
+      Q => \slotsData_reg[2][SlotData]\(71),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[2][SlotData][72]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[2][SlotIsValid]5_out\,
+      D => CMD_NewStateBits(72),
+      Q => \slotsData_reg[2][SlotData]\(72),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[2][SlotData][73]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[2][SlotIsValid]5_out\,
+      D => CMD_NewStateBits(73),
+      Q => \slotsData_reg[2][SlotData]\(73),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[2][SlotData][74]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[2][SlotIsValid]5_out\,
+      D => CMD_NewStateBits(74),
+      Q => \slotsData_reg[2][SlotData]\(74),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[2][SlotData][75]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[2][SlotIsValid]5_out\,
+      D => CMD_NewStateBits(75),
+      Q => \slotsData_reg[2][SlotData]\(75),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[2][SlotData][76]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[2][SlotIsValid]5_out\,
+      D => CMD_NewStateBits(76),
+      Q => \slotsData_reg[2][SlotData]\(76),
       R => CMD_EndFrameReset
     );
 \slotsData_reg[2][SlotData][7]\: unisim.vcomponents.FDRE
@@ -4216,6 +5918,116 @@ begin
       Q => \slotsData_reg[3][SlotData]\(3),
       R => CMD_EndFrameReset
     );
+\slotsData_reg[3][SlotData][40]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[3][SlotIsValid]7_out\,
+      D => CMD_NewStateBits(40),
+      Q => \slotsData_reg[3][SlotData]\(40),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[3][SlotData][41]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[3][SlotIsValid]7_out\,
+      D => CMD_NewStateBits(41),
+      Q => \slotsData_reg[3][SlotData]\(41),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[3][SlotData][42]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[3][SlotIsValid]7_out\,
+      D => CMD_NewStateBits(42),
+      Q => \slotsData_reg[3][SlotData]\(42),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[3][SlotData][43]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[3][SlotIsValid]7_out\,
+      D => CMD_NewStateBits(43),
+      Q => \slotsData_reg[3][SlotData]\(43),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[3][SlotData][44]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[3][SlotIsValid]7_out\,
+      D => CMD_NewStateBits(44),
+      Q => \slotsData_reg[3][SlotData]\(44),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[3][SlotData][45]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[3][SlotIsValid]7_out\,
+      D => CMD_NewStateBits(45),
+      Q => \slotsData_reg[3][SlotData]\(45),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[3][SlotData][46]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[3][SlotIsValid]7_out\,
+      D => CMD_NewStateBits(46),
+      Q => \slotsData_reg[3][SlotData]\(46),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[3][SlotData][47]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[3][SlotIsValid]7_out\,
+      D => CMD_NewStateBits(47),
+      Q => \slotsData_reg[3][SlotData]\(47),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[3][SlotData][48]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[3][SlotIsValid]7_out\,
+      D => CMD_NewStateBits(48),
+      Q => \slotsData_reg[3][SlotData]\(48),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[3][SlotData][49]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[3][SlotIsValid]7_out\,
+      D => CMD_NewStateBits(49),
+      Q => \slotsData_reg[3][SlotData]\(49),
+      R => CMD_EndFrameReset
+    );
 \slotsData_reg[3][SlotData][4]\: unisim.vcomponents.FDRE
     generic map(
       INIT => '0'
@@ -4225,6 +6037,116 @@ begin
       CE => \slotsData[3][SlotIsValid]7_out\,
       D => CMD_NewStateBits(4),
       Q => \slotsData_reg[3][SlotData]\(4),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[3][SlotData][50]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[3][SlotIsValid]7_out\,
+      D => CMD_NewStateBits(50),
+      Q => \slotsData_reg[3][SlotData]\(50),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[3][SlotData][51]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[3][SlotIsValid]7_out\,
+      D => CMD_NewStateBits(51),
+      Q => \slotsData_reg[3][SlotData]\(51),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[3][SlotData][52]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[3][SlotIsValid]7_out\,
+      D => CMD_NewStateBits(52),
+      Q => \slotsData_reg[3][SlotData]\(52),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[3][SlotData][53]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[3][SlotIsValid]7_out\,
+      D => CMD_NewStateBits(53),
+      Q => \slotsData_reg[3][SlotData]\(53),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[3][SlotData][54]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[3][SlotIsValid]7_out\,
+      D => CMD_NewStateBits(54),
+      Q => \slotsData_reg[3][SlotData]\(54),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[3][SlotData][55]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[3][SlotIsValid]7_out\,
+      D => CMD_NewStateBits(55),
+      Q => \slotsData_reg[3][SlotData]\(55),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[3][SlotData][56]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[3][SlotIsValid]7_out\,
+      D => CMD_NewStateBits(56),
+      Q => \slotsData_reg[3][SlotData]\(56),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[3][SlotData][57]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[3][SlotIsValid]7_out\,
+      D => CMD_NewStateBits(57),
+      Q => \slotsData_reg[3][SlotData]\(57),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[3][SlotData][58]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[3][SlotIsValid]7_out\,
+      D => CMD_NewStateBits(58),
+      Q => \slotsData_reg[3][SlotData]\(58),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[3][SlotData][59]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[3][SlotIsValid]7_out\,
+      D => CMD_NewStateBits(59),
+      Q => \slotsData_reg[3][SlotData]\(59),
       R => CMD_EndFrameReset
     );
 \slotsData_reg[3][SlotData][5]\: unisim.vcomponents.FDRE
@@ -4238,6 +6160,116 @@ begin
       Q => \slotsData_reg[3][SlotData]\(5),
       R => CMD_EndFrameReset
     );
+\slotsData_reg[3][SlotData][60]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[3][SlotIsValid]7_out\,
+      D => CMD_NewStateBits(60),
+      Q => \slotsData_reg[3][SlotData]\(60),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[3][SlotData][61]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[3][SlotIsValid]7_out\,
+      D => CMD_NewStateBits(61),
+      Q => \slotsData_reg[3][SlotData]\(61),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[3][SlotData][62]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[3][SlotIsValid]7_out\,
+      D => CMD_NewStateBits(62),
+      Q => \slotsData_reg[3][SlotData]\(62),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[3][SlotData][63]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[3][SlotIsValid]7_out\,
+      D => CMD_NewStateBits(63),
+      Q => \slotsData_reg[3][SlotData]\(63),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[3][SlotData][64]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[3][SlotIsValid]7_out\,
+      D => CMD_NewStateBits(64),
+      Q => \slotsData_reg[3][SlotData]\(64),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[3][SlotData][65]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[3][SlotIsValid]7_out\,
+      D => CMD_NewStateBits(65),
+      Q => \slotsData_reg[3][SlotData]\(65),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[3][SlotData][66]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[3][SlotIsValid]7_out\,
+      D => CMD_NewStateBits(66),
+      Q => \slotsData_reg[3][SlotData]\(66),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[3][SlotData][67]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[3][SlotIsValid]7_out\,
+      D => CMD_NewStateBits(67),
+      Q => \slotsData_reg[3][SlotData]\(67),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[3][SlotData][68]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[3][SlotIsValid]7_out\,
+      D => CMD_NewStateBits(68),
+      Q => \slotsData_reg[3][SlotData]\(68),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[3][SlotData][69]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[3][SlotIsValid]7_out\,
+      D => CMD_NewStateBits(69),
+      Q => \slotsData_reg[3][SlotData]\(69),
+      R => CMD_EndFrameReset
+    );
 \slotsData_reg[3][SlotData][6]\: unisim.vcomponents.FDRE
     generic map(
       INIT => '0'
@@ -4247,6 +6279,83 @@ begin
       CE => \slotsData[3][SlotIsValid]7_out\,
       D => CMD_NewStateBits(6),
       Q => \slotsData_reg[3][SlotData]\(6),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[3][SlotData][70]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[3][SlotIsValid]7_out\,
+      D => CMD_NewStateBits(70),
+      Q => \slotsData_reg[3][SlotData]\(70),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[3][SlotData][71]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[3][SlotIsValid]7_out\,
+      D => CMD_NewStateBits(71),
+      Q => \slotsData_reg[3][SlotData]\(71),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[3][SlotData][72]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[3][SlotIsValid]7_out\,
+      D => CMD_NewStateBits(72),
+      Q => \slotsData_reg[3][SlotData]\(72),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[3][SlotData][73]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[3][SlotIsValid]7_out\,
+      D => CMD_NewStateBits(73),
+      Q => \slotsData_reg[3][SlotData]\(73),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[3][SlotData][74]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[3][SlotIsValid]7_out\,
+      D => CMD_NewStateBits(74),
+      Q => \slotsData_reg[3][SlotData]\(74),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[3][SlotData][75]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[3][SlotIsValid]7_out\,
+      D => CMD_NewStateBits(75),
+      Q => \slotsData_reg[3][SlotData]\(75),
+      R => CMD_EndFrameReset
+    );
+\slotsData_reg[3][SlotData][76]\: unisim.vcomponents.FDRE
+    generic map(
+      INIT => '0'
+    )
+        port map (
+      C => clk,
+      CE => \slotsData[3][SlotIsValid]7_out\,
+      D => CMD_NewStateBits(76),
+      Q => \slotsData_reg[3][SlotData]\(76),
       R => CMD_EndFrameReset
     );
 \slotsData_reg[3][SlotData][7]\: unisim.vcomponents.FDRE
@@ -4480,9 +6589,9 @@ entity design_1_StateBlock_0_3 is
     CMD_SetNewState : in STD_LOGIC;
     CMD_EndFrameReset : in STD_LOGIC;
     CMD_NumFreeSlots : out STD_LOGIC_VECTOR ( 2 downto 0 );
-    CMD_NewStateBits : in STD_LOGIC_VECTOR ( 39 downto 0 );
+    CMD_NewStateBits : in STD_LOGIC_VECTOR ( 76 downto 0 );
     CMD_NewStateDrawEventID : in STD_LOGIC_VECTOR ( 15 downto 0 );
-    STAGE_StateBitsAtDrawID : out STD_LOGIC_VECTOR ( 39 downto 0 );
+    STAGE_StateBitsAtDrawID : out STD_LOGIC_VECTOR ( 76 downto 0 );
     STAGE_NextDrawID : out STD_LOGIC_VECTOR ( 15 downto 0 );
     STAGE_StateIsValid : out STD_LOGIC;
     STAGE_ConsumeStateSlot : in STD_LOGIC;
@@ -4513,7 +6622,7 @@ begin
 U0: entity work.design_1_StateBlock_0_3_StateBlock
      port map (
       CMD_EndFrameReset => CMD_EndFrameReset,
-      CMD_NewStateBits(39 downto 0) => CMD_NewStateBits(39 downto 0),
+      CMD_NewStateBits(76 downto 0) => CMD_NewStateBits(76 downto 0),
       CMD_NewStateDrawEventID(15 downto 0) => CMD_NewStateDrawEventID(15 downto 0),
       CMD_NumFreeSlots(2 downto 0) => CMD_NumFreeSlots(2 downto 0),
       CMD_SetNewState => CMD_SetNewState,
@@ -4529,7 +6638,7 @@ U0: entity work.design_1_StateBlock_0_3_StateBlock
       Q(1 downto 0) => DBG_CurrentReadSlotIndex(1 downto 0),
       STAGE_ConsumeStateSlot => STAGE_ConsumeStateSlot,
       STAGE_NextDrawID(15 downto 0) => STAGE_NextDrawID(15 downto 0),
-      STAGE_StateBitsAtDrawID(39 downto 0) => STAGE_StateBitsAtDrawID(39 downto 0),
+      STAGE_StateBitsAtDrawID(76 downto 0) => STAGE_StateBitsAtDrawID(76 downto 0),
       STAGE_StateIsValid => STAGE_StateIsValid,
       clk => clk
     );

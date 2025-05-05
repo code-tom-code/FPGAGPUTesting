@@ -65,6 +65,7 @@ package PacketType is
 		PT_WRITEMEMBATCH1, -- 42
 		PT_WRITEMEMBATCH2, -- 43
 		PT_WRITEMEMBATCH3WRITE, -- 44
+		PT_SETSTENCILSTATE, -- 45
 
 		PT_MAX_PACKET_TYPES -- Must always be last!
 	);
@@ -191,6 +192,12 @@ package PacketType is
 		eTexFmtR5G6B5, -- 3
 		eTexFmtA1R5G5B5, -- 4
 		eTexFmtX1R5G5B5, -- 5
+		eTexFmtX4R4G4B4, -- 6
+		eTexFmtA8, -- 7
+		eTexFmtL8, -- 8
+		eTexFmtDXT1, -- 9
+		eTexFmtDXT3, -- 10
+		eTexFmtDXT5, -- 11
 
 		eTexFmtNumFormats -- This must always be last!
 	);
@@ -239,6 +246,18 @@ package PacketType is
 		eDepthFmtD24,
 		eDepthFmtD16,
 		eDepthFmtD15
+	);
+
+	type eStencilOp is
+	(
+		sop_keep, -- 0
+		sop_zero, -- 1
+		sop_replace, -- 2
+		sop_incr_sat, -- 3
+		sop_decr_sat, -- 4
+		sop_invert, -- 5
+		sop_incr, -- 6
+		sop_decr -- 7
 	);
 
 	-- Computes the packet checksum byte

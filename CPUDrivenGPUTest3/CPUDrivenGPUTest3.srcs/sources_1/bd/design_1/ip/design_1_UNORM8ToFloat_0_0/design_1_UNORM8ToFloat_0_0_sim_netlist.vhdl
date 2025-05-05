@@ -1,7 +1,7 @@
 -- Copyright 1986-2018 Xilinx, Inc. All Rights Reserved.
 -- --------------------------------------------------------------------------------
 -- Tool Version: Vivado v.2018.1_AR73068 (win64) Build 2188600 Wed Apr  4 18:40:38 MDT 2018
--- Date        : Thu Oct 10 00:35:03 2024
+-- Date        : Sun Apr 13 16:14:40 2025
 -- Host        : Dragon2 running 64-bit major release  (build 9200)
 -- Command     : write_vhdl -force -mode funcsim
 --               D:/Xilinx/MyXilinxProjects/CPUDrivenGPUTest3/CPUDrivenGPUTest3.srcs/sources_1/bd/design_1/ip/design_1_UNORM8ToFloat_0_0/design_1_UNORM8ToFloat_0_0_sim_netlist.vhdl
@@ -20,9 +20,9 @@ entity design_1_UNORM8ToFloat_0_0_UNORM8ToFloat is
     FloatYOut : out STD_LOGIC_VECTOR ( 11 downto 0 );
     FloatZOut : out STD_LOGIC_VECTOR ( 11 downto 0 );
     FloatWOut : out STD_LOGIC_VECTOR ( 11 downto 0 );
-    D3DColorIn : in STD_LOGIC_VECTOR ( 31 downto 0 );
     Enable : in STD_LOGIC;
-    clk : in STD_LOGIC
+    clk : in STD_LOGIC;
+    D3DColorIn : in STD_LOGIC_VECTOR ( 31 downto 0 )
   );
   attribute ORIG_REF_NAME : string;
   attribute ORIG_REF_NAME of design_1_UNORM8ToFloat_0_0_UNORM8ToFloat : entity is "UNORM8ToFloat";
@@ -43,6 +43,7 @@ architecture STRUCTURE of design_1_UNORM8ToFloat_0_0_UNORM8ToFloat is
   signal \FloatWOut[22]_i_3_n_0\ : STD_LOGIC;
   signal \FloatWOut[23]_i_1_n_0\ : STD_LOGIC;
   signal \FloatWOut[23]_i_2_n_0\ : STD_LOGIC;
+  signal \FloatWOut[23]_i_3_n_0\ : STD_LOGIC;
   signal \FloatWOut[24]_i_1_n_0\ : STD_LOGIC;
   signal \FloatWOut[24]_i_2_n_0\ : STD_LOGIC;
   signal \FloatWOut[25]_i_1_n_0\ : STD_LOGIC;
@@ -53,8 +54,6 @@ architecture STRUCTURE of design_1_UNORM8ToFloat_0_0_UNORM8ToFloat is
   signal \FloatWOut[29]_i_2_n_0\ : STD_LOGIC;
   signal \FloatWOut[29]_i_3_n_0\ : STD_LOGIC;
   signal \FloatWOut[29]_i_4_n_0\ : STD_LOGIC;
-  signal \FloatWOut[29]_i_5_n_0\ : STD_LOGIC;
-  signal \FloatXOut[16]_i_1_n_0\ : STD_LOGIC;
   signal \FloatXOut[19]_i_2_n_0\ : STD_LOGIC;
   signal \FloatXOut[20]_i_2_n_0\ : STD_LOGIC;
   signal \FloatXOut[21]_i_2_n_0\ : STD_LOGIC;
@@ -62,6 +61,7 @@ architecture STRUCTURE of design_1_UNORM8ToFloat_0_0_UNORM8ToFloat is
   signal \FloatXOut[22]_i_3_n_0\ : STD_LOGIC;
   signal \FloatXOut[23]_i_1_n_0\ : STD_LOGIC;
   signal \FloatXOut[23]_i_2_n_0\ : STD_LOGIC;
+  signal \FloatXOut[23]_i_3_n_0\ : STD_LOGIC;
   signal \FloatXOut[24]_i_1_n_0\ : STD_LOGIC;
   signal \FloatXOut[24]_i_2_n_0\ : STD_LOGIC;
   signal \FloatXOut[25]_i_1_n_0\ : STD_LOGIC;
@@ -72,7 +72,6 @@ architecture STRUCTURE of design_1_UNORM8ToFloat_0_0_UNORM8ToFloat is
   signal \FloatXOut[29]_i_2_n_0\ : STD_LOGIC;
   signal \FloatXOut[29]_i_3_n_0\ : STD_LOGIC;
   signal \FloatXOut[29]_i_4_n_0\ : STD_LOGIC;
-  signal \FloatXOut[29]_i_5_n_0\ : STD_LOGIC;
   signal \FloatYOut[16]_i_1_n_0\ : STD_LOGIC;
   signal \FloatYOut[17]_i_1_n_0\ : STD_LOGIC;
   signal \FloatYOut[18]_i_1_n_0\ : STD_LOGIC;
@@ -87,6 +86,7 @@ architecture STRUCTURE of design_1_UNORM8ToFloat_0_0_UNORM8ToFloat is
   signal \FloatYOut[22]_i_3_n_0\ : STD_LOGIC;
   signal \FloatYOut[23]_i_1_n_0\ : STD_LOGIC;
   signal \FloatYOut[23]_i_2_n_0\ : STD_LOGIC;
+  signal \FloatYOut[23]_i_3_n_0\ : STD_LOGIC;
   signal \FloatYOut[24]_i_1_n_0\ : STD_LOGIC;
   signal \FloatYOut[24]_i_2_n_0\ : STD_LOGIC;
   signal \FloatYOut[25]_i_1_n_0\ : STD_LOGIC;
@@ -97,7 +97,6 @@ architecture STRUCTURE of design_1_UNORM8ToFloat_0_0_UNORM8ToFloat is
   signal \FloatYOut[29]_i_2_n_0\ : STD_LOGIC;
   signal \FloatYOut[29]_i_3_n_0\ : STD_LOGIC;
   signal \FloatYOut[29]_i_4_n_0\ : STD_LOGIC;
-  signal \FloatYOut[29]_i_5_n_0\ : STD_LOGIC;
   signal \FloatZOut[16]_i_1_n_0\ : STD_LOGIC;
   signal \FloatZOut[17]_i_1_n_0\ : STD_LOGIC;
   signal \FloatZOut[18]_i_1_n_0\ : STD_LOGIC;
@@ -112,6 +111,7 @@ architecture STRUCTURE of design_1_UNORM8ToFloat_0_0_UNORM8ToFloat is
   signal \FloatZOut[22]_i_3_n_0\ : STD_LOGIC;
   signal \FloatZOut[23]_i_1_n_0\ : STD_LOGIC;
   signal \FloatZOut[23]_i_2_n_0\ : STD_LOGIC;
+  signal \FloatZOut[23]_i_3_n_0\ : STD_LOGIC;
   signal \FloatZOut[24]_i_1_n_0\ : STD_LOGIC;
   signal \FloatZOut[24]_i_2_n_0\ : STD_LOGIC;
   signal \FloatZOut[25]_i_1_n_0\ : STD_LOGIC;
@@ -122,37 +122,36 @@ architecture STRUCTURE of design_1_UNORM8ToFloat_0_0_UNORM8ToFloat is
   signal \FloatZOut[29]_i_2_n_0\ : STD_LOGIC;
   signal \FloatZOut[29]_i_3_n_0\ : STD_LOGIC;
   signal \FloatZOut[29]_i_4_n_0\ : STD_LOGIC;
-  signal \FloatZOut[29]_i_5_n_0\ : STD_LOGIC;
-  signal \mantissaBits[255]_0\ : STD_LOGIC_VECTOR ( 22 downto 17 );
+  signal \mantissaBits[0]_0\ : STD_LOGIC_VECTOR ( 22 downto 16 );
   attribute SOFT_HLUTNM : string;
-  attribute SOFT_HLUTNM of \FloatWOut[16]_i_1\ : label is "soft_lutpair7";
-  attribute SOFT_HLUTNM of \FloatWOut[17]_i_1\ : label is "soft_lutpair7";
-  attribute SOFT_HLUTNM of \FloatWOut[24]_i_1\ : label is "soft_lutpair4";
-  attribute SOFT_HLUTNM of \FloatWOut[25]_i_1\ : label is "soft_lutpair5";
-  attribute SOFT_HLUTNM of \FloatWOut[26]_i_1\ : label is "soft_lutpair5";
+  attribute SOFT_HLUTNM of \FloatWOut[16]_i_1\ : label is "soft_lutpair3";
+  attribute SOFT_HLUTNM of \FloatWOut[17]_i_1\ : label is "soft_lutpair3";
+  attribute SOFT_HLUTNM of \FloatWOut[23]_i_1\ : label is "soft_lutpair4";
+  attribute SOFT_HLUTNM of \FloatWOut[24]_i_1\ : label is "soft_lutpair8";
+  attribute SOFT_HLUTNM of \FloatWOut[25]_i_1\ : label is "soft_lutpair8";
   attribute SOFT_HLUTNM of \FloatWOut[29]_i_2\ : label is "soft_lutpair4";
   attribute SOFT_HLUTNM of \FloatXOut[16]_i_1\ : label is "soft_lutpair2";
   attribute SOFT_HLUTNM of \FloatXOut[22]_i_2\ : label is "soft_lutpair2";
-  attribute SOFT_HLUTNM of \FloatXOut[24]_i_1\ : label is "soft_lutpair9";
-  attribute SOFT_HLUTNM of \FloatXOut[25]_i_1\ : label is "soft_lutpair9";
-  attribute SOFT_HLUTNM of \FloatXOut[26]_i_1\ : label is "soft_lutpair8";
-  attribute SOFT_HLUTNM of \FloatXOut[29]_i_2\ : label is "soft_lutpair8";
-  attribute SOFT_HLUTNM of \FloatYOut[16]_i_1\ : label is "soft_lutpair0";
-  attribute SOFT_HLUTNM of \FloatYOut[22]_i_2\ : label is "soft_lutpair0";
+  attribute SOFT_HLUTNM of \FloatXOut[23]_i_1\ : label is "soft_lutpair7";
+  attribute SOFT_HLUTNM of \FloatXOut[24]_i_1\ : label is "soft_lutpair11";
+  attribute SOFT_HLUTNM of \FloatXOut[25]_i_1\ : label is "soft_lutpair11";
+  attribute SOFT_HLUTNM of \FloatXOut[29]_i_2\ : label is "soft_lutpair7";
+  attribute SOFT_HLUTNM of \FloatYOut[16]_i_1\ : label is "soft_lutpair1";
+  attribute SOFT_HLUTNM of \FloatYOut[17]_i_1\ : label is "soft_lutpair1";
+  attribute SOFT_HLUTNM of \FloatYOut[23]_i_1\ : label is "soft_lutpair6";
   attribute SOFT_HLUTNM of \FloatYOut[24]_i_1\ : label is "soft_lutpair10";
-  attribute SOFT_HLUTNM of \FloatYOut[25]_i_1\ : label is "soft_lutpair11";
-  attribute SOFT_HLUTNM of \FloatYOut[26]_i_1\ : label is "soft_lutpair11";
-  attribute SOFT_HLUTNM of \FloatYOut[29]_i_2\ : label is "soft_lutpair10";
-  attribute SOFT_HLUTNM of \FloatZOut[16]_i_1\ : label is "soft_lutpair1";
-  attribute SOFT_HLUTNM of \FloatZOut[17]_i_1\ : label is "soft_lutpair1";
-  attribute SOFT_HLUTNM of \FloatZOut[24]_i_1\ : label is "soft_lutpair6";
-  attribute SOFT_HLUTNM of \FloatZOut[25]_i_1\ : label is "soft_lutpair6";
-  attribute SOFT_HLUTNM of \FloatZOut[26]_i_1\ : label is "soft_lutpair3";
-  attribute SOFT_HLUTNM of \FloatZOut[29]_i_2\ : label is "soft_lutpair3";
+  attribute SOFT_HLUTNM of \FloatYOut[25]_i_1\ : label is "soft_lutpair10";
+  attribute SOFT_HLUTNM of \FloatYOut[29]_i_2\ : label is "soft_lutpair6";
+  attribute SOFT_HLUTNM of \FloatZOut[16]_i_1\ : label is "soft_lutpair0";
+  attribute SOFT_HLUTNM of \FloatZOut[22]_i_2\ : label is "soft_lutpair0";
+  attribute SOFT_HLUTNM of \FloatZOut[23]_i_1\ : label is "soft_lutpair5";
+  attribute SOFT_HLUTNM of \FloatZOut[24]_i_1\ : label is "soft_lutpair9";
+  attribute SOFT_HLUTNM of \FloatZOut[25]_i_1\ : label is "soft_lutpair9";
+  attribute SOFT_HLUTNM of \FloatZOut[29]_i_2\ : label is "soft_lutpair5";
 begin
 \FloatWOut[16]_i_1\: unisim.vcomponents.LUT2
     generic map(
-      INIT => X"1"
+      INIT => X"8"
     )
         port map (
       I0 => D3DColorIn(24),
@@ -161,99 +160,99 @@ begin
     );
 \FloatWOut[17]_i_1\: unisim.vcomponents.LUT4
     generic map(
-      INIT => X"101F"
+      INIT => X"B888"
     )
         port map (
-      I0 => D3DColorIn(24),
-      I1 => D3DColorIn(30),
-      I2 => D3DColorIn(31),
-      I3 => D3DColorIn(25),
+      I0 => D3DColorIn(25),
+      I1 => D3DColorIn(31),
+      I2 => D3DColorIn(24),
+      I3 => D3DColorIn(30),
       O => \FloatWOut[17]_i_1_n_0\
     );
 \FloatWOut[18]_i_1\: unisim.vcomponents.LUT6
     generic map(
-      INIT => X"101F0000101FFFFF"
+      INIT => X"B8BBB888B888B888"
     )
         port map (
-      I0 => D3DColorIn(24),
-      I1 => D3DColorIn(29),
-      I2 => D3DColorIn(30),
-      I3 => D3DColorIn(25),
-      I4 => D3DColorIn(31),
-      I5 => D3DColorIn(26),
+      I0 => D3DColorIn(26),
+      I1 => D3DColorIn(31),
+      I2 => D3DColorIn(25),
+      I3 => D3DColorIn(30),
+      I4 => D3DColorIn(24),
+      I5 => D3DColorIn(29),
       O => \FloatWOut[18]_i_1_n_0\
     );
 \FloatWOut[19]_i_1\: unisim.vcomponents.LUT3
     generic map(
-      INIT => X"8B"
+      INIT => X"B8"
     )
         port map (
-      I0 => \FloatWOut[19]_i_2_n_0\,
+      I0 => D3DColorIn(27),
       I1 => D3DColorIn(31),
-      I2 => D3DColorIn(27),
+      I2 => \FloatWOut[19]_i_2_n_0\,
       O => \FloatWOut[19]_i_1_n_0\
     );
 \FloatWOut[19]_i_2\: unisim.vcomponents.LUT6
     generic map(
-      INIT => X"101F0000101FFFFF"
+      INIT => X"B8BBB888B888B888"
     )
         port map (
-      I0 => D3DColorIn(24),
-      I1 => D3DColorIn(28),
-      I2 => D3DColorIn(29),
-      I3 => D3DColorIn(25),
-      I4 => D3DColorIn(30),
-      I5 => D3DColorIn(26),
+      I0 => D3DColorIn(26),
+      I1 => D3DColorIn(30),
+      I2 => D3DColorIn(25),
+      I3 => D3DColorIn(29),
+      I4 => D3DColorIn(24),
+      I5 => D3DColorIn(28),
       O => \FloatWOut[19]_i_2_n_0\
     );
 \FloatWOut[20]_i_1\: unisim.vcomponents.LUT5
     generic map(
-      INIT => X"8B008BFF"
+      INIT => X"B8BBB888"
     )
         port map (
-      I0 => \FloatWOut[20]_i_2_n_0\,
-      I1 => D3DColorIn(30),
+      I0 => D3DColorIn(28),
+      I1 => D3DColorIn(31),
       I2 => D3DColorIn(27),
-      I3 => D3DColorIn(31),
-      I4 => D3DColorIn(28),
+      I3 => D3DColorIn(30),
+      I4 => \FloatWOut[20]_i_2_n_0\,
       O => \FloatWOut[20]_i_1_n_0\
     );
 \FloatWOut[20]_i_2\: unisim.vcomponents.LUT6
     generic map(
-      INIT => X"101F0000101FFFFF"
+      INIT => X"B8BBB888B888B888"
     )
         port map (
-      I0 => D3DColorIn(24),
-      I1 => D3DColorIn(27),
-      I2 => D3DColorIn(28),
-      I3 => D3DColorIn(25),
-      I4 => D3DColorIn(29),
-      I5 => D3DColorIn(26),
+      I0 => D3DColorIn(26),
+      I1 => D3DColorIn(29),
+      I2 => D3DColorIn(25),
+      I3 => D3DColorIn(28),
+      I4 => D3DColorIn(24),
+      I5 => D3DColorIn(27),
       O => \FloatWOut[20]_i_2_n_0\
     );
 \FloatWOut[21]_i_1\: unisim.vcomponents.LUT5
     generic map(
-      INIT => X"8B008BFF"
+      INIT => X"B8BBB888"
     )
         port map (
-      I0 => \FloatWOut[21]_i_2_n_0\,
-      I1 => D3DColorIn(30),
+      I0 => D3DColorIn(29),
+      I1 => D3DColorIn(31),
       I2 => D3DColorIn(28),
-      I3 => D3DColorIn(31),
-      I4 => D3DColorIn(29),
+      I3 => D3DColorIn(30),
+      I4 => \FloatWOut[21]_i_2_n_0\,
       O => \FloatWOut[21]_i_1_n_0\
     );
 \FloatWOut[21]_i_2\: unisim.vcomponents.LUT6
     generic map(
-      INIT => X"005F0000303FFFFF"
+      INIT => X"FE55FE44BA00BA00"
     )
         port map (
-      I0 => D3DColorIn(24),
-      I1 => D3DColorIn(25),
-      I2 => D3DColorIn(28),
-      I3 => D3DColorIn(26),
-      I4 => D3DColorIn(29),
-      I5 => D3DColorIn(27),
+      I0 => D3DColorIn(29),
+      I1 => D3DColorIn(28),
+      I2 => D3DColorIn(25),
+      I3 => D3DColorIn(27),
+      I4 => D3DColorIn(24),
+      I5 => D3DColorIn(26),
       O => \FloatWOut[21]_i_2_n_0\
     );
 \FloatWOut[22]_i_1\: unisim.vcomponents.LUT5
@@ -264,121 +263,129 @@ begin
       I0 => D3DColorIn(30),
       I1 => \FloatWOut[29]_i_3_n_0\,
       I2 => D3DColorIn(31),
-      I3 => \FloatWOut[29]_i_5_n_0\,
+      I3 => \FloatWOut[23]_i_3_n_0\,
       I4 => Enable,
       O => \FloatWOut[22]_i_1_n_0\
     );
 \FloatWOut[22]_i_2\: unisim.vcomponents.LUT4
     generic map(
-      INIT => X"A03F"
+      INIT => X"E5E0"
     )
         port map (
-      I0 => \FloatWOut[22]_i_3_n_0\,
+      I0 => D3DColorIn(31),
       I1 => D3DColorIn(29),
-      I2 => D3DColorIn(31),
-      I3 => D3DColorIn(30),
+      I2 => D3DColorIn(30),
+      I3 => \FloatWOut[22]_i_3_n_0\,
       O => \FloatWOut[22]_i_2_n_0\
     );
 \FloatWOut[22]_i_3\: unisim.vcomponents.LUT6
     generic map(
-      INIT => X"130F000000FFFFFF"
+      INIT => X"D9C9D9C8D8C8D8C8"
     )
         port map (
-      I0 => D3DColorIn(24),
-      I1 => D3DColorIn(25),
-      I2 => D3DColorIn(26),
-      I3 => D3DColorIn(27),
-      I4 => D3DColorIn(29),
-      I5 => D3DColorIn(28),
+      I0 => D3DColorIn(29),
+      I1 => D3DColorIn(28),
+      I2 => D3DColorIn(27),
+      I3 => D3DColorIn(26),
+      I4 => D3DColorIn(24),
+      I5 => D3DColorIn(25),
       O => \FloatWOut[22]_i_3_n_0\
     );
-\FloatWOut[23]_i_1\: unisim.vcomponents.LUT5
+\FloatWOut[23]_i_1\: unisim.vcomponents.LUT4
     generic map(
-      INIT => X"FFCF0A0A"
+      INIT => X"C0EE"
     )
         port map (
-      I0 => \FloatWOut[29]_i_3_n_0\,
-      I1 => \FloatWOut[23]_i_2_n_0\,
-      I2 => D3DColorIn(30),
-      I3 => \FloatWOut[29]_i_5_n_0\,
-      I4 => D3DColorIn(31),
+      I0 => \FloatWOut[23]_i_2_n_0\,
+      I1 => D3DColorIn(30),
+      I2 => \FloatWOut[23]_i_3_n_0\,
+      I3 => D3DColorIn(31),
       O => \FloatWOut[23]_i_1_n_0\
     );
 \FloatWOut[23]_i_2\: unisim.vcomponents.LUT6
     generic map(
-      INIT => X"77F7555500000000"
+      INIT => X"00000000AAAAEEFE"
     )
         port map (
       I0 => D3DColorIn(28),
       I1 => D3DColorIn(26),
-      I2 => D3DColorIn(25),
-      I3 => D3DColorIn(24),
+      I2 => D3DColorIn(24),
+      I3 => D3DColorIn(25),
       I4 => D3DColorIn(27),
       I5 => D3DColorIn(29),
       O => \FloatWOut[23]_i_2_n_0\
     );
-\FloatWOut[24]_i_1\: unisim.vcomponents.LUT4
+\FloatWOut[23]_i_3\: unisim.vcomponents.LUT6
     generic map(
-      INIT => X"C8FF"
+      INIT => X"8000000000000000"
+    )
+        port map (
+      I0 => D3DColorIn(28),
+      I1 => D3DColorIn(26),
+      I2 => D3DColorIn(24),
+      I3 => D3DColorIn(25),
+      I4 => D3DColorIn(27),
+      I5 => D3DColorIn(29),
+      O => \FloatWOut[23]_i_3_n_0\
+    );
+\FloatWOut[24]_i_1\: unisim.vcomponents.LUT3
+    generic map(
+      INIT => X"F2"
     )
         port map (
       I0 => \FloatWOut[24]_i_2_n_0\,
       I1 => D3DColorIn(30),
-      I2 => \FloatWOut[29]_i_5_n_0\,
-      I3 => D3DColorIn(31),
+      I2 => D3DColorIn(31),
       O => \FloatWOut[24]_i_1_n_0\
     );
 \FloatWOut[24]_i_2\: unisim.vcomponents.LUT6
     generic map(
-      INIT => X"55D5FFFF00000000"
+      INIT => X"00000000FFFFAABA"
     )
         port map (
       I0 => D3DColorIn(28),
       I1 => D3DColorIn(26),
-      I2 => D3DColorIn(25),
-      I3 => D3DColorIn(24),
+      I2 => D3DColorIn(24),
+      I3 => D3DColorIn(25),
       I4 => D3DColorIn(27),
       I5 => D3DColorIn(29),
       O => \FloatWOut[24]_i_2_n_0\
     );
-\FloatWOut[25]_i_1\: unisim.vcomponents.LUT4
+\FloatWOut[25]_i_1\: unisim.vcomponents.LUT3
     generic map(
-      INIT => X"FBFF"
+      INIT => X"FE"
     )
         port map (
       I0 => \FloatWOut[25]_i_2_n_0\,
       I1 => D3DColorIn(30),
-      I2 => \FloatWOut[29]_i_5_n_0\,
-      I3 => D3DColorIn(31),
+      I2 => D3DColorIn(31),
       O => \FloatWOut[25]_i_1_n_0\
     );
 \FloatWOut[25]_i_2\: unisim.vcomponents.LUT6
     generic map(
-      INIT => X"00800000FFFFFFFF"
+      INIT => X"FFFFFFFF00000010"
     )
         port map (
       I0 => D3DColorIn(28),
       I1 => D3DColorIn(26),
-      I2 => D3DColorIn(25),
-      I3 => D3DColorIn(24),
+      I2 => D3DColorIn(24),
+      I3 => D3DColorIn(25),
       I4 => D3DColorIn(27),
       I5 => D3DColorIn(29),
       O => \FloatWOut[25]_i_2_n_0\
     );
-\FloatWOut[26]_i_1\: unisim.vcomponents.LUT4
+\FloatWOut[26]_i_1\: unisim.vcomponents.LUT2
     generic map(
-      INIT => X"EAFF"
+      INIT => X"E"
     )
         port map (
       I0 => \FloatWOut[26]_i_2_n_0\,
-      I1 => D3DColorIn(30),
-      I2 => \FloatWOut[29]_i_5_n_0\,
-      I3 => D3DColorIn(31),
+      I1 => D3DColorIn(31),
       O => \FloatWOut[26]_i_1_n_0\
     );
 \FloatWOut[26]_i_2\: unisim.vcomponents.LUT6
     generic map(
-      INIT => X"7FFFFFFFFFFFFFFF"
+      INIT => X"FFFFFFFFFFFFFFFE"
     )
         port map (
       I0 => D3DColorIn(29),
@@ -400,15 +407,14 @@ begin
       I3 => Enable,
       O => \FloatWOut[29]_i_1_n_0\
     );
-\FloatWOut[29]_i_2\: unisim.vcomponents.LUT4
+\FloatWOut[29]_i_2\: unisim.vcomponents.LUT3
     generic map(
-      INIT => X"FBFF"
+      INIT => X"FE"
     )
         port map (
       I0 => \FloatWOut[29]_i_4_n_0\,
       I1 => D3DColorIn(30),
-      I2 => \FloatWOut[29]_i_5_n_0\,
-      I3 => D3DColorIn(31),
+      I2 => D3DColorIn(31),
       O => \FloatWOut[29]_i_2_n_0\
     );
 \FloatWOut[29]_i_3\: unisim.vcomponents.LUT6
@@ -426,7 +432,7 @@ begin
     );
 \FloatWOut[29]_i_4\: unisim.vcomponents.LUT6
     generic map(
-      INIT => X"7FFFFFFFFFFFFFFF"
+      INIT => X"FFFFFFFFFFFFFFFE"
     )
         port map (
       I0 => D3DColorIn(28),
@@ -436,19 +442,6 @@ begin
       I4 => D3DColorIn(27),
       I5 => D3DColorIn(29),
       O => \FloatWOut[29]_i_4_n_0\
-    );
-\FloatWOut[29]_i_5\: unisim.vcomponents.LUT6
-    generic map(
-      INIT => X"8000000000000000"
-    )
-        port map (
-      I0 => D3DColorIn(28),
-      I1 => D3DColorIn(26),
-      I2 => D3DColorIn(24),
-      I3 => D3DColorIn(25),
-      I4 => D3DColorIn(27),
-      I5 => D3DColorIn(29),
-      O => \FloatWOut[29]_i_5_n_0\
     );
 \FloatWOut_reg[16]\: unisim.vcomponents.FDRE
     generic map(
@@ -584,108 +577,108 @@ begin
     );
 \FloatXOut[16]_i_1\: unisim.vcomponents.LUT2
     generic map(
-      INIT => X"1"
+      INIT => X"8"
     )
         port map (
       I0 => D3DColorIn(16),
       I1 => D3DColorIn(23),
-      O => \FloatXOut[16]_i_1_n_0\
+      O => \mantissaBits[0]_0\(16)
     );
 \FloatXOut[17]_i_1\: unisim.vcomponents.LUT4
     generic map(
-      INIT => X"101F"
+      INIT => X"B888"
     )
         port map (
-      I0 => D3DColorIn(16),
-      I1 => D3DColorIn(22),
-      I2 => D3DColorIn(23),
-      I3 => D3DColorIn(17),
-      O => \mantissaBits[255]_0\(17)
+      I0 => D3DColorIn(17),
+      I1 => D3DColorIn(23),
+      I2 => D3DColorIn(16),
+      I3 => D3DColorIn(22),
+      O => \mantissaBits[0]_0\(17)
     );
 \FloatXOut[18]_i_1\: unisim.vcomponents.LUT6
     generic map(
-      INIT => X"101F0000101FFFFF"
+      INIT => X"B8BBB888B888B888"
     )
         port map (
-      I0 => D3DColorIn(16),
-      I1 => D3DColorIn(21),
-      I2 => D3DColorIn(22),
-      I3 => D3DColorIn(17),
-      I4 => D3DColorIn(23),
-      I5 => D3DColorIn(18),
-      O => \mantissaBits[255]_0\(18)
+      I0 => D3DColorIn(18),
+      I1 => D3DColorIn(23),
+      I2 => D3DColorIn(17),
+      I3 => D3DColorIn(22),
+      I4 => D3DColorIn(16),
+      I5 => D3DColorIn(21),
+      O => \mantissaBits[0]_0\(18)
     );
 \FloatXOut[19]_i_1\: unisim.vcomponents.LUT3
     generic map(
-      INIT => X"8B"
+      INIT => X"B8"
     )
         port map (
-      I0 => \FloatXOut[19]_i_2_n_0\,
+      I0 => D3DColorIn(19),
       I1 => D3DColorIn(23),
-      I2 => D3DColorIn(19),
-      O => \mantissaBits[255]_0\(19)
+      I2 => \FloatXOut[19]_i_2_n_0\,
+      O => \mantissaBits[0]_0\(19)
     );
 \FloatXOut[19]_i_2\: unisim.vcomponents.LUT6
     generic map(
-      INIT => X"101F0000101FFFFF"
+      INIT => X"B8BBB888B888B888"
     )
         port map (
-      I0 => D3DColorIn(16),
-      I1 => D3DColorIn(20),
-      I2 => D3DColorIn(21),
-      I3 => D3DColorIn(17),
-      I4 => D3DColorIn(22),
-      I5 => D3DColorIn(18),
+      I0 => D3DColorIn(18),
+      I1 => D3DColorIn(22),
+      I2 => D3DColorIn(17),
+      I3 => D3DColorIn(21),
+      I4 => D3DColorIn(16),
+      I5 => D3DColorIn(20),
       O => \FloatXOut[19]_i_2_n_0\
     );
 \FloatXOut[20]_i_1\: unisim.vcomponents.LUT5
     generic map(
-      INIT => X"8B008BFF"
+      INIT => X"B8BBB888"
     )
         port map (
-      I0 => \FloatXOut[20]_i_2_n_0\,
-      I1 => D3DColorIn(22),
+      I0 => D3DColorIn(20),
+      I1 => D3DColorIn(23),
       I2 => D3DColorIn(19),
-      I3 => D3DColorIn(23),
-      I4 => D3DColorIn(20),
-      O => \mantissaBits[255]_0\(20)
+      I3 => D3DColorIn(22),
+      I4 => \FloatXOut[20]_i_2_n_0\,
+      O => \mantissaBits[0]_0\(20)
     );
 \FloatXOut[20]_i_2\: unisim.vcomponents.LUT6
     generic map(
-      INIT => X"101F0000101FFFFF"
+      INIT => X"B8BBB888B888B888"
     )
         port map (
-      I0 => D3DColorIn(16),
-      I1 => D3DColorIn(19),
-      I2 => D3DColorIn(20),
-      I3 => D3DColorIn(17),
-      I4 => D3DColorIn(21),
-      I5 => D3DColorIn(18),
+      I0 => D3DColorIn(18),
+      I1 => D3DColorIn(21),
+      I2 => D3DColorIn(17),
+      I3 => D3DColorIn(20),
+      I4 => D3DColorIn(16),
+      I5 => D3DColorIn(19),
       O => \FloatXOut[20]_i_2_n_0\
     );
 \FloatXOut[21]_i_1\: unisim.vcomponents.LUT5
     generic map(
-      INIT => X"8B008BFF"
+      INIT => X"B8BBB888"
     )
         port map (
-      I0 => \FloatXOut[21]_i_2_n_0\,
-      I1 => D3DColorIn(22),
+      I0 => D3DColorIn(21),
+      I1 => D3DColorIn(23),
       I2 => D3DColorIn(20),
-      I3 => D3DColorIn(23),
-      I4 => D3DColorIn(21),
-      O => \mantissaBits[255]_0\(21)
+      I3 => D3DColorIn(22),
+      I4 => \FloatXOut[21]_i_2_n_0\,
+      O => \mantissaBits[0]_0\(21)
     );
 \FloatXOut[21]_i_2\: unisim.vcomponents.LUT6
     generic map(
-      INIT => X"005F0000303FFFFF"
+      INIT => X"FE55FE44BA00BA00"
     )
         port map (
-      I0 => D3DColorIn(16),
-      I1 => D3DColorIn(17),
-      I2 => D3DColorIn(20),
-      I3 => D3DColorIn(18),
-      I4 => D3DColorIn(21),
-      I5 => D3DColorIn(19),
+      I0 => D3DColorIn(21),
+      I1 => D3DColorIn(20),
+      I2 => D3DColorIn(17),
+      I3 => D3DColorIn(19),
+      I4 => D3DColorIn(16),
+      I5 => D3DColorIn(18),
       O => \FloatXOut[21]_i_2_n_0\
     );
 \FloatXOut[22]_i_1\: unisim.vcomponents.LUT5
@@ -696,121 +689,129 @@ begin
       I0 => D3DColorIn(22),
       I1 => \FloatXOut[29]_i_3_n_0\,
       I2 => D3DColorIn(23),
-      I3 => \FloatXOut[29]_i_5_n_0\,
+      I3 => \FloatXOut[23]_i_3_n_0\,
       I4 => Enable,
       O => \FloatXOut[22]_i_1_n_0\
     );
 \FloatXOut[22]_i_2\: unisim.vcomponents.LUT4
     generic map(
-      INIT => X"A03F"
+      INIT => X"E5E0"
     )
         port map (
-      I0 => \FloatXOut[22]_i_3_n_0\,
+      I0 => D3DColorIn(23),
       I1 => D3DColorIn(21),
-      I2 => D3DColorIn(23),
-      I3 => D3DColorIn(22),
-      O => \mantissaBits[255]_0\(22)
+      I2 => D3DColorIn(22),
+      I3 => \FloatXOut[22]_i_3_n_0\,
+      O => \mantissaBits[0]_0\(22)
     );
 \FloatXOut[22]_i_3\: unisim.vcomponents.LUT6
     generic map(
-      INIT => X"130F000000FFFFFF"
+      INIT => X"D9C9D8C8D9C8D8C8"
     )
         port map (
-      I0 => D3DColorIn(16),
-      I1 => D3DColorIn(17),
-      I2 => D3DColorIn(18),
-      I3 => D3DColorIn(19),
-      I4 => D3DColorIn(21),
-      I5 => D3DColorIn(20),
+      I0 => D3DColorIn(21),
+      I1 => D3DColorIn(20),
+      I2 => D3DColorIn(19),
+      I3 => D3DColorIn(18),
+      I4 => D3DColorIn(17),
+      I5 => D3DColorIn(16),
       O => \FloatXOut[22]_i_3_n_0\
     );
-\FloatXOut[23]_i_1\: unisim.vcomponents.LUT5
+\FloatXOut[23]_i_1\: unisim.vcomponents.LUT4
     generic map(
-      INIT => X"FFCF0A0A"
+      INIT => X"C0EE"
     )
         port map (
-      I0 => \FloatXOut[29]_i_3_n_0\,
-      I1 => \FloatXOut[23]_i_2_n_0\,
-      I2 => D3DColorIn(22),
-      I3 => \FloatXOut[29]_i_5_n_0\,
-      I4 => D3DColorIn(23),
+      I0 => \FloatXOut[23]_i_2_n_0\,
+      I1 => D3DColorIn(22),
+      I2 => \FloatXOut[23]_i_3_n_0\,
+      I3 => D3DColorIn(23),
       O => \FloatXOut[23]_i_1_n_0\
     );
 \FloatXOut[23]_i_2\: unisim.vcomponents.LUT6
     generic map(
-      INIT => X"77F7555500000000"
+      INIT => X"00000000AAAAEEFE"
     )
         port map (
       I0 => D3DColorIn(20),
       I1 => D3DColorIn(18),
-      I2 => D3DColorIn(17),
-      I3 => D3DColorIn(16),
+      I2 => D3DColorIn(16),
+      I3 => D3DColorIn(17),
       I4 => D3DColorIn(19),
       I5 => D3DColorIn(21),
       O => \FloatXOut[23]_i_2_n_0\
     );
-\FloatXOut[24]_i_1\: unisim.vcomponents.LUT4
+\FloatXOut[23]_i_3\: unisim.vcomponents.LUT6
     generic map(
-      INIT => X"C8FF"
+      INIT => X"8000000000000000"
+    )
+        port map (
+      I0 => D3DColorIn(20),
+      I1 => D3DColorIn(18),
+      I2 => D3DColorIn(17),
+      I3 => D3DColorIn(16),
+      I4 => D3DColorIn(19),
+      I5 => D3DColorIn(21),
+      O => \FloatXOut[23]_i_3_n_0\
+    );
+\FloatXOut[24]_i_1\: unisim.vcomponents.LUT3
+    generic map(
+      INIT => X"F2"
     )
         port map (
       I0 => \FloatXOut[24]_i_2_n_0\,
       I1 => D3DColorIn(22),
-      I2 => \FloatXOut[29]_i_5_n_0\,
-      I3 => D3DColorIn(23),
+      I2 => D3DColorIn(23),
       O => \FloatXOut[24]_i_1_n_0\
     );
 \FloatXOut[24]_i_2\: unisim.vcomponents.LUT6
     generic map(
-      INIT => X"55D5FFFF00000000"
+      INIT => X"00000000FFFFAABA"
     )
         port map (
       I0 => D3DColorIn(20),
       I1 => D3DColorIn(18),
-      I2 => D3DColorIn(17),
-      I3 => D3DColorIn(16),
+      I2 => D3DColorIn(16),
+      I3 => D3DColorIn(17),
       I4 => D3DColorIn(19),
       I5 => D3DColorIn(21),
       O => \FloatXOut[24]_i_2_n_0\
     );
-\FloatXOut[25]_i_1\: unisim.vcomponents.LUT4
+\FloatXOut[25]_i_1\: unisim.vcomponents.LUT3
     generic map(
-      INIT => X"FBFF"
+      INIT => X"FE"
     )
         port map (
       I0 => \FloatXOut[25]_i_2_n_0\,
       I1 => D3DColorIn(22),
-      I2 => \FloatXOut[29]_i_5_n_0\,
-      I3 => D3DColorIn(23),
+      I2 => D3DColorIn(23),
       O => \FloatXOut[25]_i_1_n_0\
     );
 \FloatXOut[25]_i_2\: unisim.vcomponents.LUT6
     generic map(
-      INIT => X"00800000FFFFFFFF"
+      INIT => X"FFFFFFFF00000010"
     )
         port map (
       I0 => D3DColorIn(20),
       I1 => D3DColorIn(18),
-      I2 => D3DColorIn(17),
-      I3 => D3DColorIn(16),
+      I2 => D3DColorIn(16),
+      I3 => D3DColorIn(17),
       I4 => D3DColorIn(19),
       I5 => D3DColorIn(21),
       O => \FloatXOut[25]_i_2_n_0\
     );
-\FloatXOut[26]_i_1\: unisim.vcomponents.LUT4
+\FloatXOut[26]_i_1\: unisim.vcomponents.LUT2
     generic map(
-      INIT => X"EAFF"
+      INIT => X"E"
     )
         port map (
       I0 => \FloatXOut[26]_i_2_n_0\,
-      I1 => D3DColorIn(22),
-      I2 => \FloatXOut[29]_i_5_n_0\,
-      I3 => D3DColorIn(23),
+      I1 => D3DColorIn(23),
       O => \FloatXOut[26]_i_1_n_0\
     );
 \FloatXOut[26]_i_2\: unisim.vcomponents.LUT6
     generic map(
-      INIT => X"7FFFFFFFFFFFFFFF"
+      INIT => X"FFFFFFFFFFFFFFFE"
     )
         port map (
       I0 => D3DColorIn(21),
@@ -832,15 +833,14 @@ begin
       I3 => Enable,
       O => \FloatXOut[29]_i_1_n_0\
     );
-\FloatXOut[29]_i_2\: unisim.vcomponents.LUT4
+\FloatXOut[29]_i_2\: unisim.vcomponents.LUT3
     generic map(
-      INIT => X"FBFF"
+      INIT => X"FE"
     )
         port map (
       I0 => \FloatXOut[29]_i_4_n_0\,
       I1 => D3DColorIn(22),
-      I2 => \FloatXOut[29]_i_5_n_0\,
-      I3 => D3DColorIn(23),
+      I2 => D3DColorIn(23),
       O => \FloatXOut[29]_i_2_n_0\
     );
 \FloatXOut[29]_i_3\: unisim.vcomponents.LUT6
@@ -858,7 +858,7 @@ begin
     );
 \FloatXOut[29]_i_4\: unisim.vcomponents.LUT6
     generic map(
-      INIT => X"7FFFFFFFFFFFFFFF"
+      INIT => X"FFFFFFFFFFFFFFFE"
     )
         port map (
       I0 => D3DColorIn(20),
@@ -869,19 +869,6 @@ begin
       I5 => D3DColorIn(21),
       O => \FloatXOut[29]_i_4_n_0\
     );
-\FloatXOut[29]_i_5\: unisim.vcomponents.LUT6
-    generic map(
-      INIT => X"8000000000000000"
-    )
-        port map (
-      I0 => D3DColorIn(20),
-      I1 => D3DColorIn(18),
-      I2 => D3DColorIn(17),
-      I3 => D3DColorIn(16),
-      I4 => D3DColorIn(19),
-      I5 => D3DColorIn(21),
-      O => \FloatXOut[29]_i_5_n_0\
-    );
 \FloatXOut_reg[16]\: unisim.vcomponents.FDRE
     generic map(
       INIT => '0'
@@ -889,7 +876,7 @@ begin
         port map (
       C => clk,
       CE => Enable,
-      D => \FloatXOut[16]_i_1_n_0\,
+      D => \mantissaBits[0]_0\(16),
       Q => FloatXOut(0),
       R => \FloatXOut[22]_i_1_n_0\
     );
@@ -900,7 +887,7 @@ begin
         port map (
       C => clk,
       CE => Enable,
-      D => \mantissaBits[255]_0\(17),
+      D => \mantissaBits[0]_0\(17),
       Q => FloatXOut(1),
       R => \FloatXOut[22]_i_1_n_0\
     );
@@ -911,7 +898,7 @@ begin
         port map (
       C => clk,
       CE => Enable,
-      D => \mantissaBits[255]_0\(18),
+      D => \mantissaBits[0]_0\(18),
       Q => FloatXOut(2),
       R => \FloatXOut[22]_i_1_n_0\
     );
@@ -922,7 +909,7 @@ begin
         port map (
       C => clk,
       CE => Enable,
-      D => \mantissaBits[255]_0\(19),
+      D => \mantissaBits[0]_0\(19),
       Q => FloatXOut(3),
       R => \FloatXOut[22]_i_1_n_0\
     );
@@ -933,7 +920,7 @@ begin
         port map (
       C => clk,
       CE => Enable,
-      D => \mantissaBits[255]_0\(20),
+      D => \mantissaBits[0]_0\(20),
       Q => FloatXOut(4),
       R => \FloatXOut[22]_i_1_n_0\
     );
@@ -944,7 +931,7 @@ begin
         port map (
       C => clk,
       CE => Enable,
-      D => \mantissaBits[255]_0\(21),
+      D => \mantissaBits[0]_0\(21),
       Q => FloatXOut(5),
       R => \FloatXOut[22]_i_1_n_0\
     );
@@ -955,7 +942,7 @@ begin
         port map (
       C => clk,
       CE => Enable,
-      D => \mantissaBits[255]_0\(22),
+      D => \mantissaBits[0]_0\(22),
       Q => FloatXOut(6),
       R => \FloatXOut[22]_i_1_n_0\
     );
@@ -1016,7 +1003,7 @@ begin
     );
 \FloatYOut[16]_i_1\: unisim.vcomponents.LUT2
     generic map(
-      INIT => X"1"
+      INIT => X"8"
     )
         port map (
       I0 => D3DColorIn(8),
@@ -1025,99 +1012,99 @@ begin
     );
 \FloatYOut[17]_i_1\: unisim.vcomponents.LUT4
     generic map(
-      INIT => X"101F"
+      INIT => X"B888"
     )
         port map (
-      I0 => D3DColorIn(8),
-      I1 => D3DColorIn(14),
-      I2 => D3DColorIn(15),
-      I3 => D3DColorIn(9),
+      I0 => D3DColorIn(9),
+      I1 => D3DColorIn(15),
+      I2 => D3DColorIn(8),
+      I3 => D3DColorIn(14),
       O => \FloatYOut[17]_i_1_n_0\
     );
 \FloatYOut[18]_i_1\: unisim.vcomponents.LUT6
     generic map(
-      INIT => X"101F0000101FFFFF"
+      INIT => X"B8BBB888B888B888"
     )
         port map (
-      I0 => D3DColorIn(8),
-      I1 => D3DColorIn(13),
-      I2 => D3DColorIn(14),
-      I3 => D3DColorIn(9),
-      I4 => D3DColorIn(15),
-      I5 => D3DColorIn(10),
+      I0 => D3DColorIn(10),
+      I1 => D3DColorIn(15),
+      I2 => D3DColorIn(9),
+      I3 => D3DColorIn(14),
+      I4 => D3DColorIn(8),
+      I5 => D3DColorIn(13),
       O => \FloatYOut[18]_i_1_n_0\
     );
 \FloatYOut[19]_i_1\: unisim.vcomponents.LUT3
     generic map(
-      INIT => X"8B"
+      INIT => X"B8"
     )
         port map (
-      I0 => \FloatYOut[19]_i_2_n_0\,
+      I0 => D3DColorIn(11),
       I1 => D3DColorIn(15),
-      I2 => D3DColorIn(11),
+      I2 => \FloatYOut[19]_i_2_n_0\,
       O => \FloatYOut[19]_i_1_n_0\
     );
 \FloatYOut[19]_i_2\: unisim.vcomponents.LUT6
     generic map(
-      INIT => X"101F0000101FFFFF"
+      INIT => X"B8BBB888B888B888"
     )
         port map (
-      I0 => D3DColorIn(8),
-      I1 => D3DColorIn(12),
-      I2 => D3DColorIn(13),
-      I3 => D3DColorIn(9),
-      I4 => D3DColorIn(14),
-      I5 => D3DColorIn(10),
+      I0 => D3DColorIn(10),
+      I1 => D3DColorIn(14),
+      I2 => D3DColorIn(9),
+      I3 => D3DColorIn(13),
+      I4 => D3DColorIn(8),
+      I5 => D3DColorIn(12),
       O => \FloatYOut[19]_i_2_n_0\
     );
 \FloatYOut[20]_i_1\: unisim.vcomponents.LUT5
     generic map(
-      INIT => X"8B008BFF"
+      INIT => X"B8BBB888"
     )
         port map (
-      I0 => \FloatYOut[20]_i_2_n_0\,
-      I1 => D3DColorIn(14),
+      I0 => D3DColorIn(12),
+      I1 => D3DColorIn(15),
       I2 => D3DColorIn(11),
-      I3 => D3DColorIn(15),
-      I4 => D3DColorIn(12),
+      I3 => D3DColorIn(14),
+      I4 => \FloatYOut[20]_i_2_n_0\,
       O => \FloatYOut[20]_i_1_n_0\
     );
 \FloatYOut[20]_i_2\: unisim.vcomponents.LUT6
     generic map(
-      INIT => X"101F0000101FFFFF"
+      INIT => X"B8BBB888B888B888"
     )
         port map (
-      I0 => D3DColorIn(8),
-      I1 => D3DColorIn(11),
-      I2 => D3DColorIn(12),
-      I3 => D3DColorIn(9),
-      I4 => D3DColorIn(13),
-      I5 => D3DColorIn(10),
+      I0 => D3DColorIn(10),
+      I1 => D3DColorIn(13),
+      I2 => D3DColorIn(9),
+      I3 => D3DColorIn(12),
+      I4 => D3DColorIn(8),
+      I5 => D3DColorIn(11),
       O => \FloatYOut[20]_i_2_n_0\
     );
 \FloatYOut[21]_i_1\: unisim.vcomponents.LUT5
     generic map(
-      INIT => X"8B008BFF"
+      INIT => X"B8BBB888"
     )
         port map (
-      I0 => \FloatYOut[21]_i_2_n_0\,
-      I1 => D3DColorIn(14),
+      I0 => D3DColorIn(13),
+      I1 => D3DColorIn(15),
       I2 => D3DColorIn(12),
-      I3 => D3DColorIn(15),
-      I4 => D3DColorIn(13),
+      I3 => D3DColorIn(14),
+      I4 => \FloatYOut[21]_i_2_n_0\,
       O => \FloatYOut[21]_i_1_n_0\
     );
 \FloatYOut[21]_i_2\: unisim.vcomponents.LUT6
     generic map(
-      INIT => X"005F0000303FFFFF"
+      INIT => X"FE55FE44BA00BA00"
     )
         port map (
-      I0 => D3DColorIn(8),
-      I1 => D3DColorIn(9),
-      I2 => D3DColorIn(12),
-      I3 => D3DColorIn(10),
-      I4 => D3DColorIn(13),
-      I5 => D3DColorIn(11),
+      I0 => D3DColorIn(13),
+      I1 => D3DColorIn(12),
+      I2 => D3DColorIn(9),
+      I3 => D3DColorIn(11),
+      I4 => D3DColorIn(8),
+      I5 => D3DColorIn(10),
       O => \FloatYOut[21]_i_2_n_0\
     );
 \FloatYOut[22]_i_1\: unisim.vcomponents.LUT5
@@ -1128,121 +1115,129 @@ begin
       I0 => D3DColorIn(14),
       I1 => \FloatYOut[29]_i_3_n_0\,
       I2 => D3DColorIn(15),
-      I3 => \FloatYOut[29]_i_5_n_0\,
+      I3 => \FloatYOut[23]_i_3_n_0\,
       I4 => Enable,
       O => \FloatYOut[22]_i_1_n_0\
     );
 \FloatYOut[22]_i_2\: unisim.vcomponents.LUT4
     generic map(
-      INIT => X"A03F"
+      INIT => X"E5E0"
     )
         port map (
-      I0 => \FloatYOut[22]_i_3_n_0\,
+      I0 => D3DColorIn(15),
       I1 => D3DColorIn(13),
-      I2 => D3DColorIn(15),
-      I3 => D3DColorIn(14),
+      I2 => D3DColorIn(14),
+      I3 => \FloatYOut[22]_i_3_n_0\,
       O => \FloatYOut[22]_i_2_n_0\
     );
 \FloatYOut[22]_i_3\: unisim.vcomponents.LUT6
     generic map(
-      INIT => X"130F000000FFFFFF"
+      INIT => X"D9C9D8C8D9C8D8C8"
     )
         port map (
-      I0 => D3DColorIn(8),
-      I1 => D3DColorIn(9),
-      I2 => D3DColorIn(10),
-      I3 => D3DColorIn(11),
-      I4 => D3DColorIn(13),
-      I5 => D3DColorIn(12),
+      I0 => D3DColorIn(13),
+      I1 => D3DColorIn(12),
+      I2 => D3DColorIn(11),
+      I3 => D3DColorIn(10),
+      I4 => D3DColorIn(9),
+      I5 => D3DColorIn(8),
       O => \FloatYOut[22]_i_3_n_0\
     );
-\FloatYOut[23]_i_1\: unisim.vcomponents.LUT5
+\FloatYOut[23]_i_1\: unisim.vcomponents.LUT4
     generic map(
-      INIT => X"FFCF0A0A"
+      INIT => X"C0EE"
     )
         port map (
-      I0 => \FloatYOut[29]_i_3_n_0\,
-      I1 => \FloatYOut[23]_i_2_n_0\,
-      I2 => D3DColorIn(14),
-      I3 => \FloatYOut[29]_i_5_n_0\,
-      I4 => D3DColorIn(15),
+      I0 => \FloatYOut[23]_i_2_n_0\,
+      I1 => D3DColorIn(14),
+      I2 => \FloatYOut[23]_i_3_n_0\,
+      I3 => D3DColorIn(15),
       O => \FloatYOut[23]_i_1_n_0\
     );
 \FloatYOut[23]_i_2\: unisim.vcomponents.LUT6
     generic map(
-      INIT => X"77F7555500000000"
+      INIT => X"00000000AAAAEEFE"
     )
         port map (
       I0 => D3DColorIn(12),
       I1 => D3DColorIn(10),
-      I2 => D3DColorIn(9),
-      I3 => D3DColorIn(8),
+      I2 => D3DColorIn(8),
+      I3 => D3DColorIn(9),
       I4 => D3DColorIn(11),
       I5 => D3DColorIn(13),
       O => \FloatYOut[23]_i_2_n_0\
     );
-\FloatYOut[24]_i_1\: unisim.vcomponents.LUT4
+\FloatYOut[23]_i_3\: unisim.vcomponents.LUT6
     generic map(
-      INIT => X"C8FF"
+      INIT => X"8000000000000000"
+    )
+        port map (
+      I0 => D3DColorIn(12),
+      I1 => D3DColorIn(10),
+      I2 => D3DColorIn(9),
+      I3 => D3DColorIn(8),
+      I4 => D3DColorIn(11),
+      I5 => D3DColorIn(13),
+      O => \FloatYOut[23]_i_3_n_0\
+    );
+\FloatYOut[24]_i_1\: unisim.vcomponents.LUT3
+    generic map(
+      INIT => X"F2"
     )
         port map (
       I0 => \FloatYOut[24]_i_2_n_0\,
       I1 => D3DColorIn(14),
-      I2 => \FloatYOut[29]_i_5_n_0\,
-      I3 => D3DColorIn(15),
+      I2 => D3DColorIn(15),
       O => \FloatYOut[24]_i_1_n_0\
     );
 \FloatYOut[24]_i_2\: unisim.vcomponents.LUT6
     generic map(
-      INIT => X"55D5FFFF00000000"
+      INIT => X"00000000FFFFAABA"
     )
         port map (
       I0 => D3DColorIn(12),
       I1 => D3DColorIn(10),
-      I2 => D3DColorIn(9),
-      I3 => D3DColorIn(8),
+      I2 => D3DColorIn(8),
+      I3 => D3DColorIn(9),
       I4 => D3DColorIn(11),
       I5 => D3DColorIn(13),
       O => \FloatYOut[24]_i_2_n_0\
     );
-\FloatYOut[25]_i_1\: unisim.vcomponents.LUT4
+\FloatYOut[25]_i_1\: unisim.vcomponents.LUT3
     generic map(
-      INIT => X"FBFF"
+      INIT => X"FE"
     )
         port map (
       I0 => \FloatYOut[25]_i_2_n_0\,
       I1 => D3DColorIn(14),
-      I2 => \FloatYOut[29]_i_5_n_0\,
-      I3 => D3DColorIn(15),
+      I2 => D3DColorIn(15),
       O => \FloatYOut[25]_i_1_n_0\
     );
 \FloatYOut[25]_i_2\: unisim.vcomponents.LUT6
     generic map(
-      INIT => X"00800000FFFFFFFF"
+      INIT => X"FFFFFFFF00000010"
     )
         port map (
       I0 => D3DColorIn(12),
       I1 => D3DColorIn(10),
-      I2 => D3DColorIn(9),
-      I3 => D3DColorIn(8),
+      I2 => D3DColorIn(8),
+      I3 => D3DColorIn(9),
       I4 => D3DColorIn(11),
       I5 => D3DColorIn(13),
       O => \FloatYOut[25]_i_2_n_0\
     );
-\FloatYOut[26]_i_1\: unisim.vcomponents.LUT4
+\FloatYOut[26]_i_1\: unisim.vcomponents.LUT2
     generic map(
-      INIT => X"EAFF"
+      INIT => X"E"
     )
         port map (
       I0 => \FloatYOut[26]_i_2_n_0\,
-      I1 => D3DColorIn(14),
-      I2 => \FloatYOut[29]_i_5_n_0\,
-      I3 => D3DColorIn(15),
+      I1 => D3DColorIn(15),
       O => \FloatYOut[26]_i_1_n_0\
     );
 \FloatYOut[26]_i_2\: unisim.vcomponents.LUT6
     generic map(
-      INIT => X"7FFFFFFFFFFFFFFF"
+      INIT => X"FFFFFFFFFFFFFFFE"
     )
         port map (
       I0 => D3DColorIn(13),
@@ -1264,15 +1259,14 @@ begin
       I3 => Enable,
       O => \FloatYOut[29]_i_1_n_0\
     );
-\FloatYOut[29]_i_2\: unisim.vcomponents.LUT4
+\FloatYOut[29]_i_2\: unisim.vcomponents.LUT3
     generic map(
-      INIT => X"FBFF"
+      INIT => X"FE"
     )
         port map (
       I0 => \FloatYOut[29]_i_4_n_0\,
       I1 => D3DColorIn(14),
-      I2 => \FloatYOut[29]_i_5_n_0\,
-      I3 => D3DColorIn(15),
+      I2 => D3DColorIn(15),
       O => \FloatYOut[29]_i_2_n_0\
     );
 \FloatYOut[29]_i_3\: unisim.vcomponents.LUT6
@@ -1290,7 +1284,7 @@ begin
     );
 \FloatYOut[29]_i_4\: unisim.vcomponents.LUT6
     generic map(
-      INIT => X"7FFFFFFFFFFFFFFF"
+      INIT => X"FFFFFFFFFFFFFFFE"
     )
         port map (
       I0 => D3DColorIn(12),
@@ -1300,19 +1294,6 @@ begin
       I4 => D3DColorIn(11),
       I5 => D3DColorIn(13),
       O => \FloatYOut[29]_i_4_n_0\
-    );
-\FloatYOut[29]_i_5\: unisim.vcomponents.LUT6
-    generic map(
-      INIT => X"8000000000000000"
-    )
-        port map (
-      I0 => D3DColorIn(12),
-      I1 => D3DColorIn(10),
-      I2 => D3DColorIn(9),
-      I3 => D3DColorIn(8),
-      I4 => D3DColorIn(11),
-      I5 => D3DColorIn(13),
-      O => \FloatYOut[29]_i_5_n_0\
     );
 \FloatYOut_reg[16]\: unisim.vcomponents.FDRE
     generic map(
@@ -1448,7 +1429,7 @@ begin
     );
 \FloatZOut[16]_i_1\: unisim.vcomponents.LUT2
     generic map(
-      INIT => X"1"
+      INIT => X"8"
     )
         port map (
       I0 => D3DColorIn(0),
@@ -1457,99 +1438,99 @@ begin
     );
 \FloatZOut[17]_i_1\: unisim.vcomponents.LUT4
     generic map(
-      INIT => X"101F"
+      INIT => X"B888"
     )
         port map (
-      I0 => D3DColorIn(0),
-      I1 => D3DColorIn(6),
-      I2 => D3DColorIn(7),
-      I3 => D3DColorIn(1),
+      I0 => D3DColorIn(1),
+      I1 => D3DColorIn(7),
+      I2 => D3DColorIn(0),
+      I3 => D3DColorIn(6),
       O => \FloatZOut[17]_i_1_n_0\
     );
 \FloatZOut[18]_i_1\: unisim.vcomponents.LUT6
     generic map(
-      INIT => X"101F0000101FFFFF"
+      INIT => X"B8BBB888B888B888"
     )
         port map (
-      I0 => D3DColorIn(0),
-      I1 => D3DColorIn(5),
-      I2 => D3DColorIn(6),
-      I3 => D3DColorIn(1),
-      I4 => D3DColorIn(7),
-      I5 => D3DColorIn(2),
+      I0 => D3DColorIn(2),
+      I1 => D3DColorIn(7),
+      I2 => D3DColorIn(1),
+      I3 => D3DColorIn(6),
+      I4 => D3DColorIn(0),
+      I5 => D3DColorIn(5),
       O => \FloatZOut[18]_i_1_n_0\
     );
 \FloatZOut[19]_i_1\: unisim.vcomponents.LUT3
     generic map(
-      INIT => X"8B"
+      INIT => X"B8"
     )
         port map (
-      I0 => \FloatZOut[19]_i_2_n_0\,
+      I0 => D3DColorIn(3),
       I1 => D3DColorIn(7),
-      I2 => D3DColorIn(3),
+      I2 => \FloatZOut[19]_i_2_n_0\,
       O => \FloatZOut[19]_i_1_n_0\
     );
 \FloatZOut[19]_i_2\: unisim.vcomponents.LUT6
     generic map(
-      INIT => X"101F0000101FFFFF"
+      INIT => X"B8BBB888B888B888"
     )
         port map (
-      I0 => D3DColorIn(0),
-      I1 => D3DColorIn(4),
-      I2 => D3DColorIn(5),
-      I3 => D3DColorIn(1),
-      I4 => D3DColorIn(6),
-      I5 => D3DColorIn(2),
+      I0 => D3DColorIn(2),
+      I1 => D3DColorIn(6),
+      I2 => D3DColorIn(1),
+      I3 => D3DColorIn(5),
+      I4 => D3DColorIn(0),
+      I5 => D3DColorIn(4),
       O => \FloatZOut[19]_i_2_n_0\
     );
 \FloatZOut[20]_i_1\: unisim.vcomponents.LUT5
     generic map(
-      INIT => X"8B008BFF"
+      INIT => X"B8BBB888"
     )
         port map (
-      I0 => \FloatZOut[20]_i_2_n_0\,
-      I1 => D3DColorIn(6),
+      I0 => D3DColorIn(4),
+      I1 => D3DColorIn(7),
       I2 => D3DColorIn(3),
-      I3 => D3DColorIn(7),
-      I4 => D3DColorIn(4),
+      I3 => D3DColorIn(6),
+      I4 => \FloatZOut[20]_i_2_n_0\,
       O => \FloatZOut[20]_i_1_n_0\
     );
 \FloatZOut[20]_i_2\: unisim.vcomponents.LUT6
     generic map(
-      INIT => X"101F0000101FFFFF"
+      INIT => X"B8BBB888B888B888"
     )
         port map (
-      I0 => D3DColorIn(0),
-      I1 => D3DColorIn(3),
-      I2 => D3DColorIn(4),
-      I3 => D3DColorIn(1),
-      I4 => D3DColorIn(5),
-      I5 => D3DColorIn(2),
+      I0 => D3DColorIn(2),
+      I1 => D3DColorIn(5),
+      I2 => D3DColorIn(1),
+      I3 => D3DColorIn(4),
+      I4 => D3DColorIn(0),
+      I5 => D3DColorIn(3),
       O => \FloatZOut[20]_i_2_n_0\
     );
 \FloatZOut[21]_i_1\: unisim.vcomponents.LUT5
     generic map(
-      INIT => X"8B008BFF"
+      INIT => X"B8BBB888"
     )
         port map (
-      I0 => \FloatZOut[21]_i_2_n_0\,
-      I1 => D3DColorIn(6),
+      I0 => D3DColorIn(5),
+      I1 => D3DColorIn(7),
       I2 => D3DColorIn(4),
-      I3 => D3DColorIn(7),
-      I4 => D3DColorIn(5),
+      I3 => D3DColorIn(6),
+      I4 => \FloatZOut[21]_i_2_n_0\,
       O => \FloatZOut[21]_i_1_n_0\
     );
 \FloatZOut[21]_i_2\: unisim.vcomponents.LUT6
     generic map(
-      INIT => X"005F0000303FFFFF"
+      INIT => X"FE55FE44BA00BA00"
     )
         port map (
-      I0 => D3DColorIn(0),
-      I1 => D3DColorIn(1),
-      I2 => D3DColorIn(4),
-      I3 => D3DColorIn(2),
-      I4 => D3DColorIn(5),
-      I5 => D3DColorIn(3),
+      I0 => D3DColorIn(5),
+      I1 => D3DColorIn(4),
+      I2 => D3DColorIn(1),
+      I3 => D3DColorIn(3),
+      I4 => D3DColorIn(0),
+      I5 => D3DColorIn(2),
       O => \FloatZOut[21]_i_2_n_0\
     );
 \FloatZOut[22]_i_1\: unisim.vcomponents.LUT5
@@ -1560,121 +1541,129 @@ begin
       I0 => D3DColorIn(6),
       I1 => \FloatZOut[29]_i_3_n_0\,
       I2 => D3DColorIn(7),
-      I3 => \FloatZOut[29]_i_5_n_0\,
+      I3 => \FloatZOut[23]_i_3_n_0\,
       I4 => Enable,
       O => \FloatZOut[22]_i_1_n_0\
     );
 \FloatZOut[22]_i_2\: unisim.vcomponents.LUT4
     generic map(
-      INIT => X"A03F"
+      INIT => X"E5E0"
     )
         port map (
-      I0 => \FloatZOut[22]_i_3_n_0\,
+      I0 => D3DColorIn(7),
       I1 => D3DColorIn(5),
-      I2 => D3DColorIn(7),
-      I3 => D3DColorIn(6),
+      I2 => D3DColorIn(6),
+      I3 => \FloatZOut[22]_i_3_n_0\,
       O => \FloatZOut[22]_i_2_n_0\
     );
 \FloatZOut[22]_i_3\: unisim.vcomponents.LUT6
     generic map(
-      INIT => X"130F000000FFFFFF"
+      INIT => X"D9C9D8C8D9C8D8C8"
     )
         port map (
-      I0 => D3DColorIn(0),
-      I1 => D3DColorIn(1),
-      I2 => D3DColorIn(2),
-      I3 => D3DColorIn(3),
-      I4 => D3DColorIn(5),
-      I5 => D3DColorIn(4),
+      I0 => D3DColorIn(5),
+      I1 => D3DColorIn(4),
+      I2 => D3DColorIn(3),
+      I3 => D3DColorIn(2),
+      I4 => D3DColorIn(1),
+      I5 => D3DColorIn(0),
       O => \FloatZOut[22]_i_3_n_0\
     );
-\FloatZOut[23]_i_1\: unisim.vcomponents.LUT5
+\FloatZOut[23]_i_1\: unisim.vcomponents.LUT4
     generic map(
-      INIT => X"FFCF0A0A"
+      INIT => X"C0EE"
     )
         port map (
-      I0 => \FloatZOut[29]_i_3_n_0\,
-      I1 => \FloatZOut[23]_i_2_n_0\,
-      I2 => D3DColorIn(6),
-      I3 => \FloatZOut[29]_i_5_n_0\,
-      I4 => D3DColorIn(7),
+      I0 => \FloatZOut[23]_i_2_n_0\,
+      I1 => D3DColorIn(6),
+      I2 => \FloatZOut[23]_i_3_n_0\,
+      I3 => D3DColorIn(7),
       O => \FloatZOut[23]_i_1_n_0\
     );
 \FloatZOut[23]_i_2\: unisim.vcomponents.LUT6
     generic map(
-      INIT => X"77F7555500000000"
+      INIT => X"00000000AAAAEEFE"
     )
         port map (
       I0 => D3DColorIn(4),
       I1 => D3DColorIn(2),
-      I2 => D3DColorIn(1),
-      I3 => D3DColorIn(0),
+      I2 => D3DColorIn(0),
+      I3 => D3DColorIn(1),
       I4 => D3DColorIn(3),
       I5 => D3DColorIn(5),
       O => \FloatZOut[23]_i_2_n_0\
     );
-\FloatZOut[24]_i_1\: unisim.vcomponents.LUT4
+\FloatZOut[23]_i_3\: unisim.vcomponents.LUT6
     generic map(
-      INIT => X"C8FF"
+      INIT => X"8000000000000000"
+    )
+        port map (
+      I0 => D3DColorIn(4),
+      I1 => D3DColorIn(2),
+      I2 => D3DColorIn(1),
+      I3 => D3DColorIn(0),
+      I4 => D3DColorIn(3),
+      I5 => D3DColorIn(5),
+      O => \FloatZOut[23]_i_3_n_0\
+    );
+\FloatZOut[24]_i_1\: unisim.vcomponents.LUT3
+    generic map(
+      INIT => X"F2"
     )
         port map (
       I0 => \FloatZOut[24]_i_2_n_0\,
       I1 => D3DColorIn(6),
-      I2 => \FloatZOut[29]_i_5_n_0\,
-      I3 => D3DColorIn(7),
+      I2 => D3DColorIn(7),
       O => \FloatZOut[24]_i_1_n_0\
     );
 \FloatZOut[24]_i_2\: unisim.vcomponents.LUT6
     generic map(
-      INIT => X"55D5FFFF00000000"
+      INIT => X"00000000FFFFAABA"
     )
         port map (
       I0 => D3DColorIn(4),
       I1 => D3DColorIn(2),
-      I2 => D3DColorIn(1),
-      I3 => D3DColorIn(0),
+      I2 => D3DColorIn(0),
+      I3 => D3DColorIn(1),
       I4 => D3DColorIn(3),
       I5 => D3DColorIn(5),
       O => \FloatZOut[24]_i_2_n_0\
     );
-\FloatZOut[25]_i_1\: unisim.vcomponents.LUT4
+\FloatZOut[25]_i_1\: unisim.vcomponents.LUT3
     generic map(
-      INIT => X"FBFF"
+      INIT => X"FE"
     )
         port map (
       I0 => \FloatZOut[25]_i_2_n_0\,
       I1 => D3DColorIn(6),
-      I2 => \FloatZOut[29]_i_5_n_0\,
-      I3 => D3DColorIn(7),
+      I2 => D3DColorIn(7),
       O => \FloatZOut[25]_i_1_n_0\
     );
 \FloatZOut[25]_i_2\: unisim.vcomponents.LUT6
     generic map(
-      INIT => X"00800000FFFFFFFF"
+      INIT => X"FFFFFFFF00000010"
     )
         port map (
       I0 => D3DColorIn(4),
       I1 => D3DColorIn(2),
-      I2 => D3DColorIn(1),
-      I3 => D3DColorIn(0),
+      I2 => D3DColorIn(0),
+      I3 => D3DColorIn(1),
       I4 => D3DColorIn(3),
       I5 => D3DColorIn(5),
       O => \FloatZOut[25]_i_2_n_0\
     );
-\FloatZOut[26]_i_1\: unisim.vcomponents.LUT4
+\FloatZOut[26]_i_1\: unisim.vcomponents.LUT2
     generic map(
-      INIT => X"EAFF"
+      INIT => X"E"
     )
         port map (
       I0 => \FloatZOut[26]_i_2_n_0\,
-      I1 => D3DColorIn(6),
-      I2 => \FloatZOut[29]_i_5_n_0\,
-      I3 => D3DColorIn(7),
+      I1 => D3DColorIn(7),
       O => \FloatZOut[26]_i_1_n_0\
     );
 \FloatZOut[26]_i_2\: unisim.vcomponents.LUT6
     generic map(
-      INIT => X"7FFFFFFFFFFFFFFF"
+      INIT => X"FFFFFFFFFFFFFFFE"
     )
         port map (
       I0 => D3DColorIn(5),
@@ -1696,15 +1685,14 @@ begin
       I3 => Enable,
       O => \FloatZOut[29]_i_1_n_0\
     );
-\FloatZOut[29]_i_2\: unisim.vcomponents.LUT4
+\FloatZOut[29]_i_2\: unisim.vcomponents.LUT3
     generic map(
-      INIT => X"FBFF"
+      INIT => X"FE"
     )
         port map (
       I0 => \FloatZOut[29]_i_4_n_0\,
       I1 => D3DColorIn(6),
-      I2 => \FloatZOut[29]_i_5_n_0\,
-      I3 => D3DColorIn(7),
+      I2 => D3DColorIn(7),
       O => \FloatZOut[29]_i_2_n_0\
     );
 \FloatZOut[29]_i_3\: unisim.vcomponents.LUT6
@@ -1722,7 +1710,7 @@ begin
     );
 \FloatZOut[29]_i_4\: unisim.vcomponents.LUT6
     generic map(
-      INIT => X"7FFFFFFFFFFFFFFF"
+      INIT => X"FFFFFFFFFFFFFFFE"
     )
         port map (
       I0 => D3DColorIn(4),
@@ -1732,19 +1720,6 @@ begin
       I4 => D3DColorIn(3),
       I5 => D3DColorIn(5),
       O => \FloatZOut[29]_i_4_n_0\
-    );
-\FloatZOut[29]_i_5\: unisim.vcomponents.LUT6
-    generic map(
-      INIT => X"8000000000000000"
-    )
-        port map (
-      I0 => D3DColorIn(4),
-      I1 => D3DColorIn(2),
-      I2 => D3DColorIn(1),
-      I3 => D3DColorIn(0),
-      I4 => D3DColorIn(3),
-      I5 => D3DColorIn(5),
-      O => \FloatZOut[29]_i_5_n_0\
     );
 \FloatZOut_reg[16]\: unisim.vcomponents.FDRE
     generic map(

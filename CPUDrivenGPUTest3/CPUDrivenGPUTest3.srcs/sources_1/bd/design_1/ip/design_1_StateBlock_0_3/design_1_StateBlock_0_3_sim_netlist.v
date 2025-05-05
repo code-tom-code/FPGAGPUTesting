@@ -1,7 +1,7 @@
 // Copyright 1986-2018 Xilinx, Inc. All Rights Reserved.
 // --------------------------------------------------------------------------------
 // Tool Version: Vivado v.2018.1_AR73068 (win64) Build 2188600 Wed Apr  4 18:40:38 MDT 2018
-// Date        : Thu Oct 10 00:58:51 2024
+// Date        : Fri Apr 25 20:02:13 2025
 // Host        : Dragon2 running 64-bit major release  (build 9200)
 // Command     : write_verilog -force -mode funcsim
 //               D:/Xilinx/MyXilinxProjects/CPUDrivenGPUTest3/CPUDrivenGPUTest3.srcs/sources_1/bd/design_1/ip/design_1_StateBlock_0_3/design_1_StateBlock_0_3_sim_netlist.v
@@ -36,9 +36,9 @@ module design_1_StateBlock_0_3
   input CMD_SetNewState;
   input CMD_EndFrameReset;
   output [2:0]CMD_NumFreeSlots;
-  input [39:0]CMD_NewStateBits;
+  input [76:0]CMD_NewStateBits;
   input [15:0]CMD_NewStateDrawEventID;
-  output [39:0]STAGE_StateBitsAtDrawID;
+  output [76:0]STAGE_StateBitsAtDrawID;
   output [15:0]STAGE_NextDrawID;
   output STAGE_StateIsValid;
   input STAGE_ConsumeStateSlot;
@@ -51,7 +51,7 @@ module design_1_StateBlock_0_3
   output [15:0]DBG_Slot3;
 
   wire CMD_EndFrameReset;
-  wire [39:0]CMD_NewStateBits;
+  wire [76:0]CMD_NewStateBits;
   wire [15:0]CMD_NewStateDrawEventID;
   wire [2:0]CMD_NumFreeSlots;
   wire CMD_SetNewState;
@@ -64,7 +64,7 @@ module design_1_StateBlock_0_3
   wire [3:0]DBG_SlotsValid;
   wire STAGE_ConsumeStateSlot;
   wire [15:0]STAGE_NextDrawID;
-  wire [39:0]STAGE_StateBitsAtDrawID;
+  wire [76:0]STAGE_StateBitsAtDrawID;
   wire STAGE_StateIsValid;
   wire clk;
 
@@ -125,17 +125,17 @@ module design_1_StateBlock_0_3_StateBlock
   output [15:0]DBG_Slot1;
   output [15:0]DBG_Slot0;
   output STAGE_StateIsValid;
-  output [39:0]STAGE_StateBitsAtDrawID;
+  output [76:0]STAGE_StateBitsAtDrawID;
   output [15:0]STAGE_NextDrawID;
   input CMD_EndFrameReset;
   input CMD_SetNewState;
   input clk;
   input STAGE_ConsumeStateSlot;
-  input [39:0]CMD_NewStateBits;
+  input [76:0]CMD_NewStateBits;
   input [15:0]CMD_NewStateDrawEventID;
 
   wire CMD_EndFrameReset;
-  wire [39:0]CMD_NewStateBits;
+  wire [76:0]CMD_NewStateBits;
   wire [15:0]CMD_NewStateDrawEventID;
   wire [2:0]CMD_NumFreeSlots;
   wire CMD_SetNewState;
@@ -151,7 +151,7 @@ module design_1_StateBlock_0_3_StateBlock
   wire [1:0]Q;
   wire STAGE_ConsumeStateSlot;
   wire [15:0]STAGE_NextDrawID;
-  wire [39:0]STAGE_StateBitsAtDrawID;
+  wire [76:0]STAGE_StateBitsAtDrawID;
   wire STAGE_StateIsValid;
   wire clk;
   wire \currentReadSlot[0]_i_1_n_0 ;
@@ -237,12 +237,12 @@ module design_1_StateBlock_0_3_StateBlock
   wire \slotsData[3][SlotIsValid]7_out ;
   wire \slotsData[3][SlotIsValid]_i_1_n_0 ;
   wire \slotsData[3][SlotIsValid]_i_2_n_0 ;
-  wire [39:0]\slotsData_reg[0][SlotData] ;
-  wire [39:0]\slotsData_reg[1][SlotData] ;
-  wire [39:0]\slotsData_reg[2][SlotData] ;
-  wire [39:0]\slotsData_reg[3][SlotData] ;
+  wire [76:0]\slotsData_reg[0][SlotData] ;
+  wire [76:0]\slotsData_reg[1][SlotData] ;
+  wire [76:0]\slotsData_reg[2][SlotData] ;
+  wire [76:0]\slotsData_reg[3][SlotData] ;
 
-  (* SOFT_HLUTNM = "soft_lutpair32" *) 
+  (* SOFT_HLUTNM = "soft_lutpair20" *) 
   LUT4 #(
     .INIT(16'h6996)) 
     \CMD_NumFreeSlots[0]_INST_0 
@@ -251,7 +251,7 @@ module design_1_StateBlock_0_3_StateBlock
         .I2(\DBG_SlotsValid[3] ),
         .I3(\DBG_SlotsValid[0] ),
         .O(CMD_NumFreeSlots[0]));
-  (* SOFT_HLUTNM = "soft_lutpair32" *) 
+  (* SOFT_HLUTNM = "soft_lutpair20" *) 
   LUT4 #(
     .INIT(16'h177E)) 
     \CMD_NumFreeSlots[1]_INST_0 
@@ -770,6 +770,106 @@ module design_1_StateBlock_0_3_StateBlock
         .O(STAGE_StateBitsAtDrawID[3]));
   LUT6 #(
     .INIT(64'hF0AAFFCCF0AA00CC)) 
+    \STAGE_StateBitsAtDrawID[40]_INST_0 
+       (.I0(\slotsData_reg[1][SlotData] [40]),
+        .I1(\slotsData_reg[0][SlotData] [40]),
+        .I2(\slotsData_reg[3][SlotData] [40]),
+        .I3(Q[1]),
+        .I4(Q[0]),
+        .I5(\slotsData_reg[2][SlotData] [40]),
+        .O(STAGE_StateBitsAtDrawID[40]));
+  LUT6 #(
+    .INIT(64'hF0AAFFCCF0AA00CC)) 
+    \STAGE_StateBitsAtDrawID[41]_INST_0 
+       (.I0(\slotsData_reg[1][SlotData] [41]),
+        .I1(\slotsData_reg[0][SlotData] [41]),
+        .I2(\slotsData_reg[3][SlotData] [41]),
+        .I3(Q[1]),
+        .I4(Q[0]),
+        .I5(\slotsData_reg[2][SlotData] [41]),
+        .O(STAGE_StateBitsAtDrawID[41]));
+  LUT6 #(
+    .INIT(64'hF0AAFFCCF0AA00CC)) 
+    \STAGE_StateBitsAtDrawID[42]_INST_0 
+       (.I0(\slotsData_reg[1][SlotData] [42]),
+        .I1(\slotsData_reg[0][SlotData] [42]),
+        .I2(\slotsData_reg[3][SlotData] [42]),
+        .I3(Q[1]),
+        .I4(Q[0]),
+        .I5(\slotsData_reg[2][SlotData] [42]),
+        .O(STAGE_StateBitsAtDrawID[42]));
+  LUT6 #(
+    .INIT(64'hF0AAFFCCF0AA00CC)) 
+    \STAGE_StateBitsAtDrawID[43]_INST_0 
+       (.I0(\slotsData_reg[1][SlotData] [43]),
+        .I1(\slotsData_reg[0][SlotData] [43]),
+        .I2(\slotsData_reg[3][SlotData] [43]),
+        .I3(Q[1]),
+        .I4(Q[0]),
+        .I5(\slotsData_reg[2][SlotData] [43]),
+        .O(STAGE_StateBitsAtDrawID[43]));
+  LUT6 #(
+    .INIT(64'hF0AAFFCCF0AA00CC)) 
+    \STAGE_StateBitsAtDrawID[44]_INST_0 
+       (.I0(\slotsData_reg[1][SlotData] [44]),
+        .I1(\slotsData_reg[0][SlotData] [44]),
+        .I2(\slotsData_reg[3][SlotData] [44]),
+        .I3(Q[1]),
+        .I4(Q[0]),
+        .I5(\slotsData_reg[2][SlotData] [44]),
+        .O(STAGE_StateBitsAtDrawID[44]));
+  LUT6 #(
+    .INIT(64'hF0AAFFCCF0AA00CC)) 
+    \STAGE_StateBitsAtDrawID[45]_INST_0 
+       (.I0(\slotsData_reg[1][SlotData] [45]),
+        .I1(\slotsData_reg[0][SlotData] [45]),
+        .I2(\slotsData_reg[3][SlotData] [45]),
+        .I3(Q[1]),
+        .I4(Q[0]),
+        .I5(\slotsData_reg[2][SlotData] [45]),
+        .O(STAGE_StateBitsAtDrawID[45]));
+  LUT6 #(
+    .INIT(64'hF0AAFFCCF0AA00CC)) 
+    \STAGE_StateBitsAtDrawID[46]_INST_0 
+       (.I0(\slotsData_reg[1][SlotData] [46]),
+        .I1(\slotsData_reg[0][SlotData] [46]),
+        .I2(\slotsData_reg[3][SlotData] [46]),
+        .I3(Q[1]),
+        .I4(Q[0]),
+        .I5(\slotsData_reg[2][SlotData] [46]),
+        .O(STAGE_StateBitsAtDrawID[46]));
+  LUT6 #(
+    .INIT(64'hF0AAFFCCF0AA00CC)) 
+    \STAGE_StateBitsAtDrawID[47]_INST_0 
+       (.I0(\slotsData_reg[1][SlotData] [47]),
+        .I1(\slotsData_reg[0][SlotData] [47]),
+        .I2(\slotsData_reg[3][SlotData] [47]),
+        .I3(Q[1]),
+        .I4(Q[0]),
+        .I5(\slotsData_reg[2][SlotData] [47]),
+        .O(STAGE_StateBitsAtDrawID[47]));
+  LUT6 #(
+    .INIT(64'hF0AAFFCCF0AA00CC)) 
+    \STAGE_StateBitsAtDrawID[48]_INST_0 
+       (.I0(\slotsData_reg[1][SlotData] [48]),
+        .I1(\slotsData_reg[0][SlotData] [48]),
+        .I2(\slotsData_reg[3][SlotData] [48]),
+        .I3(Q[1]),
+        .I4(Q[0]),
+        .I5(\slotsData_reg[2][SlotData] [48]),
+        .O(STAGE_StateBitsAtDrawID[48]));
+  LUT6 #(
+    .INIT(64'hF0AAFFCCF0AA00CC)) 
+    \STAGE_StateBitsAtDrawID[49]_INST_0 
+       (.I0(\slotsData_reg[1][SlotData] [49]),
+        .I1(\slotsData_reg[0][SlotData] [49]),
+        .I2(\slotsData_reg[3][SlotData] [49]),
+        .I3(Q[1]),
+        .I4(Q[0]),
+        .I5(\slotsData_reg[2][SlotData] [49]),
+        .O(STAGE_StateBitsAtDrawID[49]));
+  LUT6 #(
+    .INIT(64'hF0AAFFCCF0AA00CC)) 
     \STAGE_StateBitsAtDrawID[4]_INST_0 
        (.I0(\slotsData_reg[1][SlotData] [4]),
         .I1(\slotsData_reg[0][SlotData] [4]),
@@ -778,6 +878,106 @@ module design_1_StateBlock_0_3_StateBlock
         .I4(Q[0]),
         .I5(\slotsData_reg[2][SlotData] [4]),
         .O(STAGE_StateBitsAtDrawID[4]));
+  LUT6 #(
+    .INIT(64'hF0AAFFCCF0AA00CC)) 
+    \STAGE_StateBitsAtDrawID[50]_INST_0 
+       (.I0(\slotsData_reg[1][SlotData] [50]),
+        .I1(\slotsData_reg[0][SlotData] [50]),
+        .I2(\slotsData_reg[3][SlotData] [50]),
+        .I3(Q[1]),
+        .I4(Q[0]),
+        .I5(\slotsData_reg[2][SlotData] [50]),
+        .O(STAGE_StateBitsAtDrawID[50]));
+  LUT6 #(
+    .INIT(64'hF0AAFFCCF0AA00CC)) 
+    \STAGE_StateBitsAtDrawID[51]_INST_0 
+       (.I0(\slotsData_reg[1][SlotData] [51]),
+        .I1(\slotsData_reg[0][SlotData] [51]),
+        .I2(\slotsData_reg[3][SlotData] [51]),
+        .I3(Q[1]),
+        .I4(Q[0]),
+        .I5(\slotsData_reg[2][SlotData] [51]),
+        .O(STAGE_StateBitsAtDrawID[51]));
+  LUT6 #(
+    .INIT(64'hF0AAFFCCF0AA00CC)) 
+    \STAGE_StateBitsAtDrawID[52]_INST_0 
+       (.I0(\slotsData_reg[1][SlotData] [52]),
+        .I1(\slotsData_reg[0][SlotData] [52]),
+        .I2(\slotsData_reg[3][SlotData] [52]),
+        .I3(Q[1]),
+        .I4(Q[0]),
+        .I5(\slotsData_reg[2][SlotData] [52]),
+        .O(STAGE_StateBitsAtDrawID[52]));
+  LUT6 #(
+    .INIT(64'hF0AAFFCCF0AA00CC)) 
+    \STAGE_StateBitsAtDrawID[53]_INST_0 
+       (.I0(\slotsData_reg[1][SlotData] [53]),
+        .I1(\slotsData_reg[0][SlotData] [53]),
+        .I2(\slotsData_reg[3][SlotData] [53]),
+        .I3(Q[1]),
+        .I4(Q[0]),
+        .I5(\slotsData_reg[2][SlotData] [53]),
+        .O(STAGE_StateBitsAtDrawID[53]));
+  LUT6 #(
+    .INIT(64'hF0AAFFCCF0AA00CC)) 
+    \STAGE_StateBitsAtDrawID[54]_INST_0 
+       (.I0(\slotsData_reg[1][SlotData] [54]),
+        .I1(\slotsData_reg[0][SlotData] [54]),
+        .I2(\slotsData_reg[3][SlotData] [54]),
+        .I3(Q[1]),
+        .I4(Q[0]),
+        .I5(\slotsData_reg[2][SlotData] [54]),
+        .O(STAGE_StateBitsAtDrawID[54]));
+  LUT6 #(
+    .INIT(64'hF0AAFFCCF0AA00CC)) 
+    \STAGE_StateBitsAtDrawID[55]_INST_0 
+       (.I0(\slotsData_reg[1][SlotData] [55]),
+        .I1(\slotsData_reg[0][SlotData] [55]),
+        .I2(\slotsData_reg[3][SlotData] [55]),
+        .I3(Q[1]),
+        .I4(Q[0]),
+        .I5(\slotsData_reg[2][SlotData] [55]),
+        .O(STAGE_StateBitsAtDrawID[55]));
+  LUT6 #(
+    .INIT(64'hF0AAFFCCF0AA00CC)) 
+    \STAGE_StateBitsAtDrawID[56]_INST_0 
+       (.I0(\slotsData_reg[1][SlotData] [56]),
+        .I1(\slotsData_reg[0][SlotData] [56]),
+        .I2(\slotsData_reg[3][SlotData] [56]),
+        .I3(Q[1]),
+        .I4(Q[0]),
+        .I5(\slotsData_reg[2][SlotData] [56]),
+        .O(STAGE_StateBitsAtDrawID[56]));
+  LUT6 #(
+    .INIT(64'hF0AAFFCCF0AA00CC)) 
+    \STAGE_StateBitsAtDrawID[57]_INST_0 
+       (.I0(\slotsData_reg[1][SlotData] [57]),
+        .I1(\slotsData_reg[0][SlotData] [57]),
+        .I2(\slotsData_reg[3][SlotData] [57]),
+        .I3(Q[1]),
+        .I4(Q[0]),
+        .I5(\slotsData_reg[2][SlotData] [57]),
+        .O(STAGE_StateBitsAtDrawID[57]));
+  LUT6 #(
+    .INIT(64'hF0AAFFCCF0AA00CC)) 
+    \STAGE_StateBitsAtDrawID[58]_INST_0 
+       (.I0(\slotsData_reg[1][SlotData] [58]),
+        .I1(\slotsData_reg[0][SlotData] [58]),
+        .I2(\slotsData_reg[3][SlotData] [58]),
+        .I3(Q[1]),
+        .I4(Q[0]),
+        .I5(\slotsData_reg[2][SlotData] [58]),
+        .O(STAGE_StateBitsAtDrawID[58]));
+  LUT6 #(
+    .INIT(64'hF0AAFFCCF0AA00CC)) 
+    \STAGE_StateBitsAtDrawID[59]_INST_0 
+       (.I0(\slotsData_reg[1][SlotData] [59]),
+        .I1(\slotsData_reg[0][SlotData] [59]),
+        .I2(\slotsData_reg[3][SlotData] [59]),
+        .I3(Q[1]),
+        .I4(Q[0]),
+        .I5(\slotsData_reg[2][SlotData] [59]),
+        .O(STAGE_StateBitsAtDrawID[59]));
   LUT6 #(
     .INIT(64'hF0AAFFCCF0AA00CC)) 
     \STAGE_StateBitsAtDrawID[5]_INST_0 
@@ -790,6 +990,106 @@ module design_1_StateBlock_0_3_StateBlock
         .O(STAGE_StateBitsAtDrawID[5]));
   LUT6 #(
     .INIT(64'hF0AAFFCCF0AA00CC)) 
+    \STAGE_StateBitsAtDrawID[60]_INST_0 
+       (.I0(\slotsData_reg[1][SlotData] [60]),
+        .I1(\slotsData_reg[0][SlotData] [60]),
+        .I2(\slotsData_reg[3][SlotData] [60]),
+        .I3(Q[1]),
+        .I4(Q[0]),
+        .I5(\slotsData_reg[2][SlotData] [60]),
+        .O(STAGE_StateBitsAtDrawID[60]));
+  LUT6 #(
+    .INIT(64'hF0AAFFCCF0AA00CC)) 
+    \STAGE_StateBitsAtDrawID[61]_INST_0 
+       (.I0(\slotsData_reg[1][SlotData] [61]),
+        .I1(\slotsData_reg[0][SlotData] [61]),
+        .I2(\slotsData_reg[3][SlotData] [61]),
+        .I3(Q[1]),
+        .I4(Q[0]),
+        .I5(\slotsData_reg[2][SlotData] [61]),
+        .O(STAGE_StateBitsAtDrawID[61]));
+  LUT6 #(
+    .INIT(64'hF0AAFFCCF0AA00CC)) 
+    \STAGE_StateBitsAtDrawID[62]_INST_0 
+       (.I0(\slotsData_reg[1][SlotData] [62]),
+        .I1(\slotsData_reg[0][SlotData] [62]),
+        .I2(\slotsData_reg[3][SlotData] [62]),
+        .I3(Q[1]),
+        .I4(Q[0]),
+        .I5(\slotsData_reg[2][SlotData] [62]),
+        .O(STAGE_StateBitsAtDrawID[62]));
+  LUT6 #(
+    .INIT(64'hF0AAFFCCF0AA00CC)) 
+    \STAGE_StateBitsAtDrawID[63]_INST_0 
+       (.I0(\slotsData_reg[1][SlotData] [63]),
+        .I1(\slotsData_reg[0][SlotData] [63]),
+        .I2(\slotsData_reg[3][SlotData] [63]),
+        .I3(Q[1]),
+        .I4(Q[0]),
+        .I5(\slotsData_reg[2][SlotData] [63]),
+        .O(STAGE_StateBitsAtDrawID[63]));
+  LUT6 #(
+    .INIT(64'hF0AAFFCCF0AA00CC)) 
+    \STAGE_StateBitsAtDrawID[64]_INST_0 
+       (.I0(\slotsData_reg[1][SlotData] [64]),
+        .I1(\slotsData_reg[0][SlotData] [64]),
+        .I2(\slotsData_reg[3][SlotData] [64]),
+        .I3(Q[1]),
+        .I4(Q[0]),
+        .I5(\slotsData_reg[2][SlotData] [64]),
+        .O(STAGE_StateBitsAtDrawID[64]));
+  LUT6 #(
+    .INIT(64'hF0AAFFCCF0AA00CC)) 
+    \STAGE_StateBitsAtDrawID[65]_INST_0 
+       (.I0(\slotsData_reg[1][SlotData] [65]),
+        .I1(\slotsData_reg[0][SlotData] [65]),
+        .I2(\slotsData_reg[3][SlotData] [65]),
+        .I3(Q[1]),
+        .I4(Q[0]),
+        .I5(\slotsData_reg[2][SlotData] [65]),
+        .O(STAGE_StateBitsAtDrawID[65]));
+  LUT6 #(
+    .INIT(64'hF0AAFFCCF0AA00CC)) 
+    \STAGE_StateBitsAtDrawID[66]_INST_0 
+       (.I0(\slotsData_reg[1][SlotData] [66]),
+        .I1(\slotsData_reg[0][SlotData] [66]),
+        .I2(\slotsData_reg[3][SlotData] [66]),
+        .I3(Q[1]),
+        .I4(Q[0]),
+        .I5(\slotsData_reg[2][SlotData] [66]),
+        .O(STAGE_StateBitsAtDrawID[66]));
+  LUT6 #(
+    .INIT(64'hF0AAFFCCF0AA00CC)) 
+    \STAGE_StateBitsAtDrawID[67]_INST_0 
+       (.I0(\slotsData_reg[1][SlotData] [67]),
+        .I1(\slotsData_reg[0][SlotData] [67]),
+        .I2(\slotsData_reg[3][SlotData] [67]),
+        .I3(Q[1]),
+        .I4(Q[0]),
+        .I5(\slotsData_reg[2][SlotData] [67]),
+        .O(STAGE_StateBitsAtDrawID[67]));
+  LUT6 #(
+    .INIT(64'hF0AAFFCCF0AA00CC)) 
+    \STAGE_StateBitsAtDrawID[68]_INST_0 
+       (.I0(\slotsData_reg[1][SlotData] [68]),
+        .I1(\slotsData_reg[0][SlotData] [68]),
+        .I2(\slotsData_reg[3][SlotData] [68]),
+        .I3(Q[1]),
+        .I4(Q[0]),
+        .I5(\slotsData_reg[2][SlotData] [68]),
+        .O(STAGE_StateBitsAtDrawID[68]));
+  LUT6 #(
+    .INIT(64'hF0AAFFCCF0AA00CC)) 
+    \STAGE_StateBitsAtDrawID[69]_INST_0 
+       (.I0(\slotsData_reg[1][SlotData] [69]),
+        .I1(\slotsData_reg[0][SlotData] [69]),
+        .I2(\slotsData_reg[3][SlotData] [69]),
+        .I3(Q[1]),
+        .I4(Q[0]),
+        .I5(\slotsData_reg[2][SlotData] [69]),
+        .O(STAGE_StateBitsAtDrawID[69]));
+  LUT6 #(
+    .INIT(64'hF0AAFFCCF0AA00CC)) 
     \STAGE_StateBitsAtDrawID[6]_INST_0 
        (.I0(\slotsData_reg[1][SlotData] [6]),
         .I1(\slotsData_reg[0][SlotData] [6]),
@@ -798,6 +1098,76 @@ module design_1_StateBlock_0_3_StateBlock
         .I4(Q[0]),
         .I5(\slotsData_reg[2][SlotData] [6]),
         .O(STAGE_StateBitsAtDrawID[6]));
+  LUT6 #(
+    .INIT(64'hF0AAFFCCF0AA00CC)) 
+    \STAGE_StateBitsAtDrawID[70]_INST_0 
+       (.I0(\slotsData_reg[1][SlotData] [70]),
+        .I1(\slotsData_reg[0][SlotData] [70]),
+        .I2(\slotsData_reg[3][SlotData] [70]),
+        .I3(Q[1]),
+        .I4(Q[0]),
+        .I5(\slotsData_reg[2][SlotData] [70]),
+        .O(STAGE_StateBitsAtDrawID[70]));
+  LUT6 #(
+    .INIT(64'hF0AAFFCCF0AA00CC)) 
+    \STAGE_StateBitsAtDrawID[71]_INST_0 
+       (.I0(\slotsData_reg[1][SlotData] [71]),
+        .I1(\slotsData_reg[0][SlotData] [71]),
+        .I2(\slotsData_reg[3][SlotData] [71]),
+        .I3(Q[1]),
+        .I4(Q[0]),
+        .I5(\slotsData_reg[2][SlotData] [71]),
+        .O(STAGE_StateBitsAtDrawID[71]));
+  LUT6 #(
+    .INIT(64'hF0AAFFCCF0AA00CC)) 
+    \STAGE_StateBitsAtDrawID[72]_INST_0 
+       (.I0(\slotsData_reg[1][SlotData] [72]),
+        .I1(\slotsData_reg[0][SlotData] [72]),
+        .I2(\slotsData_reg[3][SlotData] [72]),
+        .I3(Q[1]),
+        .I4(Q[0]),
+        .I5(\slotsData_reg[2][SlotData] [72]),
+        .O(STAGE_StateBitsAtDrawID[72]));
+  LUT6 #(
+    .INIT(64'hF0AAFFCCF0AA00CC)) 
+    \STAGE_StateBitsAtDrawID[73]_INST_0 
+       (.I0(\slotsData_reg[1][SlotData] [73]),
+        .I1(\slotsData_reg[0][SlotData] [73]),
+        .I2(\slotsData_reg[3][SlotData] [73]),
+        .I3(Q[1]),
+        .I4(Q[0]),
+        .I5(\slotsData_reg[2][SlotData] [73]),
+        .O(STAGE_StateBitsAtDrawID[73]));
+  LUT6 #(
+    .INIT(64'hF0AAFFCCF0AA00CC)) 
+    \STAGE_StateBitsAtDrawID[74]_INST_0 
+       (.I0(\slotsData_reg[1][SlotData] [74]),
+        .I1(\slotsData_reg[0][SlotData] [74]),
+        .I2(\slotsData_reg[3][SlotData] [74]),
+        .I3(Q[1]),
+        .I4(Q[0]),
+        .I5(\slotsData_reg[2][SlotData] [74]),
+        .O(STAGE_StateBitsAtDrawID[74]));
+  LUT6 #(
+    .INIT(64'hF0AAFFCCF0AA00CC)) 
+    \STAGE_StateBitsAtDrawID[75]_INST_0 
+       (.I0(\slotsData_reg[1][SlotData] [75]),
+        .I1(\slotsData_reg[0][SlotData] [75]),
+        .I2(\slotsData_reg[3][SlotData] [75]),
+        .I3(Q[1]),
+        .I4(Q[0]),
+        .I5(\slotsData_reg[2][SlotData] [75]),
+        .O(STAGE_StateBitsAtDrawID[75]));
+  LUT6 #(
+    .INIT(64'hF0AAFFCCF0AA00CC)) 
+    \STAGE_StateBitsAtDrawID[76]_INST_0 
+       (.I0(\slotsData_reg[1][SlotData] [76]),
+        .I1(\slotsData_reg[0][SlotData] [76]),
+        .I2(\slotsData_reg[3][SlotData] [76]),
+        .I3(Q[1]),
+        .I4(Q[0]),
+        .I5(\slotsData_reg[2][SlotData] [76]),
+        .O(STAGE_StateBitsAtDrawID[76]));
   LUT6 #(
     .INIT(64'hF0AAFFCCF0AA00CC)) 
     \STAGE_StateBitsAtDrawID[7]_INST_0 
@@ -888,7 +1258,7 @@ module design_1_StateBlock_0_3_StateBlock
         .R(CMD_EndFrameReset));
   LUT3 #(
     .INIT(8'h02)) 
-    \slotsData[0][SlotData][39]_i_1 
+    \slotsData[0][SlotData][76]_i_1 
        (.I0(CMD_SetNewState),
         .I1(\DBG_CurrentWriteSlotIndex[1] [1]),
         .I2(\DBG_CurrentWriteSlotIndex[1] [0]),
@@ -903,7 +1273,7 @@ module design_1_StateBlock_0_3_StateBlock
         .I4(Q[1]),
         .I5(Q[0]),
         .O(\slotsData[0][SlotDrawEventID_n_0_] ));
-  (* SOFT_HLUTNM = "soft_lutpair14" *) 
+  (* SOFT_HLUTNM = "soft_lutpair16" *) 
   LUT4 #(
     .INIT(16'h0200)) 
     \slotsData[0][SlotDrawEventID][0]_i_1 
@@ -912,7 +1282,7 @@ module design_1_StateBlock_0_3_StateBlock
         .I2(\DBG_CurrentWriteSlotIndex[1] [0]),
         .I3(CMD_NewStateDrawEventID[0]),
         .O(\slotsData[0][SlotDrawEventID][0]_i_1_n_0 ));
-  (* SOFT_HLUTNM = "soft_lutpair23" *) 
+  (* SOFT_HLUTNM = "soft_lutpair26" *) 
   LUT4 #(
     .INIT(16'h0200)) 
     \slotsData[0][SlotDrawEventID][10]_i_1 
@@ -921,7 +1291,7 @@ module design_1_StateBlock_0_3_StateBlock
         .I2(\DBG_CurrentWriteSlotIndex[1] [0]),
         .I3(CMD_NewStateDrawEventID[10]),
         .O(\slotsData[0][SlotDrawEventID][10]_i_1_n_0 ));
-  (* SOFT_HLUTNM = "soft_lutpair24" *) 
+  (* SOFT_HLUTNM = "soft_lutpair27" *) 
   LUT4 #(
     .INIT(16'h0200)) 
     \slotsData[0][SlotDrawEventID][11]_i_1 
@@ -930,7 +1300,7 @@ module design_1_StateBlock_0_3_StateBlock
         .I2(\DBG_CurrentWriteSlotIndex[1] [0]),
         .I3(CMD_NewStateDrawEventID[11]),
         .O(\slotsData[0][SlotDrawEventID][11]_i_1_n_0 ));
-  (* SOFT_HLUTNM = "soft_lutpair25" *) 
+  (* SOFT_HLUTNM = "soft_lutpair28" *) 
   LUT4 #(
     .INIT(16'h0200)) 
     \slotsData[0][SlotDrawEventID][12]_i_1 
@@ -939,7 +1309,7 @@ module design_1_StateBlock_0_3_StateBlock
         .I2(\DBG_CurrentWriteSlotIndex[1] [0]),
         .I3(CMD_NewStateDrawEventID[12]),
         .O(\slotsData[0][SlotDrawEventID][12]_i_1_n_0 ));
-  (* SOFT_HLUTNM = "soft_lutpair26" *) 
+  (* SOFT_HLUTNM = "soft_lutpair29" *) 
   LUT4 #(
     .INIT(16'h0200)) 
     \slotsData[0][SlotDrawEventID][13]_i_1 
@@ -948,7 +1318,7 @@ module design_1_StateBlock_0_3_StateBlock
         .I2(\DBG_CurrentWriteSlotIndex[1] [0]),
         .I3(CMD_NewStateDrawEventID[13]),
         .O(\slotsData[0][SlotDrawEventID][13]_i_1_n_0 ));
-  (* SOFT_HLUTNM = "soft_lutpair27" *) 
+  (* SOFT_HLUTNM = "soft_lutpair30" *) 
   LUT4 #(
     .INIT(16'h0200)) 
     \slotsData[0][SlotDrawEventID][14]_i_1 
@@ -957,7 +1327,7 @@ module design_1_StateBlock_0_3_StateBlock
         .I2(\DBG_CurrentWriteSlotIndex[1] [0]),
         .I3(CMD_NewStateDrawEventID[14]),
         .O(\slotsData[0][SlotDrawEventID][14]_i_1_n_0 ));
-  (* SOFT_HLUTNM = "soft_lutpair28" *) 
+  (* SOFT_HLUTNM = "soft_lutpair31" *) 
   LUT4 #(
     .INIT(16'h0200)) 
     \slotsData[0][SlotDrawEventID][15]_i_1 
@@ -966,7 +1336,7 @@ module design_1_StateBlock_0_3_StateBlock
         .I2(\DBG_CurrentWriteSlotIndex[1] [0]),
         .I3(CMD_NewStateDrawEventID[15]),
         .O(\slotsData[0][SlotDrawEventID][15]_i_1_n_0 ));
-  (* SOFT_HLUTNM = "soft_lutpair29" *) 
+  (* SOFT_HLUTNM = "soft_lutpair17" *) 
   LUT4 #(
     .INIT(16'h0200)) 
     \slotsData[0][SlotDrawEventID][1]_i_1 
@@ -975,7 +1345,7 @@ module design_1_StateBlock_0_3_StateBlock
         .I2(\DBG_CurrentWriteSlotIndex[1] [0]),
         .I3(CMD_NewStateDrawEventID[1]),
         .O(\slotsData[0][SlotDrawEventID][1]_i_1_n_0 ));
-  (* SOFT_HLUTNM = "soft_lutpair30" *) 
+  (* SOFT_HLUTNM = "soft_lutpair18" *) 
   LUT4 #(
     .INIT(16'h0200)) 
     \slotsData[0][SlotDrawEventID][2]_i_1 
@@ -984,7 +1354,7 @@ module design_1_StateBlock_0_3_StateBlock
         .I2(\DBG_CurrentWriteSlotIndex[1] [0]),
         .I3(CMD_NewStateDrawEventID[2]),
         .O(\slotsData[0][SlotDrawEventID][2]_i_1_n_0 ));
-  (* SOFT_HLUTNM = "soft_lutpair17" *) 
+  (* SOFT_HLUTNM = "soft_lutpair19" *) 
   LUT4 #(
     .INIT(16'h0200)) 
     \slotsData[0][SlotDrawEventID][3]_i_1 
@@ -993,7 +1363,7 @@ module design_1_StateBlock_0_3_StateBlock
         .I2(\DBG_CurrentWriteSlotIndex[1] [0]),
         .I3(CMD_NewStateDrawEventID[3]),
         .O(\slotsData[0][SlotDrawEventID][3]_i_1_n_0 ));
-  (* SOFT_HLUTNM = "soft_lutpair18" *) 
+  (* SOFT_HLUTNM = "soft_lutpair32" *) 
   LUT4 #(
     .INIT(16'h0200)) 
     \slotsData[0][SlotDrawEventID][4]_i_1 
@@ -1002,7 +1372,7 @@ module design_1_StateBlock_0_3_StateBlock
         .I2(\DBG_CurrentWriteSlotIndex[1] [0]),
         .I3(CMD_NewStateDrawEventID[4]),
         .O(\slotsData[0][SlotDrawEventID][4]_i_1_n_0 ));
-  (* SOFT_HLUTNM = "soft_lutpair31" *) 
+  (* SOFT_HLUTNM = "soft_lutpair21" *) 
   LUT4 #(
     .INIT(16'h0200)) 
     \slotsData[0][SlotDrawEventID][5]_i_1 
@@ -1011,7 +1381,7 @@ module design_1_StateBlock_0_3_StateBlock
         .I2(\DBG_CurrentWriteSlotIndex[1] [0]),
         .I3(CMD_NewStateDrawEventID[5]),
         .O(\slotsData[0][SlotDrawEventID][5]_i_1_n_0 ));
-  (* SOFT_HLUTNM = "soft_lutpair19" *) 
+  (* SOFT_HLUTNM = "soft_lutpair22" *) 
   LUT4 #(
     .INIT(16'h0200)) 
     \slotsData[0][SlotDrawEventID][6]_i_1 
@@ -1020,7 +1390,7 @@ module design_1_StateBlock_0_3_StateBlock
         .I2(\DBG_CurrentWriteSlotIndex[1] [0]),
         .I3(CMD_NewStateDrawEventID[6]),
         .O(\slotsData[0][SlotDrawEventID][6]_i_1_n_0 ));
-  (* SOFT_HLUTNM = "soft_lutpair20" *) 
+  (* SOFT_HLUTNM = "soft_lutpair23" *) 
   LUT4 #(
     .INIT(16'h0200)) 
     \slotsData[0][SlotDrawEventID][7]_i_1 
@@ -1029,7 +1399,7 @@ module design_1_StateBlock_0_3_StateBlock
         .I2(\DBG_CurrentWriteSlotIndex[1] [0]),
         .I3(CMD_NewStateDrawEventID[7]),
         .O(\slotsData[0][SlotDrawEventID][7]_i_1_n_0 ));
-  (* SOFT_HLUTNM = "soft_lutpair21" *) 
+  (* SOFT_HLUTNM = "soft_lutpair24" *) 
   LUT4 #(
     .INIT(16'h0200)) 
     \slotsData[0][SlotDrawEventID][8]_i_1 
@@ -1038,7 +1408,7 @@ module design_1_StateBlock_0_3_StateBlock
         .I2(\DBG_CurrentWriteSlotIndex[1] [0]),
         .I3(CMD_NewStateDrawEventID[8]),
         .O(\slotsData[0][SlotDrawEventID][8]_i_1_n_0 ));
-  (* SOFT_HLUTNM = "soft_lutpair22" *) 
+  (* SOFT_HLUTNM = "soft_lutpair25" *) 
   LUT4 #(
     .INIT(16'h0200)) 
     \slotsData[0][SlotDrawEventID][9]_i_1 
@@ -1076,7 +1446,7 @@ module design_1_StateBlock_0_3_StateBlock
         .O(\slotsData[0][SlotIsValid]_i_2_n_0 ));
   LUT3 #(
     .INIT(8'h20)) 
-    \slotsData[1][SlotData][39]_i_1 
+    \slotsData[1][SlotData][76]_i_1 
        (.I0(CMD_SetNewState),
         .I1(\DBG_CurrentWriteSlotIndex[1] [1]),
         .I2(\DBG_CurrentWriteSlotIndex[1] [0]),
@@ -1091,7 +1461,7 @@ module design_1_StateBlock_0_3_StateBlock
         .I4(Q[1]),
         .I5(Q[0]),
         .O(\slotsData[1][SlotDrawEventID_n_0_] ));
-  (* SOFT_HLUTNM = "soft_lutpair14" *) 
+  (* SOFT_HLUTNM = "soft_lutpair16" *) 
   LUT4 #(
     .INIT(16'h2000)) 
     \slotsData[1][SlotDrawEventID][0]_i_1 
@@ -1100,7 +1470,7 @@ module design_1_StateBlock_0_3_StateBlock
         .I2(CMD_NewStateDrawEventID[0]),
         .I3(\DBG_CurrentWriteSlotIndex[1] [0]),
         .O(\slotsData[1][SlotDrawEventID][0]_i_1_n_0 ));
-  (* SOFT_HLUTNM = "soft_lutpair23" *) 
+  (* SOFT_HLUTNM = "soft_lutpair26" *) 
   LUT4 #(
     .INIT(16'h2000)) 
     \slotsData[1][SlotDrawEventID][10]_i_1 
@@ -1109,7 +1479,7 @@ module design_1_StateBlock_0_3_StateBlock
         .I2(CMD_NewStateDrawEventID[10]),
         .I3(\DBG_CurrentWriteSlotIndex[1] [0]),
         .O(\slotsData[1][SlotDrawEventID][10]_i_1_n_0 ));
-  (* SOFT_HLUTNM = "soft_lutpair24" *) 
+  (* SOFT_HLUTNM = "soft_lutpair27" *) 
   LUT4 #(
     .INIT(16'h2000)) 
     \slotsData[1][SlotDrawEventID][11]_i_1 
@@ -1118,7 +1488,7 @@ module design_1_StateBlock_0_3_StateBlock
         .I2(CMD_NewStateDrawEventID[11]),
         .I3(\DBG_CurrentWriteSlotIndex[1] [0]),
         .O(\slotsData[1][SlotDrawEventID][11]_i_1_n_0 ));
-  (* SOFT_HLUTNM = "soft_lutpair25" *) 
+  (* SOFT_HLUTNM = "soft_lutpair28" *) 
   LUT4 #(
     .INIT(16'h2000)) 
     \slotsData[1][SlotDrawEventID][12]_i_1 
@@ -1127,7 +1497,7 @@ module design_1_StateBlock_0_3_StateBlock
         .I2(CMD_NewStateDrawEventID[12]),
         .I3(\DBG_CurrentWriteSlotIndex[1] [0]),
         .O(\slotsData[1][SlotDrawEventID][12]_i_1_n_0 ));
-  (* SOFT_HLUTNM = "soft_lutpair26" *) 
+  (* SOFT_HLUTNM = "soft_lutpair29" *) 
   LUT4 #(
     .INIT(16'h2000)) 
     \slotsData[1][SlotDrawEventID][13]_i_1 
@@ -1136,7 +1506,7 @@ module design_1_StateBlock_0_3_StateBlock
         .I2(CMD_NewStateDrawEventID[13]),
         .I3(\DBG_CurrentWriteSlotIndex[1] [0]),
         .O(\slotsData[1][SlotDrawEventID][13]_i_1_n_0 ));
-  (* SOFT_HLUTNM = "soft_lutpair27" *) 
+  (* SOFT_HLUTNM = "soft_lutpair30" *) 
   LUT4 #(
     .INIT(16'h2000)) 
     \slotsData[1][SlotDrawEventID][14]_i_1 
@@ -1145,7 +1515,7 @@ module design_1_StateBlock_0_3_StateBlock
         .I2(CMD_NewStateDrawEventID[14]),
         .I3(\DBG_CurrentWriteSlotIndex[1] [0]),
         .O(\slotsData[1][SlotDrawEventID][14]_i_1_n_0 ));
-  (* SOFT_HLUTNM = "soft_lutpair28" *) 
+  (* SOFT_HLUTNM = "soft_lutpair31" *) 
   LUT4 #(
     .INIT(16'h2000)) 
     \slotsData[1][SlotDrawEventID][15]_i_1 
@@ -1154,7 +1524,7 @@ module design_1_StateBlock_0_3_StateBlock
         .I2(CMD_NewStateDrawEventID[15]),
         .I3(\DBG_CurrentWriteSlotIndex[1] [0]),
         .O(\slotsData[1][SlotDrawEventID][15]_i_1_n_0 ));
-  (* SOFT_HLUTNM = "soft_lutpair15" *) 
+  (* SOFT_HLUTNM = "soft_lutpair17" *) 
   LUT4 #(
     .INIT(16'h2000)) 
     \slotsData[1][SlotDrawEventID][1]_i_1 
@@ -1163,7 +1533,7 @@ module design_1_StateBlock_0_3_StateBlock
         .I2(CMD_NewStateDrawEventID[1]),
         .I3(\DBG_CurrentWriteSlotIndex[1] [0]),
         .O(\slotsData[1][SlotDrawEventID][1]_i_1_n_0 ));
-  (* SOFT_HLUTNM = "soft_lutpair16" *) 
+  (* SOFT_HLUTNM = "soft_lutpair18" *) 
   LUT4 #(
     .INIT(16'h2000)) 
     \slotsData[1][SlotDrawEventID][2]_i_1 
@@ -1172,7 +1542,7 @@ module design_1_StateBlock_0_3_StateBlock
         .I2(CMD_NewStateDrawEventID[2]),
         .I3(\DBG_CurrentWriteSlotIndex[1] [0]),
         .O(\slotsData[1][SlotDrawEventID][2]_i_1_n_0 ));
-  (* SOFT_HLUTNM = "soft_lutpair17" *) 
+  (* SOFT_HLUTNM = "soft_lutpair19" *) 
   LUT4 #(
     .INIT(16'h2000)) 
     \slotsData[1][SlotDrawEventID][3]_i_1 
@@ -1181,7 +1551,7 @@ module design_1_StateBlock_0_3_StateBlock
         .I2(CMD_NewStateDrawEventID[3]),
         .I3(\DBG_CurrentWriteSlotIndex[1] [0]),
         .O(\slotsData[1][SlotDrawEventID][3]_i_1_n_0 ));
-  (* SOFT_HLUTNM = "soft_lutpair18" *) 
+  (* SOFT_HLUTNM = "soft_lutpair32" *) 
   LUT4 #(
     .INIT(16'h2000)) 
     \slotsData[1][SlotDrawEventID][4]_i_1 
@@ -1190,7 +1560,7 @@ module design_1_StateBlock_0_3_StateBlock
         .I2(CMD_NewStateDrawEventID[4]),
         .I3(\DBG_CurrentWriteSlotIndex[1] [0]),
         .O(\slotsData[1][SlotDrawEventID][4]_i_1_n_0 ));
-  (* SOFT_HLUTNM = "soft_lutpair31" *) 
+  (* SOFT_HLUTNM = "soft_lutpair21" *) 
   LUT4 #(
     .INIT(16'h2000)) 
     \slotsData[1][SlotDrawEventID][5]_i_1 
@@ -1199,7 +1569,7 @@ module design_1_StateBlock_0_3_StateBlock
         .I2(CMD_NewStateDrawEventID[5]),
         .I3(\DBG_CurrentWriteSlotIndex[1] [0]),
         .O(\slotsData[1][SlotDrawEventID][5]_i_1_n_0 ));
-  (* SOFT_HLUTNM = "soft_lutpair19" *) 
+  (* SOFT_HLUTNM = "soft_lutpair22" *) 
   LUT4 #(
     .INIT(16'h2000)) 
     \slotsData[1][SlotDrawEventID][6]_i_1 
@@ -1208,7 +1578,7 @@ module design_1_StateBlock_0_3_StateBlock
         .I2(CMD_NewStateDrawEventID[6]),
         .I3(\DBG_CurrentWriteSlotIndex[1] [0]),
         .O(\slotsData[1][SlotDrawEventID][6]_i_1_n_0 ));
-  (* SOFT_HLUTNM = "soft_lutpair20" *) 
+  (* SOFT_HLUTNM = "soft_lutpair23" *) 
   LUT4 #(
     .INIT(16'h2000)) 
     \slotsData[1][SlotDrawEventID][7]_i_1 
@@ -1217,7 +1587,7 @@ module design_1_StateBlock_0_3_StateBlock
         .I2(CMD_NewStateDrawEventID[7]),
         .I3(\DBG_CurrentWriteSlotIndex[1] [0]),
         .O(\slotsData[1][SlotDrawEventID][7]_i_1_n_0 ));
-  (* SOFT_HLUTNM = "soft_lutpair21" *) 
+  (* SOFT_HLUTNM = "soft_lutpair24" *) 
   LUT4 #(
     .INIT(16'h2000)) 
     \slotsData[1][SlotDrawEventID][8]_i_1 
@@ -1226,7 +1596,7 @@ module design_1_StateBlock_0_3_StateBlock
         .I2(CMD_NewStateDrawEventID[8]),
         .I3(\DBG_CurrentWriteSlotIndex[1] [0]),
         .O(\slotsData[1][SlotDrawEventID][8]_i_1_n_0 ));
-  (* SOFT_HLUTNM = "soft_lutpair22" *) 
+  (* SOFT_HLUTNM = "soft_lutpair25" *) 
   LUT4 #(
     .INIT(16'h2000)) 
     \slotsData[1][SlotDrawEventID][9]_i_1 
@@ -1254,7 +1624,7 @@ module design_1_StateBlock_0_3_StateBlock
         .O(\slotsData[1][SlotIsValid]_i_2_n_0 ));
   LUT3 #(
     .INIT(8'h20)) 
-    \slotsData[2][SlotData][39]_i_1 
+    \slotsData[2][SlotData][76]_i_1 
        (.I0(CMD_SetNewState),
         .I1(\DBG_CurrentWriteSlotIndex[1] [0]),
         .I2(\DBG_CurrentWriteSlotIndex[1] [1]),
@@ -1269,7 +1639,7 @@ module design_1_StateBlock_0_3_StateBlock
         .I4(Q[0]),
         .I5(Q[1]),
         .O(\slotsData[2][SlotDrawEventID_n_0_] ));
-  (* SOFT_HLUTNM = "soft_lutpair4" *) 
+  (* SOFT_HLUTNM = "soft_lutpair5" *) 
   LUT4 #(
     .INIT(16'h0080)) 
     \slotsData[2][SlotDrawEventID][0]_i_1 
@@ -1278,7 +1648,7 @@ module design_1_StateBlock_0_3_StateBlock
         .I2(CMD_NewStateDrawEventID[0]),
         .I3(\DBG_CurrentWriteSlotIndex[1] [0]),
         .O(\slotsData[2][SlotDrawEventID][0]_i_1_n_0 ));
-  (* SOFT_HLUTNM = "soft_lutpair0" *) 
+  (* SOFT_HLUTNM = "soft_lutpair15" *) 
   LUT4 #(
     .INIT(16'h0080)) 
     \slotsData[2][SlotDrawEventID][10]_i_1 
@@ -1287,7 +1657,7 @@ module design_1_StateBlock_0_3_StateBlock
         .I2(CMD_NewStateDrawEventID[10]),
         .I3(\DBG_CurrentWriteSlotIndex[1] [0]),
         .O(\slotsData[2][SlotDrawEventID][10]_i_1_n_0 ));
-  (* SOFT_HLUTNM = "soft_lutpair1" *) 
+  (* SOFT_HLUTNM = "soft_lutpair0" *) 
   LUT4 #(
     .INIT(16'h0080)) 
     \slotsData[2][SlotDrawEventID][11]_i_1 
@@ -1296,7 +1666,7 @@ module design_1_StateBlock_0_3_StateBlock
         .I2(CMD_NewStateDrawEventID[11]),
         .I3(\DBG_CurrentWriteSlotIndex[1] [0]),
         .O(\slotsData[2][SlotDrawEventID][11]_i_1_n_0 ));
-  (* SOFT_HLUTNM = "soft_lutpair2" *) 
+  (* SOFT_HLUTNM = "soft_lutpair1" *) 
   LUT4 #(
     .INIT(16'h0080)) 
     \slotsData[2][SlotDrawEventID][12]_i_1 
@@ -1305,7 +1675,7 @@ module design_1_StateBlock_0_3_StateBlock
         .I2(CMD_NewStateDrawEventID[12]),
         .I3(\DBG_CurrentWriteSlotIndex[1] [0]),
         .O(\slotsData[2][SlotDrawEventID][12]_i_1_n_0 ));
-  (* SOFT_HLUTNM = "soft_lutpair5" *) 
+  (* SOFT_HLUTNM = "soft_lutpair2" *) 
   LUT4 #(
     .INIT(16'h0080)) 
     \slotsData[2][SlotDrawEventID][13]_i_1 
@@ -1323,7 +1693,7 @@ module design_1_StateBlock_0_3_StateBlock
         .I2(CMD_NewStateDrawEventID[14]),
         .I3(\DBG_CurrentWriteSlotIndex[1] [0]),
         .O(\slotsData[2][SlotDrawEventID][14]_i_1_n_0 ));
-  (* SOFT_HLUTNM = "soft_lutpair6" *) 
+  (* SOFT_HLUTNM = "soft_lutpair4" *) 
   LUT4 #(
     .INIT(16'h0080)) 
     \slotsData[2][SlotDrawEventID][15]_i_1 
@@ -1332,7 +1702,7 @@ module design_1_StateBlock_0_3_StateBlock
         .I2(CMD_NewStateDrawEventID[15]),
         .I3(\DBG_CurrentWriteSlotIndex[1] [0]),
         .O(\slotsData[2][SlotDrawEventID][15]_i_1_n_0 ));
-  (* SOFT_HLUTNM = "soft_lutpair29" *) 
+  (* SOFT_HLUTNM = "soft_lutpair6" *) 
   LUT4 #(
     .INIT(16'h0080)) 
     \slotsData[2][SlotDrawEventID][1]_i_1 
@@ -1341,7 +1711,7 @@ module design_1_StateBlock_0_3_StateBlock
         .I2(CMD_NewStateDrawEventID[1]),
         .I3(\DBG_CurrentWriteSlotIndex[1] [0]),
         .O(\slotsData[2][SlotDrawEventID][1]_i_1_n_0 ));
-  (* SOFT_HLUTNM = "soft_lutpair30" *) 
+  (* SOFT_HLUTNM = "soft_lutpair7" *) 
   LUT4 #(
     .INIT(16'h0080)) 
     \slotsData[2][SlotDrawEventID][2]_i_1 
@@ -1350,7 +1720,7 @@ module design_1_StateBlock_0_3_StateBlock
         .I2(CMD_NewStateDrawEventID[2]),
         .I3(\DBG_CurrentWriteSlotIndex[1] [0]),
         .O(\slotsData[2][SlotDrawEventID][2]_i_1_n_0 ));
-  (* SOFT_HLUTNM = "soft_lutpair7" *) 
+  (* SOFT_HLUTNM = "soft_lutpair8" *) 
   LUT4 #(
     .INIT(16'h0080)) 
     \slotsData[2][SlotDrawEventID][3]_i_1 
@@ -1359,7 +1729,7 @@ module design_1_StateBlock_0_3_StateBlock
         .I2(CMD_NewStateDrawEventID[3]),
         .I3(\DBG_CurrentWriteSlotIndex[1] [0]),
         .O(\slotsData[2][SlotDrawEventID][3]_i_1_n_0 ));
-  (* SOFT_HLUTNM = "soft_lutpair8" *) 
+  (* SOFT_HLUTNM = "soft_lutpair9" *) 
   LUT4 #(
     .INIT(16'h0080)) 
     \slotsData[2][SlotDrawEventID][4]_i_1 
@@ -1368,7 +1738,7 @@ module design_1_StateBlock_0_3_StateBlock
         .I2(CMD_NewStateDrawEventID[4]),
         .I3(\DBG_CurrentWriteSlotIndex[1] [0]),
         .O(\slotsData[2][SlotDrawEventID][4]_i_1_n_0 ));
-  (* SOFT_HLUTNM = "soft_lutpair9" *) 
+  (* SOFT_HLUTNM = "soft_lutpair10" *) 
   LUT4 #(
     .INIT(16'h0080)) 
     \slotsData[2][SlotDrawEventID][5]_i_1 
@@ -1386,7 +1756,7 @@ module design_1_StateBlock_0_3_StateBlock
         .I2(CMD_NewStateDrawEventID[6]),
         .I3(\DBG_CurrentWriteSlotIndex[1] [0]),
         .O(\slotsData[2][SlotDrawEventID][6]_i_1_n_0 ));
-  (* SOFT_HLUTNM = "soft_lutpair10" *) 
+  (* SOFT_HLUTNM = "soft_lutpair12" *) 
   LUT4 #(
     .INIT(16'h0080)) 
     \slotsData[2][SlotDrawEventID][7]_i_1 
@@ -1395,7 +1765,7 @@ module design_1_StateBlock_0_3_StateBlock
         .I2(CMD_NewStateDrawEventID[7]),
         .I3(\DBG_CurrentWriteSlotIndex[1] [0]),
         .O(\slotsData[2][SlotDrawEventID][7]_i_1_n_0 ));
-  (* SOFT_HLUTNM = "soft_lutpair12" *) 
+  (* SOFT_HLUTNM = "soft_lutpair13" *) 
   LUT4 #(
     .INIT(16'h0080)) 
     \slotsData[2][SlotDrawEventID][8]_i_1 
@@ -1404,7 +1774,7 @@ module design_1_StateBlock_0_3_StateBlock
         .I2(CMD_NewStateDrawEventID[8]),
         .I3(\DBG_CurrentWriteSlotIndex[1] [0]),
         .O(\slotsData[2][SlotDrawEventID][8]_i_1_n_0 ));
-  (* SOFT_HLUTNM = "soft_lutpair13" *) 
+  (* SOFT_HLUTNM = "soft_lutpair14" *) 
   LUT4 #(
     .INIT(16'h0080)) 
     \slotsData[2][SlotDrawEventID][9]_i_1 
@@ -1432,7 +1802,7 @@ module design_1_StateBlock_0_3_StateBlock
         .O(\slotsData[2][SlotIsValid]_i_2_n_0 ));
   LUT3 #(
     .INIT(8'h80)) 
-    \slotsData[3][SlotData][39]_i_1 
+    \slotsData[3][SlotData][76]_i_1 
        (.I0(CMD_SetNewState),
         .I1(\DBG_CurrentWriteSlotIndex[1] [1]),
         .I2(\DBG_CurrentWriteSlotIndex[1] [0]),
@@ -1447,7 +1817,7 @@ module design_1_StateBlock_0_3_StateBlock
         .I4(Q[1]),
         .I5(Q[0]),
         .O(\slotsData[3][SlotDrawEventID_n_0_] ));
-  (* SOFT_HLUTNM = "soft_lutpair4" *) 
+  (* SOFT_HLUTNM = "soft_lutpair5" *) 
   LUT4 #(
     .INIT(16'h8000)) 
     \slotsData[3][SlotDrawEventID][0]_i_1 
@@ -1456,7 +1826,7 @@ module design_1_StateBlock_0_3_StateBlock
         .I2(\DBG_CurrentWriteSlotIndex[1] [0]),
         .I3(\DBG_CurrentWriteSlotIndex[1] [1]),
         .O(\slotsData[3][SlotDrawEventID][0]_i_1_n_0 ));
-  (* SOFT_HLUTNM = "soft_lutpair0" *) 
+  (* SOFT_HLUTNM = "soft_lutpair15" *) 
   LUT4 #(
     .INIT(16'h8000)) 
     \slotsData[3][SlotDrawEventID][10]_i_1 
@@ -1465,7 +1835,7 @@ module design_1_StateBlock_0_3_StateBlock
         .I2(\DBG_CurrentWriteSlotIndex[1] [0]),
         .I3(\DBG_CurrentWriteSlotIndex[1] [1]),
         .O(\slotsData[3][SlotDrawEventID][10]_i_1_n_0 ));
-  (* SOFT_HLUTNM = "soft_lutpair1" *) 
+  (* SOFT_HLUTNM = "soft_lutpair0" *) 
   LUT4 #(
     .INIT(16'h8000)) 
     \slotsData[3][SlotDrawEventID][11]_i_1 
@@ -1474,7 +1844,7 @@ module design_1_StateBlock_0_3_StateBlock
         .I2(\DBG_CurrentWriteSlotIndex[1] [0]),
         .I3(\DBG_CurrentWriteSlotIndex[1] [1]),
         .O(\slotsData[3][SlotDrawEventID][11]_i_1_n_0 ));
-  (* SOFT_HLUTNM = "soft_lutpair2" *) 
+  (* SOFT_HLUTNM = "soft_lutpair1" *) 
   LUT4 #(
     .INIT(16'h8000)) 
     \slotsData[3][SlotDrawEventID][12]_i_1 
@@ -1483,7 +1853,7 @@ module design_1_StateBlock_0_3_StateBlock
         .I2(\DBG_CurrentWriteSlotIndex[1] [0]),
         .I3(\DBG_CurrentWriteSlotIndex[1] [1]),
         .O(\slotsData[3][SlotDrawEventID][12]_i_1_n_0 ));
-  (* SOFT_HLUTNM = "soft_lutpair5" *) 
+  (* SOFT_HLUTNM = "soft_lutpair2" *) 
   LUT4 #(
     .INIT(16'h8000)) 
     \slotsData[3][SlotDrawEventID][13]_i_1 
@@ -1501,7 +1871,7 @@ module design_1_StateBlock_0_3_StateBlock
         .I2(\DBG_CurrentWriteSlotIndex[1] [0]),
         .I3(\DBG_CurrentWriteSlotIndex[1] [1]),
         .O(\slotsData[3][SlotDrawEventID][14]_i_1_n_0 ));
-  (* SOFT_HLUTNM = "soft_lutpair6" *) 
+  (* SOFT_HLUTNM = "soft_lutpair4" *) 
   LUT4 #(
     .INIT(16'h8000)) 
     \slotsData[3][SlotDrawEventID][15]_i_1 
@@ -1510,7 +1880,7 @@ module design_1_StateBlock_0_3_StateBlock
         .I2(\DBG_CurrentWriteSlotIndex[1] [0]),
         .I3(\DBG_CurrentWriteSlotIndex[1] [1]),
         .O(\slotsData[3][SlotDrawEventID][15]_i_1_n_0 ));
-  (* SOFT_HLUTNM = "soft_lutpair15" *) 
+  (* SOFT_HLUTNM = "soft_lutpair6" *) 
   LUT4 #(
     .INIT(16'h8000)) 
     \slotsData[3][SlotDrawEventID][1]_i_1 
@@ -1519,7 +1889,7 @@ module design_1_StateBlock_0_3_StateBlock
         .I2(\DBG_CurrentWriteSlotIndex[1] [0]),
         .I3(\DBG_CurrentWriteSlotIndex[1] [1]),
         .O(\slotsData[3][SlotDrawEventID][1]_i_1_n_0 ));
-  (* SOFT_HLUTNM = "soft_lutpair16" *) 
+  (* SOFT_HLUTNM = "soft_lutpair7" *) 
   LUT4 #(
     .INIT(16'h8000)) 
     \slotsData[3][SlotDrawEventID][2]_i_1 
@@ -1528,7 +1898,7 @@ module design_1_StateBlock_0_3_StateBlock
         .I2(\DBG_CurrentWriteSlotIndex[1] [0]),
         .I3(\DBG_CurrentWriteSlotIndex[1] [1]),
         .O(\slotsData[3][SlotDrawEventID][2]_i_1_n_0 ));
-  (* SOFT_HLUTNM = "soft_lutpair7" *) 
+  (* SOFT_HLUTNM = "soft_lutpair8" *) 
   LUT4 #(
     .INIT(16'h8000)) 
     \slotsData[3][SlotDrawEventID][3]_i_1 
@@ -1537,7 +1907,7 @@ module design_1_StateBlock_0_3_StateBlock
         .I2(\DBG_CurrentWriteSlotIndex[1] [0]),
         .I3(\DBG_CurrentWriteSlotIndex[1] [1]),
         .O(\slotsData[3][SlotDrawEventID][3]_i_1_n_0 ));
-  (* SOFT_HLUTNM = "soft_lutpair8" *) 
+  (* SOFT_HLUTNM = "soft_lutpair9" *) 
   LUT4 #(
     .INIT(16'h8000)) 
     \slotsData[3][SlotDrawEventID][4]_i_1 
@@ -1546,7 +1916,7 @@ module design_1_StateBlock_0_3_StateBlock
         .I2(\DBG_CurrentWriteSlotIndex[1] [0]),
         .I3(\DBG_CurrentWriteSlotIndex[1] [1]),
         .O(\slotsData[3][SlotDrawEventID][4]_i_1_n_0 ));
-  (* SOFT_HLUTNM = "soft_lutpair9" *) 
+  (* SOFT_HLUTNM = "soft_lutpair10" *) 
   LUT4 #(
     .INIT(16'h8000)) 
     \slotsData[3][SlotDrawEventID][5]_i_1 
@@ -1564,7 +1934,7 @@ module design_1_StateBlock_0_3_StateBlock
         .I2(\DBG_CurrentWriteSlotIndex[1] [0]),
         .I3(\DBG_CurrentWriteSlotIndex[1] [1]),
         .O(\slotsData[3][SlotDrawEventID][6]_i_1_n_0 ));
-  (* SOFT_HLUTNM = "soft_lutpair10" *) 
+  (* SOFT_HLUTNM = "soft_lutpair12" *) 
   LUT4 #(
     .INIT(16'h8000)) 
     \slotsData[3][SlotDrawEventID][7]_i_1 
@@ -1573,7 +1943,7 @@ module design_1_StateBlock_0_3_StateBlock
         .I2(\DBG_CurrentWriteSlotIndex[1] [0]),
         .I3(\DBG_CurrentWriteSlotIndex[1] [1]),
         .O(\slotsData[3][SlotDrawEventID][7]_i_1_n_0 ));
-  (* SOFT_HLUTNM = "soft_lutpair12" *) 
+  (* SOFT_HLUTNM = "soft_lutpair13" *) 
   LUT4 #(
     .INIT(16'h8000)) 
     \slotsData[3][SlotDrawEventID][8]_i_1 
@@ -1582,7 +1952,7 @@ module design_1_StateBlock_0_3_StateBlock
         .I2(\DBG_CurrentWriteSlotIndex[1] [0]),
         .I3(\DBG_CurrentWriteSlotIndex[1] [1]),
         .O(\slotsData[3][SlotDrawEventID][8]_i_1_n_0 ));
-  (* SOFT_HLUTNM = "soft_lutpair13" *) 
+  (* SOFT_HLUTNM = "soft_lutpair14" *) 
   LUT4 #(
     .INIT(16'h8000)) 
     \slotsData[3][SlotDrawEventID][9]_i_1 
@@ -1882,11 +2252,171 @@ module design_1_StateBlock_0_3_StateBlock
         .R(CMD_EndFrameReset));
   FDRE #(
     .INIT(1'b0)) 
+    \slotsData_reg[0][SlotData][40] 
+       (.C(clk),
+        .CE(\slotsData[0][SlotIsValid]1_out ),
+        .D(CMD_NewStateBits[40]),
+        .Q(\slotsData_reg[0][SlotData] [40]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[0][SlotData][41] 
+       (.C(clk),
+        .CE(\slotsData[0][SlotIsValid]1_out ),
+        .D(CMD_NewStateBits[41]),
+        .Q(\slotsData_reg[0][SlotData] [41]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[0][SlotData][42] 
+       (.C(clk),
+        .CE(\slotsData[0][SlotIsValid]1_out ),
+        .D(CMD_NewStateBits[42]),
+        .Q(\slotsData_reg[0][SlotData] [42]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[0][SlotData][43] 
+       (.C(clk),
+        .CE(\slotsData[0][SlotIsValid]1_out ),
+        .D(CMD_NewStateBits[43]),
+        .Q(\slotsData_reg[0][SlotData] [43]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[0][SlotData][44] 
+       (.C(clk),
+        .CE(\slotsData[0][SlotIsValid]1_out ),
+        .D(CMD_NewStateBits[44]),
+        .Q(\slotsData_reg[0][SlotData] [44]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[0][SlotData][45] 
+       (.C(clk),
+        .CE(\slotsData[0][SlotIsValid]1_out ),
+        .D(CMD_NewStateBits[45]),
+        .Q(\slotsData_reg[0][SlotData] [45]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[0][SlotData][46] 
+       (.C(clk),
+        .CE(\slotsData[0][SlotIsValid]1_out ),
+        .D(CMD_NewStateBits[46]),
+        .Q(\slotsData_reg[0][SlotData] [46]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[0][SlotData][47] 
+       (.C(clk),
+        .CE(\slotsData[0][SlotIsValid]1_out ),
+        .D(CMD_NewStateBits[47]),
+        .Q(\slotsData_reg[0][SlotData] [47]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[0][SlotData][48] 
+       (.C(clk),
+        .CE(\slotsData[0][SlotIsValid]1_out ),
+        .D(CMD_NewStateBits[48]),
+        .Q(\slotsData_reg[0][SlotData] [48]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[0][SlotData][49] 
+       (.C(clk),
+        .CE(\slotsData[0][SlotIsValid]1_out ),
+        .D(CMD_NewStateBits[49]),
+        .Q(\slotsData_reg[0][SlotData] [49]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
     \slotsData_reg[0][SlotData][4] 
        (.C(clk),
         .CE(\slotsData[0][SlotIsValid]1_out ),
         .D(CMD_NewStateBits[4]),
         .Q(\slotsData_reg[0][SlotData] [4]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[0][SlotData][50] 
+       (.C(clk),
+        .CE(\slotsData[0][SlotIsValid]1_out ),
+        .D(CMD_NewStateBits[50]),
+        .Q(\slotsData_reg[0][SlotData] [50]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[0][SlotData][51] 
+       (.C(clk),
+        .CE(\slotsData[0][SlotIsValid]1_out ),
+        .D(CMD_NewStateBits[51]),
+        .Q(\slotsData_reg[0][SlotData] [51]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[0][SlotData][52] 
+       (.C(clk),
+        .CE(\slotsData[0][SlotIsValid]1_out ),
+        .D(CMD_NewStateBits[52]),
+        .Q(\slotsData_reg[0][SlotData] [52]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[0][SlotData][53] 
+       (.C(clk),
+        .CE(\slotsData[0][SlotIsValid]1_out ),
+        .D(CMD_NewStateBits[53]),
+        .Q(\slotsData_reg[0][SlotData] [53]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[0][SlotData][54] 
+       (.C(clk),
+        .CE(\slotsData[0][SlotIsValid]1_out ),
+        .D(CMD_NewStateBits[54]),
+        .Q(\slotsData_reg[0][SlotData] [54]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[0][SlotData][55] 
+       (.C(clk),
+        .CE(\slotsData[0][SlotIsValid]1_out ),
+        .D(CMD_NewStateBits[55]),
+        .Q(\slotsData_reg[0][SlotData] [55]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[0][SlotData][56] 
+       (.C(clk),
+        .CE(\slotsData[0][SlotIsValid]1_out ),
+        .D(CMD_NewStateBits[56]),
+        .Q(\slotsData_reg[0][SlotData] [56]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[0][SlotData][57] 
+       (.C(clk),
+        .CE(\slotsData[0][SlotIsValid]1_out ),
+        .D(CMD_NewStateBits[57]),
+        .Q(\slotsData_reg[0][SlotData] [57]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[0][SlotData][58] 
+       (.C(clk),
+        .CE(\slotsData[0][SlotIsValid]1_out ),
+        .D(CMD_NewStateBits[58]),
+        .Q(\slotsData_reg[0][SlotData] [58]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[0][SlotData][59] 
+       (.C(clk),
+        .CE(\slotsData[0][SlotIsValid]1_out ),
+        .D(CMD_NewStateBits[59]),
+        .Q(\slotsData_reg[0][SlotData] [59]),
         .R(CMD_EndFrameReset));
   FDRE #(
     .INIT(1'b0)) 
@@ -1898,11 +2428,147 @@ module design_1_StateBlock_0_3_StateBlock
         .R(CMD_EndFrameReset));
   FDRE #(
     .INIT(1'b0)) 
+    \slotsData_reg[0][SlotData][60] 
+       (.C(clk),
+        .CE(\slotsData[0][SlotIsValid]1_out ),
+        .D(CMD_NewStateBits[60]),
+        .Q(\slotsData_reg[0][SlotData] [60]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[0][SlotData][61] 
+       (.C(clk),
+        .CE(\slotsData[0][SlotIsValid]1_out ),
+        .D(CMD_NewStateBits[61]),
+        .Q(\slotsData_reg[0][SlotData] [61]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[0][SlotData][62] 
+       (.C(clk),
+        .CE(\slotsData[0][SlotIsValid]1_out ),
+        .D(CMD_NewStateBits[62]),
+        .Q(\slotsData_reg[0][SlotData] [62]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[0][SlotData][63] 
+       (.C(clk),
+        .CE(\slotsData[0][SlotIsValid]1_out ),
+        .D(CMD_NewStateBits[63]),
+        .Q(\slotsData_reg[0][SlotData] [63]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[0][SlotData][64] 
+       (.C(clk),
+        .CE(\slotsData[0][SlotIsValid]1_out ),
+        .D(CMD_NewStateBits[64]),
+        .Q(\slotsData_reg[0][SlotData] [64]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[0][SlotData][65] 
+       (.C(clk),
+        .CE(\slotsData[0][SlotIsValid]1_out ),
+        .D(CMD_NewStateBits[65]),
+        .Q(\slotsData_reg[0][SlotData] [65]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[0][SlotData][66] 
+       (.C(clk),
+        .CE(\slotsData[0][SlotIsValid]1_out ),
+        .D(CMD_NewStateBits[66]),
+        .Q(\slotsData_reg[0][SlotData] [66]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[0][SlotData][67] 
+       (.C(clk),
+        .CE(\slotsData[0][SlotIsValid]1_out ),
+        .D(CMD_NewStateBits[67]),
+        .Q(\slotsData_reg[0][SlotData] [67]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[0][SlotData][68] 
+       (.C(clk),
+        .CE(\slotsData[0][SlotIsValid]1_out ),
+        .D(CMD_NewStateBits[68]),
+        .Q(\slotsData_reg[0][SlotData] [68]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[0][SlotData][69] 
+       (.C(clk),
+        .CE(\slotsData[0][SlotIsValid]1_out ),
+        .D(CMD_NewStateBits[69]),
+        .Q(\slotsData_reg[0][SlotData] [69]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
     \slotsData_reg[0][SlotData][6] 
        (.C(clk),
         .CE(\slotsData[0][SlotIsValid]1_out ),
         .D(CMD_NewStateBits[6]),
         .Q(\slotsData_reg[0][SlotData] [6]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[0][SlotData][70] 
+       (.C(clk),
+        .CE(\slotsData[0][SlotIsValid]1_out ),
+        .D(CMD_NewStateBits[70]),
+        .Q(\slotsData_reg[0][SlotData] [70]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[0][SlotData][71] 
+       (.C(clk),
+        .CE(\slotsData[0][SlotIsValid]1_out ),
+        .D(CMD_NewStateBits[71]),
+        .Q(\slotsData_reg[0][SlotData] [71]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[0][SlotData][72] 
+       (.C(clk),
+        .CE(\slotsData[0][SlotIsValid]1_out ),
+        .D(CMD_NewStateBits[72]),
+        .Q(\slotsData_reg[0][SlotData] [72]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[0][SlotData][73] 
+       (.C(clk),
+        .CE(\slotsData[0][SlotIsValid]1_out ),
+        .D(CMD_NewStateBits[73]),
+        .Q(\slotsData_reg[0][SlotData] [73]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[0][SlotData][74] 
+       (.C(clk),
+        .CE(\slotsData[0][SlotIsValid]1_out ),
+        .D(CMD_NewStateBits[74]),
+        .Q(\slotsData_reg[0][SlotData] [74]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[0][SlotData][75] 
+       (.C(clk),
+        .CE(\slotsData[0][SlotIsValid]1_out ),
+        .D(CMD_NewStateBits[75]),
+        .Q(\slotsData_reg[0][SlotData] [75]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[0][SlotData][76] 
+       (.C(clk),
+        .CE(\slotsData[0][SlotIsValid]1_out ),
+        .D(CMD_NewStateBits[76]),
+        .Q(\slotsData_reg[0][SlotData] [76]),
         .R(CMD_EndFrameReset));
   FDRE #(
     .INIT(1'b0)) 
@@ -2338,11 +3004,171 @@ module design_1_StateBlock_0_3_StateBlock
         .R(CMD_EndFrameReset));
   FDRE #(
     .INIT(1'b0)) 
+    \slotsData_reg[1][SlotData][40] 
+       (.C(clk),
+        .CE(\slotsData[1][SlotIsValid]3_out ),
+        .D(CMD_NewStateBits[40]),
+        .Q(\slotsData_reg[1][SlotData] [40]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[1][SlotData][41] 
+       (.C(clk),
+        .CE(\slotsData[1][SlotIsValid]3_out ),
+        .D(CMD_NewStateBits[41]),
+        .Q(\slotsData_reg[1][SlotData] [41]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[1][SlotData][42] 
+       (.C(clk),
+        .CE(\slotsData[1][SlotIsValid]3_out ),
+        .D(CMD_NewStateBits[42]),
+        .Q(\slotsData_reg[1][SlotData] [42]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[1][SlotData][43] 
+       (.C(clk),
+        .CE(\slotsData[1][SlotIsValid]3_out ),
+        .D(CMD_NewStateBits[43]),
+        .Q(\slotsData_reg[1][SlotData] [43]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[1][SlotData][44] 
+       (.C(clk),
+        .CE(\slotsData[1][SlotIsValid]3_out ),
+        .D(CMD_NewStateBits[44]),
+        .Q(\slotsData_reg[1][SlotData] [44]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[1][SlotData][45] 
+       (.C(clk),
+        .CE(\slotsData[1][SlotIsValid]3_out ),
+        .D(CMD_NewStateBits[45]),
+        .Q(\slotsData_reg[1][SlotData] [45]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[1][SlotData][46] 
+       (.C(clk),
+        .CE(\slotsData[1][SlotIsValid]3_out ),
+        .D(CMD_NewStateBits[46]),
+        .Q(\slotsData_reg[1][SlotData] [46]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[1][SlotData][47] 
+       (.C(clk),
+        .CE(\slotsData[1][SlotIsValid]3_out ),
+        .D(CMD_NewStateBits[47]),
+        .Q(\slotsData_reg[1][SlotData] [47]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[1][SlotData][48] 
+       (.C(clk),
+        .CE(\slotsData[1][SlotIsValid]3_out ),
+        .D(CMD_NewStateBits[48]),
+        .Q(\slotsData_reg[1][SlotData] [48]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[1][SlotData][49] 
+       (.C(clk),
+        .CE(\slotsData[1][SlotIsValid]3_out ),
+        .D(CMD_NewStateBits[49]),
+        .Q(\slotsData_reg[1][SlotData] [49]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
     \slotsData_reg[1][SlotData][4] 
        (.C(clk),
         .CE(\slotsData[1][SlotIsValid]3_out ),
         .D(CMD_NewStateBits[4]),
         .Q(\slotsData_reg[1][SlotData] [4]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[1][SlotData][50] 
+       (.C(clk),
+        .CE(\slotsData[1][SlotIsValid]3_out ),
+        .D(CMD_NewStateBits[50]),
+        .Q(\slotsData_reg[1][SlotData] [50]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[1][SlotData][51] 
+       (.C(clk),
+        .CE(\slotsData[1][SlotIsValid]3_out ),
+        .D(CMD_NewStateBits[51]),
+        .Q(\slotsData_reg[1][SlotData] [51]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[1][SlotData][52] 
+       (.C(clk),
+        .CE(\slotsData[1][SlotIsValid]3_out ),
+        .D(CMD_NewStateBits[52]),
+        .Q(\slotsData_reg[1][SlotData] [52]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[1][SlotData][53] 
+       (.C(clk),
+        .CE(\slotsData[1][SlotIsValid]3_out ),
+        .D(CMD_NewStateBits[53]),
+        .Q(\slotsData_reg[1][SlotData] [53]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[1][SlotData][54] 
+       (.C(clk),
+        .CE(\slotsData[1][SlotIsValid]3_out ),
+        .D(CMD_NewStateBits[54]),
+        .Q(\slotsData_reg[1][SlotData] [54]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[1][SlotData][55] 
+       (.C(clk),
+        .CE(\slotsData[1][SlotIsValid]3_out ),
+        .D(CMD_NewStateBits[55]),
+        .Q(\slotsData_reg[1][SlotData] [55]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[1][SlotData][56] 
+       (.C(clk),
+        .CE(\slotsData[1][SlotIsValid]3_out ),
+        .D(CMD_NewStateBits[56]),
+        .Q(\slotsData_reg[1][SlotData] [56]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[1][SlotData][57] 
+       (.C(clk),
+        .CE(\slotsData[1][SlotIsValid]3_out ),
+        .D(CMD_NewStateBits[57]),
+        .Q(\slotsData_reg[1][SlotData] [57]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[1][SlotData][58] 
+       (.C(clk),
+        .CE(\slotsData[1][SlotIsValid]3_out ),
+        .D(CMD_NewStateBits[58]),
+        .Q(\slotsData_reg[1][SlotData] [58]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[1][SlotData][59] 
+       (.C(clk),
+        .CE(\slotsData[1][SlotIsValid]3_out ),
+        .D(CMD_NewStateBits[59]),
+        .Q(\slotsData_reg[1][SlotData] [59]),
         .R(CMD_EndFrameReset));
   FDRE #(
     .INIT(1'b0)) 
@@ -2354,11 +3180,147 @@ module design_1_StateBlock_0_3_StateBlock
         .R(CMD_EndFrameReset));
   FDRE #(
     .INIT(1'b0)) 
+    \slotsData_reg[1][SlotData][60] 
+       (.C(clk),
+        .CE(\slotsData[1][SlotIsValid]3_out ),
+        .D(CMD_NewStateBits[60]),
+        .Q(\slotsData_reg[1][SlotData] [60]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[1][SlotData][61] 
+       (.C(clk),
+        .CE(\slotsData[1][SlotIsValid]3_out ),
+        .D(CMD_NewStateBits[61]),
+        .Q(\slotsData_reg[1][SlotData] [61]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[1][SlotData][62] 
+       (.C(clk),
+        .CE(\slotsData[1][SlotIsValid]3_out ),
+        .D(CMD_NewStateBits[62]),
+        .Q(\slotsData_reg[1][SlotData] [62]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[1][SlotData][63] 
+       (.C(clk),
+        .CE(\slotsData[1][SlotIsValid]3_out ),
+        .D(CMD_NewStateBits[63]),
+        .Q(\slotsData_reg[1][SlotData] [63]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[1][SlotData][64] 
+       (.C(clk),
+        .CE(\slotsData[1][SlotIsValid]3_out ),
+        .D(CMD_NewStateBits[64]),
+        .Q(\slotsData_reg[1][SlotData] [64]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[1][SlotData][65] 
+       (.C(clk),
+        .CE(\slotsData[1][SlotIsValid]3_out ),
+        .D(CMD_NewStateBits[65]),
+        .Q(\slotsData_reg[1][SlotData] [65]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[1][SlotData][66] 
+       (.C(clk),
+        .CE(\slotsData[1][SlotIsValid]3_out ),
+        .D(CMD_NewStateBits[66]),
+        .Q(\slotsData_reg[1][SlotData] [66]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[1][SlotData][67] 
+       (.C(clk),
+        .CE(\slotsData[1][SlotIsValid]3_out ),
+        .D(CMD_NewStateBits[67]),
+        .Q(\slotsData_reg[1][SlotData] [67]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[1][SlotData][68] 
+       (.C(clk),
+        .CE(\slotsData[1][SlotIsValid]3_out ),
+        .D(CMD_NewStateBits[68]),
+        .Q(\slotsData_reg[1][SlotData] [68]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[1][SlotData][69] 
+       (.C(clk),
+        .CE(\slotsData[1][SlotIsValid]3_out ),
+        .D(CMD_NewStateBits[69]),
+        .Q(\slotsData_reg[1][SlotData] [69]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
     \slotsData_reg[1][SlotData][6] 
        (.C(clk),
         .CE(\slotsData[1][SlotIsValid]3_out ),
         .D(CMD_NewStateBits[6]),
         .Q(\slotsData_reg[1][SlotData] [6]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[1][SlotData][70] 
+       (.C(clk),
+        .CE(\slotsData[1][SlotIsValid]3_out ),
+        .D(CMD_NewStateBits[70]),
+        .Q(\slotsData_reg[1][SlotData] [70]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[1][SlotData][71] 
+       (.C(clk),
+        .CE(\slotsData[1][SlotIsValid]3_out ),
+        .D(CMD_NewStateBits[71]),
+        .Q(\slotsData_reg[1][SlotData] [71]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[1][SlotData][72] 
+       (.C(clk),
+        .CE(\slotsData[1][SlotIsValid]3_out ),
+        .D(CMD_NewStateBits[72]),
+        .Q(\slotsData_reg[1][SlotData] [72]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[1][SlotData][73] 
+       (.C(clk),
+        .CE(\slotsData[1][SlotIsValid]3_out ),
+        .D(CMD_NewStateBits[73]),
+        .Q(\slotsData_reg[1][SlotData] [73]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[1][SlotData][74] 
+       (.C(clk),
+        .CE(\slotsData[1][SlotIsValid]3_out ),
+        .D(CMD_NewStateBits[74]),
+        .Q(\slotsData_reg[1][SlotData] [74]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[1][SlotData][75] 
+       (.C(clk),
+        .CE(\slotsData[1][SlotIsValid]3_out ),
+        .D(CMD_NewStateBits[75]),
+        .Q(\slotsData_reg[1][SlotData] [75]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[1][SlotData][76] 
+       (.C(clk),
+        .CE(\slotsData[1][SlotIsValid]3_out ),
+        .D(CMD_NewStateBits[76]),
+        .Q(\slotsData_reg[1][SlotData] [76]),
         .R(CMD_EndFrameReset));
   FDRE #(
     .INIT(1'b0)) 
@@ -2794,11 +3756,171 @@ module design_1_StateBlock_0_3_StateBlock
         .R(CMD_EndFrameReset));
   FDRE #(
     .INIT(1'b0)) 
+    \slotsData_reg[2][SlotData][40] 
+       (.C(clk),
+        .CE(\slotsData[2][SlotIsValid]5_out ),
+        .D(CMD_NewStateBits[40]),
+        .Q(\slotsData_reg[2][SlotData] [40]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[2][SlotData][41] 
+       (.C(clk),
+        .CE(\slotsData[2][SlotIsValid]5_out ),
+        .D(CMD_NewStateBits[41]),
+        .Q(\slotsData_reg[2][SlotData] [41]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[2][SlotData][42] 
+       (.C(clk),
+        .CE(\slotsData[2][SlotIsValid]5_out ),
+        .D(CMD_NewStateBits[42]),
+        .Q(\slotsData_reg[2][SlotData] [42]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[2][SlotData][43] 
+       (.C(clk),
+        .CE(\slotsData[2][SlotIsValid]5_out ),
+        .D(CMD_NewStateBits[43]),
+        .Q(\slotsData_reg[2][SlotData] [43]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[2][SlotData][44] 
+       (.C(clk),
+        .CE(\slotsData[2][SlotIsValid]5_out ),
+        .D(CMD_NewStateBits[44]),
+        .Q(\slotsData_reg[2][SlotData] [44]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[2][SlotData][45] 
+       (.C(clk),
+        .CE(\slotsData[2][SlotIsValid]5_out ),
+        .D(CMD_NewStateBits[45]),
+        .Q(\slotsData_reg[2][SlotData] [45]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[2][SlotData][46] 
+       (.C(clk),
+        .CE(\slotsData[2][SlotIsValid]5_out ),
+        .D(CMD_NewStateBits[46]),
+        .Q(\slotsData_reg[2][SlotData] [46]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[2][SlotData][47] 
+       (.C(clk),
+        .CE(\slotsData[2][SlotIsValid]5_out ),
+        .D(CMD_NewStateBits[47]),
+        .Q(\slotsData_reg[2][SlotData] [47]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[2][SlotData][48] 
+       (.C(clk),
+        .CE(\slotsData[2][SlotIsValid]5_out ),
+        .D(CMD_NewStateBits[48]),
+        .Q(\slotsData_reg[2][SlotData] [48]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[2][SlotData][49] 
+       (.C(clk),
+        .CE(\slotsData[2][SlotIsValid]5_out ),
+        .D(CMD_NewStateBits[49]),
+        .Q(\slotsData_reg[2][SlotData] [49]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
     \slotsData_reg[2][SlotData][4] 
        (.C(clk),
         .CE(\slotsData[2][SlotIsValid]5_out ),
         .D(CMD_NewStateBits[4]),
         .Q(\slotsData_reg[2][SlotData] [4]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[2][SlotData][50] 
+       (.C(clk),
+        .CE(\slotsData[2][SlotIsValid]5_out ),
+        .D(CMD_NewStateBits[50]),
+        .Q(\slotsData_reg[2][SlotData] [50]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[2][SlotData][51] 
+       (.C(clk),
+        .CE(\slotsData[2][SlotIsValid]5_out ),
+        .D(CMD_NewStateBits[51]),
+        .Q(\slotsData_reg[2][SlotData] [51]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[2][SlotData][52] 
+       (.C(clk),
+        .CE(\slotsData[2][SlotIsValid]5_out ),
+        .D(CMD_NewStateBits[52]),
+        .Q(\slotsData_reg[2][SlotData] [52]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[2][SlotData][53] 
+       (.C(clk),
+        .CE(\slotsData[2][SlotIsValid]5_out ),
+        .D(CMD_NewStateBits[53]),
+        .Q(\slotsData_reg[2][SlotData] [53]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[2][SlotData][54] 
+       (.C(clk),
+        .CE(\slotsData[2][SlotIsValid]5_out ),
+        .D(CMD_NewStateBits[54]),
+        .Q(\slotsData_reg[2][SlotData] [54]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[2][SlotData][55] 
+       (.C(clk),
+        .CE(\slotsData[2][SlotIsValid]5_out ),
+        .D(CMD_NewStateBits[55]),
+        .Q(\slotsData_reg[2][SlotData] [55]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[2][SlotData][56] 
+       (.C(clk),
+        .CE(\slotsData[2][SlotIsValid]5_out ),
+        .D(CMD_NewStateBits[56]),
+        .Q(\slotsData_reg[2][SlotData] [56]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[2][SlotData][57] 
+       (.C(clk),
+        .CE(\slotsData[2][SlotIsValid]5_out ),
+        .D(CMD_NewStateBits[57]),
+        .Q(\slotsData_reg[2][SlotData] [57]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[2][SlotData][58] 
+       (.C(clk),
+        .CE(\slotsData[2][SlotIsValid]5_out ),
+        .D(CMD_NewStateBits[58]),
+        .Q(\slotsData_reg[2][SlotData] [58]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[2][SlotData][59] 
+       (.C(clk),
+        .CE(\slotsData[2][SlotIsValid]5_out ),
+        .D(CMD_NewStateBits[59]),
+        .Q(\slotsData_reg[2][SlotData] [59]),
         .R(CMD_EndFrameReset));
   FDRE #(
     .INIT(1'b0)) 
@@ -2810,11 +3932,147 @@ module design_1_StateBlock_0_3_StateBlock
         .R(CMD_EndFrameReset));
   FDRE #(
     .INIT(1'b0)) 
+    \slotsData_reg[2][SlotData][60] 
+       (.C(clk),
+        .CE(\slotsData[2][SlotIsValid]5_out ),
+        .D(CMD_NewStateBits[60]),
+        .Q(\slotsData_reg[2][SlotData] [60]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[2][SlotData][61] 
+       (.C(clk),
+        .CE(\slotsData[2][SlotIsValid]5_out ),
+        .D(CMD_NewStateBits[61]),
+        .Q(\slotsData_reg[2][SlotData] [61]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[2][SlotData][62] 
+       (.C(clk),
+        .CE(\slotsData[2][SlotIsValid]5_out ),
+        .D(CMD_NewStateBits[62]),
+        .Q(\slotsData_reg[2][SlotData] [62]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[2][SlotData][63] 
+       (.C(clk),
+        .CE(\slotsData[2][SlotIsValid]5_out ),
+        .D(CMD_NewStateBits[63]),
+        .Q(\slotsData_reg[2][SlotData] [63]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[2][SlotData][64] 
+       (.C(clk),
+        .CE(\slotsData[2][SlotIsValid]5_out ),
+        .D(CMD_NewStateBits[64]),
+        .Q(\slotsData_reg[2][SlotData] [64]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[2][SlotData][65] 
+       (.C(clk),
+        .CE(\slotsData[2][SlotIsValid]5_out ),
+        .D(CMD_NewStateBits[65]),
+        .Q(\slotsData_reg[2][SlotData] [65]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[2][SlotData][66] 
+       (.C(clk),
+        .CE(\slotsData[2][SlotIsValid]5_out ),
+        .D(CMD_NewStateBits[66]),
+        .Q(\slotsData_reg[2][SlotData] [66]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[2][SlotData][67] 
+       (.C(clk),
+        .CE(\slotsData[2][SlotIsValid]5_out ),
+        .D(CMD_NewStateBits[67]),
+        .Q(\slotsData_reg[2][SlotData] [67]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[2][SlotData][68] 
+       (.C(clk),
+        .CE(\slotsData[2][SlotIsValid]5_out ),
+        .D(CMD_NewStateBits[68]),
+        .Q(\slotsData_reg[2][SlotData] [68]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[2][SlotData][69] 
+       (.C(clk),
+        .CE(\slotsData[2][SlotIsValid]5_out ),
+        .D(CMD_NewStateBits[69]),
+        .Q(\slotsData_reg[2][SlotData] [69]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
     \slotsData_reg[2][SlotData][6] 
        (.C(clk),
         .CE(\slotsData[2][SlotIsValid]5_out ),
         .D(CMD_NewStateBits[6]),
         .Q(\slotsData_reg[2][SlotData] [6]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[2][SlotData][70] 
+       (.C(clk),
+        .CE(\slotsData[2][SlotIsValid]5_out ),
+        .D(CMD_NewStateBits[70]),
+        .Q(\slotsData_reg[2][SlotData] [70]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[2][SlotData][71] 
+       (.C(clk),
+        .CE(\slotsData[2][SlotIsValid]5_out ),
+        .D(CMD_NewStateBits[71]),
+        .Q(\slotsData_reg[2][SlotData] [71]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[2][SlotData][72] 
+       (.C(clk),
+        .CE(\slotsData[2][SlotIsValid]5_out ),
+        .D(CMD_NewStateBits[72]),
+        .Q(\slotsData_reg[2][SlotData] [72]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[2][SlotData][73] 
+       (.C(clk),
+        .CE(\slotsData[2][SlotIsValid]5_out ),
+        .D(CMD_NewStateBits[73]),
+        .Q(\slotsData_reg[2][SlotData] [73]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[2][SlotData][74] 
+       (.C(clk),
+        .CE(\slotsData[2][SlotIsValid]5_out ),
+        .D(CMD_NewStateBits[74]),
+        .Q(\slotsData_reg[2][SlotData] [74]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[2][SlotData][75] 
+       (.C(clk),
+        .CE(\slotsData[2][SlotIsValid]5_out ),
+        .D(CMD_NewStateBits[75]),
+        .Q(\slotsData_reg[2][SlotData] [75]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[2][SlotData][76] 
+       (.C(clk),
+        .CE(\slotsData[2][SlotIsValid]5_out ),
+        .D(CMD_NewStateBits[76]),
+        .Q(\slotsData_reg[2][SlotData] [76]),
         .R(CMD_EndFrameReset));
   FDRE #(
     .INIT(1'b0)) 
@@ -3250,11 +4508,171 @@ module design_1_StateBlock_0_3_StateBlock
         .R(CMD_EndFrameReset));
   FDRE #(
     .INIT(1'b0)) 
+    \slotsData_reg[3][SlotData][40] 
+       (.C(clk),
+        .CE(\slotsData[3][SlotIsValid]7_out ),
+        .D(CMD_NewStateBits[40]),
+        .Q(\slotsData_reg[3][SlotData] [40]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[3][SlotData][41] 
+       (.C(clk),
+        .CE(\slotsData[3][SlotIsValid]7_out ),
+        .D(CMD_NewStateBits[41]),
+        .Q(\slotsData_reg[3][SlotData] [41]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[3][SlotData][42] 
+       (.C(clk),
+        .CE(\slotsData[3][SlotIsValid]7_out ),
+        .D(CMD_NewStateBits[42]),
+        .Q(\slotsData_reg[3][SlotData] [42]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[3][SlotData][43] 
+       (.C(clk),
+        .CE(\slotsData[3][SlotIsValid]7_out ),
+        .D(CMD_NewStateBits[43]),
+        .Q(\slotsData_reg[3][SlotData] [43]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[3][SlotData][44] 
+       (.C(clk),
+        .CE(\slotsData[3][SlotIsValid]7_out ),
+        .D(CMD_NewStateBits[44]),
+        .Q(\slotsData_reg[3][SlotData] [44]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[3][SlotData][45] 
+       (.C(clk),
+        .CE(\slotsData[3][SlotIsValid]7_out ),
+        .D(CMD_NewStateBits[45]),
+        .Q(\slotsData_reg[3][SlotData] [45]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[3][SlotData][46] 
+       (.C(clk),
+        .CE(\slotsData[3][SlotIsValid]7_out ),
+        .D(CMD_NewStateBits[46]),
+        .Q(\slotsData_reg[3][SlotData] [46]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[3][SlotData][47] 
+       (.C(clk),
+        .CE(\slotsData[3][SlotIsValid]7_out ),
+        .D(CMD_NewStateBits[47]),
+        .Q(\slotsData_reg[3][SlotData] [47]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[3][SlotData][48] 
+       (.C(clk),
+        .CE(\slotsData[3][SlotIsValid]7_out ),
+        .D(CMD_NewStateBits[48]),
+        .Q(\slotsData_reg[3][SlotData] [48]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[3][SlotData][49] 
+       (.C(clk),
+        .CE(\slotsData[3][SlotIsValid]7_out ),
+        .D(CMD_NewStateBits[49]),
+        .Q(\slotsData_reg[3][SlotData] [49]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
     \slotsData_reg[3][SlotData][4] 
        (.C(clk),
         .CE(\slotsData[3][SlotIsValid]7_out ),
         .D(CMD_NewStateBits[4]),
         .Q(\slotsData_reg[3][SlotData] [4]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[3][SlotData][50] 
+       (.C(clk),
+        .CE(\slotsData[3][SlotIsValid]7_out ),
+        .D(CMD_NewStateBits[50]),
+        .Q(\slotsData_reg[3][SlotData] [50]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[3][SlotData][51] 
+       (.C(clk),
+        .CE(\slotsData[3][SlotIsValid]7_out ),
+        .D(CMD_NewStateBits[51]),
+        .Q(\slotsData_reg[3][SlotData] [51]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[3][SlotData][52] 
+       (.C(clk),
+        .CE(\slotsData[3][SlotIsValid]7_out ),
+        .D(CMD_NewStateBits[52]),
+        .Q(\slotsData_reg[3][SlotData] [52]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[3][SlotData][53] 
+       (.C(clk),
+        .CE(\slotsData[3][SlotIsValid]7_out ),
+        .D(CMD_NewStateBits[53]),
+        .Q(\slotsData_reg[3][SlotData] [53]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[3][SlotData][54] 
+       (.C(clk),
+        .CE(\slotsData[3][SlotIsValid]7_out ),
+        .D(CMD_NewStateBits[54]),
+        .Q(\slotsData_reg[3][SlotData] [54]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[3][SlotData][55] 
+       (.C(clk),
+        .CE(\slotsData[3][SlotIsValid]7_out ),
+        .D(CMD_NewStateBits[55]),
+        .Q(\slotsData_reg[3][SlotData] [55]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[3][SlotData][56] 
+       (.C(clk),
+        .CE(\slotsData[3][SlotIsValid]7_out ),
+        .D(CMD_NewStateBits[56]),
+        .Q(\slotsData_reg[3][SlotData] [56]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[3][SlotData][57] 
+       (.C(clk),
+        .CE(\slotsData[3][SlotIsValid]7_out ),
+        .D(CMD_NewStateBits[57]),
+        .Q(\slotsData_reg[3][SlotData] [57]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[3][SlotData][58] 
+       (.C(clk),
+        .CE(\slotsData[3][SlotIsValid]7_out ),
+        .D(CMD_NewStateBits[58]),
+        .Q(\slotsData_reg[3][SlotData] [58]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[3][SlotData][59] 
+       (.C(clk),
+        .CE(\slotsData[3][SlotIsValid]7_out ),
+        .D(CMD_NewStateBits[59]),
+        .Q(\slotsData_reg[3][SlotData] [59]),
         .R(CMD_EndFrameReset));
   FDRE #(
     .INIT(1'b0)) 
@@ -3266,11 +4684,147 @@ module design_1_StateBlock_0_3_StateBlock
         .R(CMD_EndFrameReset));
   FDRE #(
     .INIT(1'b0)) 
+    \slotsData_reg[3][SlotData][60] 
+       (.C(clk),
+        .CE(\slotsData[3][SlotIsValid]7_out ),
+        .D(CMD_NewStateBits[60]),
+        .Q(\slotsData_reg[3][SlotData] [60]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[3][SlotData][61] 
+       (.C(clk),
+        .CE(\slotsData[3][SlotIsValid]7_out ),
+        .D(CMD_NewStateBits[61]),
+        .Q(\slotsData_reg[3][SlotData] [61]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[3][SlotData][62] 
+       (.C(clk),
+        .CE(\slotsData[3][SlotIsValid]7_out ),
+        .D(CMD_NewStateBits[62]),
+        .Q(\slotsData_reg[3][SlotData] [62]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[3][SlotData][63] 
+       (.C(clk),
+        .CE(\slotsData[3][SlotIsValid]7_out ),
+        .D(CMD_NewStateBits[63]),
+        .Q(\slotsData_reg[3][SlotData] [63]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[3][SlotData][64] 
+       (.C(clk),
+        .CE(\slotsData[3][SlotIsValid]7_out ),
+        .D(CMD_NewStateBits[64]),
+        .Q(\slotsData_reg[3][SlotData] [64]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[3][SlotData][65] 
+       (.C(clk),
+        .CE(\slotsData[3][SlotIsValid]7_out ),
+        .D(CMD_NewStateBits[65]),
+        .Q(\slotsData_reg[3][SlotData] [65]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[3][SlotData][66] 
+       (.C(clk),
+        .CE(\slotsData[3][SlotIsValid]7_out ),
+        .D(CMD_NewStateBits[66]),
+        .Q(\slotsData_reg[3][SlotData] [66]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[3][SlotData][67] 
+       (.C(clk),
+        .CE(\slotsData[3][SlotIsValid]7_out ),
+        .D(CMD_NewStateBits[67]),
+        .Q(\slotsData_reg[3][SlotData] [67]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[3][SlotData][68] 
+       (.C(clk),
+        .CE(\slotsData[3][SlotIsValid]7_out ),
+        .D(CMD_NewStateBits[68]),
+        .Q(\slotsData_reg[3][SlotData] [68]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[3][SlotData][69] 
+       (.C(clk),
+        .CE(\slotsData[3][SlotIsValid]7_out ),
+        .D(CMD_NewStateBits[69]),
+        .Q(\slotsData_reg[3][SlotData] [69]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
     \slotsData_reg[3][SlotData][6] 
        (.C(clk),
         .CE(\slotsData[3][SlotIsValid]7_out ),
         .D(CMD_NewStateBits[6]),
         .Q(\slotsData_reg[3][SlotData] [6]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[3][SlotData][70] 
+       (.C(clk),
+        .CE(\slotsData[3][SlotIsValid]7_out ),
+        .D(CMD_NewStateBits[70]),
+        .Q(\slotsData_reg[3][SlotData] [70]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[3][SlotData][71] 
+       (.C(clk),
+        .CE(\slotsData[3][SlotIsValid]7_out ),
+        .D(CMD_NewStateBits[71]),
+        .Q(\slotsData_reg[3][SlotData] [71]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[3][SlotData][72] 
+       (.C(clk),
+        .CE(\slotsData[3][SlotIsValid]7_out ),
+        .D(CMD_NewStateBits[72]),
+        .Q(\slotsData_reg[3][SlotData] [72]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[3][SlotData][73] 
+       (.C(clk),
+        .CE(\slotsData[3][SlotIsValid]7_out ),
+        .D(CMD_NewStateBits[73]),
+        .Q(\slotsData_reg[3][SlotData] [73]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[3][SlotData][74] 
+       (.C(clk),
+        .CE(\slotsData[3][SlotIsValid]7_out ),
+        .D(CMD_NewStateBits[74]),
+        .Q(\slotsData_reg[3][SlotData] [74]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[3][SlotData][75] 
+       (.C(clk),
+        .CE(\slotsData[3][SlotIsValid]7_out ),
+        .D(CMD_NewStateBits[75]),
+        .Q(\slotsData_reg[3][SlotData] [75]),
+        .R(CMD_EndFrameReset));
+  FDRE #(
+    .INIT(1'b0)) 
+    \slotsData_reg[3][SlotData][76] 
+       (.C(clk),
+        .CE(\slotsData[3][SlotIsValid]7_out ),
+        .D(CMD_NewStateBits[76]),
+        .Q(\slotsData_reg[3][SlotData] [76]),
         .R(CMD_EndFrameReset));
   FDRE #(
     .INIT(1'b0)) 

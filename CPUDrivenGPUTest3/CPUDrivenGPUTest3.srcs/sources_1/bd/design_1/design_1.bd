@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
-<bd:repository xmlns:bd="http://www.xilinx.com/bd" bd:BoundaryCRC="0x92297DD4F0332EC8" bd:device="xcku5p-ffvb676-2-e" bd:synthFlowMode="Hierarchical" bd:tool_version="2018.1_AR73068" bd:top="design_1" bd:version="1.00.a">
+<bd:repository xmlns:bd="http://www.xilinx.com/bd" bd:BoundaryCRC="0x92297DD4F0332EC8" bd:device="xcku5p-ffvb676-2-e" bd:isValidated="true" bd:synthFlowMode="Hierarchical" bd:tool_version="2018.1_AR73068" bd:top="design_1" bd:version="1.00.a">
 
   <spirit:component xmlns:spirit="http://www.spiritconsortium.org/XMLSchema/SPIRIT/1685-2009">
     <spirit:vendor>xilinx.com</spirit:vendor>
@@ -20,8 +20,22 @@
         <spirit:abstractionType spirit:library="interface" spirit:name="diff_clock_rtl" spirit:vendor="xilinx.com" spirit:version="1.0"/>
         <spirit:parameters>
           <spirit:parameter>
+            <spirit:name>CAN_DEBUG</spirit:name>
+            <spirit:value>false</spirit:value>
+            <spirit:vendorExtensions>
+              <bd:configElementInfos>
+                <bd:configElementInfo bd:valueSource="default"/>
+              </bd:configElementInfos>
+            </spirit:vendorExtensions>
+          </spirit:parameter>
+          <spirit:parameter>
             <spirit:name>FREQ_HZ</spirit:name>
             <spirit:value>300000000</spirit:value>
+            <spirit:vendorExtensions>
+              <bd:configElementInfos>
+                <bd:configElementInfo bd:valueSource="user"/>
+              </bd:configElementInfos>
+            </spirit:vendorExtensions>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:busInterface>
@@ -30,14 +44,151 @@
         <spirit:master/>
         <spirit:busType spirit:library="interface" spirit:name="ddr4" spirit:vendor="xilinx.com" spirit:version="1.0"/>
         <spirit:abstractionType spirit:library="interface" spirit:name="ddr4_rtl" spirit:vendor="xilinx.com" spirit:version="1.0"/>
-        <spirit:parameters/>
+        <spirit:parameters>
+          <spirit:parameter>
+            <spirit:name>CAN_DEBUG</spirit:name>
+            <spirit:value>false</spirit:value>
+            <spirit:vendorExtensions>
+              <bd:configElementInfos>
+                <bd:configElementInfo bd:valueSource="default"/>
+              </bd:configElementInfos>
+            </spirit:vendorExtensions>
+          </spirit:parameter>
+          <spirit:parameter>
+            <spirit:name>TIMEPERIOD_PS</spirit:name>
+            <spirit:value>750</spirit:value>
+            <spirit:vendorExtensions>
+              <bd:configElementInfos>
+                <bd:configElementInfo bd:valueSource="user_prop"/>
+              </bd:configElementInfos>
+            </spirit:vendorExtensions>
+          </spirit:parameter>
+          <spirit:parameter>
+            <spirit:name>MEMORY_TYPE</spirit:name>
+            <spirit:value>Components</spirit:value>
+            <spirit:vendorExtensions>
+              <bd:configElementInfos>
+                <bd:configElementInfo bd:valueSource="user_prop"/>
+              </bd:configElementInfos>
+            </spirit:vendorExtensions>
+          </spirit:parameter>
+          <spirit:parameter>
+            <spirit:name>MEMORY_PART</spirit:name>
+            <spirit:value>MT40A256M16GE-075E</spirit:value>
+            <spirit:vendorExtensions>
+              <bd:configElementInfos>
+                <bd:configElementInfo bd:valueSource="user_prop"/>
+              </bd:configElementInfos>
+            </spirit:vendorExtensions>
+          </spirit:parameter>
+          <spirit:parameter>
+            <spirit:name>DATA_WIDTH</spirit:name>
+            <spirit:value>32</spirit:value>
+            <spirit:vendorExtensions>
+              <bd:configElementInfos>
+                <bd:configElementInfo bd:valueSource="user_prop"/>
+              </bd:configElementInfos>
+            </spirit:vendorExtensions>
+          </spirit:parameter>
+          <spirit:parameter>
+            <spirit:name>CS_ENABLED</spirit:name>
+            <spirit:value>true</spirit:value>
+            <spirit:vendorExtensions>
+              <bd:configElementInfos>
+                <bd:configElementInfo bd:valueSource="user_prop"/>
+              </bd:configElementInfos>
+            </spirit:vendorExtensions>
+          </spirit:parameter>
+          <spirit:parameter>
+            <spirit:name>DATA_MASK_ENABLED</spirit:name>
+            <spirit:value>DM_NO_DBI</spirit:value>
+            <spirit:vendorExtensions>
+              <bd:configElementInfos>
+                <bd:configElementInfo bd:valueSource="user_prop"/>
+              </bd:configElementInfos>
+            </spirit:vendorExtensions>
+          </spirit:parameter>
+          <spirit:parameter>
+            <spirit:name>SLOT</spirit:name>
+            <spirit:value>Single</spirit:value>
+            <spirit:vendorExtensions>
+              <bd:configElementInfos>
+                <bd:configElementInfo bd:valueSource="user_prop"/>
+              </bd:configElementInfos>
+            </spirit:vendorExtensions>
+          </spirit:parameter>
+          <spirit:parameter>
+            <spirit:name>CUSTOM_PARTS</spirit:name>
+            <spirit:value>no_file_loaded</spirit:value>
+            <spirit:vendorExtensions>
+              <bd:configElementInfos>
+                <bd:configElementInfo bd:valueSource="user_prop"/>
+              </bd:configElementInfos>
+            </spirit:vendorExtensions>
+          </spirit:parameter>
+          <spirit:parameter>
+            <spirit:name>MEM_ADDR_MAP</spirit:name>
+            <spirit:value>ROW_COLUMN_BANK</spirit:value>
+            <spirit:vendorExtensions>
+              <bd:configElementInfos>
+                <bd:configElementInfo bd:valueSource="user_prop"/>
+              </bd:configElementInfos>
+            </spirit:vendorExtensions>
+          </spirit:parameter>
+          <spirit:parameter>
+            <spirit:name>BURST_LENGTH</spirit:name>
+            <spirit:value>8</spirit:value>
+            <spirit:vendorExtensions>
+              <bd:configElementInfos>
+                <bd:configElementInfo bd:valueSource="user_prop"/>
+              </bd:configElementInfos>
+            </spirit:vendorExtensions>
+          </spirit:parameter>
+          <spirit:parameter>
+            <spirit:name>AXI_ARBITRATION_SCHEME</spirit:name>
+            <spirit:value>RD_PRI_REG</spirit:value>
+            <spirit:vendorExtensions>
+              <bd:configElementInfos>
+                <bd:configElementInfo bd:valueSource="user_prop"/>
+              </bd:configElementInfos>
+            </spirit:vendorExtensions>
+          </spirit:parameter>
+          <spirit:parameter>
+            <spirit:name>CAS_LATENCY</spirit:name>
+            <spirit:value>18</spirit:value>
+            <spirit:vendorExtensions>
+              <bd:configElementInfos>
+                <bd:configElementInfo bd:valueSource="user_prop"/>
+              </bd:configElementInfos>
+            </spirit:vendorExtensions>
+          </spirit:parameter>
+          <spirit:parameter>
+            <spirit:name>CAS_WRITE_LATENCY</spirit:name>
+            <spirit:value>14</spirit:value>
+            <spirit:vendorExtensions>
+              <bd:configElementInfos>
+                <bd:configElementInfo bd:valueSource="user_prop"/>
+              </bd:configElementInfos>
+            </spirit:vendorExtensions>
+          </spirit:parameter>
+        </spirit:parameters>
       </spirit:busInterface>
       <spirit:busInterface>
         <spirit:name>ext_mdio_pcs_pma_0_0</spirit:name>
         <spirit:master/>
         <spirit:busType spirit:library="interface" spirit:name="mdio" spirit:vendor="xilinx.com" spirit:version="1.0"/>
         <spirit:abstractionType spirit:library="interface" spirit:name="mdio_rtl" spirit:vendor="xilinx.com" spirit:version="1.0"/>
-        <spirit:parameters/>
+        <spirit:parameters>
+          <spirit:parameter>
+            <spirit:name>CAN_DEBUG</spirit:name>
+            <spirit:value>false</spirit:value>
+            <spirit:vendorExtensions>
+              <bd:configElementInfos>
+                <bd:configElementInfo bd:valueSource="default"/>
+              </bd:configElementInfos>
+            </spirit:vendorExtensions>
+          </spirit:parameter>
+        </spirit:parameters>
       </spirit:busInterface>
       <spirit:busInterface>
         <spirit:name>sgmii_0_0</spirit:name>
@@ -52,8 +203,22 @@
         <spirit:abstractionType spirit:library="interface" spirit:name="diff_clock_rtl" spirit:vendor="xilinx.com" spirit:version="1.0"/>
         <spirit:parameters>
           <spirit:parameter>
+            <spirit:name>CAN_DEBUG</spirit:name>
+            <spirit:value>false</spirit:value>
+            <spirit:vendorExtensions>
+              <bd:configElementInfos>
+                <bd:configElementInfo bd:valueSource="default"/>
+              </bd:configElementInfos>
+            </spirit:vendorExtensions>
+          </spirit:parameter>
+          <spirit:parameter>
             <spirit:name>FREQ_HZ</spirit:name>
             <spirit:value>625000000</spirit:value>
+            <spirit:vendorExtensions>
+              <bd:configElementInfos>
+                <bd:configElementInfo bd:valueSource="user"/>
+              </bd:configElementInfos>
+            </spirit:vendorExtensions>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:busInterface>
@@ -78,6 +243,11 @@
           <spirit:parameter>
             <spirit:name>POLARITY</spirit:name>
             <spirit:value>ACTIVE_HIGH</spirit:value>
+            <spirit:vendorExtensions>
+              <bd:configElementInfos>
+                <bd:configElementInfo bd:valueSource="user"/>
+              </bd:configElementInfos>
+            </spirit:vendorExtensions>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:busInterface>
@@ -196,6 +366,8 @@
           <spirit:configurableElementValue spirit:referenceId="C_PROBE2_TYPE">0</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="C_PROBE1_TYPE">0</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="C_PROBE0_TYPE">0</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="C_PROBE59_WIDTH">32</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="C_PROBE58_WIDTH">77</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="C_PROBE57_WIDTH">294</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="C_PROBE54_WIDTH">16</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="C_PROBE53_WIDTH">16</spirit:configurableElementValue>
@@ -245,7 +417,7 @@
           <spirit:configurableElementValue spirit:referenceId="C_PROBE2_WIDTH">88</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="C_PROBE1_WIDTH">88</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="C_PROBE0_WIDTH">8</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="C_NUM_OF_PROBES">58</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="C_NUM_OF_PROBES">60</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="C_ENABLE_ILA_AXI_MON">false</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="C_MONITOR_TYPE">Native</spirit:configurableElementValue>
         </spirit:configurableElementValues>
@@ -489,9 +661,9 @@
           <spirit:configurableElementValue spirit:referenceId="C_PROBE21_WIDTH">1</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="C_PROBE20_WIDTH">1</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="C_PROBE19_WIDTH">1</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="C_PROBE18_WIDTH">1</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="C_PROBE17_WIDTH">1</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="C_PROBE16_WIDTH">1</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="C_PROBE18_WIDTH">32</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="C_PROBE17_WIDTH">32</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="C_PROBE16_WIDTH">32</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="C_PROBE15_WIDTH">16</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="C_PROBE14_WIDTH">1</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="C_PROBE13_WIDTH">1</spirit:configurableElementValue>
@@ -508,7 +680,7 @@
           <spirit:configurableElementValue spirit:referenceId="C_PROBE2_WIDTH">3</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="C_PROBE1_WIDTH">24</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="C_PROBE0_WIDTH">96</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="C_NUM_OF_PROBES">16</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="C_NUM_OF_PROBES">19</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="C_ENABLE_ILA_AXI_MON">false</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="C_MONITOR_TYPE">Native</spirit:configurableElementValue>
         </spirit:configurableElementValues>
@@ -785,7 +957,7 @@
         <spirit:componentRef spirit:library="module_ref" spirit:name="StateBlock" spirit:vendor="xilinx.com" spirit:version="1.0"/>
         <spirit:configurableElementValues>
           <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_StateBlock_0_3</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="StateBitsCount">40</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="StateBitsCount">77</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="bd:referenceName">StateBlock</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
@@ -1117,22 +1289,11 @@
         </spirit:configurableElementValues>
       </spirit:componentInstance>
       <spirit:componentInstance>
-        <spirit:instanceName>CommandProcessor_0</spirit:instanceName>
-        <spirit:componentRef spirit:library="module_ref" spirit:name="CommandProcessor" spirit:vendor="xilinx.com" spirit:version="1.0"/>
+        <spirit:instanceName>DepthBuffer_0</spirit:instanceName>
+        <spirit:componentRef spirit:library="module_ref" spirit:name="DepthBuffer" spirit:vendor="xilinx.com" spirit:version="1.0"/>
         <spirit:configurableElementValues>
-          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_CommandProcessor_0_0</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">CommandProcessor</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
-        </spirit:configurableElementValues>
-      </spirit:componentInstance>
-      <spirit:componentInstance>
-        <spirit:instanceName>TexSample_0</spirit:instanceName>
-        <spirit:componentRef spirit:library="module_ref" spirit:name="TexSample" spirit:vendor="xilinx.com" spirit:version="1.0"/>
-        <spirit:configurableElementValues>
-          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_TexSample_0_0</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">TexSample</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_DepthBuffer_0_0</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">DepthBuffer</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
@@ -1172,11 +1333,55 @@
         </spirit:configurableElementValues>
       </spirit:componentInstance>
       <spirit:componentInstance>
-        <spirit:instanceName>DepthBuffer_0</spirit:instanceName>
-        <spirit:componentRef spirit:library="module_ref" spirit:name="DepthBuffer" spirit:vendor="xilinx.com" spirit:version="1.0"/>
+        <spirit:instanceName>TexSample_0</spirit:instanceName>
+        <spirit:componentRef spirit:library="module_ref" spirit:name="TexSample" spirit:vendor="xilinx.com" spirit:version="1.0"/>
         <spirit:configurableElementValues>
-          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_DepthBuffer_0_0</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">DepthBuffer</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_TexSample_0_0</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">TexSample</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
+        </spirit:configurableElementValues>
+      </spirit:componentInstance>
+      <spirit:componentInstance>
+        <spirit:instanceName>ila_states</spirit:instanceName>
+        <spirit:componentRef spirit:library="ip" spirit:name="ila" spirit:vendor="xilinx.com" spirit:version="6.2"/>
+        <spirit:configurableElementValues>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_ila_0_6</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="C_PROBE22_WIDTH">16</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="C_PROBE21_WIDTH">16</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="C_PROBE20_WIDTH">16</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="C_PROBE19_WIDTH">16</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="C_PROBE18_WIDTH">16</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="C_PROBE17_WIDTH">16</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="C_PROBE16_WIDTH">16</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="C_PROBE15_WIDTH">16</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="C_PROBE14_WIDTH">16</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="C_PROBE13_WIDTH">16</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="C_PROBE12_WIDTH">5</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="C_PROBE11_WIDTH">6</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="C_PROBE10_WIDTH">3</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="C_PROBE9_WIDTH">7</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="C_PROBE8_WIDTH">4</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="C_PROBE7_WIDTH">8</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="C_PROBE6_WIDTH">8</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="C_PROBE5_WIDTH">6</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="C_PROBE4_WIDTH">6</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="C_PROBE3_WIDTH">4</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="C_PROBE2_WIDTH">16</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="C_PROBE1_WIDTH">13</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="C_PROBE0_WIDTH">8</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="C_NUM_OF_PROBES">23</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="C_ENABLE_ILA_AXI_MON">false</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="C_MONITOR_TYPE">Native</spirit:configurableElementValue>
+        </spirit:configurableElementValues>
+      </spirit:componentInstance>
+      <spirit:componentInstance>
+        <spirit:instanceName>CommandProcessor_0</spirit:instanceName>
+        <spirit:componentRef spirit:library="module_ref" spirit:name="CommandProcessor" spirit:vendor="xilinx.com" spirit:version="1.0"/>
+        <spirit:configurableElementValues>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_CommandProcessor_0_0</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">CommandProcessor</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
@@ -1216,16 +1421,6 @@
         <spirit:activeInterface spirit:busRef="FIFO_WRITE" spirit:componentRef="rast_out_fifo"/>
       </spirit:interconnection>
       <spirit:interconnection>
-        <spirit:name>TexSample_0_TexSampReadRequestsFIFO</spirit:name>
-        <spirit:activeInterface spirit:busRef="TexSampReadRequestsFIFO" spirit:componentRef="TexSample_0"/>
-        <spirit:activeInterface spirit:busRef="TexFetchReadRequestsFIFO" spirit:componentRef="MemorySystem"/>
-      </spirit:interconnection>
-      <spirit:interconnection>
-        <spirit:name>TexSample_0_TexSampReadResponses</spirit:name>
-        <spirit:activeInterface spirit:busRef="TexSampReadResponses" spirit:componentRef="TexSample_0"/>
-        <spirit:activeInterface spirit:busRef="TexFetchReadResponsesFIFO" spirit:componentRef="MemorySystem"/>
-      </spirit:interconnection>
-      <spirit:interconnection>
         <spirit:name>ROP_0_ROPReadRequestsFIFO</spirit:name>
         <spirit:activeInterface spirit:busRef="ROPReadRequestsFIFO" spirit:componentRef="ROP_0"/>
         <spirit:activeInterface spirit:busRef="ROPReadRequestsFIFO" spirit:componentRef="MemorySystem"/>
@@ -1254,11 +1449,6 @@
         <spirit:name>ClearBlock_0_ClearBlockWriteRequestsFIFO</spirit:name>
         <spirit:activeInterface spirit:busRef="ClearBlockWriteRequestsFIFO" spirit:componentRef="ClearBlock_0"/>
         <spirit:activeInterface spirit:busRef="ClearBlockWriteRequestsFIFO" spirit:componentRef="MemorySystem"/>
-      </spirit:interconnection>
-      <spirit:interconnection>
-        <spirit:name>TexSample_0_TexCache</spirit:name>
-        <spirit:activeInterface spirit:busRef="BRAM_PORTA" spirit:componentRef="TextureCache_128x128x32bits"/>
-        <spirit:activeInterface spirit:busRef="TexCache" spirit:componentRef="TexSample_0"/>
       </spirit:interconnection>
       <spirit:interconnection>
         <spirit:name>ShaderCoreSystem_VERTBATCH_FIFO_0</spirit:name>
@@ -1309,16 +1499,6 @@
         <spirit:name>ROP_0_TEXSAMP_IN_FIFO</spirit:name>
         <spirit:activeInterface spirit:busRef="TEXSAMP_IN_FIFO" spirit:componentRef="ROP_0"/>
         <spirit:activeInterface spirit:busRef="FIFO_READ" spirit:componentRef="ROP_FIFO"/>
-      </spirit:interconnection>
-      <spirit:interconnection>
-        <spirit:name>TexSample_0_ROP_OUT_FIFO</spirit:name>
-        <spirit:activeInterface spirit:busRef="ROP_OUT_FIFO" spirit:componentRef="TexSample_0"/>
-        <spirit:activeInterface spirit:busRef="FIFO_WRITE" spirit:componentRef="ROP_FIFO"/>
-      </spirit:interconnection>
-      <spirit:interconnection>
-        <spirit:name>TexSample_0_INTERP_IN_FIFO</spirit:name>
-        <spirit:activeInterface spirit:busRef="INTERP_IN_FIFO" spirit:componentRef="TexSample_0"/>
-        <spirit:activeInterface spirit:busRef="FIFO_READ" spirit:componentRef="TEXSAMP_FIFO"/>
       </spirit:interconnection>
       <spirit:interconnection>
         <spirit:name>AttrInterpolator_0_TEXSAMP_OUT_FIFO</spirit:name>
@@ -1400,6 +1580,31 @@
         <spirit:activeInterface spirit:busRef="returnPacketsFIFO" spirit:componentRef="CommandProcessor_0"/>
         <spirit:activeInterface spirit:busRef="FIFO_WRITE" spirit:componentRef="NetworkPacketSystem"/>
       </spirit:interconnection>
+      <spirit:interconnection>
+        <spirit:name>TexSample_0_INTERP_IN_FIFO</spirit:name>
+        <spirit:activeInterface spirit:busRef="FIFO_READ" spirit:componentRef="TEXSAMP_FIFO"/>
+        <spirit:activeInterface spirit:busRef="INTERP_IN_FIFO" spirit:componentRef="TexSample_0"/>
+      </spirit:interconnection>
+      <spirit:interconnection>
+        <spirit:name>TexSample_0_TexCache</spirit:name>
+        <spirit:activeInterface spirit:busRef="TexCache" spirit:componentRef="TexSample_0"/>
+        <spirit:activeInterface spirit:busRef="BRAM_PORTA" spirit:componentRef="TextureCache_128x128x32bits"/>
+      </spirit:interconnection>
+      <spirit:interconnection>
+        <spirit:name>TexSample_0_ROP_OUT_FIFO</spirit:name>
+        <spirit:activeInterface spirit:busRef="ROP_OUT_FIFO" spirit:componentRef="TexSample_0"/>
+        <spirit:activeInterface spirit:busRef="FIFO_WRITE" spirit:componentRef="ROP_FIFO"/>
+      </spirit:interconnection>
+      <spirit:interconnection>
+        <spirit:name>TexSample_0_TexSampReadRequestsFIFO</spirit:name>
+        <spirit:activeInterface spirit:busRef="TexSampReadRequestsFIFO" spirit:componentRef="TexSample_0"/>
+        <spirit:activeInterface spirit:busRef="TexFetchReadRequestsFIFO" spirit:componentRef="MemorySystem"/>
+      </spirit:interconnection>
+      <spirit:interconnection>
+        <spirit:name>TexFetchReadResponsesFIFO_1</spirit:name>
+        <spirit:activeInterface spirit:busRef="TexFetchReadResponsesFIFO" spirit:componentRef="MemorySystem"/>
+        <spirit:activeInterface spirit:busRef="TexSampReadResponses" spirit:componentRef="TexSample_0"/>
+      </spirit:interconnection>
     </spirit:interconnections>
     <spirit:adHocConnections>
       <spirit:adHocConnection>
@@ -1419,6 +1624,7 @@
         <spirit:name>CommandProcessor_0_DBG_PACKETSTATE</spirit:name>
         <spirit:internalPortReference spirit:componentRef="CommandProcessor_0" spirit:portRef="DBG_CMDPACKETSTATE"/>
         <spirit:internalPortReference spirit:componentRef="ila_333_250" spirit:portRef="probe0"/>
+        <spirit:internalPortReference spirit:componentRef="ila_states" spirit:portRef="probe0"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>ddr4_0_addn_ui_clkout1</spirit:name>
@@ -1477,15 +1683,16 @@
         <spirit:internalPortReference spirit:componentRef="AttrInterp_FPU_CNV1" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="DINTERP_FPU_CNV1" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="AttrInterpolator_0" spirit:portRef="clk"/>
+        <spirit:internalPortReference spirit:componentRef="DepthBuffer_0" spirit:portRef="clk"/>
+        <spirit:internalPortReference spirit:componentRef="ROP_0" spirit:portRef="clk"/>
+        <spirit:internalPortReference spirit:componentRef="VertexBatchBuilder_0" spirit:portRef="clk"/>
+        <spirit:internalPortReference spirit:componentRef="InputAssembler2_0" spirit:portRef="clk"/>
+        <spirit:internalPortReference spirit:componentRef="TexSample_0" spirit:portRef="clk"/>
+        <spirit:internalPortReference spirit:componentRef="ila_states" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="CommandProcessor_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="ShaderCoreSystem" spirit:portRef="clk_0"/>
         <spirit:internalPortReference spirit:componentRef="ScanoutSystem" spirit:portRef="cmd_clk"/>
         <spirit:internalPortReference spirit:componentRef="NetworkPacketSystem" spirit:portRef="clk333_250"/>
-        <spirit:internalPortReference spirit:componentRef="TexSample_0" spirit:portRef="clk"/>
-        <spirit:internalPortReference spirit:componentRef="ROP_0" spirit:portRef="clk"/>
-        <spirit:internalPortReference spirit:componentRef="VertexBatchBuilder_0" spirit:portRef="clk"/>
-        <spirit:internalPortReference spirit:componentRef="InputAssembler2_0" spirit:portRef="clk"/>
-        <spirit:internalPortReference spirit:componentRef="DepthBuffer_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="DepthInterpolator_0" spirit:portRef="clk"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
@@ -1655,11 +1862,6 @@
         <spirit:internalPortReference spirit:componentRef="Rasterizer_0" spirit:portRef="TRISETUP_inBarycentricInverse"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
-        <spirit:name>TexSample_0_CMD_TexSampleIsIdle</spirit:name>
-        <spirit:internalPortReference spirit:componentRef="TexSample_0" spirit:portRef="CMD_TexSampleIsIdle"/>
-        <spirit:internalPortReference spirit:componentRef="CommandProcessor_0" spirit:portRef="CMD_TexSampler_Idle"/>
-      </spirit:adHocConnection>
-      <spirit:adHocConnection>
         <spirit:name>CommandProcessor_0_SCANOUT_RenderTargetBaseAddr</spirit:name>
         <spirit:internalPortReference spirit:componentRef="CommandProcessor_0" spirit:portRef="SCANOUT_RenderTargetBaseAddr"/>
         <spirit:internalPortReference spirit:componentRef="ScanoutSystem" spirit:portRef="CMD_BaseRenderTargetAddr"/>
@@ -1704,28 +1906,26 @@
         <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="DBG_TriSetup_State"/>
         <spirit:internalPortReference spirit:componentRef="ila_333_250" spirit:portRef="probe5"/>
         <spirit:internalPortReference spirit:componentRef="ILA_TriSetup" spirit:portRef="probe30"/>
+        <spirit:internalPortReference spirit:componentRef="ila_states" spirit:portRef="probe7"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>Rasterizer_0_DBG_Rasterizer_State</spirit:name>
         <spirit:internalPortReference spirit:componentRef="Rasterizer_0" spirit:portRef="DBG_Rasterizer_State"/>
         <spirit:internalPortReference spirit:componentRef="ila_333_250" spirit:portRef="probe6"/>
+        <spirit:internalPortReference spirit:componentRef="ila_states" spirit:portRef="probe8"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>AttrInterpolator_0_DBG_AttrInterpolator_State</spirit:name>
         <spirit:internalPortReference spirit:componentRef="AttrInterpolator_0" spirit:portRef="DBG_AttrInterpolator_State"/>
         <spirit:internalPortReference spirit:componentRef="ila_333_250" spirit:portRef="probe7"/>
         <spirit:internalPortReference spirit:componentRef="ILA_AttrInterpolator" spirit:portRef="probe2"/>
-      </spirit:adHocConnection>
-      <spirit:adHocConnection>
-        <spirit:name>TexSample_0_DBG_TexSample_State</spirit:name>
-        <spirit:internalPortReference spirit:componentRef="TexSample_0" spirit:portRef="DBG_TexSample_State"/>
-        <spirit:internalPortReference spirit:componentRef="ila_333_250" spirit:portRef="probe8"/>
-        <spirit:internalPortReference spirit:componentRef="ILA_TexSampler" spirit:portRef="probe0"/>
+        <spirit:internalPortReference spirit:componentRef="ila_states" spirit:portRef="probe10"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>ROP_0_DBG_ROP_State</spirit:name>
         <spirit:internalPortReference spirit:componentRef="ROP_0" spirit:portRef="DBG_ROP_State"/>
         <spirit:internalPortReference spirit:componentRef="ila_333_250" spirit:portRef="probe9"/>
+        <spirit:internalPortReference spirit:componentRef="ila_states" spirit:portRef="probe12"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>ClearBlock_0_DBG_ClearBlock_State</spirit:name>
@@ -1786,6 +1986,7 @@
         <spirit:name>CommandProcessor_0_DBG_IdleSignalsVector</spirit:name>
         <spirit:internalPortReference spirit:componentRef="CommandProcessor_0" spirit:portRef="DBG_IdleSignalsVector"/>
         <spirit:internalPortReference spirit:componentRef="ila_333_250" spirit:portRef="probe28"/>
+        <spirit:internalPortReference spirit:componentRef="ila_states" spirit:portRef="probe1"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>Rasterizer_0_DBG_MinX</spirit:name>
@@ -1976,26 +2177,6 @@
         <spirit:name>AttrInterpolator_0_STAT_CyclesWaitingForOutput</spirit:name>
         <spirit:internalPortReference spirit:componentRef="AttrInterpolator_0" spirit:portRef="STAT_CyclesWaitingForOutput"/>
         <spirit:internalPortReference spirit:componentRef="StatsCollector_0" spirit:portRef="INTERP_CyclesWaitingForOutput"/>
-      </spirit:adHocConnection>
-      <spirit:adHocConnection>
-        <spirit:name>TexSample_0_STAT_CyclesIdle</spirit:name>
-        <spirit:internalPortReference spirit:componentRef="TexSample_0" spirit:portRef="STAT_CyclesIdle"/>
-        <spirit:internalPortReference spirit:componentRef="StatsCollector_0" spirit:portRef="TEXSAMP_CyclesIdle"/>
-      </spirit:adHocConnection>
-      <spirit:adHocConnection>
-        <spirit:name>TexSample_0_STAT_CyclesSpentWorking</spirit:name>
-        <spirit:internalPortReference spirit:componentRef="TexSample_0" spirit:portRef="STAT_CyclesSpentWorking"/>
-        <spirit:internalPortReference spirit:componentRef="StatsCollector_0" spirit:portRef="TEXSAMP_CyclesSpentWorking"/>
-      </spirit:adHocConnection>
-      <spirit:adHocConnection>
-        <spirit:name>TexSample_0_STAT_CyclesWaitingForOutput</spirit:name>
-        <spirit:internalPortReference spirit:componentRef="TexSample_0" spirit:portRef="STAT_CyclesWaitingForOutput"/>
-        <spirit:internalPortReference spirit:componentRef="StatsCollector_0" spirit:portRef="TEXSAMP_CyclesWaitingForOutput"/>
-      </spirit:adHocConnection>
-      <spirit:adHocConnection>
-        <spirit:name>TexSample_0_STAT_CyclesWaitingCacheLoad</spirit:name>
-        <spirit:internalPortReference spirit:componentRef="TexSample_0" spirit:portRef="STAT_CyclesWaitingCacheLoad"/>
-        <spirit:internalPortReference spirit:componentRef="StatsCollector_0" spirit:portRef="TEXSAMP_CyclesWaitingCacheLoad"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>ROP_0_STAT_CyclesIdle</spirit:name>
@@ -2255,6 +2436,7 @@
         <spirit:name>VertexBatchBuilder_0_DBG_CurrentState</spirit:name>
         <spirit:internalPortReference spirit:componentRef="VertexBatchBuilder_0" spirit:portRef="DBG_CurrentState"/>
         <spirit:internalPortReference spirit:componentRef="ILA_IA" spirit:portRef="probe12"/>
+        <spirit:internalPortReference spirit:componentRef="ila_states" spirit:portRef="probe3"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>ShaderCoreSystem_DBG_InstructionPointer</spirit:name>
@@ -2321,6 +2503,7 @@
         <spirit:name>ShaderCoreSystem_DBG_CurrentState</spirit:name>
         <spirit:internalPortReference spirit:componentRef="ShaderCoreSystem" spirit:portRef="DBG_CurrentState"/>
         <spirit:internalPortReference spirit:componentRef="ILA_IA" spirit:portRef="probe11"/>
+        <spirit:internalPortReference spirit:componentRef="ila_states" spirit:portRef="probe4"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>VertexBatchBuilder_0_DBG_CurrentBatchLength</spirit:name>
@@ -2618,6 +2801,7 @@
         <spirit:name>InputAssembler2_0_DBG_IA_State</spirit:name>
         <spirit:internalPortReference spirit:componentRef="InputAssembler2_0" spirit:portRef="DBG_IA_State"/>
         <spirit:internalPortReference spirit:componentRef="ILA_TriSetup" spirit:portRef="probe42"/>
+        <spirit:internalPortReference spirit:componentRef="ila_states" spirit:portRef="probe5"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>InputAssembler2_0_DBG_IA_VertexIDPerBatch</spirit:name>
@@ -2713,11 +2897,6 @@
         <spirit:internalPortReference spirit:componentRef="DepthBuffer_0" spirit:portRef="RAST_InPixelDepth"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
-        <spirit:name>DepthBuffer_0_RAST_PixelPassedDepthTest</spirit:name>
-        <spirit:internalPortReference spirit:componentRef="DepthBuffer_0" spirit:portRef="RAST_PixelPassedDepthTest"/>
-        <spirit:internalPortReference spirit:componentRef="DepthInterpolator_0" spirit:portRef="DEPTH_PixelPassedDepthTest"/>
-      </spirit:adHocConnection>
-      <spirit:adHocConnection>
         <spirit:name>DepthBuffer_0_RAST_PixelFailedDepthTest</spirit:name>
         <spirit:internalPortReference spirit:componentRef="DepthBuffer_0" spirit:portRef="RAST_PixelFailedDepthTest"/>
         <spirit:internalPortReference spirit:componentRef="DepthInterpolator_0" spirit:portRef="DEPTH_PixelFailedDepthTest"/>
@@ -2756,6 +2935,7 @@
         <spirit:name>DepthInterpolator_0_DBG_DepthInterpolator_State</spirit:name>
         <spirit:internalPortReference spirit:componentRef="DepthInterpolator_0" spirit:portRef="DBG_DepthInterpolator_State"/>
         <spirit:internalPortReference spirit:componentRef="ILA_AttrInterpolator" spirit:portRef="probe12"/>
+        <spirit:internalPortReference spirit:componentRef="ila_states" spirit:portRef="probe9"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>Rasterizer_0_DBG_PixelXPos</spirit:name>
@@ -2852,22 +3032,6 @@
         <spirit:name>ShaderCoreSystem_STAT_CyclesWaitingForOutput</spirit:name>
         <spirit:internalPortReference spirit:componentRef="ShaderCoreSystem" spirit:portRef="STAT_CyclesWaitingForOutput"/>
         <spirit:internalPortReference spirit:componentRef="StatsCollector_0" spirit:portRef="VSHADER_CyclesWaitingForOutput"/>
-      </spirit:adHocConnection>
-      <spirit:adHocConnection>
-        <spirit:name>TexSample_0_ROP_OutFIFO_wr_data</spirit:name>
-        <spirit:internalPortReference spirit:componentRef="TexSample_0" spirit:portRef="ROP_OutFIFO_wr_data"/>
-        <spirit:internalPortReference spirit:componentRef="ROP_FIFO" spirit:portRef="din"/>
-        <spirit:internalPortReference spirit:componentRef="ILA_TexSampler" spirit:portRef="probe1"/>
-      </spirit:adHocConnection>
-      <spirit:adHocConnection>
-        <spirit:name>TexSample_0_DBG_TexCache_dina</spirit:name>
-        <spirit:internalPortReference spirit:componentRef="TexSample_0" spirit:portRef="DBG_TexCache_dina"/>
-        <spirit:internalPortReference spirit:componentRef="ILA_TexSampler" spirit:portRef="probe2"/>
-      </spirit:adHocConnection>
-      <spirit:adHocConnection>
-        <spirit:name>TexSample_0_DBG_TexCache_addra</spirit:name>
-        <spirit:internalPortReference spirit:componentRef="TexSample_0" spirit:portRef="DBG_TexCache_addra"/>
-        <spirit:internalPortReference spirit:componentRef="ILA_TexSampler" spirit:portRef="probe3"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>AttrInterpolator_0_TEXSAMP_OutFIFO_wr_data</spirit:name>
@@ -3340,6 +3504,7 @@
         <spirit:name>ClipUnit_0_DBG_CurrentState</spirit:name>
         <spirit:internalPortReference spirit:componentRef="ClipUnit_0" spirit:portRef="DBG_CurrentState"/>
         <spirit:internalPortReference spirit:componentRef="ILA_TriSetup" spirit:portRef="probe47"/>
+        <spirit:internalPortReference spirit:componentRef="ila_states" spirit:portRef="probe6"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>DepthInterpolator_0_CMD_IsIdle</spirit:name>
@@ -3439,6 +3604,7 @@
         <spirit:internalPortReference spirit:componentRef="VertexBatchBuilder_0" spirit:portRef="STAT_CurrentDrawEventID"/>
         <spirit:internalPortReference spirit:componentRef="ILA_TexSampler" spirit:portRef="probe22"/>
         <spirit:internalPortReference spirit:componentRef="StatsCollector_0" spirit:portRef="VBB_CurrentDrawEventID"/>
+        <spirit:internalPortReference spirit:componentRef="ila_states" spirit:portRef="probe13"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>VertexBatchBuilder_0_STAT_CyclesWaitingForOutput</spirit:name>
@@ -3460,6 +3626,7 @@
         <spirit:internalPortReference spirit:componentRef="ShaderCoreSystem" spirit:portRef="STAT_CurrentDrawEventID"/>
         <spirit:internalPortReference spirit:componentRef="ILA_TexSampler" spirit:portRef="probe21"/>
         <spirit:internalPortReference spirit:componentRef="StatsCollector_0" spirit:portRef="VSHADER_CurrentDrawEventID"/>
+        <spirit:internalPortReference spirit:componentRef="ila_states" spirit:portRef="probe14"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>InputAssembler2_0_CLIP_CurrentDrawEventID</spirit:name>
@@ -3472,6 +3639,7 @@
         <spirit:internalPortReference spirit:componentRef="ClipUnit_0" spirit:portRef="STAT_CurrentDrawEventID"/>
         <spirit:internalPortReference spirit:componentRef="ILA_TexSampler" spirit:portRef="probe19"/>
         <spirit:internalPortReference spirit:componentRef="StatsCollector_0" spirit:portRef="CLIP_CurrentDrawEventID"/>
+        <spirit:internalPortReference spirit:componentRef="ila_states" spirit:portRef="probe16"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>ClipUnit_0_TRISETUP_CurrentDrawEventID</spirit:name>
@@ -3483,6 +3651,7 @@
         <spirit:internalPortReference spirit:componentRef="TriSetup_0" spirit:portRef="STAT_CurrentDrawEventID"/>
         <spirit:internalPortReference spirit:componentRef="ILA_TexSampler" spirit:portRef="probe18"/>
         <spirit:internalPortReference spirit:componentRef="StatsCollector_0" spirit:portRef="TRISETUP_CurrentDrawEventID"/>
+        <spirit:internalPortReference spirit:componentRef="ila_states" spirit:portRef="probe17"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>TriSetup_0_RAST_CurrentDrawEventID</spirit:name>
@@ -3494,24 +3663,21 @@
         <spirit:internalPortReference spirit:componentRef="Rasterizer_0" spirit:portRef="STAT_CurrentDrawEventID"/>
         <spirit:internalPortReference spirit:componentRef="ILA_TexSampler" spirit:portRef="probe17"/>
         <spirit:internalPortReference spirit:componentRef="StatsCollector_0" spirit:portRef="RAST_CurrentDrawEventID"/>
+        <spirit:internalPortReference spirit:componentRef="ila_states" spirit:portRef="probe18"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>DepthInterpolator_0_STAT_CurrentDrawEventID</spirit:name>
         <spirit:internalPortReference spirit:componentRef="DepthInterpolator_0" spirit:portRef="STAT_CurrentDrawEventID"/>
         <spirit:internalPortReference spirit:componentRef="ILA_TexSampler" spirit:portRef="probe16"/>
         <spirit:internalPortReference spirit:componentRef="StatsCollector_0" spirit:portRef="DINTERP_CurrentDrawEventID"/>
+        <spirit:internalPortReference spirit:componentRef="ila_states" spirit:portRef="probe19"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>AttrInterpolator_0_STAT_CurrentDrawEventID</spirit:name>
         <spirit:internalPortReference spirit:componentRef="AttrInterpolator_0" spirit:portRef="STAT_CurrentDrawEventID"/>
         <spirit:internalPortReference spirit:componentRef="ILA_TexSampler" spirit:portRef="probe15"/>
         <spirit:internalPortReference spirit:componentRef="StatsCollector_0" spirit:portRef="INTERP_CurrentDrawEventID"/>
-      </spirit:adHocConnection>
-      <spirit:adHocConnection>
-        <spirit:name>TexSample_0_STAT_CurrentDrawEventID</spirit:name>
-        <spirit:internalPortReference spirit:componentRef="TexSample_0" spirit:portRef="STAT_CurrentDrawEventID"/>
-        <spirit:internalPortReference spirit:componentRef="ILA_TexSampler" spirit:portRef="probe4"/>
-        <spirit:internalPortReference spirit:componentRef="StatsCollector_0" spirit:portRef="TEXSAMP_CurrentDrawEventID"/>
+        <spirit:internalPortReference spirit:componentRef="ila_states" spirit:portRef="probe20"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>ROP_0_STAT_CurrentDrawEventID</spirit:name>
@@ -3519,6 +3685,7 @@
         <spirit:internalPortReference spirit:componentRef="ILA_TexSampler" spirit:portRef="probe14"/>
         <spirit:internalPortReference spirit:componentRef="ila_333_250" spirit:portRef="probe12"/>
         <spirit:internalPortReference spirit:componentRef="StatsCollector_0" spirit:portRef="ROP_CurrentDrawEventID"/>
+        <spirit:internalPortReference spirit:componentRef="ila_states" spirit:portRef="probe22"/>
         <spirit:internalPortReference spirit:componentRef="CommandProcessor_0" spirit:portRef="ROP_STAT_CurrentDrawEventID"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
@@ -3531,12 +3698,6 @@
         <spirit:internalPortReference spirit:componentRef="TexSampleStateBlock" spirit:portRef="STAGE_NextDrawID"/>
         <spirit:internalPortReference spirit:componentRef="ILA_TexSampler" spirit:portRef="probe5"/>
         <spirit:internalPortReference spirit:componentRef="TexSample_0" spirit:portRef="STATE_NextDrawID"/>
-      </spirit:adHocConnection>
-      <spirit:adHocConnection>
-        <spirit:name>TexSample_0_STATE_ConsumeStateSlot</spirit:name>
-        <spirit:internalPortReference spirit:componentRef="TexSample_0" spirit:portRef="STATE_ConsumeStateSlot"/>
-        <spirit:internalPortReference spirit:componentRef="ILA_TexSampler" spirit:portRef="probe6"/>
-        <spirit:internalPortReference spirit:componentRef="TexSampleStateBlock" spirit:portRef="STAGE_ConsumeStateSlot"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>CommandProcessor_0_TEXSAMP_SetNewState</spirit:name>
@@ -3584,6 +3745,7 @@
         <spirit:name>CommandProcessor_0_DBG_CurrentDrawGeneration</spirit:name>
         <spirit:internalPortReference spirit:componentRef="CommandProcessor_0" spirit:portRef="DBG_CurrentDrawGeneration"/>
         <spirit:internalPortReference spirit:componentRef="ila_333_250" spirit:portRef="probe15"/>
+        <spirit:internalPortReference spirit:componentRef="ila_states" spirit:portRef="probe2"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>CommandProcessor_0_TEXSAMP_EndFrameReset</spirit:name>
@@ -3614,6 +3776,7 @@
         <spirit:name>InputAssembler2_0_STAT_CurrentDrawEventID</spirit:name>
         <spirit:internalPortReference spirit:componentRef="InputAssembler2_0" spirit:portRef="STAT_CurrentDrawEventID"/>
         <spirit:internalPortReference spirit:componentRef="ILA_TexSampler" spirit:portRef="probe20"/>
+        <spirit:internalPortReference spirit:componentRef="ila_states" spirit:portRef="probe15"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>StateBlock_1_STAGE_StateBitsAtDrawID</spirit:name>
@@ -3708,6 +3871,7 @@
       <spirit:adHocConnection>
         <spirit:name>ROP_0_STAT_CountPixelsPassed</spirit:name>
         <spirit:internalPortReference spirit:componentRef="ROP_0" spirit:portRef="STAT_CountPixelsPassed"/>
+        <spirit:internalPortReference spirit:componentRef="ila_333_250" spirit:portRef="probe59"/>
         <spirit:internalPortReference spirit:componentRef="CommandProcessor_0" spirit:portRef="ROP_STAT_CountPixelsPassed"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
@@ -3824,8 +3988,8 @@
       <spirit:adHocConnection>
         <spirit:name>VBO_FIFO_empty</spirit:name>
         <spirit:internalPortReference spirit:componentRef="VBO_FIFO" spirit:portRef="empty"/>
-        <spirit:internalPortReference spirit:componentRef="CommandProcessor_0" spirit:portRef="CMD_FIFO_EMPTY_VS"/>
         <spirit:internalPortReference spirit:componentRef="InputAssembler2_0" spirit:portRef="VERTOUT_FIFO_empty"/>
+        <spirit:internalPortReference spirit:componentRef="CommandProcessor_0" spirit:portRef="CMD_FIFO_EMPTY_VS"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>rast_out_fifo_dout</spirit:name>
@@ -3844,22 +4008,6 @@
         <spirit:internalPortReference spirit:componentRef="DepthInterpolator_0" spirit:portRef="RASTOUT_FIFO_empty"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
-        <spirit:name>TEXSAMP_FIFO_dout</spirit:name>
-        <spirit:internalPortReference spirit:componentRef="TEXSAMP_FIFO" spirit:portRef="dout"/>
-        <spirit:internalPortReference spirit:componentRef="TexSample_0" spirit:portRef="INTERP_InFIFO_rd_data"/>
-      </spirit:adHocConnection>
-      <spirit:adHocConnection>
-        <spirit:name>TexSample_0_INTERP_InFIFO_rd_en</spirit:name>
-        <spirit:internalPortReference spirit:componentRef="TexSample_0" spirit:portRef="INTERP_InFIFO_rd_en"/>
-        <spirit:internalPortReference spirit:componentRef="TEXSAMP_FIFO" spirit:portRef="rd_en"/>
-      </spirit:adHocConnection>
-      <spirit:adHocConnection>
-        <spirit:name>TEXSAMP_FIFO_empty</spirit:name>
-        <spirit:internalPortReference spirit:componentRef="TEXSAMP_FIFO" spirit:portRef="empty"/>
-        <spirit:internalPortReference spirit:componentRef="CommandProcessor_0" spirit:portRef="CMD_FIFO_EMPTY_TEXSAMP"/>
-        <spirit:internalPortReference spirit:componentRef="TexSample_0" spirit:portRef="INTERP_InFIFO_empty"/>
-      </spirit:adHocConnection>
-      <spirit:adHocConnection>
         <spirit:name>ROP_FIFO_dout</spirit:name>
         <spirit:internalPortReference spirit:componentRef="ROP_FIFO" spirit:portRef="dout"/>
         <spirit:internalPortReference spirit:componentRef="ROP_0" spirit:portRef="TEXSAMP_InFIFO_rd_data"/>
@@ -3867,8 +4015,8 @@
       <spirit:adHocConnection>
         <spirit:name>ROP_FIFO_empty</spirit:name>
         <spirit:internalPortReference spirit:componentRef="ROP_FIFO" spirit:portRef="empty"/>
-        <spirit:internalPortReference spirit:componentRef="CommandProcessor_0" spirit:portRef="CMD_FIFO_EMPTY_ROP"/>
         <spirit:internalPortReference spirit:componentRef="ROP_0" spirit:portRef="TEXSAMP_InFIFO_empty"/>
+        <spirit:internalPortReference spirit:componentRef="CommandProcessor_0" spirit:portRef="CMD_FIFO_EMPTY_ROP"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>ROP_0_TEXSAMP_InFIFO_rd_en</spirit:name>
@@ -4484,6 +4632,153 @@
         <spirit:name>ATTR_FIFO_prog_full</spirit:name>
         <spirit:internalPortReference spirit:componentRef="ATTR_FIFO" spirit:portRef="prog_full"/>
         <spirit:internalPortReference spirit:componentRef="DepthInterpolator_0" spirit:portRef="ATTR_FIFO_almost_full"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TexSample_0_DBG_TexCache_addra</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TexSample_0" spirit:portRef="DBG_TexCache_addra"/>
+        <spirit:internalPortReference spirit:componentRef="ILA_TexSampler" spirit:portRef="probe3"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TexSample_0_DBG_TexCache_dina</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TexSample_0" spirit:portRef="DBG_TexCache_dina"/>
+        <spirit:internalPortReference spirit:componentRef="ILA_TexSampler" spirit:portRef="probe2"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TexSample_0_DBG_TexSample_State</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TexSample_0" spirit:portRef="DBG_TexSample_State"/>
+        <spirit:internalPortReference spirit:componentRef="ILA_TexSampler" spirit:portRef="probe0"/>
+        <spirit:internalPortReference spirit:componentRef="ila_333_250" spirit:portRef="probe8"/>
+        <spirit:internalPortReference spirit:componentRef="ila_states" spirit:portRef="probe11"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TexSample_0_STAT_CurrentDrawEventID</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TexSample_0" spirit:portRef="STAT_CurrentDrawEventID"/>
+        <spirit:internalPortReference spirit:componentRef="ILA_TexSampler" spirit:portRef="probe4"/>
+        <spirit:internalPortReference spirit:componentRef="StatsCollector_0" spirit:portRef="TEXSAMP_CurrentDrawEventID"/>
+        <spirit:internalPortReference spirit:componentRef="ila_states" spirit:portRef="probe21"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TexSample_0_STAT_CyclesWaitingCacheLoad</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TexSample_0" spirit:portRef="STAT_CyclesWaitingCacheLoad"/>
+        <spirit:internalPortReference spirit:componentRef="StatsCollector_0" spirit:portRef="TEXSAMP_CyclesWaitingCacheLoad"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TexSample_0_STAT_CyclesWaitingForOutput</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TexSample_0" spirit:portRef="STAT_CyclesWaitingForOutput"/>
+        <spirit:internalPortReference spirit:componentRef="StatsCollector_0" spirit:portRef="TEXSAMP_CyclesWaitingForOutput"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TexSample_0_STAT_CyclesSpentWorking</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TexSample_0" spirit:portRef="STAT_CyclesSpentWorking"/>
+        <spirit:internalPortReference spirit:componentRef="StatsCollector_0" spirit:portRef="TEXSAMP_CyclesSpentWorking"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TexSample_0_STAT_CyclesIdle</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TexSample_0" spirit:portRef="STAT_CyclesIdle"/>
+        <spirit:internalPortReference spirit:componentRef="StatsCollector_0" spirit:portRef="TEXSAMP_CyclesIdle"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TexSample_0_CMD_TexSampleIsIdle</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TexSample_0" spirit:portRef="CMD_TexSampleIsIdle"/>
+        <spirit:internalPortReference spirit:componentRef="CommandProcessor_0" spirit:portRef="CMD_TexSampler_Idle"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TexSample_0_STATE_ConsumeStateSlot</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TexSample_0" spirit:portRef="STATE_ConsumeStateSlot"/>
+        <spirit:internalPortReference spirit:componentRef="TexSampleStateBlock" spirit:portRef="STAGE_ConsumeStateSlot"/>
+        <spirit:internalPortReference spirit:componentRef="ILA_TexSampler" spirit:portRef="probe6"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TEXSAMP_FIFO_empty</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TEXSAMP_FIFO" spirit:portRef="empty"/>
+        <spirit:internalPortReference spirit:componentRef="TexSample_0" spirit:portRef="INTERP_InFIFO_empty"/>
+        <spirit:internalPortReference spirit:componentRef="CommandProcessor_0" spirit:portRef="CMD_FIFO_EMPTY_TEXSAMP"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>TexSample_0_ROP_OutFIFO_wr_data</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="TexSample_0" spirit:portRef="ROP_OutFIFO_wr_data"/>
+        <spirit:internalPortReference spirit:componentRef="ROP_FIFO" spirit:portRef="din"/>
+        <spirit:internalPortReference spirit:componentRef="ILA_TexSampler" spirit:portRef="probe1"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>DepthInterpolator_0_DEPTH_StencilWriteEnable</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="DepthInterpolator_0" spirit:portRef="DEPTH_StencilWriteEnable"/>
+        <spirit:internalPortReference spirit:componentRef="DepthBuffer_0" spirit:portRef="RAST_StencilWriteEnable"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>DepthInterpolator_0_DEPTH_StencilRefVal</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="DepthInterpolator_0" spirit:portRef="DEPTH_StencilRefVal"/>
+        <spirit:internalPortReference spirit:componentRef="DepthBuffer_0" spirit:portRef="RAST_StencilRefVal"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>DepthInterpolator_0_DEPTH_StencilReadMask</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="DepthInterpolator_0" spirit:portRef="DEPTH_StencilReadMask"/>
+        <spirit:internalPortReference spirit:componentRef="DepthBuffer_0" spirit:portRef="RAST_StencilReadMask"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>DepthInterpolator_0_DEPTH_StencilWriteMask</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="DepthInterpolator_0" spirit:portRef="DEPTH_StencilWriteMask"/>
+        <spirit:internalPortReference spirit:componentRef="DepthBuffer_0" spirit:portRef="RAST_StencilWriteMask"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>DepthInterpolator_0_DEPTH_StencilCmpFunc</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="DepthInterpolator_0" spirit:portRef="DEPTH_StencilCmpFunc"/>
+        <spirit:internalPortReference spirit:componentRef="DepthBuffer_0" spirit:portRef="RAST_StencilCmpFunc"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>DepthInterpolator_0_DEPTH_StencilFailOp</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="DepthInterpolator_0" spirit:portRef="DEPTH_StencilFailOp"/>
+        <spirit:internalPortReference spirit:componentRef="DepthBuffer_0" spirit:portRef="RAST_StencilFailOp"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>DepthInterpolator_0_DEPTH_StencilZFailOp</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="DepthInterpolator_0" spirit:portRef="DEPTH_StencilZFailOp"/>
+        <spirit:internalPortReference spirit:componentRef="DepthBuffer_0" spirit:portRef="RAST_StencilZFailOp"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>DepthInterpolator_0_DEPTH_StencilPassOp</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="DepthInterpolator_0" spirit:portRef="DEPTH_StencilPassOp"/>
+        <spirit:internalPortReference spirit:componentRef="DepthBuffer_0" spirit:portRef="RAST_StencilPassOp"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>CommandProcessor_0_DEPTH_ClearStencilBuffer</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="CommandProcessor_0" spirit:portRef="DEPTH_ClearStencilBuffer"/>
+        <spirit:internalPortReference spirit:componentRef="DepthBuffer_0" spirit:portRef="CMD_ClearStencilBuffer"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>CommandProcessor_0_DEPTH_ClearStencilValue</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="CommandProcessor_0" spirit:portRef="DEPTH_ClearStencilValue"/>
+        <spirit:internalPortReference spirit:componentRef="DepthBuffer_0" spirit:portRef="CMD_ClearStencilValue"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>DepthBuffer_0_RAST_PixelPassedDepthStencilTest</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="DepthBuffer_0" spirit:portRef="RAST_PixelPassedDepthStencilTest"/>
+        <spirit:internalPortReference spirit:componentRef="DepthInterpolator_0" spirit:portRef="DEPTH_PixelPassedDepthStencilTest"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>DepthBuffer_0_RAST_PixelFailedStencilTest</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="DepthBuffer_0" spirit:portRef="RAST_PixelFailedStencilTest"/>
+        <spirit:internalPortReference spirit:componentRef="DepthInterpolator_0" spirit:portRef="DEPTH_PixelFailedStencilTest"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>DepthInterpolator_0_DBG_CurrentDepthStencilState</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="DepthInterpolator_0" spirit:portRef="DBG_CurrentDepthStencilState"/>
+        <spirit:internalPortReference spirit:componentRef="ila_333_250" spirit:portRef="probe58"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>DepthBuffer_0_STAT_PixelsPassedDepthStencilTest</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="DepthBuffer_0" spirit:portRef="STAT_PixelsPassedDepthStencilTest"/>
+        <spirit:internalPortReference spirit:componentRef="ILA_AttrInterpolator" spirit:portRef="probe16"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>DepthBuffer_0_STAT_PixelsFailedDepthTest</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="DepthBuffer_0" spirit:portRef="STAT_PixelsFailedDepthTest"/>
+        <spirit:internalPortReference spirit:componentRef="ILA_AttrInterpolator" spirit:portRef="probe17"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>DepthBuffer_0_STAT_PixelsFailedStencilTest</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="DepthBuffer_0" spirit:portRef="STAT_PixelsFailedStencilTest"/>
+        <spirit:internalPortReference spirit:componentRef="ILA_AttrInterpolator" spirit:portRef="probe18"/>
       </spirit:adHocConnection>
     </spirit:adHocConnections>
     <spirit:hierConnections>
@@ -6172,17 +6467,6 @@
         </spirit:configurableElementValues>
       </spirit:componentInstance>
       <spirit:componentInstance>
-        <spirit:instanceName>UNORM8ToFloat_0</spirit:instanceName>
-        <spirit:componentRef spirit:library="module_ref" spirit:name="UNORM8ToFloat" spirit:vendor="xilinx.com" spirit:version="1.0"/>
-        <spirit:configurableElementValues>
-          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_UNORM8ToFloat_0_0</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">UNORM8ToFloat</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
-        </spirit:configurableElementValues>
-      </spirit:componentInstance>
-      <spirit:componentInstance>
         <spirit:instanceName>VertexStreamCache_0</spirit:instanceName>
         <spirit:componentRef spirit:library="module_ref" spirit:name="VertexStreamCache" spirit:vendor="xilinx.com" spirit:version="1.0"/>
         <spirit:configurableElementValues>
@@ -6249,6 +6533,17 @@
         </spirit:configurableElementValues>
       </spirit:componentInstance>
       <spirit:componentInstance>
+        <spirit:instanceName>UNORM8ToFloat_0</spirit:instanceName>
+        <spirit:componentRef spirit:library="module_ref" spirit:name="UNORM8ToFloat" spirit:vendor="xilinx.com" spirit:version="1.0"/>
+        <spirit:configurableElementValues>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_UNORM8ToFloat_0_0</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceName">UNORM8ToFloat</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:subInstancePath"></spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:referenceType">hdl</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:BoundaryCRC">0x0</spirit:configurableElementValue>
+        </spirit:configurableElementValues>
+      </spirit:componentInstance>
+      <spirit:componentInstance>
         <spirit:instanceName>ShaderCore_0</spirit:instanceName>
         <spirit:componentRef spirit:library="module_ref" spirit:name="ShaderCore" spirit:vendor="xilinx.com" spirit:version="1.0"/>
         <spirit:configurableElementValues>
@@ -6277,15 +6572,15 @@
         <spirit:name>clk_0_1</spirit:name>
         <spirit:externalPortReference spirit:portRef="clk_0"/>
         <spirit:internalPortReference spirit:componentRef="InstructionCache" spirit:portRef="clka"/>
-        <spirit:internalPortReference spirit:componentRef="UNORM8ToFloat_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="VertexStreamCache_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="ConstantBuffer_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="FloatALU_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="FloatALU_1" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="FloatALU_2" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="FloatALU_3" spirit:portRef="clk"/>
-        <spirit:internalPortReference spirit:componentRef="GPRQuadSystem" spirit:portRef="clk_0"/>
+        <spirit:internalPortReference spirit:componentRef="UNORM8ToFloat_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="ShaderCore_0" spirit:portRef="clk"/>
+        <spirit:internalPortReference spirit:componentRef="GPRQuadSystem" spirit:portRef="clk_0"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>ConstantBuffer_0_readOutData</spirit:name>

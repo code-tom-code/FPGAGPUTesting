@@ -1,7 +1,7 @@
 --Copyright 1986-2018 Xilinx, Inc. All Rights Reserved.
 ----------------------------------------------------------------------------------
 --Tool Version: Vivado v.2018.1_AR73068 (win64) Build 2188600 Wed Apr  4 18:40:38 MDT 2018
---Date        : Sun Oct 20 18:51:29 2024
+--Date        : Sat May  3 22:44:35 2025
 --Host        : Dragon2 running 64-bit major release  (build 9200)
 --Command     : generate_target design_1.bd
 --Design      : design_1
@@ -3705,17 +3705,6 @@ architecture STRUCTURE of ShaderCoreSystem_imp_18IOXXF is
     douta : out STD_LOGIC_VECTOR ( 31 downto 0 )
   );
   end component design_1_blk_mem_gen_0_0;
-  component design_1_UNORM8ToFloat_0_0 is
-  port (
-    clk : in STD_LOGIC;
-    Enable : in STD_LOGIC;
-    D3DColorIn : in STD_LOGIC_VECTOR ( 31 downto 0 );
-    FloatXOut : out STD_LOGIC_VECTOR ( 31 downto 0 );
-    FloatYOut : out STD_LOGIC_VECTOR ( 31 downto 0 );
-    FloatZOut : out STD_LOGIC_VECTOR ( 31 downto 0 );
-    FloatWOut : out STD_LOGIC_VECTOR ( 31 downto 0 )
-  );
-  end component design_1_UNORM8ToFloat_0_0;
   component design_1_VertexStreamCache_0_0 is
   port (
     clk : in STD_LOGIC;
@@ -3826,6 +3815,17 @@ architecture STRUCTURE of ShaderCoreSystem_imp_18IOXXF is
     IBIT_GO : in STD_LOGIC
   );
   end component design_1_FloatALU_3_0;
+  component design_1_UNORM8ToFloat_0_0 is
+  port (
+    clk : in STD_LOGIC;
+    Enable : in STD_LOGIC;
+    D3DColorIn : in STD_LOGIC_VECTOR ( 31 downto 0 );
+    FloatXOut : out STD_LOGIC_VECTOR ( 31 downto 0 );
+    FloatYOut : out STD_LOGIC_VECTOR ( 31 downto 0 );
+    FloatZOut : out STD_LOGIC_VECTOR ( 31 downto 0 );
+    FloatWOut : out STD_LOGIC_VECTOR ( 31 downto 0 )
+  );
+  end component design_1_UNORM8ToFloat_0_0;
   component design_1_ShaderCore_0_0 is
   port (
     clk : in STD_LOGIC;
@@ -4495,7 +4495,7 @@ entity design_1 is
     tmds_red_p : out STD_LOGIC
   );
   attribute CORE_GENERATION_INFO : string;
-  attribute CORE_GENERATION_INFO of design_1 : entity is "design_1,IP_Integrator,{x_ipVendor=xilinx.com,x_ipLibrary=BlockDiagram,x_ipName=design_1,x_ipVersion=1.00.a,x_ipLanguage=VHDL,numBlks=143,numReposBlks=138,numNonXlnxBlks=0,numHierBlks=5,maxHierDepth=2,numSysgenBlks=0,numHlsBlks=0,numHdlrefBlks=61,numPkgbdBlks=0,bdsource=USER,da_axi4_cnt=1,da_board_cnt=1,synth_mode=OOC_per_IP}";
+  attribute CORE_GENERATION_INFO of design_1 : entity is "design_1,IP_Integrator,{x_ipVendor=xilinx.com,x_ipLibrary=BlockDiagram,x_ipName=design_1,x_ipVersion=1.00.a,x_ipLanguage=VHDL,numBlks=144,numReposBlks=139,numNonXlnxBlks=0,numHierBlks=5,maxHierDepth=2,numSysgenBlks=0,numHlsBlks=0,numHdlrefBlks=61,numPkgbdBlks=0,bdsource=USER,da_axi4_cnt=1,da_board_cnt=1,synth_mode=OOC_per_IP}";
   attribute HW_HANDOFF : string;
   attribute HW_HANDOFF of design_1 : entity is "design_1.hwdef";
 end design_1;
@@ -4561,7 +4561,9 @@ architecture STRUCTURE of design_1 is
     probe54 : in STD_LOGIC_VECTOR ( 15 downto 0 );
     probe55 : in STD_LOGIC_VECTOR ( 0 to 0 );
     probe56 : in STD_LOGIC_VECTOR ( 0 to 0 );
-    probe57 : in STD_LOGIC_VECTOR ( 293 downto 0 )
+    probe57 : in STD_LOGIC_VECTOR ( 293 downto 0 );
+    probe58 : in STD_LOGIC_VECTOR ( 76 downto 0 );
+    probe59 : in STD_LOGIC_VECTOR ( 31 downto 0 )
   );
   end component design_1_ila_0_0;
   component design_1_xlconstant_0_0 is
@@ -4770,7 +4772,10 @@ architecture STRUCTURE of design_1 is
     probe12 : in STD_LOGIC_VECTOR ( 6 downto 0 );
     probe13 : in STD_LOGIC_VECTOR ( 0 to 0 );
     probe14 : in STD_LOGIC_VECTOR ( 0 to 0 );
-    probe15 : in STD_LOGIC_VECTOR ( 15 downto 0 )
+    probe15 : in STD_LOGIC_VECTOR ( 15 downto 0 );
+    probe16 : in STD_LOGIC_VECTOR ( 31 downto 0 );
+    probe17 : in STD_LOGIC_VECTOR ( 31 downto 0 );
+    probe18 : in STD_LOGIC_VECTOR ( 31 downto 0 )
   );
   end component design_1_ila_0_3;
   component design_1_ila_0_4 is
@@ -5055,9 +5060,9 @@ architecture STRUCTURE of design_1 is
     CMD_SetNewState : in STD_LOGIC;
     CMD_EndFrameReset : in STD_LOGIC;
     CMD_NumFreeSlots : out STD_LOGIC_VECTOR ( 2 downto 0 );
-    CMD_NewStateBits : in STD_LOGIC_VECTOR ( 39 downto 0 );
+    CMD_NewStateBits : in STD_LOGIC_VECTOR ( 76 downto 0 );
     CMD_NewStateDrawEventID : in STD_LOGIC_VECTOR ( 15 downto 0 );
-    STAGE_StateBitsAtDrawID : out STD_LOGIC_VECTOR ( 39 downto 0 );
+    STAGE_StateBitsAtDrawID : out STD_LOGIC_VECTOR ( 76 downto 0 );
     STAGE_NextDrawID : out STD_LOGIC_VECTOR ( 15 downto 0 );
     STAGE_StateIsValid : out STD_LOGIC;
     STAGE_ConsumeStateSlot : in STD_LOGIC;
@@ -5316,44 +5321,6 @@ architecture STRUCTURE of design_1 is
     INTERP_TRIDATA_FIFO_wr_en : out STD_LOGIC
   );
   end component design_1_TriWorkCache2_0_0;
-  component design_1_VertexBatchBuilder_0_0 is
-  port (
-    clk : in STD_LOGIC;
-    CMD_SendCommand : in STD_LOGIC_VECTOR ( 1 downto 0 );
-    CMD_CommandArg0 : in STD_LOGIC_VECTOR ( 23 downto 0 );
-    CMD_CommandArg1 : in STD_LOGIC_VECTOR ( 19 downto 0 );
-    CMD_CommandArg2 : in STD_LOGIC_VECTOR ( 15 downto 0 );
-    CMD_NewDrawEventID : in STD_LOGIC_VECTOR ( 15 downto 0 );
-    CMD_ReadyState : out STD_LOGIC;
-    IBC_ReadEnable : out STD_LOGIC;
-    IBC_ReadAddr : out STD_LOGIC_VECTOR ( 29 downto 0 );
-    IBC_ReadData : in STD_LOGIC_VECTOR ( 31 downto 0 );
-    IBC_ReadReady : in STD_LOGIC;
-    IBC_InvalidateIndexCache : out STD_LOGIC;
-    SHADER_Done : out STD_LOGIC;
-    STATE_StateBitsAtDrawID : in STD_LOGIC_VECTOR ( 34 downto 0 );
-    STATE_NextDrawID : in STD_LOGIC_VECTOR ( 15 downto 0 );
-    STATE_StateIsValid : in STD_LOGIC;
-    STATE_ConsumeStateSlot : out STD_LOGIC;
-    VERTBATCH_FIFO_full : in STD_LOGIC;
-    VERTBATCH_FIFO_wr_data : out STD_LOGIC_VECTOR ( 543 downto 0 );
-    VERTBATCH_FIFO_wr_en : out STD_LOGIC;
-    STAT_CyclesIdle : out STD_LOGIC_VECTOR ( 31 downto 0 );
-    STAT_CyclesSpentWorking : out STD_LOGIC_VECTOR ( 31 downto 0 );
-    STAT_CyclesWaitingForOutput : out STD_LOGIC_VECTOR ( 31 downto 0 );
-    STAT_CurrentDrawEventID : out STD_LOGIC_VECTOR ( 15 downto 0 );
-    DBG_UseConstantOutput : in STD_LOGIC;
-    DBG_CurrentState : out STD_LOGIC_VECTOR ( 3 downto 0 );
-    DBG_CurrentBatchLength : out STD_LOGIC_VECTOR ( 4 downto 0 );
-    DBG_CurrentIndexBatchLength : out STD_LOGIC_VECTOR ( 6 downto 0 );
-    DBG_CurrentBatchRemainingPrims : out STD_LOGIC_VECTOR ( 23 downto 0 );
-    DBG_QueueIsFull : out STD_LOGIC;
-    DBG_QueueIsEmpty : out STD_LOGIC;
-    DBG_DoneGeneratingIndices : out STD_LOGIC;
-    DBG_IndexGeneratorRemainingPrims : out STD_LOGIC_VECTOR ( 23 downto 0 );
-    DBG_LastPolygonIndices : out STD_LOGIC_VECTOR ( 47 downto 0 )
-  );
-  end component design_1_VertexBatchBuilder_0_0;
   component design_1_TriSetup_0_0 is
   port (
     clk : in STD_LOGIC;
@@ -5539,165 +5506,6 @@ architecture STRUCTURE of design_1 is
     DBG_MaxY : out STD_LOGIC_VECTOR ( 15 downto 0 )
   );
   end component design_1_Rasterizer_0_0;
-  component design_1_TexSample_0_0 is
-  port (
-    clk : in STD_LOGIC;
-    INTERP_InFIFO_rd_data : in STD_LOGIC_VECTOR ( 95 downto 0 );
-    INTERP_InFIFO_empty : in STD_LOGIC;
-    INTERP_InFIFO_rd_en : out STD_LOGIC;
-    MEM_TexSampReadRequestsFIFO_wr_data : out STD_LOGIC_VECTOR ( 29 downto 0 );
-    MEM_TexSampReadRequestsFIFO_full : in STD_LOGIC;
-    MEM_TexSampReadRequestsFIFO_wr_en : out STD_LOGIC;
-    MEM_TexSampReadResponsesFIFO_rd_data : in STD_LOGIC_VECTOR ( 255 downto 0 );
-    MEM_TexSampReadResponsesFIFO_empty : in STD_LOGIC;
-    MEM_TexSampReadResponsesFIFO_rd_en : out STD_LOGIC;
-    STATE_StateBitsAtDrawID : in STD_LOGIC_VECTOR ( 73 downto 0 );
-    STATE_NextDrawID : in STD_LOGIC_VECTOR ( 15 downto 0 );
-    STATE_StateIsValid : in STD_LOGIC;
-    STATE_ConsumeStateSlot : out STD_LOGIC;
-    TexCache_addra : out STD_LOGIC_VECTOR ( 13 downto 0 );
-    TexCache_dina : out STD_LOGIC_VECTOR ( 31 downto 0 );
-    TexCache_douta : in STD_LOGIC_VECTOR ( 31 downto 0 );
-    TexCache_ena : out STD_LOGIC;
-    TexCache_wea : out STD_LOGIC_VECTOR ( 0 to 0 );
-    CMD_TexSampleIsIdle : out STD_LOGIC;
-    ROP_OutFIFO_wr_data : out STD_LOGIC_VECTOR ( 63 downto 0 );
-    ROP_OutFIFO_full : in STD_LOGIC;
-    ROP_OutFIFO_wr_en : out STD_LOGIC;
-    STAT_CyclesIdle : out STD_LOGIC_VECTOR ( 31 downto 0 );
-    STAT_CyclesSpentWorking : out STD_LOGIC_VECTOR ( 31 downto 0 );
-    STAT_CyclesWaitingForOutput : out STD_LOGIC_VECTOR ( 31 downto 0 );
-    STAT_CyclesWaitingCacheLoad : out STD_LOGIC_VECTOR ( 31 downto 0 );
-    STAT_CurrentDrawEventID : out STD_LOGIC_VECTOR ( 15 downto 0 );
-    DBG_TexSample_State : out STD_LOGIC_VECTOR ( 5 downto 0 );
-    DBG_TexCache_douta : out STD_LOGIC_VECTOR ( 31 downto 0 );
-    DBG_TexCache_dina : out STD_LOGIC_VECTOR ( 31 downto 0 );
-    DBG_TexCache_addra : out STD_LOGIC_VECTOR ( 13 downto 0 )
-  );
-  end component design_1_TexSample_0_0;
-  component design_1_InputAssembler2_0_0 is
-  port (
-    clk : in STD_LOGIC;
-    CLIP_v0PosX : out STD_LOGIC_VECTOR ( 31 downto 0 );
-    CLIP_v0PosY : out STD_LOGIC_VECTOR ( 31 downto 0 );
-    CLIP_v0PosZ : out STD_LOGIC_VECTOR ( 31 downto 0 );
-    CLIP_v0PosW : out STD_LOGIC_VECTOR ( 31 downto 0 );
-    CLIP_v1PosX : out STD_LOGIC_VECTOR ( 31 downto 0 );
-    CLIP_v1PosY : out STD_LOGIC_VECTOR ( 31 downto 0 );
-    CLIP_v1PosZ : out STD_LOGIC_VECTOR ( 31 downto 0 );
-    CLIP_v1PosW : out STD_LOGIC_VECTOR ( 31 downto 0 );
-    CLIP_v2PosX : out STD_LOGIC_VECTOR ( 31 downto 0 );
-    CLIP_v2PosY : out STD_LOGIC_VECTOR ( 31 downto 0 );
-    CLIP_v2PosZ : out STD_LOGIC_VECTOR ( 31 downto 0 );
-    CLIP_v2PosW : out STD_LOGIC_VECTOR ( 31 downto 0 );
-    CLIP_tex0_X : out STD_LOGIC_VECTOR ( 31 downto 0 );
-    CLIP_tex0_Y : out STD_LOGIC_VECTOR ( 31 downto 0 );
-    CLIP_tex1_X : out STD_LOGIC_VECTOR ( 31 downto 0 );
-    CLIP_tex1_Y : out STD_LOGIC_VECTOR ( 31 downto 0 );
-    CLIP_tex2_X : out STD_LOGIC_VECTOR ( 31 downto 0 );
-    CLIP_tex2_Y : out STD_LOGIC_VECTOR ( 31 downto 0 );
-    CLIP_vertColor0_RGBA : out STD_LOGIC_VECTOR ( 127 downto 0 );
-    CLIP_vertColor1_RGBA : out STD_LOGIC_VECTOR ( 127 downto 0 );
-    CLIP_vertColor2_RGBA : out STD_LOGIC_VECTOR ( 127 downto 0 );
-    CLIP_v0ClipCodes : out STD_LOGIC_VECTOR ( 10 downto 0 );
-    CLIP_v1ClipCodes : out STD_LOGIC_VECTOR ( 10 downto 0 );
-    CLIP_v2ClipCodes : out STD_LOGIC_VECTOR ( 10 downto 0 );
-    CLIP_CurrentDrawEventID : out STD_LOGIC_VECTOR ( 15 downto 0 );
-    CLIP_AABBTriOverlapsViewport : out STD_LOGIC;
-    CLIP_readyForNewTri : in STD_LOGIC;
-    CLIP_newTriBegin : out STD_LOGIC;
-    VBO_Pushed : in STD_LOGIC;
-    VBO_NumVertices : in STD_LOGIC_VECTOR ( 4 downto 0 );
-    VBO_NumIndices : in STD_LOGIC_VECTOR ( 6 downto 0 );
-    VBO_IsIndexedDrawCall : in STD_LOGIC;
-    VBO_Ready : out STD_LOGIC;
-    VERTOUT_FIFO_empty : in STD_LOGIC;
-    VERTOUT_FIFO_rd_data : in STD_LOGIC_VECTOR ( 319 downto 0 );
-    VERTOUT_FIFO_rd_en : out STD_LOGIC;
-    INDEXOUT_FIFO_empty : in STD_LOGIC;
-    INDEXOUT_FIFO_rd_data : in STD_LOGIC_VECTOR ( 271 downto 0 );
-    INDEXOUT_FIFO_rd_en : out STD_LOGIC;
-    STATE_StateBitsAtDrawID : in STD_LOGIC_VECTOR ( 4 downto 0 );
-    STATE_NextDrawID : in STD_LOGIC_VECTOR ( 15 downto 0 );
-    STATE_StateIsValid : in STD_LOGIC;
-    STATE_ConsumeStateSlot : out STD_LOGIC;
-    CMD_IA_Idle : out STD_LOGIC;
-    STAT_CyclesIdle : out STD_LOGIC_VECTOR ( 31 downto 0 );
-    STAT_CyclesSpentWorking : out STD_LOGIC_VECTOR ( 31 downto 0 );
-    STAT_CyclesLoadingDataToCache : out STD_LOGIC_VECTOR ( 31 downto 0 );
-    STAT_CyclesWaitingForOutput : out STD_LOGIC_VECTOR ( 31 downto 0 );
-    STAT_CurrentDrawEventID : out STD_LOGIC_VECTOR ( 15 downto 0 );
-    DBG_IA_State : out STD_LOGIC_VECTOR ( 5 downto 0 );
-    DBG_IA_VertexIDPerBatch : out STD_LOGIC_VECTOR ( 3 downto 0 );
-    DBG_IA_CurrentTriIndices : out STD_LOGIC_VECTOR ( 11 downto 0 )
-  );
-  end component design_1_InputAssembler2_0_0;
-  component design_1_DepthInterpolator_0_1 is
-  port (
-    clk : in STD_LOGIC;
-    TRICACHE_inBarycentricInverse : in STD_LOGIC_VECTOR ( 31 downto 0 );
-    TRICACHE_inZ0 : in STD_LOGIC_VECTOR ( 31 downto 0 );
-    TRICACHE_inZ10 : in STD_LOGIC_VECTOR ( 31 downto 0 );
-    TRICACHE_inZ20 : in STD_LOGIC_VECTOR ( 31 downto 0 );
-    TRICACHE_inInvW0 : in STD_LOGIC_VECTOR ( 31 downto 0 );
-    TRICACHE_inInvW10 : in STD_LOGIC_VECTOR ( 31 downto 0 );
-    TRICACHE_inInvW20 : in STD_LOGIC_VECTOR ( 31 downto 0 );
-    TRICACHE_PopTriangleSlot : out STD_LOGIC;
-    RASTOUT_FIFO_rd_data : in STD_LOGIC_VECTOR ( 95 downto 0 );
-    RASTOUT_FIFO_empty : in STD_LOGIC;
-    RASTOUT_FIFO_rd_en : out STD_LOGIC;
-    STATE_StateBitsAtDrawID : in STD_LOGIC_VECTOR ( 39 downto 0 );
-    STATE_NextDrawID : in STD_LOGIC_VECTOR ( 15 downto 0 );
-    STATE_StateIsValid : in STD_LOGIC;
-    STATE_ConsumeStateSlot : out STD_LOGIC;
-    FPU_MUL_A : out STD_LOGIC_VECTOR ( 31 downto 0 );
-    FPU_MUL_B : out STD_LOGIC_VECTOR ( 31 downto 0 );
-    FPU_MUL_OUT : in STD_LOGIC_VECTOR ( 31 downto 0 );
-    FPU_MUL_GO : out STD_LOGIC;
-    FPU_CNV0_A : out STD_LOGIC_VECTOR ( 31 downto 0 );
-    FPU_CNV0_Mode : out STD_LOGIC_VECTOR ( 2 downto 0 );
-    FPU_CNV0_OUT : in STD_LOGIC_VECTOR ( 31 downto 0 );
-    FPU_CNV0_GO : out STD_LOGIC;
-    FPU_CNV1_A : out STD_LOGIC_VECTOR ( 31 downto 0 );
-    FPU_CNV1_Mode : out STD_LOGIC_VECTOR ( 2 downto 0 );
-    FPU_CNV1_OUT : in STD_LOGIC_VECTOR ( 31 downto 0 );
-    FPU_CNV1_GO : out STD_LOGIC;
-    FPU_SPEC_A : out STD_LOGIC_VECTOR ( 31 downto 0 );
-    FPU_SPEC_OUT : in STD_LOGIC_VECTOR ( 31 downto 0 );
-    FPU_SPEC_GO : out STD_LOGIC;
-    DEPTH_PixelReady : out STD_LOGIC;
-    DEPTH_PosX : out STD_LOGIC_VECTOR ( 9 downto 0 );
-    DEPTH_PosY : out STD_LOGIC_VECTOR ( 9 downto 0 );
-    DEPTH_OutPixelDepth : out STD_LOGIC_VECTOR ( 23 downto 0 );
-    DEPTH_PixelPassedDepthTest : in STD_LOGIC;
-    DEPTH_PixelFailedDepthTest : in STD_LOGIC;
-    DEPTH_SetDepthParams : out STD_LOGIC;
-    DEPTH_DepthWriteEnable : out STD_LOGIC;
-    DEPTH_DepthFunction : out STD_LOGIC_VECTOR ( 2 downto 0 );
-    DEPTH_DepthIsIdle : in STD_LOGIC;
-    ATTR_FIFO_wr_data : out STD_LOGIC_VECTOR ( 127 downto 0 );
-    ATTR_FIFO_wr_en : out STD_LOGIC;
-    ATTR_FIFO_full : in STD_LOGIC;
-    ATTR_FIFO_almost_full : in STD_LOGIC;
-    CMD_IsIdle : out STD_LOGIC;
-    STAT_CyclesIdle : out STD_LOGIC_VECTOR ( 31 downto 0 );
-    STAT_CyclesSpentWorking : out STD_LOGIC_VECTOR ( 31 downto 0 );
-    STAT_CyclesWaitingForOutput : out STD_LOGIC_VECTOR ( 31 downto 0 );
-    STAT_CurrentDrawEventID : out STD_LOGIC_VECTOR ( 15 downto 0 );
-    STAT_DepthOnlyPixelsPassed : out STD_LOGIC_VECTOR ( 31 downto 0 );
-    DBG_DepthInterpolator_State : out STD_LOGIC_VECTOR ( 6 downto 0 );
-    DBG_BarycentricConvertState : out STD_LOGIC_VECTOR ( 3 downto 0 );
-    DBG_BarycentricNormalizeState : out STD_LOGIC_VECTOR ( 3 downto 0 );
-    DBG_InterpolatorDriverState : out STD_LOGIC_VECTOR ( 3 downto 0 );
-    DBG_ShiftConvertZState : out STD_LOGIC_VECTOR ( 3 downto 0 );
-    DBG_DepthTestDriverZState : out STD_LOGIC_VECTOR ( 3 downto 0 );
-    DBG_RastBarycentricB : out STD_LOGIC_VECTOR ( 31 downto 0 );
-    DBG_RastBarycentricC : out STD_LOGIC_VECTOR ( 31 downto 0 );
-    DBG_InterpolatedDepthU24 : out STD_LOGIC_VECTOR ( 23 downto 0 );
-    DBG_IdleVector : out STD_LOGIC_VECTOR ( 9 downto 0 );
-    DBG_BarycentricBCFIFO : out STD_LOGIC_VECTOR ( 63 downto 0 )
-  );
-  end component design_1_DepthInterpolator_0_1;
   component design_1_ClipUnit_0_0 is
   port (
     clk : in STD_LOGIC;
@@ -5947,80 +5755,6 @@ architecture STRUCTURE of design_1 is
     ICNV_GO : in STD_LOGIC
   );
   end component design_1_StandaloneFloatALU_C_0_4;
-  component design_1_ROP_0_0 is
-  port (
-    clk : in STD_LOGIC;
-    MEM_ROPReadRequestsFIFO_wr_data : out STD_LOGIC_VECTOR ( 29 downto 0 );
-    MEM_ROPReadRequestsFIFO_full : in STD_LOGIC;
-    MEM_ROPReadRequestsFIFO_wr_en : out STD_LOGIC;
-    MEM_ROPReadResponsesFIFO_rd_data : in STD_LOGIC_VECTOR ( 255 downto 0 );
-    MEM_ROPReadResponsesFIFO_empty : in STD_LOGIC;
-    MEM_ROPReadResponsesFIFO_rd_en : out STD_LOGIC;
-    MEM_ROPWriteRequestsFIFO_wr_data : out STD_LOGIC_VECTOR ( 293 downto 0 );
-    MEM_ROPWriteRequestsFIFO_full : in STD_LOGIC;
-    MEM_ROPWriteRequestsFIFO_wr_en : out STD_LOGIC;
-    CMD_SetClearColor : in STD_LOGIC_VECTOR ( 31 downto 0 );
-    CMD_ClearSignal : in STD_LOGIC;
-    CMD_ClearSignalAck : out STD_LOGIC;
-    CMD_FlushCacheSignal : in STD_LOGIC;
-    CMD_FlushCacheAck : out STD_LOGIC;
-    CMD_ROPIsIdle : out STD_LOGIC;
-    STATE_StateBitsAtDrawID : in STD_LOGIC_VECTOR ( 100 downto 0 );
-    STATE_NextDrawID : in STD_LOGIC_VECTOR ( 15 downto 0 );
-    STATE_StateIsValid : in STD_LOGIC;
-    STATE_ConsumeStateSlot : out STD_LOGIC;
-    TEXSAMP_InFIFO_rd_data : in STD_LOGIC_VECTOR ( 63 downto 0 );
-    TEXSAMP_InFIFO_empty : in STD_LOGIC;
-    TEXSAMP_InFIFO_rd_en : out STD_LOGIC;
-    STAT_CyclesIdle : out STD_LOGIC_VECTOR ( 31 downto 0 );
-    STAT_CyclesSpentWorking : out STD_LOGIC_VECTOR ( 31 downto 0 );
-    STAT_CyclesWaitingForOutput : out STD_LOGIC_VECTOR ( 31 downto 0 );
-    STAT_CyclesWaitingForMemoryRead : out STD_LOGIC_VECTOR ( 31 downto 0 );
-    STAT_CountCacheHits : out STD_LOGIC_VECTOR ( 31 downto 0 );
-    STAT_CountCacheMisses : out STD_LOGIC_VECTOR ( 31 downto 0 );
-    STAT_CurrentDrawEventID : out STD_LOGIC_VECTOR ( 15 downto 0 );
-    STAT_CountPixelsPassed : out STD_LOGIC_VECTOR ( 31 downto 0 );
-    DBG_ROP_State : out STD_LOGIC_VECTOR ( 4 downto 0 );
-    DBG_CurrentPixelAddr : out STD_LOGIC_VECTOR ( 29 downto 0 );
-    DBG_CurrentBlendedColor : out STD_LOGIC_VECTOR ( 31 downto 0 );
-    DBG_PreviousFramebufferColor : out STD_LOGIC_VECTOR ( 31 downto 0 );
-    DBG_CurrentCacheLineDirtyFlags : out STD_LOGIC_VECTOR ( 7 downto 0 );
-    DBG_TempSelectedOutputRGB : out STD_LOGIC_VECTOR ( 47 downto 0 );
-    DBG_TempSelectedOutputA : out STD_LOGIC_VECTOR ( 15 downto 0 );
-    DBG_TempBlendedOutputRGB : out STD_LOGIC_VECTOR ( 95 downto 0 );
-    DBG_TempBlendedOutputA : out STD_LOGIC_VECTOR ( 31 downto 0 );
-    DBG_ReadRequestFIFOFull : out STD_LOGIC
-  );
-  end component design_1_ROP_0_0;
-  component design_1_DepthBuffer_0_0 is
-  port (
-    clk : in STD_LOGIC;
-    RAST_PixelReady : in STD_LOGIC;
-    RAST_PosX : in STD_LOGIC_VECTOR ( 9 downto 0 );
-    RAST_PosY : in STD_LOGIC_VECTOR ( 9 downto 0 );
-    RAST_InPixelDepth : in STD_LOGIC_VECTOR ( 23 downto 0 );
-    RAST_SetDepthParams : in STD_LOGIC;
-    RAST_DepthWriteEnable : in STD_LOGIC;
-    RAST_DepthFunction : in STD_LOGIC_VECTOR ( 2 downto 0 );
-    RAST_DepthIsIdle : out STD_LOGIC;
-    RAST_PixelPassedDepthTest : out STD_LOGIC;
-    RAST_PixelFailedDepthTest : out STD_LOGIC;
-    URAM_addra : out STD_LOGIC_VECTOR ( 17 downto 0 );
-    URAM_clka : out STD_LOGIC;
-    URAM_dina : out STD_LOGIC_VECTOR ( 63 downto 0 );
-    URAM_ena : out STD_LOGIC;
-    URAM_wea : out STD_LOGIC_VECTOR ( 7 downto 0 );
-    URAM_addrb : out STD_LOGIC_VECTOR ( 17 downto 0 );
-    URAM_clkb : out STD_LOGIC;
-    URAM_doutb : in STD_LOGIC_VECTOR ( 63 downto 0 );
-    URAM_enb : out STD_LOGIC;
-    CMD_ClearDepthBuffer : in STD_LOGIC;
-    CMD_ClearDepthValue : in STD_LOGIC_VECTOR ( 23 downto 0 );
-    CMD_DepthIsIdle : out STD_LOGIC;
-    STAT_PixelsPassedDepthTest : out STD_LOGIC_VECTOR ( 31 downto 0 );
-    STAT_PixelsFailedDepthTest : out STD_LOGIC_VECTOR ( 31 downto 0 )
-  );
-  end component design_1_DepthBuffer_0_0;
   component design_1_AttrInterpolator_0_0 is
   port (
     clk : in STD_LOGIC;
@@ -6073,6 +5807,252 @@ architecture STRUCTURE of design_1 is
     DBG_CurrentDrawEvent : out STD_LOGIC_VECTOR ( 15 downto 0 )
   );
   end component design_1_AttrInterpolator_0_0;
+  component design_1_DepthBuffer_0_0 is
+  port (
+    clk : in STD_LOGIC;
+    RAST_PixelReady : in STD_LOGIC;
+    RAST_PosX : in STD_LOGIC_VECTOR ( 9 downto 0 );
+    RAST_PosY : in STD_LOGIC_VECTOR ( 9 downto 0 );
+    RAST_InPixelDepth : in STD_LOGIC_VECTOR ( 23 downto 0 );
+    RAST_SetDepthParams : in STD_LOGIC;
+    RAST_DepthWriteEnable : in STD_LOGIC;
+    RAST_DepthFunction : in STD_LOGIC_VECTOR ( 2 downto 0 );
+    RAST_DepthIsIdle : out STD_LOGIC;
+    RAST_StencilWriteEnable : in STD_LOGIC;
+    RAST_StencilRefVal : in STD_LOGIC_VECTOR ( 7 downto 0 );
+    RAST_StencilReadMask : in STD_LOGIC_VECTOR ( 7 downto 0 );
+    RAST_StencilWriteMask : in STD_LOGIC_VECTOR ( 7 downto 0 );
+    RAST_StencilCmpFunc : in STD_LOGIC_VECTOR ( 2 downto 0 );
+    RAST_StencilFailOp : in STD_LOGIC_VECTOR ( 2 downto 0 );
+    RAST_StencilZFailOp : in STD_LOGIC_VECTOR ( 2 downto 0 );
+    RAST_StencilPassOp : in STD_LOGIC_VECTOR ( 2 downto 0 );
+    RAST_PixelPassedDepthStencilTest : out STD_LOGIC;
+    RAST_PixelFailedDepthTest : out STD_LOGIC;
+    RAST_PixelFailedStencilTest : out STD_LOGIC;
+    URAM_addra : out STD_LOGIC_VECTOR ( 17 downto 0 );
+    URAM_clka : out STD_LOGIC;
+    URAM_dina : out STD_LOGIC_VECTOR ( 63 downto 0 );
+    URAM_ena : out STD_LOGIC;
+    URAM_wea : out STD_LOGIC_VECTOR ( 7 downto 0 );
+    URAM_addrb : out STD_LOGIC_VECTOR ( 17 downto 0 );
+    URAM_clkb : out STD_LOGIC;
+    URAM_doutb : in STD_LOGIC_VECTOR ( 63 downto 0 );
+    URAM_enb : out STD_LOGIC;
+    CMD_ClearDepthBuffer : in STD_LOGIC;
+    CMD_ClearStencilBuffer : in STD_LOGIC;
+    CMD_ClearDepthValue : in STD_LOGIC_VECTOR ( 23 downto 0 );
+    CMD_ClearStencilValue : in STD_LOGIC_VECTOR ( 7 downto 0 );
+    CMD_DepthIsIdle : out STD_LOGIC;
+    STAT_PixelsPassedDepthStencilTest : out STD_LOGIC_VECTOR ( 31 downto 0 );
+    STAT_PixelsFailedDepthTest : out STD_LOGIC_VECTOR ( 31 downto 0 );
+    STAT_PixelsFailedStencilTest : out STD_LOGIC_VECTOR ( 31 downto 0 )
+  );
+  end component design_1_DepthBuffer_0_0;
+  component design_1_ROP_0_0 is
+  port (
+    clk : in STD_LOGIC;
+    MEM_ROPReadRequestsFIFO_wr_data : out STD_LOGIC_VECTOR ( 29 downto 0 );
+    MEM_ROPReadRequestsFIFO_full : in STD_LOGIC;
+    MEM_ROPReadRequestsFIFO_wr_en : out STD_LOGIC;
+    MEM_ROPReadResponsesFIFO_rd_data : in STD_LOGIC_VECTOR ( 255 downto 0 );
+    MEM_ROPReadResponsesFIFO_empty : in STD_LOGIC;
+    MEM_ROPReadResponsesFIFO_rd_en : out STD_LOGIC;
+    MEM_ROPWriteRequestsFIFO_wr_data : out STD_LOGIC_VECTOR ( 293 downto 0 );
+    MEM_ROPWriteRequestsFIFO_full : in STD_LOGIC;
+    MEM_ROPWriteRequestsFIFO_wr_en : out STD_LOGIC;
+    CMD_SetClearColor : in STD_LOGIC_VECTOR ( 31 downto 0 );
+    CMD_ClearSignal : in STD_LOGIC;
+    CMD_ClearSignalAck : out STD_LOGIC;
+    CMD_FlushCacheSignal : in STD_LOGIC;
+    CMD_FlushCacheAck : out STD_LOGIC;
+    CMD_ROPIsIdle : out STD_LOGIC;
+    STATE_StateBitsAtDrawID : in STD_LOGIC_VECTOR ( 100 downto 0 );
+    STATE_NextDrawID : in STD_LOGIC_VECTOR ( 15 downto 0 );
+    STATE_StateIsValid : in STD_LOGIC;
+    STATE_ConsumeStateSlot : out STD_LOGIC;
+    TEXSAMP_InFIFO_rd_data : in STD_LOGIC_VECTOR ( 63 downto 0 );
+    TEXSAMP_InFIFO_empty : in STD_LOGIC;
+    TEXSAMP_InFIFO_rd_en : out STD_LOGIC;
+    STAT_CyclesIdle : out STD_LOGIC_VECTOR ( 31 downto 0 );
+    STAT_CyclesSpentWorking : out STD_LOGIC_VECTOR ( 31 downto 0 );
+    STAT_CyclesWaitingForOutput : out STD_LOGIC_VECTOR ( 31 downto 0 );
+    STAT_CyclesWaitingForMemoryRead : out STD_LOGIC_VECTOR ( 31 downto 0 );
+    STAT_CountCacheHits : out STD_LOGIC_VECTOR ( 31 downto 0 );
+    STAT_CountCacheMisses : out STD_LOGIC_VECTOR ( 31 downto 0 );
+    STAT_CurrentDrawEventID : out STD_LOGIC_VECTOR ( 15 downto 0 );
+    STAT_CountPixelsPassed : out STD_LOGIC_VECTOR ( 31 downto 0 );
+    DBG_ROP_State : out STD_LOGIC_VECTOR ( 4 downto 0 );
+    DBG_CurrentPixelAddr : out STD_LOGIC_VECTOR ( 29 downto 0 );
+    DBG_CurrentBlendedColor : out STD_LOGIC_VECTOR ( 31 downto 0 );
+    DBG_PreviousFramebufferColor : out STD_LOGIC_VECTOR ( 31 downto 0 );
+    DBG_CurrentCacheLineDirtyFlags : out STD_LOGIC_VECTOR ( 7 downto 0 );
+    DBG_TempSelectedOutputRGB : out STD_LOGIC_VECTOR ( 47 downto 0 );
+    DBG_TempSelectedOutputA : out STD_LOGIC_VECTOR ( 15 downto 0 );
+    DBG_TempBlendedOutputRGB : out STD_LOGIC_VECTOR ( 95 downto 0 );
+    DBG_TempBlendedOutputA : out STD_LOGIC_VECTOR ( 31 downto 0 );
+    DBG_ReadRequestFIFOFull : out STD_LOGIC
+  );
+  end component design_1_ROP_0_0;
+  component design_1_VertexBatchBuilder_0_0 is
+  port (
+    clk : in STD_LOGIC;
+    CMD_SendCommand : in STD_LOGIC_VECTOR ( 1 downto 0 );
+    CMD_CommandArg0 : in STD_LOGIC_VECTOR ( 23 downto 0 );
+    CMD_CommandArg1 : in STD_LOGIC_VECTOR ( 19 downto 0 );
+    CMD_CommandArg2 : in STD_LOGIC_VECTOR ( 15 downto 0 );
+    CMD_NewDrawEventID : in STD_LOGIC_VECTOR ( 15 downto 0 );
+    CMD_ReadyState : out STD_LOGIC;
+    IBC_ReadEnable : out STD_LOGIC;
+    IBC_ReadAddr : out STD_LOGIC_VECTOR ( 29 downto 0 );
+    IBC_ReadData : in STD_LOGIC_VECTOR ( 31 downto 0 );
+    IBC_ReadReady : in STD_LOGIC;
+    IBC_InvalidateIndexCache : out STD_LOGIC;
+    SHADER_Done : out STD_LOGIC;
+    STATE_StateBitsAtDrawID : in STD_LOGIC_VECTOR ( 34 downto 0 );
+    STATE_NextDrawID : in STD_LOGIC_VECTOR ( 15 downto 0 );
+    STATE_StateIsValid : in STD_LOGIC;
+    STATE_ConsumeStateSlot : out STD_LOGIC;
+    VERTBATCH_FIFO_full : in STD_LOGIC;
+    VERTBATCH_FIFO_wr_data : out STD_LOGIC_VECTOR ( 543 downto 0 );
+    VERTBATCH_FIFO_wr_en : out STD_LOGIC;
+    STAT_CyclesIdle : out STD_LOGIC_VECTOR ( 31 downto 0 );
+    STAT_CyclesSpentWorking : out STD_LOGIC_VECTOR ( 31 downto 0 );
+    STAT_CyclesWaitingForOutput : out STD_LOGIC_VECTOR ( 31 downto 0 );
+    STAT_CurrentDrawEventID : out STD_LOGIC_VECTOR ( 15 downto 0 );
+    DBG_UseConstantOutput : in STD_LOGIC;
+    DBG_CurrentState : out STD_LOGIC_VECTOR ( 3 downto 0 );
+    DBG_CurrentBatchLength : out STD_LOGIC_VECTOR ( 4 downto 0 );
+    DBG_CurrentIndexBatchLength : out STD_LOGIC_VECTOR ( 6 downto 0 );
+    DBG_CurrentBatchRemainingPrims : out STD_LOGIC_VECTOR ( 23 downto 0 );
+    DBG_QueueIsFull : out STD_LOGIC;
+    DBG_QueueIsEmpty : out STD_LOGIC;
+    DBG_DoneGeneratingIndices : out STD_LOGIC;
+    DBG_IndexGeneratorRemainingPrims : out STD_LOGIC_VECTOR ( 23 downto 0 );
+    DBG_LastPolygonIndices : out STD_LOGIC_VECTOR ( 47 downto 0 )
+  );
+  end component design_1_VertexBatchBuilder_0_0;
+  component design_1_InputAssembler2_0_0 is
+  port (
+    clk : in STD_LOGIC;
+    CLIP_v0PosX : out STD_LOGIC_VECTOR ( 31 downto 0 );
+    CLIP_v0PosY : out STD_LOGIC_VECTOR ( 31 downto 0 );
+    CLIP_v0PosZ : out STD_LOGIC_VECTOR ( 31 downto 0 );
+    CLIP_v0PosW : out STD_LOGIC_VECTOR ( 31 downto 0 );
+    CLIP_v1PosX : out STD_LOGIC_VECTOR ( 31 downto 0 );
+    CLIP_v1PosY : out STD_LOGIC_VECTOR ( 31 downto 0 );
+    CLIP_v1PosZ : out STD_LOGIC_VECTOR ( 31 downto 0 );
+    CLIP_v1PosW : out STD_LOGIC_VECTOR ( 31 downto 0 );
+    CLIP_v2PosX : out STD_LOGIC_VECTOR ( 31 downto 0 );
+    CLIP_v2PosY : out STD_LOGIC_VECTOR ( 31 downto 0 );
+    CLIP_v2PosZ : out STD_LOGIC_VECTOR ( 31 downto 0 );
+    CLIP_v2PosW : out STD_LOGIC_VECTOR ( 31 downto 0 );
+    CLIP_tex0_X : out STD_LOGIC_VECTOR ( 31 downto 0 );
+    CLIP_tex0_Y : out STD_LOGIC_VECTOR ( 31 downto 0 );
+    CLIP_tex1_X : out STD_LOGIC_VECTOR ( 31 downto 0 );
+    CLIP_tex1_Y : out STD_LOGIC_VECTOR ( 31 downto 0 );
+    CLIP_tex2_X : out STD_LOGIC_VECTOR ( 31 downto 0 );
+    CLIP_tex2_Y : out STD_LOGIC_VECTOR ( 31 downto 0 );
+    CLIP_vertColor0_RGBA : out STD_LOGIC_VECTOR ( 127 downto 0 );
+    CLIP_vertColor1_RGBA : out STD_LOGIC_VECTOR ( 127 downto 0 );
+    CLIP_vertColor2_RGBA : out STD_LOGIC_VECTOR ( 127 downto 0 );
+    CLIP_v0ClipCodes : out STD_LOGIC_VECTOR ( 10 downto 0 );
+    CLIP_v1ClipCodes : out STD_LOGIC_VECTOR ( 10 downto 0 );
+    CLIP_v2ClipCodes : out STD_LOGIC_VECTOR ( 10 downto 0 );
+    CLIP_CurrentDrawEventID : out STD_LOGIC_VECTOR ( 15 downto 0 );
+    CLIP_AABBTriOverlapsViewport : out STD_LOGIC;
+    CLIP_readyForNewTri : in STD_LOGIC;
+    CLIP_newTriBegin : out STD_LOGIC;
+    VBO_Pushed : in STD_LOGIC;
+    VBO_NumVertices : in STD_LOGIC_VECTOR ( 4 downto 0 );
+    VBO_NumIndices : in STD_LOGIC_VECTOR ( 6 downto 0 );
+    VBO_IsIndexedDrawCall : in STD_LOGIC;
+    VBO_Ready : out STD_LOGIC;
+    VERTOUT_FIFO_empty : in STD_LOGIC;
+    VERTOUT_FIFO_rd_data : in STD_LOGIC_VECTOR ( 319 downto 0 );
+    VERTOUT_FIFO_rd_en : out STD_LOGIC;
+    INDEXOUT_FIFO_empty : in STD_LOGIC;
+    INDEXOUT_FIFO_rd_data : in STD_LOGIC_VECTOR ( 271 downto 0 );
+    INDEXOUT_FIFO_rd_en : out STD_LOGIC;
+    STATE_StateBitsAtDrawID : in STD_LOGIC_VECTOR ( 4 downto 0 );
+    STATE_NextDrawID : in STD_LOGIC_VECTOR ( 15 downto 0 );
+    STATE_StateIsValid : in STD_LOGIC;
+    STATE_ConsumeStateSlot : out STD_LOGIC;
+    CMD_IA_Idle : out STD_LOGIC;
+    STAT_CyclesIdle : out STD_LOGIC_VECTOR ( 31 downto 0 );
+    STAT_CyclesSpentWorking : out STD_LOGIC_VECTOR ( 31 downto 0 );
+    STAT_CyclesLoadingDataToCache : out STD_LOGIC_VECTOR ( 31 downto 0 );
+    STAT_CyclesWaitingForOutput : out STD_LOGIC_VECTOR ( 31 downto 0 );
+    STAT_CurrentDrawEventID : out STD_LOGIC_VECTOR ( 15 downto 0 );
+    DBG_IA_State : out STD_LOGIC_VECTOR ( 5 downto 0 );
+    DBG_IA_VertexIDPerBatch : out STD_LOGIC_VECTOR ( 3 downto 0 );
+    DBG_IA_CurrentTriIndices : out STD_LOGIC_VECTOR ( 11 downto 0 )
+  );
+  end component design_1_InputAssembler2_0_0;
+  component design_1_TexSample_0_0 is
+  port (
+    clk : in STD_LOGIC;
+    INTERP_InFIFO_rd_data : in STD_LOGIC_VECTOR ( 95 downto 0 );
+    INTERP_InFIFO_empty : in STD_LOGIC;
+    INTERP_InFIFO_rd_en : out STD_LOGIC;
+    MEM_TexSampReadRequestsFIFO_wr_data : out STD_LOGIC_VECTOR ( 29 downto 0 );
+    MEM_TexSampReadRequestsFIFO_full : in STD_LOGIC;
+    MEM_TexSampReadRequestsFIFO_wr_en : out STD_LOGIC;
+    MEM_TexSampReadResponsesFIFO_rd_data : in STD_LOGIC_VECTOR ( 255 downto 0 );
+    MEM_TexSampReadResponsesFIFO_empty : in STD_LOGIC;
+    MEM_TexSampReadResponsesFIFO_rd_en : out STD_LOGIC;
+    STATE_StateBitsAtDrawID : in STD_LOGIC_VECTOR ( 73 downto 0 );
+    STATE_NextDrawID : in STD_LOGIC_VECTOR ( 15 downto 0 );
+    STATE_StateIsValid : in STD_LOGIC;
+    STATE_ConsumeStateSlot : out STD_LOGIC;
+    TexCache_addra : out STD_LOGIC_VECTOR ( 13 downto 0 );
+    TexCache_dina : out STD_LOGIC_VECTOR ( 31 downto 0 );
+    TexCache_douta : in STD_LOGIC_VECTOR ( 31 downto 0 );
+    TexCache_ena : out STD_LOGIC;
+    TexCache_wea : out STD_LOGIC_VECTOR ( 0 to 0 );
+    CMD_TexSampleIsIdle : out STD_LOGIC;
+    ROP_OutFIFO_wr_data : out STD_LOGIC_VECTOR ( 63 downto 0 );
+    ROP_OutFIFO_full : in STD_LOGIC;
+    ROP_OutFIFO_wr_en : out STD_LOGIC;
+    STAT_CyclesIdle : out STD_LOGIC_VECTOR ( 31 downto 0 );
+    STAT_CyclesSpentWorking : out STD_LOGIC_VECTOR ( 31 downto 0 );
+    STAT_CyclesWaitingForOutput : out STD_LOGIC_VECTOR ( 31 downto 0 );
+    STAT_CyclesWaitingCacheLoad : out STD_LOGIC_VECTOR ( 31 downto 0 );
+    STAT_CurrentDrawEventID : out STD_LOGIC_VECTOR ( 15 downto 0 );
+    DBG_TexSample_State : out STD_LOGIC_VECTOR ( 5 downto 0 );
+    DBG_TexCache_douta : out STD_LOGIC_VECTOR ( 31 downto 0 );
+    DBG_TexCache_dina : out STD_LOGIC_VECTOR ( 31 downto 0 );
+    DBG_TexCache_addra : out STD_LOGIC_VECTOR ( 13 downto 0 );
+    DBG_texCacheReadTexelsCount : out STD_LOGIC_VECTOR ( 15 downto 0 )
+  );
+  end component design_1_TexSample_0_0;
+  component design_1_ila_0_6 is
+  port (
+    clk : in STD_LOGIC;
+    probe0 : in STD_LOGIC_VECTOR ( 7 downto 0 );
+    probe1 : in STD_LOGIC_VECTOR ( 12 downto 0 );
+    probe2 : in STD_LOGIC_VECTOR ( 15 downto 0 );
+    probe3 : in STD_LOGIC_VECTOR ( 3 downto 0 );
+    probe4 : in STD_LOGIC_VECTOR ( 5 downto 0 );
+    probe5 : in STD_LOGIC_VECTOR ( 5 downto 0 );
+    probe6 : in STD_LOGIC_VECTOR ( 7 downto 0 );
+    probe7 : in STD_LOGIC_VECTOR ( 7 downto 0 );
+    probe8 : in STD_LOGIC_VECTOR ( 3 downto 0 );
+    probe9 : in STD_LOGIC_VECTOR ( 6 downto 0 );
+    probe10 : in STD_LOGIC_VECTOR ( 2 downto 0 );
+    probe11 : in STD_LOGIC_VECTOR ( 5 downto 0 );
+    probe12 : in STD_LOGIC_VECTOR ( 4 downto 0 );
+    probe13 : in STD_LOGIC_VECTOR ( 15 downto 0 );
+    probe14 : in STD_LOGIC_VECTOR ( 15 downto 0 );
+    probe15 : in STD_LOGIC_VECTOR ( 15 downto 0 );
+    probe16 : in STD_LOGIC_VECTOR ( 15 downto 0 );
+    probe17 : in STD_LOGIC_VECTOR ( 15 downto 0 );
+    probe18 : in STD_LOGIC_VECTOR ( 15 downto 0 );
+    probe19 : in STD_LOGIC_VECTOR ( 15 downto 0 );
+    probe20 : in STD_LOGIC_VECTOR ( 15 downto 0 );
+    probe21 : in STD_LOGIC_VECTOR ( 15 downto 0 );
+    probe22 : in STD_LOGIC_VECTOR ( 15 downto 0 )
+  );
+  end component design_1_ila_0_6;
   component design_1_CommandProcessor_0_0 is
   port (
     clk : in STD_LOGIC;
@@ -6157,10 +6137,12 @@ architecture STRUCTURE of design_1 is
     DINTERP_SetNewState : out STD_LOGIC;
     DINTERP_EndFrameReset : out STD_LOGIC;
     DINTERP_NumFreeSlots : in STD_LOGIC_VECTOR ( 2 downto 0 );
-    DINTERP_NewStateBits : out STD_LOGIC_VECTOR ( 39 downto 0 );
+    DINTERP_NewStateBits : out STD_LOGIC_VECTOR ( 76 downto 0 );
     DINTERP_NewStateDrawEventID : out STD_LOGIC_VECTOR ( 15 downto 0 );
     DEPTH_ClearDepthBuffer : out STD_LOGIC;
     DEPTH_ClearDepthValue : out STD_LOGIC_VECTOR ( 23 downto 0 );
+    DEPTH_ClearStencilBuffer : out STD_LOGIC;
+    DEPTH_ClearStencilValue : out STD_LOGIC_VECTOR ( 7 downto 0 );
     INTERP_SetNewState : out STD_LOGIC;
     INTERP_EndFrameReset : out STD_LOGIC;
     INTERP_NumFreeSlots : in STD_LOGIC_VECTOR ( 2 downto 0 );
@@ -6212,6 +6194,82 @@ architecture STRUCTURE of design_1 is
     DBG_CurrentDrawGeneration : out STD_LOGIC_VECTOR ( 15 downto 0 )
   );
   end component design_1_CommandProcessor_0_0;
+  component design_1_DepthInterpolator_0_1 is
+  port (
+    clk : in STD_LOGIC;
+    TRICACHE_inBarycentricInverse : in STD_LOGIC_VECTOR ( 31 downto 0 );
+    TRICACHE_inZ0 : in STD_LOGIC_VECTOR ( 31 downto 0 );
+    TRICACHE_inZ10 : in STD_LOGIC_VECTOR ( 31 downto 0 );
+    TRICACHE_inZ20 : in STD_LOGIC_VECTOR ( 31 downto 0 );
+    TRICACHE_inInvW0 : in STD_LOGIC_VECTOR ( 31 downto 0 );
+    TRICACHE_inInvW10 : in STD_LOGIC_VECTOR ( 31 downto 0 );
+    TRICACHE_inInvW20 : in STD_LOGIC_VECTOR ( 31 downto 0 );
+    TRICACHE_PopTriangleSlot : out STD_LOGIC;
+    RASTOUT_FIFO_rd_data : in STD_LOGIC_VECTOR ( 95 downto 0 );
+    RASTOUT_FIFO_empty : in STD_LOGIC;
+    RASTOUT_FIFO_rd_en : out STD_LOGIC;
+    STATE_StateBitsAtDrawID : in STD_LOGIC_VECTOR ( 76 downto 0 );
+    STATE_NextDrawID : in STD_LOGIC_VECTOR ( 15 downto 0 );
+    STATE_StateIsValid : in STD_LOGIC;
+    STATE_ConsumeStateSlot : out STD_LOGIC;
+    FPU_MUL_A : out STD_LOGIC_VECTOR ( 31 downto 0 );
+    FPU_MUL_B : out STD_LOGIC_VECTOR ( 31 downto 0 );
+    FPU_MUL_OUT : in STD_LOGIC_VECTOR ( 31 downto 0 );
+    FPU_MUL_GO : out STD_LOGIC;
+    FPU_CNV0_A : out STD_LOGIC_VECTOR ( 31 downto 0 );
+    FPU_CNV0_Mode : out STD_LOGIC_VECTOR ( 2 downto 0 );
+    FPU_CNV0_OUT : in STD_LOGIC_VECTOR ( 31 downto 0 );
+    FPU_CNV0_GO : out STD_LOGIC;
+    FPU_CNV1_A : out STD_LOGIC_VECTOR ( 31 downto 0 );
+    FPU_CNV1_Mode : out STD_LOGIC_VECTOR ( 2 downto 0 );
+    FPU_CNV1_OUT : in STD_LOGIC_VECTOR ( 31 downto 0 );
+    FPU_CNV1_GO : out STD_LOGIC;
+    FPU_SPEC_A : out STD_LOGIC_VECTOR ( 31 downto 0 );
+    FPU_SPEC_OUT : in STD_LOGIC_VECTOR ( 31 downto 0 );
+    FPU_SPEC_GO : out STD_LOGIC;
+    DEPTH_PixelReady : out STD_LOGIC;
+    DEPTH_PosX : out STD_LOGIC_VECTOR ( 9 downto 0 );
+    DEPTH_PosY : out STD_LOGIC_VECTOR ( 9 downto 0 );
+    DEPTH_OutPixelDepth : out STD_LOGIC_VECTOR ( 23 downto 0 );
+    DEPTH_PixelPassedDepthStencilTest : in STD_LOGIC;
+    DEPTH_PixelFailedDepthTest : in STD_LOGIC;
+    DEPTH_PixelFailedStencilTest : in STD_LOGIC;
+    DEPTH_SetDepthParams : out STD_LOGIC;
+    DEPTH_DepthWriteEnable : out STD_LOGIC;
+    DEPTH_DepthFunction : out STD_LOGIC_VECTOR ( 2 downto 0 );
+    DEPTH_StencilWriteEnable : out STD_LOGIC;
+    DEPTH_StencilRefVal : out STD_LOGIC_VECTOR ( 7 downto 0 );
+    DEPTH_StencilReadMask : out STD_LOGIC_VECTOR ( 7 downto 0 );
+    DEPTH_StencilWriteMask : out STD_LOGIC_VECTOR ( 7 downto 0 );
+    DEPTH_StencilCmpFunc : out STD_LOGIC_VECTOR ( 2 downto 0 );
+    DEPTH_StencilFailOp : out STD_LOGIC_VECTOR ( 2 downto 0 );
+    DEPTH_StencilZFailOp : out STD_LOGIC_VECTOR ( 2 downto 0 );
+    DEPTH_StencilPassOp : out STD_LOGIC_VECTOR ( 2 downto 0 );
+    DEPTH_DepthIsIdle : in STD_LOGIC;
+    ATTR_FIFO_wr_data : out STD_LOGIC_VECTOR ( 127 downto 0 );
+    ATTR_FIFO_wr_en : out STD_LOGIC;
+    ATTR_FIFO_full : in STD_LOGIC;
+    ATTR_FIFO_almost_full : in STD_LOGIC;
+    CMD_IsIdle : out STD_LOGIC;
+    STAT_CyclesIdle : out STD_LOGIC_VECTOR ( 31 downto 0 );
+    STAT_CyclesSpentWorking : out STD_LOGIC_VECTOR ( 31 downto 0 );
+    STAT_CyclesWaitingForOutput : out STD_LOGIC_VECTOR ( 31 downto 0 );
+    STAT_CurrentDrawEventID : out STD_LOGIC_VECTOR ( 15 downto 0 );
+    STAT_DepthOnlyPixelsPassed : out STD_LOGIC_VECTOR ( 31 downto 0 );
+    DBG_DepthInterpolator_State : out STD_LOGIC_VECTOR ( 6 downto 0 );
+    DBG_BarycentricConvertState : out STD_LOGIC_VECTOR ( 3 downto 0 );
+    DBG_BarycentricNormalizeState : out STD_LOGIC_VECTOR ( 3 downto 0 );
+    DBG_InterpolatorDriverState : out STD_LOGIC_VECTOR ( 3 downto 0 );
+    DBG_ShiftConvertZState : out STD_LOGIC_VECTOR ( 3 downto 0 );
+    DBG_DepthTestDriverZState : out STD_LOGIC_VECTOR ( 3 downto 0 );
+    DBG_RastBarycentricB : out STD_LOGIC_VECTOR ( 31 downto 0 );
+    DBG_RastBarycentricC : out STD_LOGIC_VECTOR ( 31 downto 0 );
+    DBG_InterpolatedDepthU24 : out STD_LOGIC_VECTOR ( 23 downto 0 );
+    DBG_IdleVector : out STD_LOGIC_VECTOR ( 9 downto 0 );
+    DBG_BarycentricBCFIFO : out STD_LOGIC_VECTOR ( 63 downto 0 );
+    DBG_CurrentDepthStencilState : out STD_LOGIC_VECTOR ( 76 downto 0 )
+  );
+  end component design_1_DepthInterpolator_0_1;
   signal ATTR_FIFO_dout : STD_LOGIC_VECTOR ( 127 downto 0 );
   signal ATTR_FIFO_empty : STD_LOGIC;
   signal ATTR_FIFO_prog_full : STD_LOGIC;
@@ -6341,8 +6399,10 @@ architecture STRUCTURE of design_1 is
   signal CommandProcessor_0_DBG_PACKETSTATE : STD_LOGIC_VECTOR ( 7 downto 0 );
   signal CommandProcessor_0_DEPTH_ClearDepthBuffer : STD_LOGIC;
   signal CommandProcessor_0_DEPTH_ClearDepthValue : STD_LOGIC_VECTOR ( 23 downto 0 );
+  signal CommandProcessor_0_DEPTH_ClearStencilBuffer : STD_LOGIC;
+  signal CommandProcessor_0_DEPTH_ClearStencilValue : STD_LOGIC_VECTOR ( 7 downto 0 );
   signal CommandProcessor_0_DINTERP_EndFrameReset : STD_LOGIC;
-  signal CommandProcessor_0_DINTERP_NewStateBits : STD_LOGIC_VECTOR ( 39 downto 0 );
+  signal CommandProcessor_0_DINTERP_NewStateBits : STD_LOGIC_VECTOR ( 76 downto 0 );
   signal CommandProcessor_0_DINTERP_NewStateDrawEventID : STD_LOGIC_VECTOR ( 15 downto 0 );
   signal CommandProcessor_0_DINTERP_SetNewState : STD_LOGIC;
   signal CommandProcessor_0_IA_EndFrameReset : STD_LOGIC;
@@ -6405,19 +6465,24 @@ architecture STRUCTURE of design_1 is
   signal DepthBuffer_0_DBufferRAMW_EN : STD_LOGIC;
   signal DepthBuffer_0_RAST_DepthIsIdle : STD_LOGIC;
   signal DepthBuffer_0_RAST_PixelFailedDepthTest : STD_LOGIC;
-  signal DepthBuffer_0_RAST_PixelPassedDepthTest : STD_LOGIC;
+  signal DepthBuffer_0_RAST_PixelFailedStencilTest : STD_LOGIC;
+  signal DepthBuffer_0_RAST_PixelPassedDepthStencilTest : STD_LOGIC;
+  signal DepthBuffer_0_STAT_PixelsFailedDepthTest : STD_LOGIC_VECTOR ( 31 downto 0 );
+  signal DepthBuffer_0_STAT_PixelsFailedStencilTest : STD_LOGIC_VECTOR ( 31 downto 0 );
+  signal DepthBuffer_0_STAT_PixelsPassedDepthStencilTest : STD_LOGIC_VECTOR ( 31 downto 0 );
   signal DepthBuffer_0_URAM_addra : STD_LOGIC_VECTOR ( 17 downto 0 );
   signal DepthBuffer_0_URAM_addrb : STD_LOGIC_VECTOR ( 17 downto 0 );
   signal DepthBuffer_0_URAM_dina : STD_LOGIC_VECTOR ( 63 downto 0 );
   signal DepthBuffer_0_URAM_wea : STD_LOGIC_VECTOR ( 7 downto 0 );
   signal DepthInterpStateBlock_CMD_NumFreeSlots : STD_LOGIC_VECTOR ( 2 downto 0 );
   signal DepthInterpStateBlock_STAGE_NextDrawID : STD_LOGIC_VECTOR ( 15 downto 0 );
-  signal DepthInterpStateBlock_STAGE_StateBitsAtDrawID : STD_LOGIC_VECTOR ( 39 downto 0 );
+  signal DepthInterpStateBlock_STAGE_StateBitsAtDrawID : STD_LOGIC_VECTOR ( 76 downto 0 );
   signal DepthInterpStateBlock_STAGE_StateIsValid : STD_LOGIC;
   signal DepthInterpolator_0_ATTR_FIFO_FULL : STD_LOGIC;
   signal DepthInterpolator_0_ATTR_FIFO_WR_DATA : STD_LOGIC_VECTOR ( 127 downto 0 );
   signal DepthInterpolator_0_ATTR_FIFO_WR_EN : STD_LOGIC;
   signal DepthInterpolator_0_CMD_IsIdle : STD_LOGIC;
+  signal DepthInterpolator_0_DBG_CurrentDepthStencilState : STD_LOGIC_VECTOR ( 76 downto 0 );
   signal DepthInterpolator_0_DBG_DepthInterpolator_State : STD_LOGIC_VECTOR ( 6 downto 0 );
   signal DepthInterpolator_0_DEPTH_DepthFunction : STD_LOGIC_VECTOR ( 2 downto 0 );
   signal DepthInterpolator_0_DEPTH_DepthWriteEnable : STD_LOGIC;
@@ -6426,6 +6491,14 @@ architecture STRUCTURE of design_1 is
   signal DepthInterpolator_0_DEPTH_PosX : STD_LOGIC_VECTOR ( 9 downto 0 );
   signal DepthInterpolator_0_DEPTH_PosY : STD_LOGIC_VECTOR ( 9 downto 0 );
   signal DepthInterpolator_0_DEPTH_SetDepthParams : STD_LOGIC;
+  signal DepthInterpolator_0_DEPTH_StencilCmpFunc : STD_LOGIC_VECTOR ( 2 downto 0 );
+  signal DepthInterpolator_0_DEPTH_StencilFailOp : STD_LOGIC_VECTOR ( 2 downto 0 );
+  signal DepthInterpolator_0_DEPTH_StencilPassOp : STD_LOGIC_VECTOR ( 2 downto 0 );
+  signal DepthInterpolator_0_DEPTH_StencilReadMask : STD_LOGIC_VECTOR ( 7 downto 0 );
+  signal DepthInterpolator_0_DEPTH_StencilRefVal : STD_LOGIC_VECTOR ( 7 downto 0 );
+  signal DepthInterpolator_0_DEPTH_StencilWriteEnable : STD_LOGIC;
+  signal DepthInterpolator_0_DEPTH_StencilWriteMask : STD_LOGIC_VECTOR ( 7 downto 0 );
+  signal DepthInterpolator_0_DEPTH_StencilZFailOp : STD_LOGIC_VECTOR ( 2 downto 0 );
   signal DepthInterpolator_0_FPU_CNV0_A : STD_LOGIC_VECTOR ( 31 downto 0 );
   signal DepthInterpolator_0_FPU_CNV0_GO : STD_LOGIC;
   signal DepthInterpolator_0_FPU_CNV0_Mode : STD_LOGIC_VECTOR ( 2 downto 0 );
@@ -6736,14 +6809,17 @@ architecture STRUCTURE of design_1 is
   signal StatsWriteOrderNibblesFIFO_dout : STD_LOGIC_VECTOR ( 15 downto 0 );
   signal StatsWriteOrderNibblesFIFO_empty : STD_LOGIC;
   signal StatsWriteOrderNibblesFIFO_full : STD_LOGIC;
-  signal TEXSAMP_FIFO_dout : STD_LOGIC_VECTOR ( 95 downto 0 );
   signal TEXSAMP_FIFO_empty : STD_LOGIC;
   signal TEXSAMP_FIFO_prog_full : STD_LOGIC;
+  signal TexFetchReadResponsesFIFO_1_EMPTY : STD_LOGIC;
+  signal TexFetchReadResponsesFIFO_1_RD_DATA : STD_LOGIC_VECTOR ( 255 downto 0 );
+  signal TexFetchReadResponsesFIFO_1_RD_EN : STD_LOGIC;
   signal TexSample_0_CMD_TexSampleIsIdle : STD_LOGIC;
   signal TexSample_0_DBG_TexCache_addra : STD_LOGIC_VECTOR ( 13 downto 0 );
   signal TexSample_0_DBG_TexCache_dina : STD_LOGIC_VECTOR ( 31 downto 0 );
   signal TexSample_0_DBG_TexSample_State : STD_LOGIC_VECTOR ( 5 downto 0 );
-  signal TexSample_0_INTERP_InFIFO_rd_en : STD_LOGIC;
+  signal TexSample_0_INTERP_IN_FIFO_RD_DATA : STD_LOGIC_VECTOR ( 95 downto 0 );
+  signal TexSample_0_INTERP_IN_FIFO_RD_EN : STD_LOGIC;
   signal TexSample_0_ROP_OUT_FIFO_FULL : STD_LOGIC;
   signal TexSample_0_ROP_OUT_FIFO_WR_EN : STD_LOGIC;
   signal TexSample_0_ROP_OutFIFO_wr_data : STD_LOGIC_VECTOR ( 63 downto 0 );
@@ -6761,9 +6837,6 @@ architecture STRUCTURE of design_1 is
   signal TexSample_0_TexSampReadRequestsFIFO_FULL : STD_LOGIC;
   signal TexSample_0_TexSampReadRequestsFIFO_WR_DATA : STD_LOGIC_VECTOR ( 29 downto 0 );
   signal TexSample_0_TexSampReadRequestsFIFO_WR_EN : STD_LOGIC;
-  signal TexSample_0_TexSampReadResponses_EMPTY : STD_LOGIC;
-  signal TexSample_0_TexSampReadResponses_RD_DATA : STD_LOGIC_VECTOR ( 255 downto 0 );
-  signal TexSample_0_TexSampReadResponses_RD_EN : STD_LOGIC;
   signal TriSetupStateBlock_CMD_NumFreeSlots : STD_LOGIC_VECTOR ( 2 downto 0 );
   signal TriSetupStateBlock_STAGE_NextDrawID : STD_LOGIC_VECTOR ( 15 downto 0 );
   signal TriSetupStateBlock_STAGE_StateBitsAtDrawID : STD_LOGIC_VECTOR ( 191 downto 0 );
@@ -6958,8 +7031,6 @@ architecture STRUCTURE of design_1 is
   signal NLW_CommandProcessor_0_DBG_LAST_WRITE_DATA_UNCONNECTED : STD_LOGIC_VECTOR ( 255 downto 0 );
   signal NLW_DINTERP_TRIDATA_FIFO_rd_rst_busy_UNCONNECTED : STD_LOGIC;
   signal NLW_DINTERP_TRIDATA_FIFO_wr_rst_busy_UNCONNECTED : STD_LOGIC;
-  signal NLW_DepthBuffer_0_STAT_PixelsFailedDepthTest_UNCONNECTED : STD_LOGIC_VECTOR ( 31 downto 0 );
-  signal NLW_DepthBuffer_0_STAT_PixelsPassedDepthTest_UNCONNECTED : STD_LOGIC_VECTOR ( 31 downto 0 );
   signal NLW_DepthInterpStateBlock_DBG_CurrentReadSlotIndex_UNCONNECTED : STD_LOGIC_VECTOR ( 1 downto 0 );
   signal NLW_DepthInterpStateBlock_DBG_CurrentWriteSlotIndex_UNCONNECTED : STD_LOGIC_VECTOR ( 1 downto 0 );
   signal NLW_DepthInterpStateBlock_DBG_Slot0_UNCONNECTED : STD_LOGIC_VECTOR ( 15 downto 0 );
@@ -7011,6 +7082,7 @@ architecture STRUCTURE of design_1 is
   signal NLW_StatsWriteOrderNibblesFIFO_rd_rst_busy_UNCONNECTED : STD_LOGIC;
   signal NLW_StatsWriteOrderNibblesFIFO_wr_rst_busy_UNCONNECTED : STD_LOGIC;
   signal NLW_TexSample_0_DBG_TexCache_douta_UNCONNECTED : STD_LOGIC_VECTOR ( 31 downto 0 );
+  signal NLW_TexSample_0_DBG_texCacheReadTexelsCount_UNCONNECTED : STD_LOGIC_VECTOR ( 15 downto 0 );
   signal NLW_TriSetupStateBlock_DBG_CurrentReadSlotIndex_UNCONNECTED : STD_LOGIC_VECTOR ( 1 downto 0 );
   signal NLW_TriSetupStateBlock_DBG_CurrentWriteSlotIndex_UNCONNECTED : STD_LOGIC_VECTOR ( 1 downto 0 );
   signal NLW_TriSetupStateBlock_DBG_Slot0_UNCONNECTED : STD_LOGIC_VECTOR ( 15 downto 0 );
@@ -7464,8 +7536,10 @@ CommandProcessor_0: component design_1_CommandProcessor_0_0
       DBG_LAST_WRITE_DATA(255 downto 0) => NLW_CommandProcessor_0_DBG_LAST_WRITE_DATA_UNCONNECTED(255 downto 0),
       DEPTH_ClearDepthBuffer => CommandProcessor_0_DEPTH_ClearDepthBuffer,
       DEPTH_ClearDepthValue(23 downto 0) => CommandProcessor_0_DEPTH_ClearDepthValue(23 downto 0),
+      DEPTH_ClearStencilBuffer => CommandProcessor_0_DEPTH_ClearStencilBuffer,
+      DEPTH_ClearStencilValue(7 downto 0) => CommandProcessor_0_DEPTH_ClearStencilValue(7 downto 0),
       DINTERP_EndFrameReset => CommandProcessor_0_DINTERP_EndFrameReset,
-      DINTERP_NewStateBits(39 downto 0) => CommandProcessor_0_DINTERP_NewStateBits(39 downto 0),
+      DINTERP_NewStateBits(76 downto 0) => CommandProcessor_0_DINTERP_NewStateBits(76 downto 0),
       DINTERP_NewStateDrawEventID(15 downto 0) => CommandProcessor_0_DINTERP_NewStateDrawEventID(15 downto 0),
       DINTERP_NumFreeSlots(2 downto 0) => DepthInterpStateBlock_CMD_NumFreeSlots(2 downto 0),
       DINTERP_STAT_CountDepthOnlyPixelsPassed(31 downto 0) => DepthInterpolator_0_STAT_DepthOnlyPixelsPassed(31 downto 0),
@@ -7601,19 +7675,31 @@ DepthBuffer_0: component design_1_DepthBuffer_0_0
      port map (
       CMD_ClearDepthBuffer => CommandProcessor_0_DEPTH_ClearDepthBuffer,
       CMD_ClearDepthValue(23 downto 0) => CommandProcessor_0_DEPTH_ClearDepthValue(23 downto 0),
+      CMD_ClearStencilBuffer => CommandProcessor_0_DEPTH_ClearStencilBuffer,
+      CMD_ClearStencilValue(7 downto 0) => CommandProcessor_0_DEPTH_ClearStencilValue(7 downto 0),
       CMD_DepthIsIdle => DepthBuffer_0_CMD_DepthIsIdle,
       RAST_DepthFunction(2 downto 0) => DepthInterpolator_0_DEPTH_DepthFunction(2 downto 0),
       RAST_DepthIsIdle => DepthBuffer_0_RAST_DepthIsIdle,
       RAST_DepthWriteEnable => DepthInterpolator_0_DEPTH_DepthWriteEnable,
       RAST_InPixelDepth(23 downto 0) => DepthInterpolator_0_DEPTH_OutPixelDepth(23 downto 0),
       RAST_PixelFailedDepthTest => DepthBuffer_0_RAST_PixelFailedDepthTest,
-      RAST_PixelPassedDepthTest => DepthBuffer_0_RAST_PixelPassedDepthTest,
+      RAST_PixelFailedStencilTest => DepthBuffer_0_RAST_PixelFailedStencilTest,
+      RAST_PixelPassedDepthStencilTest => DepthBuffer_0_RAST_PixelPassedDepthStencilTest,
       RAST_PixelReady => DepthInterpolator_0_DEPTH_PixelReady,
       RAST_PosX(9 downto 0) => DepthInterpolator_0_DEPTH_PosX(9 downto 0),
       RAST_PosY(9 downto 0) => DepthInterpolator_0_DEPTH_PosY(9 downto 0),
       RAST_SetDepthParams => DepthInterpolator_0_DEPTH_SetDepthParams,
-      STAT_PixelsFailedDepthTest(31 downto 0) => NLW_DepthBuffer_0_STAT_PixelsFailedDepthTest_UNCONNECTED(31 downto 0),
-      STAT_PixelsPassedDepthTest(31 downto 0) => NLW_DepthBuffer_0_STAT_PixelsPassedDepthTest_UNCONNECTED(31 downto 0),
+      RAST_StencilCmpFunc(2 downto 0) => DepthInterpolator_0_DEPTH_StencilCmpFunc(2 downto 0),
+      RAST_StencilFailOp(2 downto 0) => DepthInterpolator_0_DEPTH_StencilFailOp(2 downto 0),
+      RAST_StencilPassOp(2 downto 0) => DepthInterpolator_0_DEPTH_StencilPassOp(2 downto 0),
+      RAST_StencilReadMask(7 downto 0) => DepthInterpolator_0_DEPTH_StencilReadMask(7 downto 0),
+      RAST_StencilRefVal(7 downto 0) => DepthInterpolator_0_DEPTH_StencilRefVal(7 downto 0),
+      RAST_StencilWriteEnable => DepthInterpolator_0_DEPTH_StencilWriteEnable,
+      RAST_StencilWriteMask(7 downto 0) => DepthInterpolator_0_DEPTH_StencilWriteMask(7 downto 0),
+      RAST_StencilZFailOp(2 downto 0) => DepthInterpolator_0_DEPTH_StencilZFailOp(2 downto 0),
+      STAT_PixelsFailedDepthTest(31 downto 0) => DepthBuffer_0_STAT_PixelsFailedDepthTest(31 downto 0),
+      STAT_PixelsFailedStencilTest(31 downto 0) => DepthBuffer_0_STAT_PixelsFailedStencilTest(31 downto 0),
+      STAT_PixelsPassedDepthStencilTest(31 downto 0) => DepthBuffer_0_STAT_PixelsPassedDepthStencilTest(31 downto 0),
       URAM_addra(17 downto 0) => DepthBuffer_0_URAM_addra(17 downto 0),
       URAM_addrb(17 downto 0) => DepthBuffer_0_URAM_addrb(17 downto 0),
       URAM_clka => DepthBuffer_0_DBufferRAMW_CLK,
@@ -7645,7 +7731,7 @@ DepthBuffer_URAM: component design_1_blk_mem_gen_0_2
 DepthInterpStateBlock: component design_1_StateBlock_0_3
      port map (
       CMD_EndFrameReset => CommandProcessor_0_DINTERP_EndFrameReset,
-      CMD_NewStateBits(39 downto 0) => CommandProcessor_0_DINTERP_NewStateBits(39 downto 0),
+      CMD_NewStateBits(76 downto 0) => CommandProcessor_0_DINTERP_NewStateBits(76 downto 0),
       CMD_NewStateDrawEventID(15 downto 0) => CommandProcessor_0_DINTERP_NewStateDrawEventID(15 downto 0),
       CMD_NumFreeSlots(2 downto 0) => DepthInterpStateBlock_CMD_NumFreeSlots(2 downto 0),
       CMD_SetNewState => CommandProcessor_0_DINTERP_SetNewState,
@@ -7658,7 +7744,7 @@ DepthInterpStateBlock: component design_1_StateBlock_0_3
       DBG_SlotsValid(3 downto 0) => NLW_DepthInterpStateBlock_DBG_SlotsValid_UNCONNECTED(3 downto 0),
       STAGE_ConsumeStateSlot => DepthInterpolator_0_STATE_ConsumeStateSlot,
       STAGE_NextDrawID(15 downto 0) => DepthInterpStateBlock_STAGE_NextDrawID(15 downto 0),
-      STAGE_StateBitsAtDrawID(39 downto 0) => DepthInterpStateBlock_STAGE_StateBitsAtDrawID(39 downto 0),
+      STAGE_StateBitsAtDrawID(76 downto 0) => DepthInterpStateBlock_STAGE_StateBitsAtDrawID(76 downto 0),
       STAGE_StateIsValid => DepthInterpStateBlock_STAGE_StateIsValid,
       clk => ddr4_0_c0_ddr4_ui_clk
     );
@@ -7672,6 +7758,7 @@ DepthInterpolator_0: component design_1_DepthInterpolator_0_1
       DBG_BarycentricBCFIFO(63 downto 0) => NLW_DepthInterpolator_0_DBG_BarycentricBCFIFO_UNCONNECTED(63 downto 0),
       DBG_BarycentricConvertState(3 downto 0) => NLW_DepthInterpolator_0_DBG_BarycentricConvertState_UNCONNECTED(3 downto 0),
       DBG_BarycentricNormalizeState(3 downto 0) => NLW_DepthInterpolator_0_DBG_BarycentricNormalizeState_UNCONNECTED(3 downto 0),
+      DBG_CurrentDepthStencilState(76 downto 0) => DepthInterpolator_0_DBG_CurrentDepthStencilState(76 downto 0),
       DBG_DepthInterpolator_State(6 downto 0) => DepthInterpolator_0_DBG_DepthInterpolator_State(6 downto 0),
       DBG_DepthTestDriverZState(3 downto 0) => NLW_DepthInterpolator_0_DBG_DepthTestDriverZState_UNCONNECTED(3 downto 0),
       DBG_IdleVector(9 downto 0) => NLW_DepthInterpolator_0_DBG_IdleVector_UNCONNECTED(9 downto 0),
@@ -7685,11 +7772,20 @@ DepthInterpolator_0: component design_1_DepthInterpolator_0_1
       DEPTH_DepthWriteEnable => DepthInterpolator_0_DEPTH_DepthWriteEnable,
       DEPTH_OutPixelDepth(23 downto 0) => DepthInterpolator_0_DEPTH_OutPixelDepth(23 downto 0),
       DEPTH_PixelFailedDepthTest => DepthBuffer_0_RAST_PixelFailedDepthTest,
-      DEPTH_PixelPassedDepthTest => DepthBuffer_0_RAST_PixelPassedDepthTest,
+      DEPTH_PixelFailedStencilTest => DepthBuffer_0_RAST_PixelFailedStencilTest,
+      DEPTH_PixelPassedDepthStencilTest => DepthBuffer_0_RAST_PixelPassedDepthStencilTest,
       DEPTH_PixelReady => DepthInterpolator_0_DEPTH_PixelReady,
       DEPTH_PosX(9 downto 0) => DepthInterpolator_0_DEPTH_PosX(9 downto 0),
       DEPTH_PosY(9 downto 0) => DepthInterpolator_0_DEPTH_PosY(9 downto 0),
       DEPTH_SetDepthParams => DepthInterpolator_0_DEPTH_SetDepthParams,
+      DEPTH_StencilCmpFunc(2 downto 0) => DepthInterpolator_0_DEPTH_StencilCmpFunc(2 downto 0),
+      DEPTH_StencilFailOp(2 downto 0) => DepthInterpolator_0_DEPTH_StencilFailOp(2 downto 0),
+      DEPTH_StencilPassOp(2 downto 0) => DepthInterpolator_0_DEPTH_StencilPassOp(2 downto 0),
+      DEPTH_StencilReadMask(7 downto 0) => DepthInterpolator_0_DEPTH_StencilReadMask(7 downto 0),
+      DEPTH_StencilRefVal(7 downto 0) => DepthInterpolator_0_DEPTH_StencilRefVal(7 downto 0),
+      DEPTH_StencilWriteEnable => DepthInterpolator_0_DEPTH_StencilWriteEnable,
+      DEPTH_StencilWriteMask(7 downto 0) => DepthInterpolator_0_DEPTH_StencilWriteMask(7 downto 0),
+      DEPTH_StencilZFailOp(2 downto 0) => DepthInterpolator_0_DEPTH_StencilZFailOp(2 downto 0),
       FPU_CNV0_A(31 downto 0) => DepthInterpolator_0_FPU_CNV0_A(31 downto 0),
       FPU_CNV0_GO => DepthInterpolator_0_FPU_CNV0_GO,
       FPU_CNV0_Mode(2 downto 0) => DepthInterpolator_0_FPU_CNV0_Mode(2 downto 0),
@@ -7710,7 +7806,7 @@ DepthInterpolator_0: component design_1_DepthInterpolator_0_1
       RASTOUT_FIFO_rd_en => DepthInterpolator_0_RASTOUT_FIFO_rd_en,
       STATE_ConsumeStateSlot => DepthInterpolator_0_STATE_ConsumeStateSlot,
       STATE_NextDrawID(15 downto 0) => DepthInterpStateBlock_STAGE_NextDrawID(15 downto 0),
-      STATE_StateBitsAtDrawID(39 downto 0) => DepthInterpStateBlock_STAGE_StateBitsAtDrawID(39 downto 0),
+      STATE_StateBitsAtDrawID(76 downto 0) => DepthInterpStateBlock_STAGE_StateBitsAtDrawID(76 downto 0),
       STATE_StateIsValid => DepthInterpStateBlock_STAGE_StateIsValid,
       STAT_CurrentDrawEventID(15 downto 0) => DepthInterpolator_0_STAT_CurrentDrawEventID(15 downto 0),
       STAT_CyclesIdle(31 downto 0) => DepthInterpolator_0_STAT_CyclesIdle(31 downto 0),
@@ -7738,6 +7834,9 @@ ILA_AttrInterpolator: component design_1_ila_0_3
       probe13(0) => DepthBuffer_0_CMD_DepthIsIdle,
       probe14(0) => DepthInterpolator_0_DEPTH_PixelReady,
       probe15(15 downto 0) => AttrInterpolator_0_DBG_CurrentDrawEvent(15 downto 0),
+      probe16(31 downto 0) => DepthBuffer_0_STAT_PixelsPassedDepthStencilTest(31 downto 0),
+      probe17(31 downto 0) => DepthBuffer_0_STAT_PixelsFailedDepthTest(31 downto 0),
+      probe18(31 downto 0) => DepthBuffer_0_STAT_PixelsFailedStencilTest(31 downto 0),
       probe2(2 downto 0) => AttrInterpolator_0_DBG_AttrInterpolator_State(2 downto 0),
       probe3(31 downto 0) => AttrInterpolator_0_DBG_RastBarycentricB(31 downto 0),
       probe4(31 downto 0) => AttrInterpolator_0_DBG_RastBarycentricC(31 downto 0),
@@ -8067,9 +8166,9 @@ MemorySystem: entity work.MemorySystem_imp_FPNZVK
       TexFetchReadRequestsFIFO_full => TexSample_0_TexSampReadRequestsFIFO_FULL,
       TexFetchReadRequestsFIFO_wr_data(29 downto 0) => TexSample_0_TexSampReadRequestsFIFO_WR_DATA(29 downto 0),
       TexFetchReadRequestsFIFO_wr_en => TexSample_0_TexSampReadRequestsFIFO_WR_EN,
-      TexFetchReadResponsesFIFO_empty => TexSample_0_TexSampReadResponses_EMPTY,
-      TexFetchReadResponsesFIFO_rd_data(255 downto 0) => TexSample_0_TexSampReadResponses_RD_DATA(255 downto 0),
-      TexFetchReadResponsesFIFO_rd_en => TexSample_0_TexSampReadResponses_RD_EN,
+      TexFetchReadResponsesFIFO_empty => TexFetchReadResponsesFIFO_1_EMPTY,
+      TexFetchReadResponsesFIFO_rd_data(255 downto 0) => TexFetchReadResponsesFIFO_1_RD_DATA(255 downto 0),
+      TexFetchReadResponsesFIFO_rd_en => TexFetchReadResponsesFIFO_1_RD_EN,
       VBCacheReadRequestsFIFO_full => ShaderCoreSystem_VBCacheReadRequests_0_FULL,
       VBCacheReadRequestsFIFO_wr_data(29 downto 0) => ShaderCoreSystem_VBCacheReadRequests_0_WR_DATA(29 downto 0),
       VBCacheReadRequestsFIFO_wr_en => ShaderCoreSystem_VBCacheReadRequests_0_WR_EN,
@@ -8502,11 +8601,11 @@ TEXSAMP_FIFO: component design_1_fifo_generator_0_21
      port map (
       clk => ddr4_0_c0_ddr4_ui_clk,
       din(95 downto 0) => AttrInterpolator_0_TEXSAMP_OutFIFO_wr_data(95 downto 0),
-      dout(95 downto 0) => TEXSAMP_FIFO_dout(95 downto 0),
+      dout(95 downto 0) => TexSample_0_INTERP_IN_FIFO_RD_DATA(95 downto 0),
       empty => TEXSAMP_FIFO_empty,
       full => AttrInterpolator_0_TEXSAMP_OUT_FIFO_FULL,
       prog_full => TEXSAMP_FIFO_prog_full,
-      rd_en => TexSample_0_INTERP_InFIFO_rd_en,
+      rd_en => TexSample_0_INTERP_IN_FIFO_RD_EN,
       wr_en => AttrInterpolator_0_TEXSAMP_OUT_FIFO_WR_EN
     );
 TRISETUP_FPU_ADD: component design_1_StandaloneFloatALU_A_0_0
@@ -8567,15 +8666,16 @@ TexSample_0: component design_1_TexSample_0_0
       DBG_TexCache_dina(31 downto 0) => TexSample_0_DBG_TexCache_dina(31 downto 0),
       DBG_TexCache_douta(31 downto 0) => NLW_TexSample_0_DBG_TexCache_douta_UNCONNECTED(31 downto 0),
       DBG_TexSample_State(5 downto 0) => TexSample_0_DBG_TexSample_State(5 downto 0),
+      DBG_texCacheReadTexelsCount(15 downto 0) => NLW_TexSample_0_DBG_texCacheReadTexelsCount_UNCONNECTED(15 downto 0),
       INTERP_InFIFO_empty => TEXSAMP_FIFO_empty,
-      INTERP_InFIFO_rd_data(95 downto 0) => TEXSAMP_FIFO_dout(95 downto 0),
-      INTERP_InFIFO_rd_en => TexSample_0_INTERP_InFIFO_rd_en,
+      INTERP_InFIFO_rd_data(95 downto 0) => TexSample_0_INTERP_IN_FIFO_RD_DATA(95 downto 0),
+      INTERP_InFIFO_rd_en => TexSample_0_INTERP_IN_FIFO_RD_EN,
       MEM_TexSampReadRequestsFIFO_full => TexSample_0_TexSampReadRequestsFIFO_FULL,
       MEM_TexSampReadRequestsFIFO_wr_data(29 downto 0) => TexSample_0_TexSampReadRequestsFIFO_WR_DATA(29 downto 0),
       MEM_TexSampReadRequestsFIFO_wr_en => TexSample_0_TexSampReadRequestsFIFO_WR_EN,
-      MEM_TexSampReadResponsesFIFO_empty => TexSample_0_TexSampReadResponses_EMPTY,
-      MEM_TexSampReadResponsesFIFO_rd_data(255 downto 0) => TexSample_0_TexSampReadResponses_RD_DATA(255 downto 0),
-      MEM_TexSampReadResponsesFIFO_rd_en => TexSample_0_TexSampReadResponses_RD_EN,
+      MEM_TexSampReadResponsesFIFO_empty => TexFetchReadResponsesFIFO_1_EMPTY,
+      MEM_TexSampReadResponsesFIFO_rd_data(255 downto 0) => TexFetchReadResponsesFIFO_1_RD_DATA(255 downto 0),
+      MEM_TexSampReadResponsesFIFO_rd_en => TexFetchReadResponsesFIFO_1_RD_EN,
       ROP_OutFIFO_full => TexSample_0_ROP_OUT_FIFO_FULL,
       ROP_OutFIFO_wr_data(63 downto 0) => TexSample_0_ROP_OutFIFO_wr_data(63 downto 0),
       ROP_OutFIFO_wr_en => TexSample_0_ROP_OUT_FIFO_WR_EN,
@@ -8940,10 +9040,39 @@ ila_333_250: component design_1_ila_0_0
       probe55(0) => CommandProcessor_0_STAT_EnableEventTimestamps,
       probe56(0) => StatsCollector_0_DBG_CurrentWriteEn,
       probe57(293 downto 0) => StatsCollector_0_DBG_CurrentWriteData(293 downto 0),
+      probe58(76 downto 0) => DepthInterpolator_0_DBG_CurrentDepthStencilState(76 downto 0),
+      probe59(31 downto 0) => ROP_0_STAT_CountPixelsPassed(31 downto 0),
       probe6(3 downto 0) => Rasterizer_0_DBG_Rasterizer_State(3 downto 0),
       probe7(2 downto 0) => AttrInterpolator_0_DBG_AttrInterpolator_State(2 downto 0),
       probe8(5 downto 0) => TexSample_0_DBG_TexSample_State(5 downto 0),
       probe9(4 downto 0) => ROP_0_DBG_ROP_State(4 downto 0)
+    );
+ila_states: component design_1_ila_0_6
+     port map (
+      clk => ddr4_0_c0_ddr4_ui_clk,
+      probe0(7 downto 0) => CommandProcessor_0_DBG_PACKETSTATE(7 downto 0),
+      probe1(12 downto 0) => CommandProcessor_0_DBG_IdleSignalsVector(12 downto 0),
+      probe10(2 downto 0) => AttrInterpolator_0_DBG_AttrInterpolator_State(2 downto 0),
+      probe11(5 downto 0) => TexSample_0_DBG_TexSample_State(5 downto 0),
+      probe12(4 downto 0) => ROP_0_DBG_ROP_State(4 downto 0),
+      probe13(15 downto 0) => VertexBatchBuilder_0_STAT_CurrentDrawEventID(15 downto 0),
+      probe14(15 downto 0) => ShaderCoreSystem_STAT_CurrentDrawEventID(15 downto 0),
+      probe15(15 downto 0) => InputAssembler2_0_STAT_CurrentDrawEventID(15 downto 0),
+      probe16(15 downto 0) => ClipUnit_0_STAT_CurrentDrawEventID(15 downto 0),
+      probe17(15 downto 0) => TriSetup_0_STAT_CurrentDrawEventID(15 downto 0),
+      probe18(15 downto 0) => Rasterizer_0_STAT_CurrentDrawEventID(15 downto 0),
+      probe19(15 downto 0) => DepthInterpolator_0_STAT_CurrentDrawEventID(15 downto 0),
+      probe2(15 downto 0) => CommandProcessor_0_DBG_CurrentDrawGeneration(15 downto 0),
+      probe20(15 downto 0) => AttrInterpolator_0_STAT_CurrentDrawEventID(15 downto 0),
+      probe21(15 downto 0) => TexSample_0_STAT_CurrentDrawEventID(15 downto 0),
+      probe22(15 downto 0) => ROP_0_STAT_CurrentDrawEventID(15 downto 0),
+      probe3(3 downto 0) => VertexBatchBuilder_0_DBG_CurrentState(3 downto 0),
+      probe4(5 downto 0) => ShaderCoreSystem_DBG_CurrentState(5 downto 0),
+      probe5(5 downto 0) => InputAssembler2_0_DBG_IA_State(5 downto 0),
+      probe6(7 downto 0) => ClipUnit_0_DBG_CurrentState(7 downto 0),
+      probe7(7 downto 0) => TriSetup_0_DBG_TriSetup_State(7 downto 0),
+      probe8(3 downto 0) => Rasterizer_0_DBG_Rasterizer_State(3 downto 0),
+      probe9(6 downto 0) => DepthInterpolator_0_DBG_DepthInterpolator_State(6 downto 0)
     );
 placeholder_texcfg: component design_1_xlconstant_0_4
      port map (

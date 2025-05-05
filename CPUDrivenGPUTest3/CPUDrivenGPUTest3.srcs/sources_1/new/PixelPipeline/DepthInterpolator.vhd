@@ -71,12 +71,21 @@ entity DepthInterpolator is
 		DEPTH_PosX : out STD_LOGIC_VECTOR(9 downto 0) := (others => '0');
 		DEPTH_PosY : out STD_LOGIC_VECTOR(9 downto 0) := (others => '0');
 		DEPTH_OutPixelDepth : out STD_LOGIC_VECTOR(23 downto 0) := (others => '0');
-		DEPTH_PixelPassedDepthTest : in STD_LOGIC;
+		DEPTH_PixelPassedDepthStencilTest : in STD_LOGIC;
 		DEPTH_PixelFailedDepthTest : in STD_LOGIC;
+		DEPTH_PixelFailedStencilTest : in STD_LOGIC;
 
 		DEPTH_SetDepthParams : out STD_LOGIC := '0';
 		DEPTH_DepthWriteEnable : out STD_LOGIC := '0';
 		DEPTH_DepthFunction : out STD_LOGIC_VECTOR(2 downto 0) := (others => '0');
+		DEPTH_StencilWriteEnable : out STD_LOGIC := '0';
+		DEPTH_StencilRefVal : out STD_LOGIC_VECTOR(7 downto 0) := (others => '0');
+		DEPTH_StencilReadMask : out STD_LOGIC_VECTOR(7 downto 0) := (others => '0');
+		DEPTH_StencilWriteMask : out STD_LOGIC_VECTOR(7 downto 0) := (others => '0');
+		DEPTH_StencilCmpFunc : out STD_LOGIC_VECTOR(2 downto 0) := (others => '0');
+		DEPTH_StencilFailOp : out STD_LOGIC_VECTOR(2 downto 0) := (others => '0');
+		DEPTH_StencilZFailOp : out STD_LOGIC_VECTOR(2 downto 0) := (others => '0');
+		DEPTH_StencilPassOp : out STD_LOGIC_VECTOR(2 downto 0) := (others => '0');
 		DEPTH_DepthIsIdle : in STD_LOGIC;
 	-- Depth Buffer interface end
 
@@ -110,7 +119,8 @@ entity DepthInterpolator is
 		DBG_RastBarycentricC : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 		DBG_InterpolatedDepthU24 : out STD_LOGIC_VECTOR(23 downto 0) := (others => '0');
 		DBG_IdleVector : out STD_LOGIC_VECTOR(9 downto 0) := (others => '0');
-		DBG_BarycentricBCFIFO : out STD_LOGIC_VECTOR(63 downto 0) := (others => '0')
+		DBG_BarycentricBCFIFO : out STD_LOGIC_VECTOR(63 downto 0) := (others => '0');
+		DBG_CurrentDepthStencilState : out STD_LOGIC_VECTOR(DEPTH_INTERPOLATOR_STATE_SIZE_BITS-1 downto 0) := (others => '0')
 		);
 end DepthInterpolator;
 
@@ -396,6 +406,7 @@ DBG_RastBarycentricB <= std_logic_vector(storedDbgBarycentricB);
 DBG_RastBarycentricC <= std_logic_vector(storedDbgBarycentricC);
 DBG_IdleVector <= BarycentricBCFIFO_IsEmpty & PixelXYFIFO_IsEmpty & outputProcessIsIdle & depthTestProcessResultsIsIdle & depthTestDriverIsIdle & shiftConvertZIsIdle & 
 	reciprocalDriverIsIdle & interpolatorDriverIsIdle & barycentricNormalizationIsIdle & barycentricConvertIsIdle;
+DBG_CurrentDepthStencilState <= SerializeStructToBits(currentDepthState);
 
 FPU_CNV0_Mode <= std_logic_vector(to_unsigned(eConvertMode'pos(U32_to_F), 3) );
 FPU_CNV1_Mode <= std_logic_vector(to_unsigned(eConvertMode'pos(F_to_U24_RoundNearestEven), 3) );
@@ -512,6 +523,14 @@ BarycentricBCFIFO : SimpleFIFO generic map(FIFO_Depth => MAX_OCCUPANCY, FIFO_Bit
 						DEPTH_SetDepthParams <= '1';
 						DEPTH_DepthWriteEnable <= currentDepthState.DepthWriteEnable;
 						DEPTH_DepthFunction <= std_logic_vector(to_unsigned(eCmpFunc'pos(currentDepthState.DepthCompareFunction), 3) );
+						DEPTH_StencilWriteEnable <= currentDepthState.StencilWriteEnable;
+						DEPTH_StencilRefVal <= std_logic_vector(currentDepthState.StencilRefVal);
+						DEPTH_StencilReadMask <= std_logic_vector(currentDepthState.StencilReadMask);
+						DEPTH_StencilWriteMask <= std_logic_vector(currentDepthState.StencilWriteMask);
+						DEPTH_StencilCmpFunc <= std_logic_vector(to_unsigned(eCmpFunc'pos(currentDepthState.StencilCmpFunc), 3) );
+						DEPTH_StencilFailOp <= std_logic_vector(to_unsigned(eStencilOp'pos(currentDepthState.StencilFailOp), 3) );
+						DEPTH_StencilZFailOp <= std_logic_vector(to_unsigned(eStencilOp'pos(currentDepthState.StencilZFailOp), 3) );
+						DEPTH_StencilPassOp <= std_logic_vector(to_unsigned(eStencilOp'pos(currentDepthState.StencilPassOp), 3) );
 						currentState <= waitingForRead;
 					end if;
 
@@ -788,15 +807,11 @@ BarycentricBCFIFO : SimpleFIFO generic map(FIFO_Depth => MAX_OCCUPANCY, FIFO_Bit
 			BarycentricBCFIFO_PopElement <= depthTestResultsReady(0);
 
 			if (depthTestResultsReady(0) = '1') then
-				if (DEPTH_PixelPassedDepthTest = '1' and currentDepthState.ColorWritesEnabled = '1' and currentDepthState.DepthTestEnable = '1') then
-					passedPixelColorAndWValueReady(2) <= '1'; -- Pixel with color passed, output this pixel along down the pipeline
-				elsif (DEPTH_PixelPassedDepthTest = '1' and currentDepthState.ColorWritesEnabled = '0' and currentDepthState.DepthTestEnable = '1') then
+				if (DEPTH_PixelPassedDepthStencilTest = '1' and currentDepthState.ColorWritesEnabled = '0' and currentDepthState.DepthTestEnable = '1' and currentDepthState.StencilWriteEnable = '0') then
 					depthOnlyPixelsPassed <= depthOnlyPixelsPassed + 1; -- Count this depth-only pixel as passed (this counter is needed for occlusion queries which often don't render to the color-buffer)
 					passedPixelColorAndWValueReady(2) <= '0'; -- Don't actually output this passed pixel further down the pipeline as it doesn't have any color data
-				elsif (currentDepthState.DepthTestEnable = '0') then
-					passedPixelColorAndWValueReady(2) <= '1'; -- Depth testing was disabled, so we don't care what the depth buffer says. Output this pixel anyway!
 				else
-					passedPixelColorAndWValueReady(2) <= '0'; -- We failed the depth test, kill this pixel!
+					passedPixelColorAndWValueReady(2) <= DEPTH_PixelPassedDepthStencilTest;
 				end if;
 			elsif (passedPixelColorAndWValueReady = "000") then
 				depthTestProcessResultsIsIdle <= '1';

@@ -1,4 +1,4 @@
--- (c) Copyright 1995-2023 Xilinx, Inc. All rights reserved.
+-- (c) Copyright 1995-2025 Xilinx, Inc. All rights reserved.
 -- 
 -- This file contains confidential and proprietary information
 -- of Xilinx, Inc. and is protected under U.S. and
@@ -59,9 +59,9 @@ ENTITY design_1_StateBlock_0_3 IS
     CMD_SetNewState : IN STD_LOGIC;
     CMD_EndFrameReset : IN STD_LOGIC;
     CMD_NumFreeSlots : OUT STD_LOGIC_VECTOR(2 DOWNTO 0);
-    CMD_NewStateBits : IN STD_LOGIC_VECTOR(39 DOWNTO 0);
+    CMD_NewStateBits : IN STD_LOGIC_VECTOR(76 DOWNTO 0);
     CMD_NewStateDrawEventID : IN STD_LOGIC_VECTOR(15 DOWNTO 0);
-    STAGE_StateBitsAtDrawID : OUT STD_LOGIC_VECTOR(39 DOWNTO 0);
+    STAGE_StateBitsAtDrawID : OUT STD_LOGIC_VECTOR(76 DOWNTO 0);
     STAGE_NextDrawID : OUT STD_LOGIC_VECTOR(15 DOWNTO 0);
     STAGE_StateIsValid : OUT STD_LOGIC;
     STAGE_ConsumeStateSlot : IN STD_LOGIC;
@@ -87,9 +87,9 @@ ARCHITECTURE design_1_StateBlock_0_3_arch OF design_1_StateBlock_0_3 IS
       CMD_SetNewState : IN STD_LOGIC;
       CMD_EndFrameReset : IN STD_LOGIC;
       CMD_NumFreeSlots : OUT STD_LOGIC_VECTOR(2 DOWNTO 0);
-      CMD_NewStateBits : IN STD_LOGIC_VECTOR(39 DOWNTO 0);
+      CMD_NewStateBits : IN STD_LOGIC_VECTOR(76 DOWNTO 0);
       CMD_NewStateDrawEventID : IN STD_LOGIC_VECTOR(15 DOWNTO 0);
-      STAGE_StateBitsAtDrawID : OUT STD_LOGIC_VECTOR(39 DOWNTO 0);
+      STAGE_StateBitsAtDrawID : OUT STD_LOGIC_VECTOR(76 DOWNTO 0);
       STAGE_NextDrawID : OUT STD_LOGIC_VECTOR(15 DOWNTO 0);
       STAGE_StateIsValid : OUT STD_LOGIC;
       STAGE_ConsumeStateSlot : IN STD_LOGIC;
@@ -109,7 +109,7 @@ ARCHITECTURE design_1_StateBlock_0_3_arch OF design_1_StateBlock_0_3 IS
 BEGIN
   U0 : StateBlock
     GENERIC MAP (
-      StateBitsCount => 40
+      StateBitsCount => 77
     )
     PORT MAP (
       clk => clk,

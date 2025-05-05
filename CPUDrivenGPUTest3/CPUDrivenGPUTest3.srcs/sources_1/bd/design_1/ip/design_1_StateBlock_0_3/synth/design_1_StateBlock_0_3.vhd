@@ -1,4 +1,4 @@
--- (c) Copyright 1995-2023 Xilinx, Inc. All rights reserved.
+-- (c) Copyright 1995-2025 Xilinx, Inc. All rights reserved.
 -- 
 -- This file contains confidential and proprietary information
 -- of Xilinx, Inc. and is protected under U.S. and
@@ -59,9 +59,9 @@ ENTITY design_1_StateBlock_0_3 IS
     CMD_SetNewState : IN STD_LOGIC;
     CMD_EndFrameReset : IN STD_LOGIC;
     CMD_NumFreeSlots : OUT STD_LOGIC_VECTOR(2 DOWNTO 0);
-    CMD_NewStateBits : IN STD_LOGIC_VECTOR(39 DOWNTO 0);
+    CMD_NewStateBits : IN STD_LOGIC_VECTOR(76 DOWNTO 0);
     CMD_NewStateDrawEventID : IN STD_LOGIC_VECTOR(15 DOWNTO 0);
-    STAGE_StateBitsAtDrawID : OUT STD_LOGIC_VECTOR(39 DOWNTO 0);
+    STAGE_StateBitsAtDrawID : OUT STD_LOGIC_VECTOR(76 DOWNTO 0);
     STAGE_NextDrawID : OUT STD_LOGIC_VECTOR(15 DOWNTO 0);
     STAGE_StateIsValid : OUT STD_LOGIC;
     STAGE_ConsumeStateSlot : IN STD_LOGIC;
@@ -87,9 +87,9 @@ ARCHITECTURE design_1_StateBlock_0_3_arch OF design_1_StateBlock_0_3 IS
       CMD_SetNewState : IN STD_LOGIC;
       CMD_EndFrameReset : IN STD_LOGIC;
       CMD_NumFreeSlots : OUT STD_LOGIC_VECTOR(2 DOWNTO 0);
-      CMD_NewStateBits : IN STD_LOGIC_VECTOR(39 DOWNTO 0);
+      CMD_NewStateBits : IN STD_LOGIC_VECTOR(76 DOWNTO 0);
       CMD_NewStateDrawEventID : IN STD_LOGIC_VECTOR(15 DOWNTO 0);
-      STAGE_StateBitsAtDrawID : OUT STD_LOGIC_VECTOR(39 DOWNTO 0);
+      STAGE_StateBitsAtDrawID : OUT STD_LOGIC_VECTOR(76 DOWNTO 0);
       STAGE_NextDrawID : OUT STD_LOGIC_VECTOR(15 DOWNTO 0);
       STAGE_StateIsValid : OUT STD_LOGIC;
       STAGE_ConsumeStateSlot : IN STD_LOGIC;
@@ -107,7 +107,7 @@ ARCHITECTURE design_1_StateBlock_0_3_arch OF design_1_StateBlock_0_3 IS
   ATTRIBUTE CHECK_LICENSE_TYPE : STRING;
   ATTRIBUTE CHECK_LICENSE_TYPE OF design_1_StateBlock_0_3_arch : ARCHITECTURE IS "design_1_StateBlock_0_3,StateBlock,{}";
   ATTRIBUTE CORE_GENERATION_INFO : STRING;
-  ATTRIBUTE CORE_GENERATION_INFO OF design_1_StateBlock_0_3_arch: ARCHITECTURE IS "design_1_StateBlock_0_3,StateBlock,{x_ipProduct=Vivado 2018.1_AR73068,x_ipVendor=xilinx.com,x_ipLibrary=module_ref,x_ipName=StateBlock,x_ipVersion=1.0,x_ipCoreRevision=1,x_ipLanguage=VHDL,x_ipSimLanguage=VHDL,StateBitsCount=40}";
+  ATTRIBUTE CORE_GENERATION_INFO OF design_1_StateBlock_0_3_arch: ARCHITECTURE IS "design_1_StateBlock_0_3,StateBlock,{x_ipProduct=Vivado 2018.1_AR73068,x_ipVendor=xilinx.com,x_ipLibrary=module_ref,x_ipName=StateBlock,x_ipVersion=1.0,x_ipCoreRevision=1,x_ipLanguage=VHDL,x_ipSimLanguage=VHDL,StateBitsCount=77}";
   ATTRIBUTE X_INTERFACE_INFO : STRING;
   ATTRIBUTE X_INTERFACE_PARAMETER : STRING;
   ATTRIBUTE X_INTERFACE_PARAMETER OF clk: SIGNAL IS "XIL_INTERFACENAME clk, FREQ_HZ 333250000, PHASE 0.00, CLK_DOMAIN design_1_ddr4_0_1_c0_ddr4_ui_clk";
@@ -115,7 +115,7 @@ ARCHITECTURE design_1_StateBlock_0_3_arch OF design_1_StateBlock_0_3 IS
 BEGIN
   U0 : StateBlock
     GENERIC MAP (
-      StateBitsCount => 40
+      StateBitsCount => 77
     )
     PORT MAP (
       clk => clk,

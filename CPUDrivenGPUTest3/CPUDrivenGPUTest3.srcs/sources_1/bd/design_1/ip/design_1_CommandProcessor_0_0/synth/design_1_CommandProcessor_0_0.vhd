@@ -1,4 +1,4 @@
--- (c) Copyright 1995-2024 Xilinx, Inc. All rights reserved.
+-- (c) Copyright 1995-2025 Xilinx, Inc. All rights reserved.
 -- 
 -- This file contains confidential and proprietary information
 -- of Xilinx, Inc. and is protected under U.S. and
@@ -137,10 +137,12 @@ ENTITY design_1_CommandProcessor_0_0 IS
     DINTERP_SetNewState : OUT STD_LOGIC;
     DINTERP_EndFrameReset : OUT STD_LOGIC;
     DINTERP_NumFreeSlots : IN STD_LOGIC_VECTOR(2 DOWNTO 0);
-    DINTERP_NewStateBits : OUT STD_LOGIC_VECTOR(39 DOWNTO 0);
+    DINTERP_NewStateBits : OUT STD_LOGIC_VECTOR(76 DOWNTO 0);
     DINTERP_NewStateDrawEventID : OUT STD_LOGIC_VECTOR(15 DOWNTO 0);
     DEPTH_ClearDepthBuffer : OUT STD_LOGIC;
     DEPTH_ClearDepthValue : OUT STD_LOGIC_VECTOR(23 DOWNTO 0);
+    DEPTH_ClearStencilBuffer : OUT STD_LOGIC;
+    DEPTH_ClearStencilValue : OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
     INTERP_SetNewState : OUT STD_LOGIC;
     INTERP_EndFrameReset : OUT STD_LOGIC;
     INTERP_NumFreeSlots : IN STD_LOGIC_VECTOR(2 DOWNTO 0);
@@ -284,10 +286,12 @@ ARCHITECTURE design_1_CommandProcessor_0_0_arch OF design_1_CommandProcessor_0_0
       DINTERP_SetNewState : OUT STD_LOGIC;
       DINTERP_EndFrameReset : OUT STD_LOGIC;
       DINTERP_NumFreeSlots : IN STD_LOGIC_VECTOR(2 DOWNTO 0);
-      DINTERP_NewStateBits : OUT STD_LOGIC_VECTOR(39 DOWNTO 0);
+      DINTERP_NewStateBits : OUT STD_LOGIC_VECTOR(76 DOWNTO 0);
       DINTERP_NewStateDrawEventID : OUT STD_LOGIC_VECTOR(15 DOWNTO 0);
       DEPTH_ClearDepthBuffer : OUT STD_LOGIC;
       DEPTH_ClearDepthValue : OUT STD_LOGIC_VECTOR(23 DOWNTO 0);
+      DEPTH_ClearStencilBuffer : OUT STD_LOGIC;
+      DEPTH_ClearStencilValue : OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
       INTERP_SetNewState : OUT STD_LOGIC;
       INTERP_EndFrameReset : OUT STD_LOGIC;
       INTERP_NumFreeSlots : IN STD_LOGIC_VECTOR(2 DOWNTO 0);
@@ -459,6 +463,8 @@ BEGIN
       DINTERP_NewStateDrawEventID => DINTERP_NewStateDrawEventID,
       DEPTH_ClearDepthBuffer => DEPTH_ClearDepthBuffer,
       DEPTH_ClearDepthValue => DEPTH_ClearDepthValue,
+      DEPTH_ClearStencilBuffer => DEPTH_ClearStencilBuffer,
+      DEPTH_ClearStencilValue => DEPTH_ClearStencilValue,
       INTERP_SetNewState => INTERP_SetNewState,
       INTERP_EndFrameReset => INTERP_EndFrameReset,
       INTERP_NumFreeSlots => INTERP_NumFreeSlots,

@@ -7,6 +7,13 @@ IBroadcastVirtualDeviceComms::IBroadcastVirtualDeviceComms(IBaseDeviceComms* con
 
 void IBroadcastVirtualDeviceComms::AddNewSecondaryBroadcastTarget(IBaseDeviceComms* const newBroadcastTarget)
 {
+	if (newBroadcastTarget == primaryComms)
+	{
+#ifdef _DEBUG
+			__debugbreak(); // No adding duplicate targets to our list!
+#endif
+		return;
+	}
 	const unsigned existingBroadcastTargetCount = (const unsigned)broadcastTargets.size();
 	for (unsigned targetID = 0; targetID < existingBroadcastTargetCount; ++targetID)
 	{

@@ -159,12 +159,7 @@ __declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceClearRendertarget(gp
 	clearCommand.renderTargetAddress = (const DWORD)renderTargetMemory;
 	clearCommand.writeColorRGBA = D3DColorToRGBAColor(clearColor); // Swizzle D3DCOLOR BGRA -> RGBA
 	clearCommand.checksum = command::ComputeChecksum(&clearCommand, sizeof(clearCommand) );
-#ifdef _DEBUG
-	if (!command::IsValidPacket(&clearCommand, sizeof(clearCommand) ) )
-	{
-		__debugbreak();
-	}
-#endif
+
 	const HRESULT clearHR = SendOrStorePacket(&clearCommand);
 	if (FAILED(clearHR) )
 		return clearHR;
@@ -238,12 +233,7 @@ __declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceClearDepthStencil(gp
 	}
 
 	clearZStencil.checksum = command::ComputeChecksum(&clearZStencil, sizeof(clearZStencil) );
-#ifdef _DEBUG
-	if (!command::IsValidPacket(&clearZStencil, sizeof(clearZStencil) ) )
-	{
-		__debugbreak();
-	}
-#endif
+
 	const HRESULT clearZStencilHR = SendOrStorePacket(&clearZStencil);
 	if (FAILED(clearZStencilHR) )
 		return clearZStencilHR;
@@ -343,24 +333,13 @@ __declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceSetTextureState(cons
 	setTextureState.cbModeColor = cbModeColor;
 	setTextureState.cbModeAlpha = cbModeAlpha;
 	setTextureState.checksum = command::ComputeChecksum(&setTextureState, sizeof(setTextureState) );
-#ifdef _DEBUG
-	if (!command::IsValidPacket(&setTextureState, sizeof(setTextureState) ) )
-	{
-		__debugbreak();
-	}
-#endif
 
 	loadTexCacheDataCommand loadTexCache;
 	loadTexCache.sourceRAMAddr = (const DWORD)textureMemory;
 	loadTexCache.loadSourceFormat = textureFormat;
 	loadTexCache.loadTexelCount = (const USHORT)(texWidth * texHeight);
 	loadTexCache.checksum = command::ComputeChecksum(&loadTexCache, sizeof(loadTexCache) );
-#ifdef _DEBUG
-	if (!command::IsValidPacket(&loadTexCache, sizeof(loadTexCache) ) )
-	{
-		__debugbreak();
-	}
-#endif
+
 	const HRESULT hRetSetState = SendOrStorePacket(&setTextureState);
 	const HRESULT hRetLoadTexCache = SendOrStorePacket(&loadTexCache);
 	if (SUCCEEDED(hRetSetState) && SUCCEEDED(hRetLoadTexCache) && DoCacheDeviceState() )
@@ -443,24 +422,13 @@ __declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceSetNullTextureState(
 	setTextureState.cbModeColor = cbModeColor;
 	setTextureState.cbModeAlpha = cbModeAlpha;
 	setTextureState.checksum = command::ComputeChecksum(&setTextureState, sizeof(setTextureState) );
-#ifdef _DEBUG
-	if (!command::IsValidPacket(&setTextureState, sizeof(setTextureState) ) )
-	{
-		__debugbreak();
-	}
-#endif
 
 	loadTexCacheDataCommand loadTexCache;
 	loadTexCache.sourceRAMAddr = (const DWORD)NULL;
 	loadTexCache.loadSourceFormat = eTexFmtA8R8G8B8;
 	loadTexCache.loadTexelCount = (const USHORT)0;
 	loadTexCache.checksum = command::ComputeChecksum(&loadTexCache, sizeof(loadTexCache) );
-#ifdef _DEBUG
-	if (!command::IsValidPacket(&loadTexCache, sizeof(loadTexCache) ) )
-	{
-		__debugbreak();
-	}
-#endif
+
 	const HRESULT hRetSetState = SendOrStorePacket(&setTextureState);
 	const HRESULT hRetLoadTexCache = SendOrStorePacket(&loadTexCache);
 	if (SUCCEEDED(hRetSetState) && SUCCEEDED(hRetLoadTexCache) && DoCacheDeviceState() )
@@ -607,12 +575,6 @@ __declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceSetROPState(gpuvoid*
 	setAlphaTestAndRTAddrState.alphaTestRefValue = alphaTestRefVal;
 	setAlphaTestAndRTAddrState.alphaTestFunc = alphaTestCmpFunc;
 	setAlphaTestAndRTAddrState.checksum = command::ComputeChecksum(&setAlphaTestAndRTAddrState, sizeof(setAlphaTestAndRTAddrState) );
-#ifdef _DEBUG
-	if (!command::IsValidPacket(&setAlphaTestAndRTAddrState, sizeof(setAlphaTestAndRTAddrState) ) )
-	{
-		__debugbreak();
-	}
-#endif
 
 	// Convert our D3DCOLOR ARGB color to an ABGR color for the blend factor:
 	const unsigned char blendFactorA = blendFactorARGB >> 24;
@@ -626,12 +588,6 @@ __declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceSetROPState(gpuvoid*
 	setBlendState.alphaBlendingEnabled = alphaBlendingEnabled;
 	setBlendState.blendFactorABGR = blendFactorABGR;
 	setBlendState.checksum = command::ComputeChecksum(&setBlendState, sizeof(setBlendState) );
-#ifdef _DEBUG
-	if (!command::IsValidPacket(&setBlendState, sizeof(setBlendState) ) )
-	{
-		__debugbreak();
-	}
-#endif
 
 	const HRESULT hRetAlphaTest = SendOrStorePacket(&setAlphaTestAndRTAddrState);
 
@@ -708,34 +664,16 @@ __declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceSetTriSetupState(con
 	setViewport0.viewportHalfWidth = viewportHalfWidth;
 	setViewport0.viewportHalfHeight = viewportHalfHeight;
 	setViewport0.checksum = command::ComputeChecksum(&setViewport0, sizeof(setViewport0) );
-#ifdef _DEBUG
-	if (!command::IsValidPacket(&setViewport0, sizeof(setViewport0) ) )
-	{
-		__debugbreak();
-	}
-#endif
 
 	setViewportStateXYCommand setViewportXY;
 	setViewportXY.viewportXOffset = viewportXOffset;
 	setViewportXY.viewportYOffset = viewportYOffset;
 	setViewportXY.checksum = command::ComputeChecksum(&setViewportXY, sizeof(setViewportXY) );
-#ifdef _DEBUG
-	if (!command::IsValidPacket(&setViewportXY, sizeof(setViewportXY) ) )
-	{
-		__debugbreak();
-	}
-#endif
 
 	setViewportState1Command setViewport1;
 	setViewport1.viewportZScale = viewportZScale;
 	setViewport1.viewportZOffset = viewportZOffset;
 	setViewport1.checksum = command::ComputeChecksum(&setViewport1, sizeof(setViewport1) );
-#ifdef _DEBUG
-	if (!command::IsValidPacket(&setViewport1, sizeof(setViewport1) ) )
-	{
-		__debugbreak();
-	}
-#endif
 
 	setScissorRectCommand setScissorRect;
 	setScissorRect.scissorLeft = scissorRectLeft;
@@ -743,12 +681,6 @@ __declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceSetTriSetupState(con
 	setScissorRect.scissorTop = scissorRectTop;
 	setScissorRect.scissorBottom = scissorRectBottom;
 	setScissorRect.checksum = command::ComputeChecksum(&setScissorRect, sizeof(setScissorRect) );
-#ifdef _DEBUG
-	if (!command::IsValidPacket(&setScissorRect, sizeof(setScissorRect) ) )
-	{
-		__debugbreak();
-	}
-#endif
 
 	const HRESULT hRetViewport0 = SendOrStorePacket(&setViewport0);
 	const HRESULT hRetViewportXY = SendOrStorePacket(&setViewportXY);
@@ -802,14 +734,8 @@ __declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceSetClipState(const b
 	setClipState.guardBandScaleX = guardBandXScaleLog2;
 	setClipState.guardBandScaleY = guardBandYScaleLog2;
 	setClipState.clippingEnabled = clippingEnabled;
-
 	setClipState.checksum = command::ComputeChecksum(&setClipState, sizeof(setClipState) );
-#ifdef _DEBUG
-	if (!command::IsValidPacket(&setClipState, sizeof(setClipState) ) )
-	{
-		__debugbreak();
-	}
-#endif
+
 	const HRESULT hRet = SendOrStorePacket(&setClipState);
 	if (SUCCEEDED(hRet) && DoCacheDeviceState() )
 	{
@@ -853,12 +779,7 @@ __declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceSetAttrInterpolatorS
 	setAttrInterpolatorState.addressingV = addressV;
 	setAttrInterpolatorState.useFlatShadingColor = useFlatShadingColor;
 	setAttrInterpolatorState.checksum = command::ComputeChecksum(&setAttrInterpolatorState, sizeof(setAttrInterpolatorState) );
-#ifdef _DEBUG
-	if (!command::IsValidPacket(&setAttrInterpolatorState, sizeof(setAttrInterpolatorState) ) )
-	{
-		__debugbreak();
-	}
-#endif
+
 	const HRESULT hRet = SendOrStorePacket(&setAttrInterpolatorState);
 	if (SUCCEEDED(hRet) && DoCacheDeviceState() )
 	{
@@ -956,14 +877,7 @@ __declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceSetDepthStencilState
 	setDepthState.DepthBiasHighBits = ulDepthBias >> 27;
 	setDepthState.ColorWritesEnabled = colorWriteEnabled;
 	setDepthState.hasStencilStateFollowing = newDepthStencilState.IsStencilEnabled();
-
 	setDepthState.checksum = command::ComputeChecksum(&setDepthState, sizeof(setDepthState) );
-#ifdef _DEBUG
-	if (!command::IsValidPacket(&setDepthState, sizeof(setDepthState) ) )
-	{
-		__debugbreak();
-	}
-#endif
 
 	setStencilStateCommand setStencilState;
 	setStencilState.stencilRefVal = stencilRef;
@@ -974,6 +888,7 @@ __declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceSetDepthStencilState
 	setStencilState.stencilFailOp = stencilFailOp;
 	setStencilState.stencilZFailOp = stencilZFailOp;
 	setStencilState.stencilPassOp = stencilPassOp;
+	setStencilState.checksum = command::ComputeChecksum(&setStencilState, sizeof(setStencilState) );
 
 	HRESULT hRetDepthStencil = SendOrStorePacket(&setDepthState);
 	if (setDepthState.hasStencilStateFollowing && SUCCEEDED(hRetDepthStencil) )
@@ -1085,12 +1000,7 @@ __declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceSetIAState(const eCu
 	setIACmd.stripCut = stripCut;
 	setIACmd.indexFmt = indexFormat;
 	setIACmd.checksum = command::ComputeChecksum(&setIACmd, sizeof(setIACmd) );
-#ifdef _DEBUG
-	if (!command::IsValidPacket(&setIACmd, sizeof(setIACmd) ) )
-	{
-		__debugbreak();
-	}
-#endif
+
 	const HRESULT hRet = SendOrStorePacket(&setIACmd);
 	if (SUCCEEDED(hRet) && DoCacheDeviceState() )
 	{
@@ -1159,12 +1069,7 @@ __declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceSetScanoutBuffer(con
 	setScanoutCmd.channelSwizzleG = greenChannelSwizzle;
 	setScanoutCmd.channelSwizzleB = blueChannelSwizzle;
 	setScanoutCmd.checksum = command::ComputeChecksum(&setScanoutCmd, sizeof(setScanoutCmd) );
-#ifdef _DEBUG
-	if (!command::IsValidPacket(&setScanoutCmd, sizeof(setScanoutCmd) ) )
-	{
-		__debugbreak();
-	}
-#endif
+
 	const HRESULT hRet = SendOrStorePacket(&setScanoutCmd);
 	if (SUCCEEDED(hRet) && DoCacheDeviceState() )
 	{
@@ -1206,12 +1111,7 @@ __declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceDownloadEndOfFrameSt
 
 	endFrameCommand endFrameStatsReadbackCmd;
 	endFrameStatsReadbackCmd.checksum = command::ComputeChecksum(&endFrameStatsReadbackCmd, sizeof(endFrameStatsReadbackCmd) );
-#ifdef _DEBUG
-	if (!command::IsValidPacket(&endFrameStatsReadbackCmd, sizeof(endFrameStatsReadbackCmd) ) )
-	{
-		__debugbreak();
-	}
-#endif
+
 	const HRESULT hRet = SendOrStorePacket(&endFrameStatsReadbackCmd);
 	if (FAILED(hRet) )
 		return hRet;
@@ -1224,12 +1124,7 @@ __declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceDownloadEndOfFrameSt
 	configNoEventFrame.eventOrdersAddress = NULL;
 	configNoEventFrame.enableEventRecording = false;
 	configNoEventFrame.checksum = command::ComputeChecksum(&configNoEventFrame, sizeof(configNoEventFrame) );
-#ifdef _DEBUG
-	if (!command::IsValidPacket(&configNoEventFrame, sizeof(configNoEventFrame) ) )
-	{
-		__debugbreak();
-	}
-#endif
+
 	const HRESULT hEventConfigRet = SendOrStorePacket(&configNoEventFrame);
 	if (FAILED(hEventConfigRet) )
 		return hEventConfigRet;
@@ -1301,12 +1196,7 @@ __declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceEndFrameAndFinishEve
 
 	endFrameCommand endFrameCmd;
 	endFrameCmd.checksum = command::ComputeChecksum(&endFrameCmd, sizeof(endFrameCmd) );
-#ifdef _DEBUG
-	if (!command::IsValidPacket(&endFrameCmd, sizeof(endFrameCmd) ) )
-	{
-		__debugbreak();
-	}
-#endif
+
 	const HRESULT hRet = SendOrStorePacket(&endFrameCmd);
 	if (FAILED(hRet) )
 		return hRet;
@@ -1330,12 +1220,7 @@ __declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceEndFrameAndFinishEve
 	configNoEventFrame.eventOrdersAddress = (const DWORD)eventOrderingMemory;
 	configNoEventFrame.enableEventRecording = true;
 	configNoEventFrame.checksum = command::ComputeChecksum(&configNoEventFrame, sizeof(configNoEventFrame) );
-#ifdef _DEBUG
-	if (!command::IsValidPacket(&configNoEventFrame, sizeof(configNoEventFrame) ) )
-	{
-		__debugbreak();
-	}
-#endif
+
 	const HRESULT hEventConfigRet = SendOrStorePacket(&configNoEventFrame);
 	if (FAILED(hEventConfigRet) )
 		return hEventConfigRet;
@@ -1358,12 +1243,7 @@ __declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceEndFrameAndQueueEven
 
 	endFrameCommand endFrameCmd;
 	endFrameCmd.checksum = command::ComputeChecksum(&endFrameCmd, sizeof(endFrameCmd) );
-#ifdef _DEBUG
-	if (!command::IsValidPacket(&endFrameCmd, sizeof(endFrameCmd) ) )
-	{
-		__debugbreak();
-	}
-#endif
+
 	const HRESULT hRet = SendOrStorePacket(&endFrameCmd);
 	if (FAILED(hRet) )
 		return hRet;
@@ -1376,12 +1256,7 @@ __declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceEndFrameAndQueueEven
 	configEventRecordingNextFrame.eventOrdersAddress = (DWORD)eventOrderingMemory;
 	configEventRecordingNextFrame.enableEventRecording = true; // Queue event recording next frame
 	configEventRecordingNextFrame.checksum = command::ComputeChecksum(&configEventRecordingNextFrame, sizeof(configEventRecordingNextFrame) );
-#ifdef _DEBUG
-	if (!command::IsValidPacket(&configEventRecordingNextFrame, sizeof(configEventRecordingNextFrame) ) )
-	{
-		__debugbreak();
-	}
-#endif
+
 	const HRESULT hEventConfigRet = SendOrStorePacket(&configEventRecordingNextFrame);
 	if (FAILED(hEventConfigRet) )
 		return hEventConfigRet;
@@ -1404,12 +1279,7 @@ __declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceEndFrame()
 
 	endFrameCommand endFrameCmd;
 	endFrameCmd.checksum = command::ComputeChecksum(&endFrameCmd, sizeof(endFrameCmd) );
-#ifdef _DEBUG
-	if (!command::IsValidPacket(&endFrameCmd, sizeof(endFrameCmd) ) )
-	{
-		__debugbreak();
-	}
-#endif
+
 	const HRESULT hRet = SendOrStorePacket(&endFrameCmd);
 	if (FAILED(hRet) )
 		return hRet;
@@ -1422,12 +1292,7 @@ __declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceEndFrame()
 	configNoEventFrame.eventOrdersAddress = NULL;
 	configNoEventFrame.enableEventRecording = false;
 	configNoEventFrame.checksum = command::ComputeChecksum(&configNoEventFrame, sizeof(configNoEventFrame) );
-#ifdef _DEBUG
-	if (!command::IsValidPacket(&configNoEventFrame, sizeof(configNoEventFrame) ) )
-	{
-		__debugbreak();
-	}
-#endif
+
 	const HRESULT hEventConfigRet = SendOrStorePacket(&configNoEventFrame);
 	if (FAILED(hEventConfigRet) )
 		return hEventConfigRet;
@@ -1463,14 +1328,8 @@ __declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceIssueQuery(const gpu
 	issueQuery.queryAddress = (const DWORD)queryAddress;
 	issueQuery.isEndQuery = isEndEvent;
 	issueQuery.queryType = queryType;
-
 	issueQuery.checksum = command::ComputeChecksum(&issueQuery, sizeof(issueQuery) );
-#ifdef _DEBUG
-	if (!command::IsValidPacket(&issueQuery, sizeof(issueQuery) ) )
-	{
-		__debugbreak();
-	}
-#endif
+
 	const HRESULT hRet = SendOrStorePacket(&issueQuery);
 	if (FAILED(hRet) )
 		return hRet;
@@ -1533,12 +1392,7 @@ __declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceLoadVertexShader(con
 	loadShaderInstructions.shaderLengthTokens = numShaderTokensToLoad;
 	loadShaderInstructions.shaderLoadTargetOffset = targetAddressToLoadTo;
 	loadShaderInstructions.checksum = command::ComputeChecksum(&loadShaderInstructions, sizeof(loadShaderInstructions) );
-#ifdef _DEBUG
-	if (!command::IsValidPacket(&loadShaderInstructions, sizeof(loadShaderInstructions) ) )
-	{
-		__debugbreak();
-	}
-#endif
+
 	const HRESULT loadVertexShaderHR = SendOrStorePacket(&loadShaderInstructions);
 	if (FAILED(loadVertexShaderHR) )
 		return loadVertexShaderHR;
@@ -1583,12 +1437,7 @@ __declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceSetVertexShaderStart
 	setShaderStartAddressCommand setShaderStartAddress;
 	setShaderStartAddress.shaderStartAddress = shaderStartAddress;
 	setShaderStartAddress.checksum = command::ComputeChecksum(&setShaderStartAddress, sizeof(setShaderStartAddress) );
-#ifdef _DEBUG
-	if (!command::IsValidPacket(&setShaderStartAddress, sizeof(setShaderStartAddress) ) )
-	{
-		__debugbreak();
-	}
-#endif
+
 	const HRESULT setShaderStartAddressHR = SendOrStorePacket(&setShaderStartAddress);
 	if (FAILED(setShaderStartAddressHR) )
 		return setShaderStartAddressHR;
@@ -1745,12 +1594,7 @@ __declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceSetVertexStreamData(
 	setVertexStreamData.inputUsageIndex = usageIndex;
 	setVertexStreamData.numVertexStreamsTotal = numVertexStreamsTotal;
 	setVertexStreamData.checksum = command::ComputeChecksum(&setVertexStreamData, sizeof(setVertexStreamData) );
-#ifdef _DEBUG
-	if (!command::IsValidPacket(&setVertexStreamData, sizeof(setVertexStreamData) ) )
-	{
-		__debugbreak();
-	}
-#endif
+
 	const HRESULT setStreamHR = SendOrStorePacket(&setVertexStreamData);
 	if (FAILED(setStreamHR) )
 		return setStreamHR;
@@ -1942,14 +1786,8 @@ __declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceSetConstantDataSingl
 	setShaderConstantSpecial.isWPow2 = (compW & (0x1 << 1) ) ? true : false;
 	setShaderConstantSpecial.isWSpec = (compW & (0x1 << 2) ) ? true : false;
 	setShaderConstantSpecial.WIndex = ( (compW >> 3) & 0xF);
-
 	setShaderConstantSpecial.checksum = command::ComputeChecksum(&setShaderConstantSpecial, sizeof(setShaderConstantSpecial) );
-#ifdef _DEBUG
-	if (!command::IsValidPacket(&setShaderConstantSpecial, sizeof(setShaderConstantSpecial) ) )
-	{
-		__debugbreak();
-	}
-#endif
+
 
 	const HRESULT setShaderConstSpecialHR = SendOrStorePacket(&setShaderConstantSpecial);
 	if (FAILED(setShaderConstSpecialHR) )
@@ -2018,12 +1856,6 @@ __declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceSetConstantData(cons
 	setShaderConstant.constantBaseRegisterIndex = startingRegisterIndex;
 	setShaderConstant.numFloat4Registers = numFloat4Registers;
 	setShaderConstant.checksum = command::ComputeChecksum(&setShaderConstant, sizeof(setShaderConstant) );
-#ifdef _DEBUG
-	if (!command::IsValidPacket(&setShaderConstant, sizeof(setShaderConstant) ) )
-	{
-		__debugbreak();
-	}
-#endif
 
 	const HRESULT setShaderConstHR = SendOrStorePacket(&setShaderConstant);
 	if (FAILED(setShaderConstHR) )
@@ -2092,14 +1924,8 @@ __declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceEnableShaderDebuggin
 
 	debugShaderNextDrawCallCommand debugCommand;
 	debugCommand.dumpRegistersAddress = (const DWORD)registerFileDumpAddress;
-
 	debugCommand.checksum = command::ComputeChecksum(&debugCommand, sizeof(debugCommand) );
-#ifdef _DEBUG
-	if (!command::IsValidPacket(&debugCommand, sizeof(debugCommand) ) )
-	{
-		__debugbreak();
-	}
-#endif
+
 	const HRESULT debugHR = SendOrStorePacket(&debugCommand);
 	if (FAILED(debugHR) )
 		return debugHR;
@@ -2201,12 +2027,7 @@ __declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceDrawIndexedPrimitive
 #endif
 
 	drawCommand.checksum = command::ComputeChecksum(&drawCommand, sizeof(drawCommand) );
-#ifdef _DEBUG
-	if (!command::IsValidPacket(&drawCommand, sizeof(drawCommand) ) )
-	{
-		__debugbreak();
-	}
-#endif
+
 	const HRESULT drawHR = SendOrStorePacket(&drawCommand);
 	if (FAILED(drawHR) )
 		return drawHR;
@@ -2279,12 +2100,7 @@ __declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceDrawPrimitive(const 
 #endif
 
 	drawCommand.checksum = command::ComputeChecksum(&drawCommand, sizeof(drawCommand) );
-#ifdef _DEBUG
-	if (!command::IsValidPacket(&drawCommand, sizeof(drawCommand) ) )
-	{
-		__debugbreak();
-	}
-#endif
+
 	const HRESULT drawHR = SendOrStorePacket(&drawCommand);
 	if (FAILED(drawHR) )
 		return drawHR;
@@ -2336,12 +2152,7 @@ __declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceExecuteCommandList(c
 	execCommandListCommand.commandListStartAddress = (const DWORD)commandList.gpuAllocatedAddress;
 	execCommandListCommand.numCommands = (const USHORT)(commandList.commands.size() );
 	execCommandListCommand.checksum = command::ComputeChecksum(&execCommandListCommand, sizeof(execCommandListCommand) );
-#ifdef _DEBUG
-	if (!command::IsValidPacket(&execCommandListCommand, sizeof(execCommandListCommand) ) )
-	{
-		__debugbreak();
-	}
-#endif
+
 	const HRESULT runCommandListHR = SendOrStorePacket(&execCommandListCommand);
 	if (FAILED(runCommandListHR) )
 		return runCommandListHR;
@@ -2489,12 +2300,7 @@ __declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceFlushROPCache()
 {
 	flushROPCacheCommand flushCommand;
 	flushCommand.checksum = command::ComputeChecksum(&flushCommand, sizeof(flushCommand) );
-#ifdef _DEBUG
-	if (!command::IsValidPacket(&flushCommand, sizeof(flushCommand) ) )
-	{
-		__debugbreak();
-	}
-#endif
+
 	const HRESULT hrSend = SendOrStorePacket(&flushCommand);
 	if (FAILED(hrSend) )
 		return hrSend;
@@ -2528,12 +2334,7 @@ __declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceWaitForIdle(const wa
 	else
 		waitCommand.returnValueToCPU = 0;
 	waitCommand.checksum = command::ComputeChecksum(&waitCommand, sizeof(waitCommand) );
-#ifdef _DEBUG
-	if (!command::IsValidPacket(&waitCommand, sizeof(waitCommand) ) )
-	{
-		__debugbreak();
-	}
-#endif
+
 	if (cpuGpuSync)
 		GetReturnTrackerSingleton().RegisterNewWaitForIdleReturn(&waitCommand);
 	const HRESULT hrSend = SendOrStorePacket(&waitCommand);
@@ -2628,6 +2429,13 @@ __declspec(nothrow) HRESULT IBaseGPUDevice::SendOrStorePacket(const command* con
 #endif
 		return E_INVALIDARG;
 	}
+
+#ifdef _DEBUG
+	if (!command::IsValidPacket(sendPacket, sizeof(genericCommand) ) )
+	{
+		__debugbreak();
+	}
+#endif
 
 	if (currentlyRecordingCommandList != NULL)
 	{

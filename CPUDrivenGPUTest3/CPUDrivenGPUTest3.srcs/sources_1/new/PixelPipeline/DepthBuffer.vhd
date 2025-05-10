@@ -422,12 +422,19 @@ begin
 					if (clearModeEnable = '0') then
 						pixelsPassedDepthStencilTest <= pixelsPassedDepthStencilTest + 1;
 					end if;
+				elsif (passedDepthTest = false) then -- We need to handle the special case of stencil ZFail ops here where they can still write to the stencil buffer even when the depth test fails:
+					RAST_PixelFailedDepthTest <= '1';
+					pixelsFailedDepthTest <= pixelsFailedDepthTest + 1;
+					if (stencilWriteEnable = '1' and stencilZFailOp /= sop_keep) then
+						if (depthPipeline(NUM_PIPELINE_STAGES).isOddAddress = '0') then
+							URAM_wea <= "00001000"; -- Only update stencil bits here, do not update depth bits in this special case
+						else
+							URAM_wea <= "10000000"; -- Only update stencil bits here, do not update depth bits in this special case
+						end if;
+					end if;
 				elsif (passedStencilTest = false) then
 					RAST_PixelFailedStencilTest <= '1';
 					pixelsFailedStencilTest <= pixelsFailedStencilTest + 1;
-				else
-					RAST_PixelFailedDepthTest <= '1';
-					pixelsFailedDepthTest <= pixelsFailedDepthTest + 1;
 				end if;
 			end if;
 		end if;

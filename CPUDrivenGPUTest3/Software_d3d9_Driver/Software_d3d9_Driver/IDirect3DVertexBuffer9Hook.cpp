@@ -4,6 +4,7 @@
 #include "IDirect3DResource9Hook.h"
 #include "GlobalToggles.h"
 #include "Driver/IBaseDeviceComms.h"
+#include "Driver/DriverOptions.h"
 
 unsigned IDirect3DVertexBuffer9Hook::VertexBuffersCreatedCounter = 0;
 
@@ -223,29 +224,32 @@ COM_DECLSPEC_NOTHROW D3DRESOURCETYPE STDMETHODCALLTYPE IDirect3DVertexBuffer9Hoo
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DVertexBuffer9Hook::Lock(THIS_ UINT OffsetToLock,UINT SizeToLock,void** ppbData,DWORD Flags)
 {
-	if (!ppbData)
-		return D3DERR_INVALIDCALL;
-
-	const DWORD validLockFlags = D3DLOCK_DISCARD | D3DLOCK_NO_DIRTY_UPDATE | D3DLOCK_NOSYSLOCK | D3DLOCK_READONLY | D3DLOCK_NOOVERWRITE; 
-	if (Flags & (~validLockFlags) )
-		return D3DERR_INVALIDCALL; // These are the only D3DLOCK flags valid for this function call
-
-	if (SizeToLock == 0 && OffsetToLock > 0)
-		return D3DERR_INVALIDCALL;
-
-	if (OffsetToLock + SizeToLock > InternalLength)
-		return D3DERR_INVALIDCALL;
-
-	if (Flags & (D3DLOCK_DISCARD | D3DLOCK_NOOVERWRITE) )
+	if (!IgnoreLockFunctionValidation.Bool() )
 	{
-		// D3D9 in Release mode ignores this error without returning a failure code
-		if (!(InternalUsage & D3DUSAGE_DYNAMIC) )
+		if (!ppbData)
 			return D3DERR_INVALIDCALL;
-	}
+
+		const DWORD validLockFlags = D3DLOCK_DISCARD | D3DLOCK_NO_DIRTY_UPDATE | D3DLOCK_NOSYSLOCK | D3DLOCK_READONLY | D3DLOCK_NOOVERWRITE; 
+		if (Flags & (~validLockFlags) )
+			return D3DERR_INVALIDCALL; // These are the only D3DLOCK flags valid for this function call
+
+		if (SizeToLock == 0 && OffsetToLock > 0)
+			return D3DERR_INVALIDCALL;
+
+		if (OffsetToLock + SizeToLock > InternalLength)
+			return D3DERR_INVALIDCALL;
+
+		if (Flags & (D3DLOCK_DISCARD | D3DLOCK_NOOVERWRITE) )
+		{
+			// D3D9 in Release mode ignores this error without returning a failure code
+			if (!(InternalUsage & D3DUSAGE_DYNAMIC) )
+				return D3DERR_INVALIDCALL;
+		}
 
 #ifdef VERTEX_BUFFER_MAGIC_COOKIE
-	ValidateMagicCookie(data, InternalLength);
+		ValidateMagicCookie(data, InternalLength);
 #endif
+	}
 
 #ifdef VERTEX_BUFFER_ENFORCE_READONLY_WHILE_UNLOCKED
 	if (IsUnlocked() )
@@ -255,12 +259,13 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DVertexBuffer9Hook::Lock(
 	}
 #endif
 
-#ifdef VERTEX_BUFFER_ENFORCE_DISCARD_ON_LOCK
-	if ( (InternalUsage & D3DUSAGE_DYNAMIC) && (Flags & D3DLOCK_DISCARD) )
+	if (EnforceDiscardClearsVertexBuffers.Bool() )
 	{
-		memset(data, 0, InternalLength);
+		if ( (InternalUsage & D3DUSAGE_DYNAMIC) && (Flags & D3DLOCK_DISCARD) )
+		{
+			memset(data, 0, InternalLength);
+		}
 	}
-#endif
 
 	if (OffsetToLock == 0 && SizeToLock == 0)
 		*ppbData = data;//&(data.front() );

@@ -207,6 +207,7 @@
   <ItemGroup>
     <ClCompile Include="Driver\BlendStateBlock.cpp" />
     <ClCompile Include="Driver\DeviceConversions.cpp" />
+    <ClCompile Include="Driver\DriverOptions.cpp" />
     <ClCompile Include="Driver\DriverSettingsDlg.cpp" />
     <ClCompile Include="Driver\GPUAllocator.cpp" />
     <ClCompile Include="Driver\GPUCommandList.cpp" />
@@ -277,6 +278,7 @@
     <ClInclude Include="DitherTables.h" />
     <ClInclude Include="Driver\DeviceAllocatedBuffer.h" />
     <ClInclude Include="Driver\DeviceConversions.h" />
+    <ClInclude Include="Driver\DriverOptions.h" />
     <ClInclude Include="Driver\DriverSettingsDlg.h" />
     <ClInclude Include="Driver\GPUAllocator.h" />
     <ClInclude Include="Driver\GPUCommandList.h" />

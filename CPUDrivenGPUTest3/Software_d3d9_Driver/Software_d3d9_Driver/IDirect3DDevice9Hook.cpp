@@ -28,6 +28,7 @@
 #include "Driver/DeviceConversions.h"
 #include "..\DriverShaderCompiler\DriverShaderCompiler.h"
 #include "..\ShaderTraceViewer\ShaderTrace.h"
+#include "Driver/DriverOptions.h"
 #include <Mmsystem.h>
 #include "INIVar.h"
 
@@ -1149,10 +1150,9 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::EvictManage
 
 COM_DECLSPEC_NOTHROW BOOL STDMETHODCALLTYPE IDirect3DDevice9Hook::ShowCursor(THIS_ BOOL bShow)
 {
-#ifdef OVERRIDE_HIDE_CURSOR
-	if (bShow == FALSE)
-		return TRUE;
-#endif
+	if (IgnoreCursorModifications.Bool() )
+		return !bShow;
+
 	const BOOL ret = d3d9dev->ShowCursor(bShow);
 	return ret;
 }
@@ -1325,7 +1325,9 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::Present(THI
 		GetDeviceStats().ArmCollectEventDataNextFrame();
 	}
 
-	const HRESULT ret = implicitSwapChain->Present(pSourceRect, pDestRect, hDestWindowOverride, pDirtyRegion, 0);
+	HRESULT ret = implicitSwapChain->Present(pSourceRect, pDestRect, hDestWindowOverride, pDirtyRegion, 0);
+	if (IgnorePresentFunctionValidation.Bool() )
+		ret = D3D_OK;
 	if (FAILED(ret) )
 		return ret;
 
@@ -1587,6 +1589,24 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::StretchRect
 		return D3DERR_INVALIDCALL;
 	}
 
+	switch (ForceStretchRectFilter.Unsigned() )
+	{
+	default:
+#ifdef _DEBUG
+	{
+		__debugbreak(); // Invalid value!
+	}
+#endif
+	case 0: // Default. Do nothing!
+		break;
+	case D3DTEXF_POINT: // 1
+		Filter = D3DTEXF_POINT;
+		break;
+	case D3DTEXF_LINEAR: // 2
+		Filter = D3DTEXF_LINEAR;
+		break;
+	}
+
 	const unsigned Width = hookSource->GetInternalWidth();
 	const unsigned Height = hookSource->GetInternalHeight();
 	const unsigned DestWidth = hookDest->GetInternalWidth();
@@ -1740,7 +1760,7 @@ void IDirect3DDevice9Hook::AutoResizeViewport(void)
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::BeginScene(THIS)
 {
-	const HRESULT ret = d3d9dev->BeginScene();
+	const HRESULT ret = IgnoreSceneFunctionValidation.Bool() ? D3D_OK : d3d9dev->BeginScene();
 	if (FAILED(ret) )
 		return ret;
 
@@ -1749,8 +1769,11 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::BeginScene(
 #ifdef _DEBUG
 	else
 	{
-		// Each BeginScene() needs to have an EndScene() pair to match it!
-		DbgBreakPrint("Error: Calling BeginScene() without first calling EndScene()");
+		if (!IgnoreSceneFunctionValidation.Bool() )
+		{
+			// Each BeginScene() needs to have an EndScene() pair to match it!
+			DbgBreakPrint("Error: Calling BeginScene() without first calling EndScene()");
+		}
 	}
 #endif
 
@@ -1759,7 +1782,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::BeginScene(
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::EndScene(THIS)
 {
-	const HRESULT ret = d3d9dev->EndScene();
+	const HRESULT ret = IgnoreSceneFunctionValidation.Bool() ? D3D_OK : d3d9dev->EndScene();
 	if (FAILED(ret) )
 		return ret;
 
@@ -1768,10 +1791,52 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::EndScene(TH
 #ifdef _DEBUG
 	else
 	{
-		// Every EndScene() needs to have a BeginScene() pair to match it!
-		DbgBreakPrint("Error: Trying to end a scene without first beginning one. Must call BeginScene() before calling EndScene()");
+		if (!IgnoreSceneFunctionValidation.Bool() )
+		{
+			// Every EndScene() needs to have a BeginScene() pair to match it!
+			DbgBreakPrint("Error: Trying to end a scene without first beginning one. Must call BeginScene() before calling EndScene()");
+		}
 	}
 #endif
+
+	return ret;
+}
+
+const DWORD ParseClearStringToClearFlags(const char* clearString)
+{
+	if (!clearString || !*clearString)
+		return 0;
+
+	DWORD ret = 0x00000000;
+
+	char cVal = '\0';
+	while (cVal = *clearString++)
+	{
+		switch (cVal)
+		{
+		default:
+#ifdef _DEBUG
+		{
+			__debugbreak(); // Invalid clear-string value
+		}
+#endif
+			break;
+		case 'C':
+		case 'c':
+			ret |= D3DCLEAR_TARGET;
+			break;
+		case 'Z':
+		case 'z':
+		case 'D':
+		case 'd':
+			ret |= D3DCLEAR_ZBUFFER;
+			break;
+		case 'S':
+		case 's':
+			ret |= D3DCLEAR_STENCIL;
+			break;
+		}
+	}
 
 	return ret;
 }
@@ -1782,75 +1847,83 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::Clear(THIS_
 	if (GetDeviceStats().IsCollectingEventDataThisFrame() )
 		QueryPerformanceCounter(&clearCallCPUTimestamp);
 
-	const unsigned validClearFlags = D3DCLEAR_STENCIL | D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER;
-	if (Flags & (~validClearFlags) )
-		return D3DERR_INVALIDCALL; // These are the only D3DCLEAR flags valid for this function call
-
-	if (Flags & (D3DCLEAR_STENCIL | D3DCLEAR_ZBUFFER) )
+	if (!IgnoreClearFunctionValidation.Bool() )
 	{
-		if (!currentState.currentDepthStencil)
-			return D3DERR_INVALIDCALL;
+		const unsigned validClearFlags = D3DCLEAR_STENCIL | D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER;
+		if (Flags & (~validClearFlags) )
+			return D3DERR_INVALIDCALL; // These are the only D3DCLEAR flags valid for this function call
 
-		if (Flags & D3DCLEAR_ZBUFFER)
+		if (Flags & (D3DCLEAR_STENCIL | D3DCLEAR_ZBUFFER) )
 		{
-			if (Z < 0.0f)
+			if (!currentState.currentDepthStencil)
+				return D3DERR_INVALIDCALL;
+
+			if (Flags & D3DCLEAR_ZBUFFER)
 			{
-				// Z-clear value must be between 0.0f and 1.0f!
-				DbgBreakPrint("Error: Clear Z-value must be between 0.0f and 1.0f");
+				if (Z < 0.0f)
+				{
+					// Z-clear value must be between 0.0f and 1.0f!
+					DbgBreakPrint("Error: Clear Z-value must be between 0.0f and 1.0f");
+					return D3DERR_INVALIDCALL;
+				}
+				if (Z > 1.0f)
+				{
+					// Z-clear value must be between 0.0f and 1.0f!
+					DbgBreakPrint("Error: Clear Z-value must be between 0.0f and 1.0f");
+					return D3DERR_INVALIDCALL;
+				}
+			}
+			if (Flags & D3DCLEAR_STENCIL)
+			{
+				if (!HasStencil(currentState.currentDepthStencil->GetInternalFormat() ) )
+					return D3DERR_INVALIDCALL;
+
+				// TODO: Stencil buffer clear value range validation (should only allow between 0 and 2^n)
+			}
+		}
+
+		// TODO: If Scissor Test is enabled (D3DRS_SCISSORTEST), then clip input rects against scissor rect. Why?
+		// Because in D3D9 (but not 10 and up), the Clear() call *is* affected by scissor testing.
+		// Source: https://docs.microsoft.com/en-us/windows/desktop/direct3d9/scissor-test
+
+		// TODO: Clip the clear rect against the viewport rect (in the case that the viewport rect is smaller than the render target)
+
+		if (Count > 0)
+		{
+			if (!pRects)
+			{
+				// Count must be 0 if pRects are NULL!
+				DbgBreakPrint("Error: Clear() Count must be 0 if pRects are NULL");
 				return D3DERR_INVALIDCALL;
 			}
-			if (Z > 1.0f)
+
+			for (unsigned x = 0; x < Count; ++x)
 			{
-				// Z-clear value must be between 0.0f and 1.0f!
-				DbgBreakPrint("Error: Clear Z-value must be between 0.0f and 1.0f");
+				// Validate rects
+			}
+		}
+		else
+		{
+			if (pRects != NULL)
+			{
+				// pRects must be NULL if Count is 0!
+				DbgBreakPrint("Error: Clear() pRects must be NULL if Count is 0");
 				return D3DERR_INVALIDCALL;
 			}
 		}
-		if (Flags & D3DCLEAR_STENCIL)
+
+		if (!(Flags & (D3DCLEAR_TARGET | D3DCLEAR_STENCIL | D3DCLEAR_ZBUFFER) ) )
 		{
-			if (!HasStencil(currentState.currentDepthStencil->GetInternalFormat() ) )
-				return D3DERR_INVALIDCALL;
-
-			// TODO: Stencil buffer clear value range validation (should only allow between 0 and 2^n)
-		}
-	}
-
-	// TODO: If Scissor Test is enabled (D3DRS_SCISSORTEST), then clip input rects against scissor rect. Why?
-	// Because in D3D9 (but not 10 and up), the Clear() call *is* affected by scissor testing.
-	// Source: https://docs.microsoft.com/en-us/windows/desktop/direct3d9/scissor-test
-
-	// TODO: Clip the clear rect against the viewport rect (in the case that the viewport rect is smaller than the render target)
-
-	if (Count > 0)
-	{
-		if (!pRects)
-		{
-			// Count must be 0 if pRects are NULL!
-			DbgBreakPrint("Error: Clear() Count must be 0 if pRects are NULL");
-			return D3DERR_INVALIDCALL;
-		}
-
-		for (unsigned x = 0; x < Count; ++x)
-		{
-			// Validate rects
-		}
-	}
-	else
-	{
-		if (pRects != NULL)
-		{
-			// pRects must be NULL if Count is 0!
-			DbgBreakPrint("Error: Clear() pRects must be NULL if Count is 0");
+			// At least one of: Target, Stencil, ZBuffer must be set in the Clear() call flags!
+			DbgBreakPrint("Error: Clear call requires at least one of the Target, Stencil, or ZBuffer flags");
 			return D3DERR_INVALIDCALL;
 		}
 	}
 
-	if (!(Flags & (D3DCLEAR_TARGET | D3DCLEAR_STENCIL | D3DCLEAR_ZBUFFER) ) )
-	{
-		// At least one of: Target, Stencil, ZBuffer must be set in the Clear() call flags!
-		DbgBreakPrint("Error: Clear call requires at least one of the Target, Stencil, or ZBuffer flags");
-		return D3DERR_INVALIDCALL;
-	}
+	const DWORD skipClearFlags = ParseClearStringToClearFlags(IgnoreClearCalls.String() );
+	Flags &= (~skipClearFlags);
+	if (Flags == 0)
+		return S_OK;
 
 	// I know it isn't strictly a "draw call", but having the clear also be able to use the single-step capabilities is very useful for debugging
 	if (DriverSingleStepClears.Bool() )
@@ -2140,6 +2213,9 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::EndStateBlo
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::ValidateDevice(THIS_ DWORD* pNumPasses)
 {
+	if (AlwaysValidateDevice.Bool() == true)
+		return S_OK;
+
 	const HRESULT ret = d3d9dev->ValidateDevice(pNumPasses);
 	return ret;
 }
@@ -4505,14 +4581,17 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawPrimiti
 	if (GetDeviceStats().IsCollectingEventDataThisFrame() )
 		QueryPerformanceCounter(&drawCallCPUTimestamp);
 
-	if (!currentState.currentVertexDecl)
-		return D3DERR_INVALIDCALL;
+	if (!IgnoreDrawFunctionValidation.Bool() )
+	{
+		if (!currentState.currentVertexDecl)
+			return D3DERR_INVALIDCALL;
 
-	if (PrimitiveCount == 0)
-		return D3DERR_INVALIDCALL;
+		if (PrimitiveCount == 0)
+			return D3DERR_INVALIDCALL;
 
-	if (PrimitiveType > D3DPT_TRIANGLEFAN || PrimitiveType < D3DPT_POINTLIST)
-		return D3DERR_INVALIDCALL;
+		if (PrimitiveType > D3DPT_TRIANGLEFAN || PrimitiveType < D3DPT_POINTLIST)
+			return D3DERR_INVALIDCALL;
+	}
 
 	const HRESULT ret = S_OK;
 
@@ -6034,31 +6113,34 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawIndexed
 	if (GetDeviceStats().IsCollectingEventDataThisFrame() )
 		QueryPerformanceCounter(&drawCallCPUTimestamp);
 
-	if (!currentState.currentVertexDecl)
-		return D3DERR_INVALIDCALL;
-
-	if (NumVertices == 0)
-		return D3DERR_INVALIDCALL;
-
-	if (primCount == 0)
-		return D3DERR_INVALIDCALL;
-
-	if (PrimitiveType > D3DPT_TRIANGLEFAN || PrimitiveType < D3DPT_POINTLIST)
-		return D3DERR_INVALIDCALL;
-
-	if (currentState.currentTextures[0])
+	if (!IgnoreDrawFunctionValidation.Bool() )
 	{
-#ifdef WITH_SURFACE_HASHING
-		const surfaceHash& currentHash = currentState.currentTextures[0]->GetUnderlyingSurfaces()[0]->GetSurfaceHash();
-		if (currentHash.format == D3DFMT_DXT5 && currentHash.sizeBytes == 0x4000 && currentHash.hashVal == 0xD957D29D)
-		{
-			//__debugbreak();
-		}
-#endif
-	}
+		if (!currentState.currentVertexDecl)
+			return D3DERR_INVALIDCALL;
 
-	if (currentState.currentIndexBuffer == NULL)
-		return D3DERR_INVALIDCALL;
+		if (NumVertices == 0)
+			return D3DERR_INVALIDCALL;
+
+		if (primCount == 0)
+			return D3DERR_INVALIDCALL;
+
+		if (PrimitiveType > D3DPT_TRIANGLEFAN || PrimitiveType < D3DPT_POINTLIST)
+			return D3DERR_INVALIDCALL;
+
+		if (currentState.currentTextures[0])
+		{
+#ifdef WITH_SURFACE_HASHING
+			const surfaceHash& currentHash = currentState.currentTextures[0]->GetUnderlyingSurfaces()[0]->GetSurfaceHash();
+			if (currentHash.format == D3DFMT_DXT5 && currentHash.sizeBytes == 0x4000 && currentHash.hashVal == 0xD957D29D)
+			{
+				//__debugbreak();
+			}
+#endif
+		}
+
+		if (currentState.currentIndexBuffer == NULL)
+			return D3DERR_INVALIDCALL;
+	}
 
 	if (!TotalDrawCallSkipTest() )
 		return S_OK;
@@ -10800,32 +10882,35 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawPrimiti
 
 	HRESULT ret;
 
-	if (PrimitiveCount == 0)
-		return D3DERR_INVALIDCALL;
-
-	if (!pVertexStreamZeroData)
-		return D3DERR_INVALIDCALL;
-
-	if (PrimitiveType > D3DPT_TRIANGLEFAN || PrimitiveType < D3DPT_POINTLIST)
-		return D3DERR_INVALIDCALL;
-
-	if (!currentState.currentVertexDecl)
+	if (!IgnoreDrawFunctionValidation.Bool() )
 	{
+		if (PrimitiveCount == 0)
+			return D3DERR_INVALIDCALL;
+
+		if (!pVertexStreamZeroData)
+			return D3DERR_INVALIDCALL;
+
+		if (PrimitiveType > D3DPT_TRIANGLEFAN || PrimitiveType < D3DPT_POINTLIST)
+			return D3DERR_INVALIDCALL;
+
+		if (!currentState.currentVertexDecl)
+		{
 #ifdef _DEBUG
 		DbgBreakPrint("Error: Vertex decl is NULL");
 #endif
-		return D3DERR_INVALIDCALL;
-	}
+			return D3DERR_INVALIDCALL;
+		}
 
 #ifdef _DEBUG
-	if (currentState.currentPixelShader && !currentState.currentPixelShader->jitShaderMain)
-	{
-		DbgPrint("Warning: Uncached pixel shader detected");
-	}
+		if (currentState.currentPixelShader && !currentState.currentPixelShader->jitShaderMain)
+		{
+			DbgPrint("Warning: Uncached pixel shader detected");
+		}
 #endif
 
-	if (VertexStreamZeroStride > 0xFFFF)
-		return D3DERR_INVALIDCALL;
+		if (VertexStreamZeroStride > 0xFFFF)
+			return D3DERR_INVALIDCALL;
+	}
 
 	if (!TotalDrawCallSkipTest() )
 		return S_OK;
@@ -10877,36 +10962,40 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawIndexed
 	SIMPLE_FUNC_SCOPE();
 
 	HRESULT ret;
-#ifdef _DEBUG
-	if (currentState.currentPixelShader && !currentState.currentPixelShader->jitShaderMain)
+
+	if (!IgnoreDrawFunctionValidation.Bool() )
 	{
-		DbgPrint("Warning: Uncached pixel shader detected");
-	}
+#ifdef _DEBUG
+		if (currentState.currentPixelShader && !currentState.currentPixelShader->jitShaderMain)
+		{
+			DbgPrint("Warning: Uncached pixel shader detected");
+		}
 #endif
 
-	if (PrimitiveCount == 0)
-		return D3DERR_INVALIDCALL;
+		if (PrimitiveCount == 0)
+			return D3DERR_INVALIDCALL;
 
-	if (NumVertices == 0)
-		return D3DERR_INVALIDCALL;
+		if (NumVertices == 0)
+			return D3DERR_INVALIDCALL;
 
-	if (MinVertexIndex >= NumVertices)
-		return D3DERR_INVALIDCALL;
+		if (MinVertexIndex >= NumVertices)
+			return D3DERR_INVALIDCALL;
 
-	if (!pIndexData)
-		return D3DERR_INVALIDCALL;
+		if (!pIndexData)
+			return D3DERR_INVALIDCALL;
 
-	if (IndexDataFormat < D3DFMT_INDEX16 || IndexDataFormat > D3DFMT_INDEX32)
-		return D3DERR_INVALIDCALL;
+		if (IndexDataFormat < D3DFMT_INDEX16 || IndexDataFormat > D3DFMT_INDEX32)
+			return D3DERR_INVALIDCALL;
 
-	if (!pVertexStreamZeroData)
-		return D3DERR_INVALIDCALL;
+		if (!pVertexStreamZeroData)
+			return D3DERR_INVALIDCALL;
 
-	if (PrimitiveType > D3DPT_TRIANGLEFAN || PrimitiveType < D3DPT_POINTLIST)
-		return D3DERR_INVALIDCALL;
+		if (PrimitiveType > D3DPT_TRIANGLEFAN || PrimitiveType < D3DPT_POINTLIST)
+			return D3DERR_INVALIDCALL;
 
-	if (VertexStreamZeroStride > 0xFFFF)
-		return D3DERR_INVALIDCALL;
+		if (VertexStreamZeroStride > 0xFFFF)
+			return D3DERR_INVALIDCALL;
+	}
 
 	if (!TotalDrawCallSkipTest() )
 		return S_OK;
@@ -11963,29 +12052,182 @@ IDirect3DDevice9Hook::IDirect3DDevice9Hook(LPDIRECT3DDEVICE9 _d3d9dev, IDirect3D
 
 	GPUInitializeAllocator();
 
-	// Using a single global comms object won't work too well for processes that create multiple IDirect3DDevice9's, but it's fine for testing for now
-	//ISerialDeviceComms* const serialDeviceComms = new ISerialDeviceComms("COM3", 921600, ODDPARITY);
-	//INetSocketDeviceComms* const networkDeviceComms = new INetSocketDeviceComms();
-	IRemoteProcessIPCComms* const remoteProcessesIPCComms = new IRemoteProcessIPCComms();
-	if (!remoteProcessesIPCComms->LaunchNewRemoteIPCProcess(BuildEndpointDLLPath("GPUEndpoint_D3D9.dll").c_str() ) )
-	{
-#ifdef _DEBUG
-		__debugbreak(); // Error: This shouldn't happen!
-#endif
-	}
-	ILocalEndpointDLLComms* const localRecorderEndpointComms = new ILocalEndpointDLLComms(BuildEndpointDLLPath("RecordingEndpoint_DiskFile.dll").c_str() );
-	IBroadcastVirtualDeviceComms* const broadcastDeviceComms = new IBroadcastVirtualDeviceComms(/*networkDeviceComms*/localRecorderEndpointComms);
-	broadcastDeviceComms->AddNewSecondaryBroadcastTarget(remoteProcessesIPCComms);
-	broadcastDeviceComms->AddNewSecondaryBroadcastTarget(localRecorderEndpointComms);
+	InitEndpointsGraph();
 
-	deviceComms = broadcastDeviceComms;
-	baseDevice = new IBaseGPUDevice(broadcastDeviceComms);
+#ifdef _DEBUG
+	if (!deviceComms)
+	{
+		__debugbreak(); // Error: Must call InitEndpoints() before this
+	}
+#endif
+	baseDevice = new IBaseGPUDevice(deviceComms);
 
 	allocatedDebugShaderRegisterFile = GPUAlloc(sizeof(DeviceRegisterFile), 1, 0, 0, 0, GPUVAT_RegisterFileDumpMemory, GPUFMT_RegFileDump, this
 #ifdef _DEBUG
 		, "DebugDeviceRegisterFileDump"
 #endif
 	);
+}
+
+// These represent different endpoints that could possibly be dynamically added into our endpoints graph:
+enum endpointCommsType : unsigned char
+{
+	ECT_SerialDevice = 0,
+	ECT_NetworkDevice,
+	ECT_LocalDLL,
+	ECT_RemoteProcessIPC,
+
+	// This must always be last
+	ECT_MAX_NUM_ENDPOINT_COMMS
+};
+
+static const char* const endpointCommsNames[] =
+{
+	"SerialDevice",
+	"NetSocketDevice",
+	"LocalDLL",
+	"RemoteProcessIPC"
+};
+static_assert(ARRAYSIZE(endpointCommsNames) == ECT_MAX_NUM_ENDPOINT_COMMS, "Error: Enum/String-table mismatch!");
+
+static const endpointCommsType LookupEndpointTypeByString(const char* const endpointNameStr)
+{
+	for (unsigned endpointCommsIndex = 0; endpointCommsIndex < ECT_MAX_NUM_ENDPOINT_COMMS; ++endpointCommsIndex)
+	{
+		if (_stricmp(endpointCommsNames[endpointCommsIndex], endpointNameStr) == 0)
+		{
+			return (const endpointCommsType)endpointCommsIndex;
+		}
+	}
+#ifdef _DEBUG
+	{
+		__debugbreak();
+	}
+#endif
+	// Error! Invalid/unknown endpoint name used!
+	return ECT_MAX_NUM_ENDPOINT_COMMS;
+}
+
+static IBaseDeviceComms* const InitEndpoint(const endpointCommsType endpointType, const char* const endpointArgs)
+{
+	switch (endpointType)
+	{
+	default:
+#ifdef _DEBUG
+	{
+		__debugbreak(); // Error: Invalid/unknown endpoint type!
+	}
+#endif
+		return NULL;
+	case ECT_SerialDevice:
+	{
+		const unsigned serialBaudRate = 921600u;
+		const BYTE parityType = 1u;
+		ISerialDeviceComms* const newSerialEndpoint = new ISerialDeviceComms(endpointArgs, serialBaudRate, parityType);
+		return newSerialEndpoint;
+	}
+	case ECT_NetworkDevice:
+	{
+		INetSocketDeviceComms* const newNetworkEndpoint = new INetSocketDeviceComms();
+		return newNetworkEndpoint;
+	}
+	case ECT_LocalDLL:
+	{
+		const std::string endpointLoadDLL = BuildEndpointDLLPath(endpointArgs);
+		ILocalEndpointDLLComms* const localDLLEndpoint = new ILocalEndpointDLLComms(endpointLoadDLL.c_str() );
+		return localDLLEndpoint;
+	}
+	case ECT_RemoteProcessIPC:
+	{
+		IRemoteProcessIPCComms* const remoteProcessIPCEndpoint = new IRemoteProcessIPCComms();
+		const std::string remoteProcessEndpointLoadDLL = BuildEndpointDLLPath(endpointArgs);
+		if (!remoteProcessIPCEndpoint->LaunchNewRemoteIPCProcess(remoteProcessEndpointLoadDLL.c_str() ) )
+		{
+	#ifdef _DEBUG
+			__debugbreak(); // Error: This shouldn't happen!
+	#endif
+		}
+		return remoteProcessIPCEndpoint;
+	}
+	}
+}
+
+void IDirect3DDevice9Hook::InitEndpointsGraph()
+{
+#ifdef _DEBUG
+	if (deviceComms != NULL)
+	{
+		__debugbreak(); // Error: Don't double-call this init!
+	}
+#endif
+
+	char endpointString[MAX_PATH] = {0};
+	INIRegistry::LoadINIStringRaw(endpointString, "Endpoints", "PrimaryDeviceComms");
+#ifdef _DEBUG
+	if (endpointString[0] == '\0')
+	{
+		__debugbreak(); // Error: Must specify a primary device endpoint!
+	}
+#endif
+	const endpointCommsType primaryEndpointType = LookupEndpointTypeByString(endpointString);
+	if (primaryEndpointType == ECT_MAX_NUM_ENDPOINT_COMMS)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Error: Unknown/invalid primary endpoint type!
+#endif
+		return;
+	}
+	INIRegistry::LoadINIStringRaw(endpointString, "Endpoints", "PrimaryDeviceCommsArgs");
+	IBaseDeviceComms* const primaryEndpoint = InitEndpoint(primaryEndpointType, endpointString);
+	if (!primaryEndpoint)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Error: Must have a valid primary endpoint!
+#endif
+		return;
+	}
+	IBroadcastVirtualDeviceComms* const broadcastDeviceComms = new IBroadcastVirtualDeviceComms(primaryEndpoint);
+
+	static const unsigned MAX_NUM_ENDPOINTS_SEARCH = 1024u;
+	for (unsigned secondaryEndpointID = 0; secondaryEndpointID < MAX_NUM_ENDPOINTS_SEARCH; ++secondaryEndpointID)
+	{
+		{
+			char commsVarName[32] = {0};
+			sprintf_s(commsVarName, "SecondaryDeviceComms%u", secondaryEndpointID);
+			endpointString[0] = '\0';
+			INIRegistry::LoadINIStringRaw(endpointString, "Endpoints", commsVarName);
+		}
+		if (endpointString[0] == '\0')
+			break; // Looks like we're out of secondary endpoints to load! Break out of the loop early :)
+		const endpointCommsType secondaryEndpointType = LookupEndpointTypeByString(endpointString);
+		if (secondaryEndpointType == ECT_MAX_NUM_ENDPOINT_COMMS)
+		{
+#ifdef _DEBUG
+			__debugbreak(); // Error: Unknown/invalid secondary endpoint type!
+#endif
+			continue;
+		}
+		{
+			char commsArgsName[32] = {0};
+			sprintf_s(commsArgsName, "SecondaryDeviceComms%uArgs", secondaryEndpointID);
+			endpointString[0] = '\0';
+			INIRegistry::LoadINIStringRaw(endpointString, "Endpoints", commsArgsName);
+		}
+		IBaseDeviceComms* const secondaryEndpoint = InitEndpoint(secondaryEndpointType, endpointString);
+		if (secondaryEndpoint)
+		{
+			broadcastDeviceComms->AddNewSecondaryBroadcastTarget(secondaryEndpoint);
+		}
+		else
+		{
+#ifdef _DEBUG
+			__debugbreak(); // Error: Failed to initialize secondary endpoint!
+#endif
+		}
+	}
+
+	// Using a single global comms object won't work too well for processes that create multiple IDirect3DDevice9's, but it's fine for testing for now
+	deviceComms = broadcastDeviceComms;
 }
 
 /*virtual*/ IDirect3DDevice9Hook::~IDirect3DDevice9Hook()
@@ -12069,21 +12311,77 @@ const bool DeviceState::CurrentStateHasInputVertexColor1(void) const
 
 void IDirect3DDevice9Hook::ModifyPresentParameters(D3DPRESENT_PARAMETERS& modifiedParams)
 {
-#ifdef OVERRIDE_FORCE_WINDOWED_MODE
-	modifiedParams.Windowed = TRUE; // Force Windowed mode
-	modifiedParams.FullScreen_RefreshRateInHz = 0;
-	//modifiedParams.BackBufferFormat = D3DFMT_UNKNOWN;
-#endif // #ifdef OVERRIDE_FORCE_WINDOWED_MODE
+	if (ForceWindowedMode.Unsigned() == DFO_ForceEnable)
+	{
+		modifiedParams.Windowed = TRUE; // Force Windowed mode
+		modifiedParams.FullScreen_RefreshRateInHz = 0;
+		modifiedParams.BackBufferFormat = D3DFMT_UNKNOWN;
+	}
+	else if (ForceWindowedMode.Unsigned() == DFO_ForceDisable)
+	{
+		modifiedParams.Windowed = FALSE; // Force Fullscreen mode
+		if (modifiedParams.FullScreen_RefreshRateInHz == 0)
+			modifiedParams.FullScreen_RefreshRateInHz = 60;
+		if (modifiedParams.BackBufferFormat == D3DFMT_UNKNOWN)
+			modifiedParams.BackBufferFormat = D3DFMT_A8R8G8B8;
+	}
+	else // App Default, don't change anything!
+	{
+	}
 
-#ifdef OVERRIDE_FORCE_NO_VSYNC
-	modifiedParams.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE; // For performance, you're gonna want this enabled
-#endif // #ifdef OVERRIDE_FORCE_NO_VSYNC
+	if (ForceVSync.Unsigned() == DFO_ForceEnable)
+	{
+		modifiedParams.PresentationInterval = D3DPRESENT_INTERVAL_ONE; // Force VSync on
+	}
+	else if (ForceVSync.Unsigned() == DFO_ForceDisable)
+	{
+		modifiedParams.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE; // For performance, you're gonna want this enabled
+	}
+	else // App default, don't change anything!
+	{
+	}
 
-//#ifdef _DEBUG
+	if (modifiedParams.Windowed == FALSE && ForceRefreshRate.Unsigned() != 0)
+	{
+		modifiedParams.FullScreen_RefreshRateInHz = ForceRefreshRate.Unsigned();
+	}
+
+	if (ForceBackbufferWidth.Unsigned() != 0)
+	{
+		modifiedParams.BackBufferWidth = ForceBackbufferWidth.Unsigned();
+	}
+	if (ForceBackbufferHeight.Unsigned() != 0)
+	{
+		modifiedParams.BackBufferHeight = ForceBackbufferHeight.Unsigned();
+	}
+
+	switch (ForceBackbufferColorDepth.Unsigned() )
+	{
+	default:
+#ifdef _DEBUG
+	{
+		__debugbreak(); // Invalid option!
+	}
+#endif
+	case 0:
+		// Default: Do nothing!
+		break;
+	case 8:
+		modifiedParams.BackBufferFormat = D3DFMT_R3G3B2; // Not supported by almost all graphics adapters!
+		break;
+	case 16:
+		modifiedParams.BackBufferFormat = D3DFMT_R5G6B5; // Not supported after DirectX10 as a scanout format, but some D3D7/D3D8/D3D9 drivers support it
+		break;
+	case 24:
+		modifiedParams.BackBufferFormat = D3DFMT_X8R8G8B8; // Supported everywhere!
+		break;
+	case 32:
+		modifiedParams.BackBufferFormat = D3DFMT_A8R8G8B8; // Not supported by many adapters!
+		break;
+	}
 
 	// We don't yet support multisampling
 	modifiedParams.MultiSampleType = D3DMULTISAMPLE_NONE;
 	modifiedParams.MultiSampleQuality = 0;
 	modifiedParams.Flags &= (~D3DPRESENTFLAG_DEVICECLIP); // Remove the DEVICECLIP flag so that there aren't weird artifacts when rendering into a window that spans multiple monitors
-//#endif
 }

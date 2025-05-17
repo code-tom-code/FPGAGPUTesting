@@ -13,6 +13,7 @@
 #include "IDirect3DVertexDeclaration9Hook.h"
 #include "IDirect3DStateBlock9Hook.h"
 #include "IDirect3DQuery9Hook.h"
+#include "Driver/DriverOptions.h"
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::CreateAdditionalSwapChain(THIS_ D3DPRESENT_PARAMETERS* pPresentationParameters, IDirect3DSwapChain9** pSwapChain)
 {
@@ -120,6 +121,11 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::CreateIndex
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::CreateRenderTarget(THIS_ UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Lockable, IDirect3DSurface9** ppSurface, HANDLE* pSharedHandle)
 {
+	if (MaxRenderTargetSize.Unsigned() != 0 && Width > MaxRenderTargetSize.Unsigned() )
+		Width = MaxRenderTargetSize.Unsigned();
+	if (MaxRenderTargetSize.Unsigned() != 0 && Height > MaxRenderTargetSize.Unsigned() )
+		Height = MaxRenderTargetSize.Unsigned();
+
 	LPDIRECT3DSURFACE9 realObject = NULL;
 	const HRESULT ret = d3d9dev->CreateRenderTarget(Width, Height, Format, MultiSample, MultisampleQuality, Lockable, &realObject, pSharedHandle);
 	if (FAILED(ret) )

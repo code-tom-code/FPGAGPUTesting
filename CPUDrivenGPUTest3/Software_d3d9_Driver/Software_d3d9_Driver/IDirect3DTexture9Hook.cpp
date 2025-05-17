@@ -3,6 +3,7 @@
 #include "IDirect3DTexture9Hook.h"
 #include "IDirect3DSurface9Hook.h"
 #include "IDirect3DDevice9Hook.h"
+#include "Driver/DriverOptions.h"
 
 /*** IUnknown methods ***/
 COM_DECLSPEC_NOTHROW HRESULT IDirect3DTexture9Hook::QueryInterface(THIS_ REFIID riid, void** ppvObj)
@@ -227,15 +228,20 @@ COM_DECLSPEC_NOTHROW HRESULT IDirect3DTexture9Hook::LockRect(THIS_ UINT Level,D3
 	if (FAILED(ret) )
 		return ret;*/
 
-	if (Level >= surfaces.size() )
+	if (!IgnoreLockFunctionValidation.Bool() )
 	{
+		if (Level >= surfaces.size() )
+		{
 #ifdef _DEBUG
-		__debugbreak();
+			__debugbreak();
 #endif
-		return D3DERR_INVALIDCALL;
+			return D3DERR_INVALIDCALL;
+		}
 	}
 
-	const HRESULT ret = surfaces[Level]->LockRect(pLockedRect, pRect, Flags);
+	HRESULT ret = surfaces[Level]->LockRect(pLockedRect, pRect, Flags);
+	if (IgnoreLockFunctionValidation.Bool() )
+		ret = D3D_OK;
 	if (FAILED(ret) )
 		return ret;
 

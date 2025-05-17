@@ -243,6 +243,9 @@
     <ClCompile Include="INIVar.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Driver\DriverOptions.cpp">
+      <Filter>Source Files\Driver</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Source.def">
@@ -460,6 +463,9 @@
     </ClInclude>
     <ClInclude Include="INIVar.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Driver\DriverOptions.h">
+      <Filter>Header Files\Driver</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

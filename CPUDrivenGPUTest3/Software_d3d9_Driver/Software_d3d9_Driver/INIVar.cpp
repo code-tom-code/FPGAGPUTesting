@@ -7,8 +7,13 @@
 #include "INIVar.h"
 #include <unordered_map>
 #include <Windows.h>
+#include <Shlobj.h> // for SHGetFolderPathA()
 
-static const char* const GlobalSettingsFilename = "C:\\Program Files (x86)\\DragonGPU\\GlobalDriverSettingsDefaults.ini"; // TODO: Don't hardcode this
+#pragma comment(lib, "Shell32.lib") // for SHGetFolderPathA()
+
+static const char* const ProductName = "DragonGPU";
+static const char* const GlobalSettingsFilename = "GlobalDriverSettingsDefaults.ini";
+static const char* const LocalSettingsFilenameSuffix = "LocalSettings.ini";
 
 namespace INIRegistry
 {
@@ -36,6 +41,37 @@ namespace INIRegistry
 		}
 #endif
 		RegisteredVars.insert(std::make_pair(newHash, &newVar) );
+	}
+
+	void GetGlobalSettingsFilePath(char (&outGlobalSettingsPath)[MAX_PATH])
+	{
+		char programFilesPath[MAX_PATH] = {0};
+		if (FAILED(SHGetFolderPathA(NULL, CSIDL_PROGRAM_FILES, NULL, SHGFP_TYPE_CURRENT, programFilesPath) ) )
+		{
+#ifdef _DEBUG
+			__debugbreak(); // Should never be here!
+#endif
+		}
+		sprintf_s(outGlobalSettingsPath, "%s\\%s\\%s", programFilesPath, ProductName, GlobalSettingsFilename);
+	}
+
+	void GetLocalSettingsFilePath(char (&outLocalSettingsPath)[MAX_PATH])
+	{
+		char modulePath[MAX_PATH] = {0};
+		if (!GetModuleFileNameA(NULL, modulePath, sizeof(modulePath) - 1) )
+		{
+#ifdef _DEBUG
+			__debugbreak(); // Should never fail!
+#endif
+		}
+		char moduleName[MAX_PATH] = {0};
+		char moduleDir[MAX_PATH] = {0};
+		char moduleDrive[4] = {0};
+#pragma warning(push)
+#pragma warning(disable:4996)
+		_splitpath(modulePath, moduleDrive, moduleDir, moduleName, NULL);
+#pragma warning(pop)
+		sprintf_s(outLocalSettingsPath, "%s%s%s%s", moduleDrive, moduleDir, moduleName, LocalSettingsFilenameSuffix);
 	}
 
 	void ParseINIData(INIVar& loadVar, const char* const INIBuffer)
@@ -82,42 +118,41 @@ namespace INIRegistry
 		}
 	}
 
-	void LoadINIData(INIVar& loadVar, const char* const localSettingsFilename)
+	void LoadINIData(INIVar& loadVar, const char* const globalSettingsFilepath, const char* const localSettingsFilepath)
 	{
 		char stringBuffer[MAX_PATH] = {0};
-		if (GetPrivateProfileStringA(loadVar.SectionName, loadVar.VarName, NULL, stringBuffer, sizeof(stringBuffer) - 1, GlobalSettingsFilename) > 0 && stringBuffer[0] != '\0')
+		if (GetPrivateProfileStringA(loadVar.SectionName, loadVar.VarName, NULL, stringBuffer, sizeof(stringBuffer) - 1, globalSettingsFilepath) > 0 && stringBuffer[0] != '\0')
 		{
 			ParseINIData(loadVar, stringBuffer);
 		}
-		if (GetPrivateProfileStringA(loadVar.SectionName, loadVar.VarName, NULL, stringBuffer, sizeof(stringBuffer) - 1, localSettingsFilename) > 0 && stringBuffer[0] != '\0')
+		if (GetPrivateProfileStringA(loadVar.SectionName, loadVar.VarName, NULL, stringBuffer, sizeof(stringBuffer) - 1, localSettingsFilepath) > 0 && stringBuffer[0] != '\0')
 		{
 			ParseINIData(loadVar, stringBuffer);
 		}
 	}
 
+	void LoadINIStringRaw(char (&outStringBuffer)[MAX_PATH], const char* const sectionName, const char* const varName)
+	{
+		char globalSettingsFilepath[MAX_PATH] = {0};
+		GetGlobalSettingsFilePath(globalSettingsFilepath);
+		char localSettingsFilepath[MAX_PATH] = {0};
+		GetLocalSettingsFilePath(localSettingsFilepath);
+		outStringBuffer[0] = '\0';
+		GetPrivateProfileStringA(sectionName, varName, NULL, outStringBuffer, sizeof(outStringBuffer) - 1, globalSettingsFilepath);
+		GetPrivateProfileStringA(sectionName, varName, NULL, outStringBuffer, sizeof(outStringBuffer) - 1, localSettingsFilepath);
+	}
+
 	void InitLoadAllINIData()
 	{
-		char modulePath[MAX_PATH] = {0};
-		if (!GetModuleFileNameA(NULL, modulePath, sizeof(modulePath) - 1) )
-		{
-#ifdef _DEBUG
-			__debugbreak(); // Should never fail!
-#endif
-		}
-		char moduleName[MAX_PATH] = {0};
-		char moduleDir[MAX_PATH] = {0};
-		char moduleDrive[4] = {0};
-#pragma warning(push)
-#pragma warning(disable:4996)
-		_splitpath(modulePath, moduleDrive, moduleDir, moduleName, NULL);
-#pragma warning(pop)
+		char globalSettingsFilepath[MAX_PATH] = {0};
+		GetGlobalSettingsFilePath(globalSettingsFilepath);
 		char localSettingsFilepath[MAX_PATH] = {0};
-		sprintf_s(localSettingsFilepath, "%s%s%sLocalSettings.ini", moduleDrive, moduleDir, moduleName);
+		GetLocalSettingsFilePath(localSettingsFilepath);
 		const std::unordered_map<unsigned, INIVar*>& CRegisteredVars = GetVarRegistrySingleton();
 		for (std::unordered_map<unsigned, INIVar*>::const_iterator it = CRegisteredVars.cbegin(); it != CRegisteredVars.cend(); ++it)
 		{
 			INIVar* const thisVar = it->second;
-			LoadINIData(*thisVar, localSettingsFilepath);
+			LoadINIData(*thisVar, globalSettingsFilepath, localSettingsFilepath);
 		}
 	}
 }

@@ -3,6 +3,7 @@
 #include "IDirect3DIndexBuffer9Hook.h"
 #include "GlobalToggles.h"
 #include "Driver/IBaseDeviceComms.h"
+#include "Driver/DriverOptions.h"
 
 unsigned IDirect3DIndexBuffer9Hook::IndexBuffersCreatedCounter = 0;
 
@@ -231,29 +232,32 @@ static inline void ValidateMagicCookie(const std::vector<unsigned short>& shorts
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DIndexBuffer9Hook::Lock(THIS_ UINT OffsetToLock,UINT SizeToLock,void** ppbData,DWORD Flags)
 {
-	if (!ppbData)
-		return D3DERR_INVALIDCALL;
-
-	const DWORD validLockFlags = D3DLOCK_DISCARD | D3DLOCK_NO_DIRTY_UPDATE | D3DLOCK_NOSYSLOCK | D3DLOCK_READONLY | D3DLOCK_NOOVERWRITE; 
-	if (Flags & (~validLockFlags) )
-		return D3DERR_INVALIDCALL; // These are the only D3DLOCK flags valid for this function call
-
-	if (SizeToLock == 0 && OffsetToLock > 0)
-		return D3DERR_INVALIDCALL;
-
-	if (OffsetToLock + SizeToLock > InternalLength)
-		return D3DERR_INVALIDCALL;
-
-	if (Flags & (D3DLOCK_DISCARD | D3DLOCK_NOOVERWRITE) )
+	if (!IgnoreLockFunctionValidation.Bool() )
 	{
-		// D3D9 in Release mode ignores this error without returning a failure code
-		if (!(InternalUsage & D3DUSAGE_DYNAMIC) )
+		if (!ppbData)
 			return D3DERR_INVALIDCALL;
-	}
+
+		const DWORD validLockFlags = D3DLOCK_DISCARD | D3DLOCK_NO_DIRTY_UPDATE | D3DLOCK_NOSYSLOCK | D3DLOCK_READONLY | D3DLOCK_NOOVERWRITE; 
+		if (Flags & (~validLockFlags) )
+			return D3DERR_INVALIDCALL; // These are the only D3DLOCK flags valid for this function call
+
+		if (SizeToLock == 0 && OffsetToLock > 0)
+			return D3DERR_INVALIDCALL;
+
+		if (OffsetToLock + SizeToLock > InternalLength)
+			return D3DERR_INVALIDCALL;
+
+		if (Flags & (D3DLOCK_DISCARD | D3DLOCK_NOOVERWRITE) )
+		{
+			// D3D9 in Release mode ignores this error without returning a failure code
+			if (!(InternalUsage & D3DUSAGE_DYNAMIC) )
+				return D3DERR_INVALIDCALL;
+		}
 
 #ifdef INDEX_BUFFER_MAGIC_COOKIE
-	ValidateMagicCookie(shortBytes, longBytes, InternalLength, InternalFormat);
+		ValidateMagicCookie(shortBytes, longBytes, InternalLength, InternalFormat);
 #endif
+	}
 
 #ifdef _DEBUG
 	if (realObject)
@@ -276,12 +280,13 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DIndexBuffer9Hook::Lock(T
 	}
 #endif
 
-#ifdef INDEX_BUFFER_ENFORCE_DISCARD_ON_LOCK
-	if ( (InternalUsage & D3DUSAGE_DYNAMIC) && (Flags & D3DLOCK_DISCARD) )
+	if (EnforceDiscardClearsIndexBuffers.Bool() )
 	{
-		memset(rawBytes.u8Bytes, 0, InternalLength);
+		if ( (InternalUsage & D3DUSAGE_DYNAMIC) && (Flags & D3DLOCK_DISCARD) )
+		{
+			memset(rawBytes.u8Bytes, 0, InternalLength);
+		}
 	}
-#endif
 
 	if (ppbData)
 	{

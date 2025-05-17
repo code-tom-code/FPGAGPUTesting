@@ -1,6 +1,7 @@
 #pragma once
 
 #include "IDirect3D9Hook.h"
+#include "Driver/DriverOptions.h"
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3D9Hook::QueryInterface(THIS_ REFIID riid, void** ppvObj) 
 {
@@ -358,6 +359,11 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3D9Hook::CreateDevice(THIS
 		DbgBreakPrint("Error: Only one of Hardware, Software, or Mixed must be specified at device-creation time!");
 	}
 #endif
+
+	if (ForceMultithreaded.Unsigned() == DFO_ForceEnable)
+		BehaviorFlags |= D3DCREATE_MULTITHREADED;
+	else if (ForceMultithreaded.Unsigned() == DFO_ForceDisable)
+		BehaviorFlags &= (~D3DCREATE_MULTITHREADED);
 
 	LPDIRECT3DDEVICE9 realDevice = NULL;
 	const HRESULT ret = d3d9->CreateDevice(Adapter, DeviceType, hFocusWindow, BehaviorFlags, &modifiedParams, &realDevice);

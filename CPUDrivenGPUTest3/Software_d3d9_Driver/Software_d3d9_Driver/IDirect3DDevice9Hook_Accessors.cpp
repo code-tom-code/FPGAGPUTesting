@@ -14,6 +14,7 @@
 #include "IDirect3DVertexShader9Hook.h"
 #include "IDirect3DPixelShader9Hook.h"
 #include "IDirect3DStateBlock9Hook.h"
+#include "Driver/DriverOptions.h"
 
 COM_DECLSPEC_NOTHROW UINT STDMETHODCALLTYPE IDirect3DDevice9Hook::GetAvailableTextureMem(THIS)
 {
@@ -226,6 +227,9 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::SetDialogBo
 
 COM_DECLSPEC_NOTHROW void STDMETHODCALLTYPE IDirect3DDevice9Hook::SetGammaRamp(THIS_ UINT iSwapChain, DWORD Flags, CONST D3DGAMMARAMP* pRamp)
 {
+	if (IgnoreGammaRamp.Bool() )
+		return;
+
 	if (iSwapChain == 0)
 	{
 		// Set the gamma ramp on the actual device:
@@ -620,6 +624,31 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::SetViewport
 	const HRESULT ret = d3d9dev->SetViewport(pViewport);
 	if (FAILED(ret) )
 		return ret;
+
+	D3DVIEWPORT9 identityViewport;
+	if (ForceIdentityViewport.Bool() )
+	{
+		identityViewport.X = 0;
+		identityViewport.Y = 0;
+		identityViewport.Width = 1;
+		identityViewport.Height = 1;
+		identityViewport.MinZ = 0.0f;
+		identityViewport.MaxZ = 1.0f;
+
+		for (unsigned x = 0; x < D3D_MAX_SIMULTANEOUS_RENDERTARGETS; ++x)
+		{
+			IDirect3DSurface9Hook* renderTarget = currentState.currentRenderTargets[x];
+			if (!renderTarget)
+				continue;
+			D3DSURFACE_DESC desc = {};
+			renderTarget->GetDesc(&desc);
+			if (desc.Width > identityViewport.Width)
+				identityViewport.Width = desc.Width;
+			if (desc.Height > identityViewport.Height)
+				identityViewport.Height = desc.Height;
+		}
+		pViewport = &identityViewport;
+	}
 
 	// Real D3D9 crashes if you pass in a NULL pointer, so we can do basically whatever we want here
 	if (pViewport)
@@ -1659,6 +1688,28 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::SetScissorR
 	const HRESULT ret = d3d9dev->SetScissorRect(pRect);
 	if (FAILED(ret) )
 		return ret;
+
+	RECT identityRect;
+	if (ForceIdentityScissorRect.Bool() )
+	{
+		identityRect.left = 0;
+		identityRect.top = 0;
+		identityRect.right = 1;
+		identityRect.bottom = 1;
+
+		for (unsigned x = 0; x < D3D_MAX_SIMULTANEOUS_RENDERTARGETS; ++x)
+		{
+			IDirect3DSurface9Hook* renderTarget = currentState.currentRenderTargets[x];
+			if (!renderTarget)
+				continue;
+			D3DSURFACE_DESC desc = {};
+			renderTarget->GetDesc(&desc);
+			identityRect.right = desc.Width;
+			identityRect.bottom = desc.Height;
+			break;
+		}
+		pRect = &identityRect;
+	}
 
 	// Real D3D9 crashes if you try to call SetScissorRect() with a NULL pointer, so we can do pretty much whatever we want in this case
 	if (pRect != NULL)

@@ -2,6 +2,7 @@
 
 #include "GlobalToggles.h"
 #include "IDirect3DSurface9Hook.h"
+#include "Driver/DriverOptions.h"
 
 static const __m128i zeroMaskVecI = { 0 };
 static const __m128 zeroVecF = { 0.0f, 0.0f, 0.0f, 0.0f };
@@ -295,6 +296,8 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DSurface9Hook::LockRect(T
 
 	D3DLOCKED_RECT realRect = {0};
 	HRESULT ret = realObject->LockRect(&realRect, pRect, Flags);
+	if (IgnoreLockFunctionValidation.Bool() )
+		ret = D3D_OK;
 	if (FAILED(ret) )
 	{
 		realObject->UnlockRect();
@@ -303,81 +306,88 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DSurface9Hook::LockRect(T
 	realObject->UnlockRect();
 #endif
 
+	if (!IgnoreLockFunctionValidation.Bool() )
+	{
 #ifdef SURFACE_MAGIC_COOKIE
-	ValidateSurfaceMagicCookie(surfaceBytes);
+		ValidateSurfaceMagicCookie(surfaceBytes);
 #endif
 
-	if (!pLockedRect)
-		return D3DERR_INVALIDCALL;
-
-	static const DWORD validLockFlags = D3DLOCK_DISCARD | D3DLOCK_DONOTWAIT | D3DLOCK_NO_DIRTY_UPDATE | D3DLOCK_NOSYSLOCK | D3DLOCK_READONLY;
-	if (Flags & (~validLockFlags) )
-		return D3DERR_INVALIDCALL; // These are the only D3DLOCK flags valid for this function call
-
-	if (creationMethod == deviceImplicitDepthStencil || creationMethod == createDepthStencil)
-	{
-		switch (InternalFormat)
-		{
-		default:
+		if (!pLockedRect)
 			return D3DERR_INVALIDCALL;
-		case D3DFMT_D16_LOCKABLE:
-		case D3DFMT_D32F_LOCKABLE:
-		case D3DFMT_D32_LOCKABLE:
-		case D3DFMT_S8_LOCKABLE:
-			break;
-		}
-	}
 
-	if (InternalPool == D3DPOOL_DEFAULT)
-	{
-		if (Flags & D3DLOCK_READONLY)
+		static const DWORD validLockFlags = D3DLOCK_DISCARD | D3DLOCK_DONOTWAIT | D3DLOCK_NO_DIRTY_UPDATE | D3DLOCK_NOSYSLOCK | D3DLOCK_READONLY;
+		if (Flags & (~validLockFlags) )
+			return D3DERR_INVALIDCALL; // These are the only D3DLOCK flags valid for this function call
+
+		if (creationMethod == deviceImplicitDepthStencil || creationMethod == createDepthStencil)
 		{
-		}
-		else
-		{
-			if (!(InternalUsage & D3DUSAGE_DYNAMIC) )
+			switch (InternalFormat)
+			{
+			default:
 				return D3DERR_INVALIDCALL;
+			case D3DFMT_D16_LOCKABLE:
+			case D3DFMT_D32F_LOCKABLE:
+			case D3DFMT_D32_LOCKABLE:
+			case D3DFMT_S8_LOCKABLE:
+				break;
+			}
 		}
-	}
 
-	if (InternalMultiSampleType != D3DMULTISAMPLE_NONE)
-		return D3DERR_INVALIDCALL;
+		if (InternalPool == D3DPOOL_DEFAULT)
+		{
+			if (Flags & D3DLOCK_READONLY)
+			{
+			}
+			else
+			{
+				if (!(InternalUsage & D3DUSAGE_DYNAMIC) )
+					return D3DERR_INVALIDCALL;
+			}
+		}
+
+		if (InternalMultiSampleType != D3DMULTISAMPLE_NONE)
+			return D3DERR_INVALIDCALL;
+	}
 
 	if (pRect)
 	{
-		// It is illegal to use the D3DLOCK_DISCARD flag with a subrect: https://msdn.microsoft.com/en-us/library/windows/desktop/bb205896(v=vs.85).aspx
-		if (Flags & D3DLOCK_DISCARD)
-			return D3DERR_INVALIDCALL;
+		if (!IgnoreLockFunctionValidation.Bool() )
+		{
+			// It is illegal to use the D3DLOCK_DISCARD flag with a subrect: https://msdn.microsoft.com/en-us/library/windows/desktop/bb205896(v=vs.85).aspx
+			if (Flags & D3DLOCK_DISCARD)
+				return D3DERR_INVALIDCALL;
 
-		// RECT validation:
-		if (pRect->left < 0 || pRect->right < 0 || pRect->top < 0 || pRect->bottom < 0)
-			return D3DERR_INVALIDCALL;
-		if (pRect->left >= pRect->right)
-			return D3DERR_INVALIDCALL;
-		if (pRect->top >= pRect->bottom)
-			return D3DERR_INVALIDCALL;
-		if (pRect->left >= (const long)InternalWidth)
-			return D3DERR_INVALIDCALL;
-		if (pRect->right > (const long)InternalWidth)
-			return D3DERR_INVALIDCALL;
-		if (pRect->top >= (const long)InternalHeight)
-			return D3DERR_INVALIDCALL;
-		if (pRect->bottom > (const long)InternalHeight)
-			return D3DERR_INVALIDCALL;
+			// RECT validation:
+			if (pRect->left < 0 || pRect->right < 0 || pRect->top < 0 || pRect->bottom < 0)
+				return D3DERR_INVALIDCALL;
+			if (pRect->left >= pRect->right)
+				return D3DERR_INVALIDCALL;
+			if (pRect->top >= pRect->bottom)
+				return D3DERR_INVALIDCALL;
+			if (pRect->left >= (const long)InternalWidth)
+				return D3DERR_INVALIDCALL;
+			if (pRect->right > (const long)InternalWidth)
+				return D3DERR_INVALIDCALL;
+			if (pRect->top >= (const long)InternalHeight)
+				return D3DERR_INVALIDCALL;
+			if (pRect->bottom > (const long)InternalHeight)
+				return D3DERR_INVALIDCALL;
+		}
 
 		D3DCOLOR* const pixels = (D3DCOLOR* const)surfaceBytesRaw;
 		pLockedRect->pBits = pixels + pRect->top * InternalWidth + pRect->left;
 	}
 	else
 	{
-#ifdef SURFACE_ENFORCE_DISCARD_ON_LOCK
-		if (Flags & D3DLOCK_DISCARD)
+		if (EnforceDiscardClearsTextures.Bool() )
 		{
-			memset(surfaceBytesRaw, 0, surfaceBytesRawSize);
-			if (auxSurfaceBytesRaw)
-				memset(auxSurfaceBytesRaw, 0, auxSurfaceBytesRawSize);
+			if (Flags & D3DLOCK_DISCARD)
+			{
+				memset(surfaceBytesRaw, 0, surfaceBytesRawSize);
+				if (auxSurfaceBytesRaw)
+					memset(auxSurfaceBytesRaw, 0, auxSurfaceBytesRawSize);
+			}
 		}
-#endif
 
 		pLockedRect->pBits = surfaceBytesRaw;
 	}
@@ -385,26 +395,29 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DSurface9Hook::LockRect(T
 	pLockedRect->Pitch = GetSurfacePitchBytes(InternalWidth, InternalFormat);
 
 #ifdef _DEBUG
-	if (pLockedRect->Pitch != realRect.Pitch)
+	if (!IgnoreLockFunctionValidation.Bool() )
 	{
-		char buffer[256] = {0};
+		if (pLockedRect->Pitch != realRect.Pitch)
+		{
+			char buffer[256] = {0};
 #pragma warning(push)
 #pragma warning(disable:4996)
-		sprintf(buffer, "Lock rect failed due to pitch misalignment. Pitch = %u, expected pitch = %u. Format = %u. Dims = %ux%u\n", realRect.Pitch, pLockedRect->Pitch, InternalFormat, InternalWidth, InternalHeight);
+			sprintf(buffer, "Lock rect failed due to pitch misalignment. Pitch = %u, expected pitch = %u. Format = %u. Dims = %ux%u\n", realRect.Pitch, pLockedRect->Pitch, InternalFormat, InternalWidth, InternalHeight);
 #pragma warning(pop)
-		OutputDebugStringA(buffer);
-	}
+			OutputDebugStringA(buffer);
+		}
 
-	if ( (pLockedRect->Pitch & 0x1) != 0)
-	{
-		// Should never get an odd pitch back
-		__debugbreak();
-	}
+		if ( (pLockedRect->Pitch & 0x1) != 0)
+		{
+			// Should never get an odd pitch back
+			__debugbreak();
+		}
 
-	if (!pLockedRect->pBits)
-	{
-		// Should never get a NULL pointer back
-		__debugbreak();
+		if (!pLockedRect->pBits)
+		{
+			// Should never get a NULL pointer back
+			__debugbreak();
+		}
 	}
 #endif // _DEBUG
 
@@ -1127,11 +1140,12 @@ void IDirect3DSurface9Hook::UpdateSurfaceToGPU()
 
 	const DWORD startTick = GetTickCount();
 
-	if (InternalWidth > 128 || InternalHeight > 128) // In the future, this limitation can be changed from "dimension > 128" to "uncompressed texture fits in 64KB" (need to code HDL for supporting textures > 128 for that)
+	// In the future, this limitation can be changed from "dimension > x" to "uncompressed texture fits in 64KB" (need to code HDL for supporting textures > x for that)
+	if (MaxTextureSize.Unsigned() != 0 && (InternalWidth > MaxTextureSize.Unsigned() || InternalHeight > MaxTextureSize.Unsigned() ) )
 	{
 		// Crap, we need to downsize the texture before sending it across so that the GPU can read from it!
-		static char* const resizeBuffer = new char[128 * 128 * sizeof(D3DCOLOR)];
-		memset(resizeBuffer, 0, 128 * 128 * sizeof(D3DCOLOR) );
+		static char* const resizeBuffer = new char[MaxTextureSize.Unsigned() * MaxTextureSize.Unsigned() * sizeof(D3DCOLOR)];
+		memset(resizeBuffer, 0, MaxTextureSize.Unsigned() * MaxTextureSize.Unsigned() * sizeof(D3DCOLOR) );
 
 		unsigned xShift = 0;
 		unsigned yShift = 0;
@@ -1141,7 +1155,7 @@ void IDirect3DSurface9Hook::UpdateSurfaceToGPU()
 
 		const unsigned resizeBufferSize = GetSurfaceSizeBytes(resizeWidth, resizeHeight, IsCompressedFormat(InternalFormat) ? D3DFMT_A8R8G8B8 : InternalFormat);
 
-		// Let's do just a quick point-sampling for now to make this work, then we can go back later and do bilinear downsampling instead:
+		// Performing a bilinear downsampling here to get a nice smooth blend for our texture to get shrunk down:
 		const float xTexScale = 1.0f / (resizeWidth - 1);
 		const float yTexScale = 1.0f / (resizeHeight - 1);
 		for (unsigned y = 0; y < resizeHeight; ++y)
@@ -1211,7 +1225,7 @@ const UINT IDirect3DSurface9Hook::GetReducedTextureDimensions(unsigned& outXShif
 #endif
 	const USHORT texWidth = (const USHORT)InternalWidth;
 	const USHORT texHeight = (const USHORT)InternalHeight;
-	if (texWidth <= 128 && texHeight <= 128)
+	if (texWidth <= MaxTextureSize.Unsigned() && texHeight <= MaxTextureSize.Unsigned() )
 		return ( (const UINT)texWidth) | ( ( (const UINT)texHeight) << 16);
 
 #ifdef _DEBUG
@@ -1226,7 +1240,7 @@ const UINT IDirect3DSurface9Hook::GetReducedTextureDimensions(unsigned& outXShif
 	unsigned xShift = 0;
 	unsigned resizeHeight = InternalHeight;
 	unsigned yShift = 0;
-	while (resizeWidth > 128 || resizeHeight > 128)
+	while (resizeWidth > MaxTextureSize.Unsigned() || resizeHeight > MaxTextureSize.Unsigned() )
 	{
 		resizeWidth >>= 1;
 		resizeHeight >>= 1;

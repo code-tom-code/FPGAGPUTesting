@@ -2,10 +2,15 @@
 
 struct INIVar;
 
+#ifndef MAX_PATH
+	#define MAX_PATH 260
+#endif
+
 namespace INIRegistry
 {
 	void RegisterVar(INIVar& newVar);
 	void InitLoadAllINIData();
+	void LoadINIStringRaw(char (&outStringBuffer)[MAX_PATH], const char* const sectionName, const char* const varName);
 };
 
 struct INIVar

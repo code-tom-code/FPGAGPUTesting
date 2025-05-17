@@ -1322,6 +1322,8 @@ public:
 	void ComputeVertexClipCodes4(const D3DXVECTOR4* (&vertexPosition4)[4], VS_2_0_OutputRegisters* const (&shadedVerts)[4]) const;
 #endif // #ifdef RUN_SHADERS_IN_WARPS
 
+	void InitEndpointsGraph();
+
 	// Called from initial device creation and from device reset to modify the present params:
 	static void ModifyPresentParameters(D3DPRESENT_PARAMETERS& inOutStruct);
 

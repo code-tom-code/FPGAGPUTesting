@@ -2253,6 +2253,10 @@ void __stdcall IBaseGPUDevice::AssociateComms(IBaseDeviceComms* const baseComms)
 	{
 		__debugbreak(); // Double-calling this function!
 	}
+	if (baseComms == nullptr)
+	{
+		__debugbreak(); // Error: Cannot associate a NULL comms with this device!
+	}
 #endif
 	deviceComms = baseComms;
 }

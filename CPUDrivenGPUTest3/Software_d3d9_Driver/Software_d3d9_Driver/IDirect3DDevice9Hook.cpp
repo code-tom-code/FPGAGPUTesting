@@ -1268,6 +1268,9 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::Present(THI
 	if (DriverControlPanelEnable.Bool() )
 		driverSettingsDlg.UpdateDialog();
 
+	// Update our GPU Stats file on disk:
+	deviceStats.WritePerFrameStats(currentFrameIndex);
+
 	// Update our GPU Stats dialog:
 	deviceStats.UpdateDialog();
 
@@ -11986,12 +11989,6 @@ IDirect3DDevice9Hook::IDirect3DDevice9Hook(LPDIRECT3DDEVICE9 _d3d9dev, IDirect3D
 	enableSoftwareRenderingVisualization = false;
 #else
 	enableSoftwareRenderingVisualization = false;
-#endif
-
-#ifdef _DEBUG
-	enableGPUStats = false;
-#else
-	enableGPUStats = false;
 #endif
 
 #ifdef _DEBUG

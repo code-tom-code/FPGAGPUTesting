@@ -16,6 +16,7 @@
 #include "Driver/GPUMemoryMapDlg.h"
 #include "LRU_GPUCommandListCache.h"
 #include "LRU_VertDataBufferCache.h"
+#include "Driver/DriverOptions.h"
 
 #include "SimpleInstrumentedProfiler.h"
 
@@ -1386,12 +1387,12 @@ public:
 
 	const bool DoEnableGPUStats() const
 	{
-		return enableGPUStats;
+		return EnableDeviceStats.Bool();
 	}
 
 	void SetEnableGPUStats(const bool newEnableGPUStats)
 	{
-		enableGPUStats = newEnableGPUStats;
+		EnableDeviceStats.Data.bData = newEnableGPUStats;
 	}
 
 	const bool GetScanoutEnabled() const
@@ -1744,8 +1745,8 @@ protected:
 	GPUStats deviceStats;
 	GPUMemoryMapDlg deviceMemoryMapDialog;
 
+	// TODO: Convert all of these options over to INIVar's:
 	bool enableSoftwareRenderingVisualization;
-	bool enableGPUStats;
 	bool enableScanout;
 	bool useDoubleBuffering; // Set this to false for GPU single-step debugging purposes to only have a frontbuffer instead of a frontbuffer + backbuffer
 	bool enableVSyncWait;
@@ -1753,6 +1754,7 @@ protected:
 	bool printScrnCapturesScreenshot;
 	bool invertScanoutColors;
 	
+	// TODO: Convert all of these options over to INIVar's also:
 	// Render state override settings allow the driver to render the scene with a specific set of render states
 	// being overridden by user values. This is useful for debugging rendering issues in real-time:
 	DepthOverrideSettings overrideDepth;

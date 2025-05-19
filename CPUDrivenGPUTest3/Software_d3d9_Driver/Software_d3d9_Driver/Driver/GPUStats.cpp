@@ -2,6 +2,7 @@
 #include "IBaseGPUDevice.h"
 #include <stdio.h>
 #include "..\resource.h"
+#include "DriverOptions.h"
 
 static const UINT WM_USER_DLG_INIT_MSG = WM_USER + 0x3E9E;
 
@@ -10,10 +11,37 @@ GPUStats::GPUStats()
 	memset(&uStats, 0, sizeof(uStats) );
 	memset(&downloadedEventTimestamps, 0, sizeof(downloadedEventTimestamps) );
 	memset(&downloadedEventOrders, 0, sizeof(downloadedEventOrders) );
+
+	if (WriteStatsToDisk.Bool() )
+	{
+#ifdef _DEBUG
+		if (!StatsWriteFilename.String() || !*StatsWriteFilename.String() )
+		{
+			__debugbreak(); // Invalid stats filename!
+		}
+#endif
+#pragma warning(push)
+#pragma warning(disable:4996)
+		statsWriteFile = fopen(StatsWriteFilename.String(), "wb");
+#pragma warning(pop)
+#ifdef _DEBUG
+		if (!statsWriteFile)
+		{
+			__debugbreak(); // Error opening stats file for writing!
+		}
+#endif
+		WriteStatsColumnHeaders();
+	}
 }
 
 GPUStats::~GPUStats()
 {
+	if (statsWriteFile != NULL)
+	{
+		fclose(statsWriteFile);
+		statsWriteFile = NULL;
+	}
+
 	if (GPUStatsDialog != NULL)
 	{
 		CloseWindow(GPUStatsDialog);
@@ -468,116 +496,307 @@ void GPUStats::PrintCounterStat(const int dlgItemID, const unsigned count) const
 	SetDlgItemTextA(GPUStatsDialog, dlgItemID, statBuffer);
 }
 
+static const char statsFileHeaderColumnsString[] = "FrameID,"\
+	"VBBCyclesTotal,"\
+	"VBBCyclesIdle,VBBCyclesOutWait,VBBCyclesWorking,"\
+	"VBBPercentIdle,VBBPercentOutWait,VBBPercentWorking,"\
+	"VShaderCyclesTotal,"\
+	"VShaderCyclesIdle,VShaderCyclesOutWait,VShaderCyclesExecShaderCode,VShaderCyclesWorking,"\
+	"VShaderPercentIdle,VShaderPercentOutWait,VShaderPercentExecShaderCode,VShaderPercentWorking,"\
+	"IACyclesTotal,"\
+	"IACyclesIdle,IACyclesOutWait,IACyclesWaitCache,IACyclesWorking,"\
+	"IAPercentIdle,IAPercentOutWait,IAPercentWaitCache,IAPercentWorking,"\
+	"ClipUnitCyclesTotal,"\
+	"ClipUnitCyclesIdle,ClipUnitCyclesOutWait,ClipUnitCyclesWorking,"\
+	"ClipUnitPercentIdle,ClipUnitPercentOutWait,ClipUnitPercentWorking,"\
+	"TriSetupCyclesTotal,"\
+	"TriSetupCyclesIdle,TriSetupCyclesOutWait,TriSetupCyclesWorking,"\
+	"TriSetupPercentIdle,TriSetupPercentOutWait,TriSetupPercentWorking,"\
+	"RastCyclesTotal,"\
+	"RastCyclesIdle,RastCyclesOutWait,RastCyclesWaitTriWorkCache,RastCyclesWorking,"\
+	"RastPercentIdle,RastPercentOutWait,RastPercentWaitTriWorkCache,RastPercentWorking,"\
+	"DInterpCyclesTotal,"\
+	"DInterpCyclesIdle,DInterpCyclesOutWait,DInterpCyclesWorking,"\
+	"DInterpPercentIdle,DInterpPercentOutWait,DInterpPercentWorking,"\
+	"InterpCyclesTotal,"\
+	"InterpCyclesIdle,InterpCyclesOutWait,InterpCyclesWorking,"\
+	"InterpPercentIdle,InterpPercentOutWait,InterpPercentWorking,"\
+	"TexSampCyclesTotal,"\
+	"TexSampCyclesIdle,TexSampCyclesOutWait,TexSampCyclesWaitCache,TexSampCyclesWorking,"\
+	"TexSampPercentIdle,TexSampPercentOutWait,TexSampPercentWaitCache,TexSampPercentWorking,"\
+	"ROPCyclesTotal,"\
+	"ROPCyclesIdle,ROPCyclesOutWait,ROPCyclesWaitCache,ROPCyclesWorking,"\
+	"ROPPercentIdle,ROPPercentOutWait,ROPPercentWaitCache,ROPPercentWorking,"\
+	"CMDCyclesTotal,"\
+	"CMDCyclesIdle,CMDCyclesWorking,"\
+	"CMDPercentIdle,CMDPercentWorking,"\
+	"MemReadCyclesTotal,"\
+	"MemReadCyclesIdle,MemReadCyclesWorking,"\
+	"MemReadPercentIdle,MemReadPercentWorking,"\
+	"MemWriteCyclesTotal,"\
+	"MemWriteCyclesIdle,MemWriteCyclesWorking,"\
+	"MemWritePercentIdle,MemWritePercentWorking,"\
+	"ROPCacheTransactionsTotal,"\
+	"ROPCacheHits,ROPCacheMisses,"\
+	"ROPCachePercentHits,ROPCachePercentMisses,"\
+	"MemReadNumBytes,MemReadNumTransactions,"\
+	"MemReadNumBytesNonScanout,MemReadNumTransactionsNonScanout,"\
+	"MemWriteNumBytes,MemWriteNumTransactions"\
+	"\n";
+
+static const char statsFileLineFormatString[] =  "%u," /* "FrameID,"*/ \
+	"%u," /* "VBBCyclesTotal,"*/ \
+	"%u,%u,%u," /* "VBBCyclesIdle,VBBCyclesOutWait,VBBCyclesWorking,"*/ \
+	"%f,%f,%f," /* "VBBPercentIdle,VBBPercentOutWait,VBBPercentWorking"*/ \
+	"%u," /* "VShaderCyclesTotal,"*/ \
+	"%u,%u,%u,%u," /* "VShaderCyclesIdle,VShaderCyclesOutWait,VShaderCyclesExecShaderCode,VShaderCyclesWorking,"*/ \
+	"%f,%f,%f,%f," /* "VShaderPercentIdle,VShaderPercentOutWait,VShaderPercentExecShaderCode,VShaderPercentWorking"*/ \
+	"%u," /* "IACyclesTotal,"*/ \
+	"%u,%u,%u,%u," /* "IACyclesIdle,IACyclesOutWait,IACyclesWaitCache,IACyclesWorking,"*/ \
+	"%f,%f,%f,%f," /* "IAPercentIdle,IAPercentOutWait,IAPercentWaitCache,IAPercentWorking"*/ \
+	"%u," /* "ClipUnitCyclesTotal,"*/ \
+	"%u,%u,%u," /* "ClipUnitCyclesIdle,ClipUnitCyclesOutWait,ClipUnitCyclesWorking,"*/ \
+	"%f,%f,%f," /* "ClipUnitPercentIdle,ClipUnitPercentOutWait,ClipUnitPercentWorking"*/ \
+	"%u," /* "TriSetupCyclesTotal,"*/ \
+	"%u,%u,%u," /* "TriSetupCyclesIdle,TriSetupCyclesOutWait,TriSetupCyclesWorking,"*/ \
+	"%f,%f,%f," /* "TriSetupPercentIdle,TriSetupPercentOutWait,TriSetupPercentWorking"*/ \
+	"%u," /* "RastCyclesTotal,"*/ \
+	"%u,%u,%u,%u," /* "RastCyclesIdle,RastCyclesOutWait,RastCyclesWaitTriWorkCache,RastCyclesWorking,"*/ \
+	"%f,%f,%f,%f," /* "RastPercentIdle,RastPercentOutWait,RastPercentWaitTriWorkCache,RastPercentWorking"*/ \
+	"%u," /* "DInterpCyclesTotal,"*/ \
+	"%u,%u,%u," /* "DInterpCyclesIdle,DInterpCyclesOutWait,DInterpCyclesWorking,"*/ \
+	"%f,%f,%f," /* "DInterpPercentIdle,DInterpPercentOutWait,DInterpPercentWorking"*/ \
+	"%u," /* "InterpCyclesTotal,"*/ \
+	"%u,%u,%u," /* "InterpCyclesIdle,InterpCyclesOutWait,InterpCyclesWorking,"*/ \
+	"%f,%f,%f," /* "InterpPercentIdle,InterpPercentOutWait,InterpPercentWorking"*/ \
+	"%u," /* "TexSampCyclesTotal,"*/ \
+	"%u,%u,%u,%u," /* "TexSampCyclesIdle,TexSampCyclesOutWait,TexSampCyclesWaitCache,TexSampCyclesWorking,"*/ \
+	"%f,%f,%f,%f," /* "TexSampPercentIdle,TexSampPercentOutWait,TexSampPercentWaitCache,TexSampPercentWorking"*/ \
+	"%u," /* "ROPCyclesTotal,"*/ \
+	"%u,%u,%u,%u," /* "ROPCyclesIdle,ROPCyclesOutWait,ROPCyclesWaitCache,ROPCyclesWorking,"*/ \
+	"%f,%f,%f,%f," /* "ROPPercentIdle,ROPPercentOutWait,ROPPercentWaitCache,ROPPercentWorking"*/ \
+	"%u," /* "CMDCyclesTotal,"*/ \
+	"%u,%u," /* "CMDCyclesIdle,CMDCyclesWorking,"*/ \
+	"%f,%f," /* "CMDPercentIdle,CMDPercentWorking"*/ \
+	"%u," /* "MemReadCyclesTotal,"*/ \
+	"%u,%u," /* "MemReadCyclesIdle,MemReadCyclesWorking,"*/ \
+	"%f,%f," /* "MemReadPercentIdle,MemReadPercentWorking"*/ \
+	"%u," /* "MemWriteCyclesTotal,"*/ \
+	"%u,%u," /* "MemWriteCyclesIdle,MemWriteCyclesWorking,"*/ \
+	"%f,%f," /* "MemWritePercentIdle,MemWritePercentWorking"*/ \
+	"%u," /* "ROPCacheTransactionsTotal,"*/ \
+	"%u,%u," /* "ROPCacheHits,ROPCacheMisses"*/ \
+	"%f,%f," /* "ROPCachePercentHits,ROPCachePercentMisses"*/ \
+	"%u,%u," /* "MemReadNumBytes,MemReadNumTransactions"*/ \
+	"%u,%u," /* "MemReadNumBytesNonScanout,MemReadNumTransactionsNonScanout"*/ \
+	"%u,%u" /* "MemWriteNumBytes,MemWriteNumTransactions"*/ \
+	"\n";
+void GPUStats::WriteStatsColumnHeaders()
+{
+	if (!statsWriteFile)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Don't call this function if we're not supposed to have an opened stats file!
+#endif
+		return;
+	}
+
+	fwrite(statsFileHeaderColumnsString, sizeof(statsFileHeaderColumnsString), 1, statsWriteFile);
+}
+
+const float GetReciprocalPercentageCycleCount(const unsigned totalCycleCount)
+{
+	if (totalCycleCount == 0)
+		return 0.0f;
+	return 100.0f / totalCycleCount;
+}
+
+static char printBuffer[8192] = {0};
+void GPUStats::WritePerFrameStats(const unsigned currentFrameID)
+{
+	if (!statsWriteFile)
+		return;
+
+	const GPUFrameStats& frameStats = uStats.typedFrameStats;
+
+	const float rcpVBBTotalCyclesPercent = GetReciprocalPercentageCycleCount(frameStats.VBBTimerStats.GetTotalCycleCount() );
+	const float rcpVShaderTotalCyclesPercent = GetReciprocalPercentageCycleCount(frameStats.VShaderTimerStats.GetTotalCycleCount() );
+	const float rcpIATotalCyclesPercent = GetReciprocalPercentageCycleCount(frameStats.IATimerStats.GetTotalCycleCount() );
+	const float rcpClipUnitTotalCyclesPercent = GetReciprocalPercentageCycleCount(frameStats.ClipUnitTimerStats.GetTotalCycleCount() );
+	const float rcpTriSetupTotalCyclesPercent = GetReciprocalPercentageCycleCount(frameStats.TriSetupTimerStats.GetTotalCycleCount() );
+	const float rcpRastTotalCyclesPercent = GetReciprocalPercentageCycleCount(frameStats.RasterizerTimerStats.GetTotalCycleCount() );
+	const float rcpDInterpTotalCyclesPercent = GetReciprocalPercentageCycleCount(frameStats.DepthInterpolatorTimerStats.GetTotalCycleCount() );
+	const float rcpInterpTotalCyclesPercent = GetReciprocalPercentageCycleCount(frameStats.AttrInterpolatorTimerStats.GetTotalCycleCount() );
+	const float rcpTexSampTotalCyclesPercent = GetReciprocalPercentageCycleCount(frameStats.TexSamplerTimerStats.GetTotalCycleCount() );
+	const float rcpROPTotalCyclesPercent = GetReciprocalPercentageCycleCount(frameStats.ROPTimerStats.GetTotalCycleCount() );
+	const float rcpCommandTotalCyclesPercent = GetReciprocalPercentageCycleCount(frameStats.CommandProcessorTimerStats.GetTotalCycleCount() );
+	const float rcpMemReadTotalCyclesPercent = GetReciprocalPercentageCycleCount(frameStats.MemControllerReadTimerStats.GetTotalCycleCount() );
+	const float rcpMemWriteTotalCyclesPercent = GetReciprocalPercentageCycleCount(frameStats.MemControllerWriteTimerStats.GetTotalCycleCount() );
+	const float rcpROPTransactionsPercent = GetReciprocalPercentageCycleCount(frameStats.ROPCacheCounterStats.GetTotalCacheLookups() );
+
+	const int length = sprintf_s(printBuffer, statsFileLineFormatString, currentFrameID, /* "FrameID,"*/ \
+		frameStats.VBBTimerStats.GetTotalCycleCount(), /* "VBBCyclesTotal,"*/
+		frameStats.VBBTimerStats.cyclesIdle, frameStats.VBBTimerStats.cyclesWaitingForOutput, frameStats.VBBTimerStats.cyclesWorking, /* "VBBCyclesIdle,VBBCyclesOutWait,VBBCyclesWorking,"*/
+		frameStats.VBBTimerStats.cyclesIdle * rcpVBBTotalCyclesPercent, frameStats.VBBTimerStats.cyclesWaitingForOutput * rcpVBBTotalCyclesPercent, frameStats.VBBTimerStats.cyclesWorking * rcpVBBTotalCyclesPercent, /* "VBBPercentIdle,VBBPercentOutWait,VBBPercentWorking"*/
+		frameStats.VShaderTimerStats.GetTotalCycleCount(), /* "VShaderCyclesTotal,"*/
+		frameStats.VShaderTimerStats.cyclesIdle, frameStats.VShaderTimerStats.cyclesWaitingForOutput, frameStats.VShaderTimerStats.cyclesExecShaderCode, frameStats.VShaderTimerStats.cyclesWorking, /* "VShaderCyclesIdle,VShaderCyclesOutWait,VShaderCyclesExecShaderCode,VShaderCyclesWorking,"*/
+		frameStats.VShaderTimerStats.cyclesIdle * rcpVShaderTotalCyclesPercent, frameStats.VShaderTimerStats.cyclesWaitingForOutput * rcpVShaderTotalCyclesPercent, frameStats.VShaderTimerStats.cyclesExecShaderCode * rcpVShaderTotalCyclesPercent, frameStats.VShaderTimerStats.cyclesWorking * rcpVShaderTotalCyclesPercent, /* "VShaderPercentIdle,VShaderPercentOutWait,VShaderPercentExecShaderCode,VShaderPercentWorking"*/
+		frameStats.IATimerStats.GetTotalCycleCount(), /* "IACyclesTotal,"*/
+		frameStats.IATimerStats.cyclesIdle, frameStats.IATimerStats.cyclesWaitingForOutput, frameStats.IATimerStats.cyclesLoadingDataToCache, frameStats.IATimerStats.cyclesWorking, /* "IACyclesIdle,IACyclesOutWait,IACyclesWaitCache,IACyclesWorking,"*/
+		frameStats.IATimerStats.cyclesIdle * rcpIATotalCyclesPercent, frameStats.IATimerStats.cyclesWaitingForOutput * rcpIATotalCyclesPercent, frameStats.IATimerStats.cyclesLoadingDataToCache * rcpIATotalCyclesPercent, frameStats.IATimerStats.cyclesWorking * rcpIATotalCyclesPercent, /* "IAPercentIdle,IAPercentOutWait,IAPercentWaitCache,IAPercentWorking"*/
+		frameStats.ClipUnitTimerStats.GetTotalCycleCount(), /* "ClipUnitCyclesTotal,"*/
+		frameStats.ClipUnitTimerStats.cyclesIdle, frameStats.ClipUnitTimerStats.cyclesWaitingForOutput, frameStats.ClipUnitTimerStats.cyclesWorking, /* "ClipUnitCyclesIdle,ClipUnitCyclesOutWait,ClipUnitCyclesWorking,"*/
+		frameStats.ClipUnitTimerStats.cyclesIdle * rcpClipUnitTotalCyclesPercent, frameStats.ClipUnitTimerStats.cyclesWaitingForOutput * rcpClipUnitTotalCyclesPercent, frameStats.ClipUnitTimerStats.cyclesWorking * rcpClipUnitTotalCyclesPercent, /* "ClipUnitPercentIdle,ClipUnitPercentOutWait,ClipUnitPercentWorking"*/
+		frameStats.TriSetupTimerStats.GetTotalCycleCount(), /* "TriSetupCyclesTotal,"*/
+		frameStats.TriSetupTimerStats.cyclesIdle, frameStats.TriSetupTimerStats.cyclesWaitingForOutput, frameStats.TriSetupTimerStats.cyclesWorking, /* "TriSetupCyclesIdle,TriSetupCyclesOutWait,TriSetupCyclesWorking,"*/
+		frameStats.TriSetupTimerStats.cyclesIdle * rcpTriSetupTotalCyclesPercent, frameStats.TriSetupTimerStats.cyclesWaitingForOutput * rcpTriSetupTotalCyclesPercent, frameStats.TriSetupTimerStats.cyclesWorking * rcpTriSetupTotalCyclesPercent, /* "TriSetupPercentIdle,TriSetupPercentOutWait,TriSetupPercentWorking"*/
+		frameStats.RasterizerTimerStats.GetTotalCycleCount(), /* "RastCyclesTotal,"*/
+		frameStats.RasterizerTimerStats.cyclesIdle, frameStats.RasterizerTimerStats.cyclesWaitingForOutput, frameStats.RasterizerTimerStats.cyclesWaitingForTriWorkCache, frameStats.RasterizerTimerStats.cyclesWorking, /* "RastCyclesIdle,RastCyclesOutWait,RastCyclesWaitTriWorkCache,RastCyclesWorking,"*/
+		frameStats.RasterizerTimerStats.cyclesIdle * rcpRastTotalCyclesPercent, frameStats.RasterizerTimerStats.cyclesWaitingForOutput * rcpRastTotalCyclesPercent, frameStats.RasterizerTimerStats.cyclesWaitingForTriWorkCache * rcpRastTotalCyclesPercent, frameStats.RasterizerTimerStats.cyclesWorking * rcpRastTotalCyclesPercent, /* "RastPercentIdle,RastPercentOutWait,RastPercentWaitTriWorkCache,RastPercentWorking"*/
+		frameStats.DepthInterpolatorTimerStats.GetTotalCycleCount(), /* "DInterpCyclesTotal,"*/
+		frameStats.DepthInterpolatorTimerStats.cyclesIdle, frameStats.DepthInterpolatorTimerStats.cyclesWaitingForOutput, frameStats.DepthInterpolatorTimerStats.cyclesWorking, /* "DInterpCyclesIdle,DInterpCyclesOutWait,DInterpCyclesWorking,"*/
+		frameStats.DepthInterpolatorTimerStats.cyclesIdle * rcpDInterpTotalCyclesPercent, frameStats.DepthInterpolatorTimerStats.cyclesWaitingForOutput * rcpDInterpTotalCyclesPercent, frameStats.DepthInterpolatorTimerStats.cyclesWorking * rcpDInterpTotalCyclesPercent, /* "DInterpPercentIdle,DInterpPercentOutWait,DInterpPercentWorking"*/
+		frameStats.AttrInterpolatorTimerStats.GetTotalCycleCount(), /* "InterpCyclesTotal,"*/
+		frameStats.AttrInterpolatorTimerStats.cyclesIdle, frameStats.AttrInterpolatorTimerStats.cyclesWaitingForOutput, frameStats.AttrInterpolatorTimerStats.cyclesWorking, /* "InterpCyclesIdle,InterpCyclesOutWait,InterpCyclesWorking,"*/
+		frameStats.AttrInterpolatorTimerStats.cyclesIdle * rcpInterpTotalCyclesPercent, frameStats.AttrInterpolatorTimerStats.cyclesWaitingForOutput * rcpInterpTotalCyclesPercent, frameStats.AttrInterpolatorTimerStats.cyclesWorking * rcpInterpTotalCyclesPercent, /* "InterpPercentIdle,InterpPercentOutWait,InterpPercentWorking"*/
+		frameStats.TexSamplerTimerStats.GetTotalCycleCount(), /* "TexSampCyclesTotal,"*/
+		frameStats.TexSamplerTimerStats.cyclesIdle, frameStats.TexSamplerTimerStats.cyclesWaitingForOutput, frameStats.TexSamplerTimerStats.cyclesLoadingTexCache, frameStats.TexSamplerTimerStats.cyclesWorking, /* "TexSampCyclesIdle,TexSampCyclesOutWait,TexSampCyclesWaitCache,TexSampCyclesWorking,"*/
+		frameStats.TexSamplerTimerStats.cyclesIdle * rcpTexSampTotalCyclesPercent, frameStats.TexSamplerTimerStats.cyclesWaitingForOutput * rcpTexSampTotalCyclesPercent, frameStats.TexSamplerTimerStats.cyclesLoadingTexCache * rcpTexSampTotalCyclesPercent, frameStats.TexSamplerTimerStats.cyclesWorking * rcpTexSampTotalCyclesPercent, /* "TexSampPercentIdle,TexSampPercentOutWait,TexSampPercentWaitCache,TexSampPercentWorking"*/
+		frameStats.ROPTimerStats.GetTotalCycleCount(), /* "ROPCyclesTotal,"*/
+		frameStats.ROPTimerStats.cyclesIdle, frameStats.ROPTimerStats.cyclesWaitingForOutput, frameStats.ROPTimerStats.cyclesWaitingForMemoryRead, frameStats.ROPTimerStats.cyclesWorking, /* "ROPCyclesIdle,ROPCyclesOutWait,ROPCyclesWaitCache,ROPCyclesWorking,"*/
+		frameStats.ROPTimerStats.cyclesIdle * rcpROPTotalCyclesPercent, frameStats.ROPTimerStats.cyclesWaitingForOutput * rcpROPTotalCyclesPercent, frameStats.ROPTimerStats.cyclesWaitingForMemoryRead * rcpROPTotalCyclesPercent, frameStats.ROPTimerStats.cyclesWorking * rcpROPTotalCyclesPercent, /* "ROPPercentIdle,ROPPercentOutWait,ROPPercentWaitCache,ROPPercentWorking"*/
+		frameStats.CommandProcessorTimerStats.GetTotalCycleCount(), /* "CMDCyclesTotal,"*/
+		frameStats.CommandProcessorTimerStats.cyclesIdle, frameStats.CommandProcessorTimerStats.cyclesWorking, /* "CMDCyclesIdle,CMDCyclesWorking,"*/
+		frameStats.CommandProcessorTimerStats.cyclesIdle * rcpCommandTotalCyclesPercent, frameStats.CommandProcessorTimerStats.cyclesWorking * rcpCommandTotalCyclesPercent, /* "CMDPercentIdle,CMDPercentWorking"*/
+		frameStats.MemControllerReadTimerStats.GetTotalCycleCount(), /* "MemReadCyclesTotal,"*/
+		frameStats.MemControllerReadTimerStats.cyclesIdle, frameStats.MemControllerReadTimerStats.cyclesWorking, /* "MemReadCyclesIdle,MemReadCyclesWorking,"*/
+		frameStats.MemControllerReadTimerStats.cyclesIdle * rcpMemReadTotalCyclesPercent, frameStats.MemControllerReadTimerStats.cyclesWorking * rcpMemReadTotalCyclesPercent, /* "MemReadPercentIdle,MemReadPercentWorking"*/
+		frameStats.MemControllerWriteTimerStats.GetTotalCycleCount(), /* "MemWriteCyclesTotal,"*/
+		frameStats.MemControllerWriteTimerStats.cyclesIdle, frameStats.MemControllerWriteTimerStats.cyclesWorking, /* "MemWriteCyclesIdle,MemWriteCyclesWorking,"*/
+		frameStats.MemControllerWriteTimerStats.cyclesIdle * rcpMemWriteTotalCyclesPercent, frameStats.MemControllerWriteTimerStats.cyclesWorking * rcpMemWriteTotalCyclesPercent, /* "MemWritePercentIdle,MemWritePercentWorking"*/
+		frameStats.ROPCacheCounterStats.GetTotalCacheLookups(), /* "ROPCacheTransactionsTotal,"*/
+		frameStats.ROPCacheCounterStats.ROPCounterCacheHits, frameStats.ROPCacheCounterStats.ROPCounterCacheMisses, /* "ROPCacheHits,ROPCacheMisses"*/
+		frameStats.ROPCacheCounterStats.ROPCounterCacheHits * rcpROPTransactionsPercent, frameStats.ROPCacheCounterStats.ROPCounterCacheMisses * rcpROPTransactionsPercent, /* "ROPCachePercentHits,ROPCachePercentMisses"*/
+		frameStats.ReadMemCounterStats.BytesTransferred, frameStats.ReadMemCounterStats.NumTransactions, /* "MemReadNumBytes,MemReadNumTransactions"*/
+		frameStats.ReadMemCounterStats.BytesTransferredNonScanout, frameStats.ReadMemCounterStats.NumTransactionsNonScanout, /* "MemReadNumBytesNonScanout,MemReadNumTransactionsNonScanout"*/
+		frameStats.WriteMemCounterStats.BytesTransferred, frameStats.WriteMemCounterStats.NumTransactions /* "MemWriteNumBytes,MemWriteNumTransactions"*/
+		);
+
+	fwrite(printBuffer, length, 1, statsWriteFile);
+}
+
 void GPUStats::UpdateDialogStats()
 {
 	if (!GPUStatsDialog)
 		return;
 
-	const float VBBIdlePercent = uStats.typedFrameStats.VBBTimerStats.cyclesIdle / (const float)uStats.typedFrameStats.VBBTimerStats.GetTotalCycleCount();
-	const float VBBOutWaitPercent = uStats.typedFrameStats.VBBTimerStats.cyclesWaitingForOutput / (const float)uStats.typedFrameStats.VBBTimerStats.GetTotalCycleCount();
-	const float VBBWorkingPercent = uStats.typedFrameStats.VBBTimerStats.cyclesWorking / (const float)uStats.typedFrameStats.VBBTimerStats.GetTotalCycleCount();
-	PrintTimeStat(IDC_VBB_STAT1, VBBIdlePercent, uStats.typedFrameStats.VBBTimerStats.cyclesIdle);
-	PrintTimeStat(IDC_VBB_STAT2, VBBOutWaitPercent, uStats.typedFrameStats.VBBTimerStats.cyclesWaitingForOutput);
-	PrintTimeStat(IDC_VBB_STAT3, VBBWorkingPercent, uStats.typedFrameStats.VBBTimerStats.cyclesWorking);
+	const GPUFrameStats& frameStats = uStats.typedFrameStats;
 
-	const float VShaderIdlePercent = uStats.typedFrameStats.VShaderTimerStats.cyclesIdle / (const float)uStats.typedFrameStats.VShaderTimerStats.GetTotalCycleCount();
-	const float VShaderOutWaitPercent = uStats.typedFrameStats.VShaderTimerStats.cyclesWaitingForOutput / (const float)uStats.typedFrameStats.VShaderTimerStats.GetTotalCycleCount();
-	const float VShaderExecShaderCode = uStats.typedFrameStats.VShaderTimerStats.cyclesExecShaderCode / (const float)uStats.typedFrameStats.VShaderTimerStats.GetTotalCycleCount();
-	const float VShaderWorkingPercent = uStats.typedFrameStats.VShaderTimerStats.cyclesWorking / (const float)uStats.typedFrameStats.VShaderTimerStats.GetTotalCycleCount();
-	PrintTimeStat(IDC_VS_STAT1, VShaderIdlePercent, uStats.typedFrameStats.VShaderTimerStats.cyclesIdle);
-	PrintTimeStat(IDC_VS_STAT2, VShaderOutWaitPercent, uStats.typedFrameStats.VShaderTimerStats.cyclesWaitingForOutput);
-	PrintTimeStat(IDC_VS_STAT3, VShaderExecShaderCode, uStats.typedFrameStats.VShaderTimerStats.cyclesExecShaderCode);
-	PrintTimeStat(IDC_VS_STAT4, VShaderWorkingPercent, uStats.typedFrameStats.VShaderTimerStats.cyclesWorking);
+	const float VBBIdlePercent = frameStats.VBBTimerStats.cyclesIdle / (const float)frameStats.VBBTimerStats.GetTotalCycleCount();
+	const float VBBOutWaitPercent = frameStats.VBBTimerStats.cyclesWaitingForOutput / (const float)frameStats.VBBTimerStats.GetTotalCycleCount();
+	const float VBBWorkingPercent = frameStats.VBBTimerStats.cyclesWorking / (const float)frameStats.VBBTimerStats.GetTotalCycleCount();
+	PrintTimeStat(IDC_VBB_STAT1, VBBIdlePercent, frameStats.VBBTimerStats.cyclesIdle);
+	PrintTimeStat(IDC_VBB_STAT2, VBBOutWaitPercent, frameStats.VBBTimerStats.cyclesWaitingForOutput);
+	PrintTimeStat(IDC_VBB_STAT3, VBBWorkingPercent, frameStats.VBBTimerStats.cyclesWorking);
 
-	const float IAIdlePercent = uStats.typedFrameStats.IATimerStats.cyclesIdle / (const float)uStats.typedFrameStats.IATimerStats.GetTotalCycleCount();
-	const float IAOutWaitPercent = uStats.typedFrameStats.IATimerStats.cyclesWaitingForOutput / (const float)uStats.typedFrameStats.IATimerStats.GetTotalCycleCount();
-	const float IAWaitCachePercent = uStats.typedFrameStats.IATimerStats.cyclesLoadingDataToCache / (const float)uStats.typedFrameStats.IATimerStats.GetTotalCycleCount();
-	const float IAWorkingPercent = uStats.typedFrameStats.IATimerStats.cyclesWorking / (const float)uStats.typedFrameStats.IATimerStats.GetTotalCycleCount();
-	PrintTimeStat(IDC_IA_STAT1, IAIdlePercent, uStats.typedFrameStats.IATimerStats.cyclesIdle);
-	PrintTimeStat(IDC_IA_STAT2, IAOutWaitPercent, uStats.typedFrameStats.IATimerStats.cyclesWaitingForOutput);
-	PrintTimeStat(IDC_IA_STAT3, IAWaitCachePercent, uStats.typedFrameStats.IATimerStats.cyclesLoadingDataToCache);
-	PrintTimeStat(IDC_IA_STAT4, IAWorkingPercent, uStats.typedFrameStats.IATimerStats.cyclesWorking);
+	const float VShaderIdlePercent = frameStats.VShaderTimerStats.cyclesIdle / (const float)frameStats.VShaderTimerStats.GetTotalCycleCount();
+	const float VShaderOutWaitPercent = frameStats.VShaderTimerStats.cyclesWaitingForOutput / (const float)frameStats.VShaderTimerStats.GetTotalCycleCount();
+	const float VShaderExecShaderCode = frameStats.VShaderTimerStats.cyclesExecShaderCode / (const float)frameStats.VShaderTimerStats.GetTotalCycleCount();
+	const float VShaderWorkingPercent = frameStats.VShaderTimerStats.cyclesWorking / (const float)frameStats.VShaderTimerStats.GetTotalCycleCount();
+	PrintTimeStat(IDC_VS_STAT1, VShaderIdlePercent, frameStats.VShaderTimerStats.cyclesIdle);
+	PrintTimeStat(IDC_VS_STAT2, VShaderOutWaitPercent, frameStats.VShaderTimerStats.cyclesWaitingForOutput);
+	PrintTimeStat(IDC_VS_STAT3, VShaderExecShaderCode, frameStats.VShaderTimerStats.cyclesExecShaderCode);
+	PrintTimeStat(IDC_VS_STAT4, VShaderWorkingPercent, frameStats.VShaderTimerStats.cyclesWorking);
 
-	const float ClipUnitIdlePercent = uStats.typedFrameStats.ClipUnitTimerStats.cyclesIdle / (const float)uStats.typedFrameStats.ClipUnitTimerStats.GetTotalCycleCount();
-	const float ClipUnitOutWaitPercent = uStats.typedFrameStats.ClipUnitTimerStats.cyclesWaitingForOutput / (const float)uStats.typedFrameStats.ClipUnitTimerStats.GetTotalCycleCount();
-	const float ClipUnitWorkingPercent = uStats.typedFrameStats.ClipUnitTimerStats.cyclesWorking / (const float)uStats.typedFrameStats.ClipUnitTimerStats.GetTotalCycleCount();
-	PrintTimeStat(IDC_CLIPUNIT_STAT1, ClipUnitIdlePercent, uStats.typedFrameStats.ClipUnitTimerStats.cyclesIdle);
-	PrintTimeStat(IDC_CLIPUNIT_STAT2, ClipUnitOutWaitPercent, uStats.typedFrameStats.ClipUnitTimerStats.cyclesWaitingForOutput);
-	PrintTimeStat(IDC_CLIPUNIT_STAT3, ClipUnitWorkingPercent, uStats.typedFrameStats.ClipUnitTimerStats.cyclesWorking);
+	const float IAIdlePercent = frameStats.IATimerStats.cyclesIdle / (const float)frameStats.IATimerStats.GetTotalCycleCount();
+	const float IAOutWaitPercent = frameStats.IATimerStats.cyclesWaitingForOutput / (const float)frameStats.IATimerStats.GetTotalCycleCount();
+	const float IAWaitCachePercent = frameStats.IATimerStats.cyclesLoadingDataToCache / (const float)frameStats.IATimerStats.GetTotalCycleCount();
+	const float IAWorkingPercent = frameStats.IATimerStats.cyclesWorking / (const float)frameStats.IATimerStats.GetTotalCycleCount();
+	PrintTimeStat(IDC_IA_STAT1, IAIdlePercent, frameStats.IATimerStats.cyclesIdle);
+	PrintTimeStat(IDC_IA_STAT2, IAOutWaitPercent, frameStats.IATimerStats.cyclesWaitingForOutput);
+	PrintTimeStat(IDC_IA_STAT3, IAWaitCachePercent, frameStats.IATimerStats.cyclesLoadingDataToCache);
+	PrintTimeStat(IDC_IA_STAT4, IAWorkingPercent, frameStats.IATimerStats.cyclesWorking);
 
-	const float TriSetupIdlePercent = uStats.typedFrameStats.TriSetupTimerStats.cyclesIdle / (const float)uStats.typedFrameStats.TriSetupTimerStats.GetTotalCycleCount();
-	const float TriSetupOutWaitPercent = uStats.typedFrameStats.TriSetupTimerStats.cyclesWaitingForOutput / (const float)uStats.typedFrameStats.TriSetupTimerStats.GetTotalCycleCount();
-	const float TriSetupWorkingPercent = uStats.typedFrameStats.TriSetupTimerStats.cyclesWorking / (const float)uStats.typedFrameStats.TriSetupTimerStats.GetTotalCycleCount();
-	PrintTimeStat(IDC_TRISETUP_STAT1, TriSetupIdlePercent, uStats.typedFrameStats.TriSetupTimerStats.cyclesIdle);
-	PrintTimeStat(IDC_TRISETUP_STAT2, TriSetupOutWaitPercent, uStats.typedFrameStats.TriSetupTimerStats.cyclesWaitingForOutput);
-	PrintTimeStat(IDC_TRISETUP_STAT3, TriSetupWorkingPercent, uStats.typedFrameStats.TriSetupTimerStats.cyclesWorking);
+	const float ClipUnitIdlePercent = frameStats.ClipUnitTimerStats.cyclesIdle / (const float)frameStats.ClipUnitTimerStats.GetTotalCycleCount();
+	const float ClipUnitOutWaitPercent = frameStats.ClipUnitTimerStats.cyclesWaitingForOutput / (const float)frameStats.ClipUnitTimerStats.GetTotalCycleCount();
+	const float ClipUnitWorkingPercent = frameStats.ClipUnitTimerStats.cyclesWorking / (const float)frameStats.ClipUnitTimerStats.GetTotalCycleCount();
+	PrintTimeStat(IDC_CLIPUNIT_STAT1, ClipUnitIdlePercent, frameStats.ClipUnitTimerStats.cyclesIdle);
+	PrintTimeStat(IDC_CLIPUNIT_STAT2, ClipUnitOutWaitPercent, frameStats.ClipUnitTimerStats.cyclesWaitingForOutput);
+	PrintTimeStat(IDC_CLIPUNIT_STAT3, ClipUnitWorkingPercent, frameStats.ClipUnitTimerStats.cyclesWorking);
 
-	const float RastIdlePercent = uStats.typedFrameStats.RasterizerTimerStats.cyclesIdle / (const float)uStats.typedFrameStats.RasterizerTimerStats.GetTotalCycleCount();
-	const float RastOutWaitPercent = uStats.typedFrameStats.RasterizerTimerStats.cyclesWaitingForOutput / (const float)uStats.typedFrameStats.RasterizerTimerStats.GetTotalCycleCount();
-	const float RastWaitTriWorkCachePercent = uStats.typedFrameStats.RasterizerTimerStats.cyclesWaitingForTriWorkCache / (const float)uStats.typedFrameStats.RasterizerTimerStats.GetTotalCycleCount();
-	const float RastWorkingPercent = uStats.typedFrameStats.RasterizerTimerStats.cyclesWorking / (const float)uStats.typedFrameStats.RasterizerTimerStats.GetTotalCycleCount();
-	PrintTimeStat(IDC_RAST_STAT1, RastIdlePercent, uStats.typedFrameStats.RasterizerTimerStats.cyclesIdle);
-	PrintTimeStat(IDC_RAST_STAT2, RastOutWaitPercent, uStats.typedFrameStats.RasterizerTimerStats.cyclesWaitingForOutput);
-	PrintTimeStat(IDC_RAST_STAT3, RastWaitTriWorkCachePercent, uStats.typedFrameStats.RasterizerTimerStats.cyclesWaitingForTriWorkCache);
-	PrintTimeStat(IDC_RAST_STAT4, RastWorkingPercent, uStats.typedFrameStats.RasterizerTimerStats.cyclesWorking);
+	const float TriSetupIdlePercent = frameStats.TriSetupTimerStats.cyclesIdle / (const float)frameStats.TriSetupTimerStats.GetTotalCycleCount();
+	const float TriSetupOutWaitPercent = frameStats.TriSetupTimerStats.cyclesWaitingForOutput / (const float)frameStats.TriSetupTimerStats.GetTotalCycleCount();
+	const float TriSetupWorkingPercent = frameStats.TriSetupTimerStats.cyclesWorking / (const float)frameStats.TriSetupTimerStats.GetTotalCycleCount();
+	PrintTimeStat(IDC_TRISETUP_STAT1, TriSetupIdlePercent, frameStats.TriSetupTimerStats.cyclesIdle);
+	PrintTimeStat(IDC_TRISETUP_STAT2, TriSetupOutWaitPercent, frameStats.TriSetupTimerStats.cyclesWaitingForOutput);
+	PrintTimeStat(IDC_TRISETUP_STAT3, TriSetupWorkingPercent, frameStats.TriSetupTimerStats.cyclesWorking);
 
-	const float DepthInterpIdlePercent = uStats.typedFrameStats.DepthInterpolatorTimerStats.cyclesIdle / (const float)uStats.typedFrameStats.DepthInterpolatorTimerStats.GetTotalCycleCount();
-	const float DepthInterpOutWaitPercent = uStats.typedFrameStats.DepthInterpolatorTimerStats.cyclesWaitingForOutput / (const float)uStats.typedFrameStats.DepthInterpolatorTimerStats.GetTotalCycleCount();
-	const float DepthInterpWorkingPercent = uStats.typedFrameStats.DepthInterpolatorTimerStats.cyclesWorking / (const float)uStats.typedFrameStats.DepthInterpolatorTimerStats.GetTotalCycleCount();
-	PrintTimeStat(IDC_DINTERP_STAT1, DepthInterpIdlePercent, uStats.typedFrameStats.DepthInterpolatorTimerStats.cyclesIdle);
-	PrintTimeStat(IDC_DINTERP_STAT2, DepthInterpOutWaitPercent, uStats.typedFrameStats.DepthInterpolatorTimerStats.cyclesWaitingForOutput);
-	PrintTimeStat(IDC_DINTERP_STAT3, DepthInterpWorkingPercent, uStats.typedFrameStats.DepthInterpolatorTimerStats.cyclesWorking);
+	const float RastIdlePercent = frameStats.RasterizerTimerStats.cyclesIdle / (const float)frameStats.RasterizerTimerStats.GetTotalCycleCount();
+	const float RastOutWaitPercent = frameStats.RasterizerTimerStats.cyclesWaitingForOutput / (const float)frameStats.RasterizerTimerStats.GetTotalCycleCount();
+	const float RastWaitTriWorkCachePercent = frameStats.RasterizerTimerStats.cyclesWaitingForTriWorkCache / (const float)frameStats.RasterizerTimerStats.GetTotalCycleCount();
+	const float RastWorkingPercent = frameStats.RasterizerTimerStats.cyclesWorking / (const float)frameStats.RasterizerTimerStats.GetTotalCycleCount();
+	PrintTimeStat(IDC_RAST_STAT1, RastIdlePercent, frameStats.RasterizerTimerStats.cyclesIdle);
+	PrintTimeStat(IDC_RAST_STAT2, RastOutWaitPercent, frameStats.RasterizerTimerStats.cyclesWaitingForOutput);
+	PrintTimeStat(IDC_RAST_STAT3, RastWaitTriWorkCachePercent, frameStats.RasterizerTimerStats.cyclesWaitingForTriWorkCache);
+	PrintTimeStat(IDC_RAST_STAT4, RastWorkingPercent, frameStats.RasterizerTimerStats.cyclesWorking);
 
-	const float AttrInterpIdlePercent = uStats.typedFrameStats.AttrInterpolatorTimerStats.cyclesIdle / (const float)uStats.typedFrameStats.AttrInterpolatorTimerStats.GetTotalCycleCount();
-	const float AttrInterpOutWaitPercent = uStats.typedFrameStats.AttrInterpolatorTimerStats.cyclesWaitingForOutput / (const float)uStats.typedFrameStats.AttrInterpolatorTimerStats.GetTotalCycleCount();
-	const float AttrInterpWorkingPercent = uStats.typedFrameStats.AttrInterpolatorTimerStats.cyclesWorking / (const float)uStats.typedFrameStats.AttrInterpolatorTimerStats.GetTotalCycleCount();
-	PrintTimeStat(IDC_INTERP_STAT1, AttrInterpIdlePercent, uStats.typedFrameStats.AttrInterpolatorTimerStats.cyclesIdle);
-	PrintTimeStat(IDC_INTERP_STAT2, AttrInterpOutWaitPercent, uStats.typedFrameStats.AttrInterpolatorTimerStats.cyclesWaitingForOutput);
-	PrintTimeStat(IDC_INTERP_STAT3, AttrInterpWorkingPercent, uStats.typedFrameStats.AttrInterpolatorTimerStats.cyclesWorking);
+	const float DepthInterpIdlePercent = frameStats.DepthInterpolatorTimerStats.cyclesIdle / (const float)frameStats.DepthInterpolatorTimerStats.GetTotalCycleCount();
+	const float DepthInterpOutWaitPercent = frameStats.DepthInterpolatorTimerStats.cyclesWaitingForOutput / (const float)frameStats.DepthInterpolatorTimerStats.GetTotalCycleCount();
+	const float DepthInterpWorkingPercent = frameStats.DepthInterpolatorTimerStats.cyclesWorking / (const float)frameStats.DepthInterpolatorTimerStats.GetTotalCycleCount();
+	PrintTimeStat(IDC_DINTERP_STAT1, DepthInterpIdlePercent, frameStats.DepthInterpolatorTimerStats.cyclesIdle);
+	PrintTimeStat(IDC_DINTERP_STAT2, DepthInterpOutWaitPercent, frameStats.DepthInterpolatorTimerStats.cyclesWaitingForOutput);
+	PrintTimeStat(IDC_DINTERP_STAT3, DepthInterpWorkingPercent, frameStats.DepthInterpolatorTimerStats.cyclesWorking);
 
-	const float TexSampIdlePercent = uStats.typedFrameStats.TexSamplerTimerStats.cyclesIdle / (const float)uStats.typedFrameStats.TexSamplerTimerStats.GetTotalCycleCount();
-	const float TexSampOutWaitPercent = uStats.typedFrameStats.TexSamplerTimerStats.cyclesWaitingForOutput / (const float)uStats.typedFrameStats.TexSamplerTimerStats.GetTotalCycleCount();
-	const float TexSampWaitCachePercent = uStats.typedFrameStats.TexSamplerTimerStats.cyclesLoadingTexCache / (const float)uStats.typedFrameStats.TexSamplerTimerStats.GetTotalCycleCount();
-	const float TexSampWorkingPercent = uStats.typedFrameStats.TexSamplerTimerStats.cyclesWorking / (const float)uStats.typedFrameStats.TexSamplerTimerStats.GetTotalCycleCount();
-	PrintTimeStat(IDC_TEXSAMP_STAT1, TexSampIdlePercent, uStats.typedFrameStats.TexSamplerTimerStats.cyclesIdle);
-	PrintTimeStat(IDC_TEXSAMP_STAT2, TexSampOutWaitPercent, uStats.typedFrameStats.TexSamplerTimerStats.cyclesWaitingForOutput);
-	PrintTimeStat(IDC_TEXSAMP_STAT3, TexSampWaitCachePercent, uStats.typedFrameStats.TexSamplerTimerStats.cyclesLoadingTexCache);
-	PrintTimeStat(IDC_TEXSAMP_STAT4, TexSampWorkingPercent, uStats.typedFrameStats.TexSamplerTimerStats.cyclesWorking);
+	const float AttrInterpIdlePercent = frameStats.AttrInterpolatorTimerStats.cyclesIdle / (const float)frameStats.AttrInterpolatorTimerStats.GetTotalCycleCount();
+	const float AttrInterpOutWaitPercent = frameStats.AttrInterpolatorTimerStats.cyclesWaitingForOutput / (const float)frameStats.AttrInterpolatorTimerStats.GetTotalCycleCount();
+	const float AttrInterpWorkingPercent = frameStats.AttrInterpolatorTimerStats.cyclesWorking / (const float)frameStats.AttrInterpolatorTimerStats.GetTotalCycleCount();
+	PrintTimeStat(IDC_INTERP_STAT1, AttrInterpIdlePercent, frameStats.AttrInterpolatorTimerStats.cyclesIdle);
+	PrintTimeStat(IDC_INTERP_STAT2, AttrInterpOutWaitPercent, frameStats.AttrInterpolatorTimerStats.cyclesWaitingForOutput);
+	PrintTimeStat(IDC_INTERP_STAT3, AttrInterpWorkingPercent, frameStats.AttrInterpolatorTimerStats.cyclesWorking);
 
-	const float ROPIdlePercent = uStats.typedFrameStats.ROPTimerStats.cyclesIdle / (const float)uStats.typedFrameStats.ROPTimerStats.GetTotalCycleCount();
-	const float ROPOutWaitPercent = uStats.typedFrameStats.ROPTimerStats.cyclesWaitingForOutput / (const float)uStats.typedFrameStats.ROPTimerStats.GetTotalCycleCount();
-	const float ROPWaitMemReadPercent = uStats.typedFrameStats.ROPTimerStats.cyclesWaitingForMemoryRead / (const float)uStats.typedFrameStats.ROPTimerStats.GetTotalCycleCount();
-	const float ROPWorkingPercent = uStats.typedFrameStats.ROPTimerStats.cyclesWorking / (const float)uStats.typedFrameStats.ROPTimerStats.GetTotalCycleCount();
-	PrintTimeStat(IDC_ROP_STAT1, ROPIdlePercent, uStats.typedFrameStats.ROPTimerStats.cyclesIdle);
-	PrintTimeStat(IDC_ROP_STAT2, ROPOutWaitPercent, uStats.typedFrameStats.ROPTimerStats.cyclesWaitingForOutput);
-	PrintTimeStat(IDC_ROP_STAT3, ROPWaitMemReadPercent, uStats.typedFrameStats.ROPTimerStats.cyclesWaitingForMemoryRead);
-	PrintTimeStat(IDC_ROP_STAT4, ROPWorkingPercent, uStats.typedFrameStats.ROPTimerStats.cyclesWorking);
+	const float TexSampIdlePercent = frameStats.TexSamplerTimerStats.cyclesIdle / (const float)frameStats.TexSamplerTimerStats.GetTotalCycleCount();
+	const float TexSampOutWaitPercent = frameStats.TexSamplerTimerStats.cyclesWaitingForOutput / (const float)frameStats.TexSamplerTimerStats.GetTotalCycleCount();
+	const float TexSampWaitCachePercent = frameStats.TexSamplerTimerStats.cyclesLoadingTexCache / (const float)frameStats.TexSamplerTimerStats.GetTotalCycleCount();
+	const float TexSampWorkingPercent = frameStats.TexSamplerTimerStats.cyclesWorking / (const float)frameStats.TexSamplerTimerStats.GetTotalCycleCount();
+	PrintTimeStat(IDC_TEXSAMP_STAT1, TexSampIdlePercent, frameStats.TexSamplerTimerStats.cyclesIdle);
+	PrintTimeStat(IDC_TEXSAMP_STAT2, TexSampOutWaitPercent, frameStats.TexSamplerTimerStats.cyclesWaitingForOutput);
+	PrintTimeStat(IDC_TEXSAMP_STAT3, TexSampWaitCachePercent, frameStats.TexSamplerTimerStats.cyclesLoadingTexCache);
+	PrintTimeStat(IDC_TEXSAMP_STAT4, TexSampWorkingPercent, frameStats.TexSamplerTimerStats.cyclesWorking);
 
-	const float CmdIdlePercent = uStats.typedFrameStats.CommandProcessorTimerStats.cyclesIdle / (const float)uStats.typedFrameStats.CommandProcessorTimerStats.GetTotalCycleCount();
-	const float CmdWorkingPercent = uStats.typedFrameStats.CommandProcessorTimerStats.cyclesWorking / (const float)uStats.typedFrameStats.CommandProcessorTimerStats.GetTotalCycleCount();
-	PrintTimeStat(IDC_CMD_STAT1, CmdIdlePercent, uStats.typedFrameStats.CommandProcessorTimerStats.cyclesIdle);
-	PrintTimeStat(IDC_CMD_STAT2, CmdWorkingPercent, uStats.typedFrameStats.CommandProcessorTimerStats.cyclesWorking);
+	const float ROPIdlePercent = frameStats.ROPTimerStats.cyclesIdle / (const float)frameStats.ROPTimerStats.GetTotalCycleCount();
+	const float ROPOutWaitPercent = frameStats.ROPTimerStats.cyclesWaitingForOutput / (const float)frameStats.ROPTimerStats.GetTotalCycleCount();
+	const float ROPWaitMemReadPercent = frameStats.ROPTimerStats.cyclesWaitingForMemoryRead / (const float)frameStats.ROPTimerStats.GetTotalCycleCount();
+	const float ROPWorkingPercent = frameStats.ROPTimerStats.cyclesWorking / (const float)frameStats.ROPTimerStats.GetTotalCycleCount();
+	PrintTimeStat(IDC_ROP_STAT1, ROPIdlePercent, frameStats.ROPTimerStats.cyclesIdle);
+	PrintTimeStat(IDC_ROP_STAT2, ROPOutWaitPercent, frameStats.ROPTimerStats.cyclesWaitingForOutput);
+	PrintTimeStat(IDC_ROP_STAT3, ROPWaitMemReadPercent, frameStats.ROPTimerStats.cyclesWaitingForMemoryRead);
+	PrintTimeStat(IDC_ROP_STAT4, ROPWorkingPercent, frameStats.ROPTimerStats.cyclesWorking);
 
-	const float MemReadIdlePercent = uStats.typedFrameStats.MemControllerReadTimerStats.cyclesIdle / (const float)uStats.typedFrameStats.MemControllerReadTimerStats.GetTotalCycleCount();
-	const float MemRedWorkingPercent = uStats.typedFrameStats.MemControllerReadTimerStats.cyclesWorking / (const float)uStats.typedFrameStats.MemControllerReadTimerStats.GetTotalCycleCount();
-	PrintTimeStat(IDC_MEMREAD_STAT1, MemReadIdlePercent, uStats.typedFrameStats.MemControllerReadTimerStats.cyclesIdle);
-	PrintTimeStat(IDC_MEMREAD_STAT2, MemRedWorkingPercent, uStats.typedFrameStats.MemControllerReadTimerStats.cyclesWorking);
+	const float CmdIdlePercent = frameStats.CommandProcessorTimerStats.cyclesIdle / (const float)frameStats.CommandProcessorTimerStats.GetTotalCycleCount();
+	const float CmdWorkingPercent = frameStats.CommandProcessorTimerStats.cyclesWorking / (const float)frameStats.CommandProcessorTimerStats.GetTotalCycleCount();
+	PrintTimeStat(IDC_CMD_STAT1, CmdIdlePercent, frameStats.CommandProcessorTimerStats.cyclesIdle);
+	PrintTimeStat(IDC_CMD_STAT2, CmdWorkingPercent, frameStats.CommandProcessorTimerStats.cyclesWorking);
 
-	const float MemWriteIdlePercent = uStats.typedFrameStats.MemControllerWriteTimerStats.cyclesIdle / (const float)uStats.typedFrameStats.MemControllerWriteTimerStats.GetTotalCycleCount();
-	const float MemWriteWorkingPercent = uStats.typedFrameStats.MemControllerWriteTimerStats.cyclesWorking / (const float)uStats.typedFrameStats.MemControllerWriteTimerStats.GetTotalCycleCount();
-	PrintTimeStat(IDC_MEMWRITE_STAT1, MemWriteIdlePercent, uStats.typedFrameStats.MemControllerWriteTimerStats.cyclesIdle);
-	PrintTimeStat(IDC_MEMWRITE_STAT2, MemWriteWorkingPercent, uStats.typedFrameStats.MemControllerWriteTimerStats.cyclesWorking);
+	const float MemReadIdlePercent = frameStats.MemControllerReadTimerStats.cyclesIdle / (const float)frameStats.MemControllerReadTimerStats.GetTotalCycleCount();
+	const float MemRedWorkingPercent = frameStats.MemControllerReadTimerStats.cyclesWorking / (const float)frameStats.MemControllerReadTimerStats.GetTotalCycleCount();
+	PrintTimeStat(IDC_MEMREAD_STAT1, MemReadIdlePercent, frameStats.MemControllerReadTimerStats.cyclesIdle);
+	PrintTimeStat(IDC_MEMREAD_STAT2, MemRedWorkingPercent, frameStats.MemControllerReadTimerStats.cyclesWorking);
 
-	PrintCounterStat(IDC_ROPCACHE_COUNT1, uStats.typedFrameStats.ROPCacheCounterStats.ROPCounterCacheHits);
-	PrintCounterStat(IDC_ROPCACHE_COUNT2, uStats.typedFrameStats.ROPCacheCounterStats.ROPCounterCacheMisses);
+	const float MemWriteIdlePercent = frameStats.MemControllerWriteTimerStats.cyclesIdle / (const float)frameStats.MemControllerWriteTimerStats.GetTotalCycleCount();
+	const float MemWriteWorkingPercent = frameStats.MemControllerWriteTimerStats.cyclesWorking / (const float)frameStats.MemControllerWriteTimerStats.GetTotalCycleCount();
+	PrintTimeStat(IDC_MEMWRITE_STAT1, MemWriteIdlePercent, frameStats.MemControllerWriteTimerStats.cyclesIdle);
+	PrintTimeStat(IDC_MEMWRITE_STAT2, MemWriteWorkingPercent, frameStats.MemControllerWriteTimerStats.cyclesWorking);
 
-	PrintCounterStat(IDC_MEMREAD_COUNT1, uStats.typedFrameStats.ReadMemCounterStats.BytesTransferred);
-	PrintCounterStat(IDC_MEMREAD_COUNT2, uStats.typedFrameStats.ReadMemCounterStats.NumTransactions);
-	PrintCounterStat(IDC_MEMREAD_COUNT3, uStats.typedFrameStats.ReadMemCounterStats.BytesTransferredNonScanout);
-	PrintCounterStat(IDC_MEMREAD_COUNT4, uStats.typedFrameStats.ReadMemCounterStats.NumTransactionsNonScanout);
+	PrintCounterStat(IDC_ROPCACHE_COUNT1, frameStats.ROPCacheCounterStats.ROPCounterCacheHits);
+	PrintCounterStat(IDC_ROPCACHE_COUNT2, frameStats.ROPCacheCounterStats.ROPCounterCacheMisses);
 
-	PrintCounterStat(IDC_MEMWRITE_COUNT1, uStats.typedFrameStats.WriteMemCounterStats.BytesTransferred);
-	PrintCounterStat(IDC_MEMWRITE_COUNT2, uStats.typedFrameStats.WriteMemCounterStats.NumTransactions);
+	PrintCounterStat(IDC_MEMREAD_COUNT1, frameStats.ReadMemCounterStats.BytesTransferred);
+	PrintCounterStat(IDC_MEMREAD_COUNT2, frameStats.ReadMemCounterStats.NumTransactions);
+	PrintCounterStat(IDC_MEMREAD_COUNT3, frameStats.ReadMemCounterStats.BytesTransferredNonScanout);
+	PrintCounterStat(IDC_MEMREAD_COUNT4, frameStats.ReadMemCounterStats.NumTransactionsNonScanout);
+
+	PrintCounterStat(IDC_MEMWRITE_COUNT1, frameStats.WriteMemCounterStats.BytesTransferred);
+	PrintCounterStat(IDC_MEMWRITE_COUNT2, frameStats.WriteMemCounterStats.NumTransactions);
 }
 
 void GPUStats::UpdateDialog()

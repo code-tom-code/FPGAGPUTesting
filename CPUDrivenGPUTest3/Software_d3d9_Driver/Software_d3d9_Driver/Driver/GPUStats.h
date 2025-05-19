@@ -251,6 +251,8 @@ struct GPUStats
 	void CreateStatsDialog(HWND parentWindow);
 	void UpdateDialog();
 	void UpdateDialogStats();
+	void WritePerFrameStats(const unsigned currentFrameID);
+	void WriteStatsColumnHeaders();
 
 	void InitStatsBuffer();
 	void InitEventsBuffers();
@@ -287,6 +289,7 @@ private:
 	gpuvoid* GPUStatsBuffer = NULL;
 	gpuvoid* GPUEventTimestampsBuffer = NULL;
 	gpuvoid* GPUEventOrdersBuffer = NULL;
+	FILE* statsWriteFile = NULL;
 	bool armCollectEventDataNextFrame = false;
 	bool isCollectingEventDataThisFrame = false;
 

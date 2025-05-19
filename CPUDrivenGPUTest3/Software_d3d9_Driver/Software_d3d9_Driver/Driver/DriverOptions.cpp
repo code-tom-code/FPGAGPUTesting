@@ -46,3 +46,6 @@ INIVar OverrideDeviceCapsSet("Options", "OverrideDeviceCapsSet", ""); // If not 
 INIVar EnforceDiscardClearsVertexBuffers("Options", "EnforceDiscardClearsVertexBuffers", false); // If true, then DISCARD locks on vertex buffers will forcefully zero the entire buffer.
 INIVar EnforceDiscardClearsIndexBuffers("Options", "EnforceDiscardClearsIndexBuffers", false); // If true, then DISCARD locks on index buffers will forcefully zero the entire buffer.
 INIVar EnforceDiscardClearsTextures("Options", "EnforceDiscardClearsTextures", false); // If true, then DISCARD locks on dynamic texture surfaces will forcefully zero the entire surface.
+INIVar EnableDeviceStats("Options", "EnableDeviceStats", false); // If true, then device stats are collected and downloaded each frame
+INIVar WriteStatsToDisk("Options", "WriteStatsToDisk", false); // If true, then stats are written to disk for every frame in a CSV file
+INIVar StatsWriteFilename("Options", "StatsWriteFilename", "FrameStats.csv"); // Frame stats are written to this filename

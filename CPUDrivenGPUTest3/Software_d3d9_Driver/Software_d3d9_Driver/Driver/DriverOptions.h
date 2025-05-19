@@ -55,3 +55,6 @@ extern INIVar OverrideDeviceCapsSet; // If not empty, overrides the device's cap
 extern INIVar EnforceDiscardClearsVertexBuffers; // If true, then DISCARD locks on vertex buffers will forcefully zero the entire buffer.
 extern INIVar EnforceDiscardClearsIndexBuffers; // If true, then DISCARD locks on index buffers will forcefully zero the entire buffer.
 extern INIVar EnforceDiscardClearsTextures; // If true, then DISCARD locks on dynamic texture surfaces will forcefully zero the entire surface.
+extern INIVar EnableDeviceStats; // If true, then device stats are collected and downloaded each frame
+extern INIVar WriteStatsToDisk; // If true, then stats are written to disk for every frame in a CSV file
+extern INIVar StatsWriteFilename; // Frame stats are written to this filename

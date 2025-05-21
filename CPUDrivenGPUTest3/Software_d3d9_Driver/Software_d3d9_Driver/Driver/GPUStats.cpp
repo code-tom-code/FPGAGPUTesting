@@ -185,7 +185,30 @@ static inline const unsigned RoundUpToNextMultipleOf8(const unsigned x)
 	return ( (x + 7) / 8) * 8;
 }
 
-void GPUStats::ProcessDrawEventsData(const LARGE_INTEGER frameBeginTimestamp, const LARGE_INTEGER frameEndTimestamp)
+static const char* const ClearFlagsString[] =
+{
+	"0", // None (0)
+	"TARGET", // TARGET (1)
+	"ZBUFFER", // ZBUFFER (2)
+	"TARGET | ZBUFFER", // TARGET | ZBUFFER (3)
+	"STENCIL", // STENCIL (4)
+	"TARGET | STENCIL", // TARGET | STENCIL (5)
+	"ZBUFFER | STENCIL", // ZBUFFER | STENCIL (6)
+	"TARGET | ZBUFFER | STENCIL", // TARGET | ZBUFFER | STENCIL (7)
+};
+
+static const char* const PrimitiveTypeString[] =
+{
+	"D3DPT_UNKNOWN", // 0
+	"D3DPT_POINTLIST", // 1
+	"D3DPT_LINELIST", // 2
+	"D3DPT_LINESTRIP", // 3
+	"D3DPT_TRIANGLELIST", // 4
+	"D3DPT_TRIANGLESTRIP", // 5
+	"D3DPT_TRIANGLEFAN", // 6
+};
+
+void GPUStats::ProcessDrawEventsData(const LARGE_INTEGER frameBeginGPUTimestamp, const LARGE_INTEGER frameEndGPUTimestamp, const LARGE_INTEGER frameBeginCPUTimestamp, const LARGE_INTEGER frameEndCPUTimestamp)
 {
 	// Erase the last frame's processed draw data:
 	ProcessedDrawEventData.clear();
@@ -318,15 +341,21 @@ void GPUStats::ProcessDrawEventsData(const LARGE_INTEGER frameBeginTimestamp, co
 		printf("TEXSAMP, %u, %u, %u, %u\n", thisEvent.DrawEventIndex, thisEvent.EventTimestamps[ProcessedEventData::ESS_TextureSampler].BeginTimestamp, thisEvent.EventTimestamps[ProcessedEventData::ESS_TextureSampler].EndTimestamp, thisEvent.DrawPtr->DrawCallStatUnion.DrawData.PrimCount);
 		printf("ROP, %u, %u, %u, %u\n", thisEvent.DrawEventIndex, thisEvent.EventTimestamps[ProcessedEventData::ESS_ROP].BeginTimestamp, thisEvent.EventTimestamps[ProcessedEventData::ESS_ROP].EndTimestamp, thisEvent.DrawPtr->DrawCallStatUnion.DrawData.PrimCount);
 	}*/
-	printf("EventIndex, DrawType, EndTimestamp\n");
+#pragma warning(push)
+#pragma warning(disable:4996)
+	FILE* const f = fopen("DrawEventTimestamps.csv", "wb");
+#pragma warning(pop)
+	fprintf(f, "EventIndex,DrawType,DrawParams,VertexWavesCount,CPURecordTimestamp,GPUEndTimestamp\n");
 
-	printf("0, FRAME_BEGIN, %I64u\n", frameBeginTimestamp.QuadPart);
+	fprintf(f, "0,FRAME_BEGIN,%s,0,%I64u,%I64u\n", "BEGIN", frameBeginCPUTimestamp.QuadPart, frameBeginGPUTimestamp.QuadPart);
 
 	const unsigned numDrawStats = (const unsigned)flippedRecordedDrawEvents.size();
-	for (unsigned x = 0; x < numDrawStats; ++x)
+	for (unsigned drawEventID = 0; drawEventID < numDrawStats; ++drawEventID)
 	{
-		const RecordedDrawCallStat& thisRecordedDrawStat = flippedRecordedDrawEvents[x];
+		const RecordedDrawCallStat& thisRecordedDrawStat = flippedRecordedDrawEvents[drawEventID];
 		const char* drawTypeString = "";
+		char drawParamsBuffer[128] = {0};
+		const unsigned wavesCount = thisRecordedDrawStat.DrawType == RecordedDrawCallStat::DT_Clear ? 0 : thisRecordedDrawStat.DrawCallStatUnion.DrawData.VertexWavesCount;
 		switch (thisRecordedDrawStat.DrawType)
 		{
 #ifdef _DEBUG
@@ -337,19 +366,45 @@ void GPUStats::ProcessDrawEventsData(const LARGE_INTEGER frameBeginTimestamp, co
 			break;
 #endif
 		case RecordedDrawCallStat::DT_Clear:
-			drawTypeString = "CLEAR";
+		{
+			drawTypeString = "Clear";
+			const char* clearFlagsString = ClearFlagsString[thisRecordedDrawStat.DrawCallStatUnion.ClearData.ClearFlags & 0x7];
+			const unsigned char clearB = (const unsigned char)(thisRecordedDrawStat.DrawCallStatUnion.ClearData.ClearColor & 0xFF);
+			const unsigned char clearG = (const unsigned char)( (thisRecordedDrawStat.DrawCallStatUnion.ClearData.ClearColor >> 8) & 0xFF);
+			const unsigned char clearR = (const unsigned char)( (thisRecordedDrawStat.DrawCallStatUnion.ClearData.ClearColor >> 16) & 0xFF);
+			const unsigned char clearA = (const unsigned char)( (thisRecordedDrawStat.DrawCallStatUnion.ClearData.ClearColor >> 24) & 0xFF);
+			const float depth = thisRecordedDrawStat.DrawCallStatUnion.ClearData.ClearDepth;
+			const unsigned char stencil = thisRecordedDrawStat.DrawCallStatUnion.ClearData.ClearStencil;
+			sprintf_s(drawParamsBuffer, "\"(%s, ARGB(%u, %u, %u, %u), %f, 0x%02X)\"", clearFlagsString, clearA, clearR, clearG, clearB, depth, stencil);
+		}
 			break;
 		case RecordedDrawCallStat::DT_DrawPrimitive:
-			drawTypeString = "DRAWPRIMITIVE";
+		{
+			drawTypeString = thisRecordedDrawStat.DrawCallStatUnion.DrawData.isDrawUP ? "DrawPrimitiveUP" : "DrawPrimitive";
+			const char* const primTypeString = PrimitiveTypeString[thisRecordedDrawStat.DrawCallStatUnion.DrawData.primType];
+			const unsigned startVert = thisRecordedDrawStat.DrawCallStatUnion.DrawData.BaseVertexIndex;
+			const unsigned primCount = thisRecordedDrawStat.DrawCallStatUnion.DrawData.PrimCount;
+			sprintf_s(drawParamsBuffer, "\"(%s, %u, %u)\"", primTypeString, startVert, primCount);
+		}
 			break;
 		case RecordedDrawCallStat::DT_DrawIndexedPrimitive:
-			drawTypeString = "DRAWINDEXEDPRIMITIVE";
+		{
+			drawTypeString = thisRecordedDrawStat.DrawCallStatUnion.DrawData.isDrawUP ? "DrawIndexedPrimitiveUP" : "DrawIndexedPrimitive";
+			const char* const primTypeString = PrimitiveTypeString[thisRecordedDrawStat.DrawCallStatUnion.DrawData.primType];
+			const int baseVertexIndex = thisRecordedDrawStat.DrawCallStatUnion.DrawData.BaseVertexIndex;
+			const unsigned minVertexIndex = thisRecordedDrawStat.DrawCallStatUnion.DrawData.MinVertexIndex;
+			const unsigned numVertices = thisRecordedDrawStat.DrawCallStatUnion.DrawData.NumVertices;
+			const unsigned startIndex = thisRecordedDrawStat.DrawCallStatUnion.DrawData.StartIndex;
+			const unsigned primCount = thisRecordedDrawStat.DrawCallStatUnion.DrawData.PrimCount;
+			sprintf_s(drawParamsBuffer, "\"(%s, %i, %u, %u, %u, %u)\"", primTypeString, baseVertexIndex, minVertexIndex, numVertices, startIndex, primCount);
+		}
 			break;
 		}
-		printf("%u, %s, %I64u\n", x + 1, drawTypeString, thisRecordedDrawStat.drawCallFinishGPUTimestamp.QuadPart);
+		fprintf(f, "%u,%s,%s,%u,%I64u,%I64u\n", drawEventID + 1, drawTypeString, drawParamsBuffer, wavesCount, thisRecordedDrawStat.drawCallCPUTimestamp.QuadPart, thisRecordedDrawStat.drawCallFinishGPUTimestamp.QuadPart);
 	}
 
-	printf("%u, FRAME_END, %I64u\n", numDrawStats + 2, frameEndTimestamp.QuadPart);
+	fprintf(f, "%u,FRAME_END,%s,0,%I64u,%I64u\n", numDrawStats + 2, "END", frameEndCPUTimestamp.QuadPart, frameEndGPUTimestamp.QuadPart);
+	fclose(f);
 }
 
 void GPUStats::FlipRecordedDrawEventsToStats(std::vector<RecordedDrawCallStat>& deviceRecordedDrawEvents)

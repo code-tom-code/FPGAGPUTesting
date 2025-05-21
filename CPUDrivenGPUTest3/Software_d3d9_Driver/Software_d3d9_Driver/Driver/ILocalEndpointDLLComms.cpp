@@ -161,15 +161,19 @@ ILocalEndpointDLLComms::ILocalEndpointDLLComms(const char* const endpointDLL) : 
 		__debugbreak(); // Error: Read data mismatch!
 	}
 #endif
-	memcpy(recvBuffer, &localResponsePackets.front(), len);
-	if (localResponsePackets.size() * sizeof(genericCommand) == len)
+	if (len <= localResponsePackets.size() * sizeof(genericCommand) )
 	{
-		localResponsePackets.clear();
-	}
-	else
-	{
-		const unsigned numElementsToRemove = len / sizeof(genericCommand);
-		localResponsePackets.erase(localResponsePackets.begin(), localResponsePackets.begin() + numElementsToRemove);
+		memcpy(recvBuffer, &localResponsePackets.front(), len);
+
+		if (localResponsePackets.size() * sizeof(genericCommand) == len)
+		{
+			localResponsePackets.clear();
+		}
+		else
+		{
+			const unsigned numElementsToRemove = len / sizeof(genericCommand);
+			localResponsePackets.erase(localResponsePackets.begin(), localResponsePackets.begin() + numElementsToRemove);
+		}
 	}
 	return S_OK;
 }

@@ -4737,6 +4737,45 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawPrimiti
 		newDrawEvent.DrawCallStatUnion.DrawData.IndexFormat = D3DFMT_UNKNOWN;
 		newDrawEvent.DrawCallStatUnion.DrawData.primType = (const BYTE)PrimitiveType;
 		newDrawEvent.DrawCallStatUnion.DrawData.CurrentFVF = currentState.currentFVF;
+		newDrawEvent.DrawCallStatUnion.DrawData.isDrawUP = currentState.currentSoftUPStream.vertexBuffer->GetInternalDataBuffer() != NULL;
+		switch (PrimitiveType)
+		{
+		case D3DPT_POINTLIST:
+			newDrawEvent.DrawCallStatUnion.DrawData.VertexWavesCount = (PrimitiveCount + 15) / 16;
+			break;
+		case D3DPT_LINELIST:
+			newDrawEvent.DrawCallStatUnion.DrawData.VertexWavesCount = (PrimitiveCount + 15) / 8;
+			break;
+		case D3DPT_LINESTRIP:
+			if (PrimitiveCount < 16)
+				newDrawEvent.DrawCallStatUnion.DrawData.VertexWavesCount = 1;
+			else
+				newDrawEvent.DrawCallStatUnion.DrawData.VertexWavesCount = (PrimitiveCount + 15) / 15; // Can only fit 15 prims into a single wave because of the 1 wraparound prim between the two
+			break;
+		case D3DPT_TRIANGLELIST:
+			newDrawEvent.DrawCallStatUnion.DrawData.VertexWavesCount = (PrimitiveCount + 4) / 5;
+			break;
+		case D3DPT_TRIANGLESTRIP:
+			if (PrimitiveCount < 15)
+				newDrawEvent.DrawCallStatUnion.DrawData.VertexWavesCount = 1;
+			else
+				newDrawEvent.DrawCallStatUnion.DrawData.VertexWavesCount = (PrimitiveCount + 16) / 16; // Has a leftover wraparound of 2 prims
+			break;
+		case D3DPT_TRIANGLEFAN:
+			if (PrimitiveCount < 8)
+				newDrawEvent.DrawCallStatUnion.DrawData.VertexWavesCount = 1;
+			else
+				newDrawEvent.DrawCallStatUnion.DrawData.VertexWavesCount = (PrimitiveCount + 8) / 8; // Has a leftover wraparound of 1 prims
+			break;
+		default:
+		{
+#ifdef _DEBUG
+			__debugbreak(); // Should never be here!
+#endif
+			newDrawEvent.DrawCallStatUnion.DrawData.VertexWavesCount = 0;
+		}
+		break;
+		}
 		eventRecordedDrawCalls.push_back(newDrawEvent);
 	}
 
@@ -6356,6 +6395,47 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawIndexed
 		newDrawEvent.DrawCallStatUnion.DrawData.IndexFormat = currentState.currentIndexBuffer->GetFormat();
 		newDrawEvent.DrawCallStatUnion.DrawData.primType = (const BYTE)PrimitiveType;
 		newDrawEvent.DrawCallStatUnion.DrawData.CurrentFVF = currentState.currentFVF;
+		newDrawEvent.DrawCallStatUnion.DrawData.isDrawUP = currentState.currentSoftUPStream.vertexBuffer->GetInternalDataBuffer() != NULL;
+
+		// TODO: This calculation is not accurate for indexed draws. We need to inspect the index buffer to simulate what the wave-packing would really look like:
+		switch (PrimitiveType)
+		{
+		case D3DPT_POINTLIST:
+			newDrawEvent.DrawCallStatUnion.DrawData.VertexWavesCount = (primCount + 15) / 16;
+			break;
+		case D3DPT_LINELIST:
+			newDrawEvent.DrawCallStatUnion.DrawData.VertexWavesCount = (primCount + 15) / 8;
+			break;
+		case D3DPT_LINESTRIP:
+			if (primCount < 16)
+				newDrawEvent.DrawCallStatUnion.DrawData.VertexWavesCount = 1;
+			else
+				newDrawEvent.DrawCallStatUnion.DrawData.VertexWavesCount = (primCount + 15) / 15; // Can only fit 15 prims into a single wave because of the 1 wraparound prim between the two
+			break;
+		case D3DPT_TRIANGLELIST:
+			newDrawEvent.DrawCallStatUnion.DrawData.VertexWavesCount = (primCount + 4) / 5;
+			break;
+		case D3DPT_TRIANGLESTRIP:
+			if (primCount < 15)
+				newDrawEvent.DrawCallStatUnion.DrawData.VertexWavesCount = 1;
+			else
+				newDrawEvent.DrawCallStatUnion.DrawData.VertexWavesCount = (primCount + 16) / 16; // Has a leftover wraparound of 2 prims
+			break;
+		case D3DPT_TRIANGLEFAN:
+			if (primCount < 8)
+				newDrawEvent.DrawCallStatUnion.DrawData.VertexWavesCount = 1;
+			else
+				newDrawEvent.DrawCallStatUnion.DrawData.VertexWavesCount = (primCount + 8) / 8; // Has a leftover wraparound of 1 prims
+			break;
+		default:
+		{
+#ifdef _DEBUG
+			__debugbreak(); // Should never be here!
+#endif
+			newDrawEvent.DrawCallStatUnion.DrawData.VertexWavesCount = 0;
+		}
+		break;
+		}
 		eventRecordedDrawCalls.push_back(newDrawEvent);
 	}
 
@@ -11980,6 +12060,8 @@ IDirect3DDevice9Hook::IDirect3DDevice9Hook(LPDIRECT3DDEVICE9 _d3d9dev, IDirect3D
 	lastFrameDeltaSeconds(0.0), currentFrameIndex(0), frameBeginTimestamp(NULL), frameEndTimestamp(NULL)
 {
 	lastFramePresentTimestamp = {0};
+	frameBeginCPUTimestamp = {0};
+	frameEndCPUTimestamp = {0};
 
 #ifdef _DEBUG
 	m_FirstMember = false;

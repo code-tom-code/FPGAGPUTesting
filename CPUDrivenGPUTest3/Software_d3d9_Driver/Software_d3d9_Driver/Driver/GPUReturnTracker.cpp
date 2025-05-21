@@ -1,5 +1,7 @@
 #include "GPUReturnTracker.h"
 
+#pragma optimize("", off)
+
 // Registers an expected read for a new idle-return
 void GPUReturnTracker::RegisterNewWaitForIdleReturn(const waitForDeviceIdleCommand* const newWaitPacket)
 {
@@ -145,7 +147,11 @@ bool GPUReturnTracker::AsyncTryGetWaitReturn(const DWORD waitIdentifier, const b
 // Forces a synchronous wait until the specified wait-return identifier is received. This function does not return until we have received the specified return packet.
 void GPUReturnTracker::SyncGetWaitReturn(const DWORD waitIdentifier, IBaseDeviceComms* const readComms)
 {
-	// Spin on the read until we receive our expected wait-response:
+	// First check and see if we already have this wait response completed. It might already be in our wait-responses list and we don't have to ask the network endpoint after all.
+	if (AsyncTryGetWaitReturn(waitIdentifier) )
+		return;
+
+	// If we don't have it, then spin on the read until we receive our expected wait-response:
 	while (true)
 	{
 		genericCommand recvPacket;
@@ -192,7 +198,11 @@ bool GPUReturnTracker::AsyncTryGetReadReturn(const gpuvoid* const readAddress, D
 // Forces a synchronous wait until the readmem-return completes. This function does not return until we have received the read memory back.
 void GPUReturnTracker::SyncGetReadReturn(const gpuvoid* const readAddress, DWORD* const readReturnData, IBaseDeviceComms* const readComms)
 {
-	// Spin on the read until we receive our expected read-response:
+	// First check and see if we already have this value read back. It might already be in our read-returns list and we don't have to ask the network endpoint after all.
+	if (AsyncTryGetReadReturn(readAddress, readReturnData) )
+		return;
+
+	// If we don't have it, then spin on the read until we receive our expected read-response:
 	while (true)
 	{
 		genericCommand recvPacket;

@@ -35,6 +35,7 @@ struct RecordedDrawCallStat
 		struct
 		{
 			BYTE primType;
+			bool isDrawUP;
 			UINT PrimCount;
 			debuggableFVF CurrentFVF;
 			INT BaseVertexIndex;
@@ -42,6 +43,7 @@ struct RecordedDrawCallStat
 			UINT NumVertices;
 			UINT StartIndex;
 			D3DFORMAT IndexFormat;
+			UINT VertexWavesCount;
 		} DrawData;
 
 		struct
@@ -270,7 +272,7 @@ struct GPUStats
 	void PrintCounterStat(const int dlgItemID, const unsigned count) const;
 
 	void FlipRecordedDrawEventsToStats(std::vector<RecordedDrawCallStat>& deviceRecordedDrawEvents);
-	void ProcessDrawEventsData(const LARGE_INTEGER frameBeginTimestamp, const LARGE_INTEGER frameEndTimestamp);
+	void ProcessDrawEventsData(const LARGE_INTEGER frameBeginGPUTimestamp, const LARGE_INTEGER frameEndGPUTimestamp, const LARGE_INTEGER frameBeginCPUTimestamp, const LARGE_INTEGER frameEndCPUTimestamp);
 
 	union
 	{

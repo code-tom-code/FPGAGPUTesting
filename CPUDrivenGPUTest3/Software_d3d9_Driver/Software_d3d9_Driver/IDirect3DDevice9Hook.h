@@ -1682,8 +1682,10 @@ public:
 	}
 
 	IDirect3DQuery9Hook* frameBeginTimestamp;
+	LARGE_INTEGER frameBeginCPUTimestamp;
 	std::vector<IDirect3DQuery9Hook*> eventEndTimestamps;
 	IDirect3DQuery9Hook* frameEndTimestamp;
+	LARGE_INTEGER frameEndCPUTimestamp;
 
 protected:
 	LPDIRECT3DDEVICE9 d3d9dev;

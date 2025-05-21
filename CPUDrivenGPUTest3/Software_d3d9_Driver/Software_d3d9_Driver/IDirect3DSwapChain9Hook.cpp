@@ -164,9 +164,13 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DSwapChain9Hook::Present(
 	{
 		parentDevice->CreateQuery(D3DQUERYTYPE_TIMESTAMP, (IDirect3DQuery9** const)&parentDevice->frameEndTimestamp);
 	}
-	if (parentDevice->frameEndTimestamp != NULL && parentDevice->GetDeviceStats().IsCollectingEventDataThisFrame())
+	if (parentDevice->frameEndTimestamp != NULL && parentDevice->GetDeviceStats().IsCollectingEventDataThisFrame() )
 	{
 		parentDevice->frameEndTimestamp->Issue(D3DISSUE_END);
+	}
+	if (parentDevice->GetDeviceStats().IsCollectingEventDataThisFrame() )
+	{
+		QueryPerformanceCounter(&parentDevice->frameEndCPUTimestamp);
 	}
 
 	// Don't download stats every frame since pulling them is relatively expensive over serial UART and it will affect total frame-times:
@@ -191,7 +195,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DSwapChain9Hook::Present(
 		}
 		parentDevice->GetDeviceStats().FinishDownloadingEndOfFrameEvents(parentDevice->GetBaseDevice() );
 		parentDevice->GetDeviceStats().FlipRecordedDrawEventsToStats(allRecordedDrawEvents);
-		parentDevice->GetDeviceStats().ProcessDrawEventsData(beginFrameTimestampData, endFrameTimestampData);
+		parentDevice->GetDeviceStats().ProcessDrawEventsData(beginFrameTimestampData, endFrameTimestampData, parentDevice->frameBeginCPUTimestamp, parentDevice->frameEndCPUTimestamp);
 	}
 	else if (parentDevice->GetDeviceStats().IsArmedForEventCollectionNextFrame() )
 	{
@@ -206,6 +210,8 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DSwapChain9Hook::Present(
 
 		parentDevice->GetBaseDevice()->DeviceEndFrameAndQueueEventRecording(parentDevice->GetDeviceStats().GetEventTimestampsBuffer(), parentDevice->GetDeviceStats().GetEventsOrderBuffer() );
 		parentDevice->GetDeviceStats().CollectEventDataThisFrame();
+
+		QueryPerformanceCounter(&parentDevice->frameBeginCPUTimestamp);
 	}
 	else // Regular frame
 	{
@@ -239,6 +245,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DSwapChain9Hook::Present(
 		SIMPLE_NAME_SCOPE("Real Device Present");
 		ret = realObject->Present(pSourceRect, pDestRect, hDestWindowOverride, pDirtyRegion, dwFlags);
 	}
+
 	return ret;
 }
 

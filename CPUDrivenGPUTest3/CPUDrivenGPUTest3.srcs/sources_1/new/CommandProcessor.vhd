@@ -225,6 +225,8 @@ entity CommandProcessor is
 
 		STAT_CyclesIdle : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 		STAT_CyclesSpentWorking : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+
+		STAT_CurrentCommandIndex : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 	-- Stats interface end
 
 	-- Debug signals
@@ -410,6 +412,9 @@ architecture Behavioral of CommandProcessor is
 	-- This timestamp is used for timestamp queries and increments once for each clock cycle that runs through the command processor
 	signal currentTimestamp : unsigned(47 downto 0) := (others => '0');
 
+	-- This keeps track of the current command index per-frame. The index resets to 0 at the end of each frame.
+	signal currentCommandIndex : unsigned(31 downto 0) := (others => '0');
+
 	signal debugShaderRegistersSet : std_logic := '0';
 	signal debugShaderRegistersTransactionsCount : unsigned(9 downto 0) := (others => '0');
 	signal debugShaderRegistersDumpAddr : unsigned(29 downto 0) := (others => '0');
@@ -495,6 +500,8 @@ begin
 
 	STAT_CyclesIdle <= std_logic_vector(statCyclesIdle);
 	STAT_CyclesSpentWorking <= std_logic_vector(statCyclesWorking);
+
+	STAT_CurrentCommandIndex <= std_logic_vector(currentCommandIndex);
 
 	DBG_IdleSignalsVector <= CombinedIdleSignals;
 	DBG_CMDPACKETSTATE <= std_logic_vector(to_unsigned(packetState'pos(mst_packet_state), 8) );
@@ -648,6 +655,8 @@ begin
 
 					when DECODE_NEW_PACKET =>
 						validPacketsFIFO_rd_en <= '0';
+
+						currentCommandIndex <= currentCommandIndex + 1; -- Increment our current command index
 
 						case (ePacketType'val(to_integer(unsigned(localIncomingPacket.packetTypeByte) ) ) ) is
 							when PT_WRITEMEM =>

@@ -21,6 +21,7 @@ entity ClearBlock is
 		-- DRAM write requests FIFO:
 		MEM_ClearBlockWriteRequestsFIFO_wr_data : out STD_LOGIC_VECTOR(30+256+256/32-1 downto 0) := (others => '0');
         MEM_ClearBlockWriteRequestsFIFO_full : in STD_LOGIC;
+		MEM_ClearBlockWriteRequestsFIFO_almost_full : in STD_LOGIC;
         MEM_ClearBlockWriteRequestsFIFO_wr_en : out STD_LOGIC := '0';
 	-- Memory Controller FIFO interface end
 
@@ -41,6 +42,7 @@ ATTRIBUTE X_INTERFACE_PARAMETER of clk: SIGNAL is "FREQ_HZ 333250000";
 ATTRIBUTE X_INTERFACE_INFO of MEM_ClearBlockWriteRequestsFIFO_wr_data: SIGNAL is "xilinx.com:interface:fifo_write:1.0 ClearBlockWriteRequestsFIFO WR_DATA";
 ATTRIBUTE X_INTERFACE_INFO of MEM_ClearBlockWriteRequestsFIFO_wr_en: SIGNAL is "xilinx.com:interface:fifo_write:1.0 ClearBlockWriteRequestsFIFO WR_EN";
 ATTRIBUTE X_INTERFACE_INFO of MEM_ClearBlockWriteRequestsFIFO_full: SIGNAL is "xilinx.com:interface:fifo_write:1.0 ClearBlockWriteRequestsFIFO FULL";
+ATTRIBUTE X_INTERFACE_INFO of MEM_ClearBlockWriteRequestsFIFO_almost_full: SIGNAL is "xilinx.com:interface:fifo_write:1.0 ClearBlockWriteRequestsFIFO ALMOST_FULL";
 
 type clearBlockState is
 (
@@ -85,13 +87,13 @@ DBG_LastWrittenClearData <= std_logic_vector(nextWriteAddr) & SplatCopyColor(std
 					end if;
 				when clearLoop =>
 					if (remainingDRAMLines /= 0) then
-						if (MEM_ClearBlockWriteRequestsFIFO_full = '0') then
+						if (MEM_ClearBlockWriteRequestsFIFO_full = '0' and MEM_ClearBlockWriteRequestsFIFO_almost_full = '0') then
 							memWriteEnable <= '1';
 						else
 							memWriteEnable <= '0';
 						end if;
 
-						if (MEM_ClearBlockWriteRequestsFIFO_full = '0' and memWriteEnable = '1') then
+						if (MEM_ClearBlockWriteRequestsFIFO_full = '0' and MEM_ClearBlockWriteRequestsFIFO_almost_full = '0' and memWriteEnable = '1') then
 							remainingDRAMLines <= remainingDRAMLines - 1;
 							nextWriteAddr <= nextWriteAddr + 32; -- Advance the memory pointer by 32 bytes (this is 256 bits or 1 DRAM line)
 						end if;

@@ -38,6 +38,18 @@ entity StatsCollector is
 		STAT_ResetWriteOrderNibblesFIFO : out STD_LOGIC := '0';
 	-- WriteOrderNibbles FIFO interface end
 
+	-- Stats data sampler interface begin
+		SAMP_SamplingIntervalCycles : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+		SAMP_CurrentWriteIndex : in STD_LOGIC_VECTOR(9 downto 0);
+		SAMP_Reset : out STD_LOGIC := '0';
+	-- Stats data sampler interface end
+
+	-- Stats data cache BRAM interface begin
+		SAMP_cache_addrb : out STD_LOGIC_VECTOR(9 downto 0) := (others => '0');
+		SAMP_cache_doutb : in STD_LOGIC_VECTOR(31 downto 0);
+		SAMP_cache_enb : out STD_LOGIC := '0';
+	-- Stats data cache BRAM interface end
+
 	-- Stats interface begin
 		VBB_CyclesIdle : in STD_LOGIC_VECTOR(31 downto 0);
 		VBB_CyclesSpentWorking : in STD_LOGIC_VECTOR(31 downto 0);
@@ -140,6 +152,10 @@ ATTRIBUTE X_INTERFACE_INFO of STAT_WriteOrderNibblesFIFO_full: SIGNAL is "xilinx
 ATTRIBUTE X_INTERFACE_INFO of STAT_WriteOrderNibblesFIFO_rd_data: SIGNAL is "xilinx.com:interface:fifo_read:1.0 StatsWriteOrderNibblesFIFO_RD RD_DATA";
 ATTRIBUTE X_INTERFACE_INFO of STAT_WriteOrderNibblesFIFO_rd_en: SIGNAL is "xilinx.com:interface:fifo_read:1.0 StatsWriteOrderNibblesFIFO_RD RD_EN";
 ATTRIBUTE X_INTERFACE_INFO of STAT_WriteOrderNibblesFIFO_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 StatsWriteOrderNibblesFIFO_RD EMPTY";
+
+ATTRIBUTE X_INTERFACE_INFO of SAMP_cache_enb: SIGNAL is "xilinx.com:interface:bram:1.0 SamplerCache EN";
+ATTRIBUTE X_INTERFACE_INFO of SAMP_cache_addrb: SIGNAL is "xilinx.com:interface:bram:1.0 SamplerCache ADDR";
+ATTRIBUTE X_INTERFACE_INFO of SAMP_cache_doutb: SIGNAL is "xilinx.com:interface:bram:1.0 SamplerCache DOUT";
 
 type StatsCollectorStateType is 
 (

@@ -5,6 +5,7 @@
 #include "GlobalToggles.h"
 #include "Driver/IBaseDeviceComms.h"
 #include "Driver/DriverOptions.h"
+#include "IDirect3DVertexDeclaration9Hook.h"
 
 unsigned IDirect3DVertexBuffer9Hook::VertexBuffersCreatedCounter = 0;
 
@@ -18,7 +19,15 @@ void PrintDebugVertexBufferName(char* const outString, UINT _Length, const Debug
 }
 #endif // #ifdef _DEBUG
 
-void IDirect3DVertexBuffer9Hook::CreateVertexBuffer(UINT _Length, const DebuggableUsage _Usage, DWORD _FVF, D3DPOOL _Pool)
+static const unsigned GetDirtyDWORDsCountFromBufferLength(const unsigned bufferLengthBytes)
+{
+	static const unsigned bitsPerDWORD = sizeof(DWORD) * 8;
+	const unsigned dirtyBitsCount = (bufferLengthBytes + (GPU_DRAM_TRANSACTION_SIZE_BYTES - 1) ) / GPU_DRAM_TRANSACTION_SIZE_BYTES;
+	const unsigned dirtyDWORDsCount = (dirtyBitsCount + (bitsPerDWORD - 1) ) / bitsPerDWORD;
+	return dirtyDWORDsCount;
+}
+
+void IDirect3DVertexBuffer9Hook::CreateVertexBuffer(UINT _Length, const DebuggableUsage _Usage, const debuggableFVF _FVF, D3DPOOL _Pool)
 {
 	InternalLength = _Length;
 	InternalUsage = _Usage;
@@ -48,6 +57,9 @@ void IDirect3DVertexBuffer9Hook::CreateVertexBuffer(UINT _Length, const Debuggab
 	{
 		__debugbreak(); // Can't alloc our vertex buffer!
 	}
+
+	const unsigned dirtyDWORDsCount = GetDirtyDWORDsCountFromBufferLength(InternalLength);
+	GPUBytesDirtyBits = (unsigned* const)calloc(dirtyDWORDsCount, sizeof(unsigned) );
 
 #ifdef VERTEX_BUFFER_MAGIC_COOKIE
 	*(DWORD* const)&data[InternalLength] = 'VRTX';
@@ -114,6 +126,7 @@ COM_DECLSPEC_NOTHROW ULONG STDMETHODCALLTYPE IDirect3DVertexBuffer9Hook::Release
 		OutputDebugStringA(printBuffer);
 #endif
 		GPUFree(GPUBytes);
+		GPUBytes = NULL;
 		delete this;
 	}
 	return ret;
@@ -268,9 +281,9 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DVertexBuffer9Hook::Lock(
 	}
 
 	if (OffsetToLock == 0 && SizeToLock == 0)
-		*ppbData = data;//&(data.front() );
+		*ppbData = data;
 	else
-		*ppbData = /*&(data.front() )*/data + OffsetToLock;
+		*ppbData = data + OffsetToLock;
 
 #ifdef _DEBUG
 	if (realObject)
@@ -289,6 +302,8 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DVertexBuffer9Hook::Lock(
 	if (IsUnlocked() )
 	{
 		lockFlags = Flags;
+		lockOffset = OffsetToLock;
+		lockSize = SizeToLock;
 	}
 
 	++lockCount;
@@ -328,23 +343,171 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DVertexBuffer9Hook::Unloc
 	{
 		if ( (lockFlags & (D3DLOCK_READONLY | D3DLOCK_NO_DIRTY_UPDATE) ) == 0)
 		{
-			GPUBytesDirty = true;
-			lastFrameIDDirtied = parentDevice->GetCurrentFrameIndex();
+			if (lockSize == 0)
+			{
+				MarkDirtyRegion(0, InternalLength);
+			}
+			else
+			{
+				MarkDirtyRegion(lockOffset, lockSize);
+			}
+			GPUBytesAnyDirty = true;
 		}
 
 #ifdef _DEBUG
 		lockFlags = 0x00000000;
 #endif
+
+		RecomputeBufferUniformity();
 	}
 
 	return S_OK;
 }
 
+void IDirect3DVertexBuffer9Hook::RecomputeBufferUniformity()
+{
+	// We can only calculate this for FVF vertex buffers, since we don't know what vertex declaration is going to be applied to this buffer otherwise
+	if (InternalFVF.rawFVF_DWORD == 0)
+		return;
+
+	FVFDataUniformity = 0x0000;
+
+	IDirect3DVertexDeclaration9Hook* const fvfVertexDecl = parentDevice->CreateVertexDeclFromFVFCode(InternalFVF);
+	if (!fvfVertexDecl)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Error: Failed to create vertex declaration!
+#endif
+		return;
+	}
+
+	// Position -> D3DDECLUSAGE_POSITION -> Degenerate triangles
+	// Diffuse -> D3DDECLUSAGE_COLOR -> Uniform color, can be replaced with D3DRS_DIFFUSEMATERIALSOURCE = D3DMCS_MATERIAL
+	// Specular -> D3DDECLUSAGE_COLOR + 1 -> Uniform color, can be replaced with D3DRS_SPECULARMATERIALSOURCE = D3DMCS_MATERIAL
+	// Normal -> D3DDECLUSAGE_NORMAL -> Uniform normal, can likely skip D3DRS_NORMALIZENORMALS
+	// PSize -> D3DDECLUSAGE_PSIZE -> Can be replaced with D3DRS_POINTSIZE
+	FVFDataUniformity = (1 << D3DDECLUSAGE_POSITION) | (1 << D3DDECLUSAGE_COLOR) | (1 << (D3DDECLUSAGE_COLOR + 1) ) | (1 << D3DDECLUSAGE_NORMAL) | (1 << D3DDECLUSAGE_PSIZE);
+
+	const unsigned vertexSize = fvfVertexDecl->GetVertexSize();
+	const unsigned numVertices = InternalLength / vertexSize;
+	const BYTE* vertexBufferEndPtr = data + numVertices * vertexSize;
+
+	const DebuggableD3DVERTEXELEMENT9* position0element = fvfVertexDecl->GetVertexElement(D3DDECLUSAGE_POSITION, 0);
+	if (!position0element)
+		position0element = fvfVertexDecl->GetVertexElement(D3DDECLUSAGE_POSITIONT, 0);
+	const DebuggableD3DVERTEXELEMENT9* normalElement = fvfVertexDecl->GetVertexElement(D3DDECLUSAGE_NORMAL, 0);
+	const DebuggableD3DVERTEXELEMENT9* psizeElement = fvfVertexDecl->GetVertexElement(D3DDECLUSAGE_PSIZE, 0);
+	const DebuggableD3DVERTEXELEMENT9* diffuseElement = fvfVertexDecl->GetVertexElement(D3DDECLUSAGE_COLOR, 0);
+	const DebuggableD3DVERTEXELEMENT9* specularElement = fvfVertexDecl->GetVertexElement(D3DDECLUSAGE_COLOR, 1);
+	D3DXVECTOR4 position0(0.0f, 0.0f, 0.0f, 1.0f);
+	if (position0element)
+	{
+		if (position0element->Type == D3DDECLTYPE_FLOAT3)
+		{
+			const D3DXVECTOR3* const position0xyz = (const D3DXVECTOR3* const)(data + position0element->Offset);
+			position0.x = position0xyz->x;
+			position0.y = position0xyz->y;
+			position0.z = position0xyz->z;
+		}
+		else if (position0element->Type == D3DDECLTYPE_FLOAT4)
+		{
+			position0 = *(const D3DXVECTOR4* const)(data + position0element->Offset);
+		}
+		else
+		{
+#ifdef _DEBUG
+			__debugbreak(); // Should never be here!
+#endif
+		}
+	}
+	const D3DXVECTOR3* normal0 = NULL;
+	if (normalElement)
+		normal0 = (const D3DXVECTOR3* const)(data + normalElement->Offset);
+	const float* psize0 = NULL;
+	if (psizeElement)
+		psize0 = (const float* const)(data + psizeElement->Offset);
+	const D3DCOLOR* diffuse0 = NULL;
+	if (diffuseElement)
+		diffuse0 = (const D3DCOLOR* const)(data + diffuseElement->Offset);
+	const D3DCOLOR* specular0 = NULL;
+	if (specularElement)
+		specular0 = (const D3DCOLOR* const)(data + specularElement->Offset);
+
+	for (const BYTE* currentVertexPtr = data + vertexSize; currentVertexPtr < vertexBufferEndPtr; currentVertexPtr += vertexSize)
+	{
+		if (position0element && (FVFDataUniformity & (1 << D3DDECLUSAGE_POSITION) ) )
+		{
+			D3DXVECTOR4 currentPos(0.0f, 0.0f, 0.0f, 1.0f);
+			if (position0element->Type == D3DDECLTYPE_FLOAT3)
+			{
+				const D3DXVECTOR3* const currentPosxyz = (const D3DXVECTOR3* const)(currentVertexPtr + position0element->Offset);
+				currentPos.x = currentPosxyz->x;
+				currentPos.y = currentPosxyz->y;
+				currentPos.z = currentPosxyz->z;
+			}
+			else if (position0element->Type == D3DDECLTYPE_FLOAT4)
+			{
+				currentPos = *(const D3DXVECTOR4* const)(currentVertexPtr + position0element->Offset);
+			}
+			else
+			{
+	#ifdef _DEBUG
+				__debugbreak(); // Should never be here!
+	#endif
+			}
+			if (currentPos != position0)
+				FVFDataUniformity &= ~(1 << D3DDECLUSAGE_POSITION);
+		}
+		if (normal0 && (FVFDataUniformity & (1 << D3DDECLUSAGE_NORMAL) ) )
+		{
+			const D3DXVECTOR3* const currentNormal = (const D3DXVECTOR3* const)(currentVertexPtr + normalElement->Offset);
+			if (*currentNormal != *normal0)
+				FVFDataUniformity &= ~(1 << D3DDECLUSAGE_NORMAL);
+		}
+		if (psize0 && (FVFDataUniformity & (1 << D3DDECLUSAGE_PSIZE) ) )
+		{
+			const float* const currentPSize = (const float* const)(currentVertexPtr + psizeElement->Offset);
+			if (*currentPSize != *psize0)
+				FVFDataUniformity &= ~(1 << D3DDECLUSAGE_PSIZE);
+		}
+		if (diffuse0 && (FVFDataUniformity & (1 << D3DDECLUSAGE_COLOR) ) )
+		{
+			const D3DCOLOR* const currentDiffuse = (const D3DCOLOR* const)(currentVertexPtr + diffuseElement->Offset);
+			if (*currentDiffuse != *diffuse0)
+				FVFDataUniformity &= ~(1 << D3DDECLUSAGE_COLOR);
+		}
+		if (specular0 && (FVFDataUniformity & (1 << (D3DDECLUSAGE_COLOR + 1) ) ) )
+		{
+			const D3DCOLOR* const currentSpecular = (const D3DCOLOR* const)(currentVertexPtr + specularElement->Offset);
+			if (*currentSpecular != *specular0)
+				FVFDataUniformity &= ~(1 << (D3DDECLUSAGE_COLOR + 1) );
+		}
+	}
+
+	if (FVFDataUniformity & (1 << D3DDECLUSAGE_COLOR) )
+	{
+		if (diffuse0)
+			UniformDiffuseColor = *diffuse0;
+		else
+			UniformDiffuseColor = 0xFFFFFFFF;
+	}
+	if (FVFDataUniformity & (1 << (D3DDECLUSAGE_COLOR + 1) ) )
+	{
+		if (specular0)
+			UniformSpecularColor = *specular0;
+		else
+			UniformSpecularColor = 0xFFFFFFFF;
+	}
+}
+
 void IDirect3DVertexBuffer9Hook::SoftUPReallocIfNecessary(const UINT newBufferLengthBytes, const UINT numVertices)
 {
+	const unsigned oldDirtyDWORDsCount = GetDirtyDWORDsCountFromBufferLength(InternalLength);
+	const unsigned newDirtyDWORDsCount = GetDirtyDWORDsCountFromBufferLength(newBufferLengthBytes);
 	if (newBufferLengthBytes > InternalLength)
 	{
 		GPUFree(GPUBytes);
+		GPUBytes = NULL;
 		GPUBytes = GPUAlloc(newBufferLengthBytes, numVertices, 1, 1, 1, GPUVAT_VertexStreamData, GPUFMT_VertexGeneral, this
 #ifdef _DEBUG
 		, debugObjectName
@@ -352,18 +515,24 @@ void IDirect3DVertexBuffer9Hook::SoftUPReallocIfNecessary(const UINT newBufferLe
 		);
 		InternalLength = newBufferLengthBytes;
 	}
+	if (newDirtyDWORDsCount > oldDirtyDWORDsCount)
+	{
+		free(GPUBytesDirtyBits);
+		const unsigned dirtyDWORDsCount = GetDirtyDWORDsCountFromBufferLength(InternalLength);
+		GPUBytesDirtyBits = (unsigned* const)calloc(dirtyDWORDsCount, sizeof(unsigned) );
+	}
 }
 
 void IDirect3DVertexBuffer9Hook::UpdateDataToGPU()
 {
 	// TODO: Save upload bandwidth by tracking dirty regions and only reuploading the dirty regions of our buffers
-	if (GPUBytesDirty)
+	if (GPUBytesAnyDirty)
 	{
 		// Copy our newly locked data off from the CPU to the GPU:
 		parentDevice->GetBaseDevice()->DeviceMemCopy(GetGPUBytes(), data, InternalLength);
 		lastFrameIDUploaded = parentDevice->GetCurrentFrameIndex();
 
-		GPUBytesDirty = false;
+		ClearDirtyRegion();
 	}
 }
 
@@ -411,10 +580,47 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DVertexBuffer9Hook::GetDe
 
 	pDesc->Size = InternalLength;
 	pDesc->Usage = InternalUsage;
-	pDesc->FVF = InternalFVF;
+	pDesc->FVF = InternalFVF.rawFVF_DWORD;
 	pDesc->Pool = InternalPool;
 	pDesc->Format = D3DFMT_VERTEXDATA;
 	pDesc->Type = D3DRTYPE_VERTEXBUFFER;
 
 	return S_OK;
+}
+
+void IDirect3DVertexBuffer9Hook::MarkDirtyRegion(const unsigned regionByteOffset, const unsigned regionByteLength)
+{
+	if (regionByteLength == 0)
+		return;
+
+	GPUBytesAnyDirty = true;
+
+	const unsigned expandedByteOffset = regionByteOffset & ~(GPU_DRAM_TRANSACTION_SIZE_BYTES - 1); // Round down to the nearest DRAM transaction boundary
+	const unsigned expandedByteLength = (regionByteLength + (GPU_DRAM_TRANSACTION_SIZE_BYTES - 1) ) & ~(GPU_DRAM_TRANSACTION_SIZE_BYTES - 1); // Round up to the next DRAM transaction boundary
+
+	const unsigned offsetStartBits = expandedByteOffset / GPU_DRAM_TRANSACTION_SIZE_BYTES;
+	const unsigned lengthNumBits = expandedByteLength / GPU_DRAM_TRANSACTION_SIZE_BYTES;
+	const unsigned endBits = offsetStartBits + lengthNumBits;
+	for (unsigned bitIndex = offsetStartBits; bitIndex < endBits; ++bitIndex)
+	{
+		const unsigned DWORDIndex = bitIndex / (sizeof(DWORD) * 8);
+		const unsigned DWORDBitOffset = bitIndex % (sizeof(DWORD) * 8);
+		GPUBytesDirtyBits[DWORDIndex] |= (1 << DWORDBitOffset);
+	}
+
+	lastFrameIDDirtied = parentDevice->GetCurrentFrameIndex();
+}
+
+void IDirect3DVertexBuffer9Hook::ClearDirtyRegion()
+{
+	if (GPUBytesAnyDirty)
+	{
+		const unsigned numDirtyDWORDs = GetDirtyDWORDsCountFromBufferLength(InternalLength);
+		for (unsigned x = 0; x < numDirtyDWORDs; ++x)
+		{
+			GPUBytesDirtyBits[x] = 0x00000000;
+		}
+
+		GPUBytesAnyDirty = false;
+	}
 }

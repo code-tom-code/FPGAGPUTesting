@@ -116,7 +116,6 @@ COM_DECLSPEC_NOTHROW ULONG STDMETHODCALLTYPE IDirect3DSurface9Hook::Release(THIS
 #pragma warning(pop)
 		OutputDebugStringA(printBuffer);
 #endif
-		GPUFree(GPUSurfaceBytesRaw);
 		delete this;
 	}
 	return ret;

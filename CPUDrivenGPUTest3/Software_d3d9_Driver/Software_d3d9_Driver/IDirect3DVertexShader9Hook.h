@@ -119,7 +119,7 @@ public:
 		outPositionPtrs[3] = ( (D3DXVECTOR4* const)thisOutputRegisters[3]) + outPositionRegisterIndex;
 	}
 
-	void JitLoadShader(const DWORD FVF = 0x00000000);
+	void JitLoadShader(const debuggableFVF FVF);
 
 	const struct DeviceBytecode* const GetDeviceCompiledShaderInfo() const
 	{

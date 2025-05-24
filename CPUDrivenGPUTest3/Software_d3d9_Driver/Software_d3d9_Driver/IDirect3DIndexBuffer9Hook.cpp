@@ -93,6 +93,7 @@ COM_DECLSPEC_NOTHROW ULONG STDMETHODCALLTYPE IDirect3DIndexBuffer9Hook::Release(
 		OutputDebugStringA(printBuffer);
 #endif
 		GPUFree(GPUBytes);
+		GPUBytes = NULL;
 		delete this;
 	}
 	return ret;
@@ -353,6 +354,7 @@ void IDirect3DIndexBuffer9Hook::SoftUPReallocIfNecessary(const UINT newBufferLen
 	if (allocLengthBytes > InternalLength)
 	{
 		GPUFree(GPUBytes);
+		GPUBytes = NULL;
 		GPUBytes = GPUAlloc(allocLengthBytes, numIndices, 1, 1, 1, GPUVAT_IndexData, ConvertD3DFormatToDeviceFormat(newFormat), this
 #ifdef _DEBUG
 		, debugObjectName

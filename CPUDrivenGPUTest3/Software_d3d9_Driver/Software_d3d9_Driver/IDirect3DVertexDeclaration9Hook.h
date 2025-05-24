@@ -96,6 +96,13 @@ public:
 		return devicePassthroughVS;
 	}
 
+	// If this vertex decl was implicitly created from a SetFVF() call, then this is the FVF code that resulted in this vertex decl being created.
+	// If this vertex decl was manually created using a CreateVertexDeclaration() call, then this would always be 0x00000000 instead:
+	const debuggableFVF GetInternalFVF() const
+	{
+		return vertDeclAutoCreatedFromFVF;
+	}
+
 protected:
 	LPDIRECT3DVERTEXDECLARATION9 realObject;
 	IDirect3DDevice9Hook* parentDevice;

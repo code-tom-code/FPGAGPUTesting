@@ -208,6 +208,115 @@ static const char* const PrimitiveTypeString[] =
 	"D3DPT_TRIANGLEFAN", // 6
 };
 
+static const char* const FVF_TEX_Strings[] =
+{
+	"D3DFVF_TEX0",
+	"D3DFVF_TEX1",
+	"D3DFVF_TEX2",
+	"D3DFVF_TEX3",
+	"D3DFVF_TEX4",
+	"D3DFVF_TEX5",
+	"D3DFVF_TEX6",
+	"D3DFVF_TEX7",
+	"D3DFVF_TEX8"
+};
+
+void DecodeFVFString(char (&outBuffer)[384], const debuggableFVF FVF)
+{
+	if (FVF.rawFVF_DWORD == 0)
+	{
+		strcpy_s(outBuffer, "0");
+		return;
+	}
+
+	switch (FVF.namedFVF.positionTypeLow)
+	{
+	case dbgD3DFVF_RESERVED0:
+		strcpy_s(outBuffer, "D3DFVF_RESERVED0");
+		break;
+	case dbgD3DFVF_XYZ:
+		if (FVF.namedFVF.positionTypeContainsUntransformedW)
+			strcpy_s(outBuffer, "D3DFVF_XYZW");
+		else
+			strcpy_s(outBuffer, "D3DFVF_XYZ");
+		break;
+	case dbgD3DFVF_XYZRHW:
+		strcpy_s(outBuffer, "D3DFVF_XYZRHW");
+		break;
+	case dbgD3DFVF_XYZB1:
+		strcpy_s(outBuffer, "D3DFVF_XYZB1");
+		break;
+	case dbgD3DFVF_XYZB2:
+		strcpy_s(outBuffer, "D3DFVF_XYZB2");
+		break;
+	case dbgD3DFVF_XYZB3:
+		strcpy_s(outBuffer, "D3DFVF_XYZB3");
+		break;
+	case dbgD3DFVF_XYZB4:
+		strcpy_s(outBuffer, "D3DFVF_XYZB4");
+		break;
+	case dbgD3DFVF_XYZB5:
+		strcpy_s(outBuffer, "D3DFVF_XYZB5");
+		break;
+	}
+
+	if (FVF.namedFVF.hasNormal)
+	{
+		if (outBuffer[0] != '\0')
+			strcat_s(outBuffer, " | ");
+		strcat_s(outBuffer, "D3DFVF_NORMAL");
+	}
+
+	if (FVF.namedFVF.hasPSize)
+	{
+		if (outBuffer[0] != '\0')
+			strcat_s(outBuffer, " | ");
+		strcat_s(outBuffer, "D3DFVF_PSIZE");
+	}
+
+	if (FVF.namedFVF.hasDiffuse)
+	{
+		if (outBuffer[0] != '\0')
+			strcat_s(outBuffer, " | ");
+		strcat_s(outBuffer, "D3DFVF_DIFFUSE");
+	}
+
+	if (FVF.namedFVF.hasSpecular)
+	{
+		if (outBuffer[0] != '\0')
+			strcat_s(outBuffer, " | ");
+		strcat_s(outBuffer, "D3DFVF_SPECULAR");
+	}
+
+	if (FVF.namedFVF.lastBeta_UBYTE4)
+	{
+		if (outBuffer[0] != '\0')
+			strcat_s(outBuffer, " | ");
+		strcat_s(outBuffer, "D3DFVF_LASTBETA_UBYTE4");
+	}
+
+	if (FVF.namedFVF.hasFog)
+	{
+		if (outBuffer[0] != '\0')
+			strcat_s(outBuffer, " | ");
+		strcat_s(outBuffer, "D3DFVF_FOG");
+	}
+
+	if (FVF.namedFVF.lastBeta_D3DCOLOR)
+	{
+		if (outBuffer[0] != '\0')
+			strcat_s(outBuffer, " | ");
+		strcat_s(outBuffer, "D3DFVF_LASTBETA_D3DCOLOR");
+	}
+
+	if (FVF.namedFVF.numTexcoordElementsPresent != 0)
+	{
+		if (outBuffer[0] != '\0')
+			strcat_s(outBuffer, " | ");
+		strcat_s(outBuffer, FVF_TEX_Strings[FVF.namedFVF.numTexcoordElementsPresent]);
+	}
+}
+
 void GPUStats::ProcessDrawEventsData(const LARGE_INTEGER frameBeginGPUTimestamp, const LARGE_INTEGER frameEndGPUTimestamp, const LARGE_INTEGER frameBeginCPUTimestamp, const LARGE_INTEGER frameEndCPUTimestamp)
 {
 	// Erase the last frame's processed draw data:
@@ -345,9 +454,9 @@ void GPUStats::ProcessDrawEventsData(const LARGE_INTEGER frameBeginGPUTimestamp,
 #pragma warning(disable:4996)
 	FILE* const f = fopen("DrawEventTimestamps.csv", "wb");
 #pragma warning(pop)
-	fprintf(f, "EventIndex,DrawType,DrawParams,VertexWavesCount,CPURecordTimestamp,GPUEndTimestamp\n");
+	fprintf(f, "EventIndex,DrawType,DrawParams,VertexWavesCount,FVF,CPURecordTimestamp,GPUEndTimestamp\n");
 
-	fprintf(f, "0,FRAME_BEGIN,%s,0,%I64u,%I64u\n", "BEGIN", frameBeginCPUTimestamp.QuadPart, frameBeginGPUTimestamp.QuadPart);
+	fprintf(f, "0,FRAME_BEGIN,%s,0,0,%I64u,%I64u\n", "BEGIN", frameBeginCPUTimestamp.QuadPart, frameBeginGPUTimestamp.QuadPart);
 
 	const unsigned numDrawStats = (const unsigned)flippedRecordedDrawEvents.size();
 	for (unsigned drawEventID = 0; drawEventID < numDrawStats; ++drawEventID)
@@ -355,6 +464,7 @@ void GPUStats::ProcessDrawEventsData(const LARGE_INTEGER frameBeginGPUTimestamp,
 		const RecordedDrawCallStat& thisRecordedDrawStat = flippedRecordedDrawEvents[drawEventID];
 		const char* drawTypeString = "";
 		char drawParamsBuffer[128] = {0};
+		char drawFVFBuffer[384] = {0};
 		const unsigned wavesCount = thisRecordedDrawStat.DrawType == RecordedDrawCallStat::DT_Clear ? 0 : thisRecordedDrawStat.DrawCallStatUnion.DrawData.VertexWavesCount;
 		switch (thisRecordedDrawStat.DrawType)
 		{
@@ -376,6 +486,7 @@ void GPUStats::ProcessDrawEventsData(const LARGE_INTEGER frameBeginGPUTimestamp,
 			const float depth = thisRecordedDrawStat.DrawCallStatUnion.ClearData.ClearDepth;
 			const unsigned char stencil = thisRecordedDrawStat.DrawCallStatUnion.ClearData.ClearStencil;
 			sprintf_s(drawParamsBuffer, "\"(%s, ARGB(%u, %u, %u, %u), %f, 0x%02X)\"", clearFlagsString, clearA, clearR, clearG, clearB, depth, stencil);
+			drawFVFBuffer[0] = '0';
 		}
 			break;
 		case RecordedDrawCallStat::DT_DrawPrimitive:
@@ -385,6 +496,7 @@ void GPUStats::ProcessDrawEventsData(const LARGE_INTEGER frameBeginGPUTimestamp,
 			const unsigned startVert = thisRecordedDrawStat.DrawCallStatUnion.DrawData.BaseVertexIndex;
 			const unsigned primCount = thisRecordedDrawStat.DrawCallStatUnion.DrawData.PrimCount;
 			sprintf_s(drawParamsBuffer, "\"(%s, %u, %u)\"", primTypeString, startVert, primCount);
+			DecodeFVFString(drawFVFBuffer, thisRecordedDrawStat.DrawCallStatUnion.DrawData.CurrentFVF);
 		}
 			break;
 		case RecordedDrawCallStat::DT_DrawIndexedPrimitive:
@@ -396,14 +508,16 @@ void GPUStats::ProcessDrawEventsData(const LARGE_INTEGER frameBeginGPUTimestamp,
 			const unsigned numVertices = thisRecordedDrawStat.DrawCallStatUnion.DrawData.NumVertices;
 			const unsigned startIndex = thisRecordedDrawStat.DrawCallStatUnion.DrawData.StartIndex;
 			const unsigned primCount = thisRecordedDrawStat.DrawCallStatUnion.DrawData.PrimCount;
-			sprintf_s(drawParamsBuffer, "\"(%s, %i, %u, %u, %u, %u)\"", primTypeString, baseVertexIndex, minVertexIndex, numVertices, startIndex, primCount);
+			const char* const indexFmtString = thisRecordedDrawStat.DrawCallStatUnion.DrawData.IndexFormat == D3DFMT_INDEX32 ? "INDEX32" : "INDEX16";
+			sprintf_s(drawParamsBuffer, "\"(%s, %i, %u, %u, %u, %u) %s\"", primTypeString, baseVertexIndex, minVertexIndex, numVertices, startIndex, primCount, indexFmtString);
+			DecodeFVFString(drawFVFBuffer, thisRecordedDrawStat.DrawCallStatUnion.DrawData.CurrentFVF);
 		}
 			break;
 		}
-		fprintf(f, "%u,%s,%s,%u,%I64u,%I64u\n", drawEventID + 1, drawTypeString, drawParamsBuffer, wavesCount, thisRecordedDrawStat.drawCallCPUTimestamp.QuadPart, thisRecordedDrawStat.drawCallFinishGPUTimestamp.QuadPart);
+		fprintf(f, "%u,%s,%s,%u,%s,%I64u,%I64u\n", drawEventID + 1, drawTypeString, drawParamsBuffer, wavesCount, drawFVFBuffer, thisRecordedDrawStat.drawCallCPUTimestamp.QuadPart, thisRecordedDrawStat.drawCallFinishGPUTimestamp.QuadPart);
 	}
 
-	fprintf(f, "%u,FRAME_END,%s,0,%I64u,%I64u\n", numDrawStats + 2, "END", frameEndCPUTimestamp.QuadPart, frameEndGPUTimestamp.QuadPart);
+	fprintf(f, "%u,FRAME_END,%s,0,0,%I64u,%I64u\n", numDrawStats + 2, "END", frameEndCPUTimestamp.QuadPart, frameEndGPUTimestamp.QuadPart);
 	fclose(f);
 }
 

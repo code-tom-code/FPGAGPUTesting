@@ -1947,7 +1947,11 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::SetFVF(THIS
 		// 1) Release any existing set vertex declarations
 		// 2) Create a new implicit vertex declaration (retrievable only via GetVertexDeclaration() )
 		// 3) Assign that new implicit vertex declaration
-		CreateAndSetVertexDeclFromFVFCode(dbgFVF);
+		IDirect3DVertexDeclaration9Hook* const fvfVertDecl = CreateVertexDeclFromFVFCode(dbgFVF);
+		if (FAILED(SetVertexDeclaration(fvfVertDecl) ) )
+		{
+			DbgBreakPrint("Error: Failed to set vertex declaration");
+		}
 	}
 
 	return ret;
@@ -2010,7 +2014,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::SetVertexSh
 	{
 		if (!hookPtr->triedJit)
 		{
-			hookPtr->JitLoadShader();
+			hookPtr->JitLoadShader(targetDeviceState->currentVertexDecl->GetInternalFVF() );
 		}
 	}
 

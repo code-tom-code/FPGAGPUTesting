@@ -78,7 +78,9 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::CreateVerte
 		return ret;
 
 	IDirect3DVertexBuffer9Hook* const newVertexBuffer = new IDirect3DVertexBuffer9Hook(realObject, this);
-	newVertexBuffer->CreateVertexBuffer(Length, (const DebuggableUsage)Usage, FVF, Pool);
+	debuggableFVF dbgFVF;
+	dbgFVF.rawFVF_DWORD = FVF;
+	newVertexBuffer->CreateVertexBuffer(Length, (const DebuggableUsage)Usage, dbgFVF, Pool);
 	*ppVertexBuffer = newVertexBuffer;
 
 	return ret;
@@ -471,14 +473,13 @@ Undocumented/underdocumented D3D9 weird things:
 - D3DFVF_XYZB5 with none of the LASTBETA flags defined means that you get a "float4 blendweights0, float1 blendindices0" rather than what I would've initially thought ("float4 blendweights0, float1 blendweights1"). I guess B5 always implies indices, although I'm not sure what float indices means.
 - It seems like the runtime handles D3DFVF_XYZB2 specially when it comes to the LASTBETA flags. It seems to *always* want to make the last element of type D3DDECLTYPE_UBYTE4, and then it switches between using D3DDECLTYPE_FLOAT1 and D3DDECLTYPE_D3DCOLOR for the first DWORD.
 */
-IDirect3DVertexDeclaration9Hook* IDirect3DDevice9Hook::CreateAndSetVertexDeclFromFVFCode(const debuggableFVF FVF)
+IDirect3DVertexDeclaration9Hook* IDirect3DDevice9Hook::CreateVertexDeclFromFVFCode(const debuggableFVF FVF)
 {
 #ifndef NO_CACHING_FVF_VERT_DECLS
 	const std::map<DWORD, IDirect3DVertexDeclaration9Hook*>::const_iterator it = FVFToVertDeclCache->find(FVF.rawFVF_DWORD);
 	if (it != FVFToVertDeclCache->end() )
 	{
 		IDirect3DVertexDeclaration9Hook* const fvfVertDecl = it->second;
-		SetVertexDeclaration(fvfVertDecl);
 		return fvfVertDecl;
 	}
 #endif // NO_CACHING_FVF_VERT_DECLS
@@ -504,11 +505,6 @@ IDirect3DVertexDeclaration9Hook* IDirect3DDevice9Hook::CreateAndSetVertexDeclFro
 	fvfVertexDecl->AddRef();
 	FVFToVertDeclCache->insert(std::make_pair(FVF.rawFVF_DWORD, fvfVertexDecl) );
 #endif // NO_CACHING_FVF_VERT_DECLS
-
-	if (FAILED(SetVertexDeclaration(fvfVertexDecl) ) )
-	{
-		DbgBreakPrint("Error: Failed to set vertex declaration");
-	}
 
 	return fvfVertexDecl;
 }

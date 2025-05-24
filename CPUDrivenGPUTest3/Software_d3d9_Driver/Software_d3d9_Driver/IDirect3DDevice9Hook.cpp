@@ -4377,14 +4377,57 @@ void IDirect3DDevice9Hook::RecomputeCachedStreamEndsForUP(const BYTE* const stre
 	ComputeCachedStreamEnd(currentState.currentStreamEnds[0], stream0Data, numVertices * vertexStride);
 }
 
+static const D3DCOLOR D3DColorValueToD3DColor(const D3DCOLORVALUE& colorVal)
+{
+	BYTE r, g, b, a;
+	if (colorVal.r > 1.0f)
+		r = 255;
+	else if (colorVal.r < 0.0f)
+		r = 0;
+	else
+		r = (const BYTE)(colorVal.r * 255.0f);
+	if (colorVal.g > 1.0f)
+		g = 255;
+	else if (colorVal.g < 0.0f)
+		g = 0;
+	else
+		g = (const BYTE)(colorVal.g * 255.0f);
+	if (colorVal.b > 1.0f)
+		b = 255;
+	else if (colorVal.b < 0.0f)
+		b = 0;
+	else
+		b = (const BYTE)(colorVal.b * 255.0f);
+	if (colorVal.a > 1.0f)
+		a = 255;
+	else if (colorVal.a < 0.0f)
+		a = 0;
+	else
+		a = (const BYTE)(colorVal.a * 255.0f);
+	return D3DCOLOR_ARGB(a, r, g, b);
+}
+
 // Returns true for "should draw", or false for "should skip"
-const bool IDirect3DDevice9Hook::TotalDrawCallSkipTest(void) const
+const bool IDirect3DDevice9Hook::TotalDrawCallSkipTest(const D3DPRIMITIVETYPE primType, const bool isUPDraw) const
 {
 #ifdef ENABLE_END_TO_SKIP_DRAWS
 	// Skip this draw call if END is held down
 	if (IsHoldingEndToSkipDrawCalls() )
 		return false;
 #endif // #ifdef ENABLE_END_TO_SKIP_DRAWS
+
+	const bool fvfVertexBufferUniformityAvailable = (isUPDraw == false && currentState.currentVertexDecl != NULL && currentState.currentStreams[0].vertexBuffer != NULL && 
+		currentState.currentStreams[0].vertexBuffer->GetInternalFVF().rawFVF_DWORD != 0 && currentState.currentVertexDecl->GetInternalFVF().rawFVF_DWORD == currentState.currentStreams[0].vertexBuffer->GetInternalFVF().rawFVF_DWORD );
+	const USHORT fvfVertexBufferUniformityFlags = fvfVertexBufferUniformityAvailable ? currentState.currentStreams[0].vertexBuffer->GetFVFDataUniformity() : 0x0000;
+
+	if (primType != D3DPT_POINTLIST)
+	{
+		// All triangles are degenerate (all vertices are the same point). Morrowind.exe has several draw-calls like this that should be skipped:
+		if (fvfVertexBufferUniformityFlags & (1 << D3DDECLUSAGE_POSITION) )
+		{
+			return false;
+		}
+	}
 
 	const bool StencilEnabled = (currentState.currentDepthStencil != NULL) && currentState.currentRenderStates.renderStatesUnion.namedStates.stencilEnable;
 	const bool StencilWriteEnabled = StencilEnabled &&
@@ -4511,21 +4554,59 @@ const bool IDirect3DDevice9Hook::TotalDrawCallSkipTest(void) const
 	}
 
 	// Skip the entire draw call if we're doing dumb stuff (like rendering a fullscreen quad that is entirely alpha-transparent while alpha blending is enabled using the fixed function pipeline. Looking at you, Morrowind.exe):
-	if (currentState.currentRenderStates.renderStatesUnion.namedStates.alphaBlendEnable && !currentState.currentPixelShader && !currentState.currentVertexShader)
+	if (currentState.currentRenderStates.renderStatesUnion.namedStates.alphaBlendEnable && !currentState.currentPixelShader && !currentState.currentVertexShader && DepthWriteEnabled == false && StencilWriteEnabled == false)
 	{
-		if (currentState.currentRenderStates.renderStatesUnion.namedStates.lighting && 
-			currentState.currentRenderStates.renderStatesUnion.namedStates.ambientMaterialSource == D3DMCS_MATERIAL && currentState.currentMaterial.Ambient.a == 0.0f &&
-			currentState.currentRenderStates.renderStatesUnion.namedStates.diffuseMaterialSource == D3DMCS_MATERIAL && currentState.currentMaterial.Diffuse.a == 0.0f)
+		const bool ambientIsConstant = currentState.currentRenderStates.renderStatesUnion.namedStates.lighting == false ||
+			currentState.currentRenderStates.renderStatesUnion.namedStates.lighting && currentState.currentRenderStates.renderStatesUnion.namedStates.ambientMaterialSource == D3DMCS_MATERIAL ||
+			currentState.currentRenderStates.renderStatesUnion.namedStates.lighting && currentState.currentRenderStates.renderStatesUnion.namedStates.ambientMaterialSource == D3DMCS_COLOR1 && (fvfVertexBufferUniformityFlags & (1 << D3DDECLUSAGE_COLOR) ) ||
+			currentState.currentRenderStates.renderStatesUnion.namedStates.lighting && currentState.currentRenderStates.renderStatesUnion.namedStates.ambientMaterialSource == D3DMCS_COLOR2 && (fvfVertexBufferUniformityFlags & (1 << (D3DDECLUSAGE_COLOR + 1) ) );
+		D3DCOLOR ambientConstantColor = 0x00000000;
+		if (ambientIsConstant)
 		{
-			// FFPS selects vertex color for alpha channel
-			if (currentState.currentStageStates[0].stageStateUnion.namedStates.alphaOp == D3DTOP_MODULATE && 
-				(currentState.currentStageStates[0].stageStateUnion.namedStates.alphaArg1 == D3DTA_DIFFUSE || currentState.currentStageStates[0].stageStateUnion.namedStates.alphaArg2 == D3DTA_DIFFUSE || 
-				currentState.currentStageStates[0].stageStateUnion.namedStates.alphaArg1 == D3DTA_CURRENT || currentState.currentStageStates[0].stageStateUnion.namedStates.alphaArg2 == D3DTA_CURRENT) )
-				return false;
-			else if (currentState.currentStageStates[0].stageStateUnion.namedStates.alphaOp == D3DTOP_SELECTARG1 && (currentState.currentStageStates[0].stageStateUnion.namedStates.alphaArg1 == D3DTA_DIFFUSE || currentState.currentStageStates[0].stageStateUnion.namedStates.alphaArg1 == D3DTA_CURRENT) )
-				return false;
-			else if (currentState.currentStageStates[0].stageStateUnion.namedStates.alphaOp == D3DTOP_SELECTARG2 && (currentState.currentStageStates[0].stageStateUnion.namedStates.alphaArg2 == D3DTA_DIFFUSE || currentState.currentStageStates[0].stageStateUnion.namedStates.alphaArg2 == D3DTA_CURRENT) )
-				return false;
+			if (currentState.currentRenderStates.renderStatesUnion.namedStates.lighting && currentState.currentRenderStates.renderStatesUnion.namedStates.ambientMaterialSource == D3DMCS_MATERIAL)
+				ambientConstantColor = D3DColorValueToD3DColor(currentState.currentMaterial.Ambient);
+			else if (currentState.currentRenderStates.renderStatesUnion.namedStates.lighting && currentState.currentRenderStates.renderStatesUnion.namedStates.ambientMaterialSource == D3DMCS_COLOR1)
+				ambientConstantColor = currentState.currentStreams[0].vertexBuffer->GetUniformDiffuseColor();
+			else if (currentState.currentRenderStates.renderStatesUnion.namedStates.lighting && currentState.currentRenderStates.renderStatesUnion.namedStates.ambientMaterialSource == D3DMCS_COLOR2)
+				ambientConstantColor = currentState.currentStreams[0].vertexBuffer->GetUniformSpecularColor();
+		}
+		const bool diffuseIsConstant = 
+			currentState.currentRenderStates.renderStatesUnion.namedStates.lighting && (currentState.currentRenderStates.renderStatesUnion.namedStates.colorVertex == false || currentState.currentRenderStates.renderStatesUnion.namedStates.diffuseMaterialSource == D3DMCS_MATERIAL) ||
+			currentState.currentRenderStates.renderStatesUnion.namedStates.lighting && currentState.currentRenderStates.renderStatesUnion.namedStates.diffuseMaterialSource == D3DMCS_COLOR1 && (fvfVertexBufferUniformityFlags & (1 << D3DDECLUSAGE_COLOR) ) ||
+			currentState.currentRenderStates.renderStatesUnion.namedStates.lighting && currentState.currentRenderStates.renderStatesUnion.namedStates.diffuseMaterialSource == D3DMCS_COLOR2 && (fvfVertexBufferUniformityFlags & (1 << (D3DDECLUSAGE_COLOR + 1) ) );
+		D3DCOLOR diffuseConstantColor = 0xFFFFFFFF;
+		if (diffuseIsConstant)
+		{
+			if (currentState.currentRenderStates.renderStatesUnion.namedStates.lighting && (currentState.currentRenderStates.renderStatesUnion.namedStates.colorVertex == false || currentState.currentRenderStates.renderStatesUnion.namedStates.diffuseMaterialSource == D3DMCS_MATERIAL) )
+				diffuseConstantColor = D3DColorValueToD3DColor(currentState.currentMaterial.Diffuse);
+			else if (currentState.currentRenderStates.renderStatesUnion.namedStates.lighting && currentState.currentRenderStates.renderStatesUnion.namedStates.diffuseMaterialSource == D3DMCS_COLOR1)
+				diffuseConstantColor = currentState.currentStreams[0].vertexBuffer->GetUniformDiffuseColor();
+			else if (currentState.currentRenderStates.renderStatesUnion.namedStates.lighting && currentState.currentRenderStates.renderStatesUnion.namedStates.diffuseMaterialSource == D3DMCS_COLOR2)
+				diffuseConstantColor = currentState.currentStreams[0].vertexBuffer->GetUniformSpecularColor();
+		}
+
+		if (ambientIsConstant && diffuseIsConstant)
+		{
+			if (currentState.currentRenderStates.renderStatesUnion.namedStates.srcBlend == D3DBLEND_SRCALPHA &&
+				(currentState.currentRenderStates.renderStatesUnion.namedStates.destBlend == D3DBLEND_INVSRCALPHA || currentState.currentRenderStates.renderStatesUnion.namedStates.destBlend == D3DBLEND_ONE) )
+			{
+				const BYTE ambientAlpha = (const BYTE)(ambientConstantColor >> 24);
+				const BYTE diffuseAlpha = (const BYTE)(diffuseConstantColor >> 24);
+				if (ambientAlpha == 0x00 && diffuseAlpha == 0x00)
+				{
+					// FFPS selects vertex color for alpha channel
+					if (currentState.currentStageStates[0].stageStateUnion.namedStates.alphaOp == D3DTOP_MODULATE && 
+						(currentState.currentStageStates[0].stageStateUnion.namedStates.alphaArg1 == D3DTA_DIFFUSE || currentState.currentStageStates[0].stageStateUnion.namedStates.alphaArg2 == D3DTA_DIFFUSE || 
+						currentState.currentStageStates[0].stageStateUnion.namedStates.alphaArg1 == D3DTA_CURRENT || currentState.currentStageStates[0].stageStateUnion.namedStates.alphaArg2 == D3DTA_CURRENT) )
+						return false;
+					else if (currentState.currentStageStates[0].stageStateUnion.namedStates.alphaOp == D3DTOP_SELECTARG1 && (currentState.currentStageStates[0].stageStateUnion.namedStates.alphaArg1 == D3DTA_DIFFUSE || currentState.currentStageStates[0].stageStateUnion.namedStates.alphaArg1 == D3DTA_CURRENT) )
+						return false;
+					else if (currentState.currentStageStates[0].stageStateUnion.namedStates.alphaOp == D3DTOP_SELECTARG2 && (currentState.currentStageStates[0].stageStateUnion.namedStates.alphaArg2 == D3DTA_DIFFUSE || currentState.currentStageStates[0].stageStateUnion.namedStates.alphaArg2 == D3DTA_CURRENT) )
+						return false;
+				}
+			}
+
+			// TODO: Can do a similar test for identity RGB colors (255, 255, 255) using additive blending
 		}
 	}
 
@@ -4598,7 +4679,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawPrimiti
 
 	const HRESULT ret = S_OK;
 
-	if (!TotalDrawCallSkipTest() )
+	if (!TotalDrawCallSkipTest(PrimitiveType, false) )
 		return ret;
 
 	HandleDrawCallSingleStepMode();
@@ -6184,7 +6265,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawIndexed
 			return D3DERR_INVALIDCALL;
 	}
 
-	if (!TotalDrawCallSkipTest() )
+	if (!TotalDrawCallSkipTest(PrimitiveType, false) )
 		return S_OK;
 
 	HandleDrawCallSingleStepMode();
@@ -10995,7 +11076,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawPrimiti
 			return D3DERR_INVALIDCALL;
 	}
 
-	if (!TotalDrawCallSkipTest() )
+	if (!TotalDrawCallSkipTest(PrimitiveType, true) )
 		return S_OK;
 
 	const unsigned numInputVerts = GetNumVertsUsed(PrimitiveType, PrimitiveCount);
@@ -11080,7 +11161,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawIndexed
 			return D3DERR_INVALIDCALL;
 	}
 
-	if (!TotalDrawCallSkipTest() )
+	if (!TotalDrawCallSkipTest(PrimitiveType, true) )
 		return S_OK;
 
 	const unsigned short shortVertexStreamZeroStride = (const unsigned short)VertexStreamZeroStride;

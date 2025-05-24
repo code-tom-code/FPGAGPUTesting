@@ -297,7 +297,7 @@ const DebuggableD3DVERTEXELEMENT9* const IDirect3DVertexDeclaration9Hook::GetVer
 	for (unsigned x = 0; x < numElements; ++x)
 	{
 		const DebuggableD3DVERTEXELEMENT9& thisElement = elements[x];
-		if (thisElement.Usage == usage && thisElement.UsageIndex == usageIndex)
+		if (thisElement.Type != D3DDECLTYPE_UNUSED && thisElement.Usage == usage && thisElement.UsageIndex == usageIndex)
 		{
 			return &thisElement;
 		}
@@ -313,7 +313,7 @@ const DebuggableD3DVERTEXELEMENT9* const IDirect3DVertexDeclaration9Hook::GetVer
 	for (unsigned x = 0; x < numElements; ++x)
 	{
 		const DebuggableD3DVERTEXELEMENT9& thisElement = vertShaderOutputElements[x];
-		if (thisElement.Usage == usage && thisElement.UsageIndex == usageIndex)
+		if (thisElement.Type != D3DDECLTYPE_UNUSED && thisElement.Usage == usage && thisElement.UsageIndex == usageIndex)
 		{
 			return &thisElement;
 		}

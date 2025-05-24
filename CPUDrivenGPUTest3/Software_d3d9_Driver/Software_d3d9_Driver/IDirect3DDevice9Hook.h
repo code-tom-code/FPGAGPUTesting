@@ -1068,7 +1068,7 @@ public:
 	void HandleFrameSingleStepMode();
 
 	// Returns true for "should draw", or false for "should skip"
-	const bool TotalDrawCallSkipTest(void) const;
+	const bool TotalDrawCallSkipTest(const D3DPRIMITIVETYPE primType, const bool isUPDraw) const;
 
 	static const bool ShouldCullEntireTriangle(const VS_2_0_OutputRegisters& v0, const VS_2_0_OutputRegisters& v1, const VS_2_0_OutputRegisters& v2) ;
 	static const bool ShouldCullEntireLine(const VS_2_0_OutputRegisters& v0, const VS_2_0_OutputRegisters& v1);
@@ -1329,7 +1329,7 @@ public:
 	static void ModifyPresentParameters(D3DPRESENT_PARAMETERS& inOutStruct);
 
 	// This is not an official D3D9 function, even though it looks like one. It is only used internally.
-	IDirect3DVertexDeclaration9Hook* CreateAndSetVertexDeclFromFVFCode(const debuggableFVF FVF);
+	IDirect3DVertexDeclaration9Hook* CreateVertexDeclFromFVFCode(const debuggableFVF FVF);
 
 	mutable DeviceFrameStats frameStats;
 

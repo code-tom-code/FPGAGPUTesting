@@ -213,6 +213,7 @@ void IDirect3DVertexShader9Hook::CreatePretransformPassthroughVertexShader(const
 	if (deviceCompiledVertexShaderBytes != NULL)
 	{
 		GPUFree( (gpuvoid* const)deviceCompiledVertexShaderBytes);
+		deviceCompiledVertexShaderBytes = NULL;
 	}
 
 	shaderBytecode.clear();
@@ -253,7 +254,6 @@ COM_DECLSPEC_NOTHROW ULONG STDMETHODCALLTYPE IDirect3DVertexShader9Hook::Release
 #pragma warning(pop)
 		OutputDebugStringA(printBuffer);
 #endif
-		GPUFree(const_cast<gpuvoid*>(deviceCompiledVertexShaderBytes) );
 		delete this;
 	}
 	return ret;
@@ -308,7 +308,7 @@ void IDirect3DVertexShader9Hook::UploadShaderBytecodeToDevice(gpuvoid* const gpu
 	parentDevice->GetBaseDevice()->DeviceMemCopy(gpuUploadShaderAddress, &(deviceCompiledVertexShaderBytecode->shaderHeader), deviceCompiledVertexShaderBytecode->deviceShaderInfo.deviceInstructionTokenCount * sizeof(instructionSlot) + sizeof(DeviceShaderHeader) );
 }
 
-void IDirect3DVertexShader9Hook::JitLoadShader(const DWORD FVF /*= 0x00000000*/)
+void IDirect3DVertexShader9Hook::JitLoadShader(const debuggableFVF FVF)
 {
 	SIMPLE_FUNC_SCOPE();
 

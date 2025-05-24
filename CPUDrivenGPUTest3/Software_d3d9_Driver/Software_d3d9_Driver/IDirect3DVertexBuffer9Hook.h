@@ -6,8 +6,9 @@ class IDirect3DVertexBuffer9Hook : public IDirect3DVertexBuffer9
 {
 public:
 	IDirect3DVertexBuffer9Hook(LPDIRECT3DVERTEXBUFFER9 _realObject, IDirect3DDevice9Hook* _parentDevice) : realObject(_realObject), parentDevice(_parentDevice), refCount(1),
-		InternalLength(0), InternalUsage(UsageNone), InternalFVF(0x00000000), InternalPool(D3DPOOL_DEFAULT), lockCount(0), data(NULL), isSoftVertexBufferUP(false), GPUBytes(NULL)
+		InternalLength(0), InternalUsage(UsageNone), InternalPool(D3DPOOL_DEFAULT), lockCount(0), data(NULL), isSoftVertexBufferUP(false), GPUBytes(NULL)
 	{
+		InternalFVF.rawFVF_DWORD = 0x00000000;
 #ifdef _DEBUG
 		if (realObject)
 			memcpy(&Name, &realObject->Name, (char*)&realObject - (char*)&Name);
@@ -45,6 +46,12 @@ public:
 		if (isSoftVertexBufferUP)
 			data = NULL;
 
+		if (GPUBytesDirtyBits)
+		{
+			free(GPUBytesDirtyBits);
+			GPUBytesDirtyBits = NULL;
+		}
+
 #ifdef WIPE_ON_DESTRUCT_D3DHOOKOBJECT
 		memset(this, 0x00000000, sizeof(*this) );
 #endif
@@ -70,7 +77,7 @@ public:
 
 	void UpdateDataToGPU();
 
-	void CreateVertexBuffer(UINT _Length, const DebuggableUsage _Usage, DWORD _FVF, D3DPOOL _Pool);
+	void CreateVertexBuffer(UINT _Length, const DebuggableUsage _Usage, const debuggableFVF _FVF, D3DPOOL _Pool);
 
 	inline void MarkSoftBufferUP(const bool isSoftUPVertexBuffer)
 	{
@@ -96,9 +103,8 @@ public:
 		}
 #endif
 		data = (BYTE* const)stream0BytesUP;
-		InternalLength = BufferLengthBytes;
-		GPUBytesDirty = true;
-		lastFrameIDDirtied = parentDevice->GetCurrentFrameIndex();
+		InternalLength = BufferLengthBytes; // Note that the new BufferLengthBytes may be smaller or larger than the original was because this new DrawPrimitiveUP() call's buffer may be a different size
+		MarkDirtyRegion(0, BufferLengthBytes);
 	}
 
 	inline void SoftUPResetInternalPointer(void)
@@ -114,8 +120,7 @@ public:
 		}
 #endif
 		data = NULL;
-		GPUBytesDirty = true;
-		lastFrameIDDirtied = parentDevice->GetCurrentFrameIndex();
+		ClearDirtyRegion();
 	}
 
 	inline const BYTE* const GetInternalDataBuffer(void) const
@@ -138,7 +143,7 @@ public:
 		return InternalLength;
 	}
 
-	inline const DWORD GetInternalFVF(void) const
+	inline const debuggableFVF GetInternalFVF(void) const
 	{
 		return InternalFVF;
 	}
@@ -148,6 +153,26 @@ public:
 		return lockCount == 0;
 	}
 
+	inline const USHORT GetFVFDataUniformity() const
+	{
+		return FVFDataUniformity;
+	}
+
+	inline const D3DCOLOR GetUniformDiffuseColor() const
+	{
+		return UniformDiffuseColor;
+	}
+
+	inline const D3DCOLOR GetUniformSpecularColor() const
+	{
+		return UniformSpecularColor;
+	}
+	
+	void MarkDirtyRegion(const unsigned regionByteOffset, const unsigned regionByteLength);
+	void ClearDirtyRegion();
+
+	void RecomputeBufferUniformity();
+
 protected:
 	LPDIRECT3DVERTEXBUFFER9 realObject;
 	IDirect3DDevice9Hook* parentDevice;
@@ -155,19 +180,25 @@ protected:
 
 	UINT InternalLength;
 	DebuggableUsage InternalUsage;
-	DWORD InternalFVF;
+	debuggableFVF InternalFVF;
 	D3DPOOL InternalPool;
 
 	DWORD lockFlags = 0x00000000;
+	UINT lockOffset = 0;
+	UINT lockSize = 0;
 	long lockCount;
+	D3DCOLOR UniformDiffuseColor = 0xFFFFFFFF;
+	D3DCOLOR UniformSpecularColor = 0xFFFFFFFF;
+	USHORT FVFDataUniformity = 0x0000; // Tracks buffer uniformity for FVF vertex buffers (used in various driver optimizations)
 	bool isSoftVertexBufferUP; // If this is true, then the memory pointed to by the buffer is managed by the application and should not be modified or freed!
 
 	BYTE* data;
 
 	gpuvoid* GPUBytes;
 
-	// Dirty flag gets set on Unlock and gets cleared when we upload a fresh copy of this buffer to the GPU!
-	bool GPUBytesDirty = true;
+	// Dirty bitflag gets set on Unlock and gets cleared when we upload a fresh copy of this buffer to the GPU!
+	bool GPUBytesAnyDirty = true;
+	unsigned* GPUBytesDirtyBits = NULL;
 
 	unsigned lastFrameIDDirtied = 0xFFFFFFFF; // Tracks the last frame the CPU wrote to this resource and dirtied it
 	unsigned lastFrameIDUploaded = 0xFFFFFFFF; // Tracks the last frame that we uploaded this buffer from the CPU to GPU

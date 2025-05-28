@@ -1377,7 +1377,8 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::Present(THI
 				char buffer[128] = {0};
 #pragma warning(push)
 #pragma warning(disable:4996)
-				const unsigned len = sprintf(buffer, "%s%03.3fms per frame (%03.3fFPS)\n", 
+				const unsigned len = sprintf(buffer, "Frame %u: %s%03.3fms per frame (%03.3fFPS)\n", 
+					currentFrameIndex,
 					/*(GetKeyState(VK_SCROLL) & 0x0001) ? "[Paused] " :*/ "", 
 					timeDeltaSeconds * 1000.0f, 1.0f / timeDeltaSeconds);
 				//sprintf(buffer, "Allocs: %u bytes (%u allocs); Frees: %u bytes (%u frees); NumPlacementsAvg: %u\n", allocBytesThisFrame, allocsThisFrame, freeBytesThisFrame, freesThisFrame, rollingAvgNumPlacements);
@@ -1952,6 +1953,30 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::Clear(THIS_
 		newClearEvent.DrawCallStatUnion.ClearData.ClearDepth = Z;
 		newClearEvent.DrawCallStatUnion.ClearData.ClearFlags = Flags;
 		newClearEvent.DrawCallStatUnion.ClearData.ClearStencil = (const BYTE)Stencil;
+		newClearEvent.DrawCallStatUnion.ClearData.BytesCleared = 0;
+
+		// TODO: In the future, we should handle calculating sub-rect clears when taking into account the clear bytes stat
+		if (Flags & D3DCLEAR_TARGET)
+		{
+			for (unsigned x = 0; x < D3D_MAX_SIMULTANEOUS_RENDERTARGETS; ++x)
+			{
+				const IDirect3DSurface9Hook* const currentRT = currentState.currentRenderTargets[x];
+				if (currentRT)
+				{
+					newClearEvent.DrawCallStatUnion.ClearData.BytesCleared += IDirect3DSurface9Hook::GetSurfaceSizeBytes(currentRT->GetInternalWidth(), currentRT->GetInternalHeight(), currentRT->GetInternalFormat() );
+				}
+			}
+		}
+		if (Flags & D3DCLEAR_ZBUFFER)
+		{
+			const unsigned numPixelsCleared = currentState.currentDepthStencil->GetInternalWidth() * currentState.currentDepthStencil->GetInternalHeight();
+			newClearEvent.DrawCallStatUnion.ClearData.BytesCleared += numPixelsCleared * 3; // TODO: Handle D16 formats in the future, currently only D24 is supported
+		}
+		if (Flags & D3DCLEAR_STENCIL)
+		{
+			const unsigned numPixelsCleared = currentState.currentDepthStencil->GetInternalWidth() * currentState.currentDepthStencil->GetInternalHeight();
+			newClearEvent.DrawCallStatUnion.ClearData.BytesCleared += numPixelsCleared * 1; // We assume that this is a S8 format
+		}
 		eventRecordedDrawCalls.push_back(newClearEvent);
 	}
 
@@ -4657,6 +4682,87 @@ void SetPassthroughVSShaderState(const DeviceState& state, IDirect3DDevice9Hook*
 	dev->SetVertexShaderConstantF(1, &c1.x, 1);
 }
 
+void IDirect3DDevice9Hook::ProfileAddVertexShaderReloadEvent(const LARGE_INTEGER& drawCallCPUTimestamp)
+{
+	// Have the command processor wait for the vertex shader core to complete loading in its new vertex shader program
+	baseDevice->DeviceWaitForIdle(waitForDeviceIdleCommand::waitForVSIdle);
+
+	IDirect3DQuery9Hook* newQuery = NULL;
+	if (!FAILED(CreateQuery(D3DQUERYTYPE_TIMESTAMP, (IDirect3DQuery9** const)&newQuery) ) )
+	{
+		if (!FAILED(newQuery->Issue(D3DISSUE_END | D3DISSUE_CUSTOM_NOREADBACK) ) )
+		{
+			eventEndTimestamps.push_back(newQuery);
+		}
+	}
+
+	RecordedDrawCallStat newVSReloadEvent;
+	newVSReloadEvent.DrawType = RecordedDrawCallStat::DT_VertexShaderLoad;
+	newVSReloadEvent.drawCallCPUTimestamp = drawCallCPUTimestamp;
+	const DeviceBytecode* const deviceVertexShaderInfo = currentState.currentVertexShader->GetDeviceCompiledShaderInfo();
+	const gpuvoid* const deviceVertexShaderBytecode = currentState.currentVertexShader->GetDeviceCompiledShaderBytecode();
+	newVSReloadEvent.DrawCallStatUnion.VertexShaderLoadData.ShaderAddress = deviceVertexShaderBytecode;
+	newVSReloadEvent.DrawCallStatUnion.VertexShaderLoadData.ShaderLengthBytes = deviceVertexShaderInfo->deviceShaderInfo.deviceInstructionTokenCount * sizeof(instructionSlot);
+	newVSReloadEvent.DrawCallStatUnion.VertexShaderLoadData.ShaderLoadOffset = 0;
+	eventRecordedDrawCalls.push_back(newVSReloadEvent);
+}
+
+void IDirect3DDevice9Hook::ProfileAddTextureReloadEvent(const LARGE_INTEGER& drawCallCPUTimestamp)
+{
+	// Have the command processor wait for the texture unit to complete loading in its new texture
+	baseDevice->DeviceWaitForIdle(waitForDeviceIdleCommand::waitForTexSamplerIdle);
+
+	IDirect3DQuery9Hook* newQuery = NULL;
+	if (!FAILED(CreateQuery(D3DQUERYTYPE_TIMESTAMP, (IDirect3DQuery9** const)&newQuery) ) )
+	{
+		if (!FAILED(newQuery->Issue(D3DISSUE_END | D3DISSUE_CUSTOM_NOREADBACK) ) )
+		{
+			eventEndTimestamps.push_back(newQuery);
+		}
+	}
+
+	RecordedDrawCallStat newTextureReloadEvent;
+	newTextureReloadEvent.DrawType = RecordedDrawCallStat::DT_TextureLoad;
+	newTextureReloadEvent.drawCallCPUTimestamp = drawCallCPUTimestamp;
+	if (currentState.currentTextures[0] != NULL)
+	{
+		const IDirect3DTexture9Hook* currentTexture = currentState.currentTextures[0];
+		const IDirect3DSurface9Hook* currentTexturePrimaryMip = currentTexture->GetUnderlyingSurfaces()[0];
+		newTextureReloadEvent.DrawCallStatUnion.TextureLoadData.TextureAddress = currentTexturePrimaryMip->GetDeviceSurfaceBytes();
+		if (MaxTextureSize.Unsigned() != 0 && (currentTexture->GetInternalWidth() > MaxTextureSize.Unsigned() || currentTexture->GetInternalHeight() > MaxTextureSize.Unsigned() ) )
+		{
+			unsigned xShift = 0;
+			unsigned yShift = 0;
+			const unsigned reducedDimensions = currentTexturePrimaryMip->GetReducedTextureDimensions(xShift, yShift);
+			const unsigned resizeWidth = reducedDimensions & 0xFFFF;
+			const unsigned resizeHeight = reducedDimensions >> 16;
+			const unsigned reducedSurfaceBytes = IDirect3DSurface9Hook::GetSurfaceSizeBytes(resizeWidth, resizeHeight, IsCompressedFormat(currentTexture->GetInternalFormat() ) ? D3DFMT_A8R8G8B8 : currentTexture->GetInternalFormat() );
+			newTextureReloadEvent.DrawCallStatUnion.TextureLoadData.TextureLoadLengthBytes = reducedSurfaceBytes;
+		}
+		else
+		{
+			const unsigned totalSurfaceBytes = IDirect3DSurface9Hook::GetSurfaceSizeBytes(currentTexture->GetInternalWidth(), currentTexture->GetInternalHeight(), IsCompressedFormat(currentTexture->GetInternalFormat() ) ? D3DFMT_A8R8G8B8 : currentTexture->GetInternalFormat() );
+			newTextureReloadEvent.DrawCallStatUnion.TextureLoadData.TextureLoadLengthBytes = totalSurfaceBytes;
+		}
+		newTextureReloadEvent.DrawCallStatUnion.TextureLoadData.TextureLoadNumMemReadTransactions = (newTextureReloadEvent.DrawCallStatUnion.TextureLoadData.TextureLoadLengthBytes + (GPU_DRAM_TRANSACTION_SIZE_BYTES - 1) ) / GPU_DRAM_TRANSACTION_SIZE_BYTES;
+		newTextureReloadEvent.DrawCallStatUnion.TextureLoadData.TextureFormat = currentTexture->GetInternalFormat();
+		newTextureReloadEvent.DrawCallStatUnion.TextureLoadData.TextureWidth = currentTexture->GetInternalWidth();
+		newTextureReloadEvent.DrawCallStatUnion.TextureLoadData.TextureHeight = currentTexture->GetInternalHeight();
+		newTextureReloadEvent.DrawCallStatUnion.TextureLoadData.TextureNumMips = currentTexture->GetInternalMipLevels();
+	}
+	else
+	{
+		newTextureReloadEvent.DrawCallStatUnion.TextureLoadData.TextureAddress = NULL;
+		newTextureReloadEvent.DrawCallStatUnion.TextureLoadData.TextureLoadLengthBytes = 0;
+		newTextureReloadEvent.DrawCallStatUnion.TextureLoadData.TextureLoadNumMemReadTransactions = 0;
+		newTextureReloadEvent.DrawCallStatUnion.TextureLoadData.TextureFormat = D3DFMT_UNKNOWN;
+		newTextureReloadEvent.DrawCallStatUnion.TextureLoadData.TextureWidth = 0;
+		newTextureReloadEvent.DrawCallStatUnion.TextureLoadData.TextureHeight = 0;
+		newTextureReloadEvent.DrawCallStatUnion.TextureLoadData.TextureNumMips = 0;
+	}
+	eventRecordedDrawCalls.push_back(newTextureReloadEvent);
+}
+
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawPrimitive(THIS_ D3DPRIMITIVETYPE PrimitiveType, UINT StartVertex, UINT PrimitiveCount)
 {
 	SIMPLE_FUNC_SCOPE();
@@ -4783,12 +4889,35 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawPrimiti
 	}
 #endif
 
+	unsigned numVerticesDrawn = 0;
+	switch (PrimitiveType)
+	{
+	case D3DPT_POINTLIST:
+		numVerticesDrawn = PrimitiveCount;
+		break;
+	case D3DPT_LINELIST:
+		numVerticesDrawn = 2 * PrimitiveCount;
+		break;
+	case D3DPT_LINESTRIP:
+		numVerticesDrawn = PrimitiveCount + 1;
+		break;
+	case D3DPT_TRIANGLELIST:
+		numVerticesDrawn = 3 * PrimitiveCount;
+		break;
+	case D3DPT_TRIANGLESTRIP:
+	case D3DPT_TRIANGLEFAN:
+		numVerticesDrawn = PrimitiveCount + 2;
+		break;
+	}
+
+	bool didReloadVertexShader = false;
+	bool didReloadTexture = false;
 	{
 		//GPUCommandList* newRecordingCommandList = GetNewCommandList();
 		//baseDevice->BeginRecordingCommandList(newRecordingCommandList);
-		DeviceSetCurrentState(PrimitiveType, NULL); // Update the device state
-		DeviceSetVertexShader(); // Set our current vertex shader on the device (has the side effect of overwriting the 0th stream source register, so make sure to call this before DeviceSetVertexStreamsAndDecl() )
-		DeviceSetVertexStreamsAndDecl(); // Bind our current vertex streams and set up our vertex decl
+		DeviceSetCurrentState(PrimitiveType, NULL, didReloadTexture); // Update the device state
+		didReloadVertexShader = DeviceSetVertexShader(); // Set our current vertex shader on the device (has the side effect of overwriting the 0th stream source register, so make sure to call this before DeviceSetVertexStreamsAndDecl() )
+		DeviceSetVertexStreamsAndDecl(StartVertex, numVerticesDrawn); // Bind our current vertex streams and set up our vertex decl
 
 		//CreateOrUseCachedCommandList(newRecordingCommandList, cachedCommandLists, resetCommandListsPool);
 		DeviceSetUsedVertexShaderConstants(); // Copy over and set our vertex shader constant registers
@@ -4798,10 +4927,19 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawPrimiti
 
 	if (GetDeviceStats().IsCollectingEventDataThisFrame() )
 	{
+		if (didReloadTexture)
+		{
+			ProfileAddTextureReloadEvent(drawCallCPUTimestamp);
+		}
+		if (didReloadVertexShader)
+		{
+			ProfileAddVertexShaderReloadEvent(drawCallCPUTimestamp);
+		}
+
 		IDirect3DQuery9Hook* newQuery = NULL;
 		if (!FAILED(CreateQuery(D3DQUERYTYPE_TIMESTAMP, (IDirect3DQuery9** const)&newQuery) ) )
 		{
-			if (!FAILED(newQuery->Issue(D3DISSUE_END) ) )
+			if (!FAILED(newQuery->Issue(D3DISSUE_END | D3DISSUE_CUSTOM_NOREADBACK) ) )
 			{
 				eventEndTimestamps.push_back(newQuery);
 			}
@@ -4819,44 +4957,12 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawPrimiti
 		newDrawEvent.DrawCallStatUnion.DrawData.primType = (const BYTE)PrimitiveType;
 		newDrawEvent.DrawCallStatUnion.DrawData.CurrentFVF = currentState.currentFVF;
 		newDrawEvent.DrawCallStatUnion.DrawData.isDrawUP = currentState.currentSoftUPStream.vertexBuffer->GetInternalDataBuffer() != NULL;
-		switch (PrimitiveType)
-		{
-		case D3DPT_POINTLIST:
-			newDrawEvent.DrawCallStatUnion.DrawData.VertexWavesCount = (PrimitiveCount + 15) / 16;
-			break;
-		case D3DPT_LINELIST:
-			newDrawEvent.DrawCallStatUnion.DrawData.VertexWavesCount = (PrimitiveCount + 15) / 8;
-			break;
-		case D3DPT_LINESTRIP:
-			if (PrimitiveCount < 16)
-				newDrawEvent.DrawCallStatUnion.DrawData.VertexWavesCount = 1;
-			else
-				newDrawEvent.DrawCallStatUnion.DrawData.VertexWavesCount = (PrimitiveCount + 15) / 15; // Can only fit 15 prims into a single wave because of the 1 wraparound prim between the two
-			break;
-		case D3DPT_TRIANGLELIST:
-			newDrawEvent.DrawCallStatUnion.DrawData.VertexWavesCount = (PrimitiveCount + 4) / 5;
-			break;
-		case D3DPT_TRIANGLESTRIP:
-			if (PrimitiveCount < 15)
-				newDrawEvent.DrawCallStatUnion.DrawData.VertexWavesCount = 1;
-			else
-				newDrawEvent.DrawCallStatUnion.DrawData.VertexWavesCount = (PrimitiveCount + 16) / 16; // Has a leftover wraparound of 2 prims
-			break;
-		case D3DPT_TRIANGLEFAN:
-			if (PrimitiveCount < 8)
-				newDrawEvent.DrawCallStatUnion.DrawData.VertexWavesCount = 1;
-			else
-				newDrawEvent.DrawCallStatUnion.DrawData.VertexWavesCount = (PrimitiveCount + 8) / 8; // Has a leftover wraparound of 1 prims
-			break;
-		default:
-		{
-#ifdef _DEBUG
-			__debugbreak(); // Should never be here!
-#endif
-			newDrawEvent.DrawCallStatUnion.DrawData.VertexWavesCount = 0;
-		}
-		break;
-		}
+		const ePrimTopology primTopology = ConvertToDevicePrimTopology(PrimitiveType);
+		unsigned activeLanesCount = 0;
+		unsigned inactiveLanesCount = 0;
+		newDrawEvent.DrawCallStatUnion.DrawData.VertexWavesCount = baseDevice->CalculateVertexWaveCountDraw(primTopology, PrimitiveCount, activeLanesCount, inactiveLanesCount);
+		newDrawEvent.DrawCallStatUnion.DrawData.ActiveLanesCount = activeLanesCount;
+		newDrawEvent.DrawCallStatUnion.DrawData.InactiveLanesCount = inactiveLanesCount;
 		eventRecordedDrawCalls.push_back(newDrawEvent);
 	}
 
@@ -5153,18 +5259,24 @@ struct deviceVertexDecl
 	deviceVertexDeclElement deviceDeclElements[8];
 };
 
-void IDirect3DDevice9Hook::DeviceSetVertexDecl(const deviceVertexDecl& deviceDecl)
+void IDirect3DDevice9Hook::DeviceSetVertexDecl(const deviceVertexDecl& deviceDecl, const unsigned offsetVertexCount, const unsigned maxIndexValue)
 {
 	for (unsigned streamElementID = 0; streamElementID < deviceDecl.numElements; ++streamElementID)
 	{
 		const deviceVertexDeclElement& thisDeviceDeclElement = deviceDecl.deviceDeclElements[streamElementID];
-		thisDeviceDeclElement.vertexBufferObjPtr->UpdateDataToGPU();
+		const unsigned thisStreamDrawStartOffsetBytes = offsetVertexCount * thisDeviceDeclElement.dwordStreamStride * sizeof(DWORD);
+		unsigned drawLengthBytes = 0;
+		if (maxIndexValue == 0xFFFFFFFF)
+			drawLengthBytes = thisDeviceDeclElement.vertexBufferLength_Bytes;
+		else
+			drawLengthBytes = thisDeviceDeclElement.dwordStreamStride * maxIndexValue * sizeof(DWORD);
+		thisDeviceDeclElement.vertexBufferObjPtr->UpdateDataToGPU(thisStreamDrawStartOffsetBytes, drawLengthBytes);
 		baseDevice->DeviceSetVertexStreamData(thisDeviceDeclElement.vertexBufferBaseAddr, thisDeviceDeclElement.vertexBufferLength_Bytes, thisDeviceDeclElement.thisElementDWORDCount, streamElementID, thisDeviceDeclElement.isD3DCOLOR,
 				thisDeviceDeclElement.shaderInputRegisterIndex, thisDeviceDeclElement.dwordStreamStride, thisDeviceDeclElement.dwordOffset, deviceDecl.numElements, thisDeviceDeclElement.usage, thisDeviceDeclElement.usageIndex);
 	}
 }
 
-void IDirect3DDevice9Hook::DeviceSetVertexStreamsAndDecl()
+void IDirect3DDevice9Hook::DeviceSetVertexStreamsAndDecl(const unsigned offsetVertexCount, const unsigned maxIndexValue)
 {
 	if (!currentState.currentVertexDecl)
 	{
@@ -5344,17 +5456,18 @@ void IDirect3DDevice9Hook::DeviceSetVertexStreamsAndDecl()
 	}
 	
 	// Finally, set our vertex decl and bind our vertex streams on the device:
-	DeviceSetVertexDecl(deviceDecl);
+	DeviceSetVertexDecl(deviceDecl, offsetVertexCount, maxIndexValue);
 }
 
-void IDirect3DDevice9Hook::DeviceSetVertexShader(const bool forceLoadVertexShader /*= false*/)
+// Returns true if the underlying device caching layer actually reloaded the vertex shader, or false if the vertex shader was already loaded and cached and did not require reloading
+const bool IDirect3DDevice9Hook::DeviceSetVertexShader(const bool forceLoadVertexShader /*= false*/)
 {
 	if (!currentState.currentVertexShader)
 	{
 #ifdef _DEBUG
 		__debugbreak(); // How did we get here without a vertex shader set?
 #endif
-		return;
+		return false;
 	}
 
 	const DeviceBytecode* const deviceVertexShaderInfo = currentState.currentVertexShader->GetDeviceCompiledShaderInfo();
@@ -5363,7 +5476,7 @@ void IDirect3DDevice9Hook::DeviceSetVertexShader(const bool forceLoadVertexShade
 #ifdef _DEBUG
 		__debugbreak(); // Uh oh, no device shader info to use? Did we fail to compile?
 #endif
-		return;
+		return false;
 	}
 
 	const gpuvoid* const deviceVertexShaderBytecode = currentState.currentVertexShader->GetDeviceCompiledShaderBytecode();
@@ -5372,10 +5485,12 @@ void IDirect3DDevice9Hook::DeviceSetVertexShader(const bool forceLoadVertexShade
 #ifdef _DEBUG
 		__debugbreak(); // Uh oh, no device bytecode to set! Did we fail to alloc?
 #endif
-		return;
+		return false;
 	}
 
-	baseDevice->DeviceLoadVertexShader(deviceVertexShaderBytecode, deviceVertexShaderInfo->deviceShaderInfo.deviceInstructionTokenCount, forceLoadVertexShader);
+	bool didReloadVertexShader = false;
+	baseDevice->DeviceLoadVertexShader(deviceVertexShaderBytecode, deviceVertexShaderInfo->deviceShaderInfo.deviceInstructionTokenCount, didReloadVertexShader, forceLoadVertexShader);
+	return didReloadVertexShader;
 }
 
 // If the "SCOption_VS_AppendViewportTransform" compile flag is specified, this contains on output the index of the viewport transform
@@ -6009,7 +6124,7 @@ void IDirect3DDevice9Hook::GetStateTexCombinerMode(combinerMode& colorCombiner, 
 	}
 }
 
-void IDirect3DDevice9Hook::DeviceSetCurrentState(const D3DPRIMITIVETYPE primType, IDirect3DIndexBuffer9Hook* const currentIB)
+void IDirect3DDevice9Hook::DeviceSetCurrentState(const D3DPRIMITIVETYPE primType, IDirect3DIndexBuffer9Hook* const currentIB, bool& outReloadedTexture)
 {
 	gpuvoid* deviceBackbuffer = currentState.currentRenderTargets[0]->GetDeviceSurfaceBytes();
 	const eBlendMask eWriteMask = ConvertToDeviceBlendMask(currentState.currentRenderStates.renderStatesUnion.namedStates.colorWriteEnable);
@@ -6159,7 +6274,7 @@ void IDirect3DDevice9Hook::DeviceSetCurrentState(const D3DPRIMITIVETYPE primType
 
 		// Note that this set texture call can be expensive, it causes the command processor to wait on the texture unit to be idle before it flushes the texture cache and
 		// reloads the new texture from DRAM!
-		baseDevice->DeviceSetTextureState(reducedDimensions & 0xFFFF, reducedDimensions >> 16, useBilinear ? TF_bilinearFilter : TF_pointFilter, rChannel, gChannel, bChannel, aChannel, cbModeColor, cbModeAlpha, surface0hook->GetDeviceSurfaceBytes(), deviceFormat);
+		baseDevice->DeviceSetTextureState(reducedDimensions & 0xFFFF, reducedDimensions >> 16, useBilinear ? TF_bilinearFilter : TF_pointFilter, rChannel, gChannel, bChannel, aChannel, cbModeColor, cbModeAlpha, surface0hook->GetDeviceSurfaceBytes(), deviceFormat, outReloadedTexture);
 		surface0hook->BindSurfaceForDrawCall();
 	}
 	else
@@ -6391,16 +6506,20 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawIndexed
 	// For debugging purposes only - add a wait for idle before each draw call:
 	// baseDevice->DeviceWaitForIdle( (const waitForDeviceIdleCommand::waitForDeviceSubsystem)(waitForDeviceIdleCommand::waitForIAIdle | waitForDeviceIdleCommand::waitForClipIdle) );
 
+	bool didReloadVertexShader = false;
+	bool didReloadTexture = false;
 	{
 		//GPUCommandList* newRecordingCommandList = GetNewCommandList();
 		//baseDevice->BeginRecordingCommandList(newRecordingCommandList);
 
 		currentState.currentIndexBuffer->UpdateDataToGPU();
-		DeviceSetCurrentState(PrimitiveType, currentState.currentIndexBuffer); // Update the device state
+		DeviceSetCurrentState(PrimitiveType, currentState.currentIndexBuffer, didReloadTexture); // Update the device state
 
-		DeviceSetVertexShader(); // Set our current vertex shader on the device (has the side effect of overwriting the 0th stream source register, so make sure to call this before DeviceSetVertexStreamsAndDecl() )
+		didReloadVertexShader = DeviceSetVertexShader(); // Set our current vertex shader on the device (has the side effect of overwriting the 0th stream source register, so make sure to call this before DeviceSetVertexStreamsAndDecl() )
 
-		DeviceSetVertexStreamsAndDecl(); // Bind our current vertex streams and set up our vertex decl
+		const unsigned vertexBufferVertexOffset = BaseVertexIndex < 0 ? 0 : BaseVertexIndex;
+		const unsigned maxNumVerticesDrawn = currentState.currentIndexBuffer->maxIndexValue == 0xFFFFFFFF ? 0xFFFFFFFF : currentState.currentIndexBuffer->maxIndexValue + 1;
+		DeviceSetVertexStreamsAndDecl(vertexBufferVertexOffset, maxNumVerticesDrawn); // Bind our current vertex streams and set up our vertex decl
 
 		DeviceSetUsedVertexShaderConstants(); // Copy over and set our vertex shader constant registers
 
@@ -6422,7 +6541,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawIndexed
 					baseDevice->DeviceMemSet(targetInstructionOverwrite, 0x000000C0, sizeof(instructionSlot) ); // Overwrite the instruction with a NOP instruction
 					const bool bForceReloadVertexShader = true;
 					DeviceSetVertexShader(bForceReloadVertexShader); // Force a reload of our newly-patched vertex shader
-					DeviceSetVertexStreamsAndDecl(); // Bind our current vertex streams and set up our vertex decl
+					DeviceSetVertexStreamsAndDecl(vertexBufferVertexOffset, maxNumVerticesDrawn); // Bind our current vertex streams and set up our vertex decl
 				}
 
 				baseDevice->DeviceEnableShaderDebuggingForNextDrawCall(allocatedDebugShaderRegisterFile);
@@ -6456,10 +6575,19 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawIndexed
 
 	if (GetDeviceStats().IsCollectingEventDataThisFrame() )
 	{
+		if (didReloadTexture)
+		{
+			ProfileAddTextureReloadEvent(drawCallCPUTimestamp);
+		}
+		if (didReloadVertexShader)
+		{
+			ProfileAddVertexShaderReloadEvent(drawCallCPUTimestamp);
+		}
+
 		IDirect3DQuery9Hook* newQuery = NULL;
 		if (!FAILED(CreateQuery(D3DQUERYTYPE_TIMESTAMP, (IDirect3DQuery9** const)&newQuery) ) )
 		{
-			if (!FAILED(newQuery->Issue(D3DISSUE_END) ) )
+			if (!FAILED(newQuery->Issue(D3DISSUE_END | D3DISSUE_CUSTOM_NOREADBACK) ) )
 			{
 				eventEndTimestamps.push_back(newQuery);
 			}
@@ -6477,46 +6605,14 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawIndexed
 		newDrawEvent.DrawCallStatUnion.DrawData.primType = (const BYTE)PrimitiveType;
 		newDrawEvent.DrawCallStatUnion.DrawData.CurrentFVF = currentState.currentFVF;
 		newDrawEvent.DrawCallStatUnion.DrawData.isDrawUP = currentState.currentSoftUPStream.vertexBuffer->GetInternalDataBuffer() != NULL;
-
-		// TODO: This calculation is not accurate for indexed draws. We need to inspect the index buffer to simulate what the wave-packing would really look like:
-		switch (PrimitiveType)
-		{
-		case D3DPT_POINTLIST:
-			newDrawEvent.DrawCallStatUnion.DrawData.VertexWavesCount = (primCount + 15) / 16;
-			break;
-		case D3DPT_LINELIST:
-			newDrawEvent.DrawCallStatUnion.DrawData.VertexWavesCount = (primCount + 15) / 8;
-			break;
-		case D3DPT_LINESTRIP:
-			if (primCount < 16)
-				newDrawEvent.DrawCallStatUnion.DrawData.VertexWavesCount = 1;
-			else
-				newDrawEvent.DrawCallStatUnion.DrawData.VertexWavesCount = (primCount + 15) / 15; // Can only fit 15 prims into a single wave because of the 1 wraparound prim between the two
-			break;
-		case D3DPT_TRIANGLELIST:
-			newDrawEvent.DrawCallStatUnion.DrawData.VertexWavesCount = (primCount + 4) / 5;
-			break;
-		case D3DPT_TRIANGLESTRIP:
-			if (primCount < 15)
-				newDrawEvent.DrawCallStatUnion.DrawData.VertexWavesCount = 1;
-			else
-				newDrawEvent.DrawCallStatUnion.DrawData.VertexWavesCount = (primCount + 16) / 16; // Has a leftover wraparound of 2 prims
-			break;
-		case D3DPT_TRIANGLEFAN:
-			if (primCount < 8)
-				newDrawEvent.DrawCallStatUnion.DrawData.VertexWavesCount = 1;
-			else
-				newDrawEvent.DrawCallStatUnion.DrawData.VertexWavesCount = (primCount + 8) / 8; // Has a leftover wraparound of 1 prims
-			break;
-		default:
-		{
-#ifdef _DEBUG
-			__debugbreak(); // Should never be here!
-#endif
-			newDrawEvent.DrawCallStatUnion.DrawData.VertexWavesCount = 0;
-		}
-		break;
-		}
+		const ePrimTopology primTopology = ConvertToDevicePrimTopology(PrimitiveType);
+		const eStripCutType stripCutMode = sct_CutDisabled; // TODO: We'll want to support different strip cut modes in the future
+		const eIndexFormat indexFormat = ConvertToDeviceIndexFormat(currentState.currentIndexBuffer, currentState.currentIndexBuffer->GetFormat() );
+		unsigned activeLanesCount = 0;
+		unsigned inactiveLanesCount = 0;
+		newDrawEvent.DrawCallStatUnion.DrawData.VertexWavesCount = baseDevice->CalculateVertexWaveCountDrawIndexed(primTopology, stripCutMode, indexFormat, currentState.currentIndexBuffer->GetBufferBytes(), BaseVertexIndex, startIndex, primCount, activeLanesCount, inactiveLanesCount);
+		newDrawEvent.DrawCallStatUnion.DrawData.ActiveLanesCount = activeLanesCount;
+		newDrawEvent.DrawCallStatUnion.DrawData.InactiveLanesCount = inactiveLanesCount;
 		eventRecordedDrawCalls.push_back(newDrawEvent);
 	}
 

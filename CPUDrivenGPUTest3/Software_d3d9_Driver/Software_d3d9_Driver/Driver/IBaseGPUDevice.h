@@ -12,6 +12,8 @@ typedef DWORD D3DCOLOR;
 typedef unsigned char BYTE;
 typedef enum _D3DPRIMITIVETYPE D3DPRIMITIVETYPE;
 
+static const unsigned WAVE_SIZE = 16u; // Currently, the vertex shader wave-size is 16 lanes per wave (this is 16 vertices per shader wave)
+
 struct CachedVertexStream
 {
 	const bool operator==(const CachedVertexStream& rhs) const
@@ -267,7 +269,8 @@ __declspec(align(16) ) struct IBaseGPUDevice
 
 	__declspec(nothrow) HRESULT __stdcall DeviceSetTextureState(const unsigned texWidth, const unsigned texHeight, const eTexFilterMode filterMode, 
 		const eTexChannelMUX rChannel, const eTexChannelMUX gChannel, const eTexChannelMUX bChannel, const eTexChannelMUX aChannel, const combinerMode cbModeColor, const combinerMode cbModeAlpha,
-		const gpuvoid* const textureMemory, const eTexFormat textureFormat);
+		const gpuvoid* const textureMemory, const eTexFormat textureFormat,
+		bool& outReloadedTexture);
 	__declspec(nothrow) HRESULT __stdcall DeviceSetNullTextureState(const eTexFilterMode filterMode, 
 		const eTexChannelMUX rChannel, const eTexChannelMUX gChannel, const eTexChannelMUX bChannel, const eTexChannelMUX aChannel, const combinerMode cbModeColor, const combinerMode cbModeAlpha);
 
@@ -296,7 +299,7 @@ __declspec(align(16) ) struct IBaseGPUDevice
 
 	__declspec(nothrow) HRESULT __stdcall DeviceIssueQuery(const gpuvoid* const queryAddress, const bool isEndEvent, const eQueryType queryType);
 
-	__declspec(nothrow) HRESULT __stdcall DeviceLoadVertexShader(const gpuvoid* const vertexShaderMemory, const unsigned short numShaderTokensToLoad, const bool forceLoadVertexShader = false, const unsigned short targetAddressToLoadTo = 0);
+	__declspec(nothrow) HRESULT __stdcall DeviceLoadVertexShader(const gpuvoid* const vertexShaderMemory, const unsigned short numShaderTokensToLoad, bool& outDidReloadVertexShader, const bool forceLoadVertexShader = false, const unsigned short targetAddressToLoadTo = 0);
 	__declspec(nothrow) HRESULT __stdcall DeviceSetVertexShaderStartAddr(const unsigned short shaderStartAddress);
 
 	__declspec(nothrow) HRESULT __stdcall DeviceSetVertexStreamData(const gpuvoid* const vertexStreamData, const unsigned vertexBufferLengthBytes, const BYTE dwordCount, const BYTE streamID, 
@@ -379,6 +382,9 @@ __declspec(align(16) ) struct IBaseGPUDevice
 		// Do not sync calls during command list recording!
 		return (currentlyRecordingCommandList == NULL) && syncEveryCall;
 	}
+
+	static const UINT CalculateVertexWaveCountDraw(const ePrimTopology primTopology, const unsigned primCount, unsigned& outActiveLaneCount, unsigned& outInactiveLaneCount);
+	static const UINT CalculateVertexWaveCountDrawIndexed(const ePrimTopology primTopology, const eStripCutType stripCut, const eIndexFormat indexFormat, const BYTE* const indexBufferBaseCPU, const int baseVertexIndex, const unsigned startIndex, const unsigned primCount, unsigned& outActiveLaneCount, unsigned& outInactiveLaneCount);
 
 	void BeginRecordingCommandList(GPUCommandList* const newCommandList);
 	void CompleteRecordingCommandList();

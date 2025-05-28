@@ -75,6 +75,7 @@ public:
     virtual COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE Unlock(THIS) override;
     virtual COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE GetDesc(THIS_ D3DINDEXBUFFER_DESC *pDesc) override;
 
+	void RecomputeIndexBounds(const unsigned indexRangeLengthBytes);
 	void UpdateDataToGPU();
 
 	inline const bool IsUnlocked(void) const
@@ -166,6 +167,9 @@ public:
 
 		const unsigned char singleIndexSize = (newFormat == D3DFMT_INDEX16) ? 2 : 4;
 		InternalLength = indexCount * singleIndexSize;
+
+		RecomputeIndexBounds(InternalLength);
+
 		GPUBytesDirty = true;
 		lastFrameIDDirtied = parentDevice->GetCurrentFrameIndex();
 	}
@@ -201,6 +205,11 @@ public:
 
 	DWORD lockFlags = 0x00000000;
 	long lockCount;
+
+	// These internal values store the minimum and maximum indices found inside this index buffer:
+	unsigned minIndexValue = 0xFFFFFFFF;
+	unsigned maxIndexValue = 0x00000000;
+
 	bool isSoftIndexBufferUP;
 
 	union

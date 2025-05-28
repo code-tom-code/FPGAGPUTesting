@@ -75,7 +75,7 @@ public:
     virtual COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE Unlock(THIS) override;
     virtual COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE GetDesc(THIS_ D3DVERTEXBUFFER_DESC *pDesc) override;
 
-	void UpdateDataToGPU();
+	void UpdateDataToGPU(const unsigned offsetBytes, unsigned lengthBytes);
 
 	void CreateVertexBuffer(UINT _Length, const DebuggableUsage _Usage, const debuggableFVF _FVF, D3DPOOL _Pool);
 
@@ -120,7 +120,7 @@ public:
 		}
 #endif
 		data = NULL;
-		ClearDirtyRegion();
+		ClearDirtyRegion(0, InternalLength);
 	}
 
 	inline const BYTE* const GetInternalDataBuffer(void) const
@@ -169,7 +169,7 @@ public:
 	}
 	
 	void MarkDirtyRegion(const unsigned regionByteOffset, const unsigned regionByteLength);
-	void ClearDirtyRegion();
+	void ClearDirtyRegion(unsigned regionByteOffset, const unsigned regionByteLength);
 
 	void RecomputeBufferUniformity();
 

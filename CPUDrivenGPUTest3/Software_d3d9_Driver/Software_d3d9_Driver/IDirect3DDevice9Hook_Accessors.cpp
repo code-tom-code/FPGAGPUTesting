@@ -2014,7 +2014,12 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::SetVertexSh
 	{
 		if (!hookPtr->triedJit)
 		{
-			hookPtr->JitLoadShader(targetDeviceState->currentVertexDecl->GetInternalFVF() );
+			debuggableFVF vertexDeclFVF;
+			if (targetDeviceState->currentVertexDecl)
+				vertexDeclFVF = targetDeviceState->currentVertexDecl->GetInternalFVF();
+			else
+				vertexDeclFVF.rawFVF_DWORD = 0;
+			hookPtr->JitLoadShader(vertexDeclFVF);
 		}
 	}
 

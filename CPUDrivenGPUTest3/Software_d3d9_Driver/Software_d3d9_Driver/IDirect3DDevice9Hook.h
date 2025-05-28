@@ -1035,6 +1035,9 @@ public:
 	void LoadVertexInputElement4(const DebuggableD3DVERTEXELEMENT9& element, const unsigned char* dataPtr[4], const unsigned registerIndex, VShaderEngine* const vertShader) const;
 #endif // #ifdef RUN_SHADERS_IN_WARPS
 
+	void ProfileAddTextureReloadEvent(const LARGE_INTEGER& drawCallCPUTimestamp);
+	void ProfileAddVertexShaderReloadEvent(const LARGE_INTEGER& drawCallCPUTimestamp);
+
 	// void StoreVertexOutputElement(const DebuggableD3DVERTEXELEMENT9& element, unsigned char* const outputPtr, const D3DDECLUSAGE usage, const unsigned usageIndex) const;
 
 	// Returns true if this is a fresh allocation, or false if it is a reused identically matching buffer
@@ -1051,12 +1054,12 @@ public:
 
 	const float4 GetDeviceViewportConstantF() const;
 
-	void DeviceSetVertexShader(const bool forceLoadVertexShader = false);
-	void DeviceSetVertexDecl(const struct deviceVertexDecl& deviceDecl);
-	void DeviceSetVertexStreamsAndDecl();
+	const bool DeviceSetVertexShader(const bool forceLoadVertexShader = false);
+	void DeviceSetVertexDecl(const struct deviceVertexDecl& deviceDecl, const unsigned offsetVertexCount, const unsigned maxIndexValue);
+	void DeviceSetVertexStreamsAndDecl(const unsigned offsetVertexCount, const unsigned maxIndexValue);
 	void DeviceSetUsedVertexShaderConstants();
 
-	void DeviceSetCurrentState(const D3DPRIMITIVETYPE primType, IDirect3DIndexBuffer9Hook* const currentIB);
+	void DeviceSetCurrentState(const D3DPRIMITIVETYPE primType, IDirect3DIndexBuffer9Hook* const currentIB, bool& outReloadedTexture);
 
 	template <const bool useIndexBuffer, typename indexFormat, const bool rasterizerUsesEarlyZTest>
 	void DrawPrimitiveUBPretransformedSkipVS(const D3DPRIMITIVETYPE PrimitiveType, INT BaseVertexIndex, UINT startIndex, UINT primCount) const;

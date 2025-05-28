@@ -2,6 +2,17 @@
 
 #include "IDirect3DDevice9Hook.h"
 
+// This is a custom flag that does not exist in Direct3D!
+// It tells the driver that we should not automatically perform a memory readback at Issue-time.
+// This is useful in situations where the driver is performing a large number of Queries and doesn't need the results back
+// immediately (such is the case when we are downloading event query data for an entire frame's worth of events at once and don't
+// want the automatic Issue readback to interfere with our profiling).
+#define D3DISSUE_CUSTOM_NOREADBACK (1u << 24u)
+
+// This is a custom flag that does not exist in Direct3D!
+// It tells the driver to perform a late-readback on this Query at GetData-time.
+#define D3DGETDATA_CUSTOM_LATEREADBACK (1u << 24u)
+
 class IDirect3DQuery9Hook : public IDirect3DQuery9
 {
 public:
@@ -35,6 +46,7 @@ public:
     virtual COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE GetData(THIS_ void* pData, DWORD dwSize, DWORD dwGetDataFlags) override;
 
 	void CreateQuery(const D3DQUERYTYPE _queryType);
+	HRESULT ForceLateReadback();
 
 protected:
 	LPDIRECT3DQUERY9 realObject;
@@ -70,6 +82,8 @@ protected:
 		D3DDEVINFO_D3D9CACHEUTILIZATION cacheUtilizationQueryData;
 		D3DMEMORYPRESSURE memoryPressureQueryData;
 	} queryData;
+
+	void QueryBeginReadback();
 
 #ifdef _DEBUG
 	char debugObjectName[64] = {0};

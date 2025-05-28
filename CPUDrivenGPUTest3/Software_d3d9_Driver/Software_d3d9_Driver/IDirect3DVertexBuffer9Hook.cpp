@@ -10,11 +10,11 @@
 unsigned IDirect3DVertexBuffer9Hook::VertexBuffersCreatedCounter = 0;
 
 #ifdef _DEBUG
-void PrintDebugVertexBufferName(char* const outString, UINT _Length, const DebuggableUsage _Usage, DWORD _FVF, D3DPOOL _Pool, const unsigned VertexBufferCount)
+void PrintDebugVertexBufferName(char* const outString, UINT _Length, const DebuggableUsage _Usage, const debuggableFVF _FVF, D3DPOOL _Pool, const unsigned VertexBufferCount)
 {
 #pragma warning(push)
 #pragma warning(disable:4996)
-	sprintf(outString, "VertexBuffer%u (Len: %u, Usg:%u, FVF:0x%08X, Pool:%u)", VertexBufferCount, _Length, _Usage, _FVF, _Pool);
+	sprintf(outString, "VertexBuffer%u (Len: %u, Usg:%u, FVF:0x%08X, Pool:%u)", VertexBufferCount, _Length, _Usage, _FVF.rawFVF_DWORD, _Pool);
 #pragma warning(pop)
 }
 #endif // #ifdef _DEBUG
@@ -25,6 +25,11 @@ static const unsigned GetDirtyDWORDsCountFromBufferLength(const unsigned bufferL
 	const unsigned dirtyBitsCount = (bufferLengthBytes + (GPU_DRAM_TRANSACTION_SIZE_BYTES - 1) ) / GPU_DRAM_TRANSACTION_SIZE_BYTES;
 	const unsigned dirtyDWORDsCount = (dirtyBitsCount + (bitsPerDWORD - 1) ) / bitsPerDWORD;
 	return dirtyDWORDsCount;
+}
+
+static const unsigned RoundUpSizeToNearestDRAMLine(const unsigned lengthBytes)
+{
+	return (lengthBytes + (GPU_DRAM_TRANSACTION_SIZE_BYTES - 1) ) & ~(GPU_DRAM_TRANSACTION_SIZE_BYTES - 1);
 }
 
 void IDirect3DVertexBuffer9Hook::CreateVertexBuffer(UINT _Length, const DebuggableUsage _Usage, const debuggableFVF _FVF, D3DPOOL _Pool)
@@ -69,7 +74,7 @@ void IDirect3DVertexBuffer9Hook::CreateVertexBuffer(UINT _Length, const Debuggab
 	PrintDebugVertexBufferName(debugObjectName, _Length, _Usage, _FVF, _Pool, VertexBuffersCreatedCounter);
 #endif
 
-	GPUBytes = GPUAlloc(_Length, InternalLength, 1, 1, 1, GPUVAT_VertexStreamData, GPUFMT_VertexGeneral, this
+	GPUBytes = GPUAlloc(RoundUpSizeToNearestDRAMLine(_Length), InternalLength, 1, 1, 1, GPUVAT_VertexStreamData, GPUFMT_VertexGeneral, this
 #ifdef _DEBUG
 		, debugObjectName
 #endif
@@ -508,7 +513,7 @@ void IDirect3DVertexBuffer9Hook::SoftUPReallocIfNecessary(const UINT newBufferLe
 	{
 		GPUFree(GPUBytes);
 		GPUBytes = NULL;
-		GPUBytes = GPUAlloc(newBufferLengthBytes, numVertices, 1, 1, 1, GPUVAT_VertexStreamData, GPUFMT_VertexGeneral, this
+		GPUBytes = GPUAlloc(RoundUpSizeToNearestDRAMLine(newBufferLengthBytes), numVertices, 1, 1, 1, GPUVAT_VertexStreamData, GPUFMT_VertexGeneral, this
 #ifdef _DEBUG
 		, debugObjectName
 #endif
@@ -523,16 +528,78 @@ void IDirect3DVertexBuffer9Hook::SoftUPReallocIfNecessary(const UINT newBufferLe
 	}
 }
 
-void IDirect3DVertexBuffer9Hook::UpdateDataToGPU()
+void IDirect3DVertexBuffer9Hook::UpdateDataToGPU(const unsigned offsetBytes, unsigned lengthBytes)
 {
 	// TODO: Save upload bandwidth by tracking dirty regions and only reuploading the dirty regions of our buffers
 	if (GPUBytesAnyDirty)
 	{
-		// Copy our newly locked data off from the CPU to the GPU:
-		parentDevice->GetBaseDevice()->DeviceMemCopy(GetGPUBytes(), data, InternalLength);
-		lastFrameIDUploaded = parentDevice->GetCurrentFrameIndex();
+		// Copy our newly locked data off from the CPU to the GPU.
 
-		ClearDirtyRegion();
+		// Easy case - entire buffer is dirty:
+		if (offsetBytes == 0 && lengthBytes >= InternalLength)
+		{
+			parentDevice->GetBaseDevice()->DeviceMemCopy(GetGPUBytes(), data, InternalLength);
+			ClearDirtyRegion(0, InternalLength);
+		}
+		else // Hard case - partial buffer dirtying with offsets
+		{
+			if (offsetBytes + lengthBytes >= InternalLength) // Clamp our length bytes to the size of our vertex buffer
+				lengthBytes = InternalLength - offsetBytes;
+
+			const unsigned endOffsetBytes = offsetBytes + lengthBytes;
+
+			const unsigned numDirtyDWORDs = GetDirtyDWORDsCountFromBufferLength(InternalLength);
+			unsigned dirtyTransactionsInARow = 0;
+			unsigned dirtyTransactionsStartOffset = 0;
+			for (unsigned dirtyBufferOffsetBytes = offsetBytes; dirtyBufferOffsetBytes < endOffsetBytes;)
+			{
+				if (dirtyBufferOffsetBytes % (32 * 32) == 0 && dirtyBufferOffsetBytes + (32 * 32) < endOffsetBytes && GPUBytesDirtyBits[dirtyBufferOffsetBytes / (32 * 32)] == 0xFFFFFFFF)
+				{
+					if (dirtyTransactionsInARow == 0)
+						dirtyTransactionsStartOffset = dirtyBufferOffsetBytes;
+					dirtyTransactionsInARow += 32;
+
+					dirtyBufferOffsetBytes += GPU_DRAM_TRANSACTION_SIZE_BYTES * 32;
+				}
+				else
+				{
+					const unsigned dirtyIndex = dirtyBufferOffsetBytes / GPU_DRAM_TRANSACTION_SIZE_BYTES;
+					if (GPUBytesDirtyBits[dirtyIndex / 32] & (1 << dirtyIndex) )
+					{
+						if (dirtyTransactionsInARow == 0)
+							dirtyTransactionsStartOffset = dirtyBufferOffsetBytes;
+						++dirtyTransactionsInARow;
+					}
+					else
+					{
+						if (dirtyTransactionsInARow != 0)
+						{
+							gpuvoid* const deviceStartAddr = reinterpret_cast<gpuvoid* const>(reinterpret_cast<BYTE* const>(GetGPUBytes() ) + dirtyTransactionsStartOffset);
+							const BYTE* const cpuStartAddr = data + dirtyTransactionsStartOffset;
+							parentDevice->GetBaseDevice()->DeviceMemCopy(deviceStartAddr, cpuStartAddr, dirtyTransactionsInARow * GPU_DRAM_TRANSACTION_SIZE_BYTES);
+
+							dirtyTransactionsInARow = 0;
+						}
+					}
+
+					dirtyBufferOffsetBytes += GPU_DRAM_TRANSACTION_SIZE_BYTES;
+				}
+			}
+
+			if (dirtyTransactionsInARow != 0)
+			{
+				gpuvoid* const deviceStartAddr = reinterpret_cast<gpuvoid* const>(reinterpret_cast<BYTE* const>(GetGPUBytes() ) + dirtyTransactionsStartOffset);
+				const BYTE* const cpuStartAddr = data + dirtyTransactionsStartOffset;
+				const unsigned copyLengthBytes = dirtyTransactionsInARow * GPU_DRAM_TRANSACTION_SIZE_BYTES;
+				parentDevice->GetBaseDevice()->DeviceMemCopy(deviceStartAddr, cpuStartAddr, copyLengthBytes);
+
+				dirtyTransactionsInARow = 0;
+			}
+
+			ClearDirtyRegion(offsetBytes, lengthBytes);
+		}
+
+		lastFrameIDUploaded = parentDevice->GetCurrentFrameIndex();
 	}
 }
 
@@ -559,7 +626,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DVertexBuffer9Hook::GetDe
 		{
 			__debugbreak();
 		}
-		if (pDesc->FVF != InternalFVF)
+		if (pDesc->FVF != InternalFVF.rawFVF_DWORD)
 		{
 			__debugbreak();
 		}
@@ -601,26 +668,76 @@ void IDirect3DVertexBuffer9Hook::MarkDirtyRegion(const unsigned regionByteOffset
 	const unsigned offsetStartBits = expandedByteOffset / GPU_DRAM_TRANSACTION_SIZE_BYTES;
 	const unsigned lengthNumBits = expandedByteLength / GPU_DRAM_TRANSACTION_SIZE_BYTES;
 	const unsigned endBits = offsetStartBits + lengthNumBits;
-	for (unsigned bitIndex = offsetStartBits; bitIndex < endBits; ++bitIndex)
+	for (unsigned bitIndex = offsetStartBits; bitIndex < endBits;)
 	{
-		const unsigned DWORDIndex = bitIndex / (sizeof(DWORD) * 8);
-		const unsigned DWORDBitOffset = bitIndex % (sizeof(DWORD) * 8);
-		GPUBytesDirtyBits[DWORDIndex] |= (1 << DWORDBitOffset);
+		if (bitIndex + 32 < endBits && bitIndex % 32 == 0) // Fast fill
+		{
+			const unsigned DWORDIndex = bitIndex / (sizeof(DWORD) * 8);
+			GPUBytesDirtyBits[DWORDIndex] = 0xFFFFFFFF;
+			bitIndex += 32;
+		}
+		else // Individual DRAM line fill
+		{
+			const unsigned DWORDIndex = bitIndex / (sizeof(DWORD) * 8);
+			const unsigned DWORDBitOffset = bitIndex % (sizeof(DWORD) * 8);
+			GPUBytesDirtyBits[DWORDIndex] |= (1 << DWORDBitOffset);
+			++bitIndex;
+		}
 	}
 
 	lastFrameIDDirtied = parentDevice->GetCurrentFrameIndex();
 }
 
-void IDirect3DVertexBuffer9Hook::ClearDirtyRegion()
+void IDirect3DVertexBuffer9Hook::ClearDirtyRegion(unsigned regionByteOffset, const unsigned regionByteLength)
 {
 	if (GPUBytesAnyDirty)
 	{
-		const unsigned numDirtyDWORDs = GetDirtyDWORDsCountFromBufferLength(InternalLength);
-		for (unsigned x = 0; x < numDirtyDWORDs; ++x)
+		if (regionByteOffset == 0 && regionByteLength == InternalLength) // Easy case - clearing the entire buffer
 		{
-			GPUBytesDirtyBits[x] = 0x00000000;
+			const unsigned numDWORDsToClear = GetDirtyDWORDsCountFromBufferLength(InternalLength);
+			for (unsigned x = 0; x < numDWORDsToClear; ++x)
+			{
+				GPUBytesDirtyBits[x] = 0x00000000;
+			}
+			GPUBytesAnyDirty = false;
 		}
+		else // Hard case - clearing individual DRAM lines
+		{
+			int remainingByteLength = (const int)regionByteLength;
 
-		GPUBytesAnyDirty = false;
+			if (regionByteOffset % 32 * 32 == 0)
+			{
+				while (remainingByteLength > 32 * 32)
+				{
+					GPUBytesDirtyBits[regionByteOffset / GPU_DRAM_TRANSACTION_SIZE_BYTES / 32] = 0x00000000;
+					regionByteOffset += GPU_DRAM_TRANSACTION_SIZE_BYTES * 32;
+					remainingByteLength -= GPU_DRAM_TRANSACTION_SIZE_BYTES * 32;
+				}
+			}
+			while (remainingByteLength > 0)
+			{
+				GPUBytesDirtyBits[regionByteOffset / GPU_DRAM_TRANSACTION_SIZE_BYTES / 32] &= ~(1 << ( (regionByteOffset / GPU_DRAM_TRANSACTION_SIZE_BYTES) % 32) );
+
+				regionByteOffset += GPU_DRAM_TRANSACTION_SIZE_BYTES;
+				remainingByteLength -= GPU_DRAM_TRANSACTION_SIZE_BYTES;
+			}
+
+			GPUBytesAnyDirty = false;
+			const unsigned numDWORDsToCheck = GetDirtyDWORDsCountFromBufferLength(InternalLength);
+			for (unsigned x = 0; x < numDWORDsToCheck; ++x)
+			{
+				if (GPUBytesDirtyBits[x] != 0x00000000)
+				{
+					GPUBytesAnyDirty = true;
+					break;
+				}
+			}
+		}
+	}
+	else
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Should never be here!
+#endif
 	}
 }

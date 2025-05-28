@@ -252,9 +252,49 @@ static inline const eQueryType ConvertToDeviceType(const D3DQUERYTYPE type)
 	}
 }
 
+void IDirect3DQuery9Hook::QueryBeginReadback()
+{
+	switch (queryType)
+	{
+		case D3DQUERYTYPE_EVENT:
+		{
+			parentDevice->GetBaseDevice()->AsyncReadFromDeviceBegin(deviceQueryAlloc, sizeof(queryData.eventQueryData) );
+			break;
+		}
+		case D3DQUERYTYPE_OCCLUSION:
+		{
+			parentDevice->GetBaseDevice()->AsyncReadFromDeviceBegin(deviceQueryAlloc, sizeof(LARGE_INTEGER) );
+			break;
+		}
+		case D3DQUERYTYPE_TIMESTAMP:
+		{
+			parentDevice->GetBaseDevice()->AsyncReadFromDeviceBegin(deviceQueryAlloc, sizeof(queryData.timestampQueryData) );
+			break;
+		}
+		default:
+#ifdef _DEBUG
+			__debugbreak(); // Should never be here!
+#endif
+			break;
+	}
+}
+
+HRESULT IDirect3DQuery9Hook::ForceLateReadback()
+{
+	if (queryState == issueEnd) // Don't issue another async read if we are not already in the issueEnd state.
+	{
+		QueryBeginReadback();
+		return S_OK;
+	}
+	else
+	{
+		return E_INVALIDARG;
+	}
+}
+
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DQuery9Hook::Issue(THIS_ DWORD dwIssueFlags)
 {
-	if (dwIssueFlags > D3DISSUE_BEGIN)
+	if ( (dwIssueFlags & ~D3DISSUE_CUSTOM_NOREADBACK) > D3DISSUE_BEGIN)
 	{
 #ifdef _DEBUG
 		DbgBreakPrint("Error: Invalid argument to IDirect3DQuery9::Issue()!");
@@ -301,28 +341,9 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DQuery9Hook::Issue(THIS_ 
 		const HRESULT ret = parentDevice->GetBaseDevice()->DeviceIssueQuery(deviceQueryAlloc, (dwIssueFlags & D3DISSUE_BEGIN) == 0, ConvertToDeviceType(queryType) );
 		if ( (dwIssueFlags & D3DISSUE_BEGIN) == 0)
 		{
-			switch (queryType)
+			if ( (dwIssueFlags & D3DISSUE_CUSTOM_NOREADBACK) == 0)
 			{
-				case D3DQUERYTYPE_EVENT:
-				{
-					parentDevice->GetBaseDevice()->AsyncReadFromDeviceBegin(deviceQueryAlloc, sizeof(queryData.eventQueryData) );
-					break;
-				}
-				case D3DQUERYTYPE_OCCLUSION:
-				{
-					parentDevice->GetBaseDevice()->AsyncReadFromDeviceBegin(deviceQueryAlloc, sizeof(LARGE_INTEGER) );
-					break;
-				}
-				case D3DQUERYTYPE_TIMESTAMP:
-				{
-					parentDevice->GetBaseDevice()->AsyncReadFromDeviceBegin(deviceQueryAlloc, sizeof(queryData.timestampQueryData) );
-					break;
-				}
-				default:
-#ifdef _DEBUG
-					__debugbreak(); // Should never be here!
-#endif
-					break;
+				QueryBeginReadback();
 			}
 		}
 		return ret;
@@ -378,7 +399,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DQuery9Hook::GetData(THIS
 		return D3DERR_INVALIDCALL;
 	}
 
-	if (dwGetDataFlags > D3DGETDATA_FLUSH)
+	if ( (dwGetDataFlags & ~D3DGETDATA_CUSTOM_LATEREADBACK) > D3DGETDATA_FLUSH)
 	{
 		return D3DERR_INVALIDCALL;
 	}
@@ -401,6 +422,11 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DQuery9Hook::GetData(THIS
 
 	if (queryState == issueEnd) // Don't double-complete our async reads. Only do this once after our read request has been issued.
 	{
+		if (dwGetDataFlags & D3DGETDATA_CUSTOM_LATEREADBACK)
+		{
+			QueryBeginReadback();
+		}
+
 		switch (queryType)
 		{
 		case D3DQUERYTYPE_EVENT:

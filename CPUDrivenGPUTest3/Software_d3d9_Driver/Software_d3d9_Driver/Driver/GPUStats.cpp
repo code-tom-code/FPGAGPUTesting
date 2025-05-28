@@ -163,6 +163,9 @@ HRESULT GPUStats::CollectEventDataThisFrame()
 
 	armCollectEventDataNextFrame = false;
 	isCollectingEventDataThisFrame = true;
+
+	OutputDebugStringA("Starting event data collection...\n");
+
 	return S_OK;
 }
 
@@ -172,6 +175,14 @@ HRESULT GPUStats::ArmCollectEventDataNextFrame()
 	{
 #ifdef _DEBUG
 		__debugbreak(); // We're already armed to record next frame's events!
+#endif
+		return E_INVALIDARG;
+	}
+
+	if (isCollectingEventDataThisFrame)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // We're already collecting event data on this current frame!
 #endif
 		return E_INVALIDARG;
 	}
@@ -220,6 +231,170 @@ static const char* const FVF_TEX_Strings[] =
 	"D3DFVF_TEX7",
 	"D3DFVF_TEX8"
 };
+
+const char* const DecodeFormatString(const D3DFORMAT format)
+{
+	switch (format)
+	{
+	default:
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Should never be here! Unknown format!
+#endif
+	}
+	case D3DFMT_UNKNOWN:
+		return "D3DFMT_UNKNOWN";
+	case D3DFMT_R8G8B8:
+		return "D3DFMT_R8G8B8";
+	case D3DFMT_A8R8G8B8:
+		return "D3DFMT_A8R8G8B8";
+	case D3DFMT_X8R8G8B8:
+		return "D3DFMT_X8R8G8B8";
+	case D3DFMT_R5G6B5:
+		return "D3DFMT_R5G6B5";
+	case D3DFMT_X1R5G5B5:
+		return "D3DFMT_X1R5G5B5";
+    case D3DFMT_A1R5G5B5:
+		return "D3DFMT_X1R5G5B5";
+    case D3DFMT_A4R4G4B4:
+		return "D3DFMT_A4R4G4B4";
+	case D3DFMT_R3G3B2:
+		return "D3DFMT_R3G3B2";
+	case D3DFMT_A8:
+		return "D3DFMT_A8";
+    case D3DFMT_A8R3G3B2:
+		return "D3DFMT_A8R3G3B2";
+    case D3DFMT_X4R4G4B4:
+		return "D3DFMT_X4R4G4B4";
+	case D3DFMT_A2B10G10R10:
+		return "D3DFMT_A2B10G10R10";
+    case D3DFMT_A8B8G8R8:
+		return "D3DFMT_A8B8G8R8";
+    case D3DFMT_X8B8G8R8:
+		return "D3DFMT_X8B8G8R8";
+	case D3DFMT_G16R16:
+		return "D3DFMT_G16R16";
+	case D3DFMT_A2R10G10B10:
+		return "D3DFMT_A2R10G10B10";
+	case D3DFMT_A16B16G16R16:
+		return "D3DFMT_A16B16G16R16";
+
+	case D3DFMT_A8P8:
+		return "D3DFMT_A8P8";
+	case D3DFMT_P8:
+		return "D3DFMT_P8";
+
+	case D3DFMT_L8:
+		return "D3DFMT_L8";
+    case D3DFMT_A8L8:
+		return "D3DFMT_A8L8";
+    case D3DFMT_A4L4:
+		return "D3DFMT_A4L4";
+
+	case D3DFMT_V8U8:
+		return "D3DFMT_V8U8";
+	case D3DFMT_L6V5U5:
+		return "D3DFMT_L6V5U5";
+    case D3DFMT_X8L8V8U8:
+		return "D3DFMT_X8L8V8U8";
+    case D3DFMT_Q8W8V8U8:
+		return "D3DFMT_Q8W8V8U8";
+	case D3DFMT_V16U16:
+		return "D3DFMT_V16U16";
+	case D3DFMT_A2W10V10U10:
+		return "D3DFMT_A2W10V10U10";
+
+	case D3DFMT_UYVY:
+		return "D3DFMT_UYVY";
+	case D3DFMT_R8G8_B8G8:
+		return "D3DFMT_R8G8_B8G8";
+	case D3DFMT_YUY2:
+		return "D3DFMT_YUY2";
+	case D3DFMT_G8R8_G8B8:
+		return "D3DFMT_G8R8_G8B8";
+    case D3DFMT_DXT1:
+		return "D3DFMT_DXT1";
+    case D3DFMT_DXT2:
+		return "D3DFMT_DXT2";
+    case D3DFMT_DXT3:
+		return "D3DFMT_DXT3";
+    case D3DFMT_DXT4:
+		return "D3DFMT_DXT4";
+    case D3DFMT_DXT5:
+		return "D3DFMT_DXT5";
+
+	case D3DFMT_D16_LOCKABLE:
+		return "D3DFMT_D16_LOCKABLE";
+	case D3DFMT_D32:
+		return "D3DFMT_D32";
+    case D3DFMT_D15S1:
+		return "D3DFMT_D15S1";
+    case D3DFMT_D24S8:
+		return "D3DFMT_D24S8";
+    case D3DFMT_D24X8:
+		return "D3DFMT_D24X8";
+	case D3DFMT_D24X4S4:
+		return "D3DFMT_D24X4S4";
+	case D3DFMT_D16:
+		return "D3DFMT_D16";
+
+	case D3DFMT_D32F_LOCKABLE:
+		return "D3DFMT_D32F_LOCKABLE";
+	case D3DFMT_D24FS8:
+		return "D3DFMT_D24FS8";
+
+    /* Z-Stencil formats valid for CPU access */
+	case D3DFMT_D32_LOCKABLE:
+		return "D3DFMT_D32_LOCKABLE";
+	case D3DFMT_S8_LOCKABLE:
+		return "D3DFMT_S8_LOCKABLE";
+
+	case D3DFMT_L16:
+		return "D3DFMT_L16";
+
+	case D3DFMT_VERTEXDATA:
+		return "D3DFMT_VERTEXDATA";
+    case D3DFMT_INDEX16:
+		return "D3DFMT_INDEX16";
+    case D3DFMT_INDEX32:
+		return "D3DFMT_INDEX32";
+
+	case D3DFMT_Q16W16V16U16:
+		return "D3DFMT_Q16W16V16U16";
+
+	case D3DFMT_MULTI2_ARGB8:
+		return "D3DFMT_MULTI2_ARGB8";
+
+    // Floating point surface formats
+
+    // s10e5 formats (16-bits per channel)
+	case D3DFMT_R16F:
+		return "D3DFMT_R16F";
+	case D3DFMT_G16R16F:
+		return "D3DFMT_G16R16F";
+	case D3DFMT_A16B16G16R16F:
+		return "D3DFMT_A16B16G16R16F";
+
+    // IEEE s23e8 formats (32-bits per channel)
+	case D3DFMT_R32F:
+		return "D3DFMT_R32F";
+	case D3DFMT_G32R32F:
+		return "D3DFMT_G32R32F";
+	case D3DFMT_A32B32G32R32F:
+		return "D3DFMT_A32B32G32R32F";
+	case D3DFMT_CxV8U8:
+		return "D3DFMT_CxV8U8";
+    // Monochrome 1 bit per pixel format
+	case D3DFMT_A1:
+		return "D3DFMT_A1";
+    // 2.8 biased fixed point
+	case D3DFMT_A2B10G10R10_XR_BIAS:
+		return "D3DFMT_A2B10G10R10_XR_BIAS";
+    // Binary format indicating that the data has no inherent type
+	case D3DFMT_BINARYBUFFER:
+		return "D3DFMT_BINARYBUFFER";
+	}
+}
 
 void DecodeFVFString(char (&outBuffer)[384], const debuggableFVF FVF)
 {
@@ -454,18 +629,26 @@ void GPUStats::ProcessDrawEventsData(const LARGE_INTEGER frameBeginGPUTimestamp,
 #pragma warning(disable:4996)
 	FILE* const f = fopen("DrawEventTimestamps.csv", "wb");
 #pragma warning(pop)
-	fprintf(f, "EventIndex,DrawType,DrawParams,VertexWavesCount,FVF,CPURecordTimestamp,GPUEndTimestamp\n");
+	fprintf(f, "EventIndex,DrawType,DrawParams,VertexWavesCount,ActiveLanesCount,InactiveLanesCount,FVF,CPURecordTimestamp,GPUEndTimestamp\n");
 
-	fprintf(f, "0,FRAME_BEGIN,%s,0,0,%I64u,%I64u\n", "BEGIN", frameBeginCPUTimestamp.QuadPart, frameBeginGPUTimestamp.QuadPart);
+	fprintf(f, "0,FRAME_BEGIN,%s,0,0,0,0,%I64u,%I64u\n", "BEGIN", frameBeginCPUTimestamp.QuadPart, frameBeginGPUTimestamp.QuadPart);
 
 	const unsigned numDrawStats = (const unsigned)flippedRecordedDrawEvents.size();
 	for (unsigned drawEventID = 0; drawEventID < numDrawStats; ++drawEventID)
 	{
 		const RecordedDrawCallStat& thisRecordedDrawStat = flippedRecordedDrawEvents[drawEventID];
 		const char* drawTypeString = "";
-		char drawParamsBuffer[128] = {0};
+		char drawParamsBuffer[256] = {0};
 		char drawFVFBuffer[384] = {0};
-		const unsigned wavesCount = thisRecordedDrawStat.DrawType == RecordedDrawCallStat::DT_Clear ? 0 : thisRecordedDrawStat.DrawCallStatUnion.DrawData.VertexWavesCount;
+		unsigned wavesCount = 0;
+		unsigned activeLanesCount = 0;
+		unsigned inactiveLanesCount = 0;
+		if (thisRecordedDrawStat.DrawType == RecordedDrawCallStat::DT_DrawPrimitive || thisRecordedDrawStat.DrawType == RecordedDrawCallStat::DT_DrawIndexedPrimitive)
+		{
+			wavesCount = thisRecordedDrawStat.DrawCallStatUnion.DrawData.VertexWavesCount;
+			activeLanesCount = thisRecordedDrawStat.DrawCallStatUnion.DrawData.ActiveLanesCount;
+			inactiveLanesCount = thisRecordedDrawStat.DrawCallStatUnion.DrawData.InactiveLanesCount;
+		}
 		switch (thisRecordedDrawStat.DrawType)
 		{
 #ifdef _DEBUG
@@ -513,11 +696,43 @@ void GPUStats::ProcessDrawEventsData(const LARGE_INTEGER frameBeginGPUTimestamp,
 			DecodeFVFString(drawFVFBuffer, thisRecordedDrawStat.DrawCallStatUnion.DrawData.CurrentFVF);
 		}
 			break;
+		case RecordedDrawCallStat::DT_VertexShaderLoad:
+		{
+			drawTypeString = "VertexShaderLoad";
+			const gpuvoid* const vertexShaderBytecodeAddress = thisRecordedDrawStat.DrawCallStatUnion.VertexShaderLoadData.ShaderAddress;
+			const unsigned shaderLengthBytes = thisRecordedDrawStat.DrawCallStatUnion.VertexShaderLoadData.ShaderLengthBytes;
+			const unsigned shaderOffset = thisRecordedDrawStat.DrawCallStatUnion.VertexShaderLoadData.ShaderLoadOffset;
+			sprintf_s(drawParamsBuffer, "\"(0x%08X), %u bytes, %u offset\"", reinterpret_cast<const unsigned>(vertexShaderBytecodeAddress), shaderLengthBytes, shaderOffset);
+			drawFVFBuffer[0] = '0';
 		}
-		fprintf(f, "%u,%s,%s,%u,%s,%I64u,%I64u\n", drawEventID + 1, drawTypeString, drawParamsBuffer, wavesCount, drawFVFBuffer, thisRecordedDrawStat.drawCallCPUTimestamp.QuadPart, thisRecordedDrawStat.drawCallFinishGPUTimestamp.QuadPart);
+			break;
+		case RecordedDrawCallStat::DT_TextureLoad:
+		{
+			drawTypeString = "TextureLoad";
+			const gpuvoid* const textureAddress = thisRecordedDrawStat.DrawCallStatUnion.TextureLoadData.TextureAddress;
+			const unsigned textureLoadLengthBytes = thisRecordedDrawStat.DrawCallStatUnion.TextureLoadData.TextureLoadLengthBytes;
+			const unsigned loadNumReadTransactions = thisRecordedDrawStat.DrawCallStatUnion.TextureLoadData.TextureLoadNumMemReadTransactions;
+			const D3DFORMAT format = thisRecordedDrawStat.DrawCallStatUnion.TextureLoadData.TextureFormat;
+			const unsigned width = thisRecordedDrawStat.DrawCallStatUnion.TextureLoadData.TextureWidth;
+			const unsigned height = thisRecordedDrawStat.DrawCallStatUnion.TextureLoadData.TextureHeight;
+			const unsigned mipCount = thisRecordedDrawStat.DrawCallStatUnion.TextureLoadData.TextureNumMips;
+			sprintf_s(drawParamsBuffer, "\"(0x%08X), %u bytes, %u transactions, %u width, %u height, %u mips\"", reinterpret_cast<const unsigned>(textureAddress), textureLoadLengthBytes, loadNumReadTransactions, width, height, mipCount);
+			strcpy_s(drawFVFBuffer, DecodeFormatString(format) );
+		}
+			break;
+		case RecordedDrawCallStat::DT_DirtyBufferUpload:
+		{
+			// Not implemented yet
+			drawTypeString = "DirtyBufferUpload";
+			strcpy_s(drawParamsBuffer, "");
+			drawFVFBuffer[0] = '0';
+		}
+			break;
+		}
+		fprintf(f, "%u,%s,%s,%u,%u,%u,%s,%I64u,%I64u\n", drawEventID + 1, drawTypeString, drawParamsBuffer, wavesCount, activeLanesCount, inactiveLanesCount, drawFVFBuffer, thisRecordedDrawStat.drawCallCPUTimestamp.QuadPart, thisRecordedDrawStat.drawCallFinishGPUTimestamp.QuadPart);
 	}
 
-	fprintf(f, "%u,FRAME_END,%s,0,0,%I64u,%I64u\n", numDrawStats + 2, "END", frameEndCPUTimestamp.QuadPart, frameEndGPUTimestamp.QuadPart);
+	fprintf(f, "%u,FRAME_END,%s,0,0,0,0,%I64u,%I64u\n", numDrawStats + 2, "END", frameEndCPUTimestamp.QuadPart, frameEndGPUTimestamp.QuadPart);
 	fclose(f);
 }
 
@@ -536,6 +751,8 @@ HRESULT GPUStats::FinishDownloadingEndOfFrameEvents(IBaseGPUDevice* const device
 #endif
 		return E_INVALIDARG;
 	}
+
+	isCollectingEventDataThisFrame = false;
 
 	if (armCollectEventDataNextFrame)
 	{
@@ -557,8 +774,6 @@ HRESULT GPUStats::FinishDownloadingEndOfFrameEvents(IBaseGPUDevice* const device
 	memset(&downloadedEventOrders, 0, sizeof(downloadedEventOrders) );
 
 	const HRESULT ret = deviceBase->DeviceEndFrameAndFinishEventRecording(GetEventTimestampsBuffer(), GetEventsOrderBuffer(), downloadedEventTimestamps, downloadedEventOrders, &downloadedEventDataHeader.FrameStartTimestamp);
-
-	isCollectingEventDataThisFrame = false;
 
 	return ret;
 }

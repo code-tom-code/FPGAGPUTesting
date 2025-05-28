@@ -8,6 +8,9 @@
 #include "GPUDeviceLimits.h"
 #include "DeviceConversions.h"
 #include "GPUReturnTracker.h"
+#include "..\INIVar.h"
+
+static INIVar ValidateMemoryAfterUpload("Debug", "ValidateMemoryAfterUpload", false);
 
 // TODO: Include address alignment in this validation also
 static const bool ValidateAddress(const gpuvoid* const deviceMemoryPtr)
@@ -245,8 +248,11 @@ __declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceClearDepthStencil(gp
 
 __declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceSetTextureState(const unsigned texWidth, const unsigned texHeight, const eTexFilterMode filterMode, 
 		const eTexChannelMUX rChannel, const eTexChannelMUX gChannel, const eTexChannelMUX bChannel, const eTexChannelMUX aChannel, const combinerMode cbModeColor, const combinerMode cbModeAlpha,
-		const gpuvoid* const textureMemory, const eTexFormat textureFormat)
+		const gpuvoid* const textureMemory, const eTexFormat textureFormat,
+		bool& outReloadedTexture)
 {
+	outReloadedTexture = false;
+
 	if (!ValidateAddress(textureMemory) )
 		return E_INVALIDARG;
 
@@ -321,6 +327,8 @@ __declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceSetTextureState(cons
 		currentCachedState.deviceCachedTextureState.deviceCachedCombinerModeColor == cbModeColor && currentCachedState.deviceCachedTextureState.deviceCachedCombinerModeAlpha == cbModeAlpha &&
 		currentCachedState.deviceCachedTextureState.deviceCachedSetTexture == textureMemory && currentCachedState.deviceCachedTextureState.deviceCachedTexFormat == textureFormat)
 		return S_OK;
+
+	outReloadedTexture = true;
 
 	setTextureStateCommand setTextureState;
 	setTextureState.texWidthLog2 = (const BYTE)GetLog2TexDimension(texWidth);
@@ -1339,8 +1347,10 @@ __declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceIssueQuery(const gpu
 	return hRet;
 }
 
-__declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceLoadVertexShader(const gpuvoid* const vertexShaderMemory, const unsigned short numShaderTokensToLoad, const bool forceLoadVertexShader/* = false*/, const unsigned short targetAddressToLoadTo/* = 0*/)
+__declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceLoadVertexShader(const gpuvoid* const vertexShaderMemory, const unsigned short numShaderTokensToLoad, bool& outDidReloadVertexShader, const bool forceLoadVertexShader/* = false*/, const unsigned short targetAddressToLoadTo/* = 0*/)
 {
+	outDidReloadVertexShader = false;
+
 	if (!ValidateAddress(vertexShaderMemory) )
 		return E_INVALIDARG;
 
@@ -1392,6 +1402,8 @@ __declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceLoadVertexShader(con
 	loadShaderInstructions.shaderLengthTokens = numShaderTokensToLoad;
 	loadShaderInstructions.shaderLoadTargetOffset = targetAddressToLoadTo;
 	loadShaderInstructions.checksum = command::ComputeChecksum(&loadShaderInstructions, sizeof(loadShaderInstructions) );
+
+	outDidReloadVertexShader = true;
 
 	const HRESULT loadVertexShaderHR = SendOrStorePacket(&loadShaderInstructions);
 	if (FAILED(loadVertexShaderHR) )
@@ -2462,6 +2474,346 @@ __declspec(nothrow) HRESULT IBaseGPUDevice::SendOrStorePacket(const command* con
 	}
 }
 
+/*static*/ const UINT IBaseGPUDevice::CalculateVertexWaveCountDraw(const ePrimTopology primTopology, const unsigned primCount, unsigned& outActiveLaneCount, unsigned& outInactiveLaneCount)
+{
+	// TODO: Verify that all of these calculations are accurate
+	unsigned waveCount = 0;
+	switch (primTopology)
+	{
+	case primTop_PointList:
+		outActiveLaneCount = primCount;
+		waveCount = (primCount + 15) / 16;
+		break;
+	case primTop_LineList:
+		outActiveLaneCount = primCount * 2;
+		waveCount = (primCount + 7) / 8;
+		break;
+	case primTop_LineStrip:
+		if (primCount < 16)
+		{
+			outActiveLaneCount = primCount + 1;
+			waveCount = 1;
+		}
+		else
+		{
+			outActiveLaneCount = (primCount / 15) * 16 + (primCount % 15 + 1);
+			waveCount = (primCount + 15) / 15; // Can only fit 15 prims into a single wave because of the 1 wraparound prim between the two
+		}
+		break;
+	case primTop_TriangleList:
+		outActiveLaneCount = primCount * 3;
+		waveCount = (primCount + 4) / 5;
+		break;
+	case primTop_TriangleStrip:
+		if (primCount < 15)
+		{
+			outActiveLaneCount = primCount + 2;
+			waveCount = 1;
+		}
+		else
+		{
+			outActiveLaneCount = (primCount / 16) * 16 + (primCount % 16 + 2);
+			waveCount = (primCount + 16) / 16; // Has a leftover wraparound of 2 prims
+		}
+		break;
+	case primTop_TriangleFan:
+		if (primCount < 15)
+		{
+			outActiveLaneCount = primCount + 2;
+			waveCount = 1;
+		}
+		else
+		{
+			outActiveLaneCount = (primCount / 16) * 16 + (primCount % 16 + 2);
+			waveCount = (primCount + 8) / 8; // Has a leftover wraparound of 1 prims
+		}
+		break;
+	case primTop_ScreenAlignedQuad:
+		outActiveLaneCount = primCount * 4;
+		waveCount = (primCount + 3) / 4;
+		break;
+	default:
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Should never be here!
+#endif
+		outActiveLaneCount = 0;
+		waveCount = 0;
+	}
+	break;
+	}
+
+	const unsigned totalLanesCount = waveCount * WAVE_SIZE;
+	outInactiveLaneCount = totalLanesCount - outActiveLaneCount;
+	return waveCount;
+}
+
+static const unsigned ReadIndexValue(const unsigned IBIndex, const eIndexFormat indexFormat, const BYTE* const indexBufferBaseCPU)
+{
+	switch (indexFormat)
+	{
+	case ibfmt_index8:
+		return indexBufferBaseCPU[IBIndex];
+	case ibfmt_index16:
+	{
+		const USHORT* const indexBuffer16 = reinterpret_cast<const USHORT* const>(indexBufferBaseCPU);
+		return indexBuffer16[IBIndex];
+	}
+	default:
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Should never be here!
+#endif
+	}
+	case ibfmt_index32:
+	{
+		const UINT* const indexBuffer32 = reinterpret_cast<const UINT* const>(indexBufferBaseCPU);
+		return indexBuffer32[IBIndex];
+	}
+	}
+}
+
+// Returns true if the given vertex is already present in our wave, or false if it's not present yet
+static const bool IsVertexPresentInWave(const UINT newVertex, const BYTE waveCurrentVertexCount, const UINT (&waveVertices)[16], BYTE& outFoundVertexIndex)
+{
+	for (BYTE waveIndex = 0; waveIndex < waveCurrentVertexCount; ++waveIndex)
+	{
+		if (waveVertices[waveIndex] == newVertex)
+		{
+			outFoundVertexIndex = waveIndex;
+			return true;
+		}
+	}
+	return false;
+}
+
+// Returns true if this new primitive fits and was placed into the wave, or false if the new primitive did not fit into our wave
+static const bool TryFitPrimitiveIntoWave(const ePrimTopology primTopology, 
+	BYTE& waveCurrentVertexCount, UINT (&waveVertices)[16], 
+	BYTE& waveCurrentIndexCount, BYTE (&waveIndices)[64], 
+	const UINT vertexA, const UINT vertexB, const UINT vertexC)
+{
+	bool foundVertexA, foundVertexB, foundVertexC;
+	BYTE foundVertexIndexA, foundVertexIndexB, foundVertexIndexC;
+	unsigned newVerticesNeededCount = 0;
+	unsigned newIndicesNeededCount = 0;
+	switch (primTopology)
+	{
+	case primTop_PointList:
+		foundVertexA = IsVertexPresentInWave(vertexA, waveCurrentVertexCount, waveVertices, foundVertexIndexA);
+		newVerticesNeededCount = foundVertexA ? 1 : 0;
+		newIndicesNeededCount = 1;
+		break;
+	case primTop_LineList:
+	case primTop_LineStrip:
+		foundVertexA = IsVertexPresentInWave(vertexA, waveCurrentVertexCount, waveVertices, foundVertexIndexA);
+		foundVertexB = IsVertexPresentInWave(vertexB, waveCurrentVertexCount, waveVertices, foundVertexIndexB);
+		newVerticesNeededCount = foundVertexA + foundVertexB;
+		newIndicesNeededCount = 2;
+		break;
+	default:
+	case primTop_ScreenAlignedQuad: // Not yet implemented!
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Should never be here!
+#endif
+	}
+	case primTop_TriangleList:
+	case primTop_TriangleStrip:
+	case primTop_TriangleFan:
+		foundVertexA = IsVertexPresentInWave(vertexA, waveCurrentVertexCount, waveVertices, foundVertexIndexA);
+		foundVertexB = IsVertexPresentInWave(vertexB, waveCurrentVertexCount, waveVertices, foundVertexIndexB);
+		foundVertexC = IsVertexPresentInWave(vertexC, waveCurrentVertexCount, waveVertices, foundVertexIndexC);
+		newVerticesNeededCount = foundVertexA + foundVertexB + foundVertexC;
+		newIndicesNeededCount = 3;
+		break;
+	}
+
+	if (waveCurrentVertexCount + newVerticesNeededCount > 16)
+		return false;
+
+	if (waveCurrentIndexCount + newIndicesNeededCount > 64)
+		return false;
+
+	switch (primTopology)
+	{
+	case primTop_PointList:
+		if (foundVertexA)
+		{
+			waveIndices[waveCurrentIndexCount++] = foundVertexIndexA;
+		}
+		else
+		{
+			const BYTE newVertexWaveIndex = waveCurrentVertexCount;
+			waveVertices[waveCurrentVertexCount++] = vertexA;
+			waveIndices[waveCurrentIndexCount++] = newVertexWaveIndex;
+		}
+		break;
+	case primTop_LineList:
+	case primTop_LineStrip:
+		if (foundVertexA)
+		{
+			waveIndices[waveCurrentIndexCount++] = foundVertexIndexA;
+		}
+		else
+		{
+			const BYTE newVertexWaveIndex = waveCurrentVertexCount;
+			waveVertices[waveCurrentVertexCount++] = vertexA;
+			waveIndices[waveCurrentIndexCount++] = newVertexWaveIndex;
+		}
+		if (foundVertexB)
+		{
+			waveIndices[waveCurrentIndexCount++] = foundVertexIndexB;
+		}
+		else
+		{
+			const BYTE newVertexWaveIndex = waveCurrentVertexCount;
+			waveVertices[waveCurrentVertexCount++] = vertexB;
+			waveIndices[waveCurrentIndexCount++] = newVertexWaveIndex;
+		}
+		break;
+	default:
+	case primTop_ScreenAlignedQuad: // Not yet implemented!
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Should never be here!
+#endif
+	}
+	case primTop_TriangleList:
+	case primTop_TriangleStrip:
+	case primTop_TriangleFan:
+		if (foundVertexA)
+		{
+			waveIndices[waveCurrentIndexCount++] = foundVertexIndexA;
+		}
+		else
+		{
+			const BYTE newVertexWaveIndex = waveCurrentVertexCount;
+			waveVertices[waveCurrentVertexCount++] = vertexA;
+			waveIndices[waveCurrentIndexCount++] = newVertexWaveIndex;
+		}
+		if (foundVertexB)
+		{
+			waveIndices[waveCurrentIndexCount++] = foundVertexIndexB;
+		}
+		else
+		{
+			const BYTE newVertexWaveIndex = waveCurrentVertexCount;
+			waveVertices[waveCurrentVertexCount++] = vertexB;
+			waveIndices[waveCurrentIndexCount++] = newVertexWaveIndex;
+		}
+		if (foundVertexC)
+		{
+			waveIndices[waveCurrentIndexCount++] = foundVertexIndexC;
+		}
+		else
+		{
+			const BYTE newVertexWaveIndex = waveCurrentVertexCount;
+			waveVertices[waveCurrentVertexCount++] = vertexC;
+			waveIndices[waveCurrentIndexCount++] = newVertexWaveIndex;
+		}
+		break;
+	}
+
+	return true;
+}
+
+/*static*/ const UINT IBaseGPUDevice::CalculateVertexWaveCountDrawIndexed(const ePrimTopology primTopology, const eStripCutType stripCut, const eIndexFormat indexFormat, const BYTE* const indexBufferBaseCPU, const int baseVertexIndex, const unsigned startIndex, const unsigned primCount, unsigned& outActiveLaneCount, unsigned& outInactiveLaneCount)
+{
+	// TODO: Verify that all of these calculations are accurate
+
+	unsigned totalUsedWavesCount = 0;
+	unsigned totalUsedLanesCount = 0;
+
+	// Vertex waves can hold up to 16 32-bit vertex indices and 64 4-bit in-wave indices per wave:
+	UINT waveVertices[16];
+	BYTE waveCurrentVertexCount = 0;
+	memset(waveVertices, 0xFFFFFFFF, sizeof(waveVertices) );
+
+	BYTE waveIndices[64];
+	BYTE waveCurrentIndexCount = 0;
+	memset(waveIndices, 0xFFFFFFFF, sizeof(waveIndices) );
+
+	// These are index buffer pointers
+	UINT indexA = startIndex;
+	UINT indexB = startIndex + 1;
+	UINT indexC = startIndex + 2;
+
+	for (unsigned primIndex = 0; primIndex < primCount; ++primIndex)
+	{
+		// These are vertex buffer pointers
+		UINT primIndexA = ReadIndexValue(indexA, indexFormat, indexBufferBaseCPU) + baseVertexIndex;
+		UINT primIndexB = ReadIndexValue(indexB, indexFormat, indexBufferBaseCPU) + baseVertexIndex;
+		UINT primIndexC = ReadIndexValue(indexC, indexFormat, indexBufferBaseCPU) + baseVertexIndex;
+
+		if (!TryFitPrimitiveIntoWave(primTopology, waveCurrentVertexCount, waveVertices, waveCurrentIndexCount, waveIndices, primIndexA, primIndexB, primIndexC) )
+		{
+			// Dispatch the current wave for vertex shading
+			++totalUsedWavesCount;
+			totalUsedLanesCount += waveCurrentVertexCount;
+
+			// We need to copy over our current primitive's vertices and indices to the start of the next new wave
+			waveCurrentVertexCount = 0;
+			waveCurrentIndexCount = 0;
+			memset(waveVertices, 0xFFFFFFFF, sizeof(waveVertices) );
+			memset(waveIndices, 0xFFFFFFFF, sizeof(waveIndices) );
+
+			TryFitPrimitiveIntoWave(primTopology, waveCurrentVertexCount, waveVertices, waveCurrentIndexCount, waveIndices, primIndexA, primIndexB, primIndexC);
+		}
+
+		// Finally, advance our index buffer pointers:
+		switch (primTopology)
+		{
+		case primTop_PointList:
+			++indexA;
+			break;
+		case primTop_LineList:
+			indexA += 2;
+			indexB += 2;
+			break;
+		case primTop_LineStrip:
+			indexA = indexB;
+			++indexB;
+			break;
+		default:
+		case primTop_ScreenAlignedQuad: // Not yet implemented!
+		{
+#ifdef _DEBUG
+			__debugbreak(); // Should never be here!
+#endif
+		}
+		case primTop_TriangleList:
+			indexA += 3;
+			indexB += 3;
+			indexC += 3;
+			break;
+		case primTop_TriangleStrip:
+			indexA = indexB;
+			indexB = indexC;
+			++indexC;
+			break;
+		case primTop_TriangleFan:
+			// indexA never changes for a fan
+			indexB = indexC;
+			++indexC;
+			break;
+		}
+	}
+	++totalUsedWavesCount;
+	totalUsedLanesCount += waveCurrentVertexCount;
+
+	outActiveLaneCount = totalUsedLanesCount;
+#ifdef _DEBUG
+	if (totalUsedWavesCount * WAVE_SIZE < outActiveLaneCount)
+	{
+		__debugbreak(); // This should never happen!
+	}
+#endif
+	outInactiveLaneCount = totalUsedWavesCount * WAVE_SIZE - outActiveLaneCount;
+
+	return totalUsedWavesCount;
+}
+
 void IBaseGPUDevice::BeginRecordingCommandList(GPUCommandList* const newCommandList)
 {
 	if (currentlyRecordingCommandList != NULL)
@@ -2764,8 +3116,11 @@ __declspec(nothrow) HRESULT __stdcall IBaseGPUDevice::DeviceMemCopy(gpuvoid* con
 
 	// Validate copies by reading the values back and then comparing the memory for equality:
 #ifdef _DEBUG
-	if (FAILED(DeviceValidateMemory(deviceDestAddr, sourceCPUAddr, dwByteLength) ) )
-		return E_FAIL;
+	if (ValidateMemoryAfterUpload.Bool() )
+	{
+		if (FAILED(DeviceValidateMemory(deviceDestAddr, sourceCPUAddr, dwByteLength) ) )
+			return E_FAIL;
+	}
 #endif
 
 	return S_OK;

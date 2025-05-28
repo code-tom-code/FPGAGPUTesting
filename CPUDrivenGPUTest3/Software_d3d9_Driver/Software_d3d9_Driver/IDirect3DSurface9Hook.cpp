@@ -15,7 +15,7 @@ static const __m128 d32divisor = { 1.0f / 4294967295.0f, 1.0f / 4294967295.0f, 1
 static const unsigned oneInt4_DWORD[4] = { 0x1, 0x1, 0x1, 0x1 };
 static const __m128i oneInt4 = *(const __m128i* const)oneInt4_DWORD;
 
-static inline const bool IsCompressedFormat(const D3DFORMAT format)
+const bool IsCompressedFormat(const D3DFORMAT format)
 {
 	switch (format)
 	{

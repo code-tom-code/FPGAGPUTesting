@@ -402,3 +402,5 @@ protected:
 	char debugObjectName[256] = {0};
 #endif
 };
+
+const bool IsCompressedFormat(const D3DFORMAT format);

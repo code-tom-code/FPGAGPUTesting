@@ -189,10 +189,22 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DSwapChain9Hook::Present(
 		for (unsigned x = 0; x < parentDevice->eventEndTimestamps.size(); ++x)
 		{
 			IDirect3DQuery9Hook* const thisEndTimestamp = parentDevice->eventEndTimestamps[x];
+			thisEndTimestamp->ForceLateReadback();
+		}
+		for (unsigned x = 0; x < parentDevice->eventEndTimestamps.size(); ++x)
+		{
+			IDirect3DQuery9Hook* const thisEndTimestamp = parentDevice->eventEndTimestamps[x];
 			LARGE_INTEGER timestampData = {0};
 			thisEndTimestamp->GetData(&timestampData, sizeof(timestampData), D3DGETDATA_FLUSH);
 			allRecordedDrawEvents[x].drawCallFinishGPUTimestamp = timestampData;
 		}
+		for (unsigned x = 0; x < parentDevice->eventEndTimestamps.size(); ++x)
+		{
+			IDirect3DQuery9Hook* const thisEndTimestamp = parentDevice->eventEndTimestamps[x];
+			thisEndTimestamp->Release();
+		}
+		parentDevice->eventEndTimestamps.clear();
+
 		parentDevice->GetDeviceStats().FinishDownloadingEndOfFrameEvents(parentDevice->GetBaseDevice() );
 		parentDevice->GetDeviceStats().FlipRecordedDrawEventsToStats(allRecordedDrawEvents);
 		parentDevice->GetDeviceStats().ProcessDrawEventsData(beginFrameTimestampData, endFrameTimestampData, parentDevice->frameBeginCPUTimestamp, parentDevice->frameEndCPUTimestamp);

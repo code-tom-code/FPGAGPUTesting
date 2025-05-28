@@ -20,7 +20,10 @@ struct RecordedDrawCallStat
 	{
 		DT_Clear = 0u,
 		DT_DrawPrimitive,
-		DT_DrawIndexedPrimitive
+		DT_DrawIndexedPrimitive,
+		DT_VertexShaderLoad,
+		DT_TextureLoad,
+		DT_DirtyBufferUpload
 	} DrawType;
 
 	// The CPU timestamp of when the program called DrawPrimitive()/DrawIndexedPrimitive()/Clear().
@@ -44,6 +47,8 @@ struct RecordedDrawCallStat
 			UINT StartIndex;
 			D3DFORMAT IndexFormat;
 			UINT VertexWavesCount;
+			UINT ActiveLanesCount;
+			UINT InactiveLanesCount;
 		} DrawData;
 
 		struct
@@ -52,7 +57,45 @@ struct RecordedDrawCallStat
 			D3DCOLOR ClearColor;
 			float ClearDepth;
 			BYTE ClearStencil;
+			UINT BytesCleared;
 		} ClearData;
+
+		struct
+		{
+			const gpuvoid* ShaderAddress;
+			USHORT ShaderLengthBytes;
+			USHORT ShaderLoadOffset;
+		} VertexShaderLoadData;
+
+		struct
+		{
+			const gpuvoid* TextureAddress;
+			UINT TextureLoadLengthBytes;
+			UINT TextureLoadNumMemReadTransactions;
+			D3DFORMAT TextureFormat;
+			USHORT TextureWidth;
+			USHORT TextureHeight;
+			BYTE TextureNumMips;
+		} TextureLoadData;
+
+		struct
+		{
+			const gpuvoid* BufferBaseAddress;
+			UINT NumDirtyBytesUploaded;
+			union
+			{
+				debuggableFVF VertexBufferFVF;
+				D3DFORMAT IndexBufferFormat;
+				D3DFORMAT TextureFormat;
+			} UploadFormat;
+			enum _UploadType : unsigned char
+			{
+				VertexBuffer = 0,
+				IndexBuffer = 1,
+				Texture = 2,
+				ConstantBuffer = 3
+			} UploadType;
+		} DirtyBufferUploadData;
 	} DrawCallStatUnion;
 };
 

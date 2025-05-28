@@ -2,6 +2,9 @@
 
 #include "IDirect3D9Hook.h"
 #include "Driver/DriverOptions.h"
+#include "INIVar.h"
+
+static INIVar MessageboxOnCreateDevice("Options", "MessageboxOnCreateDevice", true);
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3D9Hook::QueryInterface(THIS_ REFIID riid, void** ppvObj) 
 {
@@ -39,7 +42,7 @@ COM_DECLSPEC_NOTHROW ULONG STDMETHODCALLTYPE IDirect3D9Hook::Release(THIS)
 	return ret;
 }
 
-COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3D9Hook::RegisterSoftwareDevice(THIS_ void* pInitializeFunction) 
+COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3D9Hook::RegisterSoftwareDevice(THIS_ void* pInitializeFunction)
 {
 	const HRESULT ret = d3d9->RegisterSoftwareDevice(pInitializeFunction);
 	return ret;
@@ -374,6 +377,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3D9Hook::CreateDevice(THIS
 		return ret;
 	}
 
+	if (MessageboxOnCreateDevice.Bool() )
 	{
 #pragma warning(push)
 #pragma warning(disable:4996)

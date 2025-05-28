@@ -304,6 +304,57 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DIndexBuffer9Hook::Lock(T
 	return S_OK;
 }
 
+void IDirect3DIndexBuffer9Hook::RecomputeIndexBounds(const unsigned indexRangeLengthBytes)
+{
+	unsigned minIndex = 0xFFFFFFFF;
+	unsigned maxIndex = 0x00000000;
+	switch (InternalFormat)
+	{
+	case 8:
+	{
+		const BYTE* const endPtr = rawBytes.u8Bytes + indexRangeLengthBytes;
+		for (const BYTE* indxPtr = rawBytes.u8Bytes; indxPtr < endPtr; ++indxPtr)
+		{
+			const BYTE thisIndex = *indxPtr;
+			if (thisIndex < minIndex)
+				minIndex = thisIndex;
+			if (thisIndex > maxIndex)
+				maxIndex = thisIndex;
+		}
+	}
+		break;
+	case D3DFMT_INDEX16:
+	{
+		const USHORT* const endPtr = (const USHORT* const)(rawBytes.u8Bytes + indexRangeLengthBytes);
+		for (const USHORT* indxPtr = rawBytes.shortBytes; indxPtr < endPtr; ++indxPtr)
+		{
+			const USHORT thisIndex = *indxPtr;
+			if (thisIndex < minIndex)
+				minIndex = thisIndex;
+			if (thisIndex > maxIndex)
+				maxIndex = thisIndex;
+		}
+	}
+		break;
+	case D3DFMT_INDEX32:
+	{
+		const unsigned long* const endPtr = (const unsigned long* const)(rawBytes.u8Bytes + indexRangeLengthBytes);
+		for (const unsigned long* indxPtr = rawBytes.longBytes; indxPtr < endPtr; ++indxPtr)
+		{
+			const unsigned long thisIndex = *indxPtr;
+			if (thisIndex < minIndex)
+				minIndex = thisIndex;
+			if (thisIndex > maxIndex)
+				maxIndex = thisIndex;
+		}
+	}
+		break;
+	}
+
+	minIndexValue = minIndex;
+	maxIndexValue = maxIndex;
+}
+
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DIndexBuffer9Hook::Unlock(THIS)
 {
 #ifdef _DEBUG
@@ -339,6 +390,8 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DIndexBuffer9Hook::Unlock
 			GPUBytesDirty = true;
 			lastFrameIDDirtied = parentDevice->GetCurrentFrameIndex();
 		}
+
+		RecomputeIndexBounds(InternalLength);
 
 #ifdef _DEBUG
 		lockFlags = 0x00000000;

@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.1525
+# Visual Studio Version 17
+VisualStudioVersion = 17.12.35527.113 d17.12
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "d3d9", "Software_d3d9_Driver\Software_d3d9_Driver.vcxproj", "{FFDB895B-11C0-4996-8C2E-194D85FFFAE6}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -33,6 +33,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GPUEndpoint_Serial", "Endpoints\GPUEndpoint_Serial\GPUEndpoint_Serial.vcxproj", "{4689050F-282F-4F97-B218-4005A29A2294}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GPUEndpoint_Network", "Endpoints\GPUEndpoint_Network\GPUEndpoint_Network.vcxproj", "{4689050F-282F-4F97-B218-4005A29A2299}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GPUEndpoint_CycleSimulator", "Endpoints\GPUEndpoint_CycleSimulator\GPUEndpoint_CycleSimulator.vcxproj", "{0AFA35C2-FE89-431F-A7BD-EF3699EDA15A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -122,6 +124,14 @@ Global
 		{4689050F-282F-4F97-B218-4005A29A2299}.Release|Win32.Build.0 = Release|Win32
 		{4689050F-282F-4F97-B218-4005A29A2299}.Release|x64.ActiveCfg = Release|x64
 		{4689050F-282F-4F97-B218-4005A29A2299}.Release|x64.Build.0 = Release|x64
+		{0AFA35C2-FE89-431F-A7BD-EF3699EDA15A}.Debug|Win32.ActiveCfg = Debug|Win32
+		{0AFA35C2-FE89-431F-A7BD-EF3699EDA15A}.Debug|Win32.Build.0 = Debug|Win32
+		{0AFA35C2-FE89-431F-A7BD-EF3699EDA15A}.Debug|x64.ActiveCfg = Debug|x64
+		{0AFA35C2-FE89-431F-A7BD-EF3699EDA15A}.Debug|x64.Build.0 = Debug|x64
+		{0AFA35C2-FE89-431F-A7BD-EF3699EDA15A}.Release|Win32.ActiveCfg = Release|Win32
+		{0AFA35C2-FE89-431F-A7BD-EF3699EDA15A}.Release|Win32.Build.0 = Release|Win32
+		{0AFA35C2-FE89-431F-A7BD-EF3699EDA15A}.Release|x64.ActiveCfg = Release|x64
+		{0AFA35C2-FE89-431F-A7BD-EF3699EDA15A}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -133,6 +143,7 @@ Global
 		{11E17A51-E5A8-4AE6-B4A2-9C800C60D94E} = {B618D558-7FCF-4232-AA55-336A38C0977E}
 		{4689050F-282F-4F97-B218-4005A29A2294} = {B618D558-7FCF-4232-AA55-336A38C0977E}
 		{4689050F-282F-4F97-B218-4005A29A2299} = {B618D558-7FCF-4232-AA55-336A38C0977E}
+		{0AFA35C2-FE89-431F-A7BD-EF3699EDA15A} = {B618D558-7FCF-4232-AA55-336A38C0977E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {5E04EDFD-1D25-4070-891C-F7243B95D719}

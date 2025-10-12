@@ -530,7 +530,7 @@ void IDirect3DVertexBuffer9Hook::SoftUPReallocIfNecessary(const UINT newBufferLe
 
 void IDirect3DVertexBuffer9Hook::UpdateDataToGPU(const unsigned offsetBytes, unsigned lengthBytes)
 {
-	// TODO: Save upload bandwidth by tracking dirty regions and only reuploading the dirty regions of our buffers
+	// Save upload bandwidth by tracking dirty regions and only reuploading the dirty regions of our buffers
 	if (GPUBytesAnyDirty)
 	{
 		// Copy our newly locked data off from the CPU to the GPU.

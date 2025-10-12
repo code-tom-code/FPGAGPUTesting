@@ -114,3 +114,6 @@ private:
 // The resourceName passed in may also be a string from the MAKEINTRESOURCEA() macro.
 // Returns NULL if the resource cannot be found!
 const void* const GetShaderResourceFile(const char* const resourceNameA, unsigned& outFoundResourceSize, const char* const resourceCategory = "HLSL");
+
+// Call once at startup
+void PreloadD3DXCompilerDLL();

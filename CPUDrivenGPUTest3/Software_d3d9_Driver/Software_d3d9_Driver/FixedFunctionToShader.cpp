@@ -7,16 +7,25 @@
 #include <vector> // for std::vector
 #include <map> // for std::map
 #include "resource.h"
+#include "INIVar.h"
 
 // Note: There's some good tidbits of information on this page: https://docs.microsoft.com/en-us/windows-hardware/drivers/display/converting-the-direct3d-fixed-function-state
 
 /*static*/ D3DXIncludeHandler D3DXIncludeHandler::globalIncludeHandlerSingleton;
+
+// D3DCompiler_43.dll is the one that ships with the June 2010 version of the DirectX SDK.
+// If this INIVar is empty, then it will skip preloading any DLL's at all. This just serves as an optimization
+// to prevent D3DX9 from continually re-loading and re-unloading this DLL every time we call D3DXCompileShader() to convert our fixed-function
+// shaders into vertexshaders and pixelshaders.
+INIVar KeepDLLPreloaded("Driver", "KeepDLLPreloaded", "D3DCompiler_43.dll");
 
 #ifndef NO_CACHING_FIXED_FUNCTION_SHADERS
 // These maps map from device state hashes into shaders:
 static std::map<FixedFunctionStateHash, IDirect3DVertexShader9Hook*> vertShadersHashMap;
 static std::map<FixedFunctionStateHash, IDirect3DPixelShader9Hook*> pixelShadersHashMap;
 #endif // NO_CACHING_FIXED_FUNCTION_SHADERS
+
+static HMODULE PreloadedCompilerDLL = NULL;
 
 DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE D3DXIncludeHandler::Open(THIS_ D3DXINCLUDE_TYPE IncludeType, LPCSTR pFileName, LPCVOID pParentData, LPCVOID *ppData, UINT *pBytes)
 {
@@ -133,4 +142,14 @@ void FixedFunctionStateToPixelShader(const DeviceState& state, IDirect3DPixelSha
 #endif // NO_CACHING_FIXED_FUNCTION_SHADERS
 
 	*outPixelShader = newPixelShader;
+}
+
+// Call once at startup
+void PreloadD3DXCompilerDLL()
+{
+	const char* const preloadDLLName = KeepDLLPreloaded.String();
+	if (preloadDLLName && preloadDLLName[0] != '\0')
+	{
+		PreloadedCompilerDLL = LoadLibraryA(preloadDLLName);
+	}
 }

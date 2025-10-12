@@ -167,6 +167,11 @@ public:
 	{
 		return UniformSpecularColor;
 	}
+
+	inline const bool IsDirty(void) const
+	{
+		return GPUBytesAnyDirty;
+	}
 	
 	void MarkDirtyRegion(const unsigned regionByteOffset, const unsigned regionByteLength);
 	void ClearDirtyRegion(unsigned regionByteOffset, const unsigned regionByteLength);

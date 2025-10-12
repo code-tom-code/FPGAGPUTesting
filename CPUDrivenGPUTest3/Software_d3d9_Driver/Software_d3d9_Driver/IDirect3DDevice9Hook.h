@@ -625,6 +625,32 @@ struct scissorRectStruct
 	}
 };
 
+struct deviceVertexDeclElement
+{
+	deviceVertexDeclElement() : vertexBufferObjPtr(NULL), vertexBufferBaseAddr(0x00000000), vertexBufferLength_Bytes(0), isD3DCOLOR(false),
+		thisElementDWORDCount(3), vertexStreamSlotIndex(0), shaderInputRegisterIndex(0), dwordStreamStride(0), dwordOffset(0), usage(D3DDECLUSAGE_POSITION), usageIndex(0)
+	{
+	}
+
+	IDirect3DVertexBuffer9Hook* vertexBufferObjPtr;
+	const gpuvoid* vertexBufferBaseAddr;
+	unsigned vertexBufferLength_Bytes;
+	bool isD3DCOLOR;
+	BYTE thisElementDWORDCount : 3; // Can only be 1, 2, 3, or 4
+	BYTE vertexStreamSlotIndex : 3; // Can be from 0 to 7
+	BYTE shaderInputRegisterIndex : 3; // Can be from 0 to 7
+	BYTE dwordStreamStride : 6; // Can be from 0 to 63 DWORD's
+	BYTE dwordOffset : 6; // Can be from 0 to 63 DWORD's
+	D3DDECLUSAGE usage : 5; // This is the D3D usage type
+	BYTE usageIndex : 4; // This is the D3D usage index
+};
+
+struct deviceVertexDecl
+{
+	BYTE numElements : 3; // Can be from 1 to 7 (may not be 0)
+	deviceVertexDeclElement deviceDeclElements[8];
+};
+
 struct DeviceState
 {
 	DeviceState() : currentIndexBuffer(NULL), currentVertexShader(NULL), currentPixelShader(NULL), currentVertexDecl(NULL), declTarget(targetFVF), currentDepthStencil(NULL), currentNPatchMode(0.0f)
@@ -1045,7 +1071,7 @@ public:
 #ifdef _DEBUG
 		, const char* const debugAllocString
 #endif
-	);
+	) const;
 
 	// Returns true if this is a fresh allocation, or false if it is a reused identically matching buffer
 	const bool CreateOrUseCachedCommandList(GPUCommandList*& newCommandList, LRU_GPUCommandListCache& cachedDeviceCommandLists, std::vector<GPUCommandList*>& resetCommandLists);
@@ -1054,9 +1080,11 @@ public:
 
 	const float4 GetDeviceViewportConstantF() const;
 
+	const bool DeclUsesDirtyVB(const deviceVertexDecl& deviceDecl) const;
+
 	const bool DeviceSetVertexShader(const bool forceLoadVertexShader = false);
-	void DeviceSetVertexDecl(const struct deviceVertexDecl& deviceDecl, const unsigned offsetVertexCount, const unsigned maxIndexValue);
-	void DeviceSetVertexStreamsAndDecl(const unsigned offsetVertexCount, const unsigned maxIndexValue);
+	void DeviceTranslateVertexDecl(deviceVertexDecl& outDeviceDecl);
+	void DeviceSetVertexDecl(const deviceVertexDecl& deviceDecl, const unsigned firstVertexOffset, const unsigned numVerticesDrawn);
 	void DeviceSetUsedVertexShaderConstants();
 
 	void DeviceSetCurrentState(const D3DPRIMITIVETYPE primType, IDirect3DIndexBuffer9Hook* const currentIB, bool& outReloadedTexture);
@@ -1520,9 +1548,9 @@ public:
 	const D3DCULL GetStateCullMode() const;
 	const bool GetStateFogEnable() const;
 	void GetStateAlphaBlend(bool& alphaBlendEnable, bool& separateAlphaBlendEnable, D3DBLEND& srcColorBlend, D3DBLEND& destColorBlend, D3DBLEND& srcAlphaBlend, D3DBLEND& destAlphaBlend, D3DBLENDOP& colorBlendOp, D3DBLENDOP& alphaBlendOp) const;
-	void GetStateAlphaTest(bool& alphaTestEnable, D3DCMPFUNC& alphaCmpFunc, unsigned char& alphaTestRef);
-	void GetStateTexAddressing(D3DTEXTUREADDRESS& texAddressU, D3DTEXTUREADDRESS& texAddressV, D3DCOLOR& borderColor);
-	void GetStateTexCombinerMode(combinerMode& colorCombiner, combinerMode& alphaCombiner);
+	void GetStateAlphaTest(bool& alphaTestEnable, D3DCMPFUNC& alphaCmpFunc, unsigned char& alphaTestRef) const;
+	void GetStateTexAddressing(D3DTEXTUREADDRESS& texAddressU, D3DTEXTUREADDRESS& texAddressV, D3DCOLOR& borderColor) const;
+	void GetStateTexCombinerMode(combinerMode& colorCombiner, combinerMode& alphaCombiner) const;
 
 	const DepthOverrideSettings GetDepthOverride() const
 	{

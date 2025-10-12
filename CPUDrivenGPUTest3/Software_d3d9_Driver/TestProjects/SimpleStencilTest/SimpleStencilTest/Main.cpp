@@ -441,7 +441,7 @@ static inline void RenderScene4(const long double timeDelta)
 
 	d3d9dev->SetRenderState(D3DRS_STENCILENABLE, TRUE);
 	d3d9dev->SetRenderState(D3DRS_ZWRITEENABLE, FALSE);
-	d3d9dev->SetRenderState(D3DRS_COLORWRITEENABLE, 0);
+	d3d9dev->SetRenderState(D3DRS_COLORWRITEENABLE, /*D3DCOLORWRITEENABLE_ALPHA | D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_BLUE*/0);
 	d3d9dev->SetRenderState(D3DRS_STENCILFUNC, D3DCMP_ALWAYS);
 	d3d9dev->SetRenderState(D3DRS_STENCILREF, 0x00);
 	d3d9dev->SetRenderState(D3DRS_STENCILPASS, D3DSTENCILOP_KEEP);
@@ -473,7 +473,7 @@ static inline void RenderScene4(const long double timeDelta)
 	d3d9dev->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, &flyingRectVerts, sizeof(vert2D) );
 
 	d3d9dev->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_ALPHA | D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_BLUE);
-	d3d9dev->SetRenderState(D3DRS_ZENABLE, FALSE);
+	d3d9dev->SetRenderState(D3DRS_ZENABLE, TRUE);
 	d3d9dev->SetRenderState(D3DRS_ZWRITEENABLE, FALSE);
 	d3d9dev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW); // Back to the normal winding again
 	d3d9dev->SetRenderState(D3DRS_STENCILFUNC, D3DCMP_NOTEQUAL);

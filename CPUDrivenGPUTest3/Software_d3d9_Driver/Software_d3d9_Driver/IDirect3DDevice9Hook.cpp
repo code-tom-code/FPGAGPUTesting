@@ -512,7 +512,7 @@ static inline void WorkUntilNoMoreWork(void* const jobData)
 	if (!threadWork) __debugbreak();
 }*/
 
-void SpinLoopForMicros(const unsigned numMicros)
+static void SpinLoopForMicros(const unsigned numMicros)
 {
 	if (numMicros < 1)
 		return;
@@ -1806,7 +1806,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::EndScene(TH
 	return ret;
 }
 
-const DWORD ParseClearStringToClearFlags(const char* clearString)
+static const DWORD ParseClearStringToClearFlags(const char* clearString)
 {
 	if (!clearString || !*clearString)
 		return 0;
@@ -4674,7 +4674,7 @@ void IDirect3DDevice9Hook::CallRunCommandList(const GPUCommandList& runCommandLi
 // c0.z = Negation of viewport Z offset
 // c1.xy = Reciprocal of viewport X,-Y scales
 // c1.z = Reciprocal of viewport Z scale
-void SetPassthroughVSShaderState(const DeviceState& state, IDirect3DDevice9Hook* const dev)
+static void SetPassthroughVSShaderState(const DeviceState& state, IDirect3DDevice9Hook* const dev)
 {
 	const D3DXVECTOR4 c0(-state.cachedViewport.halfWidthF, -state.cachedViewport.halfHeightF, -0.0f, 0.0f);
 	const D3DXVECTOR4 c1(1.0f / state.cachedViewport.halfWidthF, -1.0f / state.cachedViewport.halfHeightF, 1.0f / state.cachedViewport.zScale, 0.0f);
@@ -4917,7 +4917,13 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawPrimiti
 		//baseDevice->BeginRecordingCommandList(newRecordingCommandList);
 		DeviceSetCurrentState(PrimitiveType, NULL, didReloadTexture); // Update the device state
 		didReloadVertexShader = DeviceSetVertexShader(); // Set our current vertex shader on the device (has the side effect of overwriting the 0th stream source register, so make sure to call this before DeviceSetVertexStreamsAndDecl() )
-		DeviceSetVertexStreamsAndDecl(StartVertex, numVerticesDrawn); // Bind our current vertex streams and set up our vertex decl
+
+		// Construct and initialize a device vertex declaration to be sent to the device:
+		deviceVertexDecl deviceDecl;
+
+		DeviceTranslateVertexDecl(deviceDecl);
+
+		DeviceSetVertexDecl(deviceDecl, StartVertex, numVerticesDrawn); // Bind our current vertex streams and set up our vertex decl
 
 		//CreateOrUseCachedCommandList(newRecordingCommandList, cachedCommandLists, resetCommandListsPool);
 		DeviceSetUsedVertexShaderConstants(); // Copy over and set our vertex shader constant registers
@@ -4992,7 +4998,7 @@ const bool IDirect3DDevice9Hook::CreateOrUseCachedVertDataBuffer(DeviceAllocated
 #ifdef _DEBUG
 	, const char* const debugAllocString
 #endif
-)
+) const
 {
 	if (newBuffer.bufferHash == 0)
 	{
@@ -5233,50 +5239,35 @@ static const bool ValidateVertexDeclarationForDevice(const std::vector<Debuggabl
 	return true;
 }
 
-struct deviceVertexDeclElement
-{
-	deviceVertexDeclElement() : vertexBufferObjPtr(NULL), vertexBufferBaseAddr(0x00000000), vertexBufferLength_Bytes(0), isD3DCOLOR(false),
-		thisElementDWORDCount(3), vertexStreamSlotIndex(0), shaderInputRegisterIndex(0), dwordStreamStride(0), dwordOffset(0), usage(D3DDECLUSAGE_POSITION), usageIndex(0)
-	{
-	}
-
-	IDirect3DVertexBuffer9Hook* vertexBufferObjPtr;
-	const gpuvoid* vertexBufferBaseAddr;
-	unsigned vertexBufferLength_Bytes;
-	bool isD3DCOLOR;
-	BYTE thisElementDWORDCount : 3; // Can only be 1, 2, 3, or 4
-	BYTE vertexStreamSlotIndex : 3; // Can be from 0 to 7
-	BYTE shaderInputRegisterIndex : 3; // Can be from 0 to 7
-	BYTE dwordStreamStride : 6; // Can be from 0 to 63 DWORD's
-	BYTE dwordOffset : 6; // Can be from 0 to 63 DWORD's
-	D3DDECLUSAGE usage : 5; // This is the D3D usage type
-	BYTE usageIndex : 4; // This is the D3D usage index
-};
-
-struct deviceVertexDecl
-{
-	BYTE numElements : 3; // Can be from 1 to 7 (may not be 0)
-	deviceVertexDeclElement deviceDeclElements[8];
-};
-
-void IDirect3DDevice9Hook::DeviceSetVertexDecl(const deviceVertexDecl& deviceDecl, const unsigned offsetVertexCount, const unsigned maxIndexValue)
+const bool IDirect3DDevice9Hook::DeclUsesDirtyVB(const deviceVertexDecl& deviceDecl) const
 {
 	for (unsigned streamElementID = 0; streamElementID < deviceDecl.numElements; ++streamElementID)
 	{
 		const deviceVertexDeclElement& thisDeviceDeclElement = deviceDecl.deviceDeclElements[streamElementID];
-		const unsigned thisStreamDrawStartOffsetBytes = offsetVertexCount * thisDeviceDeclElement.dwordStreamStride * sizeof(DWORD);
+		if (thisDeviceDeclElement.vertexBufferObjPtr->IsDirty() )
+			return true;
+	}
+	return false;
+}
+
+void IDirect3DDevice9Hook::DeviceSetVertexDecl(const deviceVertexDecl& deviceDecl, const unsigned firstVertexOffset, const unsigned numVerticesDrawn)
+{
+	for (unsigned streamElementID = 0; streamElementID < deviceDecl.numElements; ++streamElementID)
+	{
+		const deviceVertexDeclElement& thisDeviceDeclElement = deviceDecl.deviceDeclElements[streamElementID];
+		const unsigned thisStreamDrawStartOffsetBytes = firstVertexOffset * thisDeviceDeclElement.dwordStreamStride * sizeof(DWORD);
 		unsigned drawLengthBytes = 0;
-		if (maxIndexValue == 0xFFFFFFFF)
+		if (numVerticesDrawn == 0xFFFFFFFF)
 			drawLengthBytes = thisDeviceDeclElement.vertexBufferLength_Bytes;
 		else
-			drawLengthBytes = thisDeviceDeclElement.dwordStreamStride * maxIndexValue * sizeof(DWORD);
+			drawLengthBytes = thisDeviceDeclElement.dwordStreamStride * numVerticesDrawn * sizeof(DWORD);
 		thisDeviceDeclElement.vertexBufferObjPtr->UpdateDataToGPU(thisStreamDrawStartOffsetBytes, drawLengthBytes);
 		baseDevice->DeviceSetVertexStreamData(thisDeviceDeclElement.vertexBufferBaseAddr, thisDeviceDeclElement.vertexBufferLength_Bytes, thisDeviceDeclElement.thisElementDWORDCount, streamElementID, thisDeviceDeclElement.isD3DCOLOR,
 				thisDeviceDeclElement.shaderInputRegisterIndex, thisDeviceDeclElement.dwordStreamStride, thisDeviceDeclElement.dwordOffset, deviceDecl.numElements, thisDeviceDeclElement.usage, thisDeviceDeclElement.usageIndex);
 	}
 }
 
-void IDirect3DDevice9Hook::DeviceSetVertexStreamsAndDecl(const unsigned offsetVertexCount, const unsigned maxIndexValue)
+void IDirect3DDevice9Hook::DeviceTranslateVertexDecl(deviceVertexDecl& outDeviceDecl)
 {
 	if (!currentState.currentVertexDecl)
 	{
@@ -5305,7 +5296,6 @@ void IDirect3DDevice9Hook::DeviceSetVertexStreamsAndDecl(const unsigned offsetVe
 	}
 
 	// Construct and initialize a device vertex declaration to be sent to the device:
-	deviceVertexDecl deviceDecl;
 
 	const unsigned totalNumElements = vertexElements.size() - 1; // Minus one here to skip the D3DDECL_END struct
 	unsigned shaderUsedElements = 0; // If the shader uses fewer elements than are present in the vertex declaration, then this number might be less than totalNumElements
@@ -5420,7 +5410,7 @@ void IDirect3DDevice9Hook::DeviceSetVertexStreamsAndDecl(const unsigned offsetVe
 				return;
 			}
 
-			deviceVertexDeclElement& thisDeviceDeclElement = deviceDecl.deviceDeclElements[shaderUsedElements];
+			deviceVertexDeclElement& thisDeviceDeclElement = outDeviceDecl.deviceDeclElements[shaderUsedElements];
 
 			thisDeviceDeclElement.vertexBufferObjPtr = thisVertexStream.vertexBuffer;
 			thisDeviceDeclElement.vertexBufferBaseAddr = vertexBufferData;
@@ -5438,7 +5428,7 @@ void IDirect3DDevice9Hook::DeviceSetVertexStreamsAndDecl(const unsigned offsetVe
 			++shaderUsedElements;
 		}
 	}
-	deviceDecl.numElements = shaderUsedElements;
+	outDeviceDecl.numElements = shaderUsedElements;
 
 	if (shaderUsedElements == 0)
 	{
@@ -5454,9 +5444,6 @@ void IDirect3DDevice9Hook::DeviceSetVertexStreamsAndDecl(const unsigned offsetVe
 #endif
 		return;
 	}
-	
-	// Finally, set our vertex decl and bind our vertex streams on the device:
-	DeviceSetVertexDecl(deviceDecl, offsetVertexCount, maxIndexValue);
 }
 
 // Returns true if the underlying device caching layer actually reloaded the vertex shader, or false if the vertex shader was already loaded and cached and did not require reloading
@@ -5902,7 +5889,7 @@ void IDirect3DDevice9Hook::GetStateAlphaBlend(bool& alphaBlendEnable, bool& sepa
 	}
 }
 
-void IDirect3DDevice9Hook::GetStateAlphaTest(bool& alphaTestEnable, D3DCMPFUNC& alphaCmpFunc, unsigned char& alphaTestRef)
+void IDirect3DDevice9Hook::GetStateAlphaTest(bool& alphaTestEnable, D3DCMPFUNC& alphaCmpFunc, unsigned char& alphaTestRef) const
 {
 	switch (overrideAlphaTest)
 	{
@@ -5946,7 +5933,7 @@ void IDirect3DDevice9Hook::GetStateAlphaTest(bool& alphaTestEnable, D3DCMPFUNC& 
 	}
 }
 
-void IDirect3DDevice9Hook::GetStateTexAddressing(D3DTEXTUREADDRESS& texAddressU, D3DTEXTUREADDRESS& texAddressV, D3DCOLOR& borderColor)
+void IDirect3DDevice9Hook::GetStateTexAddressing(D3DTEXTUREADDRESS& texAddressU, D3DTEXTUREADDRESS& texAddressV, D3DCOLOR& borderColor) const
 {
 	switch (overrideTexAddress)
 	{
@@ -6002,7 +5989,7 @@ void IDirect3DDevice9Hook::GetStateTexAddressing(D3DTEXTUREADDRESS& texAddressU,
 	}
 }
 
-void IDirect3DDevice9Hook::GetStateTexCombinerMode(combinerMode& colorCombiner, combinerMode& alphaCombiner)
+void IDirect3DDevice9Hook::GetStateTexCombinerMode(combinerMode& colorCombiner, combinerMode& alphaCombiner) const
 {
 	combinerMode cbModeColor = cbm_textureModulateVertexColor;
 	combinerMode cbModeAlpha = cbm_textureModulateVertexColor;
@@ -6343,6 +6330,163 @@ void IDirect3DDevice9Hook::HandleFrameSingleStepMode()
 	}
 }
 
+template <const D3DFORMAT indexFormat>
+inline const unsigned GetIndex(const BYTE* const indexBufferBytes, const unsigned indexID);
+
+template <>
+inline const unsigned GetIndex<D3DFMT_INDEX16>(const BYTE* const indexBufferBytes, const unsigned indexID)
+{
+	const USHORT* const indices16 = reinterpret_cast<const USHORT* const>(indexBufferBytes);
+	return (const unsigned)indices16[indexID];
+}
+
+template <>
+inline const unsigned GetIndex<D3DFMT_INDEX32>(const BYTE* const indexBufferBytes, const unsigned indexID)
+{
+	const UINT* const indices32 = reinterpret_cast<const UINT* const>(indexBufferBytes);
+	return indices32[indexID];
+}
+
+template <const D3DPRIMITIVETYPE PrimitiveType, const D3DFORMAT indexFormat>
+inline void DrawTraverseIndexBufferCallout(const IDirect3DIndexBuffer9Hook* const indexBuffer, const INT BaseVertexIndex, const UINT startIndex, const UINT primCount, unsigned& firstVertexIndex, unsigned& numVertexIndicesUsed)
+{
+	const BYTE* const indexBytes = indexBuffer->GetBufferBytes();
+
+	unsigned indexMin = 0xFFFFFFFF;
+	unsigned indexMax = 0x00000000;
+
+	unsigned primIndexA = startIndex;
+	unsigned primIndexB = startIndex + 1;
+	unsigned primIndexC = startIndex + 2;
+
+	for (unsigned primID = 0; primID < primCount; ++primID)
+	{
+		switch (PrimitiveType)
+		{
+		case D3DPT_TRIANGLELIST:
+		case D3DPT_TRIANGLESTRIP:
+		case D3DPT_TRIANGLEFAN:
+		{
+			const unsigned indexValC = GetIndex<indexFormat>(indexBytes, primIndexC);
+			if (indexValC < indexMin)
+				indexMin = indexValC;
+			if (indexValC > indexMax)
+				indexMax = indexValC;
+		}
+		// Intentional fallthrough:
+		case D3DPT_LINELIST:
+		case D3DPT_LINESTRIP:
+		{
+			const unsigned indexValB = GetIndex<indexFormat>(indexBytes, primIndexB);
+			if (indexValB < indexMin)
+				indexMin = indexValB;
+			if (indexValB > indexMax)
+				indexMax = indexValB;
+		}
+		// Intentional fallthrough:
+		case D3DPT_POINTLIST:
+		{
+			const unsigned indexValA = GetIndex<indexFormat>(indexBytes, primIndexA);
+			if (indexValA < indexMin)
+				indexMin = indexValA;
+			if (indexValA > indexMax)
+				indexMax = indexValA;
+		}
+			break;
+		}
+
+		// Advance our primitive indices:
+		switch (PrimitiveType)
+		{
+		case D3DPT_POINTLIST:
+			++primIndexA;
+			break;
+		case D3DPT_LINELIST:
+			primIndexA += 2;
+			primIndexB += 2;
+			break;
+		case D3DPT_LINESTRIP:
+			primIndexA = primIndexB;
+			++primIndexB;
+			break;
+		case D3DPT_TRIANGLELIST:
+			primIndexA += 3;
+			primIndexB += 3;
+			primIndexC += 3;
+			break;
+		case D3DPT_TRIANGLESTRIP:
+			primIndexA = primIndexB;
+			primIndexB = primIndexC;
+			++primIndexC;
+			break;
+		case D3DPT_TRIANGLEFAN:
+			// Never advance primIndexA
+			primIndexB = primIndexC;
+			++primIndexC;
+			break;
+		}
+	}
+
+	indexMin += BaseVertexIndex;
+	indexMax += BaseVertexIndex;
+
+	firstVertexIndex = indexMin;
+	numVertexIndicesUsed = indexMax - indexMin;
+}
+
+template <const D3DPRIMITIVETYPE PrimitiveType>
+inline void DrawTraverseIndexBufferCallout1(const IDirect3DIndexBuffer9Hook* const indexBuffer, const INT BaseVertexIndex, const UINT startIndex, const UINT primCount, unsigned& firstVertexIndex, unsigned& numVertexIndicesUsed)
+{
+	const D3DFORMAT indexFormat = indexBuffer->GetFormat();
+	switch (indexFormat)
+	{
+	default:
+	{
+#ifdef _DEBUG
+		__debugbreak();
+#endif
+	}
+	case D3DFMT_INDEX16:
+		DrawTraverseIndexBufferCallout<PrimitiveType, D3DFMT_INDEX16>(indexBuffer, BaseVertexIndex, startIndex, primCount, firstVertexIndex, numVertexIndicesUsed);
+		break;
+	case D3DFMT_INDEX32:
+		DrawTraverseIndexBufferCallout<PrimitiveType, D3DFMT_INDEX32>(indexBuffer, BaseVertexIndex, startIndex, primCount, firstVertexIndex, numVertexIndicesUsed);
+		break;
+	}
+}
+
+// Walk through our index buffer to find what the min and max indices we use for this draw call are
+static inline void DrawTraverseIndexBuffer(const IDirect3DIndexBuffer9Hook* const indexBuffer, const D3DPRIMITIVETYPE PrimitiveType, const INT BaseVertexIndex, const UINT startIndex, const UINT primCount, unsigned& firstVertexIndex, unsigned& numVertexIndicesUsed)
+{
+	switch (PrimitiveType)
+	{
+	default:
+	{
+#ifdef _DEBUG
+		__debugbreak();
+#endif
+	}
+	case D3DPT_TRIANGLELIST:
+		DrawTraverseIndexBufferCallout1<D3DPT_TRIANGLELIST>(indexBuffer, BaseVertexIndex, startIndex, primCount, firstVertexIndex, numVertexIndicesUsed);
+		break;
+	case D3DPT_POINTLIST:
+		DrawTraverseIndexBufferCallout1<D3DPT_POINTLIST>(indexBuffer, BaseVertexIndex, startIndex, primCount, firstVertexIndex, numVertexIndicesUsed);
+		break;
+	case D3DPT_LINELIST:
+		DrawTraverseIndexBufferCallout1<D3DPT_LINELIST>(indexBuffer, BaseVertexIndex, startIndex, primCount, firstVertexIndex, numVertexIndicesUsed);
+		break;
+	case D3DPT_LINESTRIP:
+		DrawTraverseIndexBufferCallout1<D3DPT_LINESTRIP>(indexBuffer, BaseVertexIndex, startIndex, primCount, firstVertexIndex, numVertexIndicesUsed);
+		break;
+	case D3DPT_TRIANGLESTRIP:
+		DrawTraverseIndexBufferCallout1<D3DPT_TRIANGLESTRIP>(indexBuffer, BaseVertexIndex, startIndex, primCount, firstVertexIndex, numVertexIndicesUsed);
+		break;
+	case D3DPT_TRIANGLEFAN:
+		DrawTraverseIndexBufferCallout1<D3DPT_TRIANGLEFAN>(indexBuffer, BaseVertexIndex, startIndex, primCount, firstVertexIndex, numVertexIndicesUsed);
+		break;
+	}
+}
+
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawIndexedPrimitive(THIS_ D3DPRIMITIVETYPE PrimitiveType, INT BaseVertexIndex, UINT MinVertexIndex, UINT NumVertices, UINT startIndex, UINT primCount)
 {
 	SIMPLE_FUNC_SCOPE();
@@ -6517,9 +6661,25 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawIndexed
 
 		didReloadVertexShader = DeviceSetVertexShader(); // Set our current vertex shader on the device (has the side effect of overwriting the 0th stream source register, so make sure to call this before DeviceSetVertexStreamsAndDecl() )
 
-		const unsigned vertexBufferVertexOffset = BaseVertexIndex < 0 ? 0 : BaseVertexIndex;
-		const unsigned maxNumVerticesDrawn = currentState.currentIndexBuffer->maxIndexValue == 0xFFFFFFFF ? 0xFFFFFFFF : currentState.currentIndexBuffer->maxIndexValue + 1;
-		DeviceSetVertexStreamsAndDecl(vertexBufferVertexOffset, maxNumVerticesDrawn); // Bind our current vertex streams and set up our vertex decl
+		unsigned vertexBufferVertexOffset = BaseVertexIndex < 0 ? 0 : BaseVertexIndex;
+		unsigned maxNumVerticesDrawn = currentState.currentIndexBuffer->maxIndexValue == 0xFFFFFFFF ? 0xFFFFFFFF : currentState.currentIndexBuffer->maxIndexValue;
+
+		// Construct and initialize a device vertex declaration to be sent to the device:
+		deviceVertexDecl deviceDecl;
+
+		DeviceTranslateVertexDecl(deviceDecl);
+
+		if (DeclUsesDirtyVB(deviceDecl) )
+		{
+			// Recompute the range of indices actually used by this draw call by reading through the index buffer
+			DrawTraverseIndexBuffer(currentState.currentIndexBuffer, PrimitiveType, BaseVertexIndex, startIndex, primCount, vertexBufferVertexOffset, maxNumVerticesDrawn);
+		}
+
+		if (maxNumVerticesDrawn != 0xFFFFFFFF)
+			++maxNumVerticesDrawn;
+
+		// Finally, set our vertex decl and bind our vertex streams on the device:
+		DeviceSetVertexDecl(deviceDecl, vertexBufferVertexOffset, maxNumVerticesDrawn);
 
 		DeviceSetUsedVertexShaderConstants(); // Copy over and set our vertex shader constant registers
 
@@ -6541,7 +6701,7 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::DrawIndexed
 					baseDevice->DeviceMemSet(targetInstructionOverwrite, 0x000000C0, sizeof(instructionSlot) ); // Overwrite the instruction with a NOP instruction
 					const bool bForceReloadVertexShader = true;
 					DeviceSetVertexShader(bForceReloadVertexShader); // Force a reload of our newly-patched vertex shader
-					DeviceSetVertexStreamsAndDecl(vertexBufferVertexOffset, maxNumVerticesDrawn); // Bind our current vertex streams and set up our vertex decl
+					DeviceSetVertexDecl(deviceDecl, vertexBufferVertexOffset, maxNumVerticesDrawn); // Bind our current vertex streams and set up our vertex decl
 				}
 
 				baseDevice->DeviceEnableShaderDebuggingForNextDrawCall(allocatedDebugShaderRegisterFile);
@@ -10783,7 +10943,7 @@ static TFixed<integerBits, fractionBits, baseType> ConvertFloatToFixed(const flo
 	return ret;
 }
 
-void NormalizeToRecipRange(const TFixed<16, 16> input, TFixed<16, 16>& outNormalizedFixed, int& normalizeFactor)
+static void NormalizeToRecipRange(const TFixed<16, 16> input, TFixed<16, 16>& outNormalizedFixed, int& normalizeFactor)
 {
 	if (input.splitFormat.intPart != 0)
 	{
@@ -10806,7 +10966,7 @@ void NormalizeToRecipRange(const TFixed<16, 16> input, TFixed<16, 16>& outNormal
 	}
 }
 
-void UnNormalizeToRecipRange(const TFixed<16, 16> normalizedInput, TFixed<16, 16>& outRenormalized, const int normalizeFactor)
+static void UnNormalizeToRecipRange(const TFixed<16, 16> normalizedInput, TFixed<16, 16>& outRenormalized, const int normalizeFactor)
 {
 	if (normalizeFactor > 0)
 	{
@@ -10822,7 +10982,7 @@ void UnNormalizeToRecipRange(const TFixed<16, 16> normalizedInput, TFixed<16, 16
 	}
 }
 
-float FloatReciprocal(float input)
+static float FloatReciprocal(float input)
 {
 	const float approx0result = (48.0f / 17.0f) - (input * (32.0f / 17.0f) );
 	float lastIterResult = approx0result;
@@ -10845,7 +11005,7 @@ static inline void TestSetMinMax(const TFixed<16, 16, unsigned>& inTestVal, sign
 }
 
 // Newton-Raphson iteration using Q16.16 fixed-point numbers, with some help from this resource: http://www.cs.utsa.edu/~wagner/CS3343/newton/division.html
-TFixed<16, 16> FixedReciprocal(TFixed<16, 16> input) // +0.xxxxxxxxdec = +0.xxxxhex, Q0.16 unsigned. Value between (0.5, 1.0)
+static TFixed<16, 16> FixedReciprocal(TFixed<16, 16> input) // +0.xxxxxxxxdec = +0.xxxxhex, Q0.16 unsigned. Value between (0.5, 1.0)
 {
 	// Initial approximation is 48/17 - 32/17 * input
 	const TFixed<16, 16> approx0mul = ConvertFloatToFixed<16, 16, unsigned>(32.0f / 17.0f); // +1.8823529411764705882352941176471dec = +1.e1e1hex, Q1.16 unsigned
@@ -12207,7 +12367,7 @@ void IDirect3DDevice9Hook::InitializeState(const D3DPRESENT_PARAMETERS& d3dpp, c
 		driverSettingsDlg.InitDialog(initialCreateFocusWindow, initialCreateDeviceWindow, this);
 }
 
-const std::string BuildEndpointDLLPath(const char* const endpointDLLName)
+static const std::string BuildEndpointDLLPath(const char* const endpointDLLName)
 {
 #ifdef _M_X64
 	#ifdef _DEBUG
@@ -12309,6 +12469,8 @@ IDirect3DDevice9Hook::IDirect3DDevice9Hook(LPDIRECT3DDEVICE9 _d3d9dev, IDirect3D
 	GPUInitializeAllocator();
 
 	InitEndpointsGraph();
+
+	PreloadD3DXCompilerDLL();
 
 #ifdef _DEBUG
 	if (!deviceComms)

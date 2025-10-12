@@ -13,6 +13,8 @@
 
 #include "INIVar.h"
 
+#include "LiveObjectCounter.h"
+
 #ifdef INCREASE_SYSTEM_SCHEDULER_RESOLUTION
 	#pragma comment(lib, "Winmm.lib")
 #endif // #ifdef INCREASE_SYSTEM_SCHEDULER_RESOLUTION
@@ -319,6 +321,7 @@ BOOL WINAPI DllMain(_In_ HINSTANCE hInst, _In_ DWORD reason, _In_ LPVOID /*lpvRe
 		hLThisDLL = hInst;
 
 		// Need to run this once on startup!
+		InitLiveObjectCounters();
 		INIRegistry::InitLoadAllINIData();
 
 #ifdef _DEBUG
@@ -378,6 +381,7 @@ BOOL WINAPI DllMain(_In_ HINSTANCE hInst, _In_ DWORD reason, _In_ LPVOID /*lpvRe
 #endif // #ifdef INCREASE_SYSTEM_SCHEDULER_RESOLUTION
 
 		FreeLibrary(hL);
+		ShutdownLiveObjectCounters();
 	}
 
 	return TRUE;

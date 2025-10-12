@@ -79,6 +79,9 @@ void IDirect3DPixelShader9Hook::CreatePixelShader(const DWORD* const pFunction)
 	parentDevice->UnlockDeviceCS();
 
 	shaderBytecode.clear();
+
+	UnregisterLiveObject(LOT_PixelShader, this, parentDevice);
+
 #ifdef WIPE_ON_DESTRUCT_D3DHOOKOBJECT
 	memset(this, 0x00000000, sizeof(*this) - (sizeof(shaderBytecode) + sizeof(pixelShaderInfo) ) );
 #endif

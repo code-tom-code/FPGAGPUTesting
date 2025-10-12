@@ -1,6 +1,7 @@
 #pragma once
 
 #include "IDirect3DDevice9Hook.h"
+#include "LiveObjectCounter.h"
 
 // This is a custom flag that does not exist in Direct3D!
 // It tells the driver that we should not automatically perform a memory readback at Issue-time.
@@ -19,6 +20,7 @@ public:
 	IDirect3DQuery9Hook(LPDIRECT3DQUERY9 _realObject, IDirect3DDevice9Hook* _parentDevice) : realObject(_realObject), parentDevice(_parentDevice), refCount(1), deviceQueryAlloc(NULL), queryType( (const D3DQUERYTYPE)0), queryState(nonIssued)
 	{
 		memset(&queryData, 0, sizeof(queryData) );
+		RegisterNewLiveObject(LOT_Query, this, _parentDevice);
 	}
 
 	inline LPDIRECT3DQUERY9 GetUnderlyingQuery(void) const
@@ -28,6 +30,8 @@ public:
 
 	virtual ~IDirect3DQuery9Hook()
 	{
+		UnregisterLiveObject(LOT_Query, this, parentDevice);
+
 #ifdef WIPE_ON_DESTRUCT_D3DHOOKOBJECT
 		memset(this, 0x00000000, sizeof(*this) );
 #endif

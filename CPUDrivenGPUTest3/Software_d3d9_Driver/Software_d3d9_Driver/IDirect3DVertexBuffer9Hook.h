@@ -1,6 +1,7 @@
 #pragma once
 
 #include "IDirect3DDevice9Hook.h"
+#include "LiveObjectCounter.h"
 
 class IDirect3DVertexBuffer9Hook : public IDirect3DVertexBuffer9
 {
@@ -15,6 +16,7 @@ public:
 		else
 			memset(&Name, 0x00000000, (char*)&realObject - (char*)&Name);
 #endif
+		RegisterNewLiveObject(LOT_VertexBuffer, this, _parentDevice);
 	}
 
 	inline LPDIRECT3DVERTEXBUFFER9 GetUnderlyingVertexBuffer(void) const
@@ -51,6 +53,8 @@ public:
 			free(GPUBytesDirtyBits);
 			GPUBytesDirtyBits = NULL;
 		}
+
+		UnregisterLiveObject(LOT_VertexBuffer, this, parentDevice);
 
 #ifdef WIPE_ON_DESTRUCT_D3DHOOKOBJECT
 		memset(this, 0x00000000, sizeof(*this) );

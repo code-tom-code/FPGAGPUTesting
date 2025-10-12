@@ -15,6 +15,7 @@
 #include "IDirect3DStateBlock9Hook.h"
 #include "FixedFunctionToShader.h"
 #include "SemanticMappings.h"
+#include "LiveObjectCounter.h"
 #include "resource.h"
 #include "DitherTables.h"
 #include "Overlay/DebugOverlay.h"
@@ -90,111 +91,12 @@ static_assert(sizeof(oneMaskVecBytes) == sizeof(oneMaskVec), "Error! Unexpected 
 static const __m128 oneVec = { 1.0f, 1.0f, 1.0f, 1.0f };
 static const __m128 maxDepth24Bit = { 16777216.0f, 16777216.0f, 16777216.0f, 16777216.0f };
 
-#ifdef PROFILE_AVERAGE_VERTEX_SHADE_TIMES
-	static __int64 totalVertexShadeTicks = 0;
-	static __int64 numVertexShadeTasks = 0;
-#endif // #ifdef PROFILE_AVERAGE_VERTEX_SHADE_TIMES
-
-#ifdef PROFILE_AVERAGE_PIXEL_SHADE_TIMES
-	static __int64 totalPixelShadeTicks = 0;
-	static __int64 numPixelShadeTasks = 0;
-#endif // #ifdef PROFILE_AVERAGE_PIXEL_SHADE_TIMES
-
 extern HINSTANCE hLThisDLL;
 
 /*static*/ LightInfo LightInfo::defaultLight;
 
-#ifdef MULTITHREAD_SHADING
-#define NUM_THREADS 16
-
-#define NUM_JOBS_PER_PIXEL 4
-static unsigned MAX_NUM_JOBS = 0;
-
 // Converted value from QueryPerformanceFrequency():
 static long double ldFreq = 0.0;
-
-static volatile struct _workStatus
-{
-	volatile long numJobs; // Read by worker threads, written by driver thread
-	char cacheLinePadding[64];
-	volatile long numFinishedJobs; // Read + written by worker threads, read by driver thread
-	char cacheLinePadding2[64];
-	volatile long currentJobID; // Read + written by worker threads
-	char cacheLinePadding3[64];
-	unsigned currentWorkID; // Read + written by driver thread only
-} workStatus = {0};
-
-struct _threadItem
-{
-	IDirect3DDevice9Hook* devHook;
-	HANDLE hThread;
-	VShaderEngine threadVS_2_0;
-	PShaderEngine threadPS_2_0;
-} threadItem [NUM_THREADS * 4 + 1] = {0};
-
-// This is volatile and aligned because it will be used with Interlocked operations
-static volatile long __declspec(align(16) ) tlsThreadNumber = 0;
-
-// Threadpool implementation was slower than single-threaded implementation in some cases
-//static TP_CALLBACK_ENVIRON mainThreadpoolCallbackEnv = {0};
-//static PTP_POOL mainThreadpool = NULL;
-//static PTP_CLEANUP_GROUP mainThreadpoolCleanupGroup = NULL;
-
-static_assert(sizeof(_threadItem) > 64, "Error: False sharing may occur if thread struct is smaller than a cache line!");
-
-struct barycentricInt2
-{
-	// Note that we only need the B and C barycentric coordinates here because at any time we could
-	// recompute the A coordinate as A = (1.0f - B - C)
-	int b, c;
-};
-
-__declspec(align(16) ) struct slist_item
-{
-	workerJobType jobType;
-	union _jobData
-	{
-		struct _vertexJobData
-		{
-			VS_2_0_OutputRegisters* outputRegs[4];
-			UINT vertexIndex[4]; // This is the SV_VertexID semantic in vs_4_0
-		} vertexJobData;
-#if TRIANGLEJOBS_OR_PIXELJOBS == PIXELJOBS
-		struct _pixelJobData
-		{
-			const primitivePixelJobData* primitiveData;
-			barycentricInt2 barycentricCoords[4];
-			unsigned x[4];
-			unsigned y[4];
-		} pixelJobData;
-#endif // #if TRIANGLEJOBS_OR_PIXELJOBS == PIXELJOBS
-
-#if TRIANGLEJOBS_OR_PIXELJOBS == TRIANGLEJOBS
-		struct _triangleRasterizeJobData
-		{
-			UINT primitiveID;
-			UINT vertIndex0, vertIndex1, vertIndex2;
-			union _triangleRasterizeVerticesUnion
-			{
-				struct _triangleRasterizeFromStream
-				{
-					const D3DXVECTOR4* v0;
-					const D3DXVECTOR4* v1;
-					const D3DXVECTOR4* v2;
-				} triangleRasterizeFromStream;
-
-				struct _triangleRasterizeFromShader
-				{
-					const VS_2_0_OutputRegisters* v0;
-					const VS_2_0_OutputRegisters* v1;
-					const VS_2_0_OutputRegisters* v2;
-				} triangleRasterizeFromShader;
-			} rasterVertices;
-		} triangleRasterizeJobData;
-#endif // #if TRIANGLEJOBS_OR_PIXELJOBS == TRIANGLEJOBS
-	} jobData;
-};
-static_assert(sizeof(slist_item) % 16 == 0, "Error, bad struct alignment!");
 
 // D3D spec-compliant float to UNORM conversion function for a 0.0f to 1.0f float value into a UNORM integer:
 template <unsigned char numBits>
@@ -213,8 +115,12 @@ const unsigned FloatToUNORM(float fVal)
 	return (const unsigned)fVal;
 }
 
-static slist_item* allWorkItems = NULL;
-static DWORD tlsIndex = TLS_OUT_OF_INDEXES;
+#ifdef MULTITHREAD_SHADING
+
+// Threadpool implementation was slower than single-threaded implementation in some cases
+//static TP_CALLBACK_ENVIRON mainThreadpoolCallbackEnv = {0};
+//static PTP_POOL mainThreadpool = NULL;
+//static PTP_CLEANUP_GROUP mainThreadpoolCleanupGroup = NULL;
 
 static inline void VertexShadeJob1(slist_item& job, _threadItem* const myPtr)
 {
@@ -321,7 +227,7 @@ static inline void PixelShadeJob4(const slist_item& job, _threadItem* const myPt
 #if TRIANGLEJOBS_OR_PIXELJOBS == TRIANGLEJOBS
 static inline void TriangleRasterJob1(slist_item& job, _threadItem* const myPtr)
 {
-	const IDirect3DDevice9Hook* const devHook = myPtr->devHook;
+	IDirect3DDevice9Hook* const devHook = myPtr->devHook;
 	const drawCallTriangleRasterizeJobsData& drawCallData = devHook->currentDrawCallData.triangleRasterizeData;
 	const slist_item::_jobData::_triangleRasterizeJobData& triangleRasterizeJobData = job.jobData.triangleRasterizeJobData;
 
@@ -388,7 +294,7 @@ static inline void TriangleRasterJob1(slist_item& job, _threadItem* const myPtr)
 	}
 }*/
 
-static inline void WorkUntilNoMoreWork(void* const jobData)
+void IDirect3DDevice9Hook::WorkUntilNoMoreWork(void* const jobData)
 {
 	//while (true)
 	{
@@ -539,7 +445,7 @@ static void SpinLoopForMicros(const unsigned numMicros)
 }
 
 template <const unsigned numJobsToRunSinglethreaded>
-static inline void SynchronizeThreads()
+void IDirect3DDevice9Hook::SynchronizeThreads()
 {
 	// WorkUntilNoMoreWork(&threadItem[NUM_THREADS]);
 	//workStatus.numJobs = workStatus.currentWorkID;
@@ -560,12 +466,12 @@ static inline void SynchronizeThreads()
 	else
 	{
 #if PARALLEL_LIBRARY == PARALLELLIB_CONCRT
-		concurrency::parallel_for( (const long)0, cacheNumJobs, [](const int jobID)
+		concurrency::parallel_for( (const long)0, cacheNumJobs, [this](const int jobID)
 		{
 			WorkUntilNoMoreWork(allWorkItems + jobID);
 		});
 #elif PARALLEL_LIBRARY == PARALLELLIB_TBB
-		tbb::parallel_for( (const long)0, cacheNumJobs, [](const int jobID)
+		tbb::parallel_for( (const long)0, cacheNumJobs, [this](const int jobID)
 		{
 			WorkUntilNoMoreWork(allWorkItems + jobID);
 		});
@@ -1209,34 +1115,6 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::Reset(THIS_
 
 	return ret;
 }
-
-#ifdef ENABLE_END_TO_SKIP_DRAWS
-static DWORD lastCheckedTicks = 0x00000000;
-static bool lastCheckedIsHoldingDownEnd = false;
-
-static inline void ResetHoldingDownEndToSkip()
-{
-	--lastCheckedTicks;
-}
-
-// Skip this draw call if END is held down
-static inline const bool IsHoldingEndToSkipDrawCalls(void)
-{
-	// Since GetTickCount() has a 1ms resolution (at best), this limits us to only calling this function at most once per millisecond
-	const DWORD currentTime = GetTickCount();
-	if (currentTime != lastCheckedTicks)
-	{
-		if ( (GetKeyState(VK_END) & 0x8000) )
-			lastCheckedIsHoldingDownEnd = true;
-		else
-			lastCheckedIsHoldingDownEnd = false;
-
-		lastCheckedTicks = currentTime;
-	}
-
-	return lastCheckedIsHoldingDownEnd;
-}
-#endif // #ifdef ENABLE_END_TO_SKIP_DRAWS
 
 #pragma pack(push)
 #pragma pack(1)
@@ -3596,7 +3474,7 @@ void IDirect3DDevice9Hook::ProcessVertexToBuffer4(const DeclarationSemanticMappi
 
 #ifdef MULTITHREAD_SHADING
 template <const bool canImmediateFlushJobs>
-static inline slist_item* const GetNewWorkerJob(void)
+slist_item* const IDirect3DDevice9Hook::GetNewWorkerJob(void)
 {
 	slist_item* const ret = &(allWorkItems[workStatus.currentWorkID++]);
 
@@ -3616,7 +3494,7 @@ static inline slist_item* const GetNewWorkerJob(void)
 	return ret;
 }
 
-void IDirect3DDevice9Hook::CreateNewVertexShadeJob(VS_2_0_OutputRegisters* const * const outputRegs, const unsigned* const vertexIndices, const workerJobType jobWidth) const
+void IDirect3DDevice9Hook::CreateNewVertexShadeJob(VS_2_0_OutputRegisters* const * const outputRegs, const unsigned* const vertexIndices, const workerJobType jobWidth)
 {
 #ifdef _DEBUG
 	if (jobWidth >= VERTEX_SHADE_JOB_MAX)
@@ -3647,7 +3525,7 @@ void IDirect3DDevice9Hook::CreateNewVertexShadeJob(VS_2_0_OutputRegisters* const
 }
 
 #if TRIANGLEJOBS_OR_PIXELJOBS == TRIANGLEJOBS
-void IDirect3DDevice9Hook::CreateNewTriangleRasterJob(const UINT primitiveID, const UINT vertID0, const UINT vertID1, const UINT vertID2, const bool rasterizeFromShader, const void* const vert0, const void* const vert1, const void* const vert2) const
+void IDirect3DDevice9Hook::CreateNewTriangleRasterJob(const UINT primitiveID, const UINT vertID0, const UINT vertID1, const UINT vertID2, const bool rasterizeFromShader, const void* const vert0, const void* const vert1, const void* const vert2)
 {
 	slist_item* const newItem = GetNewWorkerJob<false>();
 	newItem->jobType = triangleRasterizeJob;
@@ -3679,7 +3557,7 @@ void IDirect3DDevice9Hook::CreateNewTriangleRasterJob(const UINT primitiveID, co
 
 #endif // #ifdef MULTITHREAD_SHADING
 
-void IDirect3DDevice9Hook::CreateNewPixelShadeJob(const unsigned x, const unsigned y, const __m128i barycentricAdjusted, const primitivePixelJobData* const primitiveData) const
+void IDirect3DDevice9Hook::CreateNewPixelShadeJob(const unsigned x, const unsigned y, const __m128i barycentricAdjusted, const primitivePixelJobData* const primitiveData)
 {
 #if defined(MULTITHREAD_SHADING) && TRIANGLEJOBS_OR_PIXELJOBS == PIXELJOBS
 	slist_item* const newItem = GetNewWorkerJob<true>();
@@ -3726,7 +3604,7 @@ void IDirect3DDevice9Hook::CreateNewPixelShadeJob(const unsigned x, const unsign
 }
 
 #ifdef RUN_SHADERS_IN_WARPS
-void IDirect3DDevice9Hook::CreateNewPixelShadeJob4(const __m128i x4, const __m128i y4, const __m128i (&barycentricsAdjusted4)[4], const primitivePixelJobData* const primitiveData) const
+void IDirect3DDevice9Hook::CreateNewPixelShadeJob4(const __m128i x4, const __m128i y4, const __m128i (&barycentricsAdjusted4)[4], const primitivePixelJobData* const primitiveData)
 {
 #if defined(MULTITHREAD_SHADING) && TRIANGLEJOBS_OR_PIXELJOBS == PIXELJOBS
 	slist_item* const newItem = GetNewWorkerJob<true>();
@@ -3833,14 +3711,6 @@ const primitivePixelJobData* const IDirect3DDevice9Hook::GetNewPrimitiveJobData(
 	return &newPrimitiveData;
 }
 
-struct vertJobCollector
-{
-	VS_2_0_OutputRegisters* outputRegs;
-	UINT vertexIndex;
-};
-
-static std::vector<vertJobCollector> vertJobsToShade;
-
 static inline const UINT GetNumVertsUsed(const D3DPRIMITIVETYPE PrimitiveType, const UINT PrimitiveCount)
 {
 	switch (PrimitiveType)
@@ -3869,7 +3739,7 @@ static inline const UINT GetNumVertsUsed(const D3DPRIMITIVETYPE PrimitiveType, c
 
 template <const bool useVertexBuffer, const D3DFORMAT indexFormat>
 void IDirect3DDevice9Hook::ProcessVerticesToBufferInner(const IDirect3DVertexDeclaration9Hook* const decl, const DeclarationSemanticMapping& mapping, const BYTE* const indexBuffer,
-	const D3DPRIMITIVETYPE PrimitiveType, const INT BaseVertexIndex, const UINT MinVertexIndex, const UINT startIndex, const UINT primCount, const void* const vertStreamBytes, const unsigned short vertStreamStride) const
+	const D3DPRIMITIVETYPE PrimitiveType, const INT BaseVertexIndex, const UINT MinVertexIndex, const UINT startIndex, const UINT primCount, const void* const vertStreamBytes, const unsigned short vertStreamStride)
 {
 	// How many processed verts does this draw call output?
 	const unsigned numOutputVerts = GetNumVertsUsed(PrimitiveType, primCount);
@@ -4231,7 +4101,7 @@ void IDirect3DDevice9Hook::ProcessVerticesToBufferInner(const IDirect3DVertexDec
 
 template <const bool useVertexBuffer, const bool useIndexBuffer>
 void IDirect3DDevice9Hook::ProcessVerticesToBuffer(const IDirect3DVertexDeclaration9Hook* const decl, const DeclarationSemanticMapping& mapping, const IDirect3DIndexBuffer9Hook* const indexBuffer, 
-	const D3DPRIMITIVETYPE PrimitiveType, const INT BaseVertexIndex, const UINT MinVertexIndex, const UINT startIndex, const UINT primCount, const void* const vertStreamBytes, const unsigned short vertStreamStride) const
+	const D3DPRIMITIVETYPE PrimitiveType, const INT BaseVertexIndex, const UINT MinVertexIndex, const UINT startIndex, const UINT primCount, const void* const vertStreamBytes, const unsigned short vertStreamStride)
 {
 	SIMPLE_FUNC_SCOPE();
 
@@ -4259,7 +4129,7 @@ void IDirect3DDevice9Hook::ProcessVerticesToBuffer(const IDirect3DVertexDeclarat
 	}
 }
 
-void IDirect3DDevice9Hook::InitVertexShader(const DeviceState& deviceState, const ShaderInfo& vertexShaderInfo) const
+void IDirect3DDevice9Hook::InitVertexShader(const DeviceState& deviceState, const ShaderInfo& vertexShaderInfo)
 {
 	deviceMainVShaderEngine.Init(deviceState, vertexShaderInfo, &vsDrawCallCB);
 
@@ -4271,7 +4141,7 @@ void IDirect3DDevice9Hook::InitVertexShader(const DeviceState& deviceState, cons
 #endif
 }
 
-void IDirect3DDevice9Hook::InitPixelShader(const DeviceState& deviceState, const ShaderInfo& pixelShaderInfo) const
+void IDirect3DDevice9Hook::InitPixelShader(const DeviceState& deviceState, const ShaderInfo& pixelShaderInfo)
 {
 	deviceMainPShaderEngine.Init(deviceState, pixelShaderInfo, &psDrawCallCB);
 
@@ -4317,7 +4187,7 @@ COM_DECLSPEC_NOTHROW void IDirect3DDevice9Hook::SetupCurrentDrawCallTriangleRast
 }
 
 // Counts the number of 32-bit DWORD's for each of the D3DDECLTYPE's
-static unsigned char typeSize_DWORDs[MAXD3DDECLTYPE] =
+static const unsigned char typeSize_DWORDs[MAXD3DDECLTYPE] =
 {
 	1 * sizeof(DWORD),// D3DDECLTYPE_FLOAT1    =  0,  // 1D float expanded to (value, 0., 0., 1.)
     2 * sizeof(DWORD),// D3DDECLTYPE_FLOAT2    =  1,  // 2D float expanded to (value, value, 0., 1.)
@@ -11054,7 +10924,7 @@ static inline const float BarycentricInverse(const int twiceTriangleArea)
 
 template <const bool rasterizerUsesEarlyZTest, const bool shadeFromShader>
 void IDirect3DDevice9Hook::RasterizeTriangle(PShaderEngine* const pShaderEngine, const void* const mappingData, const void* const v0, const void* const v1, const void* const v2,
-	const float fWidth, const float fHeight, const UINT primitiveID, const UINT vertex0index, const UINT vertex1index, const UINT vertex2index) const
+	const float fWidth, const float fHeight, const UINT primitiveID, const UINT vertex0index, const UINT vertex1index, const UINT vertex2index)
 {
 	SIMPLE_FUNC_SCOPE();
 	const D3DXVECTOR4& pos0 = shadeFromShader ? currentState.currentVertexShader->GetPosition(*(const VS_2_0_OutputRegisters* const)v0) : *(const D3DXVECTOR4* const)v0;
@@ -11517,7 +11387,7 @@ const bool IDirect3DDevice9Hook::ShouldCullEntirePoint(const VS_2_0_OutputRegist
 }
 
 template <const bool useIndexBuffer, typename indexFormat, const bool rasterizerUsesEarlyZTest>
-void IDirect3DDevice9Hook::DrawPrimitiveUBPretransformedSkipVS(const D3DPRIMITIVETYPE PrimitiveType, INT BaseVertexIndex, UINT startIndex, UINT primCount) const
+void IDirect3DDevice9Hook::DrawPrimitiveUBPretransformedSkipVS(const D3DPRIMITIVETYPE PrimitiveType, INT BaseVertexIndex, UINT startIndex, UINT primCount)
 {
 	SIMPLE_FUNC_SCOPE();
 #ifdef _DEBUG
@@ -11749,7 +11619,7 @@ void IDirect3DDevice9Hook::DrawPrimitiveUBPretransformedSkipVS(const D3DPRIMITIV
 }
 
 template <const bool rasterizerUsesEarlyZTest>
-void IDirect3DDevice9Hook::DrawPrimitiveUB(const D3DPRIMITIVETYPE PrimitiveType, const UINT PrimitiveCount) const
+void IDirect3DDevice9Hook::DrawPrimitiveUB(const D3DPRIMITIVETYPE PrimitiveType, const UINT PrimitiveCount)
 {
 	SIMPLE_FUNC_SCOPE();
 #ifdef _DEBUG
@@ -12400,6 +12270,8 @@ IDirect3DDevice9Hook::IDirect3DDevice9Hook(LPDIRECT3DDEVICE9 _d3d9dev, IDirect3D
 	frameBeginCPUTimestamp = {0};
 	frameEndCPUTimestamp = {0};
 
+	RegisterNewLiveObject(LOT_Device, this, _parentHook);
+
 #ifdef _DEBUG
 	m_FirstMember = false;
 #endif
@@ -12682,9 +12554,13 @@ void IDirect3DDevice9Hook::InitEndpointsGraph()
 	DeleteCriticalSection(&deviceCS);
 	memset(&deviceCS, 0, sizeof(deviceCS) );
 
+	UnregisterLiveObject(LOT_Device, this, parentHook);
+
 #ifdef WIPE_ON_DESTRUCT_D3DHOOKOBJECT
-	memset(this, 0x00000000, sizeof(*this) );
-#endif
+#ifdef _DEBUG
+	memset(&CreationParameters, 0x00000000, (char*)&m_FirstMember - (char*)&CreationParameters);
+#endif // _DEBUG
+#endif // WIPE_ON_DESTRUCT_D3DHOOKOBJECT
 }
 
 // Returns true if the current vertex FVF or decl has a COLOR0 component, or false otherwise

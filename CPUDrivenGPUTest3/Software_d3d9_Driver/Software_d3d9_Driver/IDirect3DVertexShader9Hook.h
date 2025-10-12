@@ -2,6 +2,7 @@
 
 #include "IDirect3DDevice9Hook.h"
 #include "ShaderAnalysis.h"
+#include "LiveObjectCounter.h"
 
 class VShaderEngine;
 
@@ -22,6 +23,7 @@ public:
 			memset(&Version, 0, (char*)&realObject - (char*)&Version);
 		}
 #endif
+		RegisterNewLiveObject(LOT_VertexShader, this, _parentDevice);
 	}
 
 	inline LPDIRECT3DVERTEXSHADER9 GetUnderlyingVertexShader(void) const

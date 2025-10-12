@@ -2,6 +2,7 @@
 
 #include "IDirect3DDevice9Hook.h"
 #include "GlobalToggles.h"
+#include "LiveObjectCounter.h"
 struct SamplerState;
 
 class IDirect3DTexture9Hook : public IDirect3DTexture9
@@ -16,10 +17,13 @@ public:
 #ifdef _DEBUG
 		memcpy(&Name, &realObject->Name, (char*)&realObject - (char*)&Name);
 #endif
+		RegisterNewLiveObject(LOT_Texture, this, _parentDevice);
 	}
 
 	virtual ~IDirect3DTexture9Hook()
 	{
+		UnregisterLiveObject(LOT_Texture, this, parentDevice);
+
 #ifdef WIPE_ON_DESTRUCT_D3DHOOKOBJECT
 		memset(this, 0x00000000, sizeof(*this) - sizeof(surfaces) );
 #endif

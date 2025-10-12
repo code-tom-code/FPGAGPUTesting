@@ -1,6 +1,7 @@
 #pragma once
 
 #include "IDirect3DDevice9Hook.h"
+#include "LiveObjectCounter.h"
 
 class IDirect3DVertexDeclaration9Hook : public IDirect3DVertexDeclaration9
 {
@@ -13,6 +14,7 @@ public:
 #ifdef _DEBUG
 		memcpy(&CreationCallStack, &realObject->CreationCallStack, (char*)&realObject - (char*)&CreationCallStack);
 #endif
+		RegisterNewLiveObject(LOT_VertexDeclaration, this, _parentDevice);
 	}
 
 	inline LPDIRECT3DVERTEXDECLARATION9 GetUnderlyingVertexDeclaration(void) const

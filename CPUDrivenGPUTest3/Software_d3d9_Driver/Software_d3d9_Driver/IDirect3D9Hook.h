@@ -6,6 +6,8 @@
 
 #include "IDirect3DDevice9Hook.h"
 
+#include "LiveObjectCounter.h"
+
 class IDirect3D9Hook : public IDirect3D9
 {
 public:
@@ -14,6 +16,7 @@ public:
 #ifdef _DEBUG
 		memcpy(&Version, &d3d9->Version, (char*)&d3d9 - (char*)&Version);
 #endif
+		RegisterNewLiveObject(LOT_D3D9, this, NULL);
 	}
 
 	inline LPDIRECT3D9 GetUnderlyingD3D9(void) const
@@ -25,6 +28,9 @@ public:
 	{
 		d3d9 = NULL;
 		refCount = 0;
+
+		UnregisterLiveObject(LOT_D3D9, this, NULL);
+
 #ifdef WIPE_ON_DESTRUCT_D3DHOOKOBJECT
 		memset(this, 0x00000000, sizeof(*this) );
 #endif

@@ -47,6 +47,29 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::GetDirect3D
 
 COM_DECLSPEC_NOTHROW /*static*/ void IDirect3DDevice9Hook::ModifyDeviceCaps(D3DCAPS9& caps)
 {
+	caps.DeviceType = D3DDEVTYPE_HAL; // We only support HAL devices
+
+	caps.Caps &= (~D3DCAPS_READ_SCANLINE); // We don't support reading scanline data back
+	caps.Caps &= (~D3DCAPS_OVERLAY); // We don't support overlays
+
+	caps.Caps2 &= (~D3DCAPS2_CANAUTOGENMIPMAP); // We can't auto-gen mips
+	caps.Caps2 &= (~D3DCAPS2_CANSHARERESOURCE); // We can't share resources
+	caps.Caps2 &= (~D3DCAPS2_CANMANAGERESOURCE); // We do support Managed-pool resources but for whatever reason the AMD and NVidia drivers report this as false, so we should as well
+	caps.Caps2 |= D3DCAPS2_DYNAMICTEXTURES; // We do support Dynamic textures
+
+	caps.Caps3 |= D3DCAPS3_ALPHA_FULLSCREEN_FLIP_OR_DISCARD; // We support alpha-blending in fullscreen mode when using the FLIP or DISCARD swap-effects
+	caps.Caps3 &= (~D3DCAPS3_DXVAHD); // We don't support DXVA nor this DXVA-HD cap
+
+	caps.PresentationIntervals = D3DPRESENT_INTERVAL_IMMEDIATE | D3DPRESENT_INTERVAL_ONE; // We only support IMMEDIATE (no V-Sync) or ONE (V-Sync on) presentation intervals
+
+	// This may end up being too restrictive, we may need to fake-enable more of these options later.
+	// D3DPRASTERCAPS_MULTISAMPLE_TOGGLE is fine to not support. The official AMD driver doesn't seem to support it on Windows 11.
+	caps.RasterCaps = (D3DPRASTERCAPS_COLORPERSPECTIVE | D3DPRASTERCAPS_DEPTHBIAS | D3DPRASTERCAPS_ZTEST);
+
+	// We don't support color palettes or cubemaps (yet) or projected textures or volume textures
+	caps.TextureCaps &= ~(D3DPTEXTURECAPS_ALPHAPALETTE | D3DPTEXTURECAPS_CUBEMAP | D3DPTEXTURECAPS_MIPCUBEMAP | D3DPTEXTURECAPS_PROJECTED | D3DPTEXTURECAPS_VOLUMEMAP);
+	caps.TextureCaps |= D3DPTEXTURECAPS_NOPROJECTEDBUMPENV; // We do not support projected bump/env maps
+
 	caps.VertexShaderVersion = D3DVS_VERSION(3, 0); // VS_3_0
 	caps.PixelShaderVersion = D3DPS_VERSION(3, 0); // PS_3_0
 
@@ -59,29 +82,70 @@ COM_DECLSPEC_NOTHROW /*static*/ void IDirect3DDevice9Hook::ModifyDeviceCaps(D3DC
 	// We do not support tessellation
 	caps.DevCaps &= (~(D3DDEVCAPS_NPATCHES | D3DDEVCAPS_QUINTICRTPATCHES | D3DDEVCAPS_RTPATCHES | D3DDEVCAPS_RTPATCHHANDLEZERO) );
 	caps.DevCaps2 &= (~(D3DDEVCAPS2_ADAPTIVETESSRTPATCH | D3DDEVCAPS2_ADAPTIVETESSNPATCH | D3DDEVCAPS2_DMAPNPATCH | D3DDEVCAPS2_PRESAMPLEDDMAPNPATCH) );
+	caps.DevCaps2 |= D3DDEVCAPS2_STREAMOFFSET | // We do support stream-offsetting
+		D3DDEVCAPS2_VERTEXELEMENTSCANSHARESTREAMOFFSET; // We do allow multiple vertex elements to share the same byte-offset
 
 	// So this wouldn't be very hard to implement support for, but currently we only support one output channel write mask for all render targets
 	caps.PrimitiveMiscCaps &= (~D3DPMISCCAPS_INDEPENDENTWRITEMASKS);
+	caps.PrimitiveMiscCaps |= D3DPMISCCAPS_CLIPTLVERTS; // We do support clipping post-transformed vertices (in fact, we always clip all vertices)
 
 	// We don't support convolution mono texture filtering
-	caps.TextureFilterCaps &= (~D3DPTFILTERCAPS_CONVOLUTIONMONO);
-
 	// We don't support D3DTEXF_GAUSSIANQUAD or D3DTEXF_PYRAMIDALQUAD texture filtering
-	caps.TextureFilterCaps &= (~(D3DPTFILTERCAPS_MAGFPYRAMIDALQUAD | D3DPTFILTERCAPS_MAGFGAUSSIANQUAD | D3DPTFILTERCAPS_MINFPYRAMIDALQUAD | D3DPTFILTERCAPS_MINFGAUSSIANQUAD) );
-	caps.CubeTextureFilterCaps &= (~(D3DPTFILTERCAPS_MAGFPYRAMIDALQUAD | D3DPTFILTERCAPS_MAGFGAUSSIANQUAD | D3DPTFILTERCAPS_MINFPYRAMIDALQUAD | D3DPTFILTERCAPS_MINFGAUSSIANQUAD) );
-	caps.VolumeTextureFilterCaps &= (~(D3DPTFILTERCAPS_MAGFPYRAMIDALQUAD | D3DPTFILTERCAPS_MAGFGAUSSIANQUAD | D3DPTFILTERCAPS_MINFPYRAMIDALQUAD | D3DPTFILTERCAPS_MINFGAUSSIANQUAD) );
+	caps.TextureFilterCaps &= (~(D3DPTFILTERCAPS_CONVOLUTIONMONO | D3DPTFILTERCAPS_MAGFPYRAMIDALQUAD | D3DPTFILTERCAPS_MAGFGAUSSIANQUAD | D3DPTFILTERCAPS_MINFPYRAMIDALQUAD | D3DPTFILTERCAPS_MINFGAUSSIANQUAD) );
+	caps.CubeTextureFilterCaps &= (~(D3DPTFILTERCAPS_CONVOLUTIONMONO | D3DPTFILTERCAPS_MAGFPYRAMIDALQUAD | D3DPTFILTERCAPS_MAGFGAUSSIANQUAD | D3DPTFILTERCAPS_MINFPYRAMIDALQUAD | D3DPTFILTERCAPS_MINFGAUSSIANQUAD) );
+	caps.VolumeTextureFilterCaps &= (~(D3DPTFILTERCAPS_CONVOLUTIONMONO | D3DPTFILTERCAPS_MAGFPYRAMIDALQUAD | D3DPTFILTERCAPS_MAGFGAUSSIANQUAD | D3DPTFILTERCAPS_MINFPYRAMIDALQUAD | D3DPTFILTERCAPS_MINFGAUSSIANQUAD) );
+
+	caps.LineCaps &= ~(D3DLINECAPS_ANTIALIAS); // We can't do antialiased lines (in fact, we can't do antialiased anything right now)
+
+	// We don't support the Border, Mirror, or MirrorOnce texture addressing modes yet (but we will soon)
+	caps.TextureAddressCaps &= ~(D3DPTADDRESSCAPS_BORDER | D3DPTADDRESSCAPS_MIRROR | D3DPTADDRESSCAPS_MIRRORONCE);
+	caps.VolumeTextureAddressCaps &= ~(D3DPTADDRESSCAPS_BORDER | D3DPTADDRESSCAPS_MIRROR | D3DPTADDRESSCAPS_MIRRORONCE);
+
+	// We can't actually render using textures this large yet, but the driver theoretically supports them:
+	caps.MaxTextureWidth = 2048u;
+	caps.MaxTextureHeight = 2048u;
+
+	// We don't support anisotropic filtering yet
+	caps.MaxAnisotropy = 1u;
+
+	// We don't support two-sided stencil!
+	caps.StencilCaps &= ~(D3DSTENCILCAPS_TWOSIDED);
+
+	caps.MaxActiveLights = 3u; // We are currently limited to this many lights when skinning is enabled because otherwise we overflow the vertex shader instruction cache and fail to render
+	caps.MaxVertexBlendMatrixIndex  = 0; // We don't currently support indexed vertex blending (because the vertex shader core doesn't yet support varying/divergent constant buffer reads)
+
+	// We only support a single adapter:
+	caps.AdapterOrdinal = 0;
+	caps.MasterAdapterOrdinal = 0;
+	caps.AdapterOrdinalInGroup = 0;
+	caps.NumberOfAdaptersInGroup = 1;
+
+	// We don't support these types being used inside vertex declarations:
+	caps.DeclTypes &= ~(D3DDTCAPS_FLOAT16_2 | D3DDTCAPS_FLOAT16_4 | D3DDTCAPS_SHORT2N | D3DDTCAPS_SHORT4N | D3DDTCAPS_USHORT2N | D3DDTCAPS_USHORT4N | D3DDTCAPS_UDEC3 | D3DDTCAPS_DEC3N);
+
+	caps.TextureOpCaps &= ~(D3DTEXOPCAPS_PREMODULATE); // We don't support the "premodulate" texture op
+
+	caps.VertexProcessingCaps &= ~(D3DVTXPCAPS_TWEENING); // We don't support vertex tweening
+
+	// We don't support MRT's (yet):
+	caps.NumSimultaneousRTs = 1;
 
 	// We don't support point sprites (yet)
 	caps.MaxPointSize = 1.0f; // If set to 1.0f then device does not support point size control.
 	caps.PrimitiveMiscCaps &= (~D3DPMISCCAPS_CLIPPLANESCALEDPOINTS); // Don't support clipping scaled point sprites (yet)
-	caps.FVFCaps &= (~D3DFVFCAPS_PSIZE); // Don't support PSIZE in FVF's (yet)
+	caps.FVFCaps &= (~D3DFVFCAPS_PSIZE | // Don't support PSIZE in FVF's (yet)
+		D3DFVFCAPS_DONOTSTRIPELEMENTS); // For performance, we should strip out unused FVF elements
+
+	caps.VertexTextureFilterCaps = 0x00000000; // We don't currently support vertex texturing
 
 	// Limit to 6 user clip-planes (see vertexClipStruct for why we can only support 6)
 	caps.MaxUserClipPlanes = 6;
 
-	// Cap the max stream stride such that it'll fit in a uint16
-	if (caps.MaxStreamStride > 0xFFFF)
-		caps.MaxStreamStride = 0xFFFF;
+	// Our input assembler currently uses 6 bits to store the number of DWORD's for the stride (which may be 0), this comes out to a maximum stride of sizeof(DWORD)*(2^6-1) = 252 bytes
+	caps.MaxStreamStride = 252u;
+
+	// The input assembler currently allows up to 8 streams
+	caps.MaxStreams = 8u;
 }
 
 COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::GetDeviceCaps(THIS_ D3DCAPS9* pCaps)
@@ -201,7 +265,8 @@ COM_DECLSPEC_NOTHROW HRESULT STDMETHODCALLTYPE IDirect3DDevice9Hook::GetRasterSt
 	if (iSwapChain == 0)
 	{
 		const HRESULT ret = implicitSwapChain->GetRasterStatus(pRasterStatus);
-		return ret;
+
+		return D3DERR_INVALIDCALL; // This driver doesn't support returning raster status from the device due to the long latency between the host and device
 	}
 	else
 	{

@@ -4,6 +4,7 @@
 
 #include "IDirect3DResource9Hook.h"
 #include "Driver/GPUAllocator.h"
+#include "LiveObjectCounter.h"
 
 #if defined(DUMP_TEXTURES_ON_FIRST_SET) || defined(COMPUTE_SURFACE_HASHES_FOR_DEBUGGING) // No need to compute surface hashes if we're never going to need them
 	#define WITH_SURFACE_HASHING 1
@@ -85,6 +86,7 @@ public:
 		else
 			memset(&Name, 0, (char*)&realObject - (char*)&Name);
 #endif
+		RegisterNewLiveObject(LOT_Surface, this, _parentDevice);
 	}
 
 	virtual ~IDirect3DSurface9Hook()
@@ -117,6 +119,8 @@ public:
 			GPUSurfaceBytesRaw = NULL;
 		}
 #endif // #ifdef SURFACE_ALLOC_PAGE_NOACCESS
+
+		UnregisterLiveObject(LOT_Surface, this, parentDevice);
 
 #ifdef WIPE_ON_DESTRUCT_D3DHOOKOBJECT
 		memset(this, 0x00000000, sizeof(*this) );

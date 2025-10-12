@@ -26,6 +26,8 @@ IDirect3DVertexDeclaration9Hook::~IDirect3DVertexDeclaration9Hook()
 		devicePassthroughVS = NULL;
 	}
 
+	UnregisterLiveObject(LOT_VertexDeclaration, this, parentDevice);
+
 	// TODO: Remove this vertex decl from the FVFToVertDeclCache when it gets fully released
 #ifdef WIPE_ON_DESTRUCT_D3DHOOKOBJECT
 	memset(this, 0x00000000, sizeof(*this) - (sizeof(elements) + sizeof(vertShaderOutputElements) ) );

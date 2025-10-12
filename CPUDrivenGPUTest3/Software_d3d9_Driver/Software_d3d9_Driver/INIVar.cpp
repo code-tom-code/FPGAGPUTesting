@@ -131,15 +131,33 @@ namespace INIRegistry
 		}
 	}
 
+	const bool FileExists(const char* const filepath)
+	{
+		const DWORD ret = GetFileAttributesA(filepath);
+		if (ret == INVALID_FILE_ATTRIBUTES)
+			return false; // File doesn't exist!
+		if (ret & FILE_ATTRIBUTE_DIRECTORY)
+			return false; // This is a directory, not a file!
+		return true;
+	}
+
 	void LoadINIStringRaw(char (&outStringBuffer)[MAX_PATH], const char* const sectionName, const char* const varName)
 	{
 		char globalSettingsFilepath[MAX_PATH] = {0};
 		GetGlobalSettingsFilePath(globalSettingsFilepath);
+		const bool globalFileExists = FileExists(globalSettingsFilepath);
 		char localSettingsFilepath[MAX_PATH] = {0};
 		GetLocalSettingsFilePath(localSettingsFilepath);
+		const bool localFileExists = FileExists(localSettingsFilepath);
 		outStringBuffer[0] = '\0';
-		GetPrivateProfileStringA(sectionName, varName, NULL, outStringBuffer, sizeof(outStringBuffer) - 1, globalSettingsFilepath);
-		GetPrivateProfileStringA(sectionName, varName, NULL, outStringBuffer, sizeof(outStringBuffer) - 1, localSettingsFilepath);
+		if (globalFileExists && GetPrivateProfileStringA(sectionName, varName, NULL, globalSettingsFilepath, sizeof(outStringBuffer) - 1, globalSettingsFilepath) > 0 && globalSettingsFilepath[0] != '\0')
+		{
+			strcpy_s(outStringBuffer, globalSettingsFilepath);
+		}
+		if (localFileExists && GetPrivateProfileStringA(sectionName, varName, NULL, localSettingsFilepath, sizeof(outStringBuffer) - 1, localSettingsFilepath) > 0 && localSettingsFilepath[0] != '\0')
+		{
+			strcpy_s(outStringBuffer, localSettingsFilepath);
+		}
 	}
 
 	void InitLoadAllINIData()

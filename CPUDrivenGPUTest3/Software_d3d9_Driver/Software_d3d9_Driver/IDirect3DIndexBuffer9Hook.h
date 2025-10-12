@@ -3,6 +3,7 @@
 #include "IDirect3DDevice9Hook.h"
 #include "IDirect3DResource9Hook.h"
 #include "Driver/GPUAllocator.h"
+#include "LiveObjectCounter.h"
 
 class IDirect3DIndexBuffer9Hook : public IDirect3DIndexBuffer9
 {
@@ -18,6 +19,7 @@ public:
 		else
 			memset(&Name, 0x00000000, (char*)&realObject - (char*)&Name);
 #endif
+		RegisterNewLiveObject(LOT_IndexBuffer, this, _parentDevice);
 	}
 
 	inline LPDIRECT3DINDEXBUFFER9 GetUnderlyingIndexBuffer(void) const
@@ -51,6 +53,8 @@ public:
 			rawBytes.voidBytes = NULL;
 			InternalFormat = D3DFMT_UNKNOWN;
 		}
+
+		UnregisterLiveObject(LOT_IndexBuffer, this, parentDevice);
 
 #ifdef WIPE_ON_DESTRUCT_D3DHOOKOBJECT
 		memset(this, 0x00000000, sizeof(*this) );

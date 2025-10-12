@@ -43,6 +43,10 @@ struct VStoPSMapping;
 typedef DWORD RGBACOLOR;
 
 #ifdef MULTITHREAD_SHADING
+
+#define NUM_THREADS 16
+#define NUM_JOBS_PER_PIXEL 4
+
 enum workerJobType
 {
 	vertexShade1Job = 0,
@@ -66,7 +70,136 @@ enum workerJobType
 
 	triangleRasterizeJob
 };
-#endif
+
+struct _workStatus
+{
+	volatile long numJobs; // Read by worker threads, written by driver thread
+	char cacheLinePadding[64];
+	volatile long numFinishedJobs; // Read + written by worker threads, read by driver thread
+	char cacheLinePadding2[64];
+	volatile long currentJobID; // Read + written by worker threads
+	char cacheLinePadding3[64];
+	unsigned currentWorkID; // Read + written by driver thread only
+};
+
+struct _threadItem
+{
+	IDirect3DDevice9Hook* devHook;
+	HANDLE hThread;
+	VShaderEngine threadVS_2_0;
+	PShaderEngine threadPS_2_0;
+};
+static_assert(sizeof(_threadItem) > 64, "Error: False sharing may occur if thread struct is smaller than a cache line!");
+
+__declspec(align(16) ) struct primitivePixelJobData
+{
+	primitivePixelJobData() : invZ(0.0f, 0.0f, 0.0f), invW(0.0f, 0.0f, 0.0f), barycentricNormalizeFactor(0.0f), primitiveID(0), VFace(true), vertex0index(0), vertex1index(0), vertex2index(0)
+	{
+		pixelShadeVertexData.shadeFromShader.v0 = NULL;
+		pixelShadeVertexData.shadeFromShader.v1 = NULL;
+		pixelShadeVertexData.shadeFromShader.v2 = NULL;
+
+		pixelShadeVertexData.shadeFromStream.v0 = NULL;
+		pixelShadeVertexData.shadeFromStream.v1 = NULL;
+		pixelShadeVertexData.shadeFromStream.v2 = NULL;
+	}
+
+	// This is: float3(1.0f / v0.z, 1.0f / v1.z, 1.0f / v2.z)
+	__declspec(align(16) ) D3DXVECTOR3 invZ;
+
+	// This is: float3(1.0f / v0.w, 1.0f / v1.w, 1.0f / v2.w)
+	__declspec(align(16) ) D3DXVECTOR3 invW;
+
+	union _pixelShadeVertexData
+	{
+		struct _shadeFromShader
+		{
+			const VS_2_0_OutputRegisters* v0;
+			const VS_2_0_OutputRegisters* v1;
+			const VS_2_0_OutputRegisters* v2;
+		} shadeFromShader;
+		struct _shadeFromStream
+		{
+			CONST BYTE* v0;
+			CONST BYTE* v1;
+			CONST BYTE* v2;
+		} shadeFromStream;
+		struct _shadeFromAgnostic
+		{
+			const void* v0;
+			const void* v1;
+			const void* v2;
+		} shadeFromAgnostic;
+	} pixelShadeVertexData;
+	UINT vertex0index;
+	UINT vertex1index;
+	UINT vertex2index;
+	float barycentricNormalizeFactor;
+	UINT primitiveID; // This is the ps_4_0 SV_PrimitiveID semantic for this primitive (not used in D3D9, but included here as being useful for debugging)
+	// UINT instanceID; // This is the ps_4_0 SV_InstanceID semantic for this primitive (not used in D3D9)
+	bool VFace; // This is the ps_3_0 VFACE semantic or the ps_4_0 SV_IsFrontFace semantic for this primitive
+};
+
+struct vertJobCollector
+{
+	VS_2_0_OutputRegisters* outputRegs;
+	UINT vertexIndex;
+};
+
+struct barycentricInt2
+{
+	// Note that we only need the B and C barycentric coordinates here because at any time we could
+	// recompute the A coordinate as A = (1.0f - B - C)
+	int b, c;
+};
+
+__declspec(align(16) ) struct slist_item
+{
+	workerJobType jobType;
+	union _jobData
+	{
+		struct _vertexJobData
+		{
+			VS_2_0_OutputRegisters* outputRegs[4];
+			UINT vertexIndex[4]; // This is the SV_VertexID semantic in vs_4_0
+		} vertexJobData;
+#if TRIANGLEJOBS_OR_PIXELJOBS == PIXELJOBS
+		struct _pixelJobData
+		{
+			const primitivePixelJobData* primitiveData;
+			barycentricInt2 barycentricCoords[4];
+			unsigned x[4];
+			unsigned y[4];
+		} pixelJobData;
+#endif // #if TRIANGLEJOBS_OR_PIXELJOBS == PIXELJOBS
+
+#if TRIANGLEJOBS_OR_PIXELJOBS == TRIANGLEJOBS
+		struct _triangleRasterizeJobData
+		{
+			UINT primitiveID;
+			UINT vertIndex0, vertIndex1, vertIndex2;
+			union _triangleRasterizeVerticesUnion
+			{
+				struct _triangleRasterizeFromStream
+				{
+					const D3DXVECTOR4* v0;
+					const D3DXVECTOR4* v1;
+					const D3DXVECTOR4* v2;
+				} triangleRasterizeFromStream;
+
+				struct _triangleRasterizeFromShader
+				{
+					const VS_2_0_OutputRegisters* v0;
+					const VS_2_0_OutputRegisters* v1;
+					const VS_2_0_OutputRegisters* v2;
+				} triangleRasterizeFromShader;
+			} rasterVertices;
+		} triangleRasterizeJobData;
+#endif // #if TRIANGLEJOBS_OR_PIXELJOBS == TRIANGLEJOBS
+	} jobData;
+};
+static_assert(sizeof(slist_item) % 16 == 0, "Error, bad struct alignment!");
+#endif // #ifdef MULTITHREAD_SHADING
 
 struct DebuggableD3DVERTEXELEMENT9
 {
@@ -653,7 +786,7 @@ struct deviceVertexDecl
 
 struct DeviceState
 {
-	DeviceState() : currentIndexBuffer(NULL), currentVertexShader(NULL), currentPixelShader(NULL), currentVertexDecl(NULL), declTarget(targetFVF), currentDepthStencil(NULL), currentNPatchMode(0.0f)
+	DeviceState() : currentIndexBuffer(NULL), currentVertexShader(NULL), currentPixelShader(NULL), currentVertexDecl(NULL), declTarget(targetFVF), currentDepthStencil(NULL), currentNPatchMode(0.0f), lightInfoMap(NULL)
 	{
 		currentFVF.rawFVF_DWORD = 0x00000000;
 
@@ -704,7 +837,10 @@ struct DeviceState
 		{
 			for (std::map<UINT, LightInfo*>::iterator it = lightInfoMap->begin(); it != lightInfoMap->end(); ++it)
 			{
-				delete it->second;
+				if (it->second != &LightInfo::defaultLight)
+				{
+					delete it->second;
+				}
 				it->second = NULL;
 			}
 			delete lightInfoMap;
@@ -821,55 +957,6 @@ struct drawCallPixelJobData
 		const DeclarationSemanticMapping* vertexDeclMapping;
 		const void* sourceAgnosticMapping;
 	} vs_to_ps_mappings;
-};
-
-__declspec(align(16) ) struct primitivePixelJobData
-{
-	primitivePixelJobData() : invZ(0.0f, 0.0f, 0.0f), invW(0.0f, 0.0f, 0.0f), barycentricNormalizeFactor(0.0f), primitiveID(0), VFace(true), vertex0index(0), vertex1index(0), vertex2index(0)
-	{
-		pixelShadeVertexData.shadeFromShader.v0 = NULL;
-		pixelShadeVertexData.shadeFromShader.v1 = NULL;
-		pixelShadeVertexData.shadeFromShader.v2 = NULL;
-
-		pixelShadeVertexData.shadeFromStream.v0 = NULL;
-		pixelShadeVertexData.shadeFromStream.v1 = NULL;
-		pixelShadeVertexData.shadeFromStream.v2 = NULL;
-	}
-
-	// This is: float3(1.0f / v0.z, 1.0f / v1.z, 1.0f / v2.z)
-	__declspec(align(16) ) D3DXVECTOR3 invZ;
-
-	// This is: float3(1.0f / v0.w, 1.0f / v1.w, 1.0f / v2.w)
-	__declspec(align(16) ) D3DXVECTOR3 invW;
-
-	union _pixelShadeVertexData
-	{
-		struct _shadeFromShader
-		{
-			const VS_2_0_OutputRegisters* v0;
-			const VS_2_0_OutputRegisters* v1;
-			const VS_2_0_OutputRegisters* v2;
-		} shadeFromShader;
-		struct _shadeFromStream
-		{
-			CONST BYTE* v0;
-			CONST BYTE* v1;
-			CONST BYTE* v2;
-		} shadeFromStream;
-		struct _shadeFromAgnostic
-		{
-			const void* v0;
-			const void* v1;
-			const void* v2;
-		} shadeFromAgnostic;
-	} pixelShadeVertexData;
-	UINT vertex0index;
-	UINT vertex1index;
-	UINT vertex2index;
-	float barycentricNormalizeFactor;
-	UINT primitiveID; // This is the ps_4_0 SV_PrimitiveID semantic for this primitive (not used in D3D9, but included here as being useful for debugging)
-	// UINT instanceID; // This is the ps_4_0 SV_InstanceID semantic for this primitive (not used in D3D9)
-	bool VFace; // This is the ps_3_0 VFACE semantic or the ps_4_0 SV_IsFrontFace semantic for this primitive
 };
 
 struct drawCallTriangleRasterizeJobsData
@@ -1042,12 +1129,12 @@ public:
 	// If indexBuffer is NULL, then synthesize an index buffer (0, 1, 2, 3, 4, etc...)
 	template <const bool useVertexBuffer, const bool useIndexBuffer>
 	void ProcessVerticesToBuffer(const IDirect3DVertexDeclaration9Hook* const decl, const DeclarationSemanticMapping& mapping, const IDirect3DIndexBuffer9Hook* const indexBuffer, 
-		const D3DPRIMITIVETYPE PrimitiveType, const INT BaseVertexIndex, const UINT MinVertexIndex, const UINT startIndex, const UINT primCount, const void* const vertStreamBytes, const unsigned short vertStreamStride) const;
+		const D3DPRIMITIVETYPE PrimitiveType, const INT BaseVertexIndex, const UINT MinVertexIndex, const UINT startIndex, const UINT primCount, const void* const vertStreamBytes, const unsigned short vertStreamStride);
 
 	// If indexBuffer is NULL, then synthesize an index buffer (0, 1, 2, 3, 4, etc...)
 	template <const bool useVertexBuffer, const D3DFORMAT indexFormat>
 	void ProcessVerticesToBufferInner(const IDirect3DVertexDeclaration9Hook* const decl, const DeclarationSemanticMapping& mapping, const BYTE* const indexBuffer,
-		const D3DPRIMITIVETYPE PrimitiveType, const INT BaseVertexIndex, const UINT MinVertexIndex, const UINT startIndex, const UINT primCount, const void* const vertStreamBytes, const unsigned short vertStreamStride) const;
+		const D3DPRIMITIVETYPE PrimitiveType, const INT BaseVertexIndex, const UINT MinVertexIndex, const UINT startIndex, const UINT primCount, const void* const vertStreamBytes, const unsigned short vertStreamStride);
 
 	// Process a single vertex:
 	template <const bool anyUserClipPlanesEnabled>
@@ -1090,10 +1177,10 @@ public:
 	void DeviceSetCurrentState(const D3DPRIMITIVETYPE primType, IDirect3DIndexBuffer9Hook* const currentIB, bool& outReloadedTexture);
 
 	template <const bool useIndexBuffer, typename indexFormat, const bool rasterizerUsesEarlyZTest>
-	void DrawPrimitiveUBPretransformedSkipVS(const D3DPRIMITIVETYPE PrimitiveType, INT BaseVertexIndex, UINT startIndex, UINT primCount) const;
+	void DrawPrimitiveUBPretransformedSkipVS(const D3DPRIMITIVETYPE PrimitiveType, INT BaseVertexIndex, UINT startIndex, UINT primCount);
 
 	template <const bool rasterizerUsesEarlyZTest>
-	void DrawPrimitiveUB(const D3DPRIMITIVETYPE PrimitiveType, const UINT PrimitiveCount) const;
+	void DrawPrimitiveUB(const D3DPRIMITIVETYPE PrimitiveType, const UINT PrimitiveCount);
 
 	void HandleDrawCallSingleStepMode();
 	void HandleFrameSingleStepMode();
@@ -1146,7 +1233,7 @@ public:
 	// Assumes pre-transformed vertices (from a processed vertex shader or from a vertex declaration + pretransformed vertex stream)
 	template <const bool rasterizerUsesEarlyZTest, const bool shadeFromShader>
 	void RasterizeTriangle(PShaderEngine* const pShaderEngine, const void* const mappingData, const void* const v0, const void* const v1, const void* const v2,
-		const float fWidth, const float fHeight, const UINT primitiveID, const UINT vertex0index, const UINT vertex1index, const UINT vertex2index) const;
+		const float fWidth, const float fHeight, const UINT primitiveID, const UINT vertex0index, const UINT vertex1index, const UINT vertex2index);
 
 	// Assumes pre-transformed vertices from a processed vertex shader
 	void RasterizeLineFromShader(const VStoPSMapping& vs_psMapping, const VS_2_0_OutputRegisters& v0, const VS_2_0_OutputRegisters& v1) const;
@@ -1279,21 +1366,21 @@ public:
 	template <const unsigned char channelWriteMask, const unsigned char pixelWriteMask>
 	void AlphaBlend4(D3DXVECTOR4 (&outVec)[4], const D3DBLENDOP blendOp, const D3DXVECTOR4 (&srcBlend)[4], const D3DXVECTOR4 (&dstBlend)[4], const D3DXVECTOR4 (&srcColor)[4], const D3DXVECTOR4 (&dstColor)[4]) const;
 
-	void InitVertexShader(const DeviceState& deviceState, const ShaderInfo& vertexShaderInfo) const;
-	void InitPixelShader(const DeviceState& deviceState, const ShaderInfo& pixelShaderInfo) const;
+	void InitVertexShader(const DeviceState& deviceState, const ShaderInfo& vertexShaderInfo);
+	void InitPixelShader(const DeviceState& deviceState, const ShaderInfo& pixelShaderInfo);
 
 #ifdef MULTITHREAD_SHADING
-	void CreateNewVertexShadeJob(VS_2_0_OutputRegisters* const * const outputRegs, const unsigned* const vertexIndices, const workerJobType jobWidth) const;
+	void CreateNewVertexShadeJob(VS_2_0_OutputRegisters* const * const outputRegs, const unsigned* const vertexIndices, const workerJobType jobWidth);
 
 #if TRIANGLEJOBS_OR_PIXELJOBS == TRIANGLEJOBS
-	void CreateNewTriangleRasterJob(const UINT primitiveID, const UINT vertID0, const UINT vertID1, const UINT vertID2, const bool rasterizeFromShader, const void* const vert0, const void* const vert1, const void* const vert2) const;
+	void CreateNewTriangleRasterJob(const UINT primitiveID, const UINT vertID0, const UINT vertID1, const UINT vertID2, const bool rasterizeFromShader, const void* const vert0, const void* const vert1, const void* const vert2);
 #endif // #if TRIANGLEJOBS_OR_PIXELJOBS == TRIANGLEJOBS
 
 #endif // #ifdef MULTITHREAD_SHADING
 
-	void CreateNewPixelShadeJob(const unsigned x, const unsigned y, const __m128i barycentricAdjusted, const primitivePixelJobData* const primitiveData) const;
+	void CreateNewPixelShadeJob(const unsigned x, const unsigned y, const __m128i barycentricAdjusted, const primitivePixelJobData* const primitiveData);
 #ifdef RUN_SHADERS_IN_WARPS
-	void CreateNewPixelShadeJob4(const __m128i x4, const __m128i y4, const __m128i (&barycentricsAdjusted4)[4], const primitivePixelJobData* const primitiveData) const;
+	void CreateNewPixelShadeJob4(const __m128i x4, const __m128i y4, const __m128i (&barycentricsAdjusted4)[4], const primitivePixelJobData* const primitiveData);
 #endif
 
 	// TODO: Find another way to do this other than mutable
@@ -1712,6 +1799,39 @@ public:
 		return currentFrameIndex;
 	}
 
+	template <const unsigned numJobsToRunSinglethreaded>
+	void SynchronizeThreads();
+
+	void WorkUntilNoMoreWork(void* const jobData);
+
+	template <const bool canImmediateFlushJobs>
+	slist_item* const GetNewWorkerJob(void);
+
+#ifdef ENABLE_END_TO_SKIP_DRAWS
+	inline void ResetHoldingDownEndToSkip()
+	{
+		--DrawSkip_LastCheckedTicks;
+	}
+
+	// Skip this draw call if END is held down
+	inline const bool IsHoldingEndToSkipDrawCalls(void) const
+	{
+		// Since GetTickCount() has a 1ms resolution (at best), this limits us to only calling this function at most once per millisecond
+		const DWORD currentTime = GetTickCount();
+		if (currentTime != DrawSkip_LastCheckedTicks)
+		{
+			if ( (GetKeyState(VK_END) & 0x8000) )
+				DrawSkip_LastCheckedIsHoldingDownEnd = true;
+			else
+				DrawSkip_LastCheckedIsHoldingDownEnd = false;
+
+			DrawSkip_LastCheckedTicks = currentTime;
+		}
+
+		return DrawSkip_LastCheckedIsHoldingDownEnd;
+	}
+#endif // #ifdef ENABLE_END_TO_SKIP_DRAWS
+
 	IDirect3DQuery9Hook* frameBeginTimestamp;
 	LARGE_INTEGER frameBeginCPUTimestamp;
 	std::vector<IDirect3DQuery9Hook*> eventEndTimestamps;
@@ -1733,6 +1853,21 @@ protected:
 	HWND initialCreateDeviceWindow;
 	BOOL enableDialogs;
 
+#ifdef PROFILE_AVERAGE_VERTEX_SHADE_TIMES
+	mutable __int64 totalVertexShadeTicks = 0;
+	mutable __int64 numVertexShadeTasks = 0;
+#endif // #ifdef PROFILE_AVERAGE_VERTEX_SHADE_TIMES
+
+#ifdef PROFILE_AVERAGE_PIXEL_SHADE_TIMES
+	mutable __int64 totalPixelShadeTicks = 0;
+	mutable __int64 numPixelShadeTasks = 0;
+#endif // #ifdef PROFILE_AVERAGE_PIXEL_SHADE_TIMES
+
+#ifdef ENABLE_END_TO_SKIP_DRAWS
+	mutable DWORD DrawSkip_LastCheckedTicks = 0x00000000;
+	mutable bool DrawSkip_LastCheckedIsHoldingDownEnd = false;
+#endif // #ifdef ENABLE_END_TO_SKIP_DRAWS
+
 	D3DPRESENT_PARAMETERS currentPresentParams;
 
 	mutable __declspec(align(16) ) VShaderEngine deviceMainVShaderEngine;
@@ -1743,6 +1878,9 @@ protected:
 #ifndef NO_CACHING_FVF_VERT_DECLS
 	std::map<DWORD, IDirect3DVertexDeclaration9Hook*>* FVFToVertDeclCache;
 #endif // NO_CACHING_FVF_VERT_DECLS
+
+	// This is volatile and aligned because it will be used with Interlocked operations
+	volatile long __declspec(align(16) ) tlsThreadNumber = 0;
 
 	__declspec(align(16) ) DeviceState currentState;
 
@@ -1767,6 +1905,15 @@ protected:
 	mutable VS_2_0_OutputRegisters* processedVertexBuffer;
 	mutable unsigned processedVertsUsed;
 	mutable unsigned processVertsAllocated;
+
+#ifdef MULTITHREAD_SHADING
+	slist_item* allWorkItems = NULL;
+	DWORD tlsIndex = TLS_OUT_OF_INDEXES;
+	unsigned MAX_NUM_JOBS = 0;
+	std::vector<vertJobCollector> vertJobsToShade;
+	volatile _workStatus workStatus = {0};
+	_threadItem threadItem [NUM_THREADS * 4 + 1] = {0};
+#endif // MULTITHREAD_SHADING
 
 	CRITICAL_SECTION deviceCS;
 

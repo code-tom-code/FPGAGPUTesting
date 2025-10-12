@@ -40,6 +40,7 @@ INIVar DisableDrawCallBatching("Options", "DisableDrawCallBatching", false); // 
 INIVar DisableClearCallBatching("Options", "DisableClearCallBatching", false); // Disables the clear call batching optimization where adjacent clear calls can be combined together into a single clear call with multiple flags.
 INIVar DisableStateCaching("Options", "DisableStateCaching", false); // Disables the driver's state caching, so every Draw call will push a full set of state parameters to the GPU every time even if they're the same as last time.
 INIVar AlwaysValidateDevice("Options", "AlwaysValidateDevice", false); // Skips device validation, always returning D3D_OK.
+INIVar OverrideDriverName("Options", "OverrideDriverName", ""); // If not empty, overrides the driver's queried name with the given string.
 INIVar OverrideDeviceName("Options", "OverrideDeviceName", ""); // If not empty, overrides the device's queried name with the given string.
 INIVar OverrideDeviceID("Options", "OverrideDeviceID", ""); // If not empty, overrides the device's queried ID with the given string.
 INIVar OverrideDeviceCapsSet("Options", "OverrideDeviceCapsSet", ""); // If not empty, overrides the device's caps bits with those from the given caps set.

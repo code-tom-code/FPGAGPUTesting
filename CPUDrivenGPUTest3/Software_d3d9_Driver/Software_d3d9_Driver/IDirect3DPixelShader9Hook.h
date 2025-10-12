@@ -2,6 +2,7 @@
 
 #include "IDirect3DDevice9Hook.h"
 #include "ShaderAnalysis.h"
+#include "LiveObjectCounter.h"
 
 class PShaderEngine;
 
@@ -13,6 +14,7 @@ public:
 #ifdef _DEBUG
 		memcpy(&Version, &realObject->Version, (char*)&realObject - (char*)&Version);
 #endif
+		RegisterNewLiveObject(LOT_PixelShader, this, _parentDevice);
 	}
 
 	inline LPDIRECT3DPIXELSHADER9 GetUnderlyingPixelShader(void) const

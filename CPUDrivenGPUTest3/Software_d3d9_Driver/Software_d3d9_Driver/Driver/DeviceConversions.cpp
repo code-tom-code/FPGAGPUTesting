@@ -168,7 +168,9 @@ const eTexFormat ConvertToDeviceTextureFormat(const D3DFORMAT texFormat)
 		__debugbreak(); // This texture format is unknown or not yet supported!
 #endif
 	case D3DFMT_DXT1:
+	case D3DFMT_DXT2:
 	case D3DFMT_DXT3:
+	case D3DFMT_DXT4:
 	case D3DFMT_DXT5:
 	case D3DFMT_A8R8G8B8:
 		deviceFormat = eTexFmtA8R8G8B8;

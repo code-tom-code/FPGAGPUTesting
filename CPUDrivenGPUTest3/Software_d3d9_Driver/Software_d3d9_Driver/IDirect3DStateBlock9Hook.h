@@ -1,6 +1,7 @@
 #pragma once
 
 #include "IDirect3DDevice9Hook.h"
+#include "LiveObjectCounter.h"
 
 enum StateBlockSetCallType : unsigned char
 {
@@ -257,10 +258,13 @@ public:
 		if (realObject)
 			CreationCallStack = realObject->CreationCallStack;
 #endif
+		RegisterNewLiveObject(LOT_StateBlock, this, _parentDevice);
 	}
 
 	virtual ~IDirect3DStateBlock9Hook()
 	{
+		UnregisterLiveObject(LOT_StateBlock, this, parentDevice);
+
 #ifdef WIPE_ON_DESTRUCT_D3DHOOKOBJECT
 		memset(this, 0x00000000, sizeof(*this) );
 #endif

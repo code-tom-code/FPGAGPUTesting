@@ -217,6 +217,9 @@ void IDirect3DVertexShader9Hook::CreatePretransformPassthroughVertexShader(const
 	}
 
 	shaderBytecode.clear();
+
+	UnregisterLiveObject(LOT_VertexShader, this, parentDevice);
+
 #ifdef WIPE_ON_DESTRUCT_D3DHOOKOBJECT
 	memset(this, 0x00000000, sizeof(*this) - (sizeof(shaderBytecode) + sizeof(vertexShaderInfo) ) );
 #endif

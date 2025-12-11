@@ -1179,17 +1179,6 @@ void NetSession::HandleSessionUnconnectedSendLoop()
 		const float millisecondsSinceLastSend = (const float)(ldFreq * currentTime.QuadPart) * 1000.0f;
 		if (millisecondsSinceLastSend > TIME_BETWEEN_SESSION_CONNECT_REQUESTS_MS)
 		{
-			HostRequestConnectSessionPacket requestSessionConnect;
-			requestSessionConnect.magicProtoValue = PROTO_MAGIC_BYTE;
-			requestSessionConnect.packetType = command::PT_CONNREQUEST;
-			requestSessionConnect.netProtoVersionMajorHost = NET_PROTO_MAJOR_VERSION;
-			requestSessionConnect.netProtoVersionMinorHost = NET_PROTO_MINOR_VERSION;
-			requestSessionConnect.unusedPadding = 0x00;
-			requestSessionConnect.hostIPv4Address[0] = 158; // TODO: Don't hardcode our host IPv4 address
-			requestSessionConnect.hostIPv4Address[1] = 1;
-			requestSessionConnect.hostIPv4Address[2] = 168;
-			requestSessionConnect.hostIPv4Address[3] = 192;
-
 			SOCKADDR_IN deviceAddr = {0};
 			deviceAddr.sin_family = AF_INET;
 			deviceAddr.sin_port = NETORDER_UDP_PORT_H2D;
@@ -1206,6 +1195,32 @@ void NetSession::HandleSessionUnconnectedSendLoop()
 					sessionState.deviceIPv4Address[1], sessionState.deviceIPv4Address[2], sessionState.deviceIPv4Address[3], NET_PROTO_UDP_PORT_H2D, WSAGetLastError() );
 				__debugbreak();
 			}
+
+			SOCKADDR_IN hostAddr = {0};
+			int hostAddrLen = sizeof(hostAddr);
+			// Note: Can only call getsockname() *after* a successful connect() to implicitly bind the socket to an interface.
+			if (getsockname(sendSocket, (sockaddr* const)&hostAddr, &hostAddrLen) != 0)
+			{
+				printf("Error: getsockname() failed to get the name of the send socket. WSAGLE: %i\n", WSAGetLastError() );
+				__debugbreak();
+			}
+
+			if (hostAddr.sin_addr.S_un.S_addr == 0x00000000 || hostAddr.sin_addr.S_un.S_addr == INADDR_LOOPBACK || hostAddr.sin_addr.S_un.S_addr == INADDR_NONE)
+			{
+				printf("Error: getsockname() couldn't resolve our send socket address\n");
+				__debugbreak();
+			}
+
+			HostRequestConnectSessionPacket requestSessionConnect;
+			requestSessionConnect.magicProtoValue = PROTO_MAGIC_BYTE;
+			requestSessionConnect.packetType = command::PT_CONNREQUEST;
+			requestSessionConnect.netProtoVersionMajorHost = NET_PROTO_MAJOR_VERSION;
+			requestSessionConnect.netProtoVersionMinorHost = NET_PROTO_MINOR_VERSION;
+			requestSessionConnect.unusedPadding = 0x00;
+			requestSessionConnect.hostIPv4Address[0] = hostAddr.sin_addr.S_un.S_un_b.s_b4;
+			requestSessionConnect.hostIPv4Address[1] = hostAddr.sin_addr.S_un.S_un_b.s_b3;
+			requestSessionConnect.hostIPv4Address[2] = hostAddr.sin_addr.S_un.S_un_b.s_b2;
+			requestSessionConnect.hostIPv4Address[3] = hostAddr.sin_addr.S_un.S_un_b.s_b1;
 
 			SendLoop(&requestSessionConnect, sizeof(requestSessionConnect) );
 			sessionState.hasSentConnectRequest = true;

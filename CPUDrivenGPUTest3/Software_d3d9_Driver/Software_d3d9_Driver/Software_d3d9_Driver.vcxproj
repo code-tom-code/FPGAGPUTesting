@@ -219,6 +219,7 @@
     <ClCompile Include="Driver\IBroadcastVirtualDeviceComms.cpp" />
     <ClCompile Include="Driver\ILocalEndpointDLLComms.cpp" />
     <ClCompile Include="Driver\INetSocketDeviceComms.cpp" />
+    <ClCompile Include="Driver\INullDeviceComms.cpp" />
     <ClCompile Include="Driver\IRemoteProcessIPCComms.cpp" />
     <ClCompile Include="Driver\ISerialDeviceComms.cpp" />
     <ClCompile Include="Driver\IVirtualDeviceComms.cpp" />
@@ -293,6 +294,7 @@
     <ClInclude Include="Driver\IBroadcastVirtualDeviceComms.h" />
     <ClInclude Include="Driver\ILocalEndpointDLLComms.h" />
     <ClInclude Include="Driver\INetSocketDeviceComms.h" />
+    <ClInclude Include="Driver\INullDeviceComms.h" />
     <ClInclude Include="Driver\IRemoteProcessIPCComms.h" />
     <ClInclude Include="Driver\ISerialDeviceComms.h" />
     <ClInclude Include="Driver\IVirtualDeviceComms.h" />

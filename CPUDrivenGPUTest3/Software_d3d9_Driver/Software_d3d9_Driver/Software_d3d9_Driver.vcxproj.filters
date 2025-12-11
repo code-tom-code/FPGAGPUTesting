@@ -249,6 +249,9 @@
     <ClCompile Include="LiveObjectCounter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Driver\INullDeviceComms.cpp">
+      <Filter>Source Files\Driver</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Source.def">
@@ -472,6 +475,9 @@
     </ClInclude>
     <ClInclude Include="LiveObjectCounter.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Driver\INullDeviceComms.h">
+      <Filter>Header Files\Driver</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

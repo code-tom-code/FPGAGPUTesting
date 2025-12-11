@@ -1,0 +1,202 @@
+#undef UNICODE
+#undef _UNICODE
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+#include "..\\Common\\EndpointDLLInterface.h"
+
+#include <stdio.h>
+
+static bool endpointInitialized = false;
+static const char* const dllEndpointName = "GPUEndpoint_Null";
+static HINSTANCE dllHInst = NULL;
+static bool bDone = false;
+static const DLLEndpointMajorVersions ThisMajorVersion = InitialVersion;
+static const unsigned ThisMinorVersion = 0;
+ReturnMessageSignature E2HReturnMessageCallback = NULL;
+
+BOOL WINAPI DllMain(
+	_In_ HINSTANCE hinstDLL,  // handle to DLL module
+	_In_ DWORD fdwReason,     // reason for calling function
+	_In_ LPVOID lpvReserved )  // reserved
+{
+	switch (fdwReason)
+	{
+	case DLL_PROCESS_ATTACH:
+#ifdef _DEBUG
+		if (endpointInitialized == true)
+		{
+			__debugbreak(); // Should never have this called twice in a row...
+		}
+#endif
+		dllHInst = hinstDLL;
+		break;
+
+	case DLL_THREAD_ATTACH:
+		break;
+
+	case DLL_THREAD_DETACH:
+		break;
+
+	case DLL_PROCESS_DETACH:
+#ifdef _DEBUG
+		if (endpointInitialized == true)
+		{
+			__debugbreak(); // Host didn't call ShutdownEndpoint() before calling FreeLibrary()
+		}
+#endif
+		dllHInst = NULL;
+		break;
+	}
+	return TRUE; // Success!
+}
+
+// Call this function first from the host! Returns true on success, or false on failure.
+bool __stdcall InitEndpointImpl(const ReturnMessageSignature D2HReplyCallback)
+{
+	// Do not call this function more than once per DLL endpoint!
+	if (endpointInitialized == true)
+	{
+#ifdef _DEBUG
+		__debugbreak();
+#endif
+		return false;
+	}
+
+#ifdef _DEBUG
+	if (E2HReturnMessageCallback != NULL)
+	{
+		__debugbreak(); // This should never happen!
+	}
+#endif
+	E2HReturnMessageCallback = D2HReplyCallback;
+
+	endpointInitialized = true;
+
+	return true;
+}
+
+static inline const int PumpWindowsMessageLoop(HWND wnd)
+{
+	MSG msg = {0};
+	while (!bDone)
+	{
+		if (PeekMessageA(&msg, wnd, 0, 0, PM_NOREMOVE) )
+		{
+			switch (GetMessageA(&msg, wnd, 0, 0) )
+			{
+			case -1:
+				printf("Error in GetMessageA. GLE: %u\n", GetLastError() );
+				return -1;
+			case 0:
+				printf("WM_QUIT received, done!\n");
+				return 0;
+			default:
+				TranslateMessage(&msg);
+				DispatchMessageA(&msg);
+				break;
+			}
+		}
+		else
+		{
+			// No more messages
+			return 1;
+		}
+	}
+	return 1;
+}
+
+static DWORD lastMessagePumpTimestamp = 0;
+
+// Host calls this function every time a new message needs to be processed
+void __stdcall ProcessNewMessageImpl(const genericCommand* H2DCommandPacket)
+{
+	return; // Do nothing
+}
+
+void __stdcall ProcessIdleImpl()
+{
+	return; // Do nothing
+}
+
+void __stdcall ShutdownEndpointImpl()
+{
+#ifdef _DEBUG
+	if (!endpointInitialized)
+	{
+		__debugbreak(); // Shutdown called on a non-initialized endpoint DLL!
+	}
+#endif
+
+	bDone = true;
+
+	E2HReturnMessageCallback = NULL;
+
+	endpointInitialized = false;
+}
+
+void __stdcall EndFrameImpl()
+{
+	return; // Do nothing
+}
+
+// It is legal for the host process to call GetDLLInfo() as many times as they would like. It should not allocate anything or change any state!
+// Function returns true on success, or false on failure.
+extern "C" bool __stdcall GetDLLInfo(DLLInfo* const outDLLInfo)
+{
+	if (!outDLLInfo)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // The host/caller may not pass a NULL pointer into this function!
+#endif
+		return false;
+	}
+
+	if (outDLLInfo->MAGIC != DLLINFO_MAGIC)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // DLLInfo struct is not initialized! The MAGIC and major version number fields must be filled in by the caller prior to the call to GetDLLInfo().
+#endif
+		return false;
+	}
+
+	if (outDLLInfo->versionMajor != ThisMajorVersion)
+	{
+#ifdef _DEBUG
+		__debugbreak(); // Major version numbers do not match! This endpoint DLL is not compatible with this host due to an interface mismatch!
+#endif
+		// Overwrite the major/minor version pair in the host-given buffer so that the host knows which version this endpoint is using:
+		outDLLInfo->versionMajor = ThisMajorVersion;
+		outDLLInfo->versionMinor = ThisMinorVersion;
+		return false;
+	}
+
+#ifdef _DEBUG
+	if (dllHInst == NULL)
+	{
+		__debugbreak(); // Somehow this function got called before DLLMain(DLL_PROCESS_ATTACH). This should never happen!
+	}
+#endif
+
+	DLLInfo endpointDLLInfo;
+
+	endpointDLLInfo.versionMajor = ThisMajorVersion;
+	endpointDLLInfo.versionMinor = ThisMinorVersion;
+
+	endpointDLLInfo.H2DFunctions.InitEndpoint = &InitEndpointImpl;
+	endpointDLLInfo.H2DFunctions.SpawnWindow = NULL;
+	endpointDLLInfo.H2DFunctions.ProcessNewMessage = &ProcessNewMessageImpl;
+	endpointDLLInfo.H2DFunctions.ShutdownEndpoint = &ShutdownEndpointImpl;
+	endpointDLLInfo.H2DFunctions.ProcessIdle = &ProcessIdleImpl;
+	endpointDLLInfo.H2DFunctions.EndFrame = &EndFrameImpl;
+
+#pragma warning(push)
+#pragma warning(disable:4996)
+	strcpy(endpointDLLInfo.endpointName, dllEndpointName);
+#pragma warning(pop)
+
+	endpointDLLInfo.endpointOptions = (const EndpointOptionsFlags)(NoWindow | NoMemReadSupport);
+
+	memcpy(outDLLInfo, &endpointDLLInfo, sizeof(endpointDLLInfo) );
+
+	return true;
+}

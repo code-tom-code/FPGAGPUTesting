@@ -24,6 +24,7 @@
 #include "Driver/INetSocketDeviceComms.h"
 #include "Driver/ILocalEndpointDLLComms.h"
 #include "Driver/IBroadcastVirtualDeviceComms.h"
+#include "Driver/INullDeviceComms.h"
 #include "Driver/GPUAllocator.h"
 #include "Driver/GPUDeviceLimits.h"
 #include "Driver/DeviceConversions.h"
@@ -12366,6 +12367,7 @@ enum endpointCommsType : unsigned char
 	ECT_NetworkDevice,
 	ECT_LocalDLL,
 	ECT_RemoteProcessIPC,
+	ECT_NullDevice,
 
 	// This must always be last
 	ECT_MAX_NUM_ENDPOINT_COMMS
@@ -12376,7 +12378,8 @@ static const char* const endpointCommsNames[] =
 	"SerialDevice",
 	"NetSocketDevice",
 	"LocalDLL",
-	"RemoteProcessIPC"
+	"RemoteProcessIPC",
+	"NullDevice"
 };
 static_assert(ARRAYSIZE(endpointCommsNames) == ECT_MAX_NUM_ENDPOINT_COMMS, "Error: Enum/String-table mismatch!");
 
@@ -12438,6 +12441,11 @@ static IBaseDeviceComms* const InitEndpoint(const endpointCommsType endpointType
 	#endif
 		}
 		return remoteProcessIPCEndpoint;
+	}
+	case ECT_NullDevice:
+	{
+		INullDeviceComms* const newNullEndpoint = new INullDeviceComms();
+		return newNullEndpoint;
 	}
 	}
 }

@@ -7,7 +7,7 @@
 #include "..\..\Software_d3d9_Driver\INIVar.h"
 
 static bool endpointInitialized = false;
-static const char* const dllEndpointName = "RecordingEndpoint_DiskFile";
+static const char* const dllEndpointName = "GPUEndpoint_DiskFile";
 static HINSTANCE dllHInst = NULL;
 static bool bDone = false;
 static const DLLEndpointMajorVersions ThisMajorVersion = InitialVersion;
@@ -84,36 +84,6 @@ bool __stdcall InitEndpointImpl(const ReturnMessageSignature D2HReplyCallback)
 	endpointInitialized = true;
 
 	return true;
-}
-
-static inline const int PumpWindowsMessageLoop(HWND wnd)
-{
-	MSG msg = {0};
-	while (!bDone)
-	{
-		if (PeekMessageA(&msg, wnd, 0, 0, PM_NOREMOVE) )
-		{
-			switch (GetMessageA(&msg, wnd, 0, 0) )
-			{
-			case -1:
-				printf("Error in GetMessageA. GLE: %u\n", GetLastError() );
-				return -1;
-			case 0:
-				printf("WM_QUIT received, done!\n");
-				return 0;
-			default:
-				TranslateMessage(&msg);
-				DispatchMessageA(&msg);
-				break;
-			}
-		}
-		else
-		{
-			// No more messages
-			return 1;
-		}
-	}
-	return 1;
 }
 
 // Host calls this function every time a new message needs to be processed

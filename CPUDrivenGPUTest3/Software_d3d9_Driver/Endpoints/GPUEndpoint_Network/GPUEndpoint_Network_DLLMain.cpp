@@ -9,7 +9,7 @@
 #include <stdio.h>
 
 static bool endpointInitialized = false;
-static const char* const dllEndpointName = "GPURenderer_Network";
+static const char* const dllEndpointName = "GPUEndpoint_Network";
 static HINSTANCE dllHInst = NULL;
 static bool bDone = false;
 static const DLLEndpointMajorVersions ThisMajorVersion = InitialVersion;
@@ -81,50 +81,6 @@ bool __stdcall InitEndpointImpl(const ReturnMessageSignature D2HReplyCallback)
 
 	return true;
 }
-
-static LRESULT CALLBACK MyWindowProc(_In_ HWND hwnd, _In_ UINT uMsg, _In_ WPARAM wParam, _In_ LPARAM lParam)
-{
-	switch (uMsg)
-	{
-	case WM_CLOSE:
-		printf("WM_CLOSE\n");
-		bDone = true;
-		break;
-	}
-	return DefWindowProcA(hwnd, uMsg, wParam, lParam);
-}
-
-static inline const int PumpWindowsMessageLoop(HWND wnd)
-{
-	MSG msg = {0};
-	while (!bDone)
-	{
-		if (PeekMessageA(&msg, wnd, 0, 0, PM_NOREMOVE) )
-		{
-			switch (GetMessageA(&msg, wnd, 0, 0) )
-			{
-			case -1:
-				printf("Error in GetMessageA. GLE: %u\n", GetLastError() );
-				return -1;
-			case 0:
-				printf("WM_QUIT received, done!\n");
-				return 0;
-			default:
-				TranslateMessage(&msg);
-				DispatchMessageA(&msg);
-				break;
-			}
-		}
-		else
-		{
-			// No more messages
-			return 1;
-		}
-	}
-	return 1;
-}
-
-static DWORD lastMessagePumpTimestamp = 0;
 
 // Host calls this function every time a new message needs to be processed
 void __stdcall ProcessNewMessageImpl(const genericCommand* H2DCommandPacket)

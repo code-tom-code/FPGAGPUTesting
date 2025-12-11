@@ -9,7 +9,7 @@
 #include <stdio.h>
 
 static bool endpointInitialized = false;
-static const char* const dllEndpointName = "GPURenderer_Serial";
+static const char* const dllEndpointName = "GPUEndpoint_Serial";
 static HINSTANCE dllHInst = NULL;
 static bool bDone = false;
 static const DLLEndpointMajorVersions ThisMajorVersion = InitialVersion;
@@ -80,18 +80,6 @@ bool __stdcall InitEndpointImpl(const ReturnMessageSignature D2HReplyCallback)
 	endpointInitialized = true;
 
 	return true;
-}
-
-static LRESULT CALLBACK MyWindowProc(_In_ HWND hwnd, _In_ UINT uMsg, _In_ WPARAM wParam, _In_ LPARAM lParam)
-{
-	switch (uMsg)
-	{
-	case WM_CLOSE:
-		printf("WM_CLOSE\n");
-		bDone = true;
-		break;
-	}
-	return DefWindowProcA(hwnd, uMsg, wParam, lParam);
 }
 
 static inline const int PumpWindowsMessageLoop(HWND wnd)

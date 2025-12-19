@@ -1,0 +1,116 @@
+{
+   "ActiveEmotionalView":"Default View",
+   "Default View_ScaleFactor":"0.819546",
+   "Default View_TopLeft":"327,-12",
+   "ExpandedHierarchyInLayout":"",
+   "guistr":"# # String gsaved with Nlview 7.8.0 2024-04-26 e1825d835c VDI=44 GEI=38 GUI=JA:21.0 threadsafe
+#  -string -flagsOSRD
+preplace port RECV_PKTS_FIFO -pg 1 -lvl 0 -x -160 -y 1010 -defaultsOSRD
+preplace port RETURN_PKTS_FIFO -pg 1 -lvl 0 -x -160 -y 830 -defaultsOSRD
+preplace port mdio_mdc -pg 1 -lvl 8 -x 3520 -y -440 -defaultsOSRD
+preplace port sgmii_lvds -pg 1 -lvl 8 -x 3520 -y -420 -defaultsOSRD
+preplace port sgmii_phyclk -pg 1 -lvl 0 -x -160 -y -110 -defaultsOSRD
+preplace port port-id_clk_333_250 -pg 1 -lvl 0 -x -160 -y 550 -defaultsOSRD
+preplace inst clk_333_250_to_10_0 -pg 1 -lvl 1 -x 130 -y 1070 -defaultsOSRD
+preplace inst EthernetMDIOController -pg 1 -lvl 4 -x 1670 -y 1250 -defaultsOSRD
+preplace inst ValidPacketsFIFO -pg 1 -lvl 4 -x 1670 -y 1020 -defaultsOSRD
+preplace inst SGMII_PHY_Bringup_MDIO -pg 1 -lvl 3 -x 1000 -y 1320 -defaultsOSRD
+preplace inst CDC_EthernetController1 -pg 1 -lvl 2 -x 530 -y 410 -defaultsOSRD
+preplace inst NetProtoSendRetransmitBRAM -pg 1 -lvl 4 -x 1670 -y 180 -defaultsOSRD
+preplace inst ClockDividerx4_10_to_2_5 -pg 1 -lvl 2 -x 530 -y 1070 -defaultsOSRD
+preplace inst NetProtoPacketProcessor -pg 1 -lvl 3 -x 1000 -y 410 -defaultsOSRD
+preplace inst ReturnPacketsFIFO -pg 1 -lvl 4 -x 1670 -y 860 -defaultsOSRD
+preplace inst CDC_EthernetController0 -pg 1 -lvl 2 -x 530 -y 570 -defaultsOSRD
+preplace inst recv_pkt_header_fifo -pg 1 -lvl 4 -x 1670 -y -610 -defaultsOSRD
+preplace inst recv_pkt_data_fifo -pg 1 -lvl 4 -x 1670 -y -440 -defaultsOSRD
+preplace inst send_pkt_header_fifo -pg 1 -lvl 4 -x 1670 -y -250 -defaultsOSRD
+preplace inst send_pkt_data_fifo -pg 1 -lvl 4 -x 1670 -y -10 -defaultsOSRD
+preplace inst DoNotReset -pg 1 -lvl 3 -x 1000 -y -450 -defaultsOSRD
+preplace inst pkt_recv_scratch_mem -pg 1 -lvl 6 -x 2710 -y -620 -defaultsOSRD
+preplace inst EthernetController3_0 -pg 1 -lvl 5 -x 2260 -y 280 -defaultsOSRD
+preplace inst gig_ethernet_pcs_pma_0 -pg 1 -lvl 7 -x 3260 -y -90 -defaultsOSRD
+preplace netloc CDC_EthernetController0_Out_Signal 1 2 1 660J 450n
+preplace netloc CDC_EthernetController1_Out_Signal 1 2 1 710J 410n
+preplace netloc ClockDividerx4_10_to_2_5_clkout25 1 2 2 690 1110 1320J
+preplace netloc DoNotReset_dout 1 2 2 730 1050 1330J
+preplace netloc EthernetController3_0_NETPKT_RecvReady 1 1 5 400 1130 700J 1120 1430J 1110 NJ 1110 2530
+preplace netloc EthernetController3_0_NETPKT_SendReady 1 1 5 390 1140 710J 1130 1440J 1120 NJ 1120 2550
+preplace netloc EthernetController3_0_an_adv_config_val 1 5 2 NJ -100 2880J
+preplace netloc EthernetController3_0_an_adv_config_vector 1 5 2 NJ -120 2890J
+preplace netloc EthernetController3_0_an_restart_config 1 5 2 NJ -80 2910J
+preplace netloc EthernetController3_0_configuration_valid 1 5 2 2610J -190 2860J
+preplace netloc EthernetController3_0_configuration_vector 1 5 2 2600J -200 2850J
+preplace netloc EthernetController3_0_pcs_rst_out 1 5 2 2580J -220 2830J
+preplace netloc EthernetController3_0_phyaddr 1 5 2 NJ -180 2870J
+preplace netloc EthernetController3_0_riu_prsnt_1 1 5 2 NJ -40 2940J
+preplace netloc EthernetController3_0_riu_prsnt_2 1 5 2 NJ 20 2890J
+preplace netloc EthernetController3_0_riu_prsnt_3 1 5 2 NJ 80 2860J
+preplace netloc EthernetController3_0_riu_rddata_1 1 5 2 NJ -20 2880J
+preplace netloc EthernetController3_0_riu_rddata_2 1 5 2 NJ 40 2830J
+preplace netloc EthernetController3_0_riu_rddata_3 1 5 2 NJ 100 2820J
+preplace netloc EthernetController3_0_riu_valid_1 1 5 2 NJ -60 2970J
+preplace netloc EthernetController3_0_riu_valid_2 1 5 2 NJ 0 2930J
+preplace netloc EthernetController3_0_riu_valid_3 1 5 2 NJ 60 2910J
+preplace netloc EthernetController3_0_rx_dly_rdy_1 1 5 2 NJ 140 2960J
+preplace netloc EthernetController3_0_rx_dly_rdy_2 1 5 2 NJ 220 3010J
+preplace netloc EthernetController3_0_rx_dly_rdy_3 1 5 2 NJ 300 3050J
+preplace netloc EthernetController3_0_rx_vtc_rdy_1 1 5 2 NJ 180 2990J
+preplace netloc EthernetController3_0_rx_vtc_rdy_2 1 5 2 NJ 260 3030J
+preplace netloc EthernetController3_0_rx_vtc_rdy_3 1 5 2 NJ 340 3060J
+preplace netloc EthernetController3_0_signal_detect 1 5 2 2530J -210 2840J
+preplace netloc EthernetController3_0_speed_is_100 1 5 2 2560J -230 2820J
+preplace netloc EthernetController3_0_speed_is_10_100 1 5 2 NJ -240 2810J
+preplace netloc EthernetController3_0_tx_dly_rdy_1 1 5 2 NJ 120 2920J
+preplace netloc EthernetController3_0_tx_dly_rdy_2 1 5 2 NJ 200 3000J
+preplace netloc EthernetController3_0_tx_dly_rdy_3 1 5 2 NJ 280 3040J
+preplace netloc EthernetController3_0_tx_vtc_rdy_1 1 5 2 NJ 160 2980J
+preplace netloc EthernetController3_0_tx_vtc_rdy_2 1 5 2 NJ 240 3020J
+preplace netloc EthernetController3_0_tx_vtc_rdy_3 1 5 2 NJ 320 2810J
+preplace netloc EthernetMDIOController_mdio_t_ctrl 1 4 3 1960J -510 2600J -500 2980J
+preplace netloc EthernetMDIOController_registerReadData 1 2 3 730 1490 NJ 1490 1970
+preplace netloc EthernetMDIOController_registerReadReady 1 2 3 720 1140 1290J 1380 1910
+preplace netloc EthernetMDIOController_registerWriteComplete 1 2 3 740 1150 1260J 1390 1900
+preplace netloc SGMII_PHY_Bringup_MDIO_phyBringupComplete 1 3 2 1420 290 NJ
+preplace netloc SGMII_PHY_Bringup_MD_0_newRequestData 1 3 1 N 1270
+preplace netloc SGMII_PHY_Bringup_MD_0_newRequestDevTypeRegister 1 3 1 N 1230
+preplace netloc SGMII_PHY_Bringup_MD_0_newRequestIsWrite 1 3 1 N 1290
+preplace netloc SGMII_PHY_Bringup_MD_0_newRequestPHYAddress 1 3 1 N 1210
+preplace netloc SGMII_PHY_Bringup_MD_0_newRequestRegister 1 3 1 N 1250
+preplace netloc SGMII_PHY_Bringup_MD_0_newRequestStart 1 3 1 N 1310
+preplace netloc clk_333_250_to_10_0_clk_out10_0 1 1 1 NJ 1070
+preplace netloc ddr4_0_c0_ddr4_ui_clk 1 0 4 20 550 380 330 700 890 1320
+preplace netloc gig_ethernet_pcs_pma_0_clk125_out 1 1 7 400 -10 670J -50 1400 -130 1980 -530 NJ -530 2950J 320 3490
+preplace netloc gig_ethernet_pcs_pma_0_gmii_isolate_0 1 4 4 1990 -500 2590J -450 2900J 330 3470
+preplace netloc gig_ethernet_pcs_pma_0_rx_locked 1 4 4 1980 1070 NJ 1070 NJ 1070 3480
+preplace netloc gig_ethernet_pcs_pma_0_status_vector_0 1 4 4 1990 1060 NJ 1060 NJ 1060 3500
+preplace netloc gig_ethernet_pcs_pma_0_tx_locked 1 4 4 1970 1080 NJ 1080 NJ 1080 3460
+preplace netloc recv_pkt_data_fifo_wr_data_count 1 4 1 1920 -440n
+preplace netloc recv_pkt_header_fifo_prog_full 1 4 1 1930 -630n
+preplace netloc send_pkt_data_fifo_wr_data_count 1 2 3 730 -60 1380J 100 1900
+preplace netloc send_pkt_header_fifo_prog_full 1 2 3 710 -70 1390J 110 1910
+preplace netloc CommandProcessor_0_returnPacketsFIFO 1 0 4 NJ 830 NJ 830 660J 880 1410J
+preplace netloc CommandProcessor_0_validPacketsFIFO 1 0 4 NJ 1010 NJ 1010 NJ 1010 NJ
+preplace netloc Conn1 1 7 1 NJ -440
+preplace netloc Conn2 1 7 1 NJ -420
+preplace netloc Conn3 1 0 7 NJ -110 NJ -110 NJ -110 1350J -120 1940J -540 NJ -540 3000J
+preplace netloc EthernetController3_0_GMII 1 5 2 NJ -440 2960J
+preplace netloc EthernetController3_0_RecvScratchRDB 1 5 1 2580 -610n
+preplace netloc EthernetController3_0_RecvScratchWRA 1 5 1 2570 -630n
+preplace netloc EthernetController3_0_recv_pkt_data 1 3 3 1410 -740 1990J -630 2560
+preplace netloc EthernetController3_0_recv_pkt_header 1 3 3 1420 -730 1980J -620 2550
+preplace netloc EthernetController3_0_send_pkt_data 1 3 3 1440 -710 1940J -600 2540
+preplace netloc EthernetController3_0_send_pkt_header 1 3 3 1430 -720 1960J -610 2530
+preplace netloc EthernetMDIOController_MDIO 1 4 3 1950J -520 2610J -510 2990J
+preplace netloc NetProtoPacketProcessor_SendPacketBRAMR 1 3 1 N 190
+preplace netloc NetProtoPacketProcessor_SendPacketBRAMW 1 3 1 N 170
+preplace netloc NetProtoPacketProcessor_recv_pkt_data 1 3 1 1340 -450n
+preplace netloc NetProtoPacketProcessor_recv_pkt_header 1 3 1 1260 -630n
+preplace netloc NetProtoPacketProcessor_returnPacketsFIFO 1 3 1 1360 150n
+preplace netloc NetProtoPacketProcessor_send_pkt_data 1 3 1 1370 -40n
+preplace netloc NetProtoPacketProcessor_send_pkt_header 1 3 1 1360 -290n
+preplace netloc NetProtoPacketProcessor_validPacketsFIFO 1 3 1 1390 130n
+levelinfo -pg 1 -160 130 530 1000 1670 2260 2710 3260 3520
+pagesize -pg 1 -db -bbox -sgen -330 -1010 3640 1500
+"
+}
+0

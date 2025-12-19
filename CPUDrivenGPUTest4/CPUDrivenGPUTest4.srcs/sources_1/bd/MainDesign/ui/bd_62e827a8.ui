@@ -1,0 +1,39 @@
+{
+   "ActiveEmotionalView":"Default View",
+   "Default View_ScaleFactor":"1.34389",
+   "Default View_TopLeft":"-120,327",
+   "ExpandedHierarchyInLayout":"",
+   "guistr":"# # String gsaved with Nlview 7.8.0 2024-04-26 e1825d835c VDI=44 GEI=38 GUI=JA:21.0
+#  -string -flagsOSRD
+preplace port port-id_clk -pg 1 -lvl 0 -x 0 -y 310 -defaultsOSRD
+preplace inst SDP_BRAM5 -pg 1 -lvl 2 -x 610 -y 660 -defaultsOSRD
+preplace inst SDP_BRAM6 -pg 1 -lvl 2 -x 610 -y 780 -defaultsOSRD
+preplace inst SDP_BRAM7 -pg 1 -lvl 2 -x 610 -y 900 -defaultsOSRD
+preplace inst SDP_BRAM0 -pg 1 -lvl 2 -x 610 -y 60 -defaultsOSRD
+preplace inst SDP_BRAM1 -pg 1 -lvl 2 -x 610 -y 180 -defaultsOSRD
+preplace inst SDP_BRAM2 -pg 1 -lvl 2 -x 610 -y 300 -defaultsOSRD
+preplace inst SDP_BRAM3 -pg 1 -lvl 2 -x 610 -y 420 -defaultsOSRD
+preplace inst SDP_BRAM4 -pg 1 -lvl 2 -x 610 -y 540 -defaultsOSRD
+preplace inst GPRQuad2_0 -pg 1 -lvl 1 -x 230 -y 460 -defaultsOSRD
+preplace netloc ddr4_0_c0_ddr4_ui_clk 1 0 1 N 310
+preplace netloc GPRQuad2_0_BRAM5W 1 1 1 490 490n
+preplace netloc GPRQuad2_0_BRAM5R 1 1 1 480 510n
+preplace netloc GPRQuad2_0_BRAM6W 1 1 1 470 530n
+preplace netloc GPRQuad2_0_BRAM6R 1 1 1 460 550n
+preplace netloc GPRQuad2_0_BRAM7W 1 1 1 450 570n
+preplace netloc GPRQuad2_0_BRAM7R 1 1 1 440 590n
+preplace netloc GPRQuad2_0_BRAM0W 1 1 1 440 50n
+preplace netloc GPRQuad2_0_BRAM0R 1 1 1 460 70n
+preplace netloc GPRQuad2_0_BRAM1W 1 1 1 470 170n
+preplace netloc GPRQuad2_0_BRAM1R 1 1 1 490 190n
+preplace netloc GPRQuad2_0_BRAM2W 1 1 1 500 290n
+preplace netloc GPRQuad2_0_BRAM2R 1 1 1 510 310n
+preplace netloc GPRQuad2_0_BRAM3W 1 1 1 N 410
+preplace netloc GPRQuad2_0_BRAM3R 1 1 1 N 430
+preplace netloc GPRQuad2_0_BRAM4W 1 1 1 510 450n
+preplace netloc GPRQuad2_0_BRAM4R 1 1 1 500 470n
+levelinfo -pg 1 0 230 610 710
+pagesize -pg 1 -db -bbox -sgen -70 -10 710 970
+"
+}
+

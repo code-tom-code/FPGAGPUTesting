@@ -1,0 +1,73 @@
+{
+   "ActiveEmotionalView":"Default View",
+   "Default View_ScaleFactor":"1.34389",
+   "Default View_TopLeft":"31,308",
+   "ExpandedHierarchyInLayout":"",
+   "guistr":"# # String gsaved with Nlview 7.8.0 2024-04-26 e1825d835c VDI=44 GEI=38 GUI=JA:21.0 threadsafe
+#  -string -flagsOSRD
+preplace port port-id_clk -pg 1 -lvl 0 -x 0 -y 310 -defaultsOSRD
+preplace port port-id_portA_en -pg 1 -lvl 0 -x 0 -y 370 -defaultsOSRD
+preplace port port-id_portB_en -pg 1 -lvl 0 -x 0 -y 450 -defaultsOSRD
+preplace port port-id_portW_en -pg 1 -lvl 0 -x 0 -y 530 -defaultsOSRD
+preplace portBus readQuadIndex -pg 1 -lvl 0 -x 0 -y 330 -defaultsOSRD
+preplace portBus writeQuadIndex -pg 1 -lvl 0 -x 0 -y 350 -defaultsOSRD
+preplace portBus portA_regType -pg 1 -lvl 0 -x 0 -y 390 -defaultsOSRD
+preplace portBus portA_regIdx -pg 1 -lvl 0 -x 0 -y 410 -defaultsOSRD
+preplace portBus portA_regChan -pg 1 -lvl 0 -x 0 -y 430 -defaultsOSRD
+preplace portBus portB_regType -pg 1 -lvl 0 -x 0 -y 470 -defaultsOSRD
+preplace portBus portB_regIdx -pg 1 -lvl 0 -x 0 -y 490 -defaultsOSRD
+preplace portBus portB_regChan -pg 1 -lvl 0 -x 0 -y 510 -defaultsOSRD
+preplace portBus portW_regType -pg 1 -lvl 0 -x 0 -y 550 -defaultsOSRD
+preplace portBus portW_regIdx -pg 1 -lvl 0 -x 0 -y 570 -defaultsOSRD
+preplace portBus portW_regChan -pg 1 -lvl 0 -x 0 -y 590 -defaultsOSRD
+preplace portBus portW_writeInData -pg 1 -lvl 0 -x 0 -y 610 -defaultsOSRD
+preplace portBus portA_readOutData -pg 1 -lvl 3 -x 750 -y 480 -defaultsOSRD
+preplace portBus portB_readOutData -pg 1 -lvl 3 -x 750 -y 500 -defaultsOSRD
+preplace inst SDP_BRAM5 -pg 1 -lvl 2 -x 630 -y 690 -defaultsOSRD
+preplace inst SDP_BRAM6 -pg 1 -lvl 2 -x 630 -y 810 -defaultsOSRD
+preplace inst SDP_BRAM7 -pg 1 -lvl 2 -x 630 -y 930 -defaultsOSRD
+preplace inst SDP_BRAM0 -pg 1 -lvl 2 -x 630 -y 60 -defaultsOSRD
+preplace inst SDP_BRAM1 -pg 1 -lvl 2 -x 630 -y 180 -defaultsOSRD
+preplace inst SDP_BRAM2 -pg 1 -lvl 2 -x 630 -y 300 -defaultsOSRD
+preplace inst SDP_BRAM3 -pg 1 -lvl 2 -x 630 -y 420 -defaultsOSRD
+preplace inst SDP_BRAM4 -pg 1 -lvl 2 -x 630 -y 570 -defaultsOSRD
+preplace inst GPRQuad2_0 -pg 1 -lvl 1 -x 230 -y 460 -defaultsOSRD
+preplace netloc GPRQuad2_0_portA_readOutData 1 1 2 510J 490 730J
+preplace netloc GPRQuad2_0_portB_readOutData 1 1 2 530J 500 NJ
+preplace netloc ddr4_0_c0_ddr4_ui_clk 1 0 1 N 310
+preplace netloc portA_en_1 1 0 1 NJ 370
+preplace netloc portA_regChan_1 1 0 1 NJ 430
+preplace netloc portA_regIdx_1 1 0 1 NJ 410
+preplace netloc portA_regType_1 1 0 1 NJ 390
+preplace netloc portB_en_1 1 0 1 NJ 450
+preplace netloc portB_regChan_1 1 0 1 NJ 510
+preplace netloc portB_regIdx_1 1 0 1 NJ 490
+preplace netloc portB_regType_1 1 0 1 NJ 470
+preplace netloc portW_en_1 1 0 1 NJ 530
+preplace netloc portW_regChan_1 1 0 1 NJ 590
+preplace netloc portW_regIdx_1 1 0 1 NJ 570
+preplace netloc portW_regType_1 1 0 1 NJ 550
+preplace netloc portW_writeInData_1 1 0 1 NJ 610
+preplace netloc readQuadIndex_1 1 0 1 NJ 330
+preplace netloc writeQuadIndex_1 1 0 1 NJ 350
+preplace netloc GPRQuad2_0_BRAM0R 1 1 1 460 70n
+preplace netloc GPRQuad2_0_BRAM0W 1 1 1 450 50n
+preplace netloc GPRQuad2_0_BRAM1R 1 1 1 510 190n
+preplace netloc GPRQuad2_0_BRAM1W 1 1 1 470 170n
+preplace netloc GPRQuad2_0_BRAM2R 1 1 1 530 310n
+preplace netloc GPRQuad2_0_BRAM2W 1 1 1 520 290n
+preplace netloc GPRQuad2_0_BRAM3R 1 1 1 N 430
+preplace netloc GPRQuad2_0_BRAM3W 1 1 1 N 410
+preplace netloc GPRQuad2_0_BRAM4R 1 1 1 500 470n
+preplace netloc GPRQuad2_0_BRAM4W 1 1 1 520 450n
+preplace netloc GPRQuad2_0_BRAM5R 1 1 1 480 510n
+preplace netloc GPRQuad2_0_BRAM5W 1 1 1 490 490n
+preplace netloc GPRQuad2_0_BRAM6R 1 1 1 460 550n
+preplace netloc GPRQuad2_0_BRAM6W 1 1 1 470 530n
+preplace netloc GPRQuad2_0_BRAM7R 1 1 1 440 590n
+preplace netloc GPRQuad2_0_BRAM7W 1 1 1 450 570n
+levelinfo -pg 1 0 230 630 750
+pagesize -pg 1 -db -bbox -sgen -230 -10 980 1000
+"
+}
+0

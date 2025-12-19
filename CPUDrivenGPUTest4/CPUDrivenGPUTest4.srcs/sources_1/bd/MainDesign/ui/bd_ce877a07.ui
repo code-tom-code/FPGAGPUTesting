@@ -1,0 +1,136 @@
+{
+   "ActiveEmotionalView":"Default View",
+   "Default View_ScaleFactor":"0.869236",
+   "Default View_TopLeft":"-101,1735",
+   "ExpandedHierarchyInLayout":"",
+   "HierExpandStatus_comment_0":"false",
+   "commentid":"",
+   "guistr":"# # String gsaved with Nlview 7.8.0 2024-04-26 e1825d835c VDI=44 GEI=38 GUI=JA:21.0 threadsafe
+#  -string -flagsOSRD
+preplace port CommandProcReadResponses -pg 1 -lvl 0 -x -1060 -y 330 -defaultsOSRD
+preplace port CommandProcReadRequests -pg 1 -lvl 0 -x -1060 -y 390 -defaultsOSRD
+preplace port default_sysclk1_300 -pg 1 -lvl 0 -x -1060 -y 1580 -defaultsOSRD
+preplace port ddr4_sdram_075 -pg 1 -lvl 7 -x 2340 -y 1820 -defaultsOSRD
+preplace port CommandProcWriteRequests -pg 1 -lvl 0 -x -1060 -y 670 -defaultsOSRD
+preplace port IBCacheReadRequests -pg 1 -lvl 0 -x -1060 -y 910 -defaultsOSRD
+preplace port IBCacheReadResponses -pg 1 -lvl 0 -x -1060 -y 1510 -defaultsOSRD
+preplace port VBCacheReadRequests -pg 1 -lvl 0 -x -1060 -y 1070 -defaultsOSRD
+preplace port VBCacheReadResponses -pg 1 -lvl 0 -x -1060 -y 1960 -defaultsOSRD
+preplace port TexSampReadRequests -pg 1 -lvl 0 -x -1060 -y 550 -defaultsOSRD
+preplace port TexSampReadResponses -pg 1 -lvl 0 -x -1060 -y 2000 -defaultsOSRD
+preplace port FIFO_WRITE -pg 1 -lvl 0 -x -1060 -y 1390 -defaultsOSRD
+preplace port FIFO_READ -pg 1 -lvl 0 -x -1060 -y 1790 -defaultsOSRD
+preplace port FIFO_WRITE1 -pg 1 -lvl 0 -x -1060 -y 2550 -defaultsOSRD
+preplace port FIFO_WRITE2 -pg 1 -lvl 0 -x -1060 -y 2870 -defaultsOSRD
+preplace port FIFO_WRITE3 -pg 1 -lvl 0 -x -1060 -y 650 -defaultsOSRD
+preplace port FIFO_READ1 -pg 1 -lvl 0 -x -1060 -y 2640 -defaultsOSRD
+preplace port FIFO_WRITE4 -pg 1 -lvl 0 -x -1060 -y 3030 -defaultsOSRD
+preplace port port-id_c0_ddr4_ui_clk -pg 1 -lvl 7 -x 2340 -y 1900 -defaultsOSRD
+preplace port port-id_outResetn -pg 1 -lvl 7 -x 2340 -y 2480 -defaultsOSRD
+preplace port port-id_CMD_MemoryControllerIsIdle -pg 1 -lvl 7 -x 2340 -y 2550 -defaultsOSRD
+preplace port port-id_reset -pg 1 -lvl 0 -x -1060 -y 1600 -defaultsOSRD
+preplace port port-id_addn_ui_clkout1 -pg 1 -lvl 7 -x 2340 -y 1460 -defaultsOSRD
+preplace port port-id_ScanoutClk_x10 -pg 1 -lvl 0 -x -1060 -y 1980 -defaultsOSRD
+preplace portBus STAT_MemReadCyclesIdle -pg 1 -lvl 7 -x 2340 -y 2100 -defaultsOSRD
+preplace portBus STAT_MemReadCyclesSpentWorking -pg 1 -lvl 7 -x 2340 -y 2120 -defaultsOSRD
+preplace portBus STAT_MemWriteCyclesIdle -pg 1 -lvl 7 -x 2340 -y 2140 -defaultsOSRD
+preplace portBus STAT_MemWriteCyclesSpentWorking -pg 1 -lvl 7 -x 2340 -y 2160 -defaultsOSRD
+preplace portBus STAT_MemReadCountBytesTransferred -pg 1 -lvl 7 -x 2340 -y 2180 -defaultsOSRD
+preplace portBus STAT_MemReadCountTransactions -pg 1 -lvl 7 -x 2340 -y 2320 -defaultsOSRD
+preplace portBus STAT_MemReadCountNonScanoutBytesTransferred -pg 1 -lvl 7 -x 2340 -y 2340 -defaultsOSRD
+preplace portBus STAT_MemReadCountNonScanoutTransactions -pg 1 -lvl 7 -x 2340 -y 2360 -defaultsOSRD
+preplace portBus STAT_MemWriteCountBytesTransferred -pg 1 -lvl 7 -x 2340 -y 2380 -defaultsOSRD
+preplace portBus STAT_MemWriteCountTransactions -pg 1 -lvl 7 -x 2340 -y 2400 -defaultsOSRD
+preplace inst ZStencilReadResponses -pg 1 -lvl 6 -x 2080 -y 2080 -defaultsOSRD
+preplace inst ScanoutReadResponses -pg 1 -lvl 6 -x 2080 -y 2680 -defaultsOSRD
+preplace inst IBCacheReadResponses -pg 1 -lvl 6 -x 2080 -y 1380 -defaultsOSRD
+preplace inst PacketDMAReadRequestsFIFO -pg 1 -lvl 1 -x -760 -y 1260 -defaultsOSRD
+preplace inst CommandProcReadResponses -pg 1 -lvl 6 -x 2080 -y 1540 -defaultsOSRD
+preplace inst ZStencilReadRequestsFIFO -pg 1 -lvl 1 -x -760 -y 1660 -defaultsOSRD
+preplace inst CommandProcReadRequestsFIFO -pg 1 -lvl 1 -x -760 -y 420 -defaultsOSRD
+preplace inst PacketDMAReadResponses -pg 1 -lvl 6 -x 2080 -y 2510 -defaultsOSRD
+preplace inst MemoryController_0 -pg 1 -lvl 3 -x 390 -y 2120 -defaultsOSRD
+preplace inst ZStencilWriteRequestsFIFO -pg 1 -lvl 2 -x -300 -y 3380 -defaultsOSRD
+preplace inst ROPWriteRequestsFIFO -pg 1 -lvl 2 -x -300 -y 2550 -defaultsOSRD
+preplace inst TexFetchReadRequestsFIFO -pg 1 -lvl 1 -x -760 -y 580 -defaultsOSRD
+preplace inst PacketDMAWriteRequestsFIFO -pg 1 -lvl 2 -x -300 -y 3220 -defaultsOSRD
+preplace inst ScanoutReadRequestsFIFO -pg 1 -lvl 1 -x -760 -y 770 -defaultsOSRD
+preplace inst ROPReadResponses -pg 1 -lvl 6 -x 2080 -y 1700 -defaultsOSRD
+preplace inst VBCacheReadResponses -pg 1 -lvl 6 -x 2080 -y 1860 -defaultsOSRD
+preplace inst ddr4_0 -pg 1 -lvl 5 -x 1550 -y 1880 -defaultsOSRD
+preplace inst TexFetchReadResponses -pg 1 -lvl 6 -x 2080 -y 2270 -defaultsOSRD
+preplace inst CommandProcWriteRequestsFIFO -pg 1 -lvl 2 -x -300 -y 2740 -defaultsOSRD
+preplace inst ClearBlockWriteRequestsFIFO -pg 1 -lvl 2 -x -300 -y 2900 -defaultsOSRD
+preplace inst ROPReadRequestsFIFO -pg 1 -lvl 1 -x -760 -y 1420 -defaultsOSRD
+preplace inst IBCacheReadRequestsFIFO -pg 1 -lvl 1 -x -760 -y 940 -defaultsOSRD
+preplace inst VBCacheReadRequestsFIFO -pg 1 -lvl 1 -x -760 -y 1100 -defaultsOSRD
+preplace inst mem_sys_reset -pg 1 -lvl 4 -x 1100 -y 1750 -defaultsOSRD
+preplace inst ResetN_UntilClockLocked -pg 1 -lvl 4 -x 1100 -y 1580 -defaultsOSRD
+preplace inst constant_always_locked -pg 1 -lvl 4 -x 1100 -y 1390 -defaultsOSRD
+preplace inst StatsWriteRequestsFIFO -pg 1 -lvl 2 -x -300 -y 3060 -defaultsOSRD
+preplace netloc MemoryController_0_CMD_MemoryControllerIsIdle 1 3 4 NJ 2110 NJ 2110 1750J 2780 2320
+preplace netloc MemoryController_0_STAT_MemReadCountBytesTransferred 1 3 4 NJ 2210 NJ 2210 1880J 1990 2280J
+preplace netloc MemoryController_0_STAT_MemReadCountNonScanoutBytesTransferred 1 3 4 NJ 2250 NJ 2250 1900J 2180 2260J
+preplace netloc MemoryController_0_STAT_MemReadCountNonScanoutTransactions 1 3 4 NJ 2270 NJ 2270 1780J 2360 NJ
+preplace netloc MemoryController_0_STAT_MemReadCountTransactions 1 3 4 NJ 2230 NJ 2230 1890J 2170 2270J
+preplace netloc MemoryController_0_STAT_MemReadCyclesIdle 1 3 4 NJ 2130 1350J 2080 1790J 1950 2320J
+preplace netloc MemoryController_0_STAT_MemReadCyclesSpentWorking 1 3 4 NJ 2150 1370J 2090 1820J 1960 2310J
+preplace netloc MemoryController_0_STAT_MemWriteCountBytesTransferred 1 3 4 NJ 2290 NJ 2290 1770J 2370 2320J
+preplace netloc MemoryController_0_STAT_MemWriteCountTransactions 1 3 4 NJ 2310 NJ 2310 1760J 2380 2260J
+preplace netloc MemoryController_0_STAT_MemWriteCyclesIdle 1 3 4 NJ 2170 NJ 2170 1850J 1970 2300J
+preplace netloc MemoryController_0_STAT_MemWriteCyclesSpentWorking 1 3 4 NJ 2190 NJ 2190 1870J 1980 2290J
+preplace netloc ResetN_UntilClockLoc_0_outResetn 1 2 5 100 2740 910J 2720 1310J 2720 1730 2790 2260
+preplace netloc constant_always_locked_dout 1 3 2 930 1450 1270
+preplace netloc ddr4_0_addn_ui_clkout1 1 5 2 1770 1290 2280
+preplace netloc ddr4_0_c0_ddr4_ui_clk 1 0 7 -1000 1970 -550 1970 70 1460 910 1490 NJ 1490 1840 1270 2320
+preplace netloc ddr4_0_c0_ddr4_ui_clk_sync_rst 1 3 3 930 1930 1320J 1730 1720
+preplace netloc ddr4_0_c0_init_calib_complete 1 2 4 110 1470 880J 1500 NJ 1500 1730
+preplace netloc proc_sys_reset_0_peripheral_aresetn 1 4 1 1370 1790n
+preplace netloc reset_1 1 0 5 -1040J 1780 -510 1510 -100 1480 720J 1920 1370
+preplace netloc wr_clk_1 1 0 6 -1030 2650 NJ 2650 -120J 2710 910J 2690 NJ 2690 1740J
+preplace netloc CommandProcessor_0_CommandProcReadRequestsFIFO 1 0 1 NJ 390
+preplace netloc CommandProcessor_0_CommandProcReadResponses 1 0 6 NJ 330 -560 340 N 340 NJ 340 N 340 1880
+preplace netloc CommandProcessor_0_CommandProcWriteRequests 1 0 2 NJ 670 -560
+preplace netloc Conn1 1 0 1 NJ 910
+preplace netloc Conn2 1 0 6 NJ 1510 -570J 1500 -120J 1440 920J 1470 NJ 1470 1750J
+preplace netloc Conn3 1 0 1 N 1070
+preplace netloc Conn4 1 0 6 -1020J 1980 NJ 1980 90J 1590 810J 1940 1290J 2020 1780J
+preplace netloc Conn5 1 0 1 N 550
+preplace netloc Conn6 1 0 6 NJ 2000 NJ 2000 80J 1580 800J 1960 1270J 2100 1770J
+preplace netloc Conn7 1 0 1 N 1390
+preplace netloc Conn8 1 0 6 NJ 1790 NJ 1790 -30J 1550 880J 1850 1280J 1720 1800J
+preplace netloc Conn9 1 0 2 NJ 2550 -540J
+preplace netloc Conn10 1 0 2 NJ 2870 NJ
+preplace netloc Conn11 1 0 1 -1030 650n
+preplace netloc Conn12 1 0 6 NJ 2640 NJ 2640 -80J 2680 NJ 2680 NJ 2680 1900J
+preplace netloc Conn13 1 0 2 NJ 3030 NJ
+preplace netloc MemoryController_0_ClearBlockWriteRequests 1 1 3 -530 2410 0 2650 670
+preplace netloc MemoryController_0_CommandProcReadRequests 1 0 4 -960 1540 N 1540 -80 1510 760
+preplace netloc MemoryController_0_CommandProcReadResponses 1 3 3 830 1860 1270 1680 1800
+preplace netloc MemoryController_0_CommandProcWriteRequests 1 1 3 -520 2420 -20 2660 710
+preplace netloc MemoryController_0_IBCacheReadRequests 1 0 4 -990 1760 N 1760 -20 1570 670
+preplace netloc MemoryController_0_IBCacheReadResponses 1 3 3 780 1900 1290 1520 1740
+preplace netloc MemoryController_0_M_AXI 1 3 2 850J 1880 1350
+preplace netloc MemoryController_0_PacketDMAReadRequests 1 0 4 -970 1550 N 1550 -70 1520 750
+preplace netloc MemoryController_0_PacketDMAReadResponses 1 3 3 780 1950 1360 1740 1800
+preplace netloc MemoryController_0_PacketDMAWriteRequests 1 1 3 -500 2440 -60 2670 690
+preplace netloc MemoryController_0_ROPReadRequests 1 0 4 -1010 2430 -540 2400 -40 2690 720
+preplace netloc MemoryController_0_ROPReadResponses 1 3 3 820 1480 N 1480 1860
+preplace netloc MemoryController_0_ROPWriteRequests 1 1 3 -510 2430 -70 2700 700
+preplace netloc MemoryController_0_ScanoutReadRequests 1 0 4 -940 1520 -580 1480 -110 1450 690
+preplace netloc MemoryController_0_ScanoutReadResponses 1 3 3 860 1650 N 1650 1810
+preplace netloc MemoryController_0_StatsWriteRequests 1 1 3 -490 2450 -100 2720 680
+preplace netloc MemoryController_0_TexFetchReadRequests 1 0 4 -950 1530 -550 1520 -90 1490 770
+preplace netloc MemoryController_0_TexFetchReadResponses 1 3 3 N 1990 1280 2000 1830
+preplace netloc MemoryController_0_VBCacheReadRequests 1 0 4 -980 1560 N 1560 -60 1530 740
+preplace netloc MemoryController_0_VBCacheReadResponses 1 3 3 790 1910 1330 1750 1880
+preplace netloc MemoryController_0_ZStencilReadRequests 1 0 4 -940 1750 -480 1580 -40 1560 730
+preplace netloc MemoryController_0_ZStencilReadResponses 1 3 3 840 1870 1300 1760 1860
+preplace netloc MemoryController_0_ZStencilWriteRequests 1 1 3 -480 2460 -110 2730 730
+preplace netloc ddr4_0_C0_DDR4 1 5 2 1760J 1280 2310
+preplace netloc default_sysclk1_300_1 1 0 5 -1020J 1570 N 1570 -50 1540 870J 1890 1340J
+levelinfo -pg 1 -1060 -760 -300 390 1100 1550 2080 2340
+pagesize -pg 1 -db -bbox -sgen -1320 -10 2770 3970
+"
+}
+0

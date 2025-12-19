@@ -1,0 +1,166 @@
+{
+   "ActiveEmotionalView":"Default View",
+   "Default View_ScaleFactor":"0.730385",
+   "Default View_TopLeft":"-315,-81",
+   "ExpandedHierarchyInLayout":"",
+   "guistr":"# # String gsaved with Nlview 7.8.0 2024-04-26 e1825d835c VDI=44 GEI=38 GUI=JA:21.0
+#  -string -flagsOSRD
+preplace port StatsWriteRequestsFIFO -pg 1 -lvl 3 -x 1170 -y 730 -defaultsOSRD
+preplace port port-id_clk -pg 1 -lvl 0 -x -20 -y 50 -defaultsOSRD
+preplace port port-id_CMD_PresentSignal -pg 1 -lvl 0 -x -20 -y 280 -defaultsOSRD
+preplace port port-id_CMD_SetNewStatsConfig -pg 1 -lvl 0 -x -20 -y 300 -defaultsOSRD
+preplace port port-id_CMD_EnableEventTimestamps -pg 1 -lvl 0 -x -20 -y 340 -defaultsOSRD
+preplace port port-id_CMD_StatsSaveComplete -pg 1 -lvl 3 -x 1170 -y 940 -defaultsOSRD
+preplace portBus STAT_SampleData -pg 1 -lvl 0 -x -20 -y 90 -defaultsOSRD
+preplace portBus CMD_WriteFrameStatsAddress -pg 1 -lvl 0 -x -20 -y 320 -defaultsOSRD
+preplace portBus CMD_WriteEventTimestampsAddress -pg 1 -lvl 0 -x -20 -y 360 -defaultsOSRD
+preplace portBus CMD_WriteEventTimestampOrders -pg 1 -lvl 0 -x -20 -y 380 -defaultsOSRD
+preplace portBus CMD_CountTimestampsMemoryWrites -pg 1 -lvl 3 -x 1170 -y 900 -defaultsOSRD
+preplace portBus CMD_CountTimestampsOrdersMemoryWrites -pg 1 -lvl 3 -x 1170 -y 920 -defaultsOSRD
+preplace portBus VBB_CyclesIdle -pg 1 -lvl 0 -x -20 -y 420 -defaultsOSRD
+preplace portBus VBB_CyclesSpentWorking -pg 1 -lvl 0 -x -20 -y 440 -defaultsOSRD
+preplace portBus VBB_CyclesWaitingForOutput -pg 1 -lvl 0 -x -20 -y 460 -defaultsOSRD
+preplace portBus VBB_CurrentDrawEventID -pg 1 -lvl 0 -x -20 -y 480 -defaultsOSRD
+preplace portBus VSHADER_CyclesIdle -pg 1 -lvl 0 -x -20 -y 500 -defaultsOSRD
+preplace portBus VSHADER_CyclesSpentWorking -pg 1 -lvl 0 -x -20 -y 520 -defaultsOSRD
+preplace portBus VSHADER_CyclesExecShaderCode -pg 1 -lvl 0 -x -20 -y 540 -defaultsOSRD
+preplace portBus VSHADER_CyclesWaitingForOutput -pg 1 -lvl 0 -x -20 -y 560 -defaultsOSRD
+preplace portBus VSHADER_CurrentDrawEventID -pg 1 -lvl 0 -x -20 -y 580 -defaultsOSRD
+preplace portBus IA_CyclesIdle -pg 1 -lvl 0 -x -20 -y 600 -defaultsOSRD
+preplace portBus IA_CyclesSpentWorking -pg 1 -lvl 0 -x -20 -y 620 -defaultsOSRD
+preplace portBus IA_CyclesLoadingDataToCache -pg 1 -lvl 0 -x -20 -y 640 -defaultsOSRD
+preplace portBus IA_CyclesWaitingForOutput -pg 1 -lvl 0 -x -20 -y 660 -defaultsOSRD
+preplace portBus IA_CurrentDrawEventID -pg 1 -lvl 0 -x -20 -y 680 -defaultsOSRD
+preplace portBus CLIP_CyclesIdle -pg 1 -lvl 0 -x -20 -y 700 -defaultsOSRD
+preplace portBus CLIP_CyclesSpentWorking -pg 1 -lvl 0 -x -20 -y 720 -defaultsOSRD
+preplace portBus CLIP_CyclesWaitingForOutput -pg 1 -lvl 0 -x -20 -y 740 -defaultsOSRD
+preplace portBus CLIP_CurrentDrawEventID -pg 1 -lvl 0 -x -20 -y 760 -defaultsOSRD
+preplace portBus TRISETUP_CyclesIdle -pg 1 -lvl 0 -x -20 -y 780 -defaultsOSRD
+preplace portBus TRISETUP_CyclesSpentWorking -pg 1 -lvl 0 -x -20 -y 800 -defaultsOSRD
+preplace portBus TRISETUP_CyclesWaitingForOutput -pg 1 -lvl 0 -x -20 -y 820 -defaultsOSRD
+preplace portBus TRISETUP_CurrentDrawEventID -pg 1 -lvl 0 -x -20 -y 840 -defaultsOSRD
+preplace portBus RAST_CyclesIdle -pg 1 -lvl 0 -x -20 -y 860 -defaultsOSRD
+preplace portBus RAST_CyclesSpentWorking -pg 1 -lvl 0 -x -20 -y 880 -defaultsOSRD
+preplace portBus RAST_CyclesWaitingForOutput -pg 1 -lvl 0 -x -20 -y 900 -defaultsOSRD
+preplace portBus RAST_CyclesWaitingForTriWorkCache -pg 1 -lvl 0 -x -20 -y 920 -defaultsOSRD
+preplace portBus RAST_CurrentDrawEventID -pg 1 -lvl 0 -x -20 -y 940 -defaultsOSRD
+preplace portBus DINTERP_CyclesIdle -pg 1 -lvl 0 -x -20 -y 960 -defaultsOSRD
+preplace portBus DINTERP_CyclesSpentWorking -pg 1 -lvl 0 -x -20 -y 980 -defaultsOSRD
+preplace portBus DINTERP_CyclesWaitingForOutput -pg 1 -lvl 0 -x -20 -y 1000 -defaultsOSRD
+preplace portBus DINTERP_CurrentDrawEventID -pg 1 -lvl 0 -x -20 -y 1020 -defaultsOSRD
+preplace portBus INTERP_CyclesIdle -pg 1 -lvl 0 -x -20 -y 1040 -defaultsOSRD
+preplace portBus INTERP_CyclesSpentWorking -pg 1 -lvl 0 -x -20 -y 1060 -defaultsOSRD
+preplace portBus INTERP_CyclesWaitingForOutput -pg 1 -lvl 0 -x -20 -y 1080 -defaultsOSRD
+preplace portBus INTERP_CurrentDrawEventID -pg 1 -lvl 0 -x -20 -y 1100 -defaultsOSRD
+preplace portBus TEXSAMP_CyclesIdle -pg 1 -lvl 0 -x -20 -y 1120 -defaultsOSRD
+preplace portBus TEXSAMP_CyclesSpentWorking -pg 1 -lvl 0 -x -20 -y 1140 -defaultsOSRD
+preplace portBus TEXSAMP_CyclesWaitingForOutput -pg 1 -lvl 0 -x -20 -y 1160 -defaultsOSRD
+preplace portBus TEXSAMP_CyclesWaitingCacheLoad -pg 1 -lvl 0 -x -20 -y 1180 -defaultsOSRD
+preplace portBus TEXSAMP_CurrentDrawEventID -pg 1 -lvl 0 -x -20 -y 1200 -defaultsOSRD
+preplace portBus ROP_CyclesIdle -pg 1 -lvl 0 -x -20 -y 1220 -defaultsOSRD
+preplace portBus ROP_CyclesSpentWorking -pg 1 -lvl 0 -x -20 -y 1240 -defaultsOSRD
+preplace portBus ROP_CyclesWaitingForOutput -pg 1 -lvl 0 -x -20 -y 1260 -defaultsOSRD
+preplace portBus ROP_CyclesWaitingForMemoryRead -pg 1 -lvl 0 -x -20 -y 1280 -defaultsOSRD
+preplace portBus ROP_CountCacheHits -pg 1 -lvl 0 -x -20 -y 1300 -defaultsOSRD
+preplace portBus ROP_CountCacheMisses -pg 1 -lvl 0 -x -20 -y 1320 -defaultsOSRD
+preplace portBus ROP_CurrentDrawEventID -pg 1 -lvl 0 -x -20 -y 1340 -defaultsOSRD
+preplace portBus CMD_CyclesIdle -pg 1 -lvl 0 -x -20 -y 1360 -defaultsOSRD
+preplace portBus CMD_CyclesSpentWorking -pg 1 -lvl 0 -x -20 -y 1380 -defaultsOSRD
+preplace portBus MEM_ReadCyclesIdle -pg 1 -lvl 0 -x -20 -y 1400 -defaultsOSRD
+preplace portBus MEM_ReadCyclesSpentWorking -pg 1 -lvl 0 -x -20 -y 1420 -defaultsOSRD
+preplace portBus MEM_WriteCyclesIdle -pg 1 -lvl 0 -x -20 -y 1440 -defaultsOSRD
+preplace portBus MEM_WriteCyclesSpentWorking -pg 1 -lvl 0 -x -20 -y 1460 -defaultsOSRD
+preplace portBus MEM_MemReadCountBytesTransferred -pg 1 -lvl 0 -x -20 -y 1480 -defaultsOSRD
+preplace portBus MEM_MemReadCountTransactions -pg 1 -lvl 0 -x -20 -y 1500 -defaultsOSRD
+preplace portBus MEM_MemReadCountNonScanoutBytesTransferred -pg 1 -lvl 0 -x -20 -y 1520 -defaultsOSRD
+preplace portBus MEM_MemReadCountNonScanoutTransactions -pg 1 -lvl 0 -x -20 -y 1540 -defaultsOSRD
+preplace portBus MEM_MemWriteCountBytesTransferred -pg 1 -lvl 0 -x -20 -y 1560 -defaultsOSRD
+preplace portBus MEM_MemWriteCountTransactions -pg 1 -lvl 0 -x -20 -y 1580 -defaultsOSRD
+preplace inst StatsDataCache -pg 1 -lvl 2 -x 970 -y 660 -defaultsOSRD
+preplace inst StatsWriteOrderNibblesFIFO -pg 1 -lvl 2 -x 970 -y 820 -defaultsOSRD
+preplace inst StatsDataSampler_0 -pg 1 -lvl 1 -x 380 -y 80 -defaultsOSRD
+preplace inst StatsCollector_0 -pg 1 -lvl 1 -x 380 -y 920 -defaultsOSRD
+preplace netloc AttrInterpolator_0_STAT_CurrentDrawEventID 1 0 1 NJ 1100
+preplace netloc AttrInterpolator_0_STAT_CyclesIdle 1 0 1 NJ 1040
+preplace netloc AttrInterpolator_0_STAT_CyclesSpentWorking 1 0 1 NJ 1060
+preplace netloc AttrInterpolator_0_STAT_CyclesWaitingForOutput 1 0 1 NJ 1080
+preplace netloc ClipUnit_0_STAT_CurrentDrawEventID 1 0 1 NJ 760
+preplace netloc ClipUnit_0_STAT_CyclesIdle 1 0 1 NJ 700
+preplace netloc ClipUnit_0_STAT_CyclesSpentWorking 1 0 1 NJ 720
+preplace netloc ClipUnit_0_STAT_CyclesWaitingForOutput 1 0 1 NJ 740
+preplace netloc CommandProcessor_0_STAT_CurrentCommandIndex 1 0 1 NJ 90
+preplace netloc CommandProcessor_0_STAT_CyclesIdle 1 0 1 NJ 1360
+preplace netloc CommandProcessor_0_STAT_CyclesSpentWorking 1 0 1 NJ 1380
+preplace netloc CommandProcessor_0_STAT_EnableEventTimestamps 1 0 1 NJ 340
+preplace netloc CommandProcessor_0_STAT_PresentSignal 1 0 1 NJ 280
+preplace netloc CommandProcessor_0_STAT_SetNewStatsConfig 1 0 1 NJ 300
+preplace netloc CommandProcessor_0_STAT_WriteEventTimestampOrders 1 0 1 NJ 380
+preplace netloc CommandProcessor_0_STAT_WriteEventTimestampsAddress 1 0 1 NJ 360
+preplace netloc CommandProcessor_0_STAT_WriteFrameStatsAddress 1 0 1 NJ 320
+preplace netloc DepthInterpolator_0_STAT_CurrentDrawEventID 1 0 1 NJ 1020
+preplace netloc DepthInterpolator_0_STAT_CyclesIdle 1 0 1 NJ 960
+preplace netloc DepthInterpolator_0_STAT_CyclesSpentWorking 1 0 1 NJ 980
+preplace netloc DepthInterpolator_0_STAT_CyclesWaitingForOutput 1 0 1 NJ 1000
+preplace netloc InputAssembler2_0_STAT_CurrentDrawEventID 1 0 1 NJ 680
+preplace netloc InputAssembler2_0_STAT_CyclesIdle 1 0 1 NJ 600
+preplace netloc InputAssembler2_0_STAT_CyclesLoadingDataToCache 1 0 1 NJ 640
+preplace netloc InputAssembler2_0_STAT_CyclesSpentWorking 1 0 1 NJ 620
+preplace netloc InputAssembler2_0_STAT_CyclesWaitingForOutput 1 0 1 NJ 660
+preplace netloc MemorySystem_STAT_MemReadCountBytesTransferred 1 0 1 NJ 1480
+preplace netloc MemorySystem_STAT_MemReadCountNonScanoutBytesTransferred 1 0 1 NJ 1520
+preplace netloc MemorySystem_STAT_MemReadCountNonScanoutTransactions 1 0 1 NJ 1540
+preplace netloc MemorySystem_STAT_MemReadCountTransactions 1 0 1 NJ 1500
+preplace netloc MemorySystem_STAT_MemReadCyclesIdle 1 0 1 NJ 1400
+preplace netloc MemorySystem_STAT_MemReadCyclesSpentWorking 1 0 1 NJ 1420
+preplace netloc MemorySystem_STAT_MemWriteCountBytesTransferred 1 0 1 NJ 1560
+preplace netloc MemorySystem_STAT_MemWriteCountTransactions 1 0 1 NJ 1580
+preplace netloc MemorySystem_STAT_MemWriteCyclesIdle 1 0 1 NJ 1440
+preplace netloc MemorySystem_STAT_MemWriteCyclesSpentWorking 1 0 1 NJ 1460
+preplace netloc ROP_0_STAT_CountCacheHits 1 0 1 NJ 1300
+preplace netloc ROP_0_STAT_CountCacheMisses 1 0 1 NJ 1320
+preplace netloc ROP_0_STAT_CurrentDrawEventID 1 0 1 NJ 1340
+preplace netloc ROP_0_STAT_CyclesIdle 1 0 1 NJ 1220
+preplace netloc ROP_0_STAT_CyclesSpentWorking 1 0 1 NJ 1240
+preplace netloc ROP_0_STAT_CyclesWaitingForMemoryRead 1 0 1 NJ 1280
+preplace netloc ROP_0_STAT_CyclesWaitingForOutput 1 0 1 NJ 1260
+preplace netloc Rasterizer_0_STAT_CurrentDrawEventID 1 0 1 NJ 940
+preplace netloc Rasterizer_0_STAT_CyclesIdle 1 0 1 NJ 860
+preplace netloc Rasterizer_0_STAT_CyclesSpentWorking 1 0 1 NJ 880
+preplace netloc Rasterizer_0_STAT_CyclesWaitingForOutput 1 0 1 NJ 900
+preplace netloc Rasterizer_0_STAT_CyclesWaitingForTriWorkCache 1 0 1 NJ 920
+preplace netloc ShaderCoreSystem_STAT_CurrentDrawEventID 1 0 1 NJ 580
+preplace netloc ShaderCoreSystem_STAT_CyclesExecShaderCode 1 0 1 NJ 540
+preplace netloc ShaderCoreSystem_STAT_CyclesIdle 1 0 1 NJ 500
+preplace netloc ShaderCoreSystem_STAT_CyclesSpentWorking 1 0 1 NJ 520
+preplace netloc ShaderCoreSystem_STAT_CyclesWaitingForOutput 1 0 1 NJ 560
+preplace netloc StatsCollector_0_CMD_CountTimestampsMemoryWrites 1 1 2 780J 910 1150J
+preplace netloc StatsCollector_0_CMD_CountTimestampsOrdersMemoryWrites 1 1 2 770J 920 NJ
+preplace netloc StatsCollector_0_CMD_StatsSaveComplete 1 1 2 760J 940 NJ
+preplace netloc StatsCollector_0_SAMP_Reset 1 0 2 10 190 740
+preplace netloc StatsCollector_0_SAMP_SamplingIntervalCycles 1 0 2 20 170 750
+preplace netloc StatsCollector_0_STAT_ResetWriteOrderNibblesFIFO 1 1 1 790 850n
+preplace netloc StatsDataSampler_0_STAT_CurrentWriteIndex 1 0 2 20 180 740
+preplace netloc TexSample_0_STAT_CurrentDrawEventID 1 0 1 NJ 1200
+preplace netloc TexSample_0_STAT_CyclesIdle 1 0 1 NJ 1120
+preplace netloc TexSample_0_STAT_CyclesSpentWorking 1 0 1 NJ 1140
+preplace netloc TexSample_0_STAT_CyclesWaitingCacheLoad 1 0 1 NJ 1180
+preplace netloc TexSample_0_STAT_CyclesWaitingForOutput 1 0 1 NJ 1160
+preplace netloc TriSetup_0_STAT_CurrentDrawEventID 1 0 1 NJ 840
+preplace netloc TriSetup_0_STAT_CyclesIdle 1 0 1 NJ 780
+preplace netloc TriSetup_0_STAT_CyclesSpentWorking 1 0 1 NJ 800
+preplace netloc TriSetup_0_STAT_CyclesWaitingForOutput 1 0 1 NJ 820
+preplace netloc VertexBatchBuilder_STAT_CurrentDrawEventID 1 0 1 NJ 480
+preplace netloc VertexBatchBuilder_STAT_CyclesIdle 1 0 1 NJ 420
+preplace netloc VertexBatchBuilder_STAT_CyclesSpentWorking 1 0 1 NJ 440
+preplace netloc VertexBatchBuilder_STAT_CyclesWaitingForOutput 1 0 1 NJ 460
+preplace netloc ddr4_0_c0_ddr4_ui_clk 1 0 2 0 200 780J
+preplace netloc StatsCollector_0_SamplerCache 1 1 1 760 670n
+preplace netloc StatsCollector_0_StatsWriteOrderNibblesFIFO_RD 1 1 1 N 810
+preplace netloc StatsCollector_0_StatsWriteOrderNibblesFIFO_WR 1 1 1 N 790
+preplace netloc StatsCollector_0_StatsWriteRequestsFIFO 1 1 2 770J 730 NJ
+preplace netloc StatsDataSampler_0_SamplingCache 1 1 1 790 70n
+levelinfo -pg 1 -20 380 970 1170
+pagesize -pg 1 -db -bbox -sgen -450 -10 1550 1640
+"
+}
+0

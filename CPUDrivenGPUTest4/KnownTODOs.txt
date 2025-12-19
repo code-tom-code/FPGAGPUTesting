@@ -11,7 +11,6 @@ New Features:
 - Implement hardware cursor
 - Implement vertex fog/pixel fog
 - Implement point-sprites
-- Try upgrading to the latest Vivado to see if it improves build-times
 - Implement VS-Vertex Decl pairs (so that rendering using the same fixed function state or same vertex shader but with a different vertex declaration produces a different shader)
 - Implement driver-side shader cache management (storing multiple shaders at once to avoid too many shader reloads and I$ flushes)
 - Have texture samplers support non-power of 2 texture dimensions (non-square textures should already be supported so long as both Width and Height are powers of 2)

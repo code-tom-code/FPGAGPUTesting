@@ -15,37 +15,37 @@ ALU ops are submitted for one of each of the four lane quads on each cycle. In t
 
 | Index | Opcode        | Latency | Pipe | Source Args | Dest Args | Description |
 |:-----:|:-------------:|:-------:|:----:|:-----------:|:---------:|:-----------:|
-| 0     | NOP           | 1       | NONE | 0           | 0         | NOP does nothing. |
-| 1     | MOV           | 1       | CMP  | 1           | 1         | MOV moves between two registers. |
+| 0     | NOP           | 1       | NONE | 0           | 0         | NOP ("no-op") does nothing. |
+| 1     | MOV           | 1       | CMP  | 1           | 1         | MOV ("move") moves between two registers. |
 | 2     | ADD           | 4       | ADD  | 2           | 1         | ADD adds two float32's together. |
-| 3     | MUL           | 5       | MUL  | 2           | 1         | MUL multiplies two float32's together. |
-| 4     | MIN           | 1       | CMP  | 2           | 1         | MIN finds the lesser of two float32's. |
-| 5     | MAX           | 1       | CMP  | 2           | 1         | MAX finds the greater of two float32's. |
-| 6     | RCP           | 14      | SPEC | 1           | 1         | RCP calculates 1.0f / x for a float32. |
-| 7     | FRC           | 3       | CNV  | 1           | 1         | FRC calculates the fractional part of a float32. |
-| 8     | EXP           | NotImpl | SPEC | 1           | 1         | EXP calculates 2.0f ^ x for a float32. |
-| 9     | LOG           | NotImpl | SPEC | 1           | 1         | LOG calculates log2(x) for a float32. |
-| 10    | RSQ           | NotImpl | SPEC | 1           | 1         | RSQ calculates 1.0f / sqrt(x) for a float32. |
-| 11    | SLT           | 1       | CMP  | 2           | 1         | SLT computes if the first arg is less than the second arg. |
-| 12    | SGE           | 1       | CMP  | 2           | 1         | SGE computes if the first arg is greater or equal to the second arg. |
-| 13    | SGN           | 1       | CMP  | 1           | 1         | SGN returns the sign of the float32 arg (or 0 for a zero value). |
+| 3     | MUL           | 5       | MUL  | 2           | 1         | MUL ("MULtiply") multiplies two float32's together. |
+| 4     | MIN           | 1       | CMP  | 2           | 1         | MIN ("MINimum") finds the lesser of two float32's. |
+| 5     | MAX           | 1       | CMP  | 2           | 1         | MAX ("MAXimum") finds the greater of two float32's. |
+| 6     | RCP           | 14      | SPEC | 1           | 1         | RCP ("ReCiProcal") calculates 1.0f / x for a float32. |
+| 7     | FRC           | 3       | CNV  | 1           | 1         | FRC ("FRaCtional") calculates the fractional part of a float32. |
+| 8     | EXP           | NotImpl | SPEC | 1           | 1         | EXP ("EXPonential") calculates 2.0f ^ x for a float32. |
+| 9     | LOG           | NotImpl | SPEC | 1           | 1         | LOG ("LOGarithm") calculates log2(x) for a float32. |
+| 10    | RSQ           | NotImpl | SPEC | 1           | 1         | RSQ ("Reciprocal SQuare-root") calculates 1.0f / sqrt(x) for a float32. |
+| 11    | SLT           | 1       | CMP  | 2           | 1         | SLT ("Select Less-Than") computes if the first arg is less than the second arg. |
+| 12    | SGE           | 1       | CMP  | 2           | 1         | SGE ("Select Greater-Equal") computes if the first arg is greater or equal to the second arg. |
+| 13    | SGN           | 1       | CMP  | 1           | 1         | SGN ("SiGN") returns the sign of the float32 arg (or 0 for a zero value). |
 | 14    | Unused        | NotImpl | NONE | 0           | 0         | Unused. |
-| 15    | RND_SINT23NE  | 3       | CNV  | 1           | 1         | RND_SINT23NE rounds the given float32 to a signed 23-bit integer (using round-to-nearest) placed into the low 23 bits of the result register. |
-| 16    | RND_SINT16NE  | 3       | CNV  | 1           | 1         | RND_SINT16NE rounds the given float32 to a signed 16-bit integer (using round-to-nearest) placed into the low 16 bits of the result register. |
-| 17    | CNV_UNORM16   | 3       | CNV  | 1           | 1         | CNV_UNORM16 saturates, and then converts the given float32 to a UNORM16 placed into the low 16 bits of the result register. |
-| 18    | CNV_UNORM8    | 3       | CNV  | 1           | 1         | CNV_UNORM8 saturates, and then converts the given float32 to a UNORM8 placed into the low 8 bits of the result register. |
-| 19    | SHFT          | 1       | SHFT | 1           | 1         | SHFT performs quick (one-cycle) multiplies or divides by 2x, 4x, 8x, or 16x. |
-| 20    | BSHFTL8       | 1       | BIT  | 1           | 1         | BSHFTL8 computes the bit-shift (x << 8) as an int32/uint32. |
-| 21    | BSHFTL16      | 1       | BIT  | 1           | 1         | BSHFTL16 computes the bit-shift (x << 16) as an int32/uint32. |
-| 22    | BSHFTL24      | 1       | BIT  | 1           | 1         | BSHFTL24 computes the bit-shift (x << 24) as an int32/uint32. |
-| 23    | BSHFTR8       | 1       | BIT  | 1           | 1         | BSHFTR8 computes the bit-shift (x >> 8) as an int32/uint32. |
-| 24    | BSHFTR16      | 1       | BIT  | 1           | 1         | BSHFTR16 computes the bit-shift (x >> 16) as an int32/uint32. |
-| 25    | BSHFTR24      | 1       | BIT  | 1           | 1         | BSHFTR24 computes the bit-shift (x >> 24) as an int32/uint32. |
+| 15    | RND_SINT23NE  | 3       | CNV  | 1           | 1         | RND_SINT23NE ("RouND to Signed 23-bit INTeger Nearest-Even") rounds the given float32 to a signed 23-bit integer (using round-to-nearest) placed into the low 23 bits of the result register. |
+| 16    | RND_SINT16NE  | 3       | CNV  | 1           | 1         | RND_SINT16NE ("RouND to Signed 16-bit INTeger Nearest-Even") rounds the given float32 to a signed 16-bit integer (using round-to-nearest) placed into the low 16 bits of the result register. |
+| 17    | CNV_UNORM16   | 3       | CNV  | 1           | 1         | CNV_UNORM16 ("CoNVert to UNORM16") saturates, and then converts the given float32 to a UNORM16 placed into the low 16 bits of the result register. |
+| 18    | CNV_UNORM8    | 3       | CNV  | 1           | 1         | CNV_UNORM8 ("CoNVert to UNORM8") saturates, and then converts the given float32 to a UNORM8 placed into the low 8 bits of the result register. |
+| 19    | SHFT          | 1       | SHFT | 1           | 1         | SHFT ("SHiFT") performs quick (one-cycle) multiplies or divides by 2x, 4x, 8x, or 16x. |
+| 20    | BSHFTL8       | 1       | BIT  | 1           | 1         | BSHFTL8 ("Bit-SHiFT Left by 8") computes the bit-shift (x << 8) as an int32/uint32. |
+| 21    | BSHFTL16      | 1       | BIT  | 1           | 1         | BSHFTL16 ("Bit-SHiFT Left by 16") computes the bit-shift (x << 16) as an int32/uint32. |
+| 22    | BSHFTL24      | 1       | BIT  | 1           | 1         | BSHFTL24 ("Bit-SHiFT Left by 24") computes the bit-shift (x << 24) as an int32/uint32. |
+| 23    | BSHFTR8       | 1       | BIT  | 1           | 1         | BSHFTR8 ("Bit-SHiFT Right by 8") computes the bit-shift (x >> 8) as an int32/uint32. |
+| 24    | BSHFTR16      | 1       | BIT  | 1           | 1         | BSHFTR16 ("Bit-SHiFT Right by 16") computes the bit-shift (x >> 16) as an int32/uint32. |
+| 25    | BSHFTR24      | 1       | BIT  | 1           | 1         | BSHFTR24 ("Bit-SHiFT Right by 24") computes the bit-shift (x >> 24) as an int32/uint32. |
 | 26    | OR            | 1       | BIT  | 2           | 1         | OR computes the bitwise-OR of the two arguments (arg1 | arg2). |
 | 27    | AND           | 1       | BIT  | 2           | 1         | AND computes the bitwise-AND of the two arguments (arg1 & arg2). |
-| 28    | CNV_F_TO_HALF | 3       | CNV  | 1           | 1         | CNV_F_TO_HALF converts a float32 to a float16, placed into the lower 16 bits of the result register. |
-| 29    | CNV_HALF_TO_F | 3       | CNV  | 1           | 1         | CNV_HALF_TO_F converts a float16 (assumed to be in the low 16 bits of the source register) to a float32. |
-| 30    | CNV_U32_TO_F  | 3       | CNV  | 1           | 1         | CNV_U32_TO_F converts a uint32 to a float32. |
+| 28    | CNV_F_TO_HALF | 3       | CNV  | 1           | 1         | CNV_F_TO_HALF ("CoNVert Float32 TO HALF") converts a float32 to a float16, placed into the lower 16 bits of the result register. |
+| 29    | CNV_HALF_TO_F | 3       | CNV  | 1           | 1         | CNV_HALF_TO_F ("CoNVert HALF TO Float32") converts a float16 (assumed to be in the low 16 bits of the source register) to a float32. |
+| 30    | CNV_U32_TO_F  | 3       | CNV  | 1           | 1         | CNV_U32_TO_F ("CoNVert Uint32 TO Float32") converts a uint32 to a float32. |
 | 31    | END           | 1       | NONE | 0           | 0         | END finishes a shader program and waits for all writes to flush. This must always be the last instruction. |
 
 ## Instruction Modifiers (Supported on all instructions)

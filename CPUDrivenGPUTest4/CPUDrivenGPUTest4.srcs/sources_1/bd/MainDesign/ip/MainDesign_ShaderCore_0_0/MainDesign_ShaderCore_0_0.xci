@@ -1,52 +1,231 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<spirit:design xmlns:xilinx="http://www.xilinx.com" xmlns:spirit="http://www.spiritconsortium.org/XMLSchema/SPIRIT/1685-2009" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <spirit:vendor>xilinx.com</spirit:vendor>
-  <spirit:library>xci</spirit:library>
-  <spirit:name>unknown</spirit:name>
-  <spirit:version>1.0</spirit:version>
-  <spirit:componentInstances>
-    <spirit:componentInstance>
-      <spirit:instanceName>design_1_ShaderCore_0_0</spirit:instanceName>
-      <spirit:componentRef spirit:vendor="xilinx.com" spirit:library="module_ref" spirit:name="ShaderCore" spirit:version="1.0"/>
-      <spirit:configurableElementValues>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.CLK.ASSOCIATED_BUSIF"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.CLK.ASSOCIATED_RESET"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.CLK.CLK_DOMAIN">design_1_ddr4_0_1_c0_ddr4_ui_clk</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.CLK.PHASE">0.00</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.ICACHE.MASTER_TYPE">OTHER</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.ICACHE.MEM_ECC">NONE</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.ICACHE.MEM_SIZE">8192</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.ICACHE.MEM_WIDTH">32</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.ICACHE.READ_WRITE_MODE"/>
-        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.Component_Name">design_1_ShaderCore_0_0</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PROJECT_PARAM.ARCHITECTURE">kintexuplus</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PROJECT_PARAM.BOARD">xilinx.com:kcu116:part0:1.3</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PROJECT_PARAM.DEVICE">xcku5p</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PROJECT_PARAM.PACKAGE">ffvb676</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PROJECT_PARAM.PREFHDL">VHDL</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PROJECT_PARAM.SILICON_REVISION"/>
-        <spirit:configurableElementValue spirit:referenceId="PROJECT_PARAM.SIMULATOR_LANGUAGE">VHDL</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PROJECT_PARAM.SPEEDGRADE">-2</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PROJECT_PARAM.TEMPERATURE_GRADE">E</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PROJECT_PARAM.USE_RDI_CUSTOMIZATION">TRUE</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PROJECT_PARAM.USE_RDI_GENERATION">TRUE</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="RUNTIME_PARAM.IPCONTEXT">IP_Integrator</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="RUNTIME_PARAM.IPREVISION">1</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="RUNTIME_PARAM.MANAGED">TRUE</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="RUNTIME_PARAM.OUTPUTDIR">.</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="RUNTIME_PARAM.SELECTEDSIMMODEL"/>
-        <spirit:configurableElementValue spirit:referenceId="RUNTIME_PARAM.SHAREDDIR">../../ipshared</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="RUNTIME_PARAM.SWVERSION">2018.1_AR73068</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="RUNTIME_PARAM.SYNTHESISFLOW">OOC_HIERARCHICAL</spirit:configurableElementValue>
-      </spirit:configurableElementValues>
-      <spirit:vendorExtensions>
-        <xilinx:componentInstanceExtensions>
-          <xilinx:configElementInfos>
-            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.CLK.CLK_DOMAIN" xilinx:valueSource="default_prop" xilinx:valuePermission="bd"/>
-            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.CLK.PHASE" xilinx:valueSource="constant_prop" xilinx:valuePermission="bd_and_user"/>
-          </xilinx:configElementInfos>
-        </xilinx:componentInstanceExtensions>
-      </spirit:vendorExtensions>
-    </spirit:componentInstance>
-  </spirit:componentInstances>
-</spirit:design>
+{
+  "schema": "xilinx.com:schema:json_instance:1.0",
+  "ip_inst": {
+    "xci_name": "MainDesign_ShaderCore_0_0",
+    "cell_name": "ShaderCoreSystem/ShaderCore_0",
+    "component_reference": "xilinx.com:module_ref:ShaderCore:1.0",
+    "ip_revision": "1",
+    "gen_directory": "../../../../../../CPUDrivenGPUTest4.gen/sources_1/bd/MainDesign/ip/MainDesign_ShaderCore_0_0",
+    "parameters": {
+      "component_parameters": {
+        "Component_Name": [ { "value": "MainDesign_ShaderCore_0_0", "resolve_type": "user", "usage": "all" } ]
+      },
+      "project_parameters": {
+        "ARCHITECTURE": [ { "value": "kintexuplus", "resolve_type": "generated", "usage": "all" } ],
+        "BASE_BOARD_PART": [ { "value": "xilinx.com:kcu116:part0:1.5", "resolve_type": "generated", "usage": "all" } ],
+        "BOARD_CONNECTIONS": [ { "value": "", "resolve_type": "generated", "usage": "all" } ],
+        "DEVICE": [ { "value": "xcku5p", "resolve_type": "generated", "usage": "all" } ],
+        "PACKAGE": [ { "value": "ffvb676", "resolve_type": "generated", "usage": "all" } ],
+        "PREFHDL": [ { "value": "VHDL", "resolve_type": "generated", "usage": "all" } ],
+        "SILICON_REVISION": [ { "value": "", "resolve_type": "generated", "usage": "all" } ],
+        "SIMULATOR_LANGUAGE": [ { "value": "VHDL", "resolve_type": "generated", "usage": "all" } ],
+        "SPEEDGRADE": [ { "value": "-2", "resolve_type": "generated", "usage": "all" } ],
+        "STATIC_POWER": [ { "value": "", "resolve_type": "generated", "usage": "all" } ],
+        "TEMPERATURE_GRADE": [ { "value": "E", "resolve_type": "generated", "usage": "all" } ]
+      },
+      "runtime_parameters": {
+        "IPCONTEXT": [ { "value": "IP_Integrator" } ],
+        "IPREVISION": [ { "value": "1" } ],
+        "MANAGED": [ { "value": "TRUE" } ],
+        "OUTPUTDIR": [ { "value": "../../../../../../CPUDrivenGPUTest4.gen/sources_1/bd/MainDesign/ip/MainDesign_ShaderCore_0_0" } ],
+        "SELECTEDSIMMODEL": [ { "value": "" } ],
+        "SHAREDDIR": [ { "value": "../../ipshared" } ],
+        "SWVERSION": [ { "value": "2025.2" } ],
+        "SYNTHESISFLOW": [ { "value": "OOC_HIERARCHICAL" } ]
+      }
+    },
+    "boundary": {
+      "ports": {
+        "clk": [ { "direction": "in" } ],
+        "CMD_IsIdle": [ { "direction": "out", "driver_value": "0x0" } ],
+        "CMD_IsReadyForCommand": [ { "direction": "out", "driver_value": "0x0" } ],
+        "CMD_InCommand": [ { "direction": "in", "size_left": "2", "size_right": "0" } ],
+        "CMD_LoadProgramAddr": [ { "direction": "in", "size_left": "29", "size_right": "0" } ],
+        "CMD_LoadProgramLen": [ { "direction": "in", "size_left": "15", "size_right": "0" } ],
+        "CMD_SetConstantIndex": [ { "direction": "in", "size_left": "7", "size_right": "0" } ],
+        "CMD_SetConstantData": [ { "direction": "in", "size_left": "127", "size_right": "0" } ],
+        "CMD_SetNumVertexStreams": [ { "direction": "in", "size_left": "2", "size_right": "0" } ],
+        "CMD_SetVertexStreamID": [ { "direction": "in", "size_left": "2", "size_right": "0" } ],
+        "CMD_SetVertexStreamDWORDCount": [ { "direction": "in", "size_left": "2", "size_right": "0" } ],
+        "CMD_SetVertexStreamIsD3DCOLOR": [ { "direction": "in" } ],
+        "CMD_SetVertexStreamShaderRegIndex": [ { "direction": "in", "size_left": "2", "size_right": "0" } ],
+        "CMD_SetVertexStreamDWORDStride": [ { "direction": "in", "size_left": "5", "size_right": "0" } ],
+        "CMD_SetVertexStreamDWORDOffset": [ { "direction": "in", "size_left": "5", "size_right": "0" } ],
+        "VBB_Done": [ { "direction": "in" } ],
+        "VERTBATCH_FIFO_empty": [ { "direction": "in", "driver_value": "1" } ],
+        "VERTBATCH_FIFO_almost_empty": [ { "direction": "in", "driver_value": "1" } ],
+        "VERTBATCH_FIFO_rd_data": [ { "direction": "in", "size_left": "543", "size_right": "0", "driver_value": "0" } ],
+        "VERTBATCH_FIFO_rd_en": [ { "direction": "out", "driver_value": "0x0" } ],
+        "VBO_Pushed": [ { "direction": "out", "driver_value": "0x0" } ],
+        "VBO_NumVertices": [ { "direction": "out", "size_left": "4", "size_right": "0", "driver_value": "0" } ],
+        "VBO_NumIndices": [ { "direction": "out", "size_left": "6", "size_right": "0", "driver_value": "0" } ],
+        "VBO_IsIndexedDrawCall": [ { "direction": "out", "driver_value": "0x0" } ],
+        "VBO_Ready": [ { "direction": "in" } ],
+        "VERTOUT_FIFO_full": [ { "direction": "in", "driver_value": "0" } ],
+        "VERTOUT_FIFO_wr_data": [ { "direction": "out", "size_left": "319", "size_right": "0" } ],
+        "VERTOUT_FIFO_wr_en": [ { "direction": "out", "driver_value": "0x0" } ],
+        "INDEXOUT_FIFO_full": [ { "direction": "in", "driver_value": "0" } ],
+        "INDEXOUT_FIFO_wr_data": [ { "direction": "out", "size_left": "271", "size_right": "0" } ],
+        "INDEXOUT_FIFO_wr_en": [ { "direction": "out", "driver_value": "0x0" } ],
+        "VSC_ReadEnable": [ { "direction": "out", "driver_value": "0x0" } ],
+        "VSC_ReadStreamIndex": [ { "direction": "out", "size_left": "2", "size_right": "0", "driver_value": "0" } ],
+        "VSC_ReadDWORDAddr": [ { "direction": "out", "size_left": "21", "size_right": "0", "driver_value": "0" } ],
+        "VSC_ReadData": [ { "direction": "in", "size_left": "31", "size_right": "0" } ],
+        "VSC_ReadReady": [ { "direction": "in" } ],
+        "VSC_SetStreamVBAddress": [ { "direction": "out", "driver_value": "0x0" } ],
+        "VSC_StreamIndex": [ { "direction": "out", "size_left": "2", "size_right": "0", "driver_value": "0" } ],
+        "VSC_StreamVBAddress": [ { "direction": "out", "size_left": "29", "size_right": "0", "driver_value": "0" } ],
+        "VSC_InvalidateCache": [ { "direction": "out", "driver_value": "0x0" } ],
+        "ICache_Clk": [ { "direction": "out", "driver_value": "0x0" } ],
+        "ICache_Enable": [ { "direction": "out", "driver_value": "0x0" } ],
+        "ICache_WriteMode": [ { "direction": "out", "size_left": "0", "size_right": "0", "driver_value": "0" } ],
+        "ICache_Address": [ { "direction": "out", "size_left": "8", "size_right": "0", "driver_value": "0" } ],
+        "ICache_WriteData": [ { "direction": "out", "size_left": "63", "size_right": "0", "driver_value": "0" } ],
+        "ICache_ReadData": [ { "direction": "in", "size_left": "63", "size_right": "0", "driver_value": "8" } ],
+        "CB_Enable": [ { "direction": "out", "driver_value": "0x0" } ],
+        "CB_WriteMode": [ { "direction": "out", "driver_value": "0x0" } ],
+        "CB_RegIndex": [ { "direction": "out", "size_left": "7", "size_right": "0", "driver_value": "0" } ],
+        "CB_RegComponent": [ { "direction": "out", "size_left": "1", "size_right": "0", "driver_value": "0" } ],
+        "CB_ReadOutData": [ { "direction": "in", "size_left": "31", "size_right": "0" } ],
+        "CB_WriteInData": [ { "direction": "out", "size_left": "31", "size_right": "0", "driver_value": "0" } ],
+        "GPR0_ReadQuadIndex": [ { "direction": "out", "size_left": "1", "size_right": "0", "driver_value": "0" } ],
+        "GPR0_WriteQuadIndex": [ { "direction": "out", "size_left": "1", "size_right": "0", "driver_value": "0" } ],
+        "GPR0_PortA_en": [ { "direction": "out", "driver_value": "0x0" } ],
+        "GPR0_PortA_regType": [ { "direction": "out", "size_left": "1", "size_right": "0", "driver_value": "0" } ],
+        "GPR0_PortA_regIdx": [ { "direction": "out", "size_left": "2", "size_right": "0", "driver_value": "0" } ],
+        "GPR0_PortA_regChan": [ { "direction": "out", "size_left": "1", "size_right": "0", "driver_value": "0" } ],
+        "GPR0_PortA_readOutData": [ { "direction": "in", "size_left": "127", "size_right": "0" } ],
+        "GPR0_PortB_en": [ { "direction": "out", "driver_value": "0x0" } ],
+        "GPR0_PortB_regType": [ { "direction": "out", "size_left": "1", "size_right": "0", "driver_value": "0" } ],
+        "GPR0_PortB_regIdx": [ { "direction": "out", "size_left": "2", "size_right": "0", "driver_value": "0" } ],
+        "GPR0_PortB_regChan": [ { "direction": "out", "size_left": "1", "size_right": "0", "driver_value": "0" } ],
+        "GPR0_PortB_readOutData": [ { "direction": "in", "size_left": "127", "size_right": "0" } ],
+        "GPR0_PortW_en": [ { "direction": "out", "driver_value": "0x0" } ],
+        "GPR0_PortW_regType": [ { "direction": "out", "size_left": "1", "size_right": "0", "driver_value": "0" } ],
+        "GPR0_PortW_regIdx": [ { "direction": "out", "size_left": "2", "size_right": "0", "driver_value": "0" } ],
+        "GPR0_PortW_regChan": [ { "direction": "out", "size_left": "1", "size_right": "0", "driver_value": "0" } ],
+        "GPR0_PortW_writeInData": [ { "direction": "out", "size_left": "127", "size_right": "0", "driver_value": "0" } ],
+        "FPUALL_IN_MODE": [ { "direction": "out", "size_left": "2", "size_right": "0", "driver_value": "0" } ],
+        "FPUALL_ISHFT_GO": [ { "direction": "out", "driver_value": "0x0" } ],
+        "FPUALL_IMUL_GO": [ { "direction": "out", "driver_value": "0x0" } ],
+        "FPUALL_IADD_GO": [ { "direction": "out", "driver_value": "0x0" } ],
+        "FPUALL_ICMP_GO": [ { "direction": "out", "driver_value": "0x0" } ],
+        "FPUALL_ICNV_GO": [ { "direction": "out", "driver_value": "0x0" } ],
+        "FPUALL_ISPEC_GO": [ { "direction": "out", "driver_value": "0x0" } ],
+        "FPUALL_IBIT_GO": [ { "direction": "out", "driver_value": "0x0" } ],
+        "FPU0_IN_A": [ { "direction": "out", "size_left": "31", "size_right": "0", "driver_value": "0" } ],
+        "FPU0_IN_B": [ { "direction": "out", "size_left": "31", "size_right": "0", "driver_value": "0" } ],
+        "FPU0_OUT_RESULT": [ { "direction": "in", "size_left": "31", "size_right": "0" } ],
+        "FPU1_IN_A": [ { "direction": "out", "size_left": "31", "size_right": "0", "driver_value": "0" } ],
+        "FPU1_IN_B": [ { "direction": "out", "size_left": "31", "size_right": "0", "driver_value": "0" } ],
+        "FPU1_OUT_RESULT": [ { "direction": "in", "size_left": "31", "size_right": "0" } ],
+        "FPU2_IN_A": [ { "direction": "out", "size_left": "31", "size_right": "0", "driver_value": "0" } ],
+        "FPU2_IN_B": [ { "direction": "out", "size_left": "31", "size_right": "0", "driver_value": "0" } ],
+        "FPU2_OUT_RESULT": [ { "direction": "in", "size_left": "31", "size_right": "0" } ],
+        "FPU3_IN_A": [ { "direction": "out", "size_left": "31", "size_right": "0", "driver_value": "0" } ],
+        "FPU3_IN_B": [ { "direction": "out", "size_left": "31", "size_right": "0", "driver_value": "0" } ],
+        "FPU3_OUT_RESULT": [ { "direction": "in", "size_left": "31", "size_right": "0" } ],
+        "UNORM8ToFloat_Enable": [ { "direction": "out", "driver_value": "0x0" } ],
+        "UNORM8ToFloat_ColorIn": [ { "direction": "out", "size_left": "31", "size_right": "0", "driver_value": "0" } ],
+        "UNORM8ToFloat_ConvertedX": [ { "direction": "in", "size_left": "31", "size_right": "0" } ],
+        "UNORM8ToFloat_ConvertedY": [ { "direction": "in", "size_left": "31", "size_right": "0" } ],
+        "UNORM8ToFloat_ConvertedZ": [ { "direction": "in", "size_left": "31", "size_right": "0" } ],
+        "UNORM8ToFloat_ConvertedW": [ { "direction": "in", "size_left": "31", "size_right": "0" } ],
+        "STAT_CyclesIdle": [ { "direction": "out", "size_left": "31", "size_right": "0", "driver_value": "0" } ],
+        "STAT_CyclesSpentWorking": [ { "direction": "out", "size_left": "31", "size_right": "0", "driver_value": "0" } ],
+        "STAT_CyclesExecShaderCode": [ { "direction": "out", "size_left": "31", "size_right": "0", "driver_value": "0" } ],
+        "STAT_CyclesWaitingForOutput": [ { "direction": "out", "size_left": "31", "size_right": "0", "driver_value": "0" } ],
+        "STAT_CurrentDrawEventID": [ { "direction": "out", "size_left": "15", "size_right": "0", "driver_value": "0" } ],
+        "DBG_CurrentState": [ { "direction": "out", "size_left": "5", "size_right": "0", "driver_value": "0" } ],
+        "DBG_CurrentFetchWave": [ { "direction": "out", "size_left": "3", "size_right": "0", "driver_value": "0" } ],
+        "DBG_CurrentDWORD": [ { "direction": "out", "size_left": "2", "size_right": "0", "driver_value": "0" } ],
+        "DBG_CurrentStreamID": [ { "direction": "out", "size_left": "2", "size_right": "0", "driver_value": "0" } ],
+        "DBG_ActiveLanesBitmask": [ { "direction": "out", "size_left": "16", "size_right": "0", "driver_value": "0" } ],
+        "DBG_InstructionPointer": [ { "direction": "out", "size_left": "8", "size_right": "0", "driver_value": "0" } ],
+        "DBG_CurrentlyExecutingInstruction": [ { "direction": "out", "size_left": "63", "size_right": "0", "driver_value": "0" } ],
+        "DBG_CyclesRemainingCurrentInstruction": [ { "direction": "out", "size_left": "4", "size_right": "0", "driver_value": "0" } ],
+        "DBG_ReadRegisterOutRequest": [ { "direction": "in" } ],
+        "DBG_ReadRegisterOutDataReady": [ { "direction": "out", "driver_value": "0x0" } ],
+        "DBG_ReadRegisterOutData": [ { "direction": "out", "size_left": "127", "size_right": "0", "driver_value": "0" } ],
+        "DBG_PortW_MUX": [ { "direction": "out", "size_left": "1", "size_right": "0", "driver_value": "0" } ],
+        "DBG_OStall": [ { "direction": "out", "driver_value": "0x0" } ],
+        "DBG_IStall": [ { "direction": "out", "driver_value": "0x0" } ]
+      },
+      "interfaces": {
+        "clk": {
+          "vlnv": "xilinx.com:signal:clock:1.0",
+          "abstraction_type": "xilinx.com:signal:clock_rtl:1.0",
+          "mode": "slave",
+          "parameters": {
+            "FREQ_HZ": [ { "value": "333250000", "value_src": "constant", "value_permission": "bd_and_user", "format": "long", "usage": "all" } ],
+            "ASSOCIATED_BUSIF": [ { "value": "VERTBATCH_FIFO:VERTOUT_FIFO:INDEXOUT_FIFO:ICache", "value_src": "constant", "value_permission": "bd_and_user", "usage": "all" } ],
+            "FREQ_TOLERANCE_HZ": [ { "value": "0", "value_permission": "bd_and_user", "resolve_type": "generated", "format": "long", "is_ips_inferred": true, "is_static_object": false } ],
+            "PHASE": [ { "value": "0.00", "value_src": "constant_prop", "value_permission": "bd_and_user", "resolve_type": "generated", "format": "float", "is_ips_inferred": true, "is_static_object": false } ],
+            "CLK_DOMAIN": [ { "value": "MainDesign_ddr4_0_0_c0_ddr4_ui_clk", "value_src": "default_prop", "value_permission": "bd_and_user", "resolve_type": "generated", "is_ips_inferred": true, "is_static_object": false } ],
+            "ASSOCIATED_PORT": [ { "value": "", "value_permission": "bd_and_user", "resolve_type": "generated", "is_ips_inferred": true, "is_static_object": false } ],
+            "ASSOCIATED_RESET": [ { "value": "", "value_permission": "bd_and_user", "resolve_type": "generated", "is_ips_inferred": true, "is_static_object": false } ],
+            "INSERT_VIP": [ { "value": "0", "resolve_type": "user", "format": "long", "usage": "simulation.rtl", "is_ips_inferred": true, "is_static_object": false } ]
+          },
+          "port_maps": {
+            "CLK": [ { "physical_name": "clk" } ]
+          }
+        },
+        "VERTBATCH_FIFO": {
+          "vlnv": "xilinx.com:interface:fifo_read:1.0",
+          "abstraction_type": "xilinx.com:interface:fifo_read_rtl:1.0",
+          "mode": "master",
+          "port_maps": {
+            "RD_DATA": [ { "physical_name": "VERTBATCH_FIFO_rd_data" } ],
+            "RD_EN": [ { "physical_name": "VERTBATCH_FIFO_rd_en" } ],
+            "EMPTY": [ { "physical_name": "VERTBATCH_FIFO_empty" } ],
+            "ALMOST_EMPTY": [ { "physical_name": "VERTBATCH_FIFO_almost_empty" } ]
+          }
+        },
+        "VERTOUT_FIFO": {
+          "vlnv": "xilinx.com:interface:fifo_write:1.0",
+          "abstraction_type": "xilinx.com:interface:fifo_write_rtl:1.0",
+          "mode": "master",
+          "port_maps": {
+            "WR_DATA": [ { "physical_name": "VERTOUT_FIFO_wr_data" } ],
+            "WR_EN": [ { "physical_name": "VERTOUT_FIFO_wr_en" } ],
+            "FULL": [ { "physical_name": "VERTOUT_FIFO_full" } ]
+          }
+        },
+        "INDEXOUT_FIFO": {
+          "vlnv": "xilinx.com:interface:fifo_write:1.0",
+          "abstraction_type": "xilinx.com:interface:fifo_write_rtl:1.0",
+          "mode": "master",
+          "port_maps": {
+            "WR_DATA": [ { "physical_name": "INDEXOUT_FIFO_wr_data" } ],
+            "WR_EN": [ { "physical_name": "INDEXOUT_FIFO_wr_en" } ],
+            "FULL": [ { "physical_name": "INDEXOUT_FIFO_full" } ]
+          }
+        },
+        "ICache": {
+          "vlnv": "xilinx.com:interface:bram:1.0",
+          "abstraction_type": "xilinx.com:interface:bram_rtl:1.0",
+          "mode": "master",
+          "parameters": {
+            "FREQ_HZ": [ { "value": "333250000", "value_src": "constant", "value_permission": "bd_and_user", "format": "long", "usage": "all" } ],
+            "MEM_SIZE": [ { "value": "8192", "value_permission": "bd_and_user", "resolve_type": "generated", "format": "long", "is_ips_inferred": true, "is_static_object": false } ],
+            "MEM_WIDTH": [ { "value": "32", "value_permission": "bd_and_user", "resolve_type": "generated", "format": "long", "is_ips_inferred": true, "is_static_object": false } ],
+            "MEM_ECC": [ { "value": "NONE", "value_permission": "bd_and_user", "resolve_type": "generated", "is_ips_inferred": true, "is_static_object": false } ],
+            "MASTER_TYPE": [ { "value": "OTHER", "value_permission": "bd_and_user", "resolve_type": "generated", "is_ips_inferred": true, "is_static_object": false } ],
+            "READ_WRITE_MODE": [ { "value": "", "value_permission": "bd_and_user", "resolve_type": "generated", "is_ips_inferred": true, "is_static_object": false } ],
+            "READ_LATENCY": [ { "value": "1", "value_permission": "bd_and_user", "resolve_type": "generated", "format": "long", "is_ips_inferred": true, "is_static_object": false } ],
+            "MEM_ADDRESS_MODE": [ { "value": "", "value_src": "weak", "value_permission": "bd_and_user", "resolve_type": "generated", "is_ips_inferred": true, "is_static_object": false } ]
+          },
+          "port_maps": {
+            "EN": [ { "physical_name": "ICache_Enable" } ],
+            "DOUT": [ { "physical_name": "ICache_ReadData" } ],
+            "DIN": [ { "physical_name": "ICache_WriteData" } ],
+            "WE": [ { "physical_name": "ICache_WriteMode" } ],
+            "ADDR": [ { "physical_name": "ICache_Address" } ],
+            "CLK": [ { "physical_name": "ICache_Clk" } ]
+          }
+        }
+      }
+    }
+  },
+  "checksum": "ace1804b"
+}

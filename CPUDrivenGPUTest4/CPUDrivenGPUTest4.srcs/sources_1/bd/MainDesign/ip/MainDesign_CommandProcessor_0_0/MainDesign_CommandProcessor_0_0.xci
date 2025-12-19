@@ -1,50 +1,273 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<spirit:design xmlns:xilinx="http://www.xilinx.com" xmlns:spirit="http://www.spiritconsortium.org/XMLSchema/SPIRIT/1685-2009" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <spirit:vendor>xilinx.com</spirit:vendor>
-  <spirit:library>xci</spirit:library>
-  <spirit:name>unknown</spirit:name>
-  <spirit:version>1.0</spirit:version>
-  <spirit:componentInstances>
-    <spirit:componentInstance>
-      <spirit:instanceName>design_1_CommandProcessor_0_0</spirit:instanceName>
-      <spirit:componentRef spirit:vendor="xilinx.com" spirit:library="module_ref" spirit:name="CommandProcessor" spirit:version="1.0"/>
-      <spirit:configurableElementValues>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.CLK.ASSOCIATED_BUSIF"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.CLK.CLK_DOMAIN">design_1_ddr4_0_1_c0_ddr4_ui_clk</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.CLK.PHASE">0.00</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.ADDR_WIDTH_BITS">30</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.DATA_WIDTH_BITS">256</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.ADDR_WIDTH_BITS">30</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.Component_Name">design_1_CommandProcessor_0_0</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.DATA_WIDTH_BITS">256</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PROJECT_PARAM.ARCHITECTURE">kintexuplus</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PROJECT_PARAM.BOARD">xilinx.com:kcu116:part0:1.3</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PROJECT_PARAM.DEVICE">xcku5p</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PROJECT_PARAM.PACKAGE">ffvb676</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PROJECT_PARAM.PREFHDL">VHDL</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PROJECT_PARAM.SILICON_REVISION"/>
-        <spirit:configurableElementValue spirit:referenceId="PROJECT_PARAM.SIMULATOR_LANGUAGE">VHDL</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PROJECT_PARAM.SPEEDGRADE">-2</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PROJECT_PARAM.TEMPERATURE_GRADE">E</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PROJECT_PARAM.USE_RDI_CUSTOMIZATION">TRUE</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PROJECT_PARAM.USE_RDI_GENERATION">TRUE</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="RUNTIME_PARAM.IPCONTEXT">IP_Integrator</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="RUNTIME_PARAM.IPREVISION">1</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="RUNTIME_PARAM.MANAGED">TRUE</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="RUNTIME_PARAM.OUTPUTDIR">.</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="RUNTIME_PARAM.SELECTEDSIMMODEL"/>
-        <spirit:configurableElementValue spirit:referenceId="RUNTIME_PARAM.SHAREDDIR">../../ipshared</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="RUNTIME_PARAM.SWVERSION">2018.1_AR73068</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="RUNTIME_PARAM.SYNTHESISFLOW">OOC_HIERARCHICAL</spirit:configurableElementValue>
-      </spirit:configurableElementValues>
-      <spirit:vendorExtensions>
-        <xilinx:componentInstanceExtensions>
-          <xilinx:configElementInfos>
-            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.CLK.CLK_DOMAIN" xilinx:valueSource="default_prop" xilinx:valuePermission="bd"/>
-            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.CLK.PHASE" xilinx:valueSource="constant_prop" xilinx:valuePermission="bd_and_user"/>
-          </xilinx:configElementInfos>
-        </xilinx:componentInstanceExtensions>
-      </spirit:vendorExtensions>
-    </spirit:componentInstance>
-  </spirit:componentInstances>
-</spirit:design>
+{
+  "schema": "xilinx.com:schema:json_instance:1.0",
+  "ip_inst": {
+    "xci_name": "MainDesign_CommandProcessor_0_0",
+    "cell_name": "CommandProcessor_0",
+    "component_reference": "xilinx.com:module_ref:CommandProcessor:1.0",
+    "ip_revision": "1",
+    "gen_directory": "../../../../../../CPUDrivenGPUTest4.gen/sources_1/bd/MainDesign/ip/MainDesign_CommandProcessor_0_0",
+    "parameters": {
+      "component_parameters": {
+        "ADDR_WIDTH_BITS": [ { "value": "30", "resolve_type": "user", "format": "long", "usage": "all" } ],
+        "DATA_WIDTH_BITS": [ { "value": "256", "resolve_type": "user", "format": "long", "usage": "all" } ],
+        "Component_Name": [ { "value": "MainDesign_CommandProcessor_0_0", "resolve_type": "user", "usage": "all" } ]
+      },
+      "model_parameters": {
+        "ADDR_WIDTH_BITS": [ { "value": "30", "resolve_type": "generated", "format": "long", "usage": "all" } ],
+        "DATA_WIDTH_BITS": [ { "value": "256", "resolve_type": "generated", "format": "long", "usage": "all" } ]
+      },
+      "project_parameters": {
+        "ARCHITECTURE": [ { "value": "kintexuplus", "resolve_type": "generated", "usage": "all" } ],
+        "BASE_BOARD_PART": [ { "value": "xilinx.com:kcu116:part0:1.5", "resolve_type": "generated", "usage": "all" } ],
+        "BOARD_CONNECTIONS": [ { "value": "", "resolve_type": "generated", "usage": "all" } ],
+        "DEVICE": [ { "value": "xcku5p", "resolve_type": "generated", "usage": "all" } ],
+        "PACKAGE": [ { "value": "ffvb676", "resolve_type": "generated", "usage": "all" } ],
+        "PREFHDL": [ { "value": "VHDL", "resolve_type": "generated", "usage": "all" } ],
+        "SILICON_REVISION": [ { "value": "", "resolve_type": "generated", "usage": "all" } ],
+        "SIMULATOR_LANGUAGE": [ { "value": "VHDL", "resolve_type": "generated", "usage": "all" } ],
+        "SPEEDGRADE": [ { "value": "-2", "resolve_type": "generated", "usage": "all" } ],
+        "STATIC_POWER": [ { "value": "", "resolve_type": "generated", "usage": "all" } ],
+        "TEMPERATURE_GRADE": [ { "value": "E", "resolve_type": "generated", "usage": "all" } ]
+      },
+      "runtime_parameters": {
+        "IPCONTEXT": [ { "value": "IP_Integrator" } ],
+        "IPREVISION": [ { "value": "1" } ],
+        "MANAGED": [ { "value": "TRUE" } ],
+        "OUTPUTDIR": [ { "value": "../../../../../../CPUDrivenGPUTest4.gen/sources_1/bd/MainDesign/ip/MainDesign_CommandProcessor_0_0" } ],
+        "SELECTEDSIMMODEL": [ { "value": "" } ],
+        "SHAREDDIR": [ { "value": "../../ipshared" } ],
+        "SWVERSION": [ { "value": "2025.2" } ],
+        "SYNTHESISFLOW": [ { "value": "OOC_HIERARCHICAL" } ]
+      }
+    },
+    "boundary": {
+      "ports": {
+        "clk": [ { "direction": "in" } ],
+        "resetn": [ { "direction": "in" } ],
+        "validPacketsFIFO_rd_data": [ { "direction": "in", "size_left": "87", "size_right": "0", "driver_value": "0" } ],
+        "validPacketsFIFO_empty": [ { "direction": "in", "driver_value": "1" } ],
+        "validPacketsFIFO_almost_empty": [ { "direction": "in", "driver_value": "1" } ],
+        "validPacketsFIFO_rd_en": [ { "direction": "out", "driver_value": "0x0" } ],
+        "returnPacketsFIFO_full": [ { "direction": "in", "driver_value": "0" } ],
+        "returnPacketsFIFO_wr_data": [ { "direction": "out", "size_left": "87", "size_right": "0", "driver_value": "0" } ],
+        "returnPacketsFIFO_wr_en": [ { "direction": "out", "driver_value": "0x0" } ],
+        "CommandProcReadRequestsFIFO_wr_data": [ { "direction": "out", "size_left": "29", "size_right": "0", "driver_value": "0" } ],
+        "CommandProcReadRequestsFIFO_full": [ { "direction": "in", "driver_value": "0" } ],
+        "CommandProcReadRequestsFIFO_wr_en": [ { "direction": "out", "driver_value": "0x0" } ],
+        "CommandProcReadResponsesFIFO_rd_data": [ { "direction": "in", "size_left": "255", "size_right": "0", "driver_value": "0" } ],
+        "CommandProcReadResponsesFIFO_empty": [ { "direction": "in", "driver_value": "1" } ],
+        "CommandProcReadResponsesFIFO_almost_empty": [ { "direction": "in", "driver_value": "1" } ],
+        "CommandProcReadResponsesFIFO_rd_en": [ { "direction": "out", "driver_value": "0x0" } ],
+        "CommandProcWriteRequestsFIFO_wr_data": [ { "direction": "out", "size_left": "293", "size_right": "0", "driver_value": "0" } ],
+        "CommandProcWriteRequestsFIFO_full": [ { "direction": "in", "driver_value": "0" } ],
+        "CommandProcWriteRequestsFIFO_wr_en": [ { "direction": "out", "driver_value": "0x0" } ],
+        "CMD_VS_Idle": [ { "direction": "in" } ],
+        "CMD_IA_Idle": [ { "direction": "in" } ],
+        "CMD_Clip_Idle": [ { "direction": "in" } ],
+        "CMD_TriSetup_Idle": [ { "direction": "in" } ],
+        "CMD_Rasterizer_Idle": [ { "direction": "in" } ],
+        "CMD_DepthInterpolator_Idle": [ { "direction": "in" } ],
+        "CMD_Depth_Idle": [ { "direction": "in" } ],
+        "CMD_AttrInterpolator_Idle": [ { "direction": "in" } ],
+        "CMD_TexSampler_Idle": [ { "direction": "in" } ],
+        "CMD_ROP_Idle": [ { "direction": "in" } ],
+        "CMD_ClearBlock_Idle": [ { "direction": "in" } ],
+        "CMD_MemController_Idle": [ { "direction": "in" } ],
+        "CMD_VSync": [ { "direction": "in" } ],
+        "CMD_FIFO_EMPTY_VBB": [ { "direction": "in" } ],
+        "CMD_FIFO_EMPTY_VS": [ { "direction": "in" } ],
+        "CMD_FIFO_EMPTY_RASTOUT": [ { "direction": "in" } ],
+        "CMD_FIFO_EMPTY_ATTR": [ { "direction": "in" } ],
+        "CMD_FIFO_EMPTY_TEXSAMP": [ { "direction": "in" } ],
+        "CMD_FIFO_EMPTY_ROP": [ { "direction": "in" } ],
+        "SHADER_IsReadyForCommand": [ { "direction": "in" } ],
+        "SHADER_InCommand": [ { "direction": "out", "size_left": "2", "size_right": "0", "driver_value": "0" } ],
+        "SHADER_LoadProgramAddr": [ { "direction": "out", "size_left": "29", "size_right": "0", "driver_value": "0" } ],
+        "SHADER_LoadProgramLen": [ { "direction": "out", "size_left": "15", "size_right": "0", "driver_value": "0" } ],
+        "SHADER_SetConstantIndex": [ { "direction": "out", "size_left": "7", "size_right": "0", "driver_value": "0" } ],
+        "SHADER_SetConstantData": [ { "direction": "out", "size_left": "127", "size_right": "0", "driver_value": "0" } ],
+        "SHADER_SetNumVertexStreams": [ { "direction": "out", "size_left": "2", "size_right": "0", "driver_value": "0" } ],
+        "SHADER_SetVertexStreamID": [ { "direction": "out", "size_left": "2", "size_right": "0", "driver_value": "0" } ],
+        "SHADER_SetVertexStreamDWORDCount": [ { "direction": "out", "size_left": "2", "size_right": "0", "driver_value": "0" } ],
+        "SHADER_SetVertexStreamIsD3DCOLOR": [ { "direction": "out", "driver_value": "0x0" } ],
+        "SHADER_SetVertexStreamShaderRegIndex": [ { "direction": "out", "size_left": "2", "size_right": "0", "driver_value": "0" } ],
+        "SHADER_SetVertexStreamDWORDStride": [ { "direction": "out", "size_left": "5", "size_right": "0", "driver_value": "0" } ],
+        "SHADER_SetVertexStreamDWORDOffset": [ { "direction": "out", "size_left": "5", "size_right": "0", "driver_value": "0" } ],
+        "SHADER_ReadRegisterOutRequest": [ { "direction": "out", "driver_value": "0x0" } ],
+        "SHADER_ReadRegisterOutDataReady": [ { "direction": "in" } ],
+        "SHADER_ReadRegisterOutData": [ { "direction": "in", "size_left": "127", "size_right": "0" } ],
+        "IA_SetNewState": [ { "direction": "out", "driver_value": "0x0" } ],
+        "IA_EndFrameReset": [ { "direction": "out", "driver_value": "0x0" } ],
+        "IA_NumFreeSlots": [ { "direction": "in", "size_left": "2", "size_right": "0" } ],
+        "IA_NewStateBits": [ { "direction": "out", "size_left": "4", "size_right": "0", "driver_value": "0" } ],
+        "IA_NewStateDrawEventID": [ { "direction": "out", "size_left": "15", "size_right": "0", "driver_value": "0" } ],
+        "VBB_SendCommand": [ { "direction": "out", "size_left": "1", "size_right": "0", "driver_value": "0" } ],
+        "VBB_CommandArg0": [ { "direction": "out", "size_left": "23", "size_right": "0", "driver_value": "0" } ],
+        "VBB_CommandArg1": [ { "direction": "out", "size_left": "19", "size_right": "0", "driver_value": "0" } ],
+        "VBB_CommandArg2": [ { "direction": "out", "size_left": "15", "size_right": "0", "driver_value": "0" } ],
+        "VBB_NewDrawEventID": [ { "direction": "out", "size_left": "15", "size_right": "0", "driver_value": "0" } ],
+        "VBB_ReadyState": [ { "direction": "in" } ],
+        "VBB_SetNewState": [ { "direction": "out", "driver_value": "0x0" } ],
+        "VBB_EndFrameReset": [ { "direction": "out", "driver_value": "0x0" } ],
+        "VBB_NumFreeSlots": [ { "direction": "in", "size_left": "2", "size_right": "0" } ],
+        "VBB_NewStateBits": [ { "direction": "out", "size_left": "34", "size_right": "0", "driver_value": "0" } ],
+        "VBB_NewStateDrawEventID": [ { "direction": "out", "size_left": "15", "size_right": "0", "driver_value": "0" } ],
+        "CLIP_SetNewState": [ { "direction": "out", "driver_value": "0x0" } ],
+        "CLIP_EndFrameReset": [ { "direction": "out", "driver_value": "0x0" } ],
+        "CLIP_NumFreeSlots": [ { "direction": "in", "size_left": "2", "size_right": "0" } ],
+        "CLIP_NewStateBits": [ { "direction": "out", "size_left": "10", "size_right": "0", "driver_value": "0" } ],
+        "CLIP_NewStateDrawEventID": [ { "direction": "out", "size_left": "15", "size_right": "0", "driver_value": "0" } ],
+        "TRISETUP_SetNewState": [ { "direction": "out", "driver_value": "0x0" } ],
+        "TRISETUP_EndFrameReset": [ { "direction": "out", "driver_value": "0x0" } ],
+        "TRISETUP_NumFreeSlots": [ { "direction": "in", "size_left": "2", "size_right": "0" } ],
+        "TRISETUP_NewStateBits": [ { "direction": "out", "size_left": "191", "size_right": "0", "driver_value": "0" } ],
+        "TRISETUP_NewStateDrawEventID": [ { "direction": "out", "size_left": "15", "size_right": "0", "driver_value": "0" } ],
+        "DINTERP_STAT_CountDepthOnlyPixelsPassed": [ { "direction": "in", "size_left": "31", "size_right": "0" } ],
+        "DINTERP_SetNewState": [ { "direction": "out", "driver_value": "0x0" } ],
+        "DINTERP_EndFrameReset": [ { "direction": "out", "driver_value": "0x0" } ],
+        "DINTERP_NumFreeSlots": [ { "direction": "in", "size_left": "2", "size_right": "0" } ],
+        "DINTERP_NewStateBits": [ { "direction": "out", "size_left": "76", "size_right": "0", "driver_value": "0" } ],
+        "DINTERP_NewStateDrawEventID": [ { "direction": "out", "size_left": "15", "size_right": "0", "driver_value": "0" } ],
+        "DEPTH_ClearDepthBuffer": [ { "direction": "out", "driver_value": "0x0" } ],
+        "DEPTH_ClearDepthValue": [ { "direction": "out", "size_left": "23", "size_right": "0", "driver_value": "0" } ],
+        "DEPTH_ClearStencilBuffer": [ { "direction": "out", "driver_value": "0x0" } ],
+        "DEPTH_ClearStencilValue": [ { "direction": "out", "size_left": "7", "size_right": "0", "driver_value": "0" } ],
+        "INTERP_SetNewState": [ { "direction": "out", "driver_value": "0x0" } ],
+        "INTERP_EndFrameReset": [ { "direction": "out", "driver_value": "0x0" } ],
+        "INTERP_NumFreeSlots": [ { "direction": "in", "size_left": "2", "size_right": "0" } ],
+        "INTERP_NewStateBits": [ { "direction": "out", "size_left": "6", "size_right": "0", "driver_value": "0" } ],
+        "INTERP_NewStateDrawEventID": [ { "direction": "out", "size_left": "15", "size_right": "0", "driver_value": "0" } ],
+        "TEXSAMP_SetNewState": [ { "direction": "out", "driver_value": "0x0" } ],
+        "TEXSAMP_EndFrameReset": [ { "direction": "out", "driver_value": "0x0" } ],
+        "TEXSAMP_NumFreeSlots": [ { "direction": "in", "size_left": "2", "size_right": "0" } ],
+        "TEXSAMP_NewStateBits": [ { "direction": "out", "size_left": "73", "size_right": "0", "driver_value": "0" } ],
+        "TEXSAMP_NewStateDrawEventID": [ { "direction": "out", "size_left": "15", "size_right": "0", "driver_value": "0" } ],
+        "ROP_SetClearColor": [ { "direction": "out", "size_left": "31", "size_right": "0", "driver_value": "0" } ],
+        "ROP_ClearSignal": [ { "direction": "out", "driver_value": "0x0" } ],
+        "ROP_ClearSignalAck": [ { "direction": "in" } ],
+        "ROP_FlushCacheSignal": [ { "direction": "out", "driver_value": "0x0" } ],
+        "ROP_FlushCacheAck": [ { "direction": "in" } ],
+        "ROP_STAT_CountPixelsPassed": [ { "direction": "in", "size_left": "31", "size_right": "0" } ],
+        "ROP_STAT_CurrentDrawEventID": [ { "direction": "in", "size_left": "15", "size_right": "0" } ],
+        "ROP_SetNewState": [ { "direction": "out", "driver_value": "0x0" } ],
+        "ROP_EndFrameReset": [ { "direction": "out", "driver_value": "0x0" } ],
+        "ROP_NumFreeSlots": [ { "direction": "in", "size_left": "2", "size_right": "0" } ],
+        "ROP_NewStateBits": [ { "direction": "out", "size_left": "100", "size_right": "0", "driver_value": "0" } ],
+        "ROP_NewStateDrawEventID": [ { "direction": "out", "size_left": "15", "size_right": "0", "driver_value": "0" } ],
+        "SCANOUT_RenderTargetBaseAddr": [ { "direction": "out", "size_left": "29", "size_right": "0", "driver_value": "0" } ],
+        "SCANOUT_ScanEnable": [ { "direction": "out", "driver_value": "0x0" } ],
+        "SCANOUT_InvertOutputColor": [ { "direction": "out", "driver_value": "0x0" } ],
+        "SCANOUT_OutputColorChannels": [ { "direction": "out", "size_left": "8", "size_right": "0", "driver_value": "0" } ],
+        "CLEAR_ClearBlockBeginSignal": [ { "direction": "out", "driver_value": "0x0" } ],
+        "CLEAR_BaseRenderTargetAddr": [ { "direction": "out", "size_left": "29", "size_right": "0", "driver_value": "0" } ],
+        "CLEAR_ClearColorRGBA": [ { "direction": "out", "size_left": "31", "size_right": "0", "driver_value": "0" } ],
+        "CLEAR_ClearDRAMLineCount": [ { "direction": "out", "size_left": "15", "size_right": "0", "driver_value": "0" } ],
+        "STAT_PresentSignal": [ { "direction": "out", "driver_value": "0x0" } ],
+        "STAT_SetNewStatsConfig": [ { "direction": "out", "driver_value": "0x0" } ],
+        "STAT_WriteFrameStatsAddress": [ { "direction": "out", "size_left": "29", "size_right": "0", "driver_value": "0" } ],
+        "STAT_EnableEventTimestamps": [ { "direction": "out", "driver_value": "0x0" } ],
+        "STAT_WriteEventTimestampsAddress": [ { "direction": "out", "size_left": "29", "size_right": "0", "driver_value": "0" } ],
+        "STAT_WriteEventTimestampOrders": [ { "direction": "out", "size_left": "29", "size_right": "0", "driver_value": "0" } ],
+        "STAT_CountTimestampsMemoryWrites": [ { "direction": "in", "size_left": "15", "size_right": "0" } ],
+        "STAT_CountTimestampsOrdersMemoryWrites": [ { "direction": "in", "size_left": "15", "size_right": "0" } ],
+        "STAT_StatsSaveComplete": [ { "direction": "in" } ],
+        "STAT_CyclesIdle": [ { "direction": "out", "size_left": "31", "size_right": "0", "driver_value": "0" } ],
+        "STAT_CyclesSpentWorking": [ { "direction": "out", "size_left": "31", "size_right": "0", "driver_value": "0" } ],
+        "STAT_CurrentCommandIndex": [ { "direction": "out", "size_left": "31", "size_right": "0", "driver_value": "0" } ],
+        "DBG_CMDPACKETSTATE": [ { "direction": "out", "size_left": "7", "size_right": "0", "driver_value": "0" } ],
+        "DBG_LAST_IN_PACKET": [ { "direction": "out", "size_left": "87", "size_right": "0", "driver_value": "0" } ],
+        "DBG_LAST_OUT_PACKET": [ { "direction": "out", "size_left": "87", "size_right": "0", "driver_value": "0" } ],
+        "DBG_LAST_READ_DATA": [ { "direction": "out", "size_left": "31", "size_right": "0", "driver_value": "0" } ],
+        "DBG_LAST_WRITE_ADDR": [ { "direction": "out", "size_left": "31", "size_right": "0", "driver_value": "0" } ],
+        "DBG_LAST_WRITE_DATA": [ { "direction": "out", "size_left": "255", "size_right": "0", "driver_value": "0" } ],
+        "DBG_IdleSignalsVector": [ { "direction": "out", "size_left": "12", "size_right": "0", "driver_value": "0" } ],
+        "DBG_CurrentDrawGeneration": [ { "direction": "out", "size_left": "15", "size_right": "0", "driver_value": "0" } ]
+      },
+      "interfaces": {
+        "clk": {
+          "vlnv": "xilinx.com:signal:clock:1.0",
+          "abstraction_type": "xilinx.com:signal:clock_rtl:1.0",
+          "mode": "slave",
+          "parameters": {
+            "ASSOCIATED_RESET": [ { "value": "resetn", "value_src": "constant", "value_permission": "bd_and_user", "usage": "all" } ],
+            "FREQ_HZ": [ { "value": "333250000", "value_src": "constant", "value_permission": "bd_and_user", "format": "long", "usage": "all" } ],
+            "ASSOCIATED_BUSIF": [ { "value": "CommandProcReadRequestsFIFO:CommandProcReadResponses:CommandProcWriteRequests:validPacketsFIFO:returnPacketsFIFO", "value_src": "constant", "value_permission": "bd_and_user", "usage": "all" } ],
+            "FREQ_TOLERANCE_HZ": [ { "value": "0", "value_permission": "bd_and_user", "resolve_type": "generated", "format": "long", "is_ips_inferred": true, "is_static_object": false } ],
+            "PHASE": [ { "value": "0.00", "value_src": "constant_prop", "value_permission": "bd_and_user", "resolve_type": "generated", "format": "float", "is_ips_inferred": true, "is_static_object": false } ],
+            "CLK_DOMAIN": [ { "value": "MainDesign_ddr4_0_0_c0_ddr4_ui_clk", "value_src": "default_prop", "value_permission": "bd_and_user", "resolve_type": "generated", "is_ips_inferred": true, "is_static_object": false } ],
+            "ASSOCIATED_PORT": [ { "value": "", "value_permission": "bd_and_user", "resolve_type": "generated", "is_ips_inferred": true, "is_static_object": false } ],
+            "INSERT_VIP": [ { "value": "0", "resolve_type": "user", "format": "long", "usage": "simulation.rtl", "is_ips_inferred": true, "is_static_object": false } ]
+          },
+          "port_maps": {
+            "CLK": [ { "physical_name": "clk" } ]
+          }
+        },
+        "resetn": {
+          "vlnv": "xilinx.com:signal:reset:1.0",
+          "abstraction_type": "xilinx.com:signal:reset_rtl:1.0",
+          "mode": "slave",
+          "parameters": {
+            "POLARITY": [ { "value": "ACTIVE_LOW", "value_src": "constant", "value_permission": "bd_and_user", "usage": "all" } ],
+            "INSERT_VIP": [ { "value": "0", "resolve_type": "user", "format": "long", "usage": "simulation.rtl", "is_ips_inferred": true, "is_static_object": false } ]
+          },
+          "port_maps": {
+            "RST": [ { "physical_name": "resetn" } ]
+          }
+        },
+        "validPacketsFIFO": {
+          "vlnv": "xilinx.com:interface:fifo_read:1.0",
+          "abstraction_type": "xilinx.com:interface:fifo_read_rtl:1.0",
+          "mode": "master",
+          "port_maps": {
+            "RD_DATA": [ { "physical_name": "validPacketsFIFO_rd_data" } ],
+            "RD_EN": [ { "physical_name": "validPacketsFIFO_rd_en" } ],
+            "EMPTY": [ { "physical_name": "validPacketsFIFO_empty" } ],
+            "ALMOST_EMPTY": [ { "physical_name": "validPacketsFIFO_almost_empty" } ]
+          }
+        },
+        "returnPacketsFIFO": {
+          "vlnv": "xilinx.com:interface:fifo_write:1.0",
+          "abstraction_type": "xilinx.com:interface:fifo_write_rtl:1.0",
+          "mode": "master",
+          "port_maps": {
+            "WR_DATA": [ { "physical_name": "returnPacketsFIFO_wr_data" } ],
+            "WR_EN": [ { "physical_name": "returnPacketsFIFO_wr_en" } ],
+            "FULL": [ { "physical_name": "returnPacketsFIFO_full" } ]
+          }
+        },
+        "CommandProcReadRequestsFIFO": {
+          "vlnv": "xilinx.com:interface:fifo_write:1.0",
+          "abstraction_type": "xilinx.com:interface:fifo_write_rtl:1.0",
+          "mode": "master",
+          "port_maps": {
+            "WR_DATA": [ { "physical_name": "CommandProcReadRequestsFIFO_wr_data" } ],
+            "WR_EN": [ { "physical_name": "CommandProcReadRequestsFIFO_wr_en" } ],
+            "FULL": [ { "physical_name": "CommandProcReadRequestsFIFO_full" } ]
+          }
+        },
+        "CommandProcReadResponses": {
+          "vlnv": "xilinx.com:interface:fifo_read:1.0",
+          "abstraction_type": "xilinx.com:interface:fifo_read_rtl:1.0",
+          "mode": "master",
+          "port_maps": {
+            "RD_DATA": [ { "physical_name": "CommandProcReadResponsesFIFO_rd_data" } ],
+            "RD_EN": [ { "physical_name": "CommandProcReadResponsesFIFO_rd_en" } ],
+            "EMPTY": [ { "physical_name": "CommandProcReadResponsesFIFO_empty" } ],
+            "ALMOST_EMPTY": [ { "physical_name": "CommandProcReadResponsesFIFO_almost_empty" } ]
+          }
+        },
+        "CommandProcWriteRequests": {
+          "vlnv": "xilinx.com:interface:fifo_write:1.0",
+          "abstraction_type": "xilinx.com:interface:fifo_write_rtl:1.0",
+          "mode": "master",
+          "port_maps": {
+            "WR_DATA": [ { "physical_name": "CommandProcWriteRequestsFIFO_wr_data" } ],
+            "WR_EN": [ { "physical_name": "CommandProcWriteRequestsFIFO_wr_en" } ],
+            "FULL": [ { "physical_name": "CommandProcWriteRequestsFIFO_full" } ]
+          }
+        }
+      }
+    }
+  },
+  "checksum": "16dd40fe"
+}

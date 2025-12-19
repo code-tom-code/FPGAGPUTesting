@@ -1,317 +1,381 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<spirit:design xmlns:xilinx="http://www.xilinx.com" xmlns:spirit="http://www.spiritconsortium.org/XMLSchema/SPIRIT/1685-2009" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <spirit:vendor>xilinx.com</spirit:vendor>
-  <spirit:library>xci</spirit:library>
-  <spirit:name>unknown</spirit:name>
-  <spirit:version>1.0</spirit:version>
-  <spirit:componentInstances>
-    <spirit:componentInstance>
-      <spirit:instanceName>design_1_gig_ethernet_pcs_pma_0_0</spirit:instanceName>
-      <spirit:componentRef spirit:vendor="xilinx.com" spirit:library="ip" spirit:name="gig_ethernet_pcs_pma" spirit:version="16.1"/>
-      <spirit:configurableElementValues>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.AN_INTERRUPT_PORT.PortWidth">1</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.AN_INTERRUPT_PORT_0.PortWidth">1</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.AN_INTERRUPT_PORT_1.PortWidth">1</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.AN_INTERRUPT_PORT_2.PortWidth">1</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.CLK104_OUT_PORT.ASSOCIATED_BUSIF"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.CLK104_OUT_PORT.ASSOCIATED_RESET"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.CLK104_OUT_PORT.CLK_DOMAIN"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.CLK104_PORT.ASSOCIATED_BUSIF"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.CLK104_PORT.ASSOCIATED_RESET"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.CLK104_PORT.CLK_DOMAIN"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.CLK125M_PORT.ASSOCIATED_BUSIF"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.CLK125M_PORT.CLK_DOMAIN"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.CLK125_OUT_PORT.ASSOCIATED_BUSIF"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.CLK125_OUT_PORT.CLK_DOMAIN">design_1_gig_ethernet_pcs_pma_0_0_clk125_out</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.CLK208_OUT_PORT.ASSOCIATED_BUSIF"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.CLK208_OUT_PORT.ASSOCIATED_RESET"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.CLK208_OUT_PORT.CLK_DOMAIN"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.CLK208_PORT.ASSOCIATED_BUSIF"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.CLK208_PORT.ASSOCIATED_RESET"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.CLK208_PORT.CLK_DOMAIN"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.CLK312_OUT_PORT.ASSOCIATED_BUSIF"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.CLK312_OUT_PORT.ASSOCIATED_RESET"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.CLK312_OUT_PORT.CLK_DOMAIN">design_1_gig_ethernet_pcs_pma_0_0_clk312_out</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.CLK312_PORT.ASSOCIATED_BUSIF"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.CLK312_PORT.ASSOCIATED_RESET"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.CLK312_PORT.CLK_DOMAIN"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.CLK625_OUT_PORT.ASSOCIATED_BUSIF"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.CLK625_OUT_PORT.ASSOCIATED_RESET"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.CLK625_OUT_PORT.CLK_DOMAIN"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.CLK625_PORT.ASSOCIATED_BUSIF"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.CLK625_PORT.ASSOCIATED_RESET"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.CLK625_PORT.CLK_DOMAIN"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.DRPCLK_PORT.ASSOCIATED_RESET"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.DRPCLK_PORT.CLK_DOMAIN"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.DRPCLK_PORT.FREQ_HZ">100000000</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.DRPCLK_PORT.PHASE">0.000</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.DRP_CLK_PORT.ASSOCIATED_RESET"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.DRP_CLK_PORT.CLK_DOMAIN"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.DRP_CLK_PORT.FREQ_HZ">100000000</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.DRP_CLK_PORT.PHASE">0.000</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.EXT_MDIO_PCS_PMA.CAN_DEBUG">false</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.EXT_MDIO_PCS_PMA_0.CAN_DEBUG">false</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.EXT_MDIO_PCS_PMA_1.CAN_DEBUG">false</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.EXT_MDIO_PCS_PMA_2.CAN_DEBUG">false</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.GTREFCLK_BUFG_OUT_PORT.ASSOCIATED_BUSIF"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.GTREFCLK_BUFG_OUT_PORT.ASSOCIATED_RESET"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.GTREFCLK_BUFG_OUT_PORT.CLK_DOMAIN"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.GTREFCLK_BUFG_PORT.ASSOCIATED_BUSIF"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.GTREFCLK_BUFG_PORT.ASSOCIATED_RESET"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.GTREFCLK_BUFG_PORT.CLK_DOMAIN"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.GTREFCLK_IN.CAN_DEBUG">false</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.GTREFCLK_IN.FREQ_HZ">100000000</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.GTREFCLK_OUT_PORT.ASSOCIATED_BUSIF"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.GTREFCLK_OUT_PORT.ASSOCIATED_RESET"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.GTREFCLK_OUT_PORT.CLK_DOMAIN"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.GTREFCLK_PORT.ASSOCIATED_BUSIF"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.GTREFCLK_PORT.ASSOCIATED_RESET"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.GTREFCLK_PORT.CLK_DOMAIN"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.GTREFCLK_PORT.FREQ_HZ">125000000</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.GTX_CLK_PORT.ASSOCIATED_BUSIF"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.GTX_CLK_PORT.ASSOCIATED_RESET"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.GTX_CLK_PORT.CLK_DOMAIN"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.GTX_CLK_PORT.FREQ_HZ">100000000</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.GTX_CLK_PORT.PHASE">0.000</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.INDEPENDENT_CLK_PORT.ASSOCIATED_BUSIF"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.INDEPENDENT_CLK_PORT.CLK_DOMAIN"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.INDEPENDENT_CLK_PORT.FREQ_HZ">100000000</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.INDEPENDENT_CLK_PORT.PHASE">0.000</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.INDEPENDENT_CLOCK_PORT.ASSOCIATED_BUSIF"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.INDEPENDENT_CLOCK_PORT.CLK_DOMAIN"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.INDEPENDENT_CLOCK_PORT.FREQ_HZ">100000000</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.INDEPENDENT_CLOCK_PORT.PHASE">0.000</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.MDIO_PCS_PMA.CAN_DEBUG">false</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.MDIO_PCS_PMA_0.CAN_DEBUG">false</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.MDIO_PCS_PMA_1.CAN_DEBUG">false</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.MDIO_PCS_PMA_2.CAN_DEBUG">false</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.PMA_RX_CLK0_PORT.ASSOCIATED_BUSIF"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.PMA_RX_CLK0_PORT.ASSOCIATED_RESET"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.PMA_RX_CLK0_PORT.CLK_DOMAIN"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.PMA_RX_CLK0_PORT.FREQ_HZ">100000000</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.PMA_RX_CLK0_PORT.PHASE">0.000</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.PMA_TX_CLK_PORT.ASSOCIATED_BUSIF"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.PMA_TX_CLK_PORT.ASSOCIATED_RESET"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.PMA_TX_CLK_PORT.CLK_DOMAIN"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.PMA_TX_CLK_PORT.FREQ_HZ">100000000</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.PMA_TX_CLK_PORT.PHASE">0.000</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.REFCLK125_IN.CAN_DEBUG">false</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.REFCLK156_25_IN.CAN_DEBUG">false</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.REFCLK625_IN.CAN_DEBUG">false</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.REFCLK_PORT.ASSOCIATED_BUSIF"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.REFCLK_PORT.ASSOCIATED_RESET"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.REFCLK_PORT.CLK_DOMAIN"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.REFCLK_PORT.FREQ_HZ">100000000</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.REFCLK_PORT.PHASE">0.000</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.RXOUTCLK_PORT.ASSOCIATED_BUSIF"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.RXOUTCLK_PORT.ASSOCIATED_RESET"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.RXOUTCLK_PORT.CLK_DOMAIN"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.RXOUTCLK_PORT.FREQ_HZ">62500000</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.RXUSERCLK2_OUT_PORT.ASSOCIATED_BUSIF"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.RXUSERCLK2_OUT_PORT.ASSOCIATED_RESET"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.RXUSERCLK2_OUT_PORT.CLK_DOMAIN"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.RXUSERCLK2_PORT.ASSOCIATED_BUSIF"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.RXUSERCLK2_PORT.ASSOCIATED_RESET"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.RXUSERCLK2_PORT.CLK_DOMAIN"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.RXUSERCLK2_PORT.FREQ_HZ">62500000</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.RXUSERCLK_OUT_PORT.ASSOCIATED_BUSIF"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.RXUSERCLK_OUT_PORT.ASSOCIATED_RESET"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.RXUSERCLK_OUT_PORT.CLK_DOMAIN"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.RXUSERCLK_PORT.ASSOCIATED_BUSIF"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.RXUSERCLK_PORT.ASSOCIATED_RESET"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.RXUSERCLK_PORT.CLK_DOMAIN"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.RXUSERCLK_PORT.FREQ_HZ">62500000</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.SGMII_CLK_EN_0_PORT.POLARITY">ACTIVE_LOW</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.SGMII_CLK_EN_1_PORT.POLARITY">ACTIVE_LOW</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.SGMII_CLK_EN_2_PORT.POLARITY">ACTIVE_LOW</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.SGMII_CLK_EN_PORT.POLARITY">ACTIVE_LOW</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.S_AXI.ADDR_WIDTH">32</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.S_AXI.ARUSER_WIDTH">0</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.S_AXI.AWUSER_WIDTH">0</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.S_AXI.BUSER_WIDTH">0</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.S_AXI.CLK_DOMAIN"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.S_AXI.DATA_WIDTH">32</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.S_AXI.FREQ_HZ">100000000</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.S_AXI.HAS_BRESP">1</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.S_AXI.HAS_BURST">1</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.S_AXI.HAS_CACHE">1</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.S_AXI.HAS_LOCK">1</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.S_AXI.HAS_PROT">1</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.S_AXI.HAS_QOS">1</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.S_AXI.HAS_REGION">1</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.S_AXI.HAS_RRESP">1</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.S_AXI.HAS_WSTRB">1</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.S_AXI.ID_WIDTH">0</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.S_AXI.MAX_BURST_LENGTH">256</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.S_AXI.NUM_READ_OUTSTANDING">1</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.S_AXI.NUM_READ_THREADS">1</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.S_AXI.NUM_WRITE_OUTSTANDING">1</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.S_AXI.NUM_WRITE_THREADS">1</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.S_AXI.PHASE">0.000</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.S_AXI.PROTOCOL">AXI4</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.S_AXI.READ_WRITE_MODE">READ_WRITE</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.S_AXI.RUSER_BITS_PER_BYTE">0</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.S_AXI.RUSER_WIDTH">0</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.S_AXI.SUPPORTS_NARROW_BURST">1</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.S_AXI.WUSER_BITS_PER_BYTE">0</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.S_AXI.WUSER_WIDTH">0</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.S_AXI_ACLK.ASSOCIATED_RESET"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.S_AXI_ACLK.CLK_DOMAIN"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.S_AXI_ACLK.FREQ_HZ">100000000</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.S_AXI_ACLK.PHASE">0.000</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.TXOUTCLK_PORT.ASSOCIATED_BUSIF"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.TXOUTCLK_PORT.ASSOCIATED_RESET"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.TXOUTCLK_PORT.CLK_DOMAIN"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.TXOUTCLK_PORT.FREQ_HZ">125000000</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.USERCLK2_OUT_PORT.ASSOCIATED_BUSIF"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.USERCLK2_OUT_PORT.ASSOCIATED_RESET"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.USERCLK2_OUT_PORT.CLK_DOMAIN"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.USERCLK2_PORT.ASSOCIATED_BUSIF"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.USERCLK2_PORT.ASSOCIATED_RESET"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.USERCLK2_PORT.CLK_DOMAIN"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.USERCLK2_PORT.FREQ_HZ">125000000</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.USERCLK_OUT_PORT.ASSOCIATED_BUSIF"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.USERCLK_OUT_PORT.ASSOCIATED_RESET"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.USERCLK_OUT_PORT.CLK_DOMAIN"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.USERCLK_PORT.ASSOCIATED_BUSIF"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.USERCLK_PORT.ASSOCIATED_RESET"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.USERCLK_PORT.CLK_DOMAIN"/>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.USERCLK_PORT.FREQ_HZ">62500000</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.C_EMAC_IF_TEMAC">true</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.EXAMPLE_SIMULATION">0</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.c_1588">0</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.c_8_or_9_family">true</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.c_InstantiateBitslice0">false</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.c_RxLane0_Placement">DIFF_PAIR_0</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.c_RxLane1_Placement">DIFF_PAIR_1</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.c_RxNibbleBitslice0Used">false</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.c_TxLane0_Placement">DIFF_PAIR_2</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.c_TxLane1_Placement">DIFF_PAIR_1</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.c_architecture">kintexuplus</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.c_clock_selection">0</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.c_component_name">design_1_gig_ethernet_pcs_pma_0_0</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.c_drpclkrate">50.0</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.c_dynamic_switching">false</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.c_elaboration_transient_dir">.</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.c_enable_async_lvds">true</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.c_enable_async_lvds_rx_only">false</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.c_enable_async_sgmii">false</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.c_enable_tx_userclk_reset_port">true</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.c_family">kintexuplus</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.c_gt_dmonitorout_width">16</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.c_gt_drpaddr_width">10</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.c_gt_loc">X0Y0</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.c_gt_rxmonitorout_width">7</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.c_gt_txdiffctrl_width">5</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.c_gt_type">GTY</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.c_gtinex">false</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.c_has_an">true</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.c_has_axil">false</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.c_has_ext_mdio">true</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.c_has_mdio">true</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.c_is_2_5g">false</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.c_is_sgmii">true</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.c_num_of_lanes">1</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.c_refclk_src">clk0</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.c_refclkrate">125</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.c_rx_gmii_clk_src">TXOUTCLK</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.c_sgmii_fabric_buffer">true</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.c_sgmii_phy_mode">false</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.c_sub_core_name">design_1_gig_ethernet_pcs_pma_0_0_gt</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.c_support_level">true</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.c_transceiver_type">GTYE4</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.c_transceivercontrol">false</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.c_tx_in_upper_nibble">0</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.c_use_lvds">true</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.c_use_tbi">false</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.c_use_transceiver">false</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.c_xdevicefamily">xcku5p</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.characterization">false</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.gt_rx_byte_width">1</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.AXILite_Interface">false</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.Auto_Negotiation">true</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.ClockSelection">Sync</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.Component_Name">design_1_gig_ethernet_pcs_pma_0_0</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.DIFFCLK_BOARD_INTERFACE">sgmii_phyclk</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.DrpClkRate">50.0</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.EMAC_IF_TEMAC">TEMAC</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.ETHERNET_BOARD_INTERFACE">sgmii_lvds</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.EXAMPLE_SIMULATION">0</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.EnableAsyncSGMII">false</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.Enable_1588">false</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.Enable_1588_1step">false</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.Ext_Management_Interface">true</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.GT_Location">X0Y0</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.GT_Type">GTY</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.GTinEx">false</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.InstantiateBitslice0">false</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.LvdsRefClk">625</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.MDIO_BOARD_INTERFACE">mdio_mdc</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.Management_Interface">true</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.MaxDataRate">1G</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.NumOfLanes">1</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.Physical_Interface">LVDS</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.RefClkRate">125</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.RefClkSrc">clk0</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.RxGmiiClkSrc">TXOUTCLK</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.RxLane0_Placement">DIFF_PAIR_0</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.RxLane1_Placement">DIFF_PAIR_1</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.RxNibbleBitslice0Used">false</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.SGMII_Mode">10_100_1000</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.SGMII_PHY_Mode">false</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.Standard">SGMII</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.SupportLevel">Include_Shared_Logic_in_Core</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.Timer_Format">Time_of_day</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.TransceiverControl">false</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.TxLane0_Placement">DIFF_PAIR_2</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.TxLane1_Placement">DIFF_PAIR_1</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.Tx_In_Upper_Nibble">0</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.USE_BOARD_FLOW">false</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PROJECT_PARAM.ARCHITECTURE">kintexuplus</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PROJECT_PARAM.BOARD">xilinx.com:kcu116:part0:1.3</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PROJECT_PARAM.DEVICE">xcku5p</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PROJECT_PARAM.PACKAGE">ffvb676</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PROJECT_PARAM.PREFHDL">VHDL</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PROJECT_PARAM.SILICON_REVISION"/>
-        <spirit:configurableElementValue spirit:referenceId="PROJECT_PARAM.SIMULATOR_LANGUAGE">VHDL</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PROJECT_PARAM.SPEEDGRADE">-2</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PROJECT_PARAM.TEMPERATURE_GRADE">E</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PROJECT_PARAM.USE_RDI_CUSTOMIZATION">TRUE</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PROJECT_PARAM.USE_RDI_GENERATION">TRUE</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="RUNTIME_PARAM.IPCONTEXT">IP_Integrator</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="RUNTIME_PARAM.IPREVISION">3</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="RUNTIME_PARAM.MANAGED">TRUE</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="RUNTIME_PARAM.OUTPUTDIR">.</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="RUNTIME_PARAM.SELECTEDSIMMODEL"/>
-        <spirit:configurableElementValue spirit:referenceId="RUNTIME_PARAM.SHAREDDIR">../../ipshared</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="RUNTIME_PARAM.SWVERSION">2018.1_AR73068</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="RUNTIME_PARAM.SYNTHESISFLOW">OUT_OF_CONTEXT</spirit:configurableElementValue>
-      </spirit:configurableElementValues>
-      <spirit:vendorExtensions>
-        <xilinx:componentInstanceExtensions>
-          <xilinx:configElementInfos>
-            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.CLK125_OUT_PORT.CLK_DOMAIN" xilinx:valuePermission="bd"/>
-            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.CLK312_OUT_PORT.CLK_DOMAIN" xilinx:valuePermission="bd"/>
-            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.GTREFCLK_PORT.FREQ_HZ" xilinx:valueSource="user" xilinx:valuePermission="bd"/>
-            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.RXOUTCLK_PORT.FREQ_HZ" xilinx:valueSource="user" xilinx:valuePermission="bd"/>
-            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.RXUSERCLK2_PORT.FREQ_HZ" xilinx:valueSource="user" xilinx:valuePermission="bd"/>
-            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.RXUSERCLK_PORT.FREQ_HZ" xilinx:valueSource="user" xilinx:valuePermission="bd"/>
-            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.TXOUTCLK_PORT.FREQ_HZ" xilinx:valueSource="user" xilinx:valuePermission="bd"/>
-            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.USERCLK2_PORT.FREQ_HZ" xilinx:valueSource="user" xilinx:valuePermission="bd"/>
-            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.USERCLK_PORT.FREQ_HZ" xilinx:valueSource="user" xilinx:valuePermission="bd"/>
-            <xilinx:configElementInfo xilinx:referenceId="PARAM_VALUE.DIFFCLK_BOARD_INTERFACE" xilinx:valueSource="user"/>
-            <xilinx:configElementInfo xilinx:referenceId="PARAM_VALUE.ETHERNET_BOARD_INTERFACE" xilinx:valueSource="user"/>
-            <xilinx:configElementInfo xilinx:referenceId="PARAM_VALUE.Ext_Management_Interface" xilinx:valueSource="user"/>
-            <xilinx:configElementInfo xilinx:referenceId="PARAM_VALUE.LvdsRefClk" xilinx:valueSource="user"/>
-            <xilinx:configElementInfo xilinx:referenceId="PARAM_VALUE.MDIO_BOARD_INTERFACE" xilinx:valueSource="user"/>
-            <xilinx:configElementInfo xilinx:referenceId="PARAM_VALUE.Physical_Interface" xilinx:valueSource="user"/>
-            <xilinx:configElementInfo xilinx:referenceId="PARAM_VALUE.Standard" xilinx:valueSource="user"/>
-            <xilinx:configElementInfo xilinx:referenceId="PARAM_VALUE.SupportLevel" xilinx:valueSource="user"/>
-            <xilinx:configElementInfo xilinx:referenceId="PARAM_VALUE.TxLane0_Placement" xilinx:valueSource="user"/>
-            <xilinx:configElementInfo xilinx:referenceId="PARAM_VALUE.Tx_In_Upper_Nibble" xilinx:valueSource="user"/>
-          </xilinx:configElementInfos>
-        </xilinx:componentInstanceExtensions>
-      </spirit:vendorExtensions>
-    </spirit:componentInstance>
-  </spirit:componentInstances>
-</spirit:design>
+{
+  "schema": "xilinx.com:schema:json_instance:1.0",
+  "ip_inst": {
+    "xci_name": "MainDesign_gig_ethernet_pcs_pma_0_0",
+    "cell_name": "NetworkPacketSystem/gig_ethernet_pcs_pma_0",
+    "component_reference": "xilinx.com:ip:gig_ethernet_pcs_pma:17.0",
+    "ip_revision": "0",
+    "gen_directory": "../../../../../../CPUDrivenGPUTest4.gen/sources_1/bd/MainDesign/ip/MainDesign_gig_ethernet_pcs_pma_0_0",
+    "parameters": {
+      "component_parameters": {
+        "Component_Name": [ { "value": "MainDesign_gig_ethernet_pcs_pma_0_0", "resolve_type": "user", "usage": "all" } ],
+        "USE_BOARD_FLOW": [ { "value": "true", "value_src": "user", "resolve_type": "user", "format": "bool", "usage": "all" } ],
+        "ETHERNET_BOARD_INTERFACE": [ { "value": "sgmii_lvds", "value_src": "user", "resolve_type": "user", "usage": "all" } ],
+        "DIFFCLK_BOARD_INTERFACE": [ { "value": "sgmii_phyclk", "value_src": "user", "resolve_type": "user", "usage": "all" } ],
+        "Standard": [ { "value": "SGMII", "resolve_type": "user", "enabled": false, "usage": "all" } ],
+        "MaxDataRate": [ { "value": "1G", "resolve_type": "user", "usage": "all" } ],
+        "Physical_Interface": [ { "value": "LVDS", "resolve_type": "user", "enabled": false, "usage": "all" } ],
+        "Management_Interface": [ { "value": "true", "resolve_type": "user", "format": "bool", "usage": "all" } ],
+        "AXILite_Interface": [ { "value": "false", "resolve_type": "user", "format": "bool", "usage": "all" } ],
+        "Ext_Management_Interface": [ { "value": "true", "resolve_type": "user", "format": "bool", "enabled": false, "usage": "all" } ],
+        "MDIO_BOARD_INTERFACE": [ { "value": "mdio_mdc", "value_src": "user", "resolve_type": "user", "usage": "all" } ],
+        "Auto_Negotiation": [ { "value": "true", "resolve_type": "user", "format": "bool", "usage": "all" } ],
+        "SGMII_Mode": [ { "value": "10_100_1000", "resolve_type": "user", "usage": "all" } ],
+        "SGMII_PHY_Mode": [ { "value": "false", "resolve_type": "user", "format": "bool", "usage": "all" } ],
+        "Enable_1588": [ { "value": "false", "resolve_type": "user", "format": "bool", "usage": "all" } ],
+        "Enable_1588_1step": [ { "value": "false", "resolve_type": "user", "format": "bool", "enabled": false, "usage": "all" } ],
+        "Timer_Format": [ { "value": "Time_of_day", "resolve_type": "user", "enabled": false, "usage": "all" } ],
+        "EMAC_IF_TEMAC": [ { "value": "TEMAC", "resolve_type": "user", "usage": "all" } ],
+        "EXAMPLE_SIMULATION": [ { "value": "0", "resolve_type": "user", "format": "long", "usage": "all" } ],
+        "SupportLevel": [ { "value": "Include_Shared_Logic_in_Core", "resolve_type": "user", "usage": "all" } ],
+        "TransceiverControl": [ { "value": "false", "resolve_type": "user", "format": "bool", "usage": "all" } ],
+        "GTinEx": [ { "value": "false", "resolve_type": "user", "format": "bool", "usage": "all" } ],
+        "GT_Type": [ { "value": "GTY", "resolve_type": "user", "usage": "all" } ],
+        "RefClkRate": [ { "value": "125", "resolve_type": "user", "usage": "all" } ],
+        "LvdsRefClk": [ { "value": "625", "resolve_type": "user", "usage": "all" } ],
+        "DrpClkRate": [ { "value": "50.0", "resolve_type": "user", "format": "float", "usage": "all" } ],
+        "NumOfLanes": [ { "value": "1", "value_src": "user", "resolve_type": "user", "format": "long", "usage": "all" } ],
+        "Tx_In_Upper_Nibble": [ { "value": "0", "value_src": "user", "resolve_type": "user", "format": "long", "usage": "all" } ],
+        "TxLane0_Placement": [ { "value": "DIFF_PAIR_2", "value_src": "user", "resolve_type": "user", "usage": "all" } ],
+        "RxLane0_Placement": [ { "value": "DIFF_PAIR_0", "resolve_type": "user", "usage": "all" } ],
+        "TxLane1_Placement": [ { "value": "DIFF_PAIR_1", "resolve_type": "user", "usage": "all" } ],
+        "RxLane1_Placement": [ { "value": "DIFF_PAIR_1", "resolve_type": "user", "usage": "all" } ],
+        "InstantiateBitslice0": [ { "value": "false", "resolve_type": "user", "format": "bool", "usage": "all" } ],
+        "RxNibbleBitslice0Used": [ { "value": "false", "resolve_type": "user", "format": "bool", "usage": "all" } ],
+        "RxGmiiClkSrc": [ { "value": "TXOUTCLK", "resolve_type": "user", "enabled": false, "usage": "all" } ],
+        "ClockSelection": [ { "value": "Sync", "resolve_type": "user", "usage": "all" } ],
+        "EnableAsyncSGMII": [ { "value": "false", "resolve_type": "user", "format": "bool", "usage": "all" } ],
+        "GT_Location": [ { "value": "X0Y0", "resolve_type": "user", "usage": "all" } ],
+        "RefClkSrc": [ { "value": "clk0", "resolve_type": "user", "usage": "all" } ],
+        "IS_GT_WIZ_OLD": [ { "value": "0", "resolve_type": "user", "format": "long", "usage": "all" } ],
+        "GT_SETTINGS": [ { "value": "0", "resolve_type": "user", "usage": "all", "data_type": "tcldict:internal:source_gt_settings" } ]
+      },
+      "model_parameters": {
+        "c_elaboration_transient_dir": [ { "value": ".", "resolve_type": "generated", "usage": "all" } ],
+        "c_component_name": [ { "value": "MainDesign_gig_ethernet_pcs_pma_0_0", "resolve_type": "generated", "usage": "all" } ],
+        "c_family": [ { "value": "kintexuplus", "resolve_type": "generated", "usage": "all" } ],
+        "c_architecture": [ { "value": "kintexuplus", "resolve_type": "generated", "usage": "all" } ],
+        "c_is_sgmii": [ { "value": "true", "resolve_type": "generated", "format": "bool", "usage": "all" } ],
+        "c_enable_async_sgmii": [ { "value": "false", "resolve_type": "generated", "format": "bool", "usage": "all" } ],
+        "c_enable_async_lvds": [ { "value": "true", "resolve_type": "generated", "format": "bool", "usage": "all" } ],
+        "c_enable_async_lvds_rx_only": [ { "value": "false", "resolve_type": "generated", "format": "bool", "usage": "all" } ],
+        "c_use_transceiver": [ { "value": "false", "resolve_type": "generated", "format": "bool", "usage": "all" } ],
+        "c_use_tbi": [ { "value": "false", "resolve_type": "generated", "format": "bool", "usage": "all" } ],
+        "c_is_2_5g": [ { "value": "false", "resolve_type": "generated", "format": "bool", "usage": "all" } ],
+        "c_use_lvds": [ { "value": "true", "resolve_type": "generated", "format": "bool", "usage": "all" } ],
+        "c_has_an": [ { "value": "true", "resolve_type": "generated", "format": "bool", "usage": "all" } ],
+        "characterization": [ { "value": "false", "resolve_type": "generated", "format": "bool", "usage": "all" } ],
+        "c_has_mdio": [ { "value": "true", "resolve_type": "generated", "format": "bool", "usage": "all" } ],
+        "c_has_axil": [ { "value": "false", "resolve_type": "generated", "format": "bool", "usage": "all" } ],
+        "c_has_ext_mdio": [ { "value": "true", "resolve_type": "generated", "format": "bool", "usage": "all" } ],
+        "c_sgmii_phy_mode": [ { "value": "false", "resolve_type": "generated", "format": "bool", "usage": "all" } ],
+        "c_dynamic_switching": [ { "value": "false", "resolve_type": "generated", "format": "bool", "usage": "all" } ],
+        "c_sgmii_fabric_buffer": [ { "value": "true", "resolve_type": "generated", "format": "bool", "usage": "all" } ],
+        "c_1588": [ { "value": "0", "resolve_type": "generated", "format": "long", "usage": "all" } ],
+        "gt_rx_byte_width": [ { "value": "1", "resolve_type": "generated", "format": "long", "usage": "all" } ],
+        "C_EMAC_IF_TEMAC": [ { "value": "true", "resolve_type": "generated", "format": "bool", "usage": "all" } ],
+        "EXAMPLE_SIMULATION": [ { "value": "0", "resolve_type": "generated", "format": "long", "usage": "all" } ],
+        "c_support_level": [ { "value": "true", "resolve_type": "generated", "format": "bool", "usage": "all" } ],
+        "c_RxNibbleBitslice0Used": [ { "value": "false", "resolve_type": "generated", "format": "bool", "usage": "all" } ],
+        "c_InstantiateBitslice0": [ { "value": "false", "resolve_type": "generated", "format": "bool", "usage": "all" } ],
+        "c_tx_in_upper_nibble": [ { "value": "0", "resolve_type": "generated", "format": "long", "usage": "all" } ],
+        "c_TxLane0_Placement": [ { "value": "DIFF_PAIR_2", "resolve_type": "generated", "usage": "all" } ],
+        "c_TxLane1_Placement": [ { "value": "DIFF_PAIR_1", "resolve_type": "generated", "usage": "all" } ],
+        "c_RxLane0_Placement": [ { "value": "DIFF_PAIR_0", "resolve_type": "generated", "usage": "all" } ],
+        "c_RxLane1_Placement": [ { "value": "DIFF_PAIR_1", "resolve_type": "generated", "usage": "all" } ],
+        "c_sub_core_name": [ { "value": "MainDesign_gig_ethernet_pcs_pma_0_0_gt", "resolve_type": "generated", "usage": "all" } ],
+        "c_transceiver_type": [ { "value": "GTYE4", "resolve_type": "generated", "usage": "all" } ],
+        "c_gt_type": [ { "value": "GTY", "resolve_type": "generated", "usage": "all" } ],
+        "c_rx_gmii_clk_src": [ { "value": "TXOUTCLK", "resolve_type": "generated", "usage": "all" } ],
+        "c_transceivercontrol": [ { "value": "false", "resolve_type": "generated", "format": "bool", "usage": "all" } ],
+        "c_gtinex": [ { "value": "false", "resolve_type": "generated", "format": "bool", "usage": "all" } ],
+        "c_xdevicefamily": [ { "value": "xcku5p", "resolve_type": "generated", "usage": "all" } ],
+        "c_clock_selection": [ { "value": "Sync", "resolve_type": "generated", "usage": "all" } ],
+        "c_gt_dmonitorout_width": [ { "value": "16", "resolve_type": "generated", "format": "long", "usage": "all" } ],
+        "c_gt_drpaddr_width": [ { "value": "10", "resolve_type": "generated", "format": "long", "usage": "all" } ],
+        "c_gt_txdiffctrl_width": [ { "value": "5", "resolve_type": "generated", "format": "long", "usage": "all" } ],
+        "c_gt_rxmonitorout_width": [ { "value": "7", "resolve_type": "generated", "format": "long", "usage": "all" } ],
+        "c_num_of_lanes": [ { "value": "1", "resolve_type": "generated", "format": "long", "usage": "all" } ],
+        "c_refclkrate": [ { "value": "125", "resolve_type": "generated", "usage": "all" } ],
+        "c_drpclkrate": [ { "value": "50.0", "resolve_type": "generated", "format": "float", "usage": "all" } ],
+        "c_gt_loc": [ { "value": "X0Y0", "resolve_type": "generated", "usage": "all" } ],
+        "c_refclk_src": [ { "value": "clk0", "resolve_type": "generated", "usage": "all" } ],
+        "c_enable_tx_userclk_reset_port": [ { "value": "true", "resolve_type": "generated", "format": "bool", "usage": "all" } ],
+        "c_8_or_9_family": [ { "value": "true", "resolve_type": "generated", "format": "bool", "usage": "all" } ],
+        "VERSAL_GT_BOARD_FLOW": [ { "value": "0", "resolve_type": "generated", "format": "long", "usage": "all" } ],
+        "C_GT_SETTINGS": [ { "value": "internal", "resolve_type": "generated", "usage": "all" } ],
+        "C_IS_GT_WIZ_OLD": [ { "value": "0", "resolve_type": "generated", "format": "long", "usage": "all" } ]
+      },
+      "project_parameters": {
+        "ARCHITECTURE": [ { "value": "kintexuplus", "resolve_type": "generated", "usage": "all" } ],
+        "BASE_BOARD_PART": [ { "value": "xilinx.com:kcu116:part0:1.5", "resolve_type": "generated", "usage": "all" } ],
+        "BOARD_CONNECTIONS": [ { "value": "", "resolve_type": "generated", "usage": "all" } ],
+        "DEVICE": [ { "value": "xcku5p", "resolve_type": "generated", "usage": "all" } ],
+        "PACKAGE": [ { "value": "ffvb676", "resolve_type": "generated", "usage": "all" } ],
+        "PREFHDL": [ { "value": "VHDL", "resolve_type": "generated", "usage": "all" } ],
+        "SILICON_REVISION": [ { "value": "", "resolve_type": "generated", "usage": "all" } ],
+        "SIMULATOR_LANGUAGE": [ { "value": "VHDL", "resolve_type": "generated", "usage": "all" } ],
+        "SPEEDGRADE": [ { "value": "-2", "resolve_type": "generated", "usage": "all" } ],
+        "STATIC_POWER": [ { "value": "", "resolve_type": "generated", "usage": "all" } ],
+        "TEMPERATURE_GRADE": [ { "value": "E", "resolve_type": "generated", "usage": "all" } ]
+      },
+      "runtime_parameters": {
+        "IPCONTEXT": [ { "value": "IP_Integrator" } ],
+        "IPREVISION": [ { "value": "0" } ],
+        "MANAGED": [ { "value": "TRUE" } ],
+        "OUTPUTDIR": [ { "value": "../../../../../../CPUDrivenGPUTest4.gen/sources_1/bd/MainDesign/ip/MainDesign_gig_ethernet_pcs_pma_0_0" } ],
+        "SELECTEDSIMMODEL": [ { "value": "" } ],
+        "SHAREDDIR": [ { "value": "../../ipshared" } ],
+        "SWVERSION": [ { "value": "2025.2" } ],
+        "SYNTHESISFLOW": [ { "value": "OUT_OF_CONTEXT" } ]
+      }
+    },
+    "boundary": {
+      "ports": {
+        "sgmii_clk_r_0": [ { "direction": "out" } ],
+        "sgmii_clk_f_0": [ { "direction": "out" } ],
+        "sgmii_clk_en_0": [ { "direction": "out" } ],
+        "clk125_out": [ { "direction": "out" } ],
+        "clk312_out": [ { "direction": "out" } ],
+        "rst_125_out": [ { "direction": "out" } ],
+        "refclk625_n": [ { "direction": "in", "driver_value": "0" } ],
+        "refclk625_p": [ { "direction": "in", "driver_value": "0" } ],
+        "speed_is_10_100_0": [ { "direction": "in", "driver_value": "0" } ],
+        "speed_is_100_0": [ { "direction": "in", "driver_value": "0" } ],
+        "reset": [ { "direction": "in" } ],
+        "txn_0": [ { "direction": "out" } ],
+        "rxn_0": [ { "direction": "in", "driver_value": "0" } ],
+        "gmii_txd_0": [ { "direction": "in", "size_left": "7", "size_right": "0", "driver_value": "0" } ],
+        "gmii_rxd_0": [ { "direction": "out", "size_left": "7", "size_right": "0" } ],
+        "txp_0": [ { "direction": "out" } ],
+        "gmii_rx_dv_0": [ { "direction": "out" } ],
+        "gmii_rx_er_0": [ { "direction": "out" } ],
+        "gmii_isolate_0": [ { "direction": "out" } ],
+        "rxp_0": [ { "direction": "in", "driver_value": "0" } ],
+        "signal_detect_0": [ { "direction": "in", "driver_value": "1" } ],
+        "gmii_tx_en_0": [ { "direction": "in", "driver_value": "0" } ],
+        "gmii_tx_er_0": [ { "direction": "in", "driver_value": "0" } ],
+        "configuration_vector_0": [ { "direction": "in", "size_left": "4", "size_right": "0", "driver_value": "0" } ],
+        "status_vector_0": [ { "direction": "out", "size_left": "15", "size_right": "0" } ],
+        "mdio_i_0": [ { "direction": "in", "driver_value": "1" } ],
+        "mdio_o_0": [ { "direction": "out" } ],
+        "mdc_0": [ { "direction": "in", "driver_value": "1" } ],
+        "configuration_valid_0": [ { "direction": "in", "driver_value": "1" } ],
+        "mdio_t_0": [ { "direction": "out" } ],
+        "phyaddr_0": [ { "direction": "in", "size_left": "4", "size_right": "0", "driver_value": "0" } ],
+        "ext_mdc_0": [ { "direction": "out" } ],
+        "ext_mdio_i_0": [ { "direction": "in", "driver_value": "1" } ],
+        "ext_mdio_o_0": [ { "direction": "out" } ],
+        "ext_mdio_t_0": [ { "direction": "out" } ],
+        "mdio_t_in_0": [ { "direction": "in", "driver_value": "1" } ],
+        "an_adv_config_val_0": [ { "direction": "in", "driver_value": "0" } ],
+        "an_adv_config_vector_0": [ { "direction": "in", "size_left": "15", "size_right": "0", "driver_value": "0" } ],
+        "an_restart_config_0": [ { "direction": "in", "driver_value": "0" } ],
+        "an_interrupt_0": [ { "direction": "out" } ],
+        "tx_dly_rdy_1": [ { "direction": "in", "driver_value": "1" } ],
+        "rx_dly_rdy_1": [ { "direction": "in", "driver_value": "1" } ],
+        "tx_vtc_rdy_1": [ { "direction": "in", "driver_value": "1" } ],
+        "rx_vtc_rdy_1": [ { "direction": "in", "driver_value": "1" } ],
+        "tx_dly_rdy_2": [ { "direction": "in", "driver_value": "1" } ],
+        "rx_dly_rdy_2": [ { "direction": "in", "driver_value": "1" } ],
+        "tx_vtc_rdy_2": [ { "direction": "in", "driver_value": "1" } ],
+        "rx_vtc_rdy_2": [ { "direction": "in", "driver_value": "1" } ],
+        "tx_dly_rdy_3": [ { "direction": "in", "driver_value": "1" } ],
+        "rx_dly_rdy_3": [ { "direction": "in", "driver_value": "1" } ],
+        "tx_vtc_rdy_3": [ { "direction": "in", "driver_value": "1" } ],
+        "rx_vtc_rdy_3": [ { "direction": "in", "driver_value": "1" } ],
+        "tx_logic_reset": [ { "direction": "out" } ],
+        "rx_logic_reset": [ { "direction": "out" } ],
+        "rx_locked": [ { "direction": "out" } ],
+        "tx_locked": [ { "direction": "out" } ],
+        "tx_bsc_rst_out": [ { "direction": "out" } ],
+        "rx_bsc_rst_out": [ { "direction": "out" } ],
+        "tx_bs_rst_out": [ { "direction": "out" } ],
+        "rx_bs_rst_out": [ { "direction": "out" } ],
+        "tx_rst_dly_out": [ { "direction": "out" } ],
+        "rx_rst_dly_out": [ { "direction": "out" } ],
+        "tx_bsc_en_vtc_out": [ { "direction": "out" } ],
+        "rx_bsc_en_vtc_out": [ { "direction": "out" } ],
+        "tx_bs_en_vtc_out": [ { "direction": "out" } ],
+        "rx_bs_en_vtc_out": [ { "direction": "out" } ],
+        "riu_clk_out": [ { "direction": "out" } ],
+        "riu_wr_en_out": [ { "direction": "out" } ],
+        "tx_pll_clk_out": [ { "direction": "out" } ],
+        "rx_pll_clk_out": [ { "direction": "out" } ],
+        "tx_rdclk_out": [ { "direction": "out" } ],
+        "riu_addr_out": [ { "direction": "out", "size_left": "5", "size_right": "0" } ],
+        "riu_wr_data_out": [ { "direction": "out", "size_left": "15", "size_right": "0" } ],
+        "riu_nibble_sel_out": [ { "direction": "out", "size_left": "1", "size_right": "0" } ],
+        "rx_btval_1": [ { "direction": "out", "size_left": "8", "size_right": "0" } ],
+        "rx_btval_2": [ { "direction": "out", "size_left": "8", "size_right": "0" } ],
+        "rx_btval_3": [ { "direction": "out", "size_left": "8", "size_right": "0" } ],
+        "riu_valid_3": [ { "direction": "in", "driver_value": "0" } ],
+        "riu_valid_2": [ { "direction": "in", "driver_value": "0" } ],
+        "riu_valid_1": [ { "direction": "in", "driver_value": "0" } ],
+        "riu_prsnt_1": [ { "direction": "in", "driver_value": "0" } ],
+        "riu_prsnt_2": [ { "direction": "in", "driver_value": "0" } ],
+        "riu_prsnt_3": [ { "direction": "in", "driver_value": "0" } ],
+        "riu_rddata_3": [ { "direction": "in", "size_left": "15", "size_right": "0", "driver_value": "0" } ],
+        "riu_rddata_1": [ { "direction": "in", "size_left": "15", "size_right": "0", "driver_value": "0" } ],
+        "riu_rddata_2": [ { "direction": "in", "size_left": "15", "size_right": "0", "driver_value": "0" } ]
+      },
+      "interfaces": {
+        "mdio_pcs_pma_0": {
+          "vlnv": "xilinx.com:interface:mdio:1.0",
+          "abstraction_type": "xilinx.com:interface:mdio_rtl:1.0",
+          "mode": "slave",
+          "parameters": {
+            "CAN_DEBUG": [ { "value": "false", "value_permission": "bd", "resolve_type": "generated", "format": "bool", "is_ips_inferred": true, "is_static_object": false } ]
+          },
+          "port_maps": {
+            "MDC": [ { "physical_name": "mdc_0" } ],
+            "MDIO_I": [ { "physical_name": "mdio_i_0" } ],
+            "MDIO_O": [ { "physical_name": "mdio_o_0" } ],
+            "MDIO_T": [ { "physical_name": "mdio_t_0" } ]
+          }
+        },
+        "ext_mdio_pcs_pma_0": {
+          "vlnv": "xilinx.com:interface:mdio:1.0",
+          "abstraction_type": "xilinx.com:interface:mdio_rtl:1.0",
+          "mode": "master",
+          "parameters": {
+            "BOARD.ASSOCIATED_PARAM": [ { "value": "MDIO_BOARD_INTERFACE", "value_src": "constant", "value_permission": "bd", "usage": "all" } ],
+            "CAN_DEBUG": [ { "value": "false", "value_permission": "bd", "resolve_type": "generated", "format": "bool", "is_ips_inferred": true, "is_static_object": false } ]
+          },
+          "port_maps": {
+            "MDC": [ { "physical_name": "ext_mdc_0" } ],
+            "MDIO_I": [ { "physical_name": "ext_mdio_i_0" } ],
+            "MDIO_O": [ { "physical_name": "ext_mdio_o_0" } ],
+            "MDIO_T": [ { "physical_name": "ext_mdio_t_0" } ]
+          }
+        },
+        "gmii_pcs_pma_0": {
+          "vlnv": "xilinx.com:interface:gmii:1.0",
+          "abstraction_type": "xilinx.com:interface:gmii_rtl:1.0",
+          "mode": "slave",
+          "port_maps": {
+            "RX_DV": [ { "physical_name": "gmii_rx_dv_0" } ],
+            "RX_ER": [ { "physical_name": "gmii_rx_er_0" } ],
+            "RXD": [ { "physical_name": "gmii_rxd_0" } ],
+            "TX_EN": [ { "physical_name": "gmii_tx_en_0" } ],
+            "TX_ER": [ { "physical_name": "gmii_tx_er_0" } ],
+            "TXD": [ { "physical_name": "gmii_txd_0" } ]
+          }
+        },
+        "sgmii_0": {
+          "vlnv": "xilinx.com:interface:sgmii:1.0",
+          "abstraction_type": "xilinx.com:interface:sgmii_rtl:1.0",
+          "mode": "master",
+          "parameters": {
+            "BOARD.ASSOCIATED_PARAM": [ { "value": "ETHERNET_BOARD_INTERFACE", "value_src": "constant", "value_permission": "bd", "usage": "all" } ]
+          },
+          "port_maps": {
+            "RXN": [ { "physical_name": "rxn_0" } ],
+            "RXP": [ { "physical_name": "rxp_0" } ],
+            "TXN": [ { "physical_name": "txn_0" } ],
+            "TXP": [ { "physical_name": "txp_0" } ]
+          }
+        },
+        "reset_port": {
+          "vlnv": "xilinx.com:signal:reset:1.0",
+          "abstraction_type": "xilinx.com:signal:reset_rtl:1.0",
+          "mode": "slave",
+          "parameters": {
+            "POLARITY": [ { "value": "ACTIVE_HIGH", "value_src": "constant", "value_permission": "bd", "usage": "all" } ],
+            "INSERT_VIP": [ { "value": "0", "resolve_type": "user", "format": "long", "usage": "simulation.rtl", "is_ips_inferred": true, "is_static_object": false } ]
+          },
+          "port_maps": {
+            "RST": [ { "physical_name": "reset" } ]
+          }
+        },
+        "an_interrupt_port_0": {
+          "vlnv": "xilinx.com:signal:interrupt:1.0",
+          "abstraction_type": "xilinx.com:signal:interrupt_rtl:1.0",
+          "mode": "master",
+          "parameters": {
+            "SENSITIVITY": [ { "value": "EDGE_RISING", "value_src": "constant", "value_permission": "bd", "usage": "all" } ],
+            "PortWidth": [ { "value": "1", "value_permission": "bd", "resolve_type": "generated", "format": "long", "is_ips_inferred": true, "is_static_object": false } ]
+          },
+          "port_maps": {
+            "INTERRUPT": [ { "physical_name": "an_interrupt_0" } ]
+          }
+        },
+        "sgmii_clk_en_0_port": {
+          "vlnv": "xilinx.com:signal:clockenable:1.0",
+          "abstraction_type": "xilinx.com:signal:clockenable_rtl:1.0",
+          "mode": "master",
+          "parameters": {
+            "POLARITY": [ { "value": "ACTIVE_LOW", "value_permission": "bd", "resolve_type": "generated", "is_ips_inferred": true, "is_static_object": false } ]
+          },
+          "port_maps": {
+            "CE": [ { "physical_name": "sgmii_clk_en_0" } ]
+          }
+        },
+        "clk312_out_port": {
+          "vlnv": "xilinx.com:signal:clock:1.0",
+          "abstraction_type": "xilinx.com:signal:clock_rtl:1.0",
+          "mode": "master",
+          "parameters": {
+            "FREQ_HZ": [ { "value": "312500000", "value_src": "constant", "value_permission": "bd", "usage": "all" } ],
+            "PHASE": [ { "value": "0", "value_src": "constant", "value_permission": "bd", "usage": "all" } ],
+            "FREQ_TOLERANCE_HZ": [ { "value": "0", "value_permission": "bd", "resolve_type": "generated", "format": "long", "is_ips_inferred": true, "is_static_object": false } ],
+            "CLK_DOMAIN": [ { "value": "MainDesign_gig_ethernet_pcs_pma_0_0_clk312_out", "value_permission": "bd", "resolve_type": "generated", "is_ips_inferred": true, "is_static_object": false } ],
+            "ASSOCIATED_BUSIF": [ { "value": "", "value_permission": "bd", "resolve_type": "generated", "is_ips_inferred": true, "is_static_object": false } ],
+            "ASSOCIATED_PORT": [ { "value": "", "value_permission": "bd", "resolve_type": "generated", "is_ips_inferred": true, "is_static_object": false } ],
+            "ASSOCIATED_RESET": [ { "value": "", "value_permission": "bd", "resolve_type": "generated", "is_ips_inferred": true, "is_static_object": false } ],
+            "INSERT_VIP": [ { "value": "0", "resolve_type": "user", "format": "long", "usage": "simulation.rtl", "is_ips_inferred": true, "is_static_object": false } ]
+          },
+          "port_maps": {
+            "CLK": [ { "physical_name": "clk312_out" } ]
+          }
+        },
+        "clk125_out_port": {
+          "vlnv": "xilinx.com:signal:clock:1.0",
+          "abstraction_type": "xilinx.com:signal:clock_rtl:1.0",
+          "mode": "master",
+          "parameters": {
+            "FREQ_HZ": [ { "value": "125000000", "value_src": "constant", "value_permission": "bd", "usage": "all" } ],
+            "PHASE": [ { "value": "0", "value_src": "constant", "value_permission": "bd", "usage": "all" } ],
+            "ASSOCIATED_RESET": [ { "value": "rst_125_out_port", "value_src": "constant", "value_permission": "bd", "usage": "all" } ],
+            "FREQ_TOLERANCE_HZ": [ { "value": "0", "value_permission": "bd", "resolve_type": "generated", "format": "long", "is_ips_inferred": true, "is_static_object": false } ],
+            "CLK_DOMAIN": [ { "value": "MainDesign_gig_ethernet_pcs_pma_0_0_clk125_out", "value_permission": "bd", "resolve_type": "generated", "is_ips_inferred": true, "is_static_object": false } ],
+            "ASSOCIATED_BUSIF": [ { "value": "", "value_permission": "bd", "resolve_type": "generated", "is_ips_inferred": true, "is_static_object": false } ],
+            "ASSOCIATED_PORT": [ { "value": "", "value_permission": "bd", "resolve_type": "generated", "is_ips_inferred": true, "is_static_object": false } ],
+            "INSERT_VIP": [ { "value": "0", "resolve_type": "user", "format": "long", "usage": "simulation.rtl", "is_ips_inferred": true, "is_static_object": false } ]
+          },
+          "port_maps": {
+            "CLK": [ { "physical_name": "clk125_out" } ]
+          }
+        },
+        "rst_125_out_port": {
+          "vlnv": "xilinx.com:signal:reset:1.0",
+          "abstraction_type": "xilinx.com:signal:reset_rtl:1.0",
+          "mode": "master",
+          "parameters": {
+            "POLARITY": [ { "value": "ACTIVE_HIGH", "value_src": "constant", "value_permission": "bd", "usage": "all" } ],
+            "INSERT_VIP": [ { "value": "0", "resolve_type": "user", "format": "long", "usage": "simulation.rtl", "is_ips_inferred": true, "is_static_object": false } ]
+          },
+          "port_maps": {
+            "RST": [ { "physical_name": "rst_125_out" } ]
+          }
+        },
+        "refclk625_in": {
+          "vlnv": "xilinx.com:interface:diff_clock:1.0",
+          "abstraction_type": "xilinx.com:interface:diff_clock_rtl:1.0",
+          "mode": "slave",
+          "parameters": {
+            "FREQ_HZ": [ { "value": "625000000", "value_src": "constant", "value_permission": "bd", "usage": "all" } ],
+            "TYPE": [ { "value": "ETH_LVDS_CLK", "value_src": "constant", "value_permission": "bd", "usage": "all" } ],
+            "BOARD.ASSOCIATED_PARAM": [ { "value": "DIFFCLK_BOARD_INTERFACE", "value_src": "constant", "value_permission": "bd", "usage": "all" } ],
+            "CAN_DEBUG": [ { "value": "false", "value_permission": "bd", "resolve_type": "generated", "format": "bool", "is_ips_inferred": true, "is_static_object": false } ]
+          },
+          "port_maps": {
+            "CLK_N": [ { "physical_name": "refclk625_n" } ],
+            "CLK_P": [ { "physical_name": "refclk625_p" } ]
+          }
+        }
+      }
+    }
+  },
+  "checksum": "8c9a6d6b"
+}

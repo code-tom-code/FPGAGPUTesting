@@ -48,9 +48,9 @@ The Rasterizer rasterizes triangles into pixels. It also calculates per-pixel tr
 
 The Depth Interpolator computes pixel Z depth and also pixel W values interpolated across the triangle using barycentric coordinates from the [Rasterizer](#Rasterizer-RAST). If depth-stencil testing is enabled, then the interpolated pixel depth values are passed to the Depth Tester for depth testing. Otherwise, the depth test is assumed to pass, and the pixel W value is passed on to the [Attribute Interpolator](#Attribute-Interpolator-INTERP) unit.
 
-### Depth Tester (DEPTH)
+### Depth/Stencil Tester (DEPTH)
 
-The Depth Tester unit owns and manages the depth buffer SRAM memory (currently hardcoded to 640x480 @ D24S8) and the depth buffer compression metadata. This unit also performs per-pixel depth testing (if depth testing is enabled) and also handles depth writing into the depth buffer. If the pixel fails the depth test, then it is discarded and its data is not passed on to the next stage.
+The Depth/Stencil Tester unit owns and manages the depth/stencil buffer SRAM memory (currently hardcoded to 640x480 @ D24S8) and the depth/stencil buffer compression metadata. This unit also performs per-pixel depth+stencil testing (if depth/stencil testing are enabled) and also handles depth/stencil writing into the depth/stencil buffer. If the pixel fails the depth or stencil tests, then it is discarded and its data is not passed on to the next stage. This may result in various test-fail or test-pass stencil operations which update the stencil buffer.
 
 ### Attribute Interpolator (INTERP)
 

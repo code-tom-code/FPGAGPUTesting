@@ -12263,7 +12263,7 @@ IDirect3DDevice9Hook::IDirect3DDevice9Hook(LPDIRECT3DDEVICE9 _d3d9dev, IDirect3D
 	processedVertexBuffer(NULL), processedVertsUsed(0), processVertsAllocated(0), currentlyRecordingStateBlock(NULL), currentSwvpEnabled(FALSE), deviceComms(NULL), baseDevice(NULL), allocatedDebugShaderRegisterFile(NULL),
 	overrideDepth(DepthOverrideSettings::DOS_Default), overrideStencil(StencilOverrideSettings::SOS_Default), overrideFillMode(FillModeOverrideSettings::FMOS_Default), overrideShadeMode(ShadeModeOverrideSettings::SMOS_Default),
 	overrideCullMode(CullModeOverrideSettings::CMOS_Default), overrideFogMode(FogModeOverrideSettings::FOGOS_Default), overrideAlphaBlend(AlphaBlendOverrideSettings::ABOS_Default), overrideAlphaTest(AlphaTestOverrideSettings::ATOS_Default),
-	overrideTexAddress(TexAddressOverrideSettings::TAOS_Default), overrideTexMode(TexModeOverrideSettings::TMOS_Default),
+	overrideTexAddress(TexAddressOverrideSettings::TAOS_Default), overrideTexMode(TexModeOverrideSettings::TMOS_Default), overrideTexFilter(TexFilterOverrideSettings::TFOS_Default),
 	invertScanoutColors(false), drawCallSleepMicros(0), frameLimiterFPS(0.0f), singleStepDrawCallMode(false), singleStepFrameMode(false), queueSingleStepDrawCallModeNextFrame(false), queueSingleStepFrameModeNextFrame(false), scanoutRedSwizzle(setScanoutPointerCommand::dcs_red), scanoutGreenSwizzle(setScanoutPointerCommand::dcs_green), scanoutBlueSwizzle(setScanoutPointerCommand::dcs_blue),
 	lastFrameDeltaSeconds(0.0), currentFrameIndex(0), frameBeginTimestamp(NULL), frameEndTimestamp(NULL)
 {

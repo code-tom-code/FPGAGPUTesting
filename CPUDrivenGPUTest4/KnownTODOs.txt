@@ -8,7 +8,6 @@ New Features:
 - Implement texture palettes (P8 textures)
 - Implement log, exp, and sincos instructions
 - Implement HDMI data island TERC4 packets (whichever are necessary to enable HDMI capture card capture)
-- Implement stencil buffering
 - Implement hardware cursor
 - Implement vertex fog/pixel fog
 - Implement point-sprites
@@ -43,7 +42,7 @@ Optimizations:
 - If the driver detects that a texture could be using a lower-bandwidth texture format or a smaller resolution, then convert it to that (DXT3/DXT5 with all opaque/fulltransparent texels -> DXT1, solid color texture > 4x4, all colors could be quantized to smaller format)
 - When not using the viewport transform Z scale/offset, omit those instructions from the vertex shader viewport transform code
 - When not using the viewport transform X/Y offset, omit those instructions from the vertex shader viewport transform code
-- Optimize rcp instruction to have better than 14 cycle latency!
+- Optimize rcp instruction to have better than 14 cycle latency! (Be careful, rcp is used in tons of places in the GPU and needs to remain quite accurate)
 - Optimize vertex load and vertex export to use both ports simultaneously for double the speed of loading vertex data
 - See if it's possible to optimize draw calls by switching from D3DPT_TRIANGLELIST to D3DPT_TRIANGLESTRIP in some cases (saves on index buffer bandwidth)
 

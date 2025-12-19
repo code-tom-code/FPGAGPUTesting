@@ -1,4 +1,4 @@
-# CPUDrivenGPUTest3 Hardware
+# CPUDrivenGPUTest4 Hardware
 
 ### Network Protocol Packet Processor (NETPKT)
 

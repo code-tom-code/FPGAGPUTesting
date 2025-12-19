@@ -17,6 +17,7 @@ entity TexSample is
 	-- Attribute Interpolator FIFO interface begin
 		INTERP_InFIFO_rd_data : in STD_LOGIC_VECTOR(95 downto 0); -- 12 bytes per pixel of input data to the texture sampler
         INTERP_InFIFO_empty : in STD_LOGIC;
+		INTERP_InFIFO_almost_empty : in STD_LOGIC;
         INTERP_InFIFO_rd_en : out STD_LOGIC := '0';
 	-- Attribute Interpolator FIFO interface end
 
@@ -29,6 +30,7 @@ entity TexSample is
 		-- DRAM read responses FIFO:
 		MEM_TexSampReadResponsesFIFO_rd_data : in STD_LOGIC_VECTOR(256-1 downto 0);
         MEM_TexSampReadResponsesFIFO_empty : in STD_LOGIC;
+		MEM_TexSampReadResponsesFIFO_almost_empty : in STD_LOGIC;
         MEM_TexSampReadResponsesFIFO_rd_en : out STD_LOGIC := '0';
 	-- Memory Controller FIFO interface end
 
@@ -44,6 +46,7 @@ entity TexSample is
 		TexCache_dina : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 		TexCache_douta : in STD_LOGIC_VECTOR(31 downto 0);
 		TexCache_ena : out STD_LOGIC := '0';
+		TexCache_clk : out STD_LOGIC := '0';
 		TexCache_wea : out STD_LOGIC_VECTOR(0 downto 0) := (others => '0');
 	-- Texture cache BRAM interfaces end
 
@@ -69,7 +72,12 @@ entity TexSample is
 		DBG_TexSample_State : out STD_LOGIC_VECTOR(5 downto 0) := (others => '0');
 		DBG_TexCache_douta : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 		DBG_TexCache_dina : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-		DBG_TexCache_addra : out STD_LOGIC_VECTOR(13 downto 0) := (others => '0')
+		DBG_TexCache_addra : out STD_LOGIC_VECTOR(13 downto 0) := (others => '0');
+		DBG_texCacheReadTexelsCount : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
+		
+		DBG_Message : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
+		DBG_MessageData : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
+		DBG_NewMessage : out STD_LOGIC := '0'
 		);
 end TexSample;
 
@@ -77,27 +85,44 @@ architecture Behavioral of TexSample is
 
 ATTRIBUTE X_INTERFACE_INFO : STRING;
 ATTRIBUTE X_INTERFACE_PARAMETER : STRING;
+ATTRIBUTE X_INTERFACE_MODE : STRING;
 
 ATTRIBUTE X_INTERFACE_INFO of clk: SIGNAL is "xilinx.com:signal:clock:1.0 clk CLK";
-ATTRIBUTE X_INTERFACE_PARAMETER of clk: SIGNAL is "FREQ_HZ 333250000";
 
+-- We're using the ASSOCIATED_BUSIF parameter here to associate these other interfaces' clocks with the main clock (which is this module's primary driving clock for everything).
+-- Doing this fixes the following IPI import warning: WARNING: [IP_Flow 19-11886] Bus Interface 'clk' is not associated with any clock interface
+ATTRIBUTE X_INTERFACE_PARAMETER of clk: SIGNAL is "FREQ_HZ 333250000, ASSOCIATED_BUSIF TexSampReadRequestsFIFO:TexSampReadResponses:INTERP_IN_FIFO:ROP_OUT_FIFO:TexCache";
+
+-- We're using the X_INTERFACE_MODE attribute here to set the interface mode to "master" mode. Options include "master", "slave", and "monitor" (used for monitoring an interface that is driven by another master/slave).
+-- Doing this fixes the following IPI import warnings:
+-- WARNING: [IP_Flow 19-5462] Defaulting to slave bus interface due to conflicts in bus interface inference.
+-- WARNING: [IP_Flow 19-3480] Bus Interface 'TexSampReadResponses': Portmap direction mismatched between component port 'MEM_TexSampReadResponsesFIFO_rd_data' and definition port 'RD_DATA'.
+ATTRIBUTE X_INTERFACE_MODE of MEM_TexSampReadRequestsFIFO_wr_data: SIGNAL is "master";
 ATTRIBUTE X_INTERFACE_INFO of MEM_TexSampReadRequestsFIFO_wr_data: SIGNAL is "xilinx.com:interface:fifo_write:1.0 TexSampReadRequestsFIFO WR_DATA";
 ATTRIBUTE X_INTERFACE_INFO of MEM_TexSampReadRequestsFIFO_wr_en: SIGNAL is "xilinx.com:interface:fifo_write:1.0 TexSampReadRequestsFIFO WR_EN";
 ATTRIBUTE X_INTERFACE_INFO of MEM_TexSampReadRequestsFIFO_full: SIGNAL is "xilinx.com:interface:fifo_write:1.0 TexSampReadRequestsFIFO FULL";
 
+ATTRIBUTE X_INTERFACE_MODE of MEM_TexSampReadResponsesFIFO_rd_data: SIGNAL is "master";
 ATTRIBUTE X_INTERFACE_INFO of MEM_TexSampReadResponsesFIFO_rd_data: SIGNAL is "xilinx.com:interface:fifo_read:1.0 TexSampReadResponses RD_DATA";
 ATTRIBUTE X_INTERFACE_INFO of MEM_TexSampReadResponsesFIFO_rd_en: SIGNAL is "xilinx.com:interface:fifo_read:1.0 TexSampReadResponses RD_EN";
 ATTRIBUTE X_INTERFACE_INFO of MEM_TexSampReadResponsesFIFO_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 TexSampReadResponses EMPTY";
+ATTRIBUTE X_INTERFACE_INFO of MEM_TexSampReadResponsesFIFO_almost_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 TexSampReadResponses ALMOST_EMPTY";
 
+ATTRIBUTE X_INTERFACE_MODE of INTERP_InFIFO_rd_data: SIGNAL is "master";
 ATTRIBUTE X_INTERFACE_INFO of INTERP_InFIFO_rd_data: SIGNAL is "xilinx.com:interface:fifo_read:1.0 INTERP_IN_FIFO RD_DATA";
 ATTRIBUTE X_INTERFACE_INFO of INTERP_InFIFO_rd_en: SIGNAL is "xilinx.com:interface:fifo_read:1.0 INTERP_IN_FIFO RD_EN";
 ATTRIBUTE X_INTERFACE_INFO of INTERP_InFIFO_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 INTERP_IN_FIFO EMPTY";
+ATTRIBUTE X_INTERFACE_INFO of INTERP_InFIFO_almost_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 INTERP_IN_FIFO ALMOST_EMPTY";
 
+ATTRIBUTE X_INTERFACE_MODE of ROP_OutFIFO_wr_data: SIGNAL is "master";
 ATTRIBUTE X_INTERFACE_INFO of ROP_OutFIFO_wr_data: SIGNAL is "xilinx.com:interface:fifo_write:1.0 ROP_OUT_FIFO WR_DATA";
 ATTRIBUTE X_INTERFACE_INFO of ROP_OutFIFO_wr_en: SIGNAL is "xilinx.com:interface:fifo_write:1.0 ROP_OUT_FIFO WR_EN";
 ATTRIBUTE X_INTERFACE_INFO of ROP_OutFIFO_full: SIGNAL is "xilinx.com:interface:fifo_write:1.0 ROP_OUT_FIFO FULL";
 
 -- Texture cache is ideally 64x128 R8G8B8A8 texel pairs (two 32-bit texels in a single transaction because URAM reads/writes 64 bits at a time)
+ATTRIBUTE X_INTERFACE_MODE of TexCache_douta: SIGNAL is "master";
+ATTRIBUTE X_INTERFACE_INFO of TexCache_clk: SIGNAL is "xilinx.com:interface:bram:1.0 TexCache CLK";
+ATTRIBUTE X_INTERFACE_PARAMETER of TexCache_clk: SIGNAL is "FREQ_HZ 333250000";
 ATTRIBUTE X_INTERFACE_INFO of TexCache_ena: SIGNAL is "xilinx.com:interface:bram:1.0 TexCache EN";
 ATTRIBUTE X_INTERFACE_INFO of TexCache_douta: SIGNAL is "xilinx.com:interface:bram:1.0 TexCache DOUT";
 ATTRIBUTE X_INTERFACE_INFO of TexCache_dina: SIGNAL is "xilinx.com:interface:bram:1.0 TexCache DIN";
@@ -490,6 +515,7 @@ signal statCyclesWaitingForCacheLoad : unsigned(31 downto 0) := (others => '0');
 
 begin
 
+TexCache_clk <= clk;
 TexCache_addra <= texCacheAddress;
 TexCache_ena <= texCacheEnable;
 TexCache_wea <= texCacheWriteEnable;
@@ -506,6 +532,7 @@ DBG_TexSample_State <= std_logic_vector(to_unsigned(texSampleStateType'pos(curre
 DBG_TexCache_douta <= TexCache_douta;
 DBG_TexCache_dina <= texCacheWriteData;
 DBG_TexCache_addra <= texCacheAddress;
+DBG_texCacheReadTexelsCount <= std_logic_vector(texCacheReadTexelsCount);
 
 	process(clk)
 	begin
@@ -547,6 +574,7 @@ DBG_TexCache_addra <= texCacheAddress;
 			case currentState is
 				when waitingForRead =>
 					ROP_OutFIFO_wr_en <= '0'; -- Deassert after one cycle
+					DBG_NewMessage <= '0';
 
 					storedVertColorRGBA <= INTERP_InFIFO_rd_data(95 downto 64);
 					tempShiftTexcoord := resize(unsigned(INTERP_InFIFO_rd_data(47 downto 32) ), tempShiftTexcoord'length) srl GetTexDimensionShift(texWidth);
@@ -836,10 +864,14 @@ DBG_TexCache_addra <= texCacheAddress;
 				when waitingForWrite =>
 					if (ROP_OutFIFO_full = '0') then
 						ROP_OutFIFO_wr_en <= '1';
+						DBG_NewMessage <= '1';
 						ROP_OutFIFO_wr_data <= std_logic_vector(PackOutputData(storedPixelX, storedPixelY, unsigned(ROP_outR), unsigned(ROP_outG), unsigned(ROP_outB), unsigned(ROP_outA) ) );
+						DBG_Message <= std_logic_vector(storedPixelX);
+						DBG_MessageData <= std_logic_vector(storedPixelY);
 						currentState <= waitingForRead;
 					else
 						ROP_OutFIFO_wr_en <= '0';
+						DBG_NewMessage <= '0';
 					end if;
 
 				when loadTextureState_memRequest =>

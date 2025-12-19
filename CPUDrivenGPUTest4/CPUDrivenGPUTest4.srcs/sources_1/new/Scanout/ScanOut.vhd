@@ -37,6 +37,7 @@ entity ScanOut is
 		-- DRAM read responses FIFO:
 		MEM_ScanoutReadResponsesFIFO_rd_data : in STD_LOGIC_VECTOR(256-1 downto 0);
         MEM_ScanoutReadResponsesFIFO_empty : in STD_LOGIC;
+		MEM_ScanoutReadResponsesFIFO_almost_empty : in STD_LOGIC;
         MEM_ScanoutReadResponsesFIFO_rd_en : out STD_LOGIC := '0';
 	-- Memory Controller FIFO interface end
 
@@ -81,17 +82,28 @@ architecture Behavioral of ScanOut is
 
 ATTRIBUTE X_INTERFACE_INFO : STRING;
 ATTRIBUTE X_INTERFACE_PARAMETER : STRING;
+ATTRIBUTE X_INTERFACE_MODE : STRING;
 
 ATTRIBUTE X_INTERFACE_INFO of clk_x10: SIGNAL is "xilinx.com:signal:clock:1.0 clk_x10 CLK";
-ATTRIBUTE X_INTERFACE_PARAMETER of clk_x10: SIGNAL is "FREQ_HZ 251750000";
 
+-- We're using the ASSOCIATED_BUSIF parameter here to associate these other interfaces' clocks with the AXI clock (which is the 10x clock in this case).
+-- Doing this fixes the following IPI import warning: WARNING: [IP_Flow 19-11886] Bus Interface 'ScanoutReadResponses' is not associated with any clock interface
+ATTRIBUTE X_INTERFACE_PARAMETER of clk_x10: SIGNAL is "FREQ_HZ 251750000, ASSOCIATED_BUSIF ScanoutReadRequestsFIFO:ScanoutReadResponses";
+
+-- We're using the X_INTERFACE_MODE attribute here to set the interface mode to "master" mode. Options include "master", "slave", and "monitor" (used for monitoring an interface that is driven by another master/slave).
+-- Doing this fixes the following IPI import warnings:
+-- WARNING: [IP_Flow 19-5462] Defaulting to slave bus interface due to conflicts in bus interface inference.
+-- WARNING: [IP_Flow 19-3480] Bus Interface 'ScanoutReadResponses': Portmap direction mismatched between component port 'MEM_ScanoutReadResponsesFIFO_rd_data' and definition port 'RD_DATA'.
+ATTRIBUTE X_INTERFACE_MODE of MEM_ScanoutReadRequestsFIFO_wr_data: SIGNAL is "master";
 ATTRIBUTE X_INTERFACE_INFO of MEM_ScanoutReadRequestsFIFO_wr_data: SIGNAL is "xilinx.com:interface:fifo_write:1.0 ScanoutReadRequestsFIFO WR_DATA";
 ATTRIBUTE X_INTERFACE_INFO of MEM_ScanoutReadRequestsFIFO_wr_en: SIGNAL is "xilinx.com:interface:fifo_write:1.0 ScanoutReadRequestsFIFO WR_EN";
 ATTRIBUTE X_INTERFACE_INFO of MEM_ScanoutReadRequestsFIFO_full: SIGNAL is "xilinx.com:interface:fifo_write:1.0 ScanoutReadRequestsFIFO FULL";
 
+ATTRIBUTE X_INTERFACE_MODE of MEM_ScanoutReadResponsesFIFO_rd_data: SIGNAL is "master";
 ATTRIBUTE X_INTERFACE_INFO of MEM_ScanoutReadResponsesFIFO_rd_data: SIGNAL is "xilinx.com:interface:fifo_read:1.0 ScanoutReadResponses RD_DATA";
 ATTRIBUTE X_INTERFACE_INFO of MEM_ScanoutReadResponsesFIFO_rd_en: SIGNAL is "xilinx.com:interface:fifo_read:1.0 ScanoutReadResponses RD_EN";
 ATTRIBUTE X_INTERFACE_INFO of MEM_ScanoutReadResponsesFIFO_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 ScanoutReadResponses EMPTY";
+ATTRIBUTE X_INTERFACE_INFO of MEM_ScanoutReadResponsesFIFO_almost_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 ScanoutReadResponses ALMOST_EMPTY";
 
 type loadProcessState is
 (

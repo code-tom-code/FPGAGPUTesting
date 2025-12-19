@@ -35,10 +35,19 @@ architecture Behavioral of ClearBlock is
 
 ATTRIBUTE X_INTERFACE_INFO : STRING;
 ATTRIBUTE X_INTERFACE_PARAMETER : STRING;
+ATTRIBUTE X_INTERFACE_MODE : STRING;
 
 ATTRIBUTE X_INTERFACE_INFO of clk: SIGNAL is "xilinx.com:signal:clock:1.0 clk CLK";
-ATTRIBUTE X_INTERFACE_PARAMETER of clk: SIGNAL is "FREQ_HZ 333250000";
 
+-- We're using the ASSOCIATED_BUSIF parameter here to associate these other interfaces' clocks with the main clock (which is this module's primary driving clock for everything).
+-- Doing this fixes the following IPI import warning: WARNING: [IP_Flow 19-11886] Bus Interface 'clk' is not associated with any clock interface
+ATTRIBUTE X_INTERFACE_PARAMETER of clk: SIGNAL is "FREQ_HZ 333250000, ASSOCIATED_BUSIF ClearBlockWriteRequestsFIFO";
+
+-- We're using the X_INTERFACE_MODE attribute here to set the interface mode to "master" mode. Options include "master", "slave", and "monitor" (used for monitoring an interface that is driven by another master/slave).
+-- Doing this fixes the following IPI import warnings:
+-- WARNING: [IP_Flow 19-5462] Defaulting to slave bus interface due to conflicts in bus interface inference.
+-- WARNING: [IP_Flow 19-3480] Bus Interface 'ClearBlockWriteRequestsFIFO': Portmap direction mismatched between component port 'MEM_ClearBlockWriteRequestsFIFO_wr_data' and definition port 'WR_DATA'.
+ATTRIBUTE X_INTERFACE_MODE of MEM_ClearBlockWriteRequestsFIFO_wr_data: SIGNAL is "master";
 ATTRIBUTE X_INTERFACE_INFO of MEM_ClearBlockWriteRequestsFIFO_wr_data: SIGNAL is "xilinx.com:interface:fifo_write:1.0 ClearBlockWriteRequestsFIFO WR_DATA";
 ATTRIBUTE X_INTERFACE_INFO of MEM_ClearBlockWriteRequestsFIFO_wr_en: SIGNAL is "xilinx.com:interface:fifo_write:1.0 ClearBlockWriteRequestsFIFO WR_EN";
 ATTRIBUTE X_INTERFACE_INFO of MEM_ClearBlockWriteRequestsFIFO_full: SIGNAL is "xilinx.com:interface:fifo_write:1.0 ClearBlockWriteRequestsFIFO FULL";

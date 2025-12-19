@@ -86,10 +86,12 @@ entity EthernetController3 is
 		recv_pkt_data_wr_en : out STD_LOGIC := '0';
 
 		send_pkt_header_empty : in STD_LOGIC;
+		send_pkt_header_almost_empty : in STD_LOGIC;
 		send_pkt_header_rd_data : in STD_LOGIC_VECTOR(31 downto 0);
 		send_pkt_header_rd_en : out STD_LOGIC := '0';
 
 		send_pkt_data_empty : in STD_LOGIC;
+		send_pkt_data_almost_empty : in STD_LOGIC;
 		send_pkt_data_rd_data : in STD_LOGIC_VECTOR(7 downto 0);
 		send_pkt_data_rd_en : out STD_LOGIC := '0';
 	-- End IO Data FIFO's
@@ -211,11 +213,20 @@ architecture Behavioral of EthernetController3 is
 
 ATTRIBUTE X_INTERFACE_INFO : STRING;
 ATTRIBUTE X_INTERFACE_PARAMETER : STRING;
+ATTRIBUTE X_INTERFACE_MODE : STRING;
 ATTRIBUTE FSM_ENCODING : STRING;
 
 ATTRIBUTE X_INTERFACE_INFO of clk125: SIGNAL is "xilinx.com:signal:clock:1.0 clk125 CLK";
-ATTRIBUTE X_INTERFACE_PARAMETER of clk125: SIGNAL is "FREQ_HZ 125000000";
 
+-- We're using the ASSOCIATED_BUSIF parameter here to associate these other interfaces' clocks with the main 2.5MHz clock (which is this module's primary driving clock for everything).
+-- Doing this fixes the following IPI import warning: WARNING: [IP_Flow 19-11886] Bus Interface 'recv_pkt_header' is not associated with any clock interface
+ATTRIBUTE X_INTERFACE_PARAMETER of clk125: SIGNAL is "FREQ_HZ 125000000, ASSOCIATED_BUSIF GMII:send_pkt_header:send_pkt_data:recv_pkt_header:recv_pkt_data:RecvScratchWRA:RecvScratchRDB";
+
+-- We're using the X_INTERFACE_MODE attribute here to set the interface mode to "master" mode. Options include "master", "slave", and "monitor" (used for monitoring an interface that is driven by another master/slave).
+-- Doing this fixes the following IPI import warnings:
+-- WARNING: [IP_Flow 19-5462] Defaulting to slave bus interface due to conflicts in bus interface inference.
+-- WARNING: [IP_Flow 19-3480] Bus Interface 'send_pkt_data': Portmap direction mismatched between component port 'send_pkt_data_rd_data' and definition port 'RD_DATA'.
+ATTRIBUTE X_INTERFACE_MODE of tx_data: SIGNAL is "master";
 ATTRIBUTE X_INTERFACE_INFO of tx_data: SIGNAL is "xilinx.com:interface:gmii:1.0 GMII TXD";
 ATTRIBUTE X_INTERFACE_INFO of tx_en: SIGNAL is "xilinx.com:interface:gmii:1.0 GMII TX_EN";
 ATTRIBUTE X_INTERFACE_INFO of tx_er: SIGNAL is "xilinx.com:interface:gmii:1.0 GMII TX_ER";
@@ -223,21 +234,28 @@ ATTRIBUTE X_INTERFACE_INFO of rx_data: SIGNAL is "xilinx.com:interface:gmii:1.0 
 ATTRIBUTE X_INTERFACE_INFO of rx_dv: SIGNAL is "xilinx.com:interface:gmii:1.0 GMII RX_DV";
 ATTRIBUTE X_INTERFACE_INFO of rx_er: SIGNAL is "xilinx.com:interface:gmii:1.0 GMII RX_ER";
 
+ATTRIBUTE X_INTERFACE_MODE of send_pkt_header_rd_data: SIGNAL is "master";
 ATTRIBUTE X_INTERFACE_INFO of send_pkt_header_rd_data: SIGNAL is "xilinx.com:interface:fifo_read:1.0 send_pkt_header RD_DATA";
 ATTRIBUTE X_INTERFACE_INFO of send_pkt_header_rd_en: SIGNAL is "xilinx.com:interface:fifo_read:1.0 send_pkt_header RD_EN";
 ATTRIBUTE X_INTERFACE_INFO of send_pkt_header_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 send_pkt_header EMPTY";
+ATTRIBUTE X_INTERFACE_INFO of send_pkt_header_almost_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 send_pkt_header ALMOST_EMPTY";
 
+ATTRIBUTE X_INTERFACE_MODE of send_pkt_data_rd_data: SIGNAL is "master";
 ATTRIBUTE X_INTERFACE_INFO of send_pkt_data_rd_data: SIGNAL is "xilinx.com:interface:fifo_read:1.0 send_pkt_data RD_DATA";
 ATTRIBUTE X_INTERFACE_INFO of send_pkt_data_rd_en: SIGNAL is "xilinx.com:interface:fifo_read:1.0 send_pkt_data RD_EN";
 ATTRIBUTE X_INTERFACE_INFO of send_pkt_data_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 send_pkt_data EMPTY";
+ATTRIBUTE X_INTERFACE_INFO of send_pkt_data_almost_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 send_pkt_data ALMOST_EMPTY";
 
+ATTRIBUTE X_INTERFACE_MODE of recv_pkt_header_wr_data: SIGNAL is "master";
 ATTRIBUTE X_INTERFACE_INFO of recv_pkt_header_wr_data: SIGNAL is "xilinx.com:interface:fifo_write:1.0 recv_pkt_header WR_DATA";
 ATTRIBUTE X_INTERFACE_INFO of recv_pkt_header_wr_en: SIGNAL is "xilinx.com:interface:fifo_write:1.0 recv_pkt_header WR_EN";
 
+ATTRIBUTE X_INTERFACE_MODE of recv_pkt_data_wr_data: SIGNAL is "master";
 ATTRIBUTE X_INTERFACE_INFO of recv_pkt_data_wr_data: SIGNAL is "xilinx.com:interface:fifo_write:1.0 recv_pkt_data WR_DATA";
 ATTRIBUTE X_INTERFACE_INFO of recv_pkt_data_wr_en: SIGNAL is "xilinx.com:interface:fifo_write:1.0 recv_pkt_data WR_EN";
 
 -- Recv scratch BRAM:
+ATTRIBUTE X_INTERFACE_MODE of recv_scratch_addra: SIGNAL is "master";
 ATTRIBUTE X_INTERFACE_INFO of recv_scratch_clka125: SIGNAL is "xilinx.com:interface:bram:1.0 RecvScratchWRA CLK";
 ATTRIBUTE X_INTERFACE_PARAMETER of recv_scratch_clka125: SIGNAL is "FREQ_HZ 125000000";
 ATTRIBUTE X_INTERFACE_INFO of recv_scratch_clkb125: SIGNAL is "xilinx.com:interface:bram:1.0 RecvScratchRDB CLK";
@@ -477,7 +495,6 @@ end function;
 -- Master state machine signals:
 signal currentState : EthConfigStateType := init;
 signal resetDelayCycles : unsigned(31 downto 0) := (others => '0');
-signal controllerIsReadyForData : std_logic := '0';
 
 -- Send process signals:
 signal initialPacketSendPtr : unsigned(11 downto 0) := (others => '0');
@@ -674,7 +691,6 @@ DBG_SendUDPPacketCount <= std_logic_vector(sendPacketsCount);
 					end if;
 
 				when readyState =>
-					controllerIsReadyForData <= '1';
 					NETPKT_SendReady <= '1';
 					-- Do nothing. We're ready to send and receive data now!
 

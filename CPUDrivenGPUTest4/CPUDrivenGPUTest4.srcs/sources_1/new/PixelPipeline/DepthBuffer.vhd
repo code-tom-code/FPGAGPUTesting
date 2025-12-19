@@ -74,10 +74,19 @@ architecture Behavioral of DepthBuffer is
 
 	ATTRIBUTE X_INTERFACE_INFO : STRING;
 	ATTRIBUTE X_INTERFACE_PARAMETER : STRING;
+	ATTRIBUTE X_INTERFACE_MODE : STRING;
 
 	ATTRIBUTE X_INTERFACE_INFO of clk: SIGNAL is "xilinx.com:signal:clock:1.0 clk CLK";
-	ATTRIBUTE X_INTERFACE_PARAMETER of clk: SIGNAL is "FREQ_HZ 333250000";
+	
+	-- We're using the ASSOCIATED_BUSIF parameter here to associate these other interfaces' clocks with the main clock (which is this module's primary driving clock for everything).
+	-- Doing this fixes the following IPI import warning: WARNING: [IP_Flow 19-11886] Bus Interface 'clk' is not associated with any clock interface
+	ATTRIBUTE X_INTERFACE_PARAMETER of clk: SIGNAL is "FREQ_HZ 333250000, ASSOCIATED_BUSIF DBufferRAMW:DBufferRAMR";
 
+	-- We're using the X_INTERFACE_MODE attribute here to set the interface mode to "master" mode. Options include "master", "slave", and "monitor" (used for monitoring an interface that is driven by another master/slave).
+	-- Doing this fixes the following IPI import warnings:
+	-- WARNING: [IP_Flow 19-5462] Defaulting to slave bus interface due to conflicts in bus interface inference.
+	-- WARNING: [IP_Flow 19-3480] Bus Interface 'DBufferRAMW': Portmap direction mismatched between component port 'URAM_dina' and definition port 'DIN'.
+	ATTRIBUTE X_INTERFACE_MODE of URAM_dina: SIGNAL is "master";
 	ATTRIBUTE X_INTERFACE_INFO of URAM_clka: SIGNAL is "xilinx.com:interface:bram:1.0 DBufferRAMW CLK";
 	ATTRIBUTE X_INTERFACE_PARAMETER of URAM_clka: SIGNAL is "FREQ_HZ 333250000";
 	ATTRIBUTE X_INTERFACE_INFO of URAM_ena: SIGNAL is "xilinx.com:interface:bram:1.0 DBufferRAMW EN";
@@ -85,6 +94,7 @@ architecture Behavioral of DepthBuffer is
 	ATTRIBUTE X_INTERFACE_INFO of URAM_wea: SIGNAL is "xilinx.com:interface:bram:1.0 DBufferRAMW WE";
 	ATTRIBUTE X_INTERFACE_INFO of URAM_addra: SIGNAL is "xilinx.com:interface:bram:1.0 DBufferRAMW ADDR";
 
+	ATTRIBUTE X_INTERFACE_MODE of URAM_doutb: SIGNAL is "master";
 	ATTRIBUTE X_INTERFACE_INFO of URAM_clkb: SIGNAL is "xilinx.com:interface:bram:1.0 DBufferRAMR CLK";
 	ATTRIBUTE X_INTERFACE_PARAMETER of URAM_clkb: SIGNAL is "FREQ_HZ 333250000";
 	ATTRIBUTE X_INTERFACE_INFO of URAM_enb: SIGNAL is "xilinx.com:interface:bram:1.0 DBufferRAMR EN";

@@ -13,10 +13,10 @@ package PixelPipeline_Types is
 
 	type eSpecialPixelCodeBits is
 	(
-		SetNewPrimSlot, -- 0
-		TerminateCurrentPrimSlot, -- 1
-		SetNewDrawEventID, -- 2
-		TerminateCurrentDrawEventID, -- 3
+		SetNewPrimSlot, -- 0 (Shows up as 0x8001)
+		TerminateCurrentPrimSlot, -- 1 (Shows up as 0x8002)
+		SetNewDrawEventID, -- 2 (Shows up as 0x8004)
+		TerminateCurrentDrawEventID, -- 3 (Shows up as 0x8008)
 		Unused4, -- 4
 		Unused5, -- 5
 		Unused6, -- 6

@@ -18,6 +18,7 @@ entity AttrInterpolator is
 	-- Depth Interpolator FIFO interface begin
 		DINTERP_FIFO_rd_data : in STD_LOGIC_VECTOR(INTERPOLATOR_DATA_BITS-1 downto 0);
         DINTERP_FIFO_empty : in STD_LOGIC;
+		DINTERP_FIFO_almost_empty : in STD_LOGIC;
         DINTERP_FIFO_rd_en : out STD_LOGIC := '0';
 	-- Depth Interpolator FIFO interface end
 
@@ -89,7 +90,11 @@ entity AttrInterpolator is
 		DBG_PixelWFIFO : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 		DBG_RastBarycentricB : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 		DBG_RastBarycentricC : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-		DBG_CurrentDrawEvent : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0')
+		DBG_CurrentDrawEvent : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
+		
+		DBG_Message : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
+		DBG_MessageData : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
+		DBG_NewMessage : out STD_LOGIC := '0'
 		);
 end AttrInterpolator;
 
@@ -97,17 +102,28 @@ architecture Behavioral of AttrInterpolator is
 
 ATTRIBUTE X_INTERFACE_INFO : STRING;
 ATTRIBUTE X_INTERFACE_PARAMETER : STRING;
+ATTRIBUTE X_INTERFACE_MODE : STRING;
 
 ATTRIBUTE X_INTERFACE_INFO of clk: SIGNAL is "xilinx.com:signal:clock:1.0 clk CLK";
-ATTRIBUTE X_INTERFACE_PARAMETER of clk: SIGNAL is "FREQ_HZ 333250000";
 
+-- We're using the ASSOCIATED_BUSIF parameter here to associate these other interfaces' clocks with the main clock (which is this module's primary driving clock for everything).
+-- Doing this fixes the following IPI import warning: WARNING: [IP_Flow 19-11886] Bus Interface 'clk' is not associated with any clock interface
+ATTRIBUTE X_INTERFACE_PARAMETER of clk: SIGNAL is "FREQ_HZ 333250000, ASSOCIATED_BUSIF TEXSAMP_OUT_FIFO:ATTR_FIFO";
+
+-- We're using the X_INTERFACE_MODE attribute here to set the interface mode to "master" mode. Options include "master", "slave", and "monitor" (used for monitoring an interface that is driven by another master/slave).
+-- Doing this fixes the following IPI import warnings:
+-- WARNING: [IP_Flow 19-5462] Defaulting to slave bus interface due to conflicts in bus interface inference.
+-- WARNING: [IP_Flow 19-3480] Bus Interface 'ATTR_FIFO': Portmap direction mismatched between component port 'DINTERP_FIFO_rd_data' and definition port 'RD_DATA'.
+ATTRIBUTE X_INTERFACE_MODE of TEXSAMP_OutFIFO_wr_data: SIGNAL is "master";
 ATTRIBUTE X_INTERFACE_INFO of TEXSAMP_OutFIFO_wr_data: SIGNAL is "xilinx.com:interface:fifo_write:1.0 TEXSAMP_OUT_FIFO WR_DATA";
 ATTRIBUTE X_INTERFACE_INFO of TEXSAMP_OutFIFO_wr_en: SIGNAL is "xilinx.com:interface:fifo_write:1.0 TEXSAMP_OUT_FIFO WR_EN";
 ATTRIBUTE X_INTERFACE_INFO of TEXSAMP_OutFIFO_full: SIGNAL is "xilinx.com:interface:fifo_write:1.0 TEXSAMP_OUT_FIFO FULL";
 
+ATTRIBUTE X_INTERFACE_MODE of DINTERP_FIFO_rd_data: SIGNAL is "master";
 ATTRIBUTE X_INTERFACE_INFO of DINTERP_FIFO_rd_data: SIGNAL is "xilinx.com:interface:fifo_read:1.0 ATTR_FIFO RD_DATA";
 ATTRIBUTE X_INTERFACE_INFO of DINTERP_FIFO_rd_en: SIGNAL is "xilinx.com:interface:fifo_read:1.0 ATTR_FIFO RD_EN";
 ATTRIBUTE X_INTERFACE_INFO of DINTERP_FIFO_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 ATTR_FIFO EMPTY";
+ATTRIBUTE X_INTERFACE_INFO of DINTERP_FIFO_almost_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 ATTR_FIFO ALMOST_EMPTY";
 
 constant flatshading : STD_LOGIC := '0';
 
@@ -677,9 +693,12 @@ outputCollectorGoSignal <= outputCollectorConverterProcessGoSignal or outputColl
 	begin
 		if (rising_edge(clk) ) then
 			TEXSAMP_OutFIFO_wr_en <= '0';
+			DBG_NewMessage <= '0';
 			PixelXYFIFO_PopElement <= '0';
 			TEXSAMP_OutFIFO_wr_data <= std_logic_vector(PackOutputData(unsigned(PixelXYFIFO_OutCurrentData(15 downto 0) ), unsigned(PixelXYFIFO_OutCurrentData(31 downto 16) ), compressedOutPixelDataTX, unsigned(FPU_CNV1_OUT(15 downto 0) ), 
 				compressedOutPixelDataColorR, compressedOutPixelDataColorG, compressedOutPixelDataColorB, unsigned(FPU_CNV0_OUT(7 downto 0) ) ) );
+			DBG_Message <= PixelXYFIFO_OutCurrentData(15 downto 0);
+			DBG_MessageData <= PixelXYFIFO_OutCurrentData(31 downto 16);
 			OutputDriverIsIdle <= '0';
 
 			case currentOutputCollectorState is
@@ -702,6 +721,7 @@ outputCollectorGoSignal <= outputCollectorConverterProcessGoSignal or outputColl
 
 				when others =>
 					TEXSAMP_OutFIFO_wr_en <= '1';
+					DBG_NewMessage <= '1';
 					PixelXYFIFO_PopElement <= '1';
 					currentOutputCollectorState <= IS_TX;
 

@@ -26,10 +26,12 @@ entity NetProtoPacketProcessor is
 
 	-- IO Data FIFO's
 		recv_pkt_header_empty : in STD_LOGIC;
+		recv_pkt_header_almost_empty : in STD_LOGIC;
 		recv_pkt_header_rd_data : in STD_LOGIC_VECTOR(31 downto 0);
 		recv_pkt_header_rd_en : out STD_LOGIC := '0';
 
 		recv_pkt_data_empty : in STD_LOGIC;
+		recv_pkt_data_almost_empty : in STD_LOGIC;
 		recv_pkt_data_rd_data : in STD_LOGIC_VECTOR(31 downto 0);
 		recv_pkt_data_rd_en : out STD_LOGIC := '0';
 
@@ -56,6 +58,7 @@ entity NetProtoPacketProcessor is
 
 		-- Return packet FIFO outputs from the Command Processor to the host:
 		returnPacketsFIFO_empty : in STD_LOGIC;
+		returnPacketsFIFO_almost_empty : in STD_LOGIC;
 		returnPacketsFIFO_rd_data : in STD_LOGIC_VECTOR(PACKET_SIZE_IN_BYTES*8-1 downto 0);
 		returnPacketsFIFO_rd_en : out STD_LOGIC := '0';
 	-- End Command Processor FIFO's
@@ -116,39 +119,59 @@ architecture Behavioral of NetProtoPacketProcessor is
 
 ATTRIBUTE X_INTERFACE_INFO : STRING;
 ATTRIBUTE X_INTERFACE_PARAMETER : STRING;
+ATTRIBUTE X_INTERFACE_MODE : STRING;
 ATTRIBUTE FSM_ENCODING : STRING;
 
 ATTRIBUTE X_INTERFACE_INFO of clk333_250: SIGNAL is "xilinx.com:signal:clock:1.0 clk333_250 CLK";
-ATTRIBUTE X_INTERFACE_PARAMETER of clk333_250: SIGNAL is "FREQ_HZ 333250000";
 
+-- We're using the ASSOCIATED_BUSIF parameter here to associate these other interfaces' clocks with the main 2.5MHz clock (which is this module's primary driving clock for everything).
+-- Doing this fixes the following IPI import warning: WARNING: [IP_Flow 19-11886] Bus Interface 'recv_pkt_header' is not associated with any clock interface
+ATTRIBUTE X_INTERFACE_PARAMETER of clk333_250: SIGNAL is "FREQ_HZ 333250000, ASSOCIATED_BUSIF recv_pkt_header:recv_pkt_data:send_pkt_header:send_pkt_data:validPacketsFIFO:returnPacketsFIFO:SendPacketBRAMW:SendPacketBRAMR";
+
+-- We're using the X_INTERFACE_MODE attribute here to set the interface mode to "master" mode. Options include "master", "slave", and "monitor" (used for monitoring an interface that is driven by another master/slave).
+-- Doing this fixes the following IPI import warnings:
+-- WARNING: [IP_Flow 19-5462] Defaulting to slave bus interface due to conflicts in bus interface inference.
+-- WARNING: [IP_Flow 19-3480] Bus Interface 'recv_pkt_header': Portmap direction mismatched between component port 'recv_pkt_header_rd_data' and definition port 'RD_DATA'.
+ATTRIBUTE X_INTERFACE_MODE of recv_pkt_header_rd_data: SIGNAL is "master";
 ATTRIBUTE X_INTERFACE_INFO of recv_pkt_header_rd_data: SIGNAL is "xilinx.com:interface:fifo_read:1.0 recv_pkt_header RD_DATA";
 ATTRIBUTE X_INTERFACE_INFO of recv_pkt_header_rd_en: SIGNAL is "xilinx.com:interface:fifo_read:1.0 recv_pkt_header RD_EN";
 ATTRIBUTE X_INTERFACE_INFO of recv_pkt_header_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 recv_pkt_header EMPTY";
+ATTRIBUTE X_INTERFACE_INFO of recv_pkt_header_almost_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 recv_pkt_header ALMOST_EMPTY";
 
+ATTRIBUTE X_INTERFACE_MODE of recv_pkt_data_rd_data: SIGNAL is "master";
 ATTRIBUTE X_INTERFACE_INFO of recv_pkt_data_rd_data: SIGNAL is "xilinx.com:interface:fifo_read:1.0 recv_pkt_data RD_DATA";
 ATTRIBUTE X_INTERFACE_INFO of recv_pkt_data_rd_en: SIGNAL is "xilinx.com:interface:fifo_read:1.0 recv_pkt_data RD_EN";
 ATTRIBUTE X_INTERFACE_INFO of recv_pkt_data_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 recv_pkt_data EMPTY";
+ATTRIBUTE X_INTERFACE_INFO of recv_pkt_data_almost_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 recv_pkt_data ALMOST_EMPTY";
 
+ATTRIBUTE X_INTERFACE_MODE of send_pkt_header_wr_data: SIGNAL is "master";
 ATTRIBUTE X_INTERFACE_INFO of send_pkt_header_wr_data: SIGNAL is "xilinx.com:interface:fifo_write:1.0 send_pkt_header WR_DATA";
 ATTRIBUTE X_INTERFACE_INFO of send_pkt_header_wr_en: SIGNAL is "xilinx.com:interface:fifo_write:1.0 send_pkt_header WR_EN";
 
+ATTRIBUTE X_INTERFACE_MODE of send_pkt_data_wr_data: SIGNAL is "master";
 ATTRIBUTE X_INTERFACE_INFO of send_pkt_data_wr_data: SIGNAL is "xilinx.com:interface:fifo_write:1.0 send_pkt_data WR_DATA";
 ATTRIBUTE X_INTERFACE_INFO of send_pkt_data_wr_en: SIGNAL is "xilinx.com:interface:fifo_write:1.0 send_pkt_data WR_EN";
 
+ATTRIBUTE X_INTERFACE_MODE of validPacketsFIFO_wr_data: SIGNAL is "master";
 ATTRIBUTE X_INTERFACE_INFO of validPacketsFIFO_wr_data: SIGNAL is "xilinx.com:interface:fifo_write:1.0 validPacketsFIFO WR_DATA";
 ATTRIBUTE X_INTERFACE_INFO of validPacketsFIFO_wr_en: SIGNAL is "xilinx.com:interface:fifo_write:1.0 validPacketsFIFO WR_EN";
 ATTRIBUTE X_INTERFACE_INFO of validPacketsFIFO_full: SIGNAL is "xilinx.com:interface:fifo_write:1.0 validPacketsFIFO FULL";
 ATTRIBUTE X_INTERFACE_INFO of validPacketsFIFO_prog_full: SIGNAL is "xilinx.com:interface:fifo_write:1.0 validPacketsFIFO ALMOST_FULL";
 
+ATTRIBUTE X_INTERFACE_MODE of returnPacketsFIFO_rd_data: SIGNAL is "master";
 ATTRIBUTE X_INTERFACE_INFO of returnPacketsFIFO_rd_data: SIGNAL is "xilinx.com:interface:fifo_read:1.0 returnPacketsFIFO RD_DATA";
 ATTRIBUTE X_INTERFACE_INFO of returnPacketsFIFO_rd_en: SIGNAL is "xilinx.com:interface:fifo_read:1.0 returnPacketsFIFO RD_EN";
 ATTRIBUTE X_INTERFACE_INFO of returnPacketsFIFO_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 returnPacketsFIFO EMPTY";
+ATTRIBUTE X_INTERFACE_INFO of returnPacketsFIFO_almost_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 returnPacketsFIFO ALMOST_EMPTY";
 
+ATTRIBUTE X_INTERFACE_MODE of sendBRAM_addra: SIGNAL is "master";
 ATTRIBUTE X_INTERFACE_INFO of sendBRAM_clka: SIGNAL is "xilinx.com:interface:bram:1.0 SendPacketBRAMW CLK";
 ATTRIBUTE X_INTERFACE_INFO of sendBRAM_ena: SIGNAL is "xilinx.com:interface:bram:1.0 SendPacketBRAMW EN";
 ATTRIBUTE X_INTERFACE_INFO of sendBRAM_dina: SIGNAL is "xilinx.com:interface:bram:1.0 SendPacketBRAMW DIN";
 ATTRIBUTE X_INTERFACE_INFO of sendBRAM_wea: SIGNAL is "xilinx.com:interface:bram:1.0 SendPacketBRAMW WE";
 ATTRIBUTE X_INTERFACE_INFO of sendBRAM_addra: SIGNAL is "xilinx.com:interface:bram:1.0 SendPacketBRAMW ADDR";
+
+ATTRIBUTE X_INTERFACE_MODE of sendBRAM_addrb: SIGNAL is "master";
 ATTRIBUTE X_INTERFACE_INFO of sendBRAM_addrb: SIGNAL is "xilinx.com:interface:bram:1.0 SendPacketBRAMR ADDR";
 ATTRIBUTE X_INTERFACE_INFO of sendBRAM_clkb: SIGNAL is "xilinx.com:interface:bram:1.0 SendPacketBRAMR CLK";
 ATTRIBUTE X_INTERFACE_INFO of sendBRAM_doutb: SIGNAL is "xilinx.com:interface:bram:1.0 SendPacketBRAMR DOUT";

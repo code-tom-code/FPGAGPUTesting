@@ -34,6 +34,7 @@ entity CommandProcessor is
 		-- Valid packets FIFO inputs:
         validPacketsFIFO_rd_data : in STD_LOGIC_VECTOR(PACKET_SIZE_IN_BYTES*8-1 downto 0);
         validPacketsFIFO_empty : in STD_LOGIC;
+		validPacketsFIFO_almost_empty : in STD_LOGIC;
         validPacketsFIFO_rd_en : out STD_LOGIC := '0';
 
 		-- Return packet FIFO outputs:
@@ -51,6 +52,7 @@ entity CommandProcessor is
 		-- DRAM read responses FIFO:
 		CommandProcReadResponsesFIFO_rd_data : in STD_LOGIC_VECTOR(DATA_WIDTH_BITS-1 downto 0);
         CommandProcReadResponsesFIFO_empty : in STD_LOGIC;
+		CommandProcReadResponsesFIFO_almost_empty : in STD_LOGIC;
         CommandProcReadResponsesFIFO_rd_en : out STD_LOGIC := '0';
 
 		-- DRAM write requests FIFO:
@@ -249,26 +251,46 @@ architecture Behavioral of CommandProcessor is
 
 	ATTRIBUTE X_INTERFACE_INFO : STRING;
 	ATTRIBUTE X_INTERFACE_PARAMETER : STRING;
+	ATTRIBUTE X_INTERFACE_MODE : STRING;
 
 	ATTRIBUTE X_INTERFACE_INFO of clk: SIGNAL is "xilinx.com:signal:clock:1.0 clk CLK";
-	ATTRIBUTE X_INTERFACE_PARAMETER of clk: SIGNAL is "FREQ_HZ 333250000";
+	
+	-- We're using the ASSOCIATED_BUSIF parameter here to associate these other interfaces' clocks with the main clock (which is this module's primary driving clock for everything).
+	-- Doing this fixes the following IPI import warning: WARNING: [IP_Flow 19-11886] Bus Interface 'CommandProcReadRequestsFIFO' is not associated with any clock interface
+	ATTRIBUTE X_INTERFACE_PARAMETER of clk: SIGNAL is "FREQ_HZ 333250000, ASSOCIATED_BUSIF CommandProcReadRequestsFIFO:CommandProcReadResponses:CommandProcWriteRequests:validPacketsFIFO:returnPacketsFIFO";
+	
+	ATTRIBUTE X_INTERFACE_INFO of resetn: SIGNAL is "xilinx.com:signal:reset:1.0 resetn RST";
 
+	-- Supported parameter: POLARITY {ACTIVE_LOW, ACTIVE_HIGH}
+	ATTRIBUTE X_INTERFACE_PARAMETER of resetn: SIGNAL is "POLARITY ACTIVE_LOW";
+
+	-- We're using the X_INTERFACE_MODE attribute here to set the interface mode to "master" mode. Options include "master", "slave", and "monitor" (used for monitoring an interface that is driven by another master/slave).
+	-- Doing this fixes the following IPI import warnings:
+	-- WARNING: [IP_Flow 19-5462] Defaulting to slave bus interface due to conflicts in bus interface inference.
+	-- WARNING: [IP_Flow 19-3480] Bus Interface 'validPacketsFIFO': Portmap direction mismatched between component port 'validPacketsFIFO_rd_data' and definition port 'RD_DATA'.
+	ATTRIBUTE X_INTERFACE_MODE of validPacketsFIFO_rd_data: SIGNAL is "master";
 	ATTRIBUTE X_INTERFACE_INFO of validPacketsFIFO_rd_data: SIGNAL is "xilinx.com:interface:fifo_read:1.0 validPacketsFIFO RD_DATA";
 	ATTRIBUTE X_INTERFACE_INFO of validPacketsFIFO_rd_en: SIGNAL is "xilinx.com:interface:fifo_read:1.0 validPacketsFIFO RD_EN";
 	ATTRIBUTE X_INTERFACE_INFO of validPacketsFIFO_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 validPacketsFIFO EMPTY";
+	ATTRIBUTE X_INTERFACE_INFO of validPacketsFIFO_almost_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 validPacketsFIFO ALMOST_EMPTY";
 
+	ATTRIBUTE X_INTERFACE_MODE of returnPacketsFIFO_wr_data: SIGNAL is "master";
 	ATTRIBUTE X_INTERFACE_INFO of returnPacketsFIFO_wr_data: SIGNAL is "xilinx.com:interface:fifo_write:1.0 returnPacketsFIFO WR_DATA";
 	ATTRIBUTE X_INTERFACE_INFO of returnPacketsFIFO_wr_en: SIGNAL is "xilinx.com:interface:fifo_write:1.0 returnPacketsFIFO WR_EN";
 	ATTRIBUTE X_INTERFACE_INFO of returnPacketsFIFO_full: SIGNAL is "xilinx.com:interface:fifo_write:1.0 returnPacketsFIFO FULL";
 
+	ATTRIBUTE X_INTERFACE_MODE of CommandProcReadRequestsFIFO_wr_data: SIGNAL is "master";
 	ATTRIBUTE X_INTERFACE_INFO of CommandProcReadRequestsFIFO_wr_data: SIGNAL is "xilinx.com:interface:fifo_write:1.0 CommandProcReadRequestsFIFO WR_DATA";
 	ATTRIBUTE X_INTERFACE_INFO of CommandProcReadRequestsFIFO_wr_en: SIGNAL is "xilinx.com:interface:fifo_write:1.0 CommandProcReadRequestsFIFO WR_EN";
 	ATTRIBUTE X_INTERFACE_INFO of CommandProcReadRequestsFIFO_full: SIGNAL is "xilinx.com:interface:fifo_write:1.0 CommandProcReadRequestsFIFO FULL";
 
+	ATTRIBUTE X_INTERFACE_MODE of CommandProcReadResponsesFIFO_rd_data: SIGNAL is "master";
 	ATTRIBUTE X_INTERFACE_INFO of CommandProcReadResponsesFIFO_rd_data: SIGNAL is "xilinx.com:interface:fifo_read:1.0 CommandProcReadResponses RD_DATA";
 	ATTRIBUTE X_INTERFACE_INFO of CommandProcReadResponsesFIFO_rd_en: SIGNAL is "xilinx.com:interface:fifo_read:1.0 CommandProcReadResponses RD_EN";
 	ATTRIBUTE X_INTERFACE_INFO of CommandProcReadResponsesFIFO_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 CommandProcReadResponses EMPTY";
+	ATTRIBUTE X_INTERFACE_INFO of CommandProcReadResponsesFIFO_almost_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 CommandProcReadResponses ALMOST_EMPTY";
 
+	ATTRIBUTE X_INTERFACE_MODE of CommandProcWriteRequestsFIFO_wr_data: SIGNAL is "master";
 	ATTRIBUTE X_INTERFACE_INFO of CommandProcWriteRequestsFIFO_wr_data: SIGNAL is "xilinx.com:interface:fifo_write:1.0 CommandProcWriteRequests WR_DATA";
 	ATTRIBUTE X_INTERFACE_INFO of CommandProcWriteRequestsFIFO_wr_en: SIGNAL is "xilinx.com:interface:fifo_write:1.0 CommandProcWriteRequests WR_EN";
 	ATTRIBUTE X_INTERFACE_INFO of CommandProcWriteRequestsFIFO_full: SIGNAL is "xilinx.com:interface:fifo_write:1.0 CommandProcWriteRequests FULL";

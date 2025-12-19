@@ -23,6 +23,7 @@ entity ROP is
 		-- DRAM read responses FIFO:
 		MEM_ROPReadResponsesFIFO_rd_data : in STD_LOGIC_VECTOR(256-1 downto 0);
         MEM_ROPReadResponsesFIFO_empty : in STD_LOGIC;
+		MEM_ROPReadResponsesFIFO_almost_empty : in STD_LOGIC;
         MEM_ROPReadResponsesFIFO_rd_en : out STD_LOGIC := '0';
 
 		-- DRAM write requests FIFO:
@@ -52,6 +53,7 @@ entity ROP is
 	-- Texture Sampler FIFO interface begin
 		TEXSAMP_InFIFO_rd_data : in STD_LOGIC_VECTOR(63 downto 0); -- 8 bytes of input data per pixel to the ROP unit
         TEXSAMP_InFIFO_empty : in STD_LOGIC;
+		TEXSAMP_InFIFO_almost_empty : in STD_LOGIC;
         TEXSAMP_InFIFO_rd_en : out STD_LOGIC := '0';
 	-- Texture Sampler FIFO interface end
 
@@ -84,25 +86,39 @@ architecture Behavioral of ROP is
 
 ATTRIBUTE X_INTERFACE_INFO : STRING;
 ATTRIBUTE X_INTERFACE_PARAMETER : STRING;
+ATTRIBUTE X_INTERFACE_MODE : STRING;
 
 ATTRIBUTE X_INTERFACE_INFO of clk: SIGNAL is "xilinx.com:signal:clock:1.0 clk CLK";
-ATTRIBUTE X_INTERFACE_PARAMETER of clk: SIGNAL is "FREQ_HZ 333250000";
 
+-- We're using the ASSOCIATED_BUSIF parameter here to associate these other interfaces' clocks with the main clock (which is this module's primary driving clock for everything).
+-- Doing this fixes the following IPI import warning: WARNING: [IP_Flow 19-11886] Bus Interface 'clk' is not associated with any clock interface
+ATTRIBUTE X_INTERFACE_PARAMETER of clk: SIGNAL is "FREQ_HZ 333250000, ASSOCIATED_BUSIF ROPReadRequestsFIFO:ROPReadResponses:ROPWriteRequestsFIFO:TEXSAMP_IN_FIFO";
+
+-- We're using the X_INTERFACE_MODE attribute here to set the interface mode to "master" mode. Options include "master", "slave", and "monitor" (used for monitoring an interface that is driven by another master/slave).
+-- Doing this fixes the following IPI import warnings:
+-- WARNING: [IP_Flow 19-5462] Defaulting to slave bus interface due to conflicts in bus interface inference.
+-- WARNING: [IP_Flow 19-3480] Bus Interface 'ROPReadResponses': Portmap direction mismatched between component port 'MEM_ROPReadResponsesFIFO_rd_data' and definition port 'RD_DATA'.
+ATTRIBUTE X_INTERFACE_MODE of MEM_ROPReadRequestsFIFO_wr_data: SIGNAL is "master";
 ATTRIBUTE X_INTERFACE_INFO of MEM_ROPReadRequestsFIFO_wr_data: SIGNAL is "xilinx.com:interface:fifo_write:1.0 ROPReadRequestsFIFO WR_DATA";
 ATTRIBUTE X_INTERFACE_INFO of MEM_ROPReadRequestsFIFO_wr_en: SIGNAL is "xilinx.com:interface:fifo_write:1.0 ROPReadRequestsFIFO WR_EN";
 ATTRIBUTE X_INTERFACE_INFO of MEM_ROPReadRequestsFIFO_full: SIGNAL is "xilinx.com:interface:fifo_write:1.0 ROPReadRequestsFIFO FULL";
 
+ATTRIBUTE X_INTERFACE_MODE of MEM_ROPReadResponsesFIFO_rd_data: SIGNAL is "master";
 ATTRIBUTE X_INTERFACE_INFO of MEM_ROPReadResponsesFIFO_rd_data: SIGNAL is "xilinx.com:interface:fifo_read:1.0 ROPReadResponses RD_DATA";
 ATTRIBUTE X_INTERFACE_INFO of MEM_ROPReadResponsesFIFO_rd_en: SIGNAL is "xilinx.com:interface:fifo_read:1.0 ROPReadResponses RD_EN";
 ATTRIBUTE X_INTERFACE_INFO of MEM_ROPReadResponsesFIFO_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 ROPReadResponses EMPTY";
+ATTRIBUTE X_INTERFACE_INFO of MEM_ROPReadResponsesFIFO_almost_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 ROPReadResponses ALMOST_EMPTY";
 
+ATTRIBUTE X_INTERFACE_MODE of MEM_ROPWriteRequestsFIFO_wr_data: SIGNAL is "master";
 ATTRIBUTE X_INTERFACE_INFO of MEM_ROPWriteRequestsFIFO_wr_data: SIGNAL is "xilinx.com:interface:fifo_write:1.0 ROPWriteRequestsFIFO WR_DATA";
 ATTRIBUTE X_INTERFACE_INFO of MEM_ROPWriteRequestsFIFO_wr_en: SIGNAL is "xilinx.com:interface:fifo_write:1.0 ROPWriteRequestsFIFO WR_EN";
 ATTRIBUTE X_INTERFACE_INFO of MEM_ROPWriteRequestsFIFO_full: SIGNAL is "xilinx.com:interface:fifo_write:1.0 ROPWriteRequestsFIFO FULL";
 
+ATTRIBUTE X_INTERFACE_MODE of TEXSAMP_InFIFO_rd_data: SIGNAL is "master";
 ATTRIBUTE X_INTERFACE_INFO of TEXSAMP_InFIFO_rd_data: SIGNAL is "xilinx.com:interface:fifo_read:1.0 TEXSAMP_IN_FIFO RD_DATA";
 ATTRIBUTE X_INTERFACE_INFO of TEXSAMP_InFIFO_rd_en: SIGNAL is "xilinx.com:interface:fifo_read:1.0 TEXSAMP_IN_FIFO RD_EN";
 ATTRIBUTE X_INTERFACE_INFO of TEXSAMP_InFIFO_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 TEXSAMP_IN_FIFO EMPTY";
+ATTRIBUTE X_INTERFACE_INFO of TEXSAMP_InFIFO_almost_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 TEXSAMP_IN_FIFO ALMOST_EMPTY";
 
 type ROPStateType is 
 (

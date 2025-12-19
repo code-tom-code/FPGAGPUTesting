@@ -1,3 +1,5 @@
+-- The GPR Quad (a quad of General Purpose Registers) is the block that manages the register file for the shader core. It implements a 2R1W register file of 32-bit registers that is 128 registers wide.
+-- The registers themselves are constructed using 32-bit BRAM blocks.
 
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
@@ -126,7 +128,10 @@ ATTRIBUTE X_INTERFACE_INFO : STRING;
 ATTRIBUTE X_INTERFACE_PARAMETER : STRING;
 
 ATTRIBUTE X_INTERFACE_INFO of clk: SIGNAL is "xilinx.com:signal:clock:1.0 clk CLK";
-ATTRIBUTE X_INTERFACE_PARAMETER of clk: SIGNAL is "FREQ_HZ 333250000";
+
+-- We're using the ASSOCIATED_BUSIF parameter here to associate these other interfaces' clocks with the main clock (which is this module's primary driving clock for everything).
+-- Doing this fixes the following IPI import warning: WARNING: [IP_Flow 19-11886] Bus Interface 'clk' is not associated with any clock interface
+ATTRIBUTE X_INTERFACE_PARAMETER of clk: SIGNAL is "FREQ_HZ 333250000, ASSOCIATED_BUSIF BRAM0W:BRAM0R:BRAM1W:BRAM1R:BRAM2W:BRAM2R:BRAM3W:BRAM3R:BRAM4W:BRAM4R:BRAM5W:BRAM5R:BRAM6W:BRAM6R:BRAM7W:BRAM7R";
 
 ATTRIBUTE X_INTERFACE_INFO of  clka_bram0: SIGNAL is "xilinx.com:interface:bram:1.0 BRAM0W CLK";
 ATTRIBUTE X_INTERFACE_INFO of   ena_bram0: SIGNAL is "xilinx.com:interface:bram:1.0 BRAM0W EN";

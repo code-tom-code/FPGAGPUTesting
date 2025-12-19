@@ -57,9 +57,11 @@ entity InputAssembler2 is
 		VBO_IsIndexedDrawCall : in STD_LOGIC;
 		VBO_Ready : out STD_LOGIC := '0'; -- Set to 1 when we're ready for more vertices
 		VERTOUT_FIFO_empty : in STD_LOGIC;
+		VERTOUT_FIFO_almost_empty : in STD_LOGIC;
 		VERTOUT_FIFO_rd_data : in STD_LOGIC_VECTOR(319 downto 0);
 		VERTOUT_FIFO_rd_en : out STD_LOGIC := '0';
 		INDEXOUT_FIFO_empty : in STD_LOGIC;
+		INDEXOUT_FIFO_almost_empty : in STD_LOGIC;
 		INDEXOUT_FIFO_rd_data : in STD_LOGIC_VECTOR(271 downto 0);
 		INDEXOUT_FIFO_rd_en : out STD_LOGIC := '0';
 	-- Vertex Batch Output (VBO) interfaces end
@@ -94,17 +96,29 @@ architecture Behavioral of InputAssembler2 is
 
 ATTRIBUTE X_INTERFACE_INFO : STRING;
 ATTRIBUTE X_INTERFACE_PARAMETER : STRING;
+ATTRIBUTE X_INTERFACE_MODE : STRING;
 
 ATTRIBUTE X_INTERFACE_INFO of clk: SIGNAL is "xilinx.com:signal:clock:1.0 clk CLK";
-ATTRIBUTE X_INTERFACE_PARAMETER of clk: SIGNAL is "FREQ_HZ 333250000";
 
+-- We're using the ASSOCIATED_BUSIF parameter here to associate these other interfaces' clocks with the main clock (which is this module's primary driving clock for everything).
+-- Doing this fixes the following IPI import warning: WARNING: [IP_Flow 19-11886] Bus Interface 'clk' is not associated with any clock interface
+ATTRIBUTE X_INTERFACE_PARAMETER of clk: SIGNAL is "FREQ_HZ 333250000, ASSOCIATED_BUSIF VERTOUT_FIFO:INDEXOUT_FIFO";
+
+-- We're using the X_INTERFACE_MODE attribute here to set the interface mode to "master" mode. Options include "master", "slave", and "monitor" (used for monitoring an interface that is driven by another master/slave).
+-- Doing this fixes the following IPI import warnings:
+-- WARNING: [IP_Flow 19-5462] Defaulting to slave bus interface due to conflicts in bus interface inference.
+-- WARNING: [IP_Flow 19-3480] Bus Interface 'VERTOUT_FIFO': Portmap direction mismatched between component port 'VERTOUT_FIFO_rd_data' and definition port 'RD_DATA'.
+ATTRIBUTE X_INTERFACE_MODE of VERTOUT_FIFO_rd_data: SIGNAL is "master";
 ATTRIBUTE X_INTERFACE_INFO of VERTOUT_FIFO_rd_data : SIGNAL is "xilinx.com:interface:fifo_read:1.0 VERTOUT_FIFO RD_DATA";
 ATTRIBUTE X_INTERFACE_INFO of VERTOUT_FIFO_rd_en : SIGNAL is "xilinx.com:interface:fifo_read:1.0 VERTOUT_FIFO RD_EN";
 ATTRIBUTE X_INTERFACE_INFO of VERTOUT_FIFO_empty : SIGNAL is "xilinx.com:interface:fifo_read:1.0 VERTOUT_FIFO EMPTY";
+ATTRIBUTE X_INTERFACE_INFO of VERTOUT_FIFO_almost_empty : SIGNAL is "xilinx.com:interface:fifo_read:1.0 VERTOUT_FIFO ALMOST_EMPTY";
 
+ATTRIBUTE X_INTERFACE_MODE of INDEXOUT_FIFO_rd_data: SIGNAL is "master";
 ATTRIBUTE X_INTERFACE_INFO of INDEXOUT_FIFO_rd_data : SIGNAL is "xilinx.com:interface:fifo_read:1.0 INDEXOUT_FIFO RD_DATA";
 ATTRIBUTE X_INTERFACE_INFO of INDEXOUT_FIFO_rd_en : SIGNAL is "xilinx.com:interface:fifo_read:1.0 INDEXOUT_FIFO RD_EN";
 ATTRIBUTE X_INTERFACE_INFO of INDEXOUT_FIFO_empty : SIGNAL is "xilinx.com:interface:fifo_read:1.0 INDEXOUT_FIFO EMPTY";
+ATTRIBUTE X_INTERFACE_INFO of INDEXOUT_FIFO_almost_empty : SIGNAL is "xilinx.com:interface:fifo_read:1.0 INDEXOUT_FIFO ALMOST_EMPTY";
 
 component AABB2DOverlapViewport
 	port(

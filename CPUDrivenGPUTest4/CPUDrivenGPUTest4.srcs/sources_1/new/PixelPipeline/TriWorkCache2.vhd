@@ -54,6 +54,7 @@ entity TriWorkCache2 is
 
 		-- Storage FIFO's interfaces begin
 			DINTERP_TRIDATA_FIFO_empty : in STD_LOGIC;
+			DINTERP_TRIDATA_FIFO_almost_empty : in STD_LOGIC;
 			DINTERP_TRIDATA_FIFO_rd_data : in STD_LOGIC_VECTOR(224-1 downto 0);
 			DINTERP_TRIDATA_FIFO_rd_en : out STD_LOGIC := '0';
 			DINTERP_TRIDATA_FIFO_full : in STD_LOGIC;
@@ -61,6 +62,7 @@ entity TriWorkCache2 is
 			DINTERP_TRIDATA_FIFO_wr_en : out STD_LOGIC := '0';
 
 			INTERP_TRIDATA_FIFO_empty : in STD_LOGIC;
+			INTERP_TRIDATA_FIFO_almost_empty : in STD_LOGIC;
 			INTERP_TRIDATA_FIFO_rd_data : in STD_LOGIC_VECTOR(576-1 downto 0);
 			INTERP_TRIDATA_FIFO_rd_en : out STD_LOGIC := '0';
 			INTERP_TRIDATA_FIFO_full : in STD_LOGIC;
@@ -74,20 +76,36 @@ architecture Behavioral of TriWorkCache2 is
 
 ATTRIBUTE X_INTERFACE_INFO : STRING;
 ATTRIBUTE X_INTERFACE_PARAMETER : STRING;
+ATTRIBUTE X_INTERFACE_MODE : STRING;
 
 ATTRIBUTE X_INTERFACE_INFO of clk: SIGNAL is "xilinx.com:signal:clock:1.0 clk CLK";
-ATTRIBUTE X_INTERFACE_PARAMETER of clk: SIGNAL is "FREQ_HZ 333250000";
 
+-- We're using the ASSOCIATED_BUSIF parameter here to associate these other interfaces' clocks with the main clock (which is this module's primary driving clock for everything).
+-- Doing this fixes the following IPI import warning: WARNING: [IP_Flow 19-11886] Bus Interface 'clk' is not associated with any clock interface
+ATTRIBUTE X_INTERFACE_PARAMETER of clk: SIGNAL is "FREQ_HZ 333250000, ASSOCIATED_BUSIF DINTERP_TRIDATA_RD:DINTERP_TRIDATA_WR:INTERP_TRIDATA_RD:INTERP_TRIDATA_WR";
+
+-- We're using the X_INTERFACE_MODE attribute here to set the interface mode to "master" mode. Options include "master", "slave", and "monitor" (used for monitoring an interface that is driven by another master/slave).
+-- Doing this fixes the following IPI import warnings:
+-- WARNING: [IP_Flow 19-5462] Defaulting to slave bus interface due to conflicts in bus interface inference.
+-- WARNING: [IP_Flow 19-3480] Bus Interface 'DINTERP_TRIDATA_RD': Portmap direction mismatched between component port 'DINTERP_TRIDATA_FIFO_rd_data' and definition port 'RD_DATA'.
+ATTRIBUTE X_INTERFACE_MODE of DINTERP_TRIDATA_FIFO_rd_data: SIGNAL is "master";
 ATTRIBUTE X_INTERFACE_INFO of DINTERP_TRIDATA_FIFO_rd_data: SIGNAL is "xilinx.com:interface:fifo_read:1.0 DINTERP_TRIDATA_RD RD_DATA";
 ATTRIBUTE X_INTERFACE_INFO of DINTERP_TRIDATA_FIFO_rd_en: SIGNAL is "xilinx.com:interface:fifo_read:1.0 DINTERP_TRIDATA_RD RD_EN";
 ATTRIBUTE X_INTERFACE_INFO of DINTERP_TRIDATA_FIFO_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 DINTERP_TRIDATA_RD EMPTY";
+ATTRIBUTE X_INTERFACE_INFO of DINTERP_TRIDATA_FIFO_almost_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 DINTERP_TRIDATA_RD ALMOST_EMPTY";
+
+ATTRIBUTE X_INTERFACE_MODE of DINTERP_TRIDATA_FIFO_wr_data: SIGNAL is "master";
 ATTRIBUTE X_INTERFACE_INFO of DINTERP_TRIDATA_FIFO_wr_data: SIGNAL is "xilinx.com:interface:fifo_write:1.0 DINTERP_TRIDATA_WR WR_DATA";
 ATTRIBUTE X_INTERFACE_INFO of DINTERP_TRIDATA_FIFO_wr_en: SIGNAL is "xilinx.com:interface:fifo_write:1.0 DINTERP_TRIDATA_WR WR_EN";
 ATTRIBUTE X_INTERFACE_INFO of DINTERP_TRIDATA_FIFO_full: SIGNAL is "xilinx.com:interface:fifo_write:1.0 DINTERP_TRIDATA_WR FULL";
 
+ATTRIBUTE X_INTERFACE_MODE of INTERP_TRIDATA_FIFO_rd_data: SIGNAL is "master";
 ATTRIBUTE X_INTERFACE_INFO of INTERP_TRIDATA_FIFO_rd_data: SIGNAL is "xilinx.com:interface:fifo_read:1.0 INTERP_TRIDATA_RD RD_DATA";
 ATTRIBUTE X_INTERFACE_INFO of INTERP_TRIDATA_FIFO_rd_en: SIGNAL is "xilinx.com:interface:fifo_read:1.0 INTERP_TRIDATA_RD RD_EN";
 ATTRIBUTE X_INTERFACE_INFO of INTERP_TRIDATA_FIFO_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 INTERP_TRIDATA_RD EMPTY";
+ATTRIBUTE X_INTERFACE_INFO of INTERP_TRIDATA_FIFO_almost_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 INTERP_TRIDATA_RD ALMOST_EMPTY";
+
+ATTRIBUTE X_INTERFACE_MODE of INTERP_TRIDATA_FIFO_wr_data: SIGNAL is "master";
 ATTRIBUTE X_INTERFACE_INFO of INTERP_TRIDATA_FIFO_wr_data: SIGNAL is "xilinx.com:interface:fifo_write:1.0 INTERP_TRIDATA_WR WR_DATA";
 ATTRIBUTE X_INTERFACE_INFO of INTERP_TRIDATA_FIFO_wr_en: SIGNAL is "xilinx.com:interface:fifo_write:1.0 INTERP_TRIDATA_WR WR_EN";
 ATTRIBUTE X_INTERFACE_INFO of INTERP_TRIDATA_FIFO_full: SIGNAL is "xilinx.com:interface:fifo_write:1.0 INTERP_TRIDATA_WR FULL";

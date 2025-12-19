@@ -102,6 +102,7 @@ entity MemoryController is
 	-- Scanout system incoming read requests FIFO:
         ScanoutReadRequestsFIFO_rd_data : in STD_LOGIC_VECTOR(C_M_AXI_ADDR_WIDTH-1 downto 0);
         ScanoutReadRequestsFIFO_empty : in STD_LOGIC;
+		ScanoutReadRequestsFIFO_almost_empty : in STD_LOGIC;
         ScanoutReadRequestsFIFO_rd_en : out STD_LOGIC := '0';
 
 	-- Scanout system returned read responses FIFO:
@@ -112,6 +113,7 @@ entity MemoryController is
 	-- ZStencil system incoming read requests FIFO:
         ZStencilReadRequestsFIFO_rd_data : in STD_LOGIC_VECTOR(C_M_AXI_ADDR_WIDTH-1 downto 0);
         ZStencilReadRequestsFIFO_empty : in STD_LOGIC;
+		ZStencilReadRequestsFIFO_almost_empty : in STD_LOGIC;
         ZStencilReadRequestsFIFO_rd_en : out STD_LOGIC := '0';
 
 	-- ZStencil system returned read responses FIFO:
@@ -122,11 +124,13 @@ entity MemoryController is
 	-- ZStencil system incoming write requests FIFO:
         ZStencilWriteRequestsFIFO_rd_data : in STD_LOGIC_VECTOR(C_M_AXI_ADDR_WIDTH+C_M_AXI_DATA_WIDTH+C_M_AXI_DATA_WIDTH/32-1 downto 0);
         ZStencilWriteRequestsFIFO_empty : in STD_LOGIC;
+		ZStencilWriteRequestsFIFO_almost_empty : in STD_LOGIC;
         ZStencilWriteRequestsFIFO_rd_en : out STD_LOGIC := '0';
 
 	-- Command Processor system incoming read requests FIFO:
         CommandProcReadRequestsFIFO_rd_data : in STD_LOGIC_VECTOR(C_M_AXI_ADDR_WIDTH-1 downto 0);
         CommandProcReadRequestsFIFO_empty : in STD_LOGIC;
+		CommandProcReadRequestsFIFO_almost_empty : in STD_LOGIC;
         CommandProcReadRequestsFIFO_rd_en : out STD_LOGIC := '0';
 
 	-- Command Processor system returned read responses FIFO:
@@ -137,11 +141,13 @@ entity MemoryController is
 	-- Command Processor system incoming write requests FIFO:
         CommandProcWriteRequestsFIFO_rd_data : in STD_LOGIC_VECTOR(C_M_AXI_ADDR_WIDTH+C_M_AXI_DATA_WIDTH+C_M_AXI_DATA_WIDTH/32-1 downto 0);
         CommandProcWriteRequestsFIFO_empty : in STD_LOGIC;
+		CommandProcWriteRequestsFIFO_almost_empty : in STD_LOGIC;
         CommandProcWriteRequestsFIFO_rd_en : out STD_LOGIC := '0';
 
 	-- Vertex Buffer Cache (VBC) system incoming read requests FIFO:
         VBCacheReadRequestsFIFO_rd_data : in STD_LOGIC_VECTOR(C_M_AXI_ADDR_WIDTH-1 downto 0);
         VBCacheReadRequestsFIFO_empty : in STD_LOGIC;
+		VBCacheReadRequestsFIFO_almost_empty : in STD_LOGIC;
         VBCacheReadRequestsFIFO_rd_en : out STD_LOGIC := '0';
 
 	-- Vertex Buffer Cache (VBC) system returned read responses FIFO:
@@ -152,6 +158,7 @@ entity MemoryController is
 	-- Index Buffer Cache (IBC) system incoming read requests FIFO:
         IBCacheReadRequestsFIFO_rd_data : in STD_LOGIC_VECTOR(C_M_AXI_ADDR_WIDTH-1 downto 0);
         IBCacheReadRequestsFIFO_empty : in STD_LOGIC;
+		IBCacheReadRequestsFIFO_almost_empty : in STD_LOGIC;
         IBCacheReadRequestsFIFO_rd_en : out STD_LOGIC := '0';
 
 	-- Index Buffer Cache (IBC) system returned read responses FIFO:
@@ -162,6 +169,7 @@ entity MemoryController is
 	-- Packet DMA system incoming read requests FIFO:
         PacketDMAReadRequestsFIFO_rd_data : in STD_LOGIC_VECTOR(C_M_AXI_ADDR_WIDTH-1 downto 0);
         PacketDMAReadRequestsFIFO_empty : in STD_LOGIC;
+		PacketDMAReadRequestsFIFO_almost_empty : in STD_LOGIC;
         PacketDMAReadRequestsFIFO_rd_en : out STD_LOGIC := '0';
 
 	-- Packet DMA system returned read responses FIFO:
@@ -172,11 +180,13 @@ entity MemoryController is
 	-- Packet DMA system incoming write requests FIFO:
         PacketDMAWriteRequestsFIFO_rd_data : in STD_LOGIC_VECTOR(C_M_AXI_ADDR_WIDTH+C_M_AXI_DATA_WIDTH+C_M_AXI_DATA_WIDTH/32-1 downto 0);
         PacketDMAWriteRequestsFIFO_empty : in STD_LOGIC;
+		PacketDMAWriteRequestsFIFO_almost_empty : in STD_LOGIC;
         PacketDMAWriteRequestsFIFO_rd_en : out STD_LOGIC := '0';
 
 	-- Texture fetch incoming read requests FIFO:
         TexFetchReadRequestsFIFO_rd_data : in STD_LOGIC_VECTOR(C_M_AXI_ADDR_WIDTH-1 downto 0);
         TexFetchReadRequestsFIFO_empty : in STD_LOGIC;
+		TexFetchReadRequestsFIFO_almost_empty : in STD_LOGIC;
         TexFetchReadRequestsFIFO_rd_en : out STD_LOGIC := '0';
 
 	-- Texture fetch returned read responses FIFO:
@@ -187,6 +197,7 @@ entity MemoryController is
 	-- ROP system incoming read requests FIFO:
         ROPReadRequestsFIFO_rd_data : in STD_LOGIC_VECTOR(C_M_AXI_ADDR_WIDTH-1 downto 0);
         ROPReadRequestsFIFO_empty : in STD_LOGIC;
+		ROPReadRequestsFIFO_almost_empty : in STD_LOGIC;
         ROPReadRequestsFIFO_rd_en : out STD_LOGIC := '0';
 
 	-- ROP system returned read responses FIFO:
@@ -197,16 +208,19 @@ entity MemoryController is
 	-- ROP system incoming write requests FIFO:
         ROPWriteRequestsFIFO_rd_data : in STD_LOGIC_VECTOR(C_M_AXI_ADDR_WIDTH+C_M_AXI_DATA_WIDTH+C_M_AXI_DATA_WIDTH/32-1 downto 0);
         ROPWriteRequestsFIFO_empty : in STD_LOGIC;
+		ROPWriteRequestsFIFO_almost_empty : in STD_LOGIC;
         ROPWriteRequestsFIFO_rd_en : out STD_LOGIC := '0';
 
 	-- Clear block incoming write requests FIFO:
         ClearBlockWriteRequestsFIFO_rd_data : in STD_LOGIC_VECTOR(C_M_AXI_ADDR_WIDTH+C_M_AXI_DATA_WIDTH+C_M_AXI_DATA_WIDTH/32-1 downto 0);
         ClearBlockWriteRequestsFIFO_empty : in STD_LOGIC;
+		ClearBlockWriteRequestsFIFO_almost_empty : in STD_LOGIC;
         ClearBlockWriteRequestsFIFO_rd_en : out STD_LOGIC := '0';
 
 	-- Stats Collector system incoming write requests FIFO:
         StatsWriteRequestsFIFO_rd_data : in STD_LOGIC_VECTOR(C_M_AXI_ADDR_WIDTH+C_M_AXI_DATA_WIDTH+C_M_AXI_DATA_WIDTH/32-1 downto 0);
         StatsWriteRequestsFIFO_empty : in STD_LOGIC;
+		StatsWriteRequestsFIFO_almost_empty : in STD_LOGIC;
         StatsWriteRequestsFIFO_rd_en : out STD_LOGIC := '0';
 
 	-- Command processor interfaces begin
@@ -247,6 +261,9 @@ end MemoryController;
 architecture Behavioral of MemoryController is
 
 	ATTRIBUTE X_INTERFACE_INFO : STRING;
+	ATTRIBUTE X_INTERFACE_PARAMETER : STRING;
+	ATTRIBUTE X_INTERFACE_MODE : STRING;
+	
 	ATTRIBUTE X_INTERFACE_INFO of M_AXI_AWADDR: SIGNAL is "xilinx.com:interface:aximm:1.0 M_AXI AWADDR";
 	ATTRIBUTE X_INTERFACE_INFO of M_AXI_AWLEN: SIGNAL is "xilinx.com:interface:aximm:1.0 M_AXI AWLEN";
 	ATTRIBUTE X_INTERFACE_INFO of M_AXI_AWSIZE: SIGNAL is "xilinx.com:interface:aximm:1.0 M_AXI AWSIZE";
@@ -281,97 +298,143 @@ architecture Behavioral of MemoryController is
 	ATTRIBUTE X_INTERFACE_INFO of M_AXI_ARID: SIGNAL is "xilinx.com:interface:aximm:1.0 M_AXI ARID";
 	ATTRIBUTE X_INTERFACE_INFO of M_AXI_AWID: SIGNAL is "xilinx.com:interface:aximm:1.0 M_AXI AWID";
 	ATTRIBUTE X_INTERFACE_INFO of M_AXI_RID: SIGNAL is "xilinx.com:interface:aximm:1.0 M_AXI RID";
-
-	ATTRIBUTE X_INTERFACE_PARAMETER : STRING;
-	ATTRIBUTE X_INTERFACE_PARAMETER of M_AXI_AWADDR: SIGNAL is "CLK_DOMAIN M_AXI_ACLK,MAX_BURST_LENGTH 16,NUM_WRITE_OUTSTANDING 32,NUM_READ_OUTSTANDING 32,SUPPORTS_NARROW_BURST 0,READ_WRITE_MODE READ_WRITE,BUSER_WIDTH 0,RUSER_WIDTH 0,WUSER_WIDTH 0,ARUSER_WIDTH 0,AWUSER_WIDTH 0,ADDR_WIDTH 30,ID_WIDTH 4,FREQ_HZ 333250000,PROTOCOL AXI4,DATA_WIDTH 256,HAS_BURST 1,HAS_CACHE 1,HAS_LOCK 1,HAS_PROT 1,HAS_QOS 0,HAS_REGION 0,HAS_WSTRB 1,HAS_BRESP 1,HAS_RRESP 1";
+	
+	-- You only need to apply "interface-level" parameters such as this one to a single signal within the interface and the same parameters will be applied to the interface as a whole.
+	ATTRIBUTE X_INTERFACE_PARAMETER of M_AXI_AWADDR: SIGNAL is "CLK_DOMAIN MainDesign_ddr4_0_0_c0_ddr4_ui_clk,FREQ_HZ 333250000,MAX_BURST_LENGTH 16,NUM_WRITE_OUTSTANDING 32,NUM_READ_OUTSTANDING 32,SUPPORTS_NARROW_BURST 0,READ_WRITE_MODE READ_WRITE,BUSER_WIDTH 0,RUSER_WIDTH 0,WUSER_WIDTH 0,ARUSER_WIDTH 0,AWUSER_WIDTH 0,ADDR_WIDTH 30,ID_WIDTH 4,PROTOCOL AXI4,DATA_WIDTH 256,HAS_BURST 1,HAS_CACHE 1,HAS_LOCK 1,HAS_PROT 1,HAS_QOS 0,HAS_REGION 0,HAS_WSTRB 1,HAS_BRESP 1,HAS_RRESP 1";
+	
+	-- We're using the FREQ_HZ parameter here to mark the clock frequency of the main AXI clock, in hertz.
+	-- Doing this fixes the following IPI import warning: WARNING: [IP_Flow 19-11770] Clock interface 'M_AXI_ACLK' has no FREQ_HZ parameter.
+	-- We're using the ASSOCIATED_BUSIF parameter here to associate these other interfaces' clocks with the AXI clock (which is this module's primary driving clock for everything).
+	-- Doing this fixes the following IPI import warning: WARNING: [IP_Flow 19-11886] Bus Interface 'ScanoutReadResponses' is not associated with any clock interface
+	ATTRIBUTE X_INTERFACE_PARAMETER of M_AXI_ACLK: SIGNAL is "FREQ_HZ 333250000, ASSOCIATED_BUSIF M_AXI:ScanoutReadRequests:ScanoutReadResponses:ZStencilReadRequests:ZStencilReadResponses:ZStencilWriteRequests:CommandProcReadRequests:CommandProcReadResponses:CommandProcWriteRequests:VBCacheReadRequests:VBCacheReadResponses:IBCacheReadRequests:IBCacheReadResponses:PacketDMAReadRequests:PacketDMAReadResponses:PacketDMAWriteRequests:TexFetchReadRequests:TexFetchReadResponses:ROPReadRequests:ROPReadResponses:ROPWriteRequests:ClearBlockWriteRequests:StatsWriteRequests";
+	
+	-- We're using the X_INTERFACE_MODE attribute here to set the interface mode to "master" mode. Options include "master", "slave", and "monitor" (used for monitoring an interface that is driven by another master/slave).
+	-- Doing this fixes the following IPI import warnings:
+	-- WARNING: [IP_Flow 19-5462] Defaulting to slave bus interface due to conflicts in bus interface inference.
+	-- WARNING: [IP_Flow 19-3480] Bus Interface 'ScanoutReadRequests': Portmap direction mismatched between component port 'ScanoutReadRequestsFIFO_rd_data' and definition port 'RD_DATA'.
+	ATTRIBUTE X_INTERFACE_MODE of ScanoutReadRequestsFIFO_rd_data: SIGNAL is "master";
 	
 	ATTRIBUTE X_INTERFACE_INFO of ScanoutReadRequestsFIFO_rd_data: SIGNAL is "xilinx.com:interface:fifo_read:1.0 ScanoutReadRequests RD_DATA";
 	ATTRIBUTE X_INTERFACE_INFO of ScanoutReadRequestsFIFO_rd_en: SIGNAL is "xilinx.com:interface:fifo_read:1.0 ScanoutReadRequests RD_EN";
 	ATTRIBUTE X_INTERFACE_INFO of ScanoutReadRequestsFIFO_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 ScanoutReadRequests EMPTY";
+	ATTRIBUTE X_INTERFACE_INFO of ScanoutReadRequestsFIFO_almost_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 ScanoutReadRequests ALMOST_EMPTY";
 	
+	ATTRIBUTE X_INTERFACE_MODE of ScanoutReadResponsesFIFO_wr_data: SIGNAL is "master";
 	ATTRIBUTE X_INTERFACE_INFO of ScanoutReadResponsesFIFO_wr_data: SIGNAL is "xilinx.com:interface:fifo_write:1.0 ScanoutReadResponses WR_DATA";
 	ATTRIBUTE X_INTERFACE_INFO of ScanoutReadResponsesFIFO_wr_en: SIGNAL is "xilinx.com:interface:fifo_write:1.0 ScanoutReadResponses WR_EN";
 	ATTRIBUTE X_INTERFACE_INFO of ScanoutReadResponsesFIFO_full: SIGNAL is "xilinx.com:interface:fifo_write:1.0 ScanoutReadResponses FULL";
 
+	ATTRIBUTE X_INTERFACE_MODE of ZStencilReadRequestsFIFO_rd_data: SIGNAL is "master";
 	ATTRIBUTE X_INTERFACE_INFO of ZStencilReadRequestsFIFO_rd_data: SIGNAL is "xilinx.com:interface:fifo_read:1.0 ZStencilReadRequests RD_DATA";
 	ATTRIBUTE X_INTERFACE_INFO of ZStencilReadRequestsFIFO_rd_en: SIGNAL is "xilinx.com:interface:fifo_read:1.0 ZStencilReadRequests RD_EN";
 	ATTRIBUTE X_INTERFACE_INFO of ZStencilReadRequestsFIFO_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 ZStencilReadRequests EMPTY";
+	ATTRIBUTE X_INTERFACE_INFO of ZStencilReadRequestsFIFO_almost_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 ZStencilReadRequests ALMOST_EMPTY";
 
+	ATTRIBUTE X_INTERFACE_MODE of ZStencilReadResponsesFIFO_wr_data: SIGNAL is "master";
 	ATTRIBUTE X_INTERFACE_INFO of ZStencilReadResponsesFIFO_wr_data: SIGNAL is "xilinx.com:interface:fifo_write:1.0 ZStencilReadResponses WR_DATA";
 	ATTRIBUTE X_INTERFACE_INFO of ZStencilReadResponsesFIFO_wr_en: SIGNAL is "xilinx.com:interface:fifo_write:1.0 ZStencilReadResponses WR_EN";
 	ATTRIBUTE X_INTERFACE_INFO of ZStencilReadResponsesFIFO_full: SIGNAL is "xilinx.com:interface:fifo_write:1.0 ZStencilReadResponses FULL";
 
+	ATTRIBUTE X_INTERFACE_MODE of ZStencilWriteRequestsFIFO_rd_data: SIGNAL is "master";
 	ATTRIBUTE X_INTERFACE_INFO of ZStencilWriteRequestsFIFO_rd_data: SIGNAL is "xilinx.com:interface:fifo_read:1.0 ZStencilWriteRequests RD_DATA";
 	ATTRIBUTE X_INTERFACE_INFO of ZStencilWriteRequestsFIFO_rd_en: SIGNAL is "xilinx.com:interface:fifo_read:1.0 ZStencilWriteRequests RD_EN";
 	ATTRIBUTE X_INTERFACE_INFO of ZStencilWriteRequestsFIFO_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 ZStencilWriteRequests EMPTY";
+	ATTRIBUTE X_INTERFACE_INFO of ZStencilWriteRequestsFIFO_almost_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 ZStencilWriteRequests ALMOST_EMPTY";
 
+	ATTRIBUTE X_INTERFACE_MODE of CommandProcReadRequestsFIFO_rd_data: SIGNAL is "master";
 	ATTRIBUTE X_INTERFACE_INFO of CommandProcReadRequestsFIFO_rd_data: SIGNAL is "xilinx.com:interface:fifo_read:1.0 CommandProcReadRequests RD_DATA";
 	ATTRIBUTE X_INTERFACE_INFO of CommandProcReadRequestsFIFO_rd_en: SIGNAL is "xilinx.com:interface:fifo_read:1.0 CommandProcReadRequests RD_EN";
 	ATTRIBUTE X_INTERFACE_INFO of CommandProcReadRequestsFIFO_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 CommandProcReadRequests EMPTY";
+	ATTRIBUTE X_INTERFACE_INFO of CommandProcReadRequestsFIFO_almost_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 CommandProcReadRequests ALMOST_EMPTY";
 
+	ATTRIBUTE X_INTERFACE_MODE of CommandProcReadResponsesFIFO_wr_data: SIGNAL is "master";
 	ATTRIBUTE X_INTERFACE_INFO of CommandProcReadResponsesFIFO_wr_data: SIGNAL is "xilinx.com:interface:fifo_write:1.0 CommandProcReadResponses WR_DATA";
 	ATTRIBUTE X_INTERFACE_INFO of CommandProcReadResponsesFIFO_wr_en: SIGNAL is "xilinx.com:interface:fifo_write:1.0 CommandProcReadResponses WR_EN";
 	ATTRIBUTE X_INTERFACE_INFO of CommandProcReadResponsesFIFO_full: SIGNAL is "xilinx.com:interface:fifo_write:1.0 CommandProcReadResponses FULL";
 
+	ATTRIBUTE X_INTERFACE_MODE of CommandProcWriteRequestsFIFO_rd_data: SIGNAL is "master";
 	ATTRIBUTE X_INTERFACE_INFO of CommandProcWriteRequestsFIFO_rd_data: SIGNAL is "xilinx.com:interface:fifo_read:1.0 CommandProcWriteRequests RD_DATA";
 	ATTRIBUTE X_INTERFACE_INFO of CommandProcWriteRequestsFIFO_rd_en: SIGNAL is "xilinx.com:interface:fifo_read:1.0 CommandProcWriteRequests RD_EN";
 	ATTRIBUTE X_INTERFACE_INFO of CommandProcWriteRequestsFIFO_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 CommandProcWriteRequests EMPTY";
+	ATTRIBUTE X_INTERFACE_INFO of CommandProcWriteRequestsFIFO_almost_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 CommandProcWriteRequests ALMOST_EMPTY";
 
+	ATTRIBUTE X_INTERFACE_MODE of VBCacheReadRequestsFIFO_rd_data: SIGNAL is "master";
 	ATTRIBUTE X_INTERFACE_INFO of VBCacheReadRequestsFIFO_rd_data: SIGNAL is "xilinx.com:interface:fifo_read:1.0 VBCacheReadRequests RD_DATA";
 	ATTRIBUTE X_INTERFACE_INFO of VBCacheReadRequestsFIFO_rd_en: SIGNAL is "xilinx.com:interface:fifo_read:1.0 VBCacheReadRequests RD_EN";
 	ATTRIBUTE X_INTERFACE_INFO of VBCacheReadRequestsFIFO_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 VBCacheReadRequests EMPTY";
+	ATTRIBUTE X_INTERFACE_INFO of VBCacheReadRequestsFIFO_almost_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 VBCacheReadRequests ALMOST_EMPTY";
 
 	ATTRIBUTE X_INTERFACE_INFO of VBCacheReadResponsesFIFO_wr_data: SIGNAL is "xilinx.com:interface:fifo_write:1.0 VBCacheReadResponses WR_DATA";
 	ATTRIBUTE X_INTERFACE_INFO of VBCacheReadResponsesFIFO_wr_en: SIGNAL is "xilinx.com:interface:fifo_write:1.0 VBCacheReadResponses WR_EN";
 	ATTRIBUTE X_INTERFACE_INFO of VBCacheReadResponsesFIFO_full: SIGNAL is "xilinx.com:interface:fifo_write:1.0 VBCacheReadResponses FULL";
 
+	ATTRIBUTE X_INTERFACE_MODE of IBCacheReadRequestsFIFO_rd_data: SIGNAL is "master";
 	ATTRIBUTE X_INTERFACE_INFO of IBCacheReadRequestsFIFO_rd_data: SIGNAL is "xilinx.com:interface:fifo_read:1.0 IBCacheReadRequests RD_DATA";
 	ATTRIBUTE X_INTERFACE_INFO of IBCacheReadRequestsFIFO_rd_en: SIGNAL is "xilinx.com:interface:fifo_read:1.0 IBCacheReadRequests RD_EN";
 	ATTRIBUTE X_INTERFACE_INFO of IBCacheReadRequestsFIFO_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 IBCacheReadRequests EMPTY";
+	ATTRIBUTE X_INTERFACE_INFO of IBCacheReadRequestsFIFO_almost_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 IBCacheReadRequests ALMOST_EMPTY";
 
+	ATTRIBUTE X_INTERFACE_MODE of IBCacheReadResponsesFIFO_wr_data: SIGNAL is "master";
 	ATTRIBUTE X_INTERFACE_INFO of IBCacheReadResponsesFIFO_wr_data: SIGNAL is "xilinx.com:interface:fifo_write:1.0 IBCacheReadResponses WR_DATA";
 	ATTRIBUTE X_INTERFACE_INFO of IBCacheReadResponsesFIFO_wr_en: SIGNAL is "xilinx.com:interface:fifo_write:1.0 IBCacheReadResponses WR_EN";
 	ATTRIBUTE X_INTERFACE_INFO of IBCacheReadResponsesFIFO_full: SIGNAL is "xilinx.com:interface:fifo_write:1.0 IBCacheReadResponses FULL";
 
+	ATTRIBUTE X_INTERFACE_MODE of PacketDMAReadRequestsFIFO_rd_data: SIGNAL is "master";
 	ATTRIBUTE X_INTERFACE_INFO of PacketDMAReadRequestsFIFO_rd_data: SIGNAL is "xilinx.com:interface:fifo_read:1.0 PacketDMAReadRequests RD_DATA";
 	ATTRIBUTE X_INTERFACE_INFO of PacketDMAReadRequestsFIFO_rd_en: SIGNAL is "xilinx.com:interface:fifo_read:1.0 PacketDMAReadRequests RD_EN";
 	ATTRIBUTE X_INTERFACE_INFO of PacketDMAReadRequestsFIFO_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 PacketDMAReadRequests EMPTY";
+	ATTRIBUTE X_INTERFACE_INFO of PacketDMAReadRequestsFIFO_almost_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 PacketDMAReadRequests ALMOST_EMPTY";
 
+	ATTRIBUTE X_INTERFACE_MODE of PacketDMAReadResponsesFIFO_wr_data: SIGNAL is "master";
 	ATTRIBUTE X_INTERFACE_INFO of PacketDMAReadResponsesFIFO_wr_data: SIGNAL is "xilinx.com:interface:fifo_write:1.0 PacketDMAReadResponses WR_DATA";
 	ATTRIBUTE X_INTERFACE_INFO of PacketDMAReadResponsesFIFO_wr_en: SIGNAL is "xilinx.com:interface:fifo_write:1.0 PacketDMAReadResponses WR_EN";
 	ATTRIBUTE X_INTERFACE_INFO of PacketDMAReadResponsesFIFO_full: SIGNAL is "xilinx.com:interface:fifo_write:1.0 PacketDMAReadResponses FULL";
 
+	ATTRIBUTE X_INTERFACE_MODE of PacketDMAWriteRequestsFIFO_rd_data: SIGNAL is "master";
 	ATTRIBUTE X_INTERFACE_INFO of PacketDMAWriteRequestsFIFO_rd_data: SIGNAL is "xilinx.com:interface:fifo_read:1.0 PacketDMAWriteRequests RD_DATA";
 	ATTRIBUTE X_INTERFACE_INFO of PacketDMAWriteRequestsFIFO_rd_en: SIGNAL is "xilinx.com:interface:fifo_read:1.0 PacketDMAWriteRequests RD_EN";
 	ATTRIBUTE X_INTERFACE_INFO of PacketDMAWriteRequestsFIFO_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 PacketDMAWriteRequests EMPTY";
+	ATTRIBUTE X_INTERFACE_INFO of PacketDMAWriteRequestsFIFO_almost_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 PacketDMAWriteRequests ALMOST_EMPTY";
 
+	ATTRIBUTE X_INTERFACE_MODE of TexFetchReadRequestsFIFO_rd_data: SIGNAL is "master";
 	ATTRIBUTE X_INTERFACE_INFO of TexFetchReadRequestsFIFO_rd_data: SIGNAL is "xilinx.com:interface:fifo_read:1.0 TexFetchReadRequests RD_DATA";
 	ATTRIBUTE X_INTERFACE_INFO of TexFetchReadRequestsFIFO_rd_en: SIGNAL is "xilinx.com:interface:fifo_read:1.0 TexFetchReadRequests RD_EN";
 	ATTRIBUTE X_INTERFACE_INFO of TexFetchReadRequestsFIFO_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 TexFetchReadRequests EMPTY";
+	ATTRIBUTE X_INTERFACE_INFO of TexFetchReadRequestsFIFO_almost_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 TexFetchReadRequests ALMOST_EMPTY";
 
+	ATTRIBUTE X_INTERFACE_MODE of TexFetchReadResponsesFIFO_wr_data: SIGNAL is "master";
 	ATTRIBUTE X_INTERFACE_INFO of TexFetchReadResponsesFIFO_wr_data: SIGNAL is "xilinx.com:interface:fifo_write:1.0 TexFetchReadResponses WR_DATA";
 	ATTRIBUTE X_INTERFACE_INFO of TexFetchReadResponsesFIFO_wr_en: SIGNAL is "xilinx.com:interface:fifo_write:1.0 TexFetchReadResponses WR_EN";
 	ATTRIBUTE X_INTERFACE_INFO of TexFetchReadResponsesFIFO_full: SIGNAL is "xilinx.com:interface:fifo_write:1.0 TexFetchReadResponses FULL";
 
+	ATTRIBUTE X_INTERFACE_MODE of ROPReadRequestsFIFO_rd_data: SIGNAL is "master";
 	ATTRIBUTE X_INTERFACE_INFO of ROPReadRequestsFIFO_rd_data: SIGNAL is "xilinx.com:interface:fifo_read:1.0 ROPReadRequests RD_DATA";
 	ATTRIBUTE X_INTERFACE_INFO of ROPReadRequestsFIFO_rd_en: SIGNAL is "xilinx.com:interface:fifo_read:1.0 ROPReadRequests RD_EN";
 	ATTRIBUTE X_INTERFACE_INFO of ROPReadRequestsFIFO_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 ROPReadRequests EMPTY";
+	ATTRIBUTE X_INTERFACE_INFO of ROPReadRequestsFIFO_almost_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 ROPReadRequests ALMOST_EMPTY";
 
+	ATTRIBUTE X_INTERFACE_MODE of ROPReadResponsesFIFO_wr_data: SIGNAL is "master";
 	ATTRIBUTE X_INTERFACE_INFO of ROPReadResponsesFIFO_wr_data: SIGNAL is "xilinx.com:interface:fifo_write:1.0 ROPReadResponses WR_DATA";
 	ATTRIBUTE X_INTERFACE_INFO of ROPReadResponsesFIFO_wr_en: SIGNAL is "xilinx.com:interface:fifo_write:1.0 ROPReadResponses WR_EN";
 	ATTRIBUTE X_INTERFACE_INFO of ROPReadResponsesFIFO_full: SIGNAL is "xilinx.com:interface:fifo_write:1.0 ROPReadResponses FULL";
 
+	ATTRIBUTE X_INTERFACE_MODE of ROPWriteRequestsFIFO_rd_data: SIGNAL is "master";
 	ATTRIBUTE X_INTERFACE_INFO of ROPWriteRequestsFIFO_rd_data: SIGNAL is "xilinx.com:interface:fifo_read:1.0 ROPWriteRequests RD_DATA";
 	ATTRIBUTE X_INTERFACE_INFO of ROPWriteRequestsFIFO_rd_en: SIGNAL is "xilinx.com:interface:fifo_read:1.0 ROPWriteRequests RD_EN";
 	ATTRIBUTE X_INTERFACE_INFO of ROPWriteRequestsFIFO_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 ROPWriteRequests EMPTY";
+	ATTRIBUTE X_INTERFACE_INFO of ROPWriteRequestsFIFO_almost_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 ROPWriteRequests ALMOST_EMPTY";
 
+	ATTRIBUTE X_INTERFACE_MODE of ClearBlockWriteRequestsFIFO_rd_data: SIGNAL is "master";
 	ATTRIBUTE X_INTERFACE_INFO of ClearBlockWriteRequestsFIFO_rd_data: SIGNAL is "xilinx.com:interface:fifo_read:1.0 ClearBlockWriteRequests RD_DATA";
 	ATTRIBUTE X_INTERFACE_INFO of ClearBlockWriteRequestsFIFO_rd_en: SIGNAL is "xilinx.com:interface:fifo_read:1.0 ClearBlockWriteRequests RD_EN";
 	ATTRIBUTE X_INTERFACE_INFO of ClearBlockWriteRequestsFIFO_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 ClearBlockWriteRequests EMPTY";
+	ATTRIBUTE X_INTERFACE_INFO of ClearBlockWriteRequestsFIFO_almost_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 ClearBlockWriteRequests ALMOST_EMPTY";
 
+	ATTRIBUTE X_INTERFACE_MODE of StatsWriteRequestsFIFO_rd_data: SIGNAL is "master";
 	ATTRIBUTE X_INTERFACE_INFO of StatsWriteRequestsFIFO_rd_data: SIGNAL is "xilinx.com:interface:fifo_read:1.0 StatsWriteRequests RD_DATA";
 	ATTRIBUTE X_INTERFACE_INFO of StatsWriteRequestsFIFO_rd_en: SIGNAL is "xilinx.com:interface:fifo_read:1.0 StatsWriteRequests RD_EN";
 	ATTRIBUTE X_INTERFACE_INFO of StatsWriteRequestsFIFO_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 StatsWriteRequests EMPTY";
+	ATTRIBUTE X_INTERFACE_INFO of StatsWriteRequestsFIFO_almost_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 StatsWriteRequests ALMOST_EMPTY";
 
 	-- Defines the various memory endpoints to return results to (also used for debugging)
 	type memoryClient is ( SCANOUT, -- 0

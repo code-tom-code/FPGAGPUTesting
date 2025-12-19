@@ -30,10 +30,24 @@ architecture Behavioral of StatsDataSampler is
 
 ATTRIBUTE X_INTERFACE_INFO : STRING;
 ATTRIBUTE X_INTERFACE_PARAMETER : STRING;
+ATTRIBUTE X_INTERFACE_MODE : STRING;
 
 ATTRIBUTE X_INTERFACE_INFO of clk: SIGNAL is "xilinx.com:signal:clock:1.0 clk CLK";
-ATTRIBUTE X_INTERFACE_PARAMETER of clk: SIGNAL is "FREQ_HZ 333250000";
 
+ATTRIBUTE X_INTERFACE_INFO of STAT_Reset: SIGNAL is "xilinx.com:signal:reset:1.0 STAT_Reset RST";
+
+-- Supported parameter: POLARITY {ACTIVE_LOW, ACTIVE_HIGH}
+ATTRIBUTE X_INTERFACE_PARAMETER of STAT_Reset: SIGNAL is "POLARITY ACTIVE_HIGH";
+
+-- We're using the ASSOCIATED_BUSIF parameter here to associate these other interfaces' clocks with the main clock (which is this module's primary driving clock for everything).
+-- Doing this fixes the following IPI import warning: WARNING: [IP_Flow 19-11886] Bus Interface 'SamplingCache' is not associated with any clock interface
+ATTRIBUTE X_INTERFACE_PARAMETER of clk: SIGNAL is "FREQ_HZ 333250000, ASSOCIATED_BUSIF SamplingCache";
+
+-- We're using the X_INTERFACE_MODE attribute here to set the interface mode to "master" mode. Options include "master", "slave", and "monitor" (used for monitoring an interface that is driven by another master/slave).
+-- Doing this fixes the following IPI import warnings:
+-- WARNING: [IP_Flow 19-5462] Defaulting to slave bus interface due to conflicts in bus interface inference.
+-- WARNING: [IP_Flow 19-3480] Bus Interface 'SamplingCache': Portmap direction mismatched between component port 'SamplingCache_dina' and definition port 'DIN'.
+ATTRIBUTE X_INTERFACE_MODE of SamplingCache_dina: SIGNAL is "master";
 ATTRIBUTE X_INTERFACE_INFO of SamplingCache_clk: SIGNAL is "xilinx.com:interface:bram:1.0 SamplingCache CLK";
 ATTRIBUTE X_INTERFACE_INFO of SamplingCache_dina: SIGNAL is "xilinx.com:interface:bram:1.0 SamplingCache DIN";
 ATTRIBUTE X_INTERFACE_INFO of SamplingCache_wea: SIGNAL is "xilinx.com:interface:bram:1.0 SamplingCache WE";

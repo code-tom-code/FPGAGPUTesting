@@ -106,7 +106,11 @@ entity Rasterizer is
 		DBG_MinX : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
 		DBG_MaxX : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
 		DBG_MinY : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
-		DBG_MaxY : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0')
+		DBG_MaxY : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
+		
+		DBG_Message : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
+		DBG_MessageData : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
+		DBG_NewMessage : out STD_LOGIC := '0'
 		);
 end Rasterizer;
 
@@ -114,10 +118,19 @@ architecture Behavioral of Rasterizer is
 
 ATTRIBUTE X_INTERFACE_INFO : STRING;
 ATTRIBUTE X_INTERFACE_PARAMETER : STRING;
+ATTRIBUTE X_INTERFACE_MODE : STRING;
 
 ATTRIBUTE X_INTERFACE_INFO of clk: SIGNAL is "xilinx.com:signal:clock:1.0 clk CLK";
-ATTRIBUTE X_INTERFACE_PARAMETER of clk: SIGNAL is "FREQ_HZ 333250000";
 
+-- We're using the ASSOCIATED_BUSIF parameter here to associate these other interfaces' clocks with the main clock (which is this module's primary driving clock for everything).
+-- Doing this fixes the following IPI import warning: WARNING: [IP_Flow 19-11886] Bus Interface 'clk' is not associated with any clock interface
+ATTRIBUTE X_INTERFACE_PARAMETER of clk: SIGNAL is "FREQ_HZ 333250000, ASSOCIATED_BUSIF RASTOUT_FIFO";
+
+-- We're using the X_INTERFACE_MODE attribute here to set the interface mode to "master" mode. Options include "master", "slave", and "monitor" (used for monitoring an interface that is driven by another master/slave).
+-- Doing this fixes the following IPI import warnings:
+-- WARNING: [IP_Flow 19-5462] Defaulting to slave bus interface due to conflicts in bus interface inference.
+-- WARNING: [IP_Flow 19-3480] Bus Interface 'RASTOUT_FIFO': Portmap direction mismatched between component port 'RASTOUT_FIFO_wr_data' and definition port 'WR_DATA'.
+ATTRIBUTE X_INTERFACE_MODE of RASTOUT_FIFO_wr_data: SIGNAL is "master";
 ATTRIBUTE X_INTERFACE_INFO of RASTOUT_FIFO_wr_data: SIGNAL is "xilinx.com:interface:fifo_write:1.0 RASTOUT_FIFO WR_DATA";
 ATTRIBUTE X_INTERFACE_INFO of RASTOUT_FIFO_wr_en: SIGNAL is "xilinx.com:interface:fifo_write:1.0 RASTOUT_FIFO WR_EN";
 ATTRIBUTE X_INTERFACE_INFO of RASTOUT_FIFO_full: SIGNAL is "xilinx.com:interface:fifo_write:1.0 RASTOUT_FIFO FULL";
@@ -254,6 +267,10 @@ DBG_MinX <= std_logic_vector(minX);
 DBG_MaxX <= std_logic_vector(maxX);
 DBG_MinY <= std_logic_vector(minY);
 DBG_MaxY <= std_logic_vector(maxY);
+
+DBG_NewMessage <= fifoWriteEnable;
+DBG_Message <= fifoWriteData(79 downto 64);
+DBG_MessageData <= fifoWriteData(95 downto 80);
 
 	process(clk)
 	begin

@@ -32,6 +32,7 @@ entity ShaderCore is
 		-- Vertex Batch Builder (VBB) signals:
 		VBB_Done : in STD_LOGIC; -- Set to 1 when there's no more pending work to push into the FIFO. Shading is complete when this is 1 and VERTBATCH_FIFO_empty is 1 at the same time.
 		VERTBATCH_FIFO_empty : in STD_LOGIC;
+		VERTBATCH_FIFO_almost_empty : in STD_LOGIC;
 		VERTBATCH_FIFO_rd_data : in STD_LOGIC_VECTOR(544-1 downto 0);
 		VERTBATCH_FIFO_rd_en : out STD_LOGIC := '0';
 
@@ -163,17 +164,30 @@ architecture Behavioral of ShaderCore is
 
 ATTRIBUTE X_INTERFACE_INFO : STRING;
 ATTRIBUTE X_INTERFACE_PARAMETER : STRING;
+ATTRIBUTE X_INTERFACE_MODE : STRING;
 
 ATTRIBUTE X_INTERFACE_INFO of clk: SIGNAL is "xilinx.com:signal:clock:1.0 clk CLK";
-ATTRIBUTE X_INTERFACE_PARAMETER of clk: SIGNAL is "FREQ_HZ 333250000";
 
+-- We're using the ASSOCIATED_BUSIF parameter here to associate these other interfaces' clocks with the main clock (which is this module's primary driving clock for everything).
+-- Doing this fixes the following IPI import warning: WARNING: [IP_Flow 19-11886] Bus Interface 'clk' is not associated with any clock interface
+ATTRIBUTE X_INTERFACE_PARAMETER of clk: SIGNAL is "FREQ_HZ 333250000, ASSOCIATED_BUSIF VERTBATCH_FIFO:VERTOUT_FIFO:INDEXOUT_FIFO:ICache";
+
+-- We're using the X_INTERFACE_MODE attribute here to set the interface mode to "master" mode. Options include "master", "slave", and "monitor" (used for monitoring an interface that is driven by another master/slave).
+-- Doing this fixes the following IPI import warnings:
+-- WARNING: [IP_Flow 19-5462] Defaulting to slave bus interface due to conflicts in bus interface inference.
+-- WARNING: [IP_Flow 19-3480] Bus Interface 'VERTBATCH_FIFO': Portmap direction mismatched between component port 'VERTBATCH_FIFO_rd_data' and definition port 'RD_DATA'.
+ATTRIBUTE X_INTERFACE_MODE of VERTBATCH_FIFO_rd_data: SIGNAL is "master";
 ATTRIBUTE X_INTERFACE_INFO of VERTBATCH_FIFO_rd_data: SIGNAL is "xilinx.com:interface:fifo_read:1.0 VERTBATCH_FIFO RD_DATA";
 ATTRIBUTE X_INTERFACE_INFO of VERTBATCH_FIFO_rd_en: SIGNAL is "xilinx.com:interface:fifo_read:1.0 VERTBATCH_FIFO RD_EN";
 ATTRIBUTE X_INTERFACE_INFO of VERTBATCH_FIFO_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 VERTBATCH_FIFO EMPTY";
+ATTRIBUTE X_INTERFACE_INFO of VERTBATCH_FIFO_almost_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 VERTBATCH_FIFO ALMOST_EMPTY";
 
+ATTRIBUTE X_INTERFACE_MODE of VERTOUT_FIFO_wr_data: SIGNAL is "master";
 ATTRIBUTE X_INTERFACE_INFO of VERTOUT_FIFO_wr_data: SIGNAL is "xilinx.com:interface:fifo_write:1.0 VERTOUT_FIFO WR_DATA";
 ATTRIBUTE X_INTERFACE_INFO of VERTOUT_FIFO_wr_en: SIGNAL is "xilinx.com:interface:fifo_write:1.0 VERTOUT_FIFO WR_EN";
 ATTRIBUTE X_INTERFACE_INFO of VERTOUT_FIFO_full: SIGNAL is "xilinx.com:interface:fifo_write:1.0 VERTOUT_FIFO FULL";
+
+ATTRIBUTE X_INTERFACE_MODE of INDEXOUT_FIFO_wr_data: SIGNAL is "master";
 ATTRIBUTE X_INTERFACE_INFO of INDEXOUT_FIFO_wr_data: SIGNAL is "xilinx.com:interface:fifo_write:1.0 INDEXOUT_FIFO WR_DATA";
 ATTRIBUTE X_INTERFACE_INFO of INDEXOUT_FIFO_wr_en: SIGNAL is "xilinx.com:interface:fifo_write:1.0 INDEXOUT_FIFO WR_EN";
 ATTRIBUTE X_INTERFACE_INFO of INDEXOUT_FIFO_full: SIGNAL is "xilinx.com:interface:fifo_write:1.0 INDEXOUT_FIFO FULL";

@@ -35,7 +35,11 @@ ATTRIBUTE X_INTERFACE_INFO : STRING;
 ATTRIBUTE X_INTERFACE_PARAMETER : STRING;
 
 ATTRIBUTE X_INTERFACE_INFO of clk: SIGNAL is "xilinx.com:signal:clock:1.0 clk CLK";
-ATTRIBUTE X_INTERFACE_PARAMETER of clk: SIGNAL is "FREQ_HZ 333250000";
+
+-- We're using the ASSOCIATED_BUSIF parameter here to associate these other interfaces' clocks with the main clock (which is this module's primary driving clock for everything).
+-- Doing this fixes the following IPI import warning: WARNING: [IP_Flow 19-11886] Bus Interface 'clk' is not associated with any clock interface
+ATTRIBUTE X_INTERFACE_PARAMETER of clk: SIGNAL is "FREQ_HZ 333250000, ASSOCIATED_BUSIF ConstBufferBRAM";
+
 ATTRIBUTE X_INTERFACE_INFO of ConstBufferBRAM_ena: SIGNAL is "xilinx.com:interface:bram:1.0 ConstBufferBRAM EN";
 ATTRIBUTE X_INTERFACE_INFO of ConstBufferBRAM_clka: SIGNAL is "xilinx.com:interface:bram:1.0 ConstBufferBRAM CLK";
 ATTRIBUTE X_INTERFACE_INFO of ConstBufferBRAM_douta: SIGNAL is "xilinx.com:interface:bram:1.0 ConstBufferBRAM DOUT";

@@ -48,15 +48,24 @@ architecture Behavioral of EthernetMDIOController is
 
 ATTRIBUTE X_INTERFACE_INFO : STRING;
 ATTRIBUTE X_INTERFACE_PARAMETER : STRING;
+ATTRIBUTE X_INTERFACE_MODE : STRING;
 
 ATTRIBUTE X_INTERFACE_INFO of clkin25: SIGNAL is "xilinx.com:signal:clock:1.0 clkin25 CLK";
---ATTRIBUTE X_INTERFACE_PARAMETER of clkin25: SIGNAL is "FREQ_HZ 25000000";
 
+-- We're using the ASSOCIATED_BUSIF parameter here to associate these other interfaces' clocks with the main 2.5MHz clock (which is this module's primary driving clock for everything).
+-- Doing this fixes the following IPI import warning: WARNING: [IP_Flow 19-11886] Bus Interface 'MDIO' is not associated with any clock interface
+ATTRIBUTE X_INTERFACE_PARAMETER of clkin25: SIGNAL is "FREQ_HZ 2500000, ASSOCIATED_BUSIF MDIO";
+
+-- We're using the X_INTERFACE_MODE attribute here to set the interface mode to "master" mode. Options include "master", "slave", and "monitor" (used for monitoring an interface that is driven by another master/slave).
+-- Doing this fixes the following IPI import warnings:
+-- WARNING: [IP_Flow 19-5462] Defaulting to slave bus interface due to conflicts in bus interface inference.
+-- WARNING: [IP_Flow 19-3480] Bus Interface 'MDIO': Portmap direction mismatched between component port 'mdio_i' and definition port 'MDIO_I'.
+ATTRIBUTE X_INTERFACE_MODE of mdio_clk: SIGNAL is "master";
 ATTRIBUTE X_INTERFACE_INFO of mdio_clk: SIGNAL is "xilinx.com:interface:mdio:1.0 MDIO MDC";
 ATTRIBUTE X_INTERFACE_INFO of mdio_i: SIGNAL is "xilinx.com:interface:mdio:1.0 MDIO MDIO_I";
 ATTRIBUTE X_INTERFACE_INFO of mdio_o: SIGNAL is "xilinx.com:interface:mdio:1.0 MDIO MDIO_O";
 ATTRIBUTE X_INTERFACE_INFO of mdio_t: SIGNAL is "xilinx.com:interface:mdio:1.0 MDIO MDIO_T";
-ATTRIBUTE X_INTERFACE_PARAMETER of mdio_clk: SIGNAL is "FREQ_HZ 25000000";
+ATTRIBUTE X_INTERFACE_PARAMETER of mdio_clk: SIGNAL is "FREQ_HZ 2500000";
 
 type EthMDIOStateType is
 (

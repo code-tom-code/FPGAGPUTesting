@@ -33,6 +33,7 @@ entity StatsCollector is
 
 		STAT_WriteOrderNibblesFIFO_rd_data : in STD_LOGIC_VECTOR(15 downto 0);
         STAT_WriteOrderNibblesFIFO_empty : in STD_LOGIC;
+		STAT_WriteOrderNibblesFIFO_almost_empty : in STD_LOGIC;
         STAT_WriteOrderNibblesFIFO_rd_en : out STD_LOGIC := '0';
 
 		STAT_ResetWriteOrderNibblesFIFO : out STD_LOGIC := '0';
@@ -48,6 +49,7 @@ entity StatsCollector is
 		SAMP_cache_addrb : out STD_LOGIC_VECTOR(9 downto 0) := (others => '0');
 		SAMP_cache_doutb : in STD_LOGIC_VECTOR(31 downto 0);
 		SAMP_cache_enb : out STD_LOGIC := '0';
+		SAMP_cache_clk : out STD_LOGIC := '0';
 	-- Stats data cache BRAM interface end
 
 	-- Stats interface begin
@@ -137,25 +139,46 @@ architecture Behavioral of StatsCollector is
 
 ATTRIBUTE X_INTERFACE_INFO : STRING;
 ATTRIBUTE X_INTERFACE_PARAMETER : STRING;
+ATTRIBUTE X_INTERFACE_MODE : STRING;
 
 ATTRIBUTE X_INTERFACE_INFO of clk: SIGNAL is "xilinx.com:signal:clock:1.0 clk CLK";
-ATTRIBUTE X_INTERFACE_PARAMETER of clk: SIGNAL is "FREQ_HZ 333250000";
 
+-- We're using the ASSOCIATED_BUSIF parameter here to associate these other interfaces' clocks with the main clock (which is this module's primary driving clock for everything).
+-- Doing this fixes the following IPI import warning: WARNING: [IP_Flow 19-11886] Bus Interface 'StatsWriteRequestsFIFO' is not associated with any clock interface
+ATTRIBUTE X_INTERFACE_PARAMETER of clk: SIGNAL is "FREQ_HZ 333250000, ASSOCIATED_BUSIF StatsWriteRequestsFIFO:StatsWriteOrderNibblesFIFO_WR:StatsWriteOrderNibblesFIFO_RD:SamplerCache";
+
+ATTRIBUTE X_INTERFACE_INFO of SAMP_Reset: SIGNAL is "xilinx.com:signal:reset:1.0 SAMP_Reset RST";
+ATTRIBUTE X_INTERFACE_INFO of STAT_ResetWriteOrderNibblesFIFO: SIGNAL is "xilinx.com:signal:reset:1.0 STAT_ResetWriteOrderNibblesFIFO RST";
+
+-- Supported parameter: POLARITY {ACTIVE_LOW, ACTIVE_HIGH}
+ATTRIBUTE X_INTERFACE_PARAMETER of SAMP_Reset: SIGNAL is "POLARITY ACTIVE_HIGH";
+ATTRIBUTE X_INTERFACE_PARAMETER of STAT_ResetWriteOrderNibblesFIFO: SIGNAL is "POLARITY ACTIVE_HIGH";
+
+-- We're using the X_INTERFACE_MODE attribute here to set the interface mode to "master" mode. Options include "master", "slave", and "monitor" (used for monitoring an interface that is driven by another master/slave).
+-- Doing this fixes the following IPI import warnings:
+-- WARNING: [IP_Flow 19-5462] Defaulting to slave bus interface due to conflicts in bus interface inference.
+-- WARNING: [IP_Flow 19-3480] Bus Interface 'StatsWriteOrderNibblesFIFO_RD': Portmap direction mismatched between component port 'STAT_WriteOrderNibblesFIFO_rd_data' and definition port 'RD_DATA'.
+ATTRIBUTE X_INTERFACE_MODE of MEM_StatsWriteRequestsFIFO_wr_data: SIGNAL is "master";
 ATTRIBUTE X_INTERFACE_INFO of MEM_StatsWriteRequestsFIFO_wr_data: SIGNAL is "xilinx.com:interface:fifo_write:1.0 StatsWriteRequestsFIFO WR_DATA";
 ATTRIBUTE X_INTERFACE_INFO of MEM_StatsWriteRequestsFIFO_wr_en: SIGNAL is "xilinx.com:interface:fifo_write:1.0 StatsWriteRequestsFIFO WR_EN";
 ATTRIBUTE X_INTERFACE_INFO of MEM_StatsWriteRequestsFIFO_full: SIGNAL is "xilinx.com:interface:fifo_write:1.0 StatsWriteRequestsFIFO FULL";
 
+ATTRIBUTE X_INTERFACE_MODE of STAT_WriteOrderNibblesFIFO_wr_data: SIGNAL is "master";
 ATTRIBUTE X_INTERFACE_INFO of STAT_WriteOrderNibblesFIFO_wr_data: SIGNAL is "xilinx.com:interface:fifo_write:1.0 StatsWriteOrderNibblesFIFO_WR WR_DATA";
 ATTRIBUTE X_INTERFACE_INFO of STAT_WriteOrderNibblesFIFO_wr_en: SIGNAL is "xilinx.com:interface:fifo_write:1.0 StatsWriteOrderNibblesFIFO_WR WR_EN";
 ATTRIBUTE X_INTERFACE_INFO of STAT_WriteOrderNibblesFIFO_full: SIGNAL is "xilinx.com:interface:fifo_write:1.0 StatsWriteOrderNibblesFIFO_WR FULL";
 
+ATTRIBUTE X_INTERFACE_MODE of STAT_WriteOrderNibblesFIFO_rd_data: SIGNAL is "master";
 ATTRIBUTE X_INTERFACE_INFO of STAT_WriteOrderNibblesFIFO_rd_data: SIGNAL is "xilinx.com:interface:fifo_read:1.0 StatsWriteOrderNibblesFIFO_RD RD_DATA";
 ATTRIBUTE X_INTERFACE_INFO of STAT_WriteOrderNibblesFIFO_rd_en: SIGNAL is "xilinx.com:interface:fifo_read:1.0 StatsWriteOrderNibblesFIFO_RD RD_EN";
 ATTRIBUTE X_INTERFACE_INFO of STAT_WriteOrderNibblesFIFO_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 StatsWriteOrderNibblesFIFO_RD EMPTY";
+ATTRIBUTE X_INTERFACE_INFO of STAT_WriteOrderNibblesFIFO_almost_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 StatsWriteOrderNibblesFIFO_RD ALMOST_EMPTY";
 
+ATTRIBUTE X_INTERFACE_MODE of SAMP_cache_doutb: SIGNAL is "master";
 ATTRIBUTE X_INTERFACE_INFO of SAMP_cache_enb: SIGNAL is "xilinx.com:interface:bram:1.0 SamplerCache EN";
 ATTRIBUTE X_INTERFACE_INFO of SAMP_cache_addrb: SIGNAL is "xilinx.com:interface:bram:1.0 SamplerCache ADDR";
 ATTRIBUTE X_INTERFACE_INFO of SAMP_cache_doutb: SIGNAL is "xilinx.com:interface:bram:1.0 SamplerCache DOUT";
+ATTRIBUTE X_INTERFACE_INFO of SAMP_cache_clk: SIGNAL is "xilinx.com:interface:bram:1.0 SamplerCache CLK";
 
 type StatsCollectorStateType is 
 (
@@ -426,6 +449,7 @@ end function;
 
 begin
 
+SAMP_cache_clk <= clk;
 MEM_StatsWriteRequestsFIFO_wr_data <= std_logic_vector(memoryWriteAddressBase + memoryWriteAddressOffset) & std_logic_vector(memoryWriteOutgoingData) & std_logic_vector(memoryWriteDWORDEnables);
 MEM_StatsWriteRequestsFIFO_wr_en <= memoryWriteEnable;
 

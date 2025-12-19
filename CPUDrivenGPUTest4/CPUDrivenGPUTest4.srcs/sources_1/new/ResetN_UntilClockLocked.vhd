@@ -1,46 +1,27 @@
-----------------------------------------------------------------------------------
--- Company: 
--- Engineer: 
--- 
--- Create Date: 11/09/2019 12:08:49 PM
--- Design Name: 
--- Module Name: ResetN_UntilClockLocked - Behavioral
--- Project Name: 
--- Target Devices: 
--- Tool Versions: 
--- Description: 
--- 
--- Dependencies: 
--- 
--- Revision:
--- Revision 0.01 - File Created
--- Additional Comments:
--- 
-----------------------------------------------------------------------------------
-
-
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 
--- Uncomment the following library declaration if using
--- arithmetic functions with Signed or Unsigned values
---use IEEE.NUMERIC_STD.ALL;
-
--- Uncomment the following library declaration if instantiating
--- any Xilinx leaf cells in this code.
---library UNISIM;
---use UNISIM.VComponents.all;
-
 entity ResetN_UntilClockLocked is
-    Port ( reset : in STD_LOGIC;
+    Port ( inResetp : in STD_LOGIC;
            locked : in STD_LOGIC;
-           resetn : out STD_LOGIC);
+           outResetn : out STD_LOGIC);
 end ResetN_UntilClockLocked;
 
 architecture Behavioral of ResetN_UntilClockLocked is
 
+ATTRIBUTE X_INTERFACE_INFO : STRING;
+ATTRIBUTE X_INTERFACE_PARAMETER : STRING;
+
+ATTRIBUTE X_INTERFACE_INFO of inResetp: SIGNAL is "xilinx.com:signal:reset:1.0 inResetp RST";
+ATTRIBUTE X_INTERFACE_INFO of outResetn: SIGNAL is "xilinx.com:signal:reset:1.0 outResetn RST";
+
+-- Supported parameter: POLARITY {ACTIVE_LOW, ACTIVE_HIGH}
+-- Normally active low is assumed.  Use this parameter to force the level
+ATTRIBUTE X_INTERFACE_PARAMETER of inResetp: SIGNAL is "POLARITY ACTIVE_HIGH";
+ATTRIBUTE X_INTERFACE_PARAMETER of outResetn: SIGNAL is "POLARITY ACTIVE_LOW";
+
 begin
 
-resetn <= not reset;
+outResetn <= not inResetp;
 
 end Behavioral;

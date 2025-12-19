@@ -31,6 +31,7 @@ entity DepthInterpolator is
 	-- Rasterizer Output per-pixel interface begin
 		RASTOUT_FIFO_rd_data : in STD_LOGIC_VECTOR(32+32+16+16 - 1 downto 0);
 		RASTOUT_FIFO_empty : in STD_LOGIC;
+		RASTOUT_FIFO_almost_empty : in STD_LOGIC;
 		RASTOUT_FIFO_rd_en : out STD_LOGIC := '0';
 	-- Rasterizer Output per-pixel interface end
 
@@ -120,7 +121,11 @@ entity DepthInterpolator is
 		DBG_InterpolatedDepthU24 : out STD_LOGIC_VECTOR(23 downto 0) := (others => '0');
 		DBG_IdleVector : out STD_LOGIC_VECTOR(9 downto 0) := (others => '0');
 		DBG_BarycentricBCFIFO : out STD_LOGIC_VECTOR(63 downto 0) := (others => '0');
-		DBG_CurrentDepthStencilState : out STD_LOGIC_VECTOR(DEPTH_INTERPOLATOR_STATE_SIZE_BITS-1 downto 0) := (others => '0')
+		DBG_CurrentDepthStencilState : out STD_LOGIC_VECTOR(DEPTH_INTERPOLATOR_STATE_SIZE_BITS-1 downto 0) := (others => '0');
+		
+		DBG_Message : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
+		DBG_MessageData : out STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
+		DBG_NewMessage : out STD_LOGIC := '0'
 		);
 end DepthInterpolator;
 
@@ -128,14 +133,25 @@ architecture Behavioral of DepthInterpolator is
 
 ATTRIBUTE X_INTERFACE_INFO : STRING;
 ATTRIBUTE X_INTERFACE_PARAMETER : STRING;
+ATTRIBUTE X_INTERFACE_MODE : STRING;
 
 ATTRIBUTE X_INTERFACE_INFO of clk: SIGNAL is "xilinx.com:signal:clock:1.0 clk CLK";
-ATTRIBUTE X_INTERFACE_PARAMETER of clk: SIGNAL is "FREQ_HZ 333250000";
 
+-- We're using the ASSOCIATED_BUSIF parameter here to associate these other interfaces' clocks with the main clock (which is this module's primary driving clock for everything).
+-- Doing this fixes the following IPI import warning: WARNING: [IP_Flow 19-11886] Bus Interface 'clk' is not associated with any clock interface
+ATTRIBUTE X_INTERFACE_PARAMETER of clk: SIGNAL is "FREQ_HZ 333250000, ASSOCIATED_BUSIF RASTOUT_FIFO:ATTR_FIFO";
+
+-- We're using the X_INTERFACE_MODE attribute here to set the interface mode to "master" mode. Options include "master", "slave", and "monitor" (used for monitoring an interface that is driven by another master/slave).
+-- Doing this fixes the following IPI import warnings:
+-- WARNING: [IP_Flow 19-5462] Defaulting to slave bus interface due to conflicts in bus interface inference.
+-- WARNING: [IP_Flow 19-3480] Bus Interface 'RASTOUT_FIFO': Portmap direction mismatched between component port 'RASTOUT_FIFO_rd_data' and definition port 'RD_DATA'.
+ATTRIBUTE X_INTERFACE_MODE of RASTOUT_FIFO_rd_data: SIGNAL is "master";
 ATTRIBUTE X_INTERFACE_INFO of RASTOUT_FIFO_rd_data: SIGNAL is "xilinx.com:interface:fifo_read:1.0 RASTOUT_FIFO RD_DATA";
 ATTRIBUTE X_INTERFACE_INFO of RASTOUT_FIFO_rd_en: SIGNAL is "xilinx.com:interface:fifo_read:1.0 RASTOUT_FIFO RD_EN";
 ATTRIBUTE X_INTERFACE_INFO of RASTOUT_FIFO_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 RASTOUT_FIFO EMPTY";
+ATTRIBUTE X_INTERFACE_INFO of RASTOUT_FIFO_almost_empty: SIGNAL is "xilinx.com:interface:fifo_read:1.0 RASTOUT_FIFO ALMOST_EMPTY";
 
+ATTRIBUTE X_INTERFACE_MODE of ATTR_FIFO_wr_data: SIGNAL is "master";
 ATTRIBUTE X_INTERFACE_INFO of ATTR_FIFO_wr_data: SIGNAL is "xilinx.com:interface:fifo_write:1.0 ATTR_FIFO WR_DATA";
 ATTRIBUTE X_INTERFACE_INFO of ATTR_FIFO_wr_en: SIGNAL is "xilinx.com:interface:fifo_write:1.0 ATTR_FIFO WR_EN";
 ATTRIBUTE X_INTERFACE_INFO of ATTR_FIFO_full: SIGNAL is "xilinx.com:interface:fifo_write:1.0 ATTR_FIFO FULL";
@@ -807,9 +823,15 @@ BarycentricBCFIFO : SimpleFIFO generic map(FIFO_Depth => MAX_OCCUPANCY, FIFO_Bit
 			BarycentricBCFIFO_PopElement <= depthTestResultsReady(0);
 
 			if (depthTestResultsReady(0) = '1') then
+				--if (DEPTH_PixelPassedDepthStencilTest = '1' and currentDepthState.ColorWritesEnabled = '1' and currentDepthState.DepthTestEnable = '1') then
+					--passedPixelColorAndWValueReady(2) <= '1'; -- Pixel with color passed, output this pixel along down the pipeline
 				if (DEPTH_PixelPassedDepthStencilTest = '1' and currentDepthState.ColorWritesEnabled = '0' and currentDepthState.DepthTestEnable = '1' and currentDepthState.StencilWriteEnable = '0') then
 					depthOnlyPixelsPassed <= depthOnlyPixelsPassed + 1; -- Count this depth-only pixel as passed (this counter is needed for occlusion queries which often don't render to the color-buffer)
 					passedPixelColorAndWValueReady(2) <= '0'; -- Don't actually output this passed pixel further down the pipeline as it doesn't have any color data
+				--elsif (currentDepthState.DepthTestEnable = '0') then
+					--passedPixelColorAndWValueReady(2) <= '1'; -- Depth testing was disabled, so we don't care what the depth buffer says. Output this pixel anyway!
+				--else
+					--passedPixelColorAndWValueReady(2) <= '0'; -- We failed the depth/stencil tests, kill this pixel!
 				else
 					passedPixelColorAndWValueReady(2) <= DEPTH_PixelPassedDepthStencilTest;
 				end if;
@@ -826,13 +848,18 @@ BarycentricBCFIFO : SimpleFIFO generic map(FIFO_Depth => MAX_OCCUPANCY, FIFO_Bit
 				ATTR_FIFO_wr_data <= SerializeAttributeData(MakeStructFromMembers(unsigned(passedPixelXYShiftReg(0)(15 downto 0) ), unsigned(passedPixelXYShiftReg(0)(31 downto 16) ),
 					f32(passedBarycentricBCShiftReg(0)(31 downto 0) ), f32(passedBarycentricBCShiftReg(0)(63 downto 32) ),
 					f32(FPU_SPEC_OUT) ) );
+				DBG_Message <= passedPixelXYShiftReg(0)(15 downto 0);
+				DBG_MessageData <= passedPixelXYShiftReg(0)(31 downto 16);
 			else
 				ATTR_FIFO_wr_data <= "--------------------------------" & -- PixelW
 					"--------------------------------" & "--------------------------------" & -- Normalized Barycentrics B and C
 					std_logic_vector(storedPixelY) & std_logic_vector(storedPixelX);
+				DBG_Message <= std_logic_vector(storedPixelX);
+				DBG_MessageData <= std_logic_vector(storedPixelY);
 			end if;
 
 			ATTR_FIFO_wr_en <= outputProcessGoSignal;
+			DBG_NewMessage <= outputProcessGoSignal;
 			outputProcessIsIdle <= not outputProcessGoSignal;
 		end if;
 	end process;

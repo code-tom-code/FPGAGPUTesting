@@ -1,0 +1,109 @@
+// Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+// Copyright 2022-2025 Advanced Micro Devices, Inc. All Rights Reserved.
+// -------------------------------------------------------------------------------
+// This file contains confidential and proprietary information
+// of AMD and is protected under U.S. and international copyright
+// and other intellectual property laws.
+//
+// DISCLAIMER
+// This disclaimer is not a license and does not grant any
+// rights to the materials distributed herewith. Except as
+// otherwise provided in a valid license issued to you by
+// AMD, and to the maximum extent permitted by applicable
+// law: (1) THESE MATERIALS ARE MADE AVAILABLE "AS IS" AND
+// WITH ALL FAULTS, AND AMD HEREBY DISCLAIMS ALL WARRANTIES
+// AND CONDITIONS, EXPRESS, IMPLIED, OR STATUTORY, INCLUDING
+// BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY, NON-
+// INFRINGEMENT, OR FITNESS FOR ANY PARTICULAR PURPOSE; and
+// (2) AMD shall not be liable (whether in contract or tort,
+// including negligence, or under any other theory of
+// liability) for any loss or damage of any kind or nature
+// related to, arising under or in connection with these
+// materials, including for any direct, or any indirect,
+// special, incidental, or consequential loss or damage
+// (including loss of data, profits, goodwill, or any type of
+// loss or damage suffered as a result of any action brought
+// by a third party) even if such damage or loss was
+// reasonably foreseeable or AMD had been advised of the
+// possibility of the same.
+//
+// CRITICAL APPLICATIONS
+// AMD products are not designed or intended to be fail-
+// safe, or for use in any application requiring fail-safe
+// performance, such as life-support or safety devices or
+// systems, Class III medical devices, nuclear facilities,
+// applications related to the deployment of airbags, or any
+// other applications that could lead to death, personal
+// injury, or severe property or environmental damage
+// (individually and collectively, "Critical
+// Applications"). Customer assumes the sole risk and
+// liability of any use of AMD products in Critical
+// Applications, subject only to applicable laws and
+// regulations governing limitations on product liability.
+//
+// THIS COPYRIGHT NOTICE AND DISCLAIMER MUST BE RETAINED AS
+// PART OF THIS FILE AT ALL TIMES.
+//
+// DO NOT MODIFY THIS FILE.
+
+// MODULE VLNV: amd.com:blockdesign:MainDesign:1.0
+
+// The following must be inserted into your System Verilog file for this
+// module to be instantiated. Change the instance name, port and interface connections
+// (in parentheses) to your own signal names.
+
+// IMPORTANT: Please check the generated 'MainDesign_sv.sv' wrapper file is also included in the project.
+//            This file can be found in the .gen folder of the respective IP or Block Design after
+//            running the generate output products step.
+
+// INCLUDE_TAG     ------ Begin cut for INTERFACE INSTANTIATION Include ------
+`include "vivado_interfaces.svh"
+// INCLUDE_TAG_END ------  End cut for INTERFACE INSTANTIATION Include  ------
+
+// INTF_TAG     ------ Begin cut for INTERFACE INSTANTIATION Template ------
+
+// INTF_TAG_END ------  End cut for INTERFACE INSTANTIATION Template  ------
+
+// INST_TAG     ------ Begin cut for WRAPPER INSTANTIATION Template ------
+MainDesign_sv your_instance_name (
+  .default_sysclk1_300_clk_n(default_sysclk1_300_clk_n), // input wire default_sysclk1_300_clk_n
+  .default_sysclk1_300_clk_p(default_sysclk1_300_clk_p), // input wire default_sysclk1_300_clk_p
+  .ddr4_sdram_075_act_n(ddr4_sdram_075_act_n), // output wire ddr4_sdram_075_act_n
+  .ddr4_sdram_075_adr(ddr4_sdram_075_adr), // output wire [16:0] ddr4_sdram_075_adr
+  .ddr4_sdram_075_ba(ddr4_sdram_075_ba), // output wire [1:0] ddr4_sdram_075_ba
+  .ddr4_sdram_075_bg(ddr4_sdram_075_bg), // output wire ddr4_sdram_075_bg
+  .ddr4_sdram_075_ck_c(ddr4_sdram_075_ck_c), // output wire ddr4_sdram_075_ck_c
+  .ddr4_sdram_075_ck_t(ddr4_sdram_075_ck_t), // output wire ddr4_sdram_075_ck_t
+  .ddr4_sdram_075_cke(ddr4_sdram_075_cke), // output wire ddr4_sdram_075_cke
+  .ddr4_sdram_075_cs_n(ddr4_sdram_075_cs_n), // output wire ddr4_sdram_075_cs_n
+  .ddr4_sdram_075_dm_n(ddr4_sdram_075_dm_n), // inout wire [3:0] ddr4_sdram_075_dm_n
+  .ddr4_sdram_075_dq(ddr4_sdram_075_dq), // inout wire [31:0] ddr4_sdram_075_dq
+  .ddr4_sdram_075_dqs_c(ddr4_sdram_075_dqs_c), // inout wire [3:0] ddr4_sdram_075_dqs_c
+  .ddr4_sdram_075_dqs_t(ddr4_sdram_075_dqs_t), // inout wire [3:0] ddr4_sdram_075_dqs_t
+  .ddr4_sdram_075_odt(ddr4_sdram_075_odt), // output wire ddr4_sdram_075_odt
+  .ddr4_sdram_075_reset_n(ddr4_sdram_075_reset_n), // output wire ddr4_sdram_075_reset_n
+  .mdio_mdc_mdc(mdio_mdc_mdc), // output wire mdio_mdc_mdc
+  .mdio_mdc_mdio_i(mdio_mdc_mdio_i), // input wire mdio_mdc_mdio_i
+  .mdio_mdc_mdio_o(mdio_mdc_mdio_o), // output wire mdio_mdc_mdio_o
+  .mdio_mdc_mdio_t(mdio_mdc_mdio_t), // output wire mdio_mdc_mdio_t
+  .sgmii_lvds_rxn(sgmii_lvds_rxn), // input wire sgmii_lvds_rxn
+  .sgmii_lvds_rxp(sgmii_lvds_rxp), // input wire sgmii_lvds_rxp
+  .sgmii_lvds_txn(sgmii_lvds_txn), // output wire sgmii_lvds_txn
+  .sgmii_lvds_txp(sgmii_lvds_txp), // output wire sgmii_lvds_txp
+  .sgmii_phyclk_clk_n(sgmii_phyclk_clk_n), // input wire sgmii_phyclk_clk_n
+  .sgmii_phyclk_clk_p(sgmii_phyclk_clk_p), // input wire sgmii_phyclk_clk_p
+  .reset(reset), // input wire reset
+  .tmds_blue_p(tmds_blue_p), // output wire tmds_blue_p
+  .tmds_blue_n(tmds_blue_n), // output wire tmds_blue_n
+  .tmds_green_p(tmds_green_p), // output wire tmds_green_p
+  .tmds_green_n(tmds_green_n), // output wire tmds_green_n
+  .tmds_red_p(tmds_red_p), // output wire tmds_red_p
+  .tmds_red_n(tmds_red_n), // output wire tmds_red_n
+  .tmds_cl_p(tmds_cl_p), // output wire tmds_cl_p
+  .tmds_cl_n(tmds_cl_n) // output wire tmds_cl_n
+);
+// INST_TAG_END ------  End cut for WRAPPER INSTANTIATION Template  ------
+
+// You must compile the wrapper file MainDesign_sv.sv when simulating
+// the module, MainDesign_sv. When compiling the wrapper file, be sure to
+// reference the System Verilog simulation library.

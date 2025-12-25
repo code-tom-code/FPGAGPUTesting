@@ -148,7 +148,8 @@
         "DoNotReset": "",
         "pkt_recv_scratch_mem": "",
         "EthernetController3_0": "",
-        "gig_ethernet_pcs_pma_0": ""
+        "gig_ethernet_pcs_pma_0": "",
+        "CDC_MDIO_Ethernet_0": ""
       },
       "ila_0": "",
       "ila_1": "",
@@ -13118,6 +13119,24 @@
               "boundary_crc": "0x0"
             },
             "ports": {
+              "clk": {
+                "type": "clk",
+                "direction": "I",
+                "parameters": {
+                  "FREQ_HZ": {
+                    "value": "251750000",
+                    "value_src": "constant"
+                  },
+                  "PHASE": {
+                    "value": "0.0",
+                    "value_src": "ip_prop"
+                  },
+                  "CLK_DOMAIN": {
+                    "value": "MainDesign_clk_wiz_0_0_clk_x10",
+                    "value_src": "default_prop"
+                  }
+                }
+              },
               "red_s": {
                 "direction": "I"
               },
@@ -13558,7 +13577,8 @@
               "clk_x10",
               "dvid_0/clk_x10",
               "CDC_Command_Scanout/scanout_clk",
-              "ScanOutController/clk_x10"
+              "ScanOutController/clk_x10",
+              "obuf_outputs_0/clk"
             ]
           },
           "scanout_clk_25_175_x10_clk_x10n": {
@@ -16785,6 +16805,59 @@
                 "value": "true"
               }
             }
+          },
+          "CDC_MDIO_Ethernet_0": {
+            "vlnv": "xilinx.com:module_ref:CDC_MDIOController_EthernetController:1.0",
+            "ip_revision": "1",
+            "xci_name": "MainDesign_CDC_MDIOController_E_0_0",
+            "xci_path": "ip\\MainDesign_CDC_MDIOController_E_0_0\\MainDesign_CDC_MDIOController_E_0_0.xci",
+            "inst_hier_path": "NetworkPacketSystem/CDC_MDIO_Ethernet_0",
+            "has_run_ip_tcl": "true",
+            "reference_info": {
+              "ref_type": "hdl",
+              "ref_name": "CDC_MDIOController_EthernetController",
+              "boundary_crc": "0x0"
+            },
+            "ports": {
+              "Out_clk125": {
+                "type": "clk",
+                "direction": "I",
+                "parameters": {
+                  "FREQ_HZ": {
+                    "value": "125000000",
+                    "value_src": "constant"
+                  },
+                  "PHASE": {
+                    "value": "0",
+                    "value_src": "const_prop"
+                  },
+                  "CLK_DOMAIN": {
+                    "value": "MainDesign_gig_ethernet_pcs_pma_0_0_clk125_out",
+                    "value_src": "default_prop"
+                  }
+                }
+              },
+              "Out_Signal": {
+                "direction": "O"
+              },
+              "In_clk2_5": {
+                "type": "clk",
+                "direction": "I",
+                "parameters": {
+                  "FREQ_HZ": {
+                    "value": "2500000",
+                    "value_src": "constant"
+                  },
+                  "CLK_DOMAIN": {
+                    "value": "MainDesign_ClockDivider4_1_0_0_clkout25",
+                    "value_src": "default_prop"
+                  }
+                }
+              },
+              "In_Signal": {
+                "direction": "I"
+              }
+            }
           }
         },
         "interface_nets": {
@@ -16928,11 +17001,18 @@
               "NetProtoPacketProcessor/ETHCTRL_SendReady"
             ]
           },
+          "CDC_MDIOController_E_0_Out_Signal": {
+            "ports": [
+              "CDC_MDIO_Ethernet_0/Out_Signal",
+              "EthernetController3_0/phyBringupComplete"
+            ]
+          },
           "ClockDividerx4_10_to_2_5_clkout25": {
             "ports": [
               "ClockDividerx4_10_to_2_5/clkout25",
               "SGMII_PHY_Bringup_MDIO/clkin25",
-              "EthernetMDIOController/clkin25"
+              "EthernetMDIOController/clkin25",
+              "CDC_MDIO_Ethernet_0/In_clk2_5"
             ]
           },
           "DoNotReset_dout": {
@@ -17170,7 +17250,7 @@
           "SGMII_PHY_Bringup_MDIO_phyBringupComplete": {
             "ports": [
               "SGMII_PHY_Bringup_MDIO/phyBringupComplete",
-              "EthernetController3_0/phyBringupComplete"
+              "CDC_MDIO_Ethernet_0/In_Signal"
             ]
           },
           "SGMII_PHY_Bringup_MD_0_newRequestData": {
@@ -17245,7 +17325,8 @@
               "send_pkt_data_fifo/rd_clk",
               "CDC_EthernetController1/In_clk125",
               "CDC_EthernetController0/In_clk125",
-              "EthernetController3_0/clk125"
+              "EthernetController3_0/clk125",
+              "CDC_MDIO_Ethernet_0/Out_clk125"
             ]
           },
           "gig_ethernet_pcs_pma_0_gmii_isolate_0": {

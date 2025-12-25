@@ -2,7 +2,7 @@
   "schema": "xilinx.com:schema:json_instance:1.0",
   "ip_inst": {
     "xci_name": "MainDesign_NetProtoPacketProces_0_0",
-    "cell_name": "NetworkPacketSystem/NetProtoPacketProcessor",
+    "cell_name": "NetProtoPacketProcessor",
     "component_reference": "xilinx.com:module_ref:NetProtoPacketProcessor:1.0",
     "ip_revision": "1",
     "gen_directory": "../../../../../../CPUDrivenGPUTest4.gen/sources_1/bd/MainDesign/ip/MainDesign_NetProtoPacketProces_0_0",
@@ -200,7 +200,7 @@
             "MASTER_TYPE": [ { "value": "OTHER", "value_permission": "bd_and_user", "resolve_type": "generated", "is_ips_inferred": true, "is_static_object": false } ],
             "READ_WRITE_MODE": [ { "value": "", "value_permission": "bd_and_user", "resolve_type": "generated", "is_ips_inferred": true, "is_static_object": false } ],
             "READ_LATENCY": [ { "value": "1", "value_permission": "bd_and_user", "resolve_type": "generated", "format": "long", "is_ips_inferred": true, "is_static_object": false } ],
-            "MEM_ADDRESS_MODE": [ { "value": "", "value_src": "weak", "value_permission": "bd_and_user", "resolve_type": "generated", "is_ips_inferred": true, "is_static_object": false } ]
+            "MEM_ADDRESS_MODE": [ { "value": "", "value_src": "weak", "resolve_type": "generated", "is_ips_inferred": true, "is_static_object": false } ]
           },
           "port_maps": {
             "EN": [ { "physical_name": "sendBRAM_ena" } ],
@@ -221,7 +221,7 @@
             "MASTER_TYPE": [ { "value": "OTHER", "value_permission": "bd_and_user", "resolve_type": "generated", "is_ips_inferred": true, "is_static_object": false } ],
             "READ_WRITE_MODE": [ { "value": "", "value_permission": "bd_and_user", "resolve_type": "generated", "is_ips_inferred": true, "is_static_object": false } ],
             "READ_LATENCY": [ { "value": "1", "value_permission": "bd_and_user", "resolve_type": "generated", "format": "long", "is_ips_inferred": true, "is_static_object": false } ],
-            "MEM_ADDRESS_MODE": [ { "value": "", "value_src": "weak", "value_permission": "bd_and_user", "resolve_type": "generated", "is_ips_inferred": true, "is_static_object": false } ]
+            "MEM_ADDRESS_MODE": [ { "value": "", "value_src": "weak", "resolve_type": "generated", "is_ips_inferred": true, "is_static_object": false } ]
           },
           "port_maps": {
             "EN": [ { "physical_name": "sendBRAM_enb" } ],
@@ -233,5 +233,5 @@
       }
     }
   },
-  "checksum": "77dea9ed"
+  "checksum": "fce90bcd"
 }

@@ -45,7 +45,20 @@ set_property CLOCK_DEDICATED_ROUTE BACKBONE [get_nets MainDesign_i/MemorySystem/
 # Constraints from file : 'MainDesign_ddr4_0_0_board.xdc'
 ####################################################################################
 
-set_output_delay -clock [get_clocks MainDesign_i/ScanoutSystem/scanout_clk_25_175_x10/inst/clk_in1] 1.000 [get_ports {tmds_blue_n tmds_blue_p tmds_green_n tmds_green_p tmds_red_n tmds_red_p tmds_cl_n tmds_cl_p}]
+set fwclk        MainDesign_i/ScanoutSystem/scanout_clk_25_175_x10/inst/clk_in1;     # forwarded clock name (generated using create_generated_clock at output clock port)        
+set tsu_r        0.5958291956305858987090367428004;            # destination device setup time requirement for rising edge
+set thd_r        1.3902681231380337636544190665343;            # destination device hold time requirement for rising edge
+set tsu_f        0.5958291956305858987090367428004;            # destination device setup time requirement for falling edge
+set thd_f        1.3902681231380337636544190665343;            # destination device hold time requirement for falling edge
+set trce_dly_max 0.000;            # maximum board trace delay
+set trce_dly_min 0.000;            # minimum board trace delay
+set output_ports {tmds_blue_n tmds_blue_p tmds_green_n tmds_green_p tmds_red_n tmds_red_p tmds_cl_n tmds_cl_p};   # list of output ports
+
+# Output Delay Constraints
+set_output_delay -clock $fwclk -max [expr $trce_dly_max + $tsu_r] [get_ports $output_ports];
+set_output_delay -clock $fwclk -min [expr $trce_dly_min - $thd_r] [get_ports $output_ports];
+set_output_delay -clock $fwclk -max [expr $trce_dly_max + $tsu_f] [get_ports $output_ports] -clock_fall -add_delay;
+set_output_delay -clock $fwclk -min [expr $trce_dly_min - $thd_f] [get_ports $output_ports] -clock_fall -add_delay;
 
 set_property CLOCK_DEDICATED_ROUTE BACKBONE [get_pins -hier -filter {NAME =~ */u_ddr4_infrastructure/gen_mmcme*.u_mmcme_adv_inst/CLKIN1}]
 

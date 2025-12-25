@@ -2,8 +2,8 @@
 --Copyright 2022-2025 Advanced Micro Devices, Inc. All Rights Reserved.
 ----------------------------------------------------------------------------------
 --Tool Version: Vivado v.2025.2 (win64) Build 6299465 Fri Nov 14 19:35:11 GMT 2025
---Date        : Fri Dec 19 00:33:20 2025
---Host        : Dragon3 running 64-bit major release  (build 9200)
+--Date        : Tue Dec 23 19:01:29 2025
+--Host        : TomTop3 running 64-bit major release  (build 9200)
 --Command     : generate_target MainDesign.bd
 --Design      : MainDesign
 --Purpose     : IP block netlist
@@ -2315,8 +2315,17 @@ architecture STRUCTURE of NetworkPacketSystem_imp_NIBU6B is
     riu_rddata_2 : in STD_LOGIC_VECTOR ( 15 downto 0 )
   );
   end component MainDesign_gig_ethernet_pcs_pma_0_0;
+  component MainDesign_CDC_MDIOController_E_0_0 is
+  port (
+    Out_clk125 : in STD_LOGIC;
+    Out_Signal : out STD_LOGIC;
+    In_clk2_5 : in STD_LOGIC;
+    In_Signal : in STD_LOGIC
+  );
+  end component MainDesign_CDC_MDIOController_E_0_0;
   signal CDC_EthernetController0_Out_Signal : STD_LOGIC;
   signal CDC_EthernetController1_Out_Signal : STD_LOGIC;
+  signal CDC_MDIOController_E_0_Out_Signal : STD_LOGIC;
   signal ClockDividerx4_10_to_2_5_clkout25 : STD_LOGIC;
   signal DoNotReset_dout : STD_LOGIC_VECTOR ( 0 to 0 );
   signal EthernetController3_0_GMII_RXD : STD_LOGIC_VECTOR ( 7 downto 0 );
@@ -2555,6 +2564,13 @@ CDC_EthernetController1: component MainDesign_CDC_EthernetControll_1_0
       Out_Signal => CDC_EthernetController1_Out_Signal,
       Out_clk333 => clk_333_250
     );
+CDC_MDIO_Ethernet_0: component MainDesign_CDC_MDIOController_E_0_0
+     port map (
+      In_Signal => SGMII_PHY_Bringup_MDIO_phyBringupComplete,
+      In_clk2_5 => ClockDividerx4_10_to_2_5_clkout25,
+      Out_Signal => CDC_MDIOController_E_0_Out_Signal,
+      Out_clk125 => gig_ethernet_pcs_pma_0_clk125_out
+    );
 ClockDividerx4_10_to_2_5: component MainDesign_ClockDivider4_1_0_0
      port map (
       clkin100 => clk_333_250_to_10_0_clk_out10_0,
@@ -2605,7 +2621,7 @@ EthernetController3_0: component MainDesign_EthernetController3_0_0
       gmii_isolate => gig_ethernet_pcs_pma_0_gmii_isolate_0,
       mac_address(47 downto 0) => NLW_EthernetController3_0_mac_address_UNCONNECTED(47 downto 0),
       pcs_rst_out => EthernetController3_0_pcs_rst_out,
-      phyBringupComplete => SGMII_PHY_Bringup_MDIO_phyBringupComplete,
+      phyBringupComplete => CDC_MDIOController_E_0_Out_Signal,
       phyaddr(4 downto 0) => EthernetController3_0_phyaddr(4 downto 0),
       recv_pkt_data_count(10 downto 0) => recv_pkt_data_fifo_wr_data_count(10 downto 0),
       recv_pkt_data_wr_data(31 downto 0) => EthernetController3_0_recv_pkt_data_WR_DATA(31 downto 0),
@@ -3093,6 +3109,7 @@ architecture STRUCTURE of ScanoutSystem_imp_WZ5F7I is
   end component MainDesign_ScanOut_0_0;
   component MainDesign_obuf_outputs_0_0 is
   port (
+    clk : in STD_LOGIC;
     red_s : in STD_LOGIC;
     green_s : in STD_LOGIC;
     blue_s : in STD_LOGIC;
@@ -3244,6 +3261,7 @@ obuf_outputs_0: component MainDesign_obuf_outputs_0_0
      port map (
       blue_s => dvid_0_blue_s,
       cl_s => dvid_0_cl_s,
+      clk => \^clk_x10\,
       green_s => dvid_0_green_s,
       out_blue_n => tmds_blue_n,
       out_blue_p => tmds_blue_p,
@@ -4383,10 +4401,10 @@ use UNISIM.VCOMPONENTS.ALL;
     tmds_red_n : out STD_LOGIC;
     tmds_red_p : out STD_LOGIC
   );
-  attribute CORE_GENERATION_INFO : string;
-  attribute CORE_GENERATION_INFO of MainDesign : entity is "MainDesign,IP_Integrator,{x_ipVendor=xilinx.com,x_ipLibrary=BlockDiagram,x_ipName=MainDesign,x_ipVersion=1.00.a,x_ipLanguage=VHDL,numBlks=144,numReposBlks=138,numNonXlnxBlks=0,numHierBlks=6,maxHierDepth=2,numSysgenBlks=0,numHlsBlks=0,numHdlrefBlks=66,numPkgbdBlks=0,bdsource=USER,""""""""""""""""""""""""""da_board_cnt""""""""""""""""""""""""""=3,""""""""""""""""da_board_cnt""""""""""""""""=3,synth_mode=Hierarchical}";
-  attribute HW_HANDOFF : string;
-  attribute HW_HANDOFF of MainDesign : entity is "MainDesign.hwdef";
+  attribute core_generation_info : string;
+  attribute core_generation_info of MainDesign : entity is "MainDesign,IP_Integrator,{x_ipVendor=xilinx.com,x_ipLibrary=BlockDiagram,x_ipName=MainDesign,x_ipVersion=1.00.a,x_ipLanguage=VHDL,numBlks=145,numReposBlks=139,numNonXlnxBlks=0,numHierBlks=6,maxHierDepth=2,numSysgenBlks=0,numHlsBlks=0,numHdlrefBlks=67,numPkgbdBlks=0,bdsource=USER,""""""""""""""""""""""""""""""""da_board_cnt""""""""""""""""""""""""""""""""=3,""""""""""""""""""""""da_board_cnt""""""""""""""""""""""=3,synth_mode=Hierarchical}";
+  attribute hw_handoff : string;
+  attribute hw_handoff of MainDesign : entity is "MainDesign.hwdef";
 end MainDesign;
 
 architecture STRUCTURE of MainDesign is
@@ -6672,46 +6690,46 @@ architecture STRUCTURE of MainDesign is
   signal NLW_VertexBatchBuilder_DBG_CurrentIndexBatchLength_UNCONNECTED : STD_LOGIC_VECTOR ( 6 downto 0 );
   signal NLW_VertexBatchBuilder_DBG_IndexGeneratorRemainingPrims_UNCONNECTED : STD_LOGIC_VECTOR ( 23 downto 0 );
   signal NLW_VertexBatchBuilder_DBG_LastPolygonIndices_UNCONNECTED : STD_LOGIC_VECTOR ( 47 downto 0 );
-  attribute X_INTERFACE_INFO : string;
-  attribute X_INTERFACE_INFO of ddr4_sdram_075_act_n : signal is "xilinx.com:interface:ddr4:1.0 ddr4_sdram_075 ACT_N";
-  attribute X_INTERFACE_MODE : string;
-  attribute X_INTERFACE_MODE of ddr4_sdram_075_act_n : signal is "Master";
-  attribute X_INTERFACE_PARAMETER : string;
-  attribute X_INTERFACE_PARAMETER of ddr4_sdram_075_act_n : signal is "XIL_INTERFACENAME ddr4_sdram_075, AXI_ARBITRATION_SCHEME RD_PRI_REG, BURST_LENGTH 8, CAN_DEBUG false, CAS_LATENCY 18, CAS_WRITE_LATENCY 14, CS_ENABLED true, CUSTOM_PARTS no_file_loaded, DATA_MASK_ENABLED DM_NO_DBI, DATA_WIDTH 32, MEMORY_PART MT40A256M16GE-075E, MEMORY_TYPE Components, MEM_ADDR_MAP ROW_COLUMN_BANK, SLOT Single, TIMEPERIOD_PS 750";
-  attribute X_INTERFACE_INFO of ddr4_sdram_075_bg : signal is "xilinx.com:interface:ddr4:1.0 ddr4_sdram_075 BG";
-  attribute X_INTERFACE_INFO of ddr4_sdram_075_ck_c : signal is "xilinx.com:interface:ddr4:1.0 ddr4_sdram_075 CK_C";
-  attribute X_INTERFACE_INFO of ddr4_sdram_075_ck_t : signal is "xilinx.com:interface:ddr4:1.0 ddr4_sdram_075 CK_T";
-  attribute X_INTERFACE_INFO of ddr4_sdram_075_cke : signal is "xilinx.com:interface:ddr4:1.0 ddr4_sdram_075 CKE";
-  attribute X_INTERFACE_INFO of ddr4_sdram_075_cs_n : signal is "xilinx.com:interface:ddr4:1.0 ddr4_sdram_075 CS_N";
-  attribute X_INTERFACE_INFO of ddr4_sdram_075_odt : signal is "xilinx.com:interface:ddr4:1.0 ddr4_sdram_075 ODT";
-  attribute X_INTERFACE_INFO of ddr4_sdram_075_reset_n : signal is "xilinx.com:interface:ddr4:1.0 ddr4_sdram_075 RESET_N";
-  attribute X_INTERFACE_INFO of default_sysclk1_300_clk_n : signal is "xilinx.com:interface:diff_clock:1.0 default_sysclk1_300 CLK_N";
-  attribute X_INTERFACE_MODE of default_sysclk1_300_clk_n : signal is "Slave";
-  attribute X_INTERFACE_PARAMETER of default_sysclk1_300_clk_n : signal is "XIL_INTERFACENAME default_sysclk1_300, CAN_DEBUG false, FREQ_HZ 300000000";
-  attribute X_INTERFACE_INFO of default_sysclk1_300_clk_p : signal is "xilinx.com:interface:diff_clock:1.0 default_sysclk1_300 CLK_P";
-  attribute X_INTERFACE_INFO of mdio_mdc_mdc : signal is "xilinx.com:interface:mdio:1.0 mdio_mdc MDC";
-  attribute X_INTERFACE_MODE of mdio_mdc_mdc : signal is "Master";
-  attribute X_INTERFACE_PARAMETER of mdio_mdc_mdc : signal is "XIL_INTERFACENAME mdio_mdc, CAN_DEBUG false";
-  attribute X_INTERFACE_INFO of mdio_mdc_mdio_i : signal is "xilinx.com:interface:mdio:1.0 mdio_mdc MDIO_I";
-  attribute X_INTERFACE_INFO of mdio_mdc_mdio_o : signal is "xilinx.com:interface:mdio:1.0 mdio_mdc MDIO_O";
-  attribute X_INTERFACE_INFO of mdio_mdc_mdio_t : signal is "xilinx.com:interface:mdio:1.0 mdio_mdc MDIO_T";
-  attribute X_INTERFACE_INFO of reset : signal is "xilinx.com:signal:reset:1.0 RST.RESET RST";
-  attribute X_INTERFACE_PARAMETER of reset : signal is "XIL_INTERFACENAME RST.RESET, INSERT_VIP 0, POLARITY ACTIVE_HIGH";
-  attribute X_INTERFACE_INFO of sgmii_lvds_rxn : signal is "xilinx.com:interface:sgmii:1.0 sgmii_lvds RXN";
-  attribute X_INTERFACE_MODE of sgmii_lvds_rxn : signal is "Master";
-  attribute X_INTERFACE_INFO of sgmii_lvds_rxp : signal is "xilinx.com:interface:sgmii:1.0 sgmii_lvds RXP";
-  attribute X_INTERFACE_INFO of sgmii_lvds_txn : signal is "xilinx.com:interface:sgmii:1.0 sgmii_lvds TXN";
-  attribute X_INTERFACE_INFO of sgmii_lvds_txp : signal is "xilinx.com:interface:sgmii:1.0 sgmii_lvds TXP";
-  attribute X_INTERFACE_INFO of sgmii_phyclk_clk_n : signal is "xilinx.com:interface:diff_clock:1.0 sgmii_phyclk CLK_N";
-  attribute X_INTERFACE_MODE of sgmii_phyclk_clk_n : signal is "Slave";
-  attribute X_INTERFACE_PARAMETER of sgmii_phyclk_clk_n : signal is "XIL_INTERFACENAME sgmii_phyclk, CAN_DEBUG false, FREQ_HZ 625000000";
-  attribute X_INTERFACE_INFO of sgmii_phyclk_clk_p : signal is "xilinx.com:interface:diff_clock:1.0 sgmii_phyclk CLK_P";
-  attribute X_INTERFACE_INFO of ddr4_sdram_075_adr : signal is "xilinx.com:interface:ddr4:1.0 ddr4_sdram_075 ADR";
-  attribute X_INTERFACE_INFO of ddr4_sdram_075_ba : signal is "xilinx.com:interface:ddr4:1.0 ddr4_sdram_075 BA";
-  attribute X_INTERFACE_INFO of ddr4_sdram_075_dm_n : signal is "xilinx.com:interface:ddr4:1.0 ddr4_sdram_075 DM_N";
-  attribute X_INTERFACE_INFO of ddr4_sdram_075_dq : signal is "xilinx.com:interface:ddr4:1.0 ddr4_sdram_075 DQ";
-  attribute X_INTERFACE_INFO of ddr4_sdram_075_dqs_c : signal is "xilinx.com:interface:ddr4:1.0 ddr4_sdram_075 DQS_C";
-  attribute X_INTERFACE_INFO of ddr4_sdram_075_dqs_t : signal is "xilinx.com:interface:ddr4:1.0 ddr4_sdram_075 DQS_T";
+  attribute x_interface_info : string;
+  attribute x_interface_info of ddr4_sdram_075_act_n : signal is "xilinx.com:interface:ddr4:1.0 ddr4_sdram_075 ACT_N";
+  attribute x_interface_mode : string;
+  attribute x_interface_mode of ddr4_sdram_075_act_n : signal is "Master";
+  attribute x_interface_parameter : string;
+  attribute x_interface_parameter of ddr4_sdram_075_act_n : signal is "XIL_INTERFACENAME ddr4_sdram_075, AXI_ARBITRATION_SCHEME RD_PRI_REG, BURST_LENGTH 8, CAN_DEBUG false, CAS_LATENCY 18, CAS_WRITE_LATENCY 14, CS_ENABLED true, CUSTOM_PARTS no_file_loaded, DATA_MASK_ENABLED DM_NO_DBI, DATA_WIDTH 32, MEMORY_PART MT40A256M16GE-075E, MEMORY_TYPE Components, MEM_ADDR_MAP ROW_COLUMN_BANK, SLOT Single, TIMEPERIOD_PS 750";
+  attribute x_interface_info of ddr4_sdram_075_bg : signal is "xilinx.com:interface:ddr4:1.0 ddr4_sdram_075 BG";
+  attribute x_interface_info of ddr4_sdram_075_ck_c : signal is "xilinx.com:interface:ddr4:1.0 ddr4_sdram_075 CK_C";
+  attribute x_interface_info of ddr4_sdram_075_ck_t : signal is "xilinx.com:interface:ddr4:1.0 ddr4_sdram_075 CK_T";
+  attribute x_interface_info of ddr4_sdram_075_cke : signal is "xilinx.com:interface:ddr4:1.0 ddr4_sdram_075 CKE";
+  attribute x_interface_info of ddr4_sdram_075_cs_n : signal is "xilinx.com:interface:ddr4:1.0 ddr4_sdram_075 CS_N";
+  attribute x_interface_info of ddr4_sdram_075_odt : signal is "xilinx.com:interface:ddr4:1.0 ddr4_sdram_075 ODT";
+  attribute x_interface_info of ddr4_sdram_075_reset_n : signal is "xilinx.com:interface:ddr4:1.0 ddr4_sdram_075 RESET_N";
+  attribute x_interface_info of default_sysclk1_300_clk_n : signal is "xilinx.com:interface:diff_clock:1.0 default_sysclk1_300 CLK_N";
+  attribute x_interface_mode of default_sysclk1_300_clk_n : signal is "Slave";
+  attribute x_interface_parameter of default_sysclk1_300_clk_n : signal is "XIL_INTERFACENAME default_sysclk1_300, CAN_DEBUG false, FREQ_HZ 300000000";
+  attribute x_interface_info of default_sysclk1_300_clk_p : signal is "xilinx.com:interface:diff_clock:1.0 default_sysclk1_300 CLK_P";
+  attribute x_interface_info of mdio_mdc_mdc : signal is "xilinx.com:interface:mdio:1.0 mdio_mdc MDC";
+  attribute x_interface_mode of mdio_mdc_mdc : signal is "Master";
+  attribute x_interface_parameter of mdio_mdc_mdc : signal is "XIL_INTERFACENAME mdio_mdc, CAN_DEBUG false";
+  attribute x_interface_info of mdio_mdc_mdio_i : signal is "xilinx.com:interface:mdio:1.0 mdio_mdc MDIO_I";
+  attribute x_interface_info of mdio_mdc_mdio_o : signal is "xilinx.com:interface:mdio:1.0 mdio_mdc MDIO_O";
+  attribute x_interface_info of mdio_mdc_mdio_t : signal is "xilinx.com:interface:mdio:1.0 mdio_mdc MDIO_T";
+  attribute x_interface_info of reset : signal is "xilinx.com:signal:reset:1.0 RST.RESET RST";
+  attribute x_interface_parameter of reset : signal is "XIL_INTERFACENAME RST.RESET, INSERT_VIP 0, POLARITY ACTIVE_HIGH";
+  attribute x_interface_info of sgmii_lvds_rxn : signal is "xilinx.com:interface:sgmii:1.0 sgmii_lvds RXN";
+  attribute x_interface_mode of sgmii_lvds_rxn : signal is "Master";
+  attribute x_interface_info of sgmii_lvds_rxp : signal is "xilinx.com:interface:sgmii:1.0 sgmii_lvds RXP";
+  attribute x_interface_info of sgmii_lvds_txn : signal is "xilinx.com:interface:sgmii:1.0 sgmii_lvds TXN";
+  attribute x_interface_info of sgmii_lvds_txp : signal is "xilinx.com:interface:sgmii:1.0 sgmii_lvds TXP";
+  attribute x_interface_info of sgmii_phyclk_clk_n : signal is "xilinx.com:interface:diff_clock:1.0 sgmii_phyclk CLK_N";
+  attribute x_interface_mode of sgmii_phyclk_clk_n : signal is "Slave";
+  attribute x_interface_parameter of sgmii_phyclk_clk_n : signal is "XIL_INTERFACENAME sgmii_phyclk, CAN_DEBUG false, FREQ_HZ 625000000";
+  attribute x_interface_info of sgmii_phyclk_clk_p : signal is "xilinx.com:interface:diff_clock:1.0 sgmii_phyclk CLK_P";
+  attribute x_interface_info of ddr4_sdram_075_adr : signal is "xilinx.com:interface:ddr4:1.0 ddr4_sdram_075 ADR";
+  attribute x_interface_info of ddr4_sdram_075_ba : signal is "xilinx.com:interface:ddr4:1.0 ddr4_sdram_075 BA";
+  attribute x_interface_info of ddr4_sdram_075_dm_n : signal is "xilinx.com:interface:ddr4:1.0 ddr4_sdram_075 DM_N";
+  attribute x_interface_info of ddr4_sdram_075_dq : signal is "xilinx.com:interface:ddr4:1.0 ddr4_sdram_075 DQ";
+  attribute x_interface_info of ddr4_sdram_075_dqs_c : signal is "xilinx.com:interface:ddr4:1.0 ddr4_sdram_075 DQS_C";
+  attribute x_interface_info of ddr4_sdram_075_dqs_t : signal is "xilinx.com:interface:ddr4:1.0 ddr4_sdram_075 DQS_T";
 begin
 ATTRINTERP_TRIDATA_FIFO: component MainDesign_fifo_generator_0_8
      port map (

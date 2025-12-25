@@ -671,7 +671,7 @@ sendBRAM_enb <= '1';
 						currentState <= sessionIsResetting;
 					end if;
 
-				when sessionIsResetting =>			
+				when sessionIsResetting =>
 					currentState <= unconnectedSendingNonSessionBroadcasts;
 			end case;
 		end if;

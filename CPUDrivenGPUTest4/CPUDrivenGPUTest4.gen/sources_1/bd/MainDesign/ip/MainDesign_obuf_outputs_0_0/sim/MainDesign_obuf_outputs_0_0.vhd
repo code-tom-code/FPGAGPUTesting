@@ -55,6 +55,7 @@ USE ieee.numeric_std.ALL;
 
 ENTITY MainDesign_obuf_outputs_0_0 IS
   PORT (
+    clk : IN STD_LOGIC;
     red_s : IN STD_LOGIC;
     green_s : IN STD_LOGIC;
     blue_s : IN STD_LOGIC;
@@ -75,6 +76,7 @@ ARCHITECTURE MainDesign_obuf_outputs_0_0_arch OF MainDesign_obuf_outputs_0_0 IS
   ATTRIBUTE DowngradeIPIdentifiedWarnings OF MainDesign_obuf_outputs_0_0_arch: ARCHITECTURE IS "yes";
   COMPONENT obuf_outputs IS
     PORT (
+      clk : IN STD_LOGIC;
       red_s : IN STD_LOGIC;
       green_s : IN STD_LOGIC;
       blue_s : IN STD_LOGIC;
@@ -89,9 +91,16 @@ ARCHITECTURE MainDesign_obuf_outputs_0_0_arch OF MainDesign_obuf_outputs_0_0 IS
       out_cl_n : OUT STD_LOGIC
     );
   END COMPONENT obuf_outputs;
+  ATTRIBUTE X_INTERFACE_INFO : STRING;
+  ATTRIBUTE X_INTERFACE_MODE : STRING;
+  ATTRIBUTE X_INTERFACE_PARAMETER : STRING;
+  ATTRIBUTE X_INTERFACE_INFO OF clk: SIGNAL IS "xilinx.com:signal:clock:1.0 clk333_250 CLK";
+  ATTRIBUTE X_INTERFACE_MODE OF clk: SIGNAL IS "slave clk333_250";
+  ATTRIBUTE X_INTERFACE_PARAMETER OF clk: SIGNAL IS "XIL_INTERFACENAME clk333_250, FREQ_HZ 251750000, FREQ_TOLERANCE_HZ 0, PHASE 0.0, CLK_DOMAIN MainDesign_clk_wiz_0_0_clk_x10, INSERT_VIP 0";
 BEGIN
   U0 : obuf_outputs
     PORT MAP (
+      clk => clk,
       red_s => red_s,
       green_s => green_s,
       blue_s => blue_s,

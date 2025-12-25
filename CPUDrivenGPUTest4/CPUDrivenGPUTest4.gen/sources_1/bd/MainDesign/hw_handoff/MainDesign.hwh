@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
-<EDKSYSTEM EDWVERSION="1.2" TIMESTAMP="Fri Dec 19 00:33:23 2025" VIVADOVERSION="2025.2">
+<EDKSYSTEM EDWVERSION="1.2" TIMESTAMP="Tue Dec 23 19:01:33 2025" VIVADOVERSION="2025.2">
 
   <SYSTEMINFO ARCH="kintexuplus" BOARD="xilinx.com:kcu116:part0:1.5" DEVICE="xcku5p" NAME="MainDesign" PACKAGE="ffvb676" SPEEDGRADE="-2"/>
 
@@ -1136,7 +1136,7 @@
       <PARAMETERS>
         <PARAMETER NAME="CONST_VAL" VALUE="0x1"/>
         <PARAMETER NAME="CONST_WIDTH" VALUE="1"/>
-        <PARAMETER NAME="Component_Name" VALUE="MainDesign_ilconstant_0_0"/>
+        <PARAMETER NAME="Component_Name" VALUE="MainDesign_AlwaysEnable_0"/>
         <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
       </PARAMETERS>
       <PORTS>
@@ -19671,6 +19671,36 @@
       </PORTS>
       <BUSINTERFACES/>
     </MODULE>
+    <MODULE COREREVISION="1" FULLNAME="/NetworkPacketSystem/CDC_MDIO_Ethernet_0" HWVERSION="1.0" INSTANCE="NetworkPacketSystem_CDC_MDIO_Ethernet_0" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="CDC_MDIOController_EthernetController" VLNV="xilinx.com:module_ref:CDC_MDIOController_EthernetController:1.0">
+      <DOCUMENTS/>
+      <PARAMETERS>
+        <PARAMETER NAME="Component_Name" VALUE="MainDesign_CDC_MDIOController_E_0_0"/>
+        <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
+      </PARAMETERS>
+      <PORTS>
+        <PORT DIR="I" NAME="In_Signal" SIGIS="undef" SIGNAME="NetworkPacketSystem_SGMII_PHY_Bringup_MDIO_phyBringupComplete">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="NetworkPacketSystem_SGMII_PHY_Bringup_MDIO" PORT="phyBringupComplete"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT CLKFREQUENCY="2500000" DIR="I" NAME="In_clk2_5" SIGIS="clk" SIGNAME="NetworkPacketSystem_ClockDividerx4_10_to_2_5_clkout25">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="NetworkPacketSystem_ClockDividerx4_10_to_2_5" PORT="clkout25"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" NAME="Out_Signal" SIGIS="undef" SIGNAME="NetworkPacketSystem_CDC_MDIO_Ethernet_0_Out_Signal">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="NetworkPacketSystem_EthernetController3_0" PORT="phyBringupComplete"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT CLKFREQUENCY="125000000" DIR="I" NAME="Out_clk125" SIGIS="clk" SIGNAME="NetworkPacketSystem_gig_ethernet_pcs_pma_0_clk125_out">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="NetworkPacketSystem_gig_ethernet_pcs_pma_0" PORT="clk125_out"/>
+          </CONNECTIONS>
+        </PORT>
+      </PORTS>
+      <BUSINTERFACES/>
+    </MODULE>
     <MODULE COREREVISION="1" FULLNAME="/NetworkPacketSystem/ClockDividerx4_10_to_2_5" HWVERSION="1.0" INSTANCE="NetworkPacketSystem_ClockDividerx4_10_to_2_5" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="ClockDivider4_1" VLNV="xilinx.com:module_ref:ClockDivider4_1:1.0">
       <DOCUMENTS/>
       <PARAMETERS>
@@ -19687,6 +19717,7 @@
           <CONNECTIONS>
             <CONNECTION INSTANCE="NetworkPacketSystem_SGMII_PHY_Bringup_MDIO" PORT="clkin25"/>
             <CONNECTION INSTANCE="NetworkPacketSystem_EthernetMDIOController" PORT="clkin25"/>
+            <CONNECTION INSTANCE="NetworkPacketSystem_CDC_MDIO_Ethernet_0" PORT="In_clk2_5"/>
           </CONNECTIONS>
         </PORT>
       </PORTS>
@@ -19822,9 +19853,9 @@
             <CONNECTION INSTANCE="NetworkPacketSystem_gig_ethernet_pcs_pma_0" PORT="reset"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" NAME="phyBringupComplete" SIGIS="undef" SIGNAME="NetworkPacketSystem_SGMII_PHY_Bringup_MDIO_phyBringupComplete">
+        <PORT DIR="I" NAME="phyBringupComplete" SIGIS="undef" SIGNAME="NetworkPacketSystem_CDC_MDIO_Ethernet_0_Out_Signal">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="NetworkPacketSystem_SGMII_PHY_Bringup_MDIO" PORT="phyBringupComplete"/>
+            <CONNECTION INSTANCE="NetworkPacketSystem_CDC_MDIO_Ethernet_0" PORT="Out_Signal"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="4" NAME="phyaddr" RIGHT="0" SIGIS="undef" SIGNAME="NetworkPacketSystem_EthernetController3_0_phyaddr">
@@ -21269,7 +21300,7 @@
         </PORT>
         <PORT DIR="O" NAME="phyBringupComplete" SIGIS="undef" SIGNAME="NetworkPacketSystem_SGMII_PHY_Bringup_MDIO_phyBringupComplete">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="NetworkPacketSystem_EthernetController3_0" PORT="phyBringupComplete"/>
+            <CONNECTION INSTANCE="NetworkPacketSystem_CDC_MDIO_Ethernet_0" PORT="In_Signal"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="I" LEFT="15" NAME="registerReadData" RIGHT="0" SIGIS="undef" SIGNAME="NetworkPacketSystem_EthernetMDIOController_registerReadData">
@@ -22452,6 +22483,7 @@
             <CONNECTION INSTANCE="NetworkPacketSystem_CDC_EthernetController1" PORT="In_clk125"/>
             <CONNECTION INSTANCE="NetworkPacketSystem_CDC_EthernetController0" PORT="In_clk125"/>
             <CONNECTION INSTANCE="NetworkPacketSystem_EthernetController3_0" PORT="clk125"/>
+            <CONNECTION INSTANCE="NetworkPacketSystem_CDC_MDIO_Ethernet_0" PORT="Out_clk125"/>
           </CONNECTIONS>
         </PORT>
         <PORT CLKFREQUENCY="312500000" DIR="O" NAME="clk312_out" SIGIS="clk"/>
@@ -26309,6 +26341,11 @@
             <CONNECTION INSTANCE="ScanoutSystem_dvid_0" PORT="cl_s"/>
           </CONNECTIONS>
         </PORT>
+        <PORT CLKFREQUENCY="251750000" DIR="I" NAME="clk" SIGIS="clk" SIGNAME="ScanoutSystem_scanout_clk_25_175_x10_clk_x10">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="ScanoutSystem_scanout_clk_25_175_x10" PORT="clk_x10"/>
+          </CONNECTIONS>
+        </PORT>
         <PORT DIR="I" NAME="green_s" SIGIS="undef" SIGNAME="ScanoutSystem_dvid_0_green_s">
           <CONNECTIONS>
             <CONNECTION INSTANCE="ScanoutSystem_dvid_0" PORT="green_s"/>
@@ -26954,6 +26991,7 @@
             <CONNECTION INSTANCE="ScanoutSystem_dvid_0" PORT="clk_x10"/>
             <CONNECTION INSTANCE="ScanoutSystem_CDC_Command_Scanout" PORT="scanout_clk"/>
             <CONNECTION INSTANCE="ScanoutSystem_ScanOutController" PORT="clk_x10"/>
+            <CONNECTION INSTANCE="ScanoutSystem_obuf_outputs_0" PORT="clk"/>
           </CONNECTIONS>
         </PORT>
         <PORT CLKFREQUENCY="251750000" DIR="O" NAME="clk_x10n" SIGIS="clk" SIGNAME="ScanoutSystem_scanout_clk_25_175_x10_clk_x10n">

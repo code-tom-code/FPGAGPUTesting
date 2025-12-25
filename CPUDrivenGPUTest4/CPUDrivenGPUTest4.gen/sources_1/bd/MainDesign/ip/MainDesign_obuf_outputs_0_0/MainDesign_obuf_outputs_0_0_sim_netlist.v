@@ -2,10 +2,10 @@
 // Copyright 2022-2025 Advanced Micro Devices, Inc. All Rights Reserved.
 // --------------------------------------------------------------------------------
 // Tool Version: Vivado v.2025.2 (win64) Build 6299465 Fri Nov 14 19:35:11 GMT 2025
-// Date        : Mon Dec  8 16:51:00 2025
-// Host        : Dragon3 running 64-bit major release  (build 9200)
+// Date        : Mon Dec 22 00:18:47 2025
+// Host        : TomTop3 running 64-bit major release  (build 9200)
 // Command     : write_verilog -force -mode funcsim
-//               c:/Xilinx/MyXilinxProjects/CPUDrivenGPUTest4/CPUDrivenGPUTest4.gen/sources_1/bd/MainDesign/ip/MainDesign_obuf_outputs_0_0/MainDesign_obuf_outputs_0_0_sim_netlist.v
+//               c:/Users/Tom/Documents/repos/FPGAGPUTesting/CPUDrivenGPUTest4/CPUDrivenGPUTest4.gen/sources_1/bd/MainDesign/ip/MainDesign_obuf_outputs_0_0/MainDesign_obuf_outputs_0_0_sim_netlist.v
 // Design      : MainDesign_obuf_outputs_0_0
 // Purpose     : This verilog netlist is a functional simulation representation of the design and should not be modified
 //               or synthesized. This netlist cannot be used for SDF annotated simulation.
@@ -17,7 +17,8 @@
 (* x_core_info = "obuf_outputs,Vivado 2025.2" *) 
 (* NotValidForBitStream *)
 module MainDesign_obuf_outputs_0_0
-   (red_s,
+   (clk,
+    red_s,
     green_s,
     blue_s,
     cl_s,
@@ -29,6 +30,7 @@ module MainDesign_obuf_outputs_0_0
     out_blue_n,
     out_cl_p,
     out_cl_n);
+  (* x_interface_info = "xilinx.com:signal:clock:1.0 clk333_250 CLK" *) (* x_interface_mode = "slave clk333_250" *) (* x_interface_parameter = "XIL_INTERFACENAME clk333_250, FREQ_HZ 251750000, FREQ_TOLERANCE_HZ 0, PHASE 0.0, CLK_DOMAIN MainDesign_clk_wiz_0_0_clk_x10, INSERT_VIP 0" *) input clk;
   input red_s;
   input green_s;
   input blue_s;
@@ -42,9 +44,10 @@ module MainDesign_obuf_outputs_0_0
   output out_cl_p;
   output out_cl_n;
 
-  (* SLEW = "SLOW" *) wire blue_s;
-  (* SLEW = "SLOW" *) wire cl_s;
-  (* SLEW = "SLOW" *) wire green_s;
+  wire blue_s;
+  wire cl_s;
+  wire clk;
+  wire green_s;
   (* SLEW = "SLOW" *) wire out_blue_n;
   (* SLEW = "SLOW" *) wire out_blue_p;
   (* SLEW = "SLOW" *) wire out_cl_n;
@@ -53,11 +56,12 @@ module MainDesign_obuf_outputs_0_0
   (* SLEW = "SLOW" *) wire out_green_p;
   (* SLEW = "SLOW" *) wire out_red_n;
   (* SLEW = "SLOW" *) wire out_red_p;
-  (* SLEW = "SLOW" *) wire red_s;
+  wire red_s;
 
   MainDesign_obuf_outputs_0_0_obuf_outputs U0
        (.blue_s(blue_s),
         .cl_s(cl_s),
+        .clk(clk),
         .green_s(green_s),
         .out_blue_n(out_blue_n),
         .out_blue_p(out_blue_p),
@@ -81,6 +85,7 @@ module MainDesign_obuf_outputs_0_0_obuf_outputs
     out_cl_p,
     out_cl_n,
     red_s,
+    clk,
     green_s,
     blue_s,
     cl_s);
@@ -93,12 +98,18 @@ module MainDesign_obuf_outputs_0_0_obuf_outputs
   output out_cl_p;
   output out_cl_n;
   input red_s;
+  input clk;
   input green_s;
   input blue_s;
   input cl_s;
 
+  wire I;
+  wire blue_buffer;
   wire blue_s;
+  wire cl_buffer;
   wire cl_s;
+  wire clk;
+  wire green_buffer;
   wire green_s;
   wire out_blue_n;
   wire out_blue_p;
@@ -116,7 +127,7 @@ module MainDesign_obuf_outputs_0_0_obuf_outputs
   OBUFDS #(
     .IOSTANDARD("DEFAULT")) 
     OBUFDS_blue
-       (.I(blue_s),
+       (.I(blue_buffer),
         .O(out_blue_p),
         .OB(out_blue_n));
   (* CAPACITANCE = "DONT_CARE" *) 
@@ -125,7 +136,7 @@ module MainDesign_obuf_outputs_0_0_obuf_outputs
   OBUFDS #(
     .IOSTANDARD("DEFAULT")) 
     OBUFDS_cl
-       (.I(cl_s),
+       (.I(cl_buffer),
         .O(out_cl_p),
         .OB(out_cl_n));
   (* CAPACITANCE = "DONT_CARE" *) 
@@ -134,7 +145,7 @@ module MainDesign_obuf_outputs_0_0_obuf_outputs
   OBUFDS #(
     .IOSTANDARD("DEFAULT")) 
     OBUFDS_green
-       (.I(green_s),
+       (.I(green_buffer),
         .O(out_green_p),
         .OB(out_green_n));
   (* CAPACITANCE = "DONT_CARE" *) 
@@ -143,9 +154,41 @@ module MainDesign_obuf_outputs_0_0_obuf_outputs
   OBUFDS #(
     .IOSTANDARD("DEFAULT")) 
     OBUFDS_red
-       (.I(red_s),
+       (.I(I),
         .O(out_red_p),
         .OB(out_red_n));
+  FDRE #(
+    .INIT(1'b0)) 
+    blue_buffer_reg
+       (.C(clk),
+        .CE(1'b1),
+        .D(blue_s),
+        .Q(blue_buffer),
+        .R(1'b0));
+  FDRE #(
+    .INIT(1'b0)) 
+    cl_buffer_reg
+       (.C(clk),
+        .CE(1'b1),
+        .D(cl_s),
+        .Q(cl_buffer),
+        .R(1'b0));
+  FDRE #(
+    .INIT(1'b0)) 
+    green_buffer_reg
+       (.C(clk),
+        .CE(1'b1),
+        .D(green_s),
+        .Q(green_buffer),
+        .R(1'b0));
+  FDRE #(
+    .INIT(1'b0)) 
+    red_buffer_reg
+       (.C(clk),
+        .CE(1'b1),
+        .D(red_s),
+        .Q(I),
+        .R(1'b0));
 endmodule
 `ifndef GLBL
 `define GLBL

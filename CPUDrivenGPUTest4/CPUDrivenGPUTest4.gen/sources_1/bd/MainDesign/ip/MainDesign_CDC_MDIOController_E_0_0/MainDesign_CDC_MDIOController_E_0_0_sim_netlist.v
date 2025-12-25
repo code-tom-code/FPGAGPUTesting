@@ -1,0 +1,238 @@
+// Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+// Copyright 2022-2025 Advanced Micro Devices, Inc. All Rights Reserved.
+// --------------------------------------------------------------------------------
+// Tool Version: Vivado v.2025.2 (win64) Build 6299465 Fri Nov 14 19:35:11 GMT 2025
+// Date        : Tue Dec 23 19:02:17 2025
+// Host        : TomTop3 running 64-bit major release  (build 9200)
+// Command     : write_verilog -force -mode funcsim
+//               c:/Users/Tom/Documents/repos/FPGAGPUTesting/CPUDrivenGPUTest4/CPUDrivenGPUTest4.gen/sources_1/bd/MainDesign/ip/MainDesign_CDC_MDIOController_E_0_0/MainDesign_CDC_MDIOController_E_0_0_sim_netlist.v
+// Design      : MainDesign_CDC_MDIOController_E_0_0
+// Purpose     : This verilog netlist is a functional simulation representation of the design and should not be modified
+//               or synthesized. This netlist cannot be used for SDF annotated simulation.
+// Device      : xcku5p-ffvb676-2-e
+// --------------------------------------------------------------------------------
+`timescale 1 ps / 1 ps
+
+(* CHECK_LICENSE_TYPE = "MainDesign_CDC_MDIOController_E_0_0,CDC_MDIOController_EthernetController,{}" *) (* downgradeipidentifiedwarnings = "yes" *) (* ip_definition_source = "module_ref" *) 
+(* x_core_info = "CDC_MDIOController_EthernetController,Vivado 2025.2" *) 
+(* NotValidForBitStream *)
+module MainDesign_CDC_MDIOController_E_0_0
+   (Out_clk125,
+    Out_Signal,
+    In_clk2_5,
+    In_Signal);
+  (* x_interface_info = "xilinx.com:signal:clock:1.0 Out_clk125 CLK" *) (* x_interface_mode = "slave Out_clk125" *) (* x_interface_parameter = "XIL_INTERFACENAME Out_clk125, FREQ_HZ 125000000, FREQ_TOLERANCE_HZ 0, PHASE 0, CLK_DOMAIN MainDesign_gig_ethernet_pcs_pma_0_0_clk125_out, INSERT_VIP 0" *) input Out_clk125;
+  output Out_Signal;
+  (* x_interface_info = "xilinx.com:signal:clock:1.0 In_clk2_5 CLK" *) (* x_interface_mode = "slave In_clk2_5" *) (* x_interface_parameter = "XIL_INTERFACENAME In_clk2_5, FREQ_HZ 2500000, FREQ_TOLERANCE_HZ 0, PHASE 0.0, CLK_DOMAIN MainDesign_ClockDivider4_1_0_0_clkout25, INSERT_VIP 0" *) input In_clk2_5;
+  input In_Signal;
+
+  wire In_Signal;
+  wire In_clk2_5;
+  wire Out_Signal;
+  wire Out_clk125;
+
+  MainDesign_CDC_MDIOController_E_0_0_CDC_MDIOController_EthernetController U0
+       (.In_Signal(In_Signal),
+        .In_clk2_5(In_clk2_5),
+        .Out_Signal(Out_Signal),
+        .Out_clk125(Out_clk125));
+endmodule
+
+(* ORIG_REF_NAME = "CDC_MDIOController_EthernetController" *) 
+module MainDesign_CDC_MDIOController_E_0_0_CDC_MDIOController_EthernetController
+   (Out_Signal,
+    In_clk2_5,
+    In_Signal,
+    Out_clk125);
+  output Out_Signal;
+  input In_clk2_5;
+  input In_Signal;
+  input Out_clk125;
+
+  wire In_Signal;
+  wire In_clk2_5;
+  wire Out_Signal;
+  wire Out_clk125;
+  wire Signal_Pipeline2_reg_srl2_n_0;
+  wire dest_out;
+
+  FDRE #(
+    .INIT(1'b0)) 
+    Out_Signal_reg
+       (.C(Out_clk125),
+        .CE(1'b1),
+        .D(Signal_Pipeline2_reg_srl2_n_0),
+        .Q(Out_Signal),
+        .R(1'b0));
+  (* srl_name = "\\U0/Signal_Pipeline2_reg_srl2 " *) 
+  SRL16E #(
+    .INIT(16'h0000)) 
+    Signal_Pipeline2_reg_srl2
+       (.A0(1'b1),
+        .A1(1'b0),
+        .A2(1'b0),
+        .A3(1'b0),
+        .CE(1'b1),
+        .CLK(Out_clk125),
+        .D(dest_out),
+        .Q(Signal_Pipeline2_reg_srl2_n_0));
+  (* DEST_SYNC_FF = "4" *) 
+  (* INIT_SYNC_FF = "0" *) 
+  (* SIM_ASSERT_CHK = "0" *) 
+  (* SRC_INPUT_REG = "1" *) 
+  (* VERSION = "0" *) 
+  (* XPM_CDC = "SINGLE" *) 
+  (* XPM_MODULE = "TRUE" *) 
+  MainDesign_CDC_MDIOController_E_0_0_xpm_cdc_single cdcVSyncLogic
+       (.dest_clk(Out_clk125),
+        .dest_out(dest_out),
+        .src_clk(In_clk2_5),
+        .src_in(In_Signal));
+endmodule
+
+(* DEST_SYNC_FF = "4" *) (* INIT_SYNC_FF = "0" *) (* ORIG_REF_NAME = "xpm_cdc_single" *) 
+(* SIM_ASSERT_CHK = "0" *) (* SRC_INPUT_REG = "1" *) (* VERSION = "0" *) 
+(* XPM_MODULE = "TRUE" *) (* keep_hierarchy = "soft" *) (* xpm_cdc = "SINGLE" *) 
+module MainDesign_CDC_MDIOController_E_0_0_xpm_cdc_single
+   (src_clk,
+    src_in,
+    dest_clk,
+    dest_out);
+  input src_clk;
+  input src_in;
+  input dest_clk;
+  output dest_out;
+
+  wire dest_clk;
+  wire [0:0]p_0_in;
+  wire src_clk;
+  wire src_in;
+  (* RTL_KEEP = "true" *) (* async_reg = "true" *) (* xpm_cdc = "SINGLE" *) wire [3:0]syncstages_ff;
+
+  assign dest_out = syncstages_ff[3];
+  FDRE src_ff_reg
+       (.C(src_clk),
+        .CE(1'b1),
+        .D(src_in),
+        .Q(p_0_in),
+        .R(1'b0));
+  (* ASYNC_REG *) 
+  (* KEEP = "true" *) 
+  (* XPM_CDC = "SINGLE" *) 
+  FDRE \syncstages_ff_reg[0] 
+       (.C(dest_clk),
+        .CE(1'b1),
+        .D(p_0_in),
+        .Q(syncstages_ff[0]),
+        .R(1'b0));
+  (* ASYNC_REG *) 
+  (* KEEP = "true" *) 
+  (* XPM_CDC = "SINGLE" *) 
+  FDRE \syncstages_ff_reg[1] 
+       (.C(dest_clk),
+        .CE(1'b1),
+        .D(syncstages_ff[0]),
+        .Q(syncstages_ff[1]),
+        .R(1'b0));
+  (* ASYNC_REG *) 
+  (* KEEP = "true" *) 
+  (* XPM_CDC = "SINGLE" *) 
+  FDRE \syncstages_ff_reg[2] 
+       (.C(dest_clk),
+        .CE(1'b1),
+        .D(syncstages_ff[1]),
+        .Q(syncstages_ff[2]),
+        .R(1'b0));
+  (* ASYNC_REG *) 
+  (* KEEP = "true" *) 
+  (* XPM_CDC = "SINGLE" *) 
+  FDRE \syncstages_ff_reg[3] 
+       (.C(dest_clk),
+        .CE(1'b1),
+        .D(syncstages_ff[2]),
+        .Q(syncstages_ff[3]),
+        .R(1'b0));
+endmodule
+`ifndef GLBL
+`define GLBL
+`timescale  1 ps / 1 ps
+
+module glbl ();
+
+    parameter ROC_WIDTH = 100000;
+    parameter TOC_WIDTH = 0;
+    parameter GRES_WIDTH = 10000;
+    parameter GRES_START = 10000;
+
+//--------   STARTUP Globals --------------
+    wire GSR;
+    wire GTS;
+    wire GWE;
+    wire PRLD;
+    wire GRESTORE;
+    tri1 p_up_tmp;
+    tri (weak1, strong0) PLL_LOCKG = p_up_tmp;
+
+    wire PROGB_GLBL;
+    wire CCLKO_GLBL;
+    wire FCSBO_GLBL;
+    wire [3:0] DO_GLBL;
+    wire [3:0] DI_GLBL;
+   
+    reg GSR_int;
+    reg GTS_int;
+    reg PRLD_int;
+    reg GRESTORE_int;
+
+//--------   JTAG Globals --------------
+    wire JTAG_TDO_GLBL;
+    wire JTAG_TCK_GLBL;
+    wire JTAG_TDI_GLBL;
+    wire JTAG_TMS_GLBL;
+    wire JTAG_TRST_GLBL;
+
+    reg JTAG_CAPTURE_GLBL;
+    reg JTAG_RESET_GLBL;
+    reg JTAG_SHIFT_GLBL;
+    reg JTAG_UPDATE_GLBL;
+    reg JTAG_RUNTEST_GLBL;
+
+    reg JTAG_SEL1_GLBL = 0;
+    reg JTAG_SEL2_GLBL = 0 ;
+    reg JTAG_SEL3_GLBL = 0;
+    reg JTAG_SEL4_GLBL = 0;
+
+    reg JTAG_USER_TDO1_GLBL = 1'bz;
+    reg JTAG_USER_TDO2_GLBL = 1'bz;
+    reg JTAG_USER_TDO3_GLBL = 1'bz;
+    reg JTAG_USER_TDO4_GLBL = 1'bz;
+
+    assign (strong1, weak0) GSR = GSR_int;
+    assign (strong1, weak0) GTS = GTS_int;
+    assign (weak1, weak0) PRLD = PRLD_int;
+    assign (strong1, weak0) GRESTORE = GRESTORE_int;
+
+    initial begin
+	GSR_int = 1'b1;
+	PRLD_int = 1'b1;
+	#(ROC_WIDTH)
+	GSR_int = 1'b0;
+	PRLD_int = 1'b0;
+    end
+
+    initial begin
+	GTS_int = 1'b1;
+	#(TOC_WIDTH)
+	GTS_int = 1'b0;
+    end
+
+    initial begin 
+	GRESTORE_int = 1'b0;
+	#(GRES_START);
+	GRESTORE_int = 1'b1;
+	#(GRES_WIDTH);
+	GRESTORE_int = 1'b0;
+    end
+
+endmodule
+`endif

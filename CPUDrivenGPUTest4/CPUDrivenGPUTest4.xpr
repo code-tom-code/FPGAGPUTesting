@@ -4,7 +4,7 @@
 <!-- Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.                   -->
 <!-- Copyright 2022-2025 Advanced Micro Devices, Inc. All Rights Reserved.   -->
 
-<Project Product="Vivado" Version="7" Minor="71" Path="C:/Xilinx/MyXilinxProjects/CPUDrivenGPUTest4/CPUDrivenGPUTest4.xpr">
+<Project Product="Vivado" Version="7" Minor="71" Path="C:/Users/Tom/Documents/repos/FPGAGPUTesting/CPUDrivenGPUTest4/CPUDrivenGPUTest4.xpr">
   <DefaultLaunch Dir="$PRUNDIR"/>
   <Configuration>
     <Option Name="Id" Val="a2fac4810932471d90c60ffb57e829af"/>
@@ -61,20 +61,20 @@
     <Option Name="IPStaticSourceDir" Val="$PIPUSERFILESDIR/ipstatic"/>
     <Option Name="EnableBDX" Val="FALSE"/>
     <Option Name="DSABoardId" Val="kcu116"/>
-    <Option Name="WTXSimLaunchSim" Val="0"/>
+    <Option Name="WTXSimLaunchSim" Val="1"/>
     <Option Name="WTModelSimLaunchSim" Val="0"/>
     <Option Name="WTQuestaLaunchSim" Val="0"/>
     <Option Name="WTIesLaunchSim" Val="0"/>
     <Option Name="WTVcsLaunchSim" Val="0"/>
     <Option Name="WTRivieraLaunchSim" Val="0"/>
     <Option Name="WTActivehdlLaunchSim" Val="0"/>
-    <Option Name="WTXSimExportSim" Val="7"/>
-    <Option Name="WTModelSimExportSim" Val="7"/>
-    <Option Name="WTQuestaExportSim" Val="7"/>
+    <Option Name="WTXSimExportSim" Val="9"/>
+    <Option Name="WTModelSimExportSim" Val="9"/>
+    <Option Name="WTQuestaExportSim" Val="9"/>
     <Option Name="WTIesExportSim" Val="0"/>
     <Option Name="WTVcsExportSim" Val="0"/>
-    <Option Name="WTRivieraExportSim" Val="7"/>
-    <Option Name="WTActivehdlExportSim" Val="7"/>
+    <Option Name="WTRivieraExportSim" Val="9"/>
+    <Option Name="WTActivehdlExportSim" Val="9"/>
     <Option Name="GenerateIPUpgradeLog" Val="TRUE"/>
     <Option Name="XSimRadix" Val="hex"/>
     <Option Name="XSimTimeUnit" Val="ns"/>
@@ -556,6 +556,12 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
+      <File Path="$PSRCDIR/sources_1/new/CDC_MDIOController_EthernetController.vhd">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
       <File Path="$PSRCDIR/sources_1/bd/MainDesign/MainDesign.bd">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
@@ -573,6 +579,9 @@
         </CompFileExtendedInfo>
         <CompFileExtendedInfo CompFileName="MainDesign.bd" FileRelPathName="ip\MainDesign_CDC_EthernetControll_1_0\MainDesign_CDC_EthernetControll_1_0.xci">
           <Proxy FileSetName="MainDesign_CDC_EthernetControll_1_0"/>
+        </CompFileExtendedInfo>
+        <CompFileExtendedInfo CompFileName="MainDesign.bd" FileRelPathName="ip\MainDesign_CDC_MDIOController_E_0_0\MainDesign_CDC_MDIOController_E_0_0.xci">
+          <Proxy FileSetName="MainDesign_CDC_MDIOController_E_0_0"/>
         </CompFileExtendedInfo>
         <CompFileExtendedInfo CompFileName="MainDesign.bd" FileRelPathName="ip\MainDesign_ClearBlockWriteRequestsFIFO_0\MainDesign_ClearBlockWriteRequestsFIFO_0.xci">
           <Proxy FileSetName="MainDesign_ClearBlockWriteRequestsFIFO_0"/>
@@ -1485,12 +1494,6 @@
         <Option Name="UseBlackboxStub" Val="1"/>
       </Config>
     </FileSet>
-    <FileSet Name="MainDesign_obuf_outputs_0_0" Type="BlockSrcs" RelSrcDir="$PSRCDIR/MainDesign_obuf_outputs_0_0" RelGenDir="$PGENDIR/MainDesign_obuf_outputs_0_0">
-      <Config>
-        <Option Name="TopModule" Val="MainDesign_obuf_outputs_0_0"/>
-        <Option Name="UseBlackboxStub" Val="1"/>
-      </Config>
-    </FileSet>
     <FileSet Name="MainDesign_clk_wiz_0_0" Type="BlockSrcs" RelSrcDir="$PSRCDIR/MainDesign_clk_wiz_0_0" RelGenDir="$PGENDIR/MainDesign_clk_wiz_0_0">
       <Config>
         <Option Name="TopModule" Val="MainDesign_clk_wiz_0_0"/>
@@ -1665,12 +1668,6 @@
         <Option Name="UseBlackboxStub" Val="1"/>
       </Config>
     </FileSet>
-    <FileSet Name="MainDesign_NetProtoPacketProces_0_0" Type="BlockSrcs" RelSrcDir="$PSRCDIR/MainDesign_NetProtoPacketProces_0_0" RelGenDir="$PGENDIR/MainDesign_NetProtoPacketProces_0_0">
-      <Config>
-        <Option Name="TopModule" Val="MainDesign_NetProtoPacketProces_0_0"/>
-        <Option Name="UseBlackboxStub" Val="1"/>
-      </Config>
-    </FileSet>
     <FileSet Name="MainDesign_StatsDataSampler_0_0" Type="BlockSrcs" RelSrcDir="$PSRCDIR/MainDesign_StatsDataSampler_0_0" RelGenDir="$PGENDIR/MainDesign_StatsDataSampler_0_0">
       <Config>
         <Option Name="TopModule" Val="MainDesign_StatsDataSampler_0_0"/>
@@ -1806,6 +1803,24 @@
     <FileSet Name="MainDesign_blk_mem_gen_0_5" Type="BlockSrcs" RelSrcDir="$PSRCDIR/MainDesign_blk_mem_gen_0_5" RelGenDir="$PGENDIR/MainDesign_blk_mem_gen_0_5">
       <Config>
         <Option Name="TopModule" Val="MainDesign_blk_mem_gen_0_5"/>
+        <Option Name="UseBlackboxStub" Val="1"/>
+      </Config>
+    </FileSet>
+    <FileSet Name="MainDesign_obuf_outputs_0_0" Type="BlockSrcs" RelSrcDir="$PSRCDIR/MainDesign_obuf_outputs_0_0" RelGenDir="$PGENDIR/MainDesign_obuf_outputs_0_0">
+      <Config>
+        <Option Name="TopModule" Val="MainDesign_obuf_outputs_0_0"/>
+        <Option Name="UseBlackboxStub" Val="1"/>
+      </Config>
+    </FileSet>
+    <FileSet Name="MainDesign_NetProtoPacketProces_0_0" Type="BlockSrcs" RelSrcDir="$PSRCDIR/MainDesign_NetProtoPacketProces_0_0" RelGenDir="$PGENDIR/MainDesign_NetProtoPacketProces_0_0">
+      <Config>
+        <Option Name="TopModule" Val="MainDesign_NetProtoPacketProces_0_0"/>
+        <Option Name="UseBlackboxStub" Val="1"/>
+      </Config>
+    </FileSet>
+    <FileSet Name="MainDesign_CDC_MDIOController_E_0_0" Type="BlockSrcs" RelSrcDir="$PSRCDIR/MainDesign_CDC_MDIOController_E_0_0" RelGenDir="$PGENDIR/MainDesign_CDC_MDIOController_E_0_0">
+      <Config>
+        <Option Name="TopModule" Val="MainDesign_CDC_MDIOController_E_0_0"/>
         <Option Name="UseBlackboxStub" Val="1"/>
       </Config>
     </FileSet>
@@ -2609,16 +2624,6 @@
       <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
       <RQSFiles/>
     </Run>
-    <Run Id="MainDesign_obuf_outputs_0_0_synth_1" Type="Ft3:Synth" SrcSet="MainDesign_obuf_outputs_0_0" Part="xcku5p-ffvb676-2-e" ConstrsSet="MainDesign_obuf_outputs_0_0" Description="Vivado Synthesis Defaults" AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" Dir="$PRUNDIR/MainDesign_obuf_outputs_0_0_synth_1" IncludeInArchive="true" IsChild="false" AutoIncrementalDir="$PSRCDIR/utils_1/imports/MainDesign_obuf_outputs_0_0_synth_1" AutoRQSDir="$PSRCDIR/utils_1/imports/MainDesign_obuf_outputs_0_0_synth_1" ParallelReportGen="true">
-      <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2025"/>
-        <Step Id="synth_design"/>
-      </Strategy>
-      <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
-      <ReportStrategy Name="Vivado Synthesis Default Reports" Flow="Vivado Synthesis 2025"/>
-      <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
-      <RQSFiles/>
-    </Run>
     <Run Id="MainDesign_clk_wiz_0_0_synth_1" Type="Ft3:Synth" SrcSet="MainDesign_clk_wiz_0_0" Part="xcku5p-ffvb676-2-e" ConstrsSet="MainDesign_clk_wiz_0_0" Description="Vivado Synthesis Defaults" AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" Dir="$PRUNDIR/MainDesign_clk_wiz_0_0_synth_1" IncludeInArchive="true" IsChild="false" AutoIncrementalDir="$PSRCDIR/utils_1/imports/MainDesign_clk_wiz_0_0_synth_1" AutoRQSDir="$PSRCDIR/utils_1/imports/MainDesign_clk_wiz_0_0_synth_1" ParallelReportGen="true">
       <Strategy Version="1" Minor="2">
         <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2025"/>
@@ -2909,16 +2914,6 @@
       <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
       <RQSFiles/>
     </Run>
-    <Run Id="MainDesign_NetProtoPacketProces_0_0_synth_1" Type="Ft3:Synth" SrcSet="MainDesign_NetProtoPacketProces_0_0" Part="xcku5p-ffvb676-2-e" ConstrsSet="MainDesign_NetProtoPacketProces_0_0" Description="Vivado Synthesis Defaults" AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" Dir="$PRUNDIR/MainDesign_NetProtoPacketProces_0_0_synth_1" IncludeInArchive="true" IsChild="false" AutoIncrementalDir="$PSRCDIR/utils_1/imports/MainDesign_NetProtoPacketProces_0_0_synth_1" AutoRQSDir="$PSRCDIR/utils_1/imports/MainDesign_NetProtoPacketProces_0_0_synth_1" ParallelReportGen="true">
-      <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2025"/>
-        <Step Id="synth_design"/>
-      </Strategy>
-      <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
-      <ReportStrategy Name="Vivado Synthesis Default Reports" Flow="Vivado Synthesis 2025"/>
-      <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
-      <RQSFiles/>
-    </Run>
     <Run Id="MainDesign_StatsDataSampler_0_0_synth_1" Type="Ft3:Synth" SrcSet="MainDesign_StatsDataSampler_0_0" Part="xcku5p-ffvb676-2-e" ConstrsSet="MainDesign_StatsDataSampler_0_0" Description="Vivado Synthesis Defaults" AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" Dir="$PRUNDIR/MainDesign_StatsDataSampler_0_0_synth_1" IncludeInArchive="true" IsChild="false" AutoIncrementalDir="$PSRCDIR/utils_1/imports/MainDesign_StatsDataSampler_0_0_synth_1" AutoRQSDir="$PSRCDIR/utils_1/imports/MainDesign_StatsDataSampler_0_0_synth_1" ParallelReportGen="true">
       <Strategy Version="1" Minor="2">
         <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2025"/>
@@ -3121,9 +3116,7 @@
     </Run>
     <Run Id="MainDesign_ila_3_0_synth_1" Type="Ft3:Synth" SrcSet="MainDesign_ila_3_0" Part="xcku5p-ffvb676-2-e" ConstrsSet="MainDesign_ila_3_0" Description="Vivado Synthesis Defaults" AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" Dir="$PRUNDIR/MainDesign_ila_3_0_synth_1" IncludeInArchive="true" IsChild="false" AutoIncrementalDir="$PSRCDIR/utils_1/imports/MainDesign_ila_3_0_synth_1" AutoRQSDir="$PSRCDIR/utils_1/imports/MainDesign_ila_3_0_synth_1" ParallelReportGen="true">
       <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2025">
-          <Desc>Vivado Synthesis Defaults</Desc>
-        </StratHandle>
+        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2025"/>
         <Step Id="synth_design"/>
       </Strategy>
       <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
@@ -3132,6 +3125,36 @@
       <RQSFiles/>
     </Run>
     <Run Id="MainDesign_ila_3_1_synth_1" Type="Ft3:Synth" SrcSet="MainDesign_ila_3_1" Part="xcku5p-ffvb676-2-e" ConstrsSet="MainDesign_ila_3_1" Description="Vivado Synthesis Defaults" AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" Dir="$PRUNDIR/MainDesign_ila_3_1_synth_1" IncludeInArchive="true" IsChild="false" AutoIncrementalDir="$PSRCDIR/utils_1/imports/MainDesign_ila_3_1_synth_1" AutoRQSDir="$PSRCDIR/utils_1/imports/MainDesign_ila_3_1_synth_1" ParallelReportGen="true">
+      <Strategy Version="1" Minor="2">
+        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2025"/>
+        <Step Id="synth_design"/>
+      </Strategy>
+      <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
+      <ReportStrategy Name="Vivado Synthesis Default Reports" Flow="Vivado Synthesis 2025"/>
+      <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
+      <RQSFiles/>
+    </Run>
+    <Run Id="MainDesign_blk_mem_gen_0_5_synth_1" Type="Ft3:Synth" SrcSet="MainDesign_blk_mem_gen_0_5" Part="xcku5p-ffvb676-2-e" ConstrsSet="MainDesign_blk_mem_gen_0_5" Description="Vivado Synthesis Defaults" AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" Dir="$PRUNDIR/MainDesign_blk_mem_gen_0_5_synth_1" IncludeInArchive="true" IsChild="false" AutoIncrementalDir="$PSRCDIR/utils_1/imports/MainDesign_blk_mem_gen_0_5_synth_1" AutoRQSDir="$PSRCDIR/utils_1/imports/MainDesign_blk_mem_gen_0_5_synth_1" ParallelReportGen="true">
+      <Strategy Version="1" Minor="2">
+        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2025"/>
+        <Step Id="synth_design"/>
+      </Strategy>
+      <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
+      <ReportStrategy Name="Vivado Synthesis Default Reports" Flow="Vivado Synthesis 2025"/>
+      <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
+      <RQSFiles/>
+    </Run>
+    <Run Id="MainDesign_obuf_outputs_0_0_synth_1" Type="Ft3:Synth" SrcSet="MainDesign_obuf_outputs_0_0" Part="xcku5p-ffvb676-2-e" ConstrsSet="MainDesign_obuf_outputs_0_0" Description="Vivado Synthesis Defaults" AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" Dir="$PRUNDIR/MainDesign_obuf_outputs_0_0_synth_1" IncludeInArchive="true" IsChild="false" AutoIncrementalDir="$PSRCDIR/utils_1/imports/MainDesign_obuf_outputs_0_0_synth_1" AutoRQSDir="$PSRCDIR/utils_1/imports/MainDesign_obuf_outputs_0_0_synth_1" ParallelReportGen="true">
+      <Strategy Version="1" Minor="2">
+        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2025"/>
+        <Step Id="synth_design"/>
+      </Strategy>
+      <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
+      <ReportStrategy Name="Vivado Synthesis Default Reports" Flow="Vivado Synthesis 2025"/>
+      <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
+      <RQSFiles/>
+    </Run>
+    <Run Id="MainDesign_NetProtoPacketProces_0_0_synth_1" Type="Ft3:Synth" SrcSet="MainDesign_NetProtoPacketProces_0_0" Part="xcku5p-ffvb676-2-e" ConstrsSet="MainDesign_NetProtoPacketProces_0_0" Description="Vivado Synthesis Defaults" AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" Dir="$PRUNDIR/MainDesign_NetProtoPacketProces_0_0_synth_1" IncludeInArchive="true" IsChild="false" AutoIncrementalDir="$PSRCDIR/utils_1/imports/MainDesign_NetProtoPacketProces_0_0_synth_1" AutoRQSDir="$PSRCDIR/utils_1/imports/MainDesign_NetProtoPacketProces_0_0_synth_1" ParallelReportGen="true">
       <Strategy Version="1" Minor="2">
         <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2025">
           <Desc>Vivado Synthesis Defaults</Desc>
@@ -3143,7 +3166,7 @@
       <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
       <RQSFiles/>
     </Run>
-    <Run Id="MainDesign_blk_mem_gen_0_5_synth_1" Type="Ft3:Synth" SrcSet="MainDesign_blk_mem_gen_0_5" Part="xcku5p-ffvb676-2-e" ConstrsSet="MainDesign_blk_mem_gen_0_5" Description="Vivado Synthesis Defaults" AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" Dir="$PRUNDIR/MainDesign_blk_mem_gen_0_5_synth_1" IncludeInArchive="true" IsChild="false" AutoIncrementalDir="$PSRCDIR/utils_1/imports/MainDesign_blk_mem_gen_0_5_synth_1" AutoRQSDir="$PSRCDIR/utils_1/imports/MainDesign_blk_mem_gen_0_5_synth_1" ParallelReportGen="true">
+    <Run Id="MainDesign_CDC_MDIOController_E_0_0_synth_1" Type="Ft3:Synth" SrcSet="MainDesign_CDC_MDIOController_E_0_0" Part="xcku5p-ffvb676-2-e" ConstrsSet="MainDesign_CDC_MDIOController_E_0_0" Description="Vivado Synthesis Defaults" AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" Dir="$PRUNDIR/MainDesign_CDC_MDIOController_E_0_0_synth_1" IncludeInArchive="true" IsChild="false" AutoIncrementalDir="$PSRCDIR/utils_1/imports/MainDesign_CDC_MDIOController_E_0_0_synth_1" AutoRQSDir="$PSRCDIR/utils_1/imports/MainDesign_CDC_MDIOController_E_0_0_synth_1" ParallelReportGen="true">
       <Strategy Version="1" Minor="2">
         <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2025">
           <Desc>Vivado Synthesis Defaults</Desc>
@@ -4482,23 +4505,6 @@
       <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
       <RQSFiles/>
     </Run>
-    <Run Id="MainDesign_obuf_outputs_0_0_impl_1" Type="Ft2:EntireDesign" Part="xcku5p-ffvb676-2-e" ConstrsSet="MainDesign_obuf_outputs_0_0" Description="Default settings for Implementation." AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" SynthRun="MainDesign_obuf_outputs_0_0_synth_1" IncludeInArchive="false" IsChild="false" GenFullBitstream="true" AutoIncrementalDir="$PSRCDIR/utils_1/imports/MainDesign_obuf_outputs_0_0_impl_1" AutoRQSDir="$PSRCDIR/utils_1/imports/MainDesign_obuf_outputs_0_0_impl_1" ParallelReportGen="true">
-      <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2025"/>
-        <Step Id="init_design"/>
-        <Step Id="opt_design"/>
-        <Step Id="power_opt_design"/>
-        <Step Id="place_design"/>
-        <Step Id="post_place_power_opt_design"/>
-        <Step Id="phys_opt_design"/>
-        <Step Id="route_design"/>
-        <Step Id="post_route_phys_opt_design"/>
-        <Step Id="write_bitstream"/>
-      </Strategy>
-      <ReportStrategy Name="Vivado Implementation Default Reports" Flow="Vivado Implementation 2025"/>
-      <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
-      <RQSFiles/>
-    </Run>
     <Run Id="MainDesign_clk_wiz_0_0_impl_1" Type="Ft2:EntireDesign" Part="xcku5p-ffvb676-2-e" ConstrsSet="MainDesign_clk_wiz_0_0" Description="Default settings for Implementation." AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" SynthRun="MainDesign_clk_wiz_0_0_synth_1" IncludeInArchive="false" IsChild="false" GenFullBitstream="true" AutoIncrementalDir="$PSRCDIR/utils_1/imports/MainDesign_clk_wiz_0_0_impl_1" AutoRQSDir="$PSRCDIR/utils_1/imports/MainDesign_clk_wiz_0_0_impl_1" ParallelReportGen="true">
       <Strategy Version="1" Minor="2">
         <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2025"/>
@@ -4992,23 +4998,6 @@
       <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
       <RQSFiles/>
     </Run>
-    <Run Id="MainDesign_NetProtoPacketProces_0_0_impl_1" Type="Ft2:EntireDesign" Part="xcku5p-ffvb676-2-e" ConstrsSet="MainDesign_NetProtoPacketProces_0_0" Description="Default settings for Implementation." AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" SynthRun="MainDesign_NetProtoPacketProces_0_0_synth_1" IncludeInArchive="false" IsChild="false" GenFullBitstream="true" AutoIncrementalDir="$PSRCDIR/utils_1/imports/MainDesign_NetProtoPacketProces_0_0_impl_1" AutoRQSDir="$PSRCDIR/utils_1/imports/MainDesign_NetProtoPacketProces_0_0_impl_1" ParallelReportGen="true">
-      <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2025"/>
-        <Step Id="init_design"/>
-        <Step Id="opt_design"/>
-        <Step Id="power_opt_design"/>
-        <Step Id="place_design"/>
-        <Step Id="post_place_power_opt_design"/>
-        <Step Id="phys_opt_design"/>
-        <Step Id="route_design"/>
-        <Step Id="post_route_phys_opt_design"/>
-        <Step Id="write_bitstream"/>
-      </Strategy>
-      <ReportStrategy Name="Vivado Implementation Default Reports" Flow="Vivado Implementation 2025"/>
-      <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
-      <RQSFiles/>
-    </Run>
     <Run Id="MainDesign_StatsDataSampler_0_0_impl_1" Type="Ft2:EntireDesign" Part="xcku5p-ffvb676-2-e" ConstrsSet="MainDesign_StatsDataSampler_0_0" Description="Default settings for Implementation." AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" SynthRun="MainDesign_StatsDataSampler_0_0_synth_1" IncludeInArchive="false" IsChild="false" GenFullBitstream="true" AutoIncrementalDir="$PSRCDIR/utils_1/imports/MainDesign_StatsDataSampler_0_0_impl_1" AutoRQSDir="$PSRCDIR/utils_1/imports/MainDesign_StatsDataSampler_0_0_impl_1" ParallelReportGen="true">
       <Strategy Version="1" Minor="2">
         <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2025"/>
@@ -5351,9 +5340,7 @@
     </Run>
     <Run Id="MainDesign_ila_3_0_impl_1" Type="Ft2:EntireDesign" Part="xcku5p-ffvb676-2-e" ConstrsSet="MainDesign_ila_3_0" Description="Default settings for Implementation." AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" SynthRun="MainDesign_ila_3_0_synth_1" IncludeInArchive="false" IsChild="false" GenFullBitstream="true" AutoIncrementalDir="$PSRCDIR/utils_1/imports/MainDesign_ila_3_0_impl_1" AutoRQSDir="$PSRCDIR/utils_1/imports/MainDesign_ila_3_0_impl_1" ParallelReportGen="true">
       <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2025">
-          <Desc>Default settings for Implementation.</Desc>
-        </StratHandle>
+        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2025"/>
         <Step Id="init_design"/>
         <Step Id="opt_design"/>
         <Step Id="power_opt_design"/>
@@ -5369,6 +5356,57 @@
       <RQSFiles/>
     </Run>
     <Run Id="MainDesign_ila_3_1_impl_1" Type="Ft2:EntireDesign" Part="xcku5p-ffvb676-2-e" ConstrsSet="MainDesign_ila_3_1" Description="Default settings for Implementation." AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" SynthRun="MainDesign_ila_3_1_synth_1" IncludeInArchive="false" IsChild="false" GenFullBitstream="true" AutoIncrementalDir="$PSRCDIR/utils_1/imports/MainDesign_ila_3_1_impl_1" AutoRQSDir="$PSRCDIR/utils_1/imports/MainDesign_ila_3_1_impl_1" ParallelReportGen="true">
+      <Strategy Version="1" Minor="2">
+        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2025"/>
+        <Step Id="init_design"/>
+        <Step Id="opt_design"/>
+        <Step Id="power_opt_design"/>
+        <Step Id="place_design"/>
+        <Step Id="post_place_power_opt_design"/>
+        <Step Id="phys_opt_design"/>
+        <Step Id="route_design"/>
+        <Step Id="post_route_phys_opt_design"/>
+        <Step Id="write_bitstream"/>
+      </Strategy>
+      <ReportStrategy Name="Vivado Implementation Default Reports" Flow="Vivado Implementation 2025"/>
+      <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
+      <RQSFiles/>
+    </Run>
+    <Run Id="MainDesign_blk_mem_gen_0_5_impl_1" Type="Ft2:EntireDesign" Part="xcku5p-ffvb676-2-e" ConstrsSet="MainDesign_blk_mem_gen_0_5" Description="Default settings for Implementation." AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" SynthRun="MainDesign_blk_mem_gen_0_5_synth_1" IncludeInArchive="false" IsChild="false" GenFullBitstream="true" AutoIncrementalDir="$PSRCDIR/utils_1/imports/MainDesign_blk_mem_gen_0_5_impl_1" AutoRQSDir="$PSRCDIR/utils_1/imports/MainDesign_blk_mem_gen_0_5_impl_1" ParallelReportGen="true">
+      <Strategy Version="1" Minor="2">
+        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2025"/>
+        <Step Id="init_design"/>
+        <Step Id="opt_design"/>
+        <Step Id="power_opt_design"/>
+        <Step Id="place_design"/>
+        <Step Id="post_place_power_opt_design"/>
+        <Step Id="phys_opt_design"/>
+        <Step Id="route_design"/>
+        <Step Id="post_route_phys_opt_design"/>
+        <Step Id="write_bitstream"/>
+      </Strategy>
+      <ReportStrategy Name="Vivado Implementation Default Reports" Flow="Vivado Implementation 2025"/>
+      <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
+      <RQSFiles/>
+    </Run>
+    <Run Id="MainDesign_obuf_outputs_0_0_impl_1" Type="Ft2:EntireDesign" Part="xcku5p-ffvb676-2-e" ConstrsSet="MainDesign_obuf_outputs_0_0" Description="Default settings for Implementation." AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" SynthRun="MainDesign_obuf_outputs_0_0_synth_1" IncludeInArchive="false" IsChild="false" GenFullBitstream="true" AutoIncrementalDir="$PSRCDIR/utils_1/imports/MainDesign_obuf_outputs_0_0_impl_1" AutoRQSDir="$PSRCDIR/utils_1/imports/MainDesign_obuf_outputs_0_0_impl_1" ParallelReportGen="true">
+      <Strategy Version="1" Minor="2">
+        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2025"/>
+        <Step Id="init_design"/>
+        <Step Id="opt_design"/>
+        <Step Id="power_opt_design"/>
+        <Step Id="place_design"/>
+        <Step Id="post_place_power_opt_design"/>
+        <Step Id="phys_opt_design"/>
+        <Step Id="route_design"/>
+        <Step Id="post_route_phys_opt_design"/>
+        <Step Id="write_bitstream"/>
+      </Strategy>
+      <ReportStrategy Name="Vivado Implementation Default Reports" Flow="Vivado Implementation 2025"/>
+      <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
+      <RQSFiles/>
+    </Run>
+    <Run Id="MainDesign_NetProtoPacketProces_0_0_impl_1" Type="Ft2:EntireDesign" Part="xcku5p-ffvb676-2-e" ConstrsSet="MainDesign_NetProtoPacketProces_0_0" Description="Default settings for Implementation." AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" SynthRun="MainDesign_NetProtoPacketProces_0_0_synth_1" IncludeInArchive="false" IsChild="false" GenFullBitstream="true" AutoIncrementalDir="$PSRCDIR/utils_1/imports/MainDesign_NetProtoPacketProces_0_0_impl_1" AutoRQSDir="$PSRCDIR/utils_1/imports/MainDesign_NetProtoPacketProces_0_0_impl_1" ParallelReportGen="true">
       <Strategy Version="1" Minor="2">
         <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2025">
           <Desc>Default settings for Implementation.</Desc>
@@ -5387,7 +5425,7 @@
       <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
       <RQSFiles/>
     </Run>
-    <Run Id="MainDesign_blk_mem_gen_0_5_impl_1" Type="Ft2:EntireDesign" Part="xcku5p-ffvb676-2-e" ConstrsSet="MainDesign_blk_mem_gen_0_5" Description="Default settings for Implementation." AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" SynthRun="MainDesign_blk_mem_gen_0_5_synth_1" IncludeInArchive="false" IsChild="false" GenFullBitstream="true" AutoIncrementalDir="$PSRCDIR/utils_1/imports/MainDesign_blk_mem_gen_0_5_impl_1" AutoRQSDir="$PSRCDIR/utils_1/imports/MainDesign_blk_mem_gen_0_5_impl_1" ParallelReportGen="true">
+    <Run Id="MainDesign_CDC_MDIOController_E_0_0_impl_1" Type="Ft2:EntireDesign" Part="xcku5p-ffvb676-2-e" ConstrsSet="MainDesign_CDC_MDIOController_E_0_0" Description="Default settings for Implementation." AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" SynthRun="MainDesign_CDC_MDIOController_E_0_0_synth_1" IncludeInArchive="false" IsChild="false" GenFullBitstream="true" AutoIncrementalDir="$PSRCDIR/utils_1/imports/MainDesign_CDC_MDIOController_E_0_0_impl_1" AutoRQSDir="$PSRCDIR/utils_1/imports/MainDesign_CDC_MDIOController_E_0_0_impl_1" ParallelReportGen="true">
       <Strategy Version="1" Minor="2">
         <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2025">
           <Desc>Default settings for Implementation.</Desc>

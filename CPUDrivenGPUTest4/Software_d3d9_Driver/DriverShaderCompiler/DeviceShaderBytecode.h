@@ -39,6 +39,18 @@ enum InstructionOperation : unsigned __int64
 	Op_END = 31
 };
 
+enum InstructionExecutionPipe : unsigned char
+{
+	ExePipe_Add, // Addition pipe
+	ExePipe_Mul, // Multiplication pipe
+	ExePipe_Cmp, // Comparisons pipe
+	ExePipe_Cnv, // Conversion pipe
+	ExePipe_Shift, // Shifts pipe
+	ExePipe_Bit, // Bitwise ops pipe
+	ExePipe_Spec, // Specials pipe
+	ExePipe_None // Non-pipe instructions (NOP, END, etc.)
+};
+
 enum InstructionDestRegModifier : unsigned __int64
 {
 	DRMod_None = 0,

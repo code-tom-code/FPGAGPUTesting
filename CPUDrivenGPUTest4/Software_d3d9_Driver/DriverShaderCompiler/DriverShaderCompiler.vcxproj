@@ -189,6 +189,7 @@
     <ClCompile Include="AssembleDXToken.cpp" />
     <ClCompile Include="CompileShader.cpp" />
     <ClCompile Include="DeviceConversions.cpp" />
+    <ClCompile Include="DeviceShaderSimulator.cpp" />
     <ClCompile Include="DriverShaderCompiler.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -200,6 +201,7 @@
     <ClInclude Include="DeviceConversions.h" />
     <ClInclude Include="DeviceShaderBytecode.h" />
     <ClInclude Include="DriverShaderCompiler.h" />
+    <ClInclude Include="DriverShaderSimulator.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ShaderAnalysis\ShaderAnalysis.vcxproj">

@@ -6,6 +6,7 @@
 #include "AssembleDXToken.h"
 #include "AssembleDXHelpers.h"
 #include "DeviceConversions.h"
+#include "DriverShaderSimulator.h"
 #include <vector>
 
 #define SHADER_OUTPUT_DIRECTORY "DriverCompileOutput"
@@ -2832,9 +2833,8 @@ void CalculateDeviceShaderStats(const std::vector<instructionSlot>& inFinalDevic
 	{
 		outDeviceShaderInfo.constRegisterCount += __popcnt16(cRegBitmask[x]);
 	}
-
-	outDeviceShaderInfo.deviceExecutionCycleCount = 0;
-	outDeviceShaderInfo.deviceCyclesWastedToWaits = 0;
+	
+	outDeviceShaderInfo.deviceExecutionCycleCount = SimulateShaderCycles(inFinalDeviceInstructionStream, outDeviceShaderInfo.deviceCyclesWastedToWaits);
 	outDeviceShaderInfo.vsViewportTransformConstRegisterF = vsViewportTransformConstRegisterF;
 }
 

@@ -112,7 +112,7 @@ struct PipelineOutputStageSim
 
 void AdvancePipeline(PipelineOutputStageSim (&pipeStages)[PipelineMaxSize])
 {
-	for (unsigned char x = 0; x < PipelineMaxSize - 2; ++x)
+	for (unsigned char x = 0; x < PipelineMaxSize - 1; ++x)
 	{
 		pipeStages[x] = pipeStages[x + 1];
 	}
@@ -177,23 +177,34 @@ const unsigned short SimulateShaderCycles(const std::vector<instructionSlot>& in
 	const unsigned numShaderInstructions = (const unsigned)(inFinalDeviceInstructionStream.size() );
 	for (unsigned nextInstructionIndex = 0; nextInstructionIndex < numShaderInstructions;)
 	{
-		const instructionSlot nextInstruction = inFinalDeviceInstructionStream[nextInstructionIndex];
-
-		const InstructionExecutionPipe exePipe = GetPipeFromInstructionOp(nextInstruction.instructionStruct.operation);
-		unsigned short instructionBaseLatency = 0u;
-		if (exePipe == ExePipe_None)
-		{
-			instructionBaseLatency = 1u;
-		}
-		else
-		{
-			instructionBaseLatency = GetPipeLatency(exePipe);
-		}
-
 		AdvancePipeline(pipeStages);
 		++shaderCycles;
+
+		// Fail-safe:
+		if (shaderCycles == 0xFFFF) // No shader that can fit into our shader cache should ever take 65535 cycles to complete (the longest natural shader that I've seen was about 5,000 cycles)
+		{
+#ifdef _DEBUG
+			__debugbreak(); // Error! Infinite loop detected D:
+#endif
+			shaderCycles = 0;
+			break;
+		}
+
 		if (cyclesRemainingCurrentInstruction == 0)
 		{
+			const instructionSlot nextInstruction = inFinalDeviceInstructionStream[nextInstructionIndex];
+
+			const InstructionExecutionPipe exePipe = GetPipeFromInstructionOp(nextInstruction.instructionStruct.operation);
+			unsigned short instructionBaseLatency = 0u;
+			if (exePipe == ExePipe_None)
+			{
+				instructionBaseLatency = 1u;
+			}
+			else
+			{
+				instructionBaseLatency = GetPipeLatency(exePipe);
+			}
+
 			// Check for an output collision (we can't write while the previous instruction is still finishing its writes)
 			if (pipeStages[instructionBaseLatency + CycleLatency_GPRQuad + 1u].wrEnable ||
 				pipeStages[instructionBaseLatency + CycleLatency_GPRQuad + 2u].wrEnable ||
@@ -211,7 +222,6 @@ const unsigned short SimulateShaderCycles(const std::vector<instructionSlot>& in
 			else
 			{
 				// No stalls! We can issue the next instruction after all :)
-				++nextInstructionIndex;
 				if (nextInstruction.instructionStruct.destReg_regType != DRTyp_NULL) // If this next instruction writes to an output register...
 				{
 					for (unsigned stageID = CycleLatency_GPRQuad + 1; stageID <= CycleLatency_GPRQuad + 4; ++stageID)
@@ -240,6 +250,9 @@ const unsigned short SimulateShaderCycles(const std::vector<instructionSlot>& in
 
 				// Instructions that take less than 7 cycles to execute will be scheduled for a minimumm of 7 cycles to allow for 3-cycle read latency and 4 write cycles
 				cyclesRemainingCurrentInstruction = instructionBaseLatency < 7 ? 7 : instructionBaseLatency;
+
+				// Advance our instruction pointer
+				++nextInstructionIndex;
 			}
 		}
 		else

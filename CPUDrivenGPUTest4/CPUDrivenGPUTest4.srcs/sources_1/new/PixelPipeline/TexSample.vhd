@@ -193,6 +193,8 @@ signal outputMUXA : texChannelMUX := TCM_A;
 
 signal colorCombinerMode : eCombinerMode := cbm_textureModulateVertexColor;
 signal alphaCombinerMode : eCombinerMode := cbm_textureModulateVertexColor;
+signal colorCombinerUsesTexture : std_logic := '1';
+signal alphaCombinerUsesTexture : std_logic := '1';
 
 signal interpBitsX : STD_LOGIC_VECTOR(7 downto 0) := (others => '0');
 signal interpBitsY : STD_LOGIC_VECTOR(7 downto 0) := (others => '0');
@@ -508,6 +510,16 @@ signal statCyclesWaitingForCacheLoad : unsigned(31 downto 0) := (others => '0');
 		end case;
 	end function;
 
+	pure function CombinerUsesTexture(cmbMode : eCombinerMode) return std_logic is
+	begin
+		case cmbMode is
+			when cbm_allBlack | cbm_allWhite | cbm_vertexColorOnly | cbm_debugTexcoords | cbm_debugBilinearInterpolants =>
+				return '0';
+			when others =>
+				return '1';
+		end case;
+	end function;
+
 	pure function PackOutputData(pixelX : unsigned(15 downto 0); pixelY : unsigned(15 downto 0); pixelR : unsigned(7 downto 0); pixelG : unsigned(7 downto 0); pixelB : unsigned(7 downto 0); pixelA : unsigned(7 downto 0) ) return unsigned is
 	begin
 		return pixelA & pixelB & pixelG & pixelR & pixelY & pixelX;
@@ -598,6 +610,8 @@ DBG_texCacheReadTexelsCount <= std_logic_vector(texCacheReadTexelsCount);
 						texHeight <= DeserializeBitsToStruct(STATE_StateBitsAtDrawID).TextureHeightLog2;
 						colorCombinerMode <= DeserializeBitsToStruct(STATE_StateBitsAtDrawID).ColorCombinerMode;
 						alphaCombinerMode <= DeserializeBitsToStruct(STATE_StateBitsAtDrawID).AlphaCombinerMode;
+						colorCombinerUsesTexture <= CombinerUsesTexture(DeserializeBitsToStruct(STATE_StateBitsAtDrawID).ColorCombinerMode);
+						alphaCombinerUsesTexture <= CombinerUsesTexture(DeserializeBitsToStruct(STATE_StateBitsAtDrawID).AlphaCombinerMode);
 						loadTexCacheReadAddr <= DeserializeBitsToStruct(STATE_StateBitsAtDrawID).TextureBaseAddr;
 						texCacheReadTexelsCount <= DeserializeBitsToStruct(STATE_StateBitsAtDrawID).TotalTexelCount;
 						texFormat <= DeserializeBitsToStruct(STATE_StateBitsAtDrawID).TextureFormat;
@@ -619,10 +633,14 @@ DBG_texCacheReadTexelsCount <= std_logic_vector(texCacheReadTexelsCount);
 								currentState <= waitingForWrite;
 							end if;
 						else
-							if (bilinearModeEnabled = '0') then
-								currentState <= texSample_point_address;
+							if (colorCombinerUsesTexture = '1' or alphaCombinerUsesTexture = '1') then
+								if (bilinearModeEnabled = '0') then
+									currentState <= texSample_point_address;
+								else
+									currentState <= texSample_bilinear_readTL;
+								end if;
 							else
-								currentState <= texSample_bilinear_readTL;
+								currentState <= setupOutput; -- We can skip all of the texturing logic if we're not going to be using fetched texel data
 							end if;
 						end if;
 					else
@@ -792,6 +810,7 @@ DBG_texCacheReadTexelsCount <= std_logic_vector(texCacheReadTexelsCount);
 
 					currentState <= swizzleTexColors;
 
+					-- Note that this swizzling only applies to the texture color, it does not affect the vertex color
 				when swizzleTexColors =>
 					outColorRegR <= GetSwizzledOutput(outputMUXR, outColorRegR, outColorRegG, outColorRegB, outColorRegA);
 					outColorRegG <= GetSwizzledOutput(outputMUXG, outColorRegR, outColorRegG, outColorRegB, outColorRegA);

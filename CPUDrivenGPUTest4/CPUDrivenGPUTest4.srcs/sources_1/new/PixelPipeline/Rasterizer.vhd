@@ -219,6 +219,9 @@ signal barycentricYDeltaC : signed(15 downto 0) := (others => '0');
 
 signal barycentricInverse : unsigned(31 downto 0) := (others => '0');
 
+signal hasOutputPixelOnThisRow : std_logic := '0';
+signal earlyFinishRow : std_logic := '0';
+
 signal pixelXPos : unsigned(15 downto 0) := (others => '0'); -- stores values from 0 to 64k, but we only need from 0 to 800
 signal pixelYPos : unsigned(15 downto 0) := (others => '0'); -- stores values from 0 to 64k, but we only need from 0 to 525
 signal previousDrawEventID : unsigned(15 downto 0) := (others => '0');
@@ -348,6 +351,9 @@ DBG_MessageData <= fifoWriteData(95 downto 80);
 					barycentricYDeltaC <= signed(TRISETUP_inBarycentricYDeltaC);
 					barycentricInverse <= unsigned(TRISETUP_inBarycentricInverse);
 
+					hasOutputPixelOnThisRow <= '0';
+					earlyFinishRow <= '0';
+
 					vertDataA.texcoord.tx <= unsigned(TRISETUP_inTX0);
 					vertDataA.texcoord.ty <= unsigned(TRISETUP_inTY0);
 					vertDataA.color.r <= unsigned(TRISETUP_inVertColor0(31 downto 0) );
@@ -402,7 +408,7 @@ DBG_MessageData <= fifoWriteData(95 downto 80);
 
 				when triRasterize_mainLoop =>
 					fifoWriteEnable <= '0';
-					if (pixelXPos < maxX and pixelYPos <= maxY) then
+					if (pixelXPos < maxX and pixelYPos <= maxY and earlyFinishRow = '0') then
 						if (barycentricInside(barycentricA) and barycentricInside(barycentricB) and barycentricInside(barycentricC) ) then
 							if (isTopLeftEdgeA = '0') then
 								tempBarycentricA := barycentricA + 1;
@@ -420,6 +426,8 @@ DBG_MessageData <= fifoWriteData(95 downto 80);
 								tempBarycentricC := barycentricC;
 							end if;
 
+							hasOutputPixelOnThisRow <= '1';
+
 							if (RASTOUT_FIFO_full = '0' and RASTOUT_FIFO_almost_full = '0' and hasWrittenPixelsForThisTriangle = '1') then
 								fifoWriteEnable <= '1';
 								fifoWriteData <= std_logic_vector(pixelYPos) & std_logic_vector(pixelXPos) & 
@@ -434,6 +442,8 @@ DBG_MessageData <= fifoWriteData(95 downto 80);
 							if (hasWrittenPixelsForThisTriangle = '0') then
 								currentState <= triRasterize_allocateNewTriCacheSlot;
 							end if;
+						elsif (hasOutputPixelOnThisRow = '1') then
+							earlyFinishRow <= '1';
 						end if;
 
 						-- We haven't reached anything, keep marching pixels along to the right (+X direction)
@@ -452,6 +462,8 @@ DBG_MessageData <= fifoWriteData(95 downto 80);
 						-- We've reached the rightmost pixel, time to restart at the left again:
 						pixelXPos <= minX;
 						pixelYPos <= pixelYPos + 1;
+						hasOutputPixelOnThisRow <= '0';
+						earlyFinishRow <= '0';
 						barycentricA <= barycentricRowResetA + resize(barycentricYDeltaA, barycentricRowResetA'length) + resize(barycentricXDeltaA, barycentricRowResetA'length);
 						barycentricB <= barycentricRowResetB + resize(barycentricYDeltaB, barycentricRowResetB'length) + resize(barycentricXDeltaB, barycentricRowResetB'length);
 						barycentricC <= barycentricRowResetC + resize(barycentricYDeltaC, barycentricRowResetC'length) + resize(barycentricXDeltaC, barycentricRowResetC'length);
